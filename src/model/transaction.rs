@@ -1,0 +1,62 @@
+#[derive(Default)]
+pub struct Transaction {
+    hash: String,
+    signature_fragments: String,
+    address: String,
+    value: i64,
+    obsolete_tag: String,
+    timestamp: i64,
+    current_index: i64,
+    last_index: i64,
+    bundle: String,
+    trunk_transaction: String,
+    branch_transaction: String,
+    nonce: String,
+    persistence: bool,
+    attachment_timestamp: i64,
+    tag: String,
+    attachment_timestamp_lower_bound: i64,
+    attachment_timestamp_upper_bound: i64,
+}
+
+impl Transaction {
+    fn new(
+        hash: String,
+        signature_fragments: String,
+        address: String,
+        value: i64,
+        obsolete_tag: String,
+        timestamp: i64,
+        current_index: i64,
+        last_index: i64,
+        bundle: String,
+        trunk_transaction: String,
+        branch_transaction: String,
+        nonce: String,
+        persistence: bool,
+        attachment_timestamp: i64,
+        tag: String,
+        attachment_timestamp_lower_bound: i64,
+        attachment_timestamp_upper_bound: i64,
+    ) -> Transaction {
+        Transaction {
+            hash,
+            signature_fragments,
+            address,
+            value,
+            obsolete_tag,
+            timestamp,
+            current_index,
+            last_index,
+            bundle,
+            trunk_transaction,
+            branch_transaction,
+            nonce,
+            persistence,
+            attachment_timestamp,
+            tag,
+            attachment_timestamp_lower_bound,
+            attachment_timestamp_upper_bound,
+        }
+    }
+}
