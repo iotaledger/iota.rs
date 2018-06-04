@@ -117,6 +117,39 @@ pub fn trits_to_string(t: &[i32]) -> Option<String> {
     )
 }
 
+pub fn trits(trytes: i64) -> Vec<i32> {
+    let mut trits = Vec::new();
+    let mut absolute_value = if trytes < 0 {
+        trytes * -1
+    } else {
+        trytes
+    };
+
+    while absolute_value > 0 {
+        let mut remainder = absolute_value as i32 % RADIX;
+        absolute_value /= RADIX as i64;
+        if remainder > MAX_TRIT_VALUE {
+            remainder = MIN_TRIT_VALUE;
+            absolute_value += 1;
+        }
+        trits.push(remainder);
+    }
+    if trytes < 0 {
+        for i in 0..trits.len() {
+            trits[i] = -trits[i];
+        }
+    }
+    trits
+}
+
+pub fn long_value(trits: &[i32]) -> i64 {
+    let mut v: i64 = 0;
+    for i in trits.len()..0 {
+        v = v * 3 + trits[i] as i64;
+    }
+    return v;
+}
+
 fn increment(trit_array: &mut [i32], size: usize) {
     for i in 0..size {
         trit_array[i] = trit_array[i] + 1;

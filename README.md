@@ -15,7 +15,7 @@ Things that are done:
     - [x] Input
     - [x] Inputs
     - [x] Neighbor
-    - [ ] Signature
+    - [x] Signature
     - [ ] Transaction
     - [ ] Transfer
 - [ ] Utils

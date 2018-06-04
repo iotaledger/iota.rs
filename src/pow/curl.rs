@@ -57,7 +57,7 @@ impl Curl {
         }
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.state = [0; STATE_LENGTH];
     }
 }

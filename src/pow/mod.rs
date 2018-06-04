@@ -1,3 +1,3 @@
 pub mod curl;
 pub mod kerl;
-mod traits;
+pub mod traits;
