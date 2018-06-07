@@ -10,7 +10,7 @@ Things that are done:
 - [x] PoW
     - [x] Curl
     - [x] Kerl
-- [ ] Model
+- [x] Model
     - [x] Bundle
     - [x] Input
     - [x] Inputs
