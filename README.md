@@ -11,13 +11,13 @@ Things that are done:
     - [x] Curl
     - [x] Kerl
 - [ ] Model
-    - [ ] Bundle
+    - [x] Bundle
     - [x] Input
     - [x] Inputs
     - [x] Neighbor
     - [x] Signature
-    - [ ] Transaction
-    - [ ] Transfer
+    - [x] Transaction
+    - [x] Transfer
 - [ ] Utils
     - [ ] Checksum
     - [x] Constants

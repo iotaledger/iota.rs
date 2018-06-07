@@ -117,40 +117,53 @@ pub fn trits_to_string(t: &[i32]) -> Option<String> {
     )
 }
 
-pub fn trits(trytes: i64) -> Vec<i32> {
+pub fn trits(trytes: u64) -> Vec<i32> {
     let mut trits = Vec::new();
-    let mut absolute_value = if trytes < 0 {
-        trytes * -1
-    } else {
-        trytes
-    };
-
-    while absolute_value > 0 {
-        let mut remainder = absolute_value as i32 % RADIX;
-        absolute_value /= RADIX as i64;
+    let mut value = trytes;
+    while value > 0 {
+        let mut remainder = value as i32 % RADIX;
+        value /= RADIX as u64;
         if remainder > MAX_TRIT_VALUE {
             remainder = MIN_TRIT_VALUE;
-            absolute_value += 1;
+            value += 1;
         }
         trits.push(remainder);
-    }
-    if trytes < 0 {
-        for i in 0..trits.len() {
-            trits[i] = -trits[i];
-        }
     }
     trits
 }
 
-pub fn long_value(trits: &[i32]) -> i64 {
+pub fn trytes(trits: &[i32]) -> String {
+    let mut trytes = String::new();
+    for i in 0..(trits.len() + NUMBER_OF_TRITS_IN_A_TRYTE - 1) / NUMBER_OF_TRITS_IN_A_TRYTE {
+        let mut j = trits[i * 3] + trits[i * 3 + 1] + trits[i * 3 + 2] * 9;
+        if j < 0 {
+            j += constants::TRYTE_ALPHABET.len() as i32;
+        }
+        trytes.push(constants::TRYTE_ALPHABET[j as usize]);
+    }
+    trytes
+}
+
+pub fn value(trits: &[i32]) -> i32 {
+    let mut value = 0;
+    for i in trits.len()..0 {
+        value = value * 3 + trits[i];
+    }
+    value
+}
+
+pub fn long_value(trits: &[i32]) -> u64 {
     let mut v: i64 = 0;
     for i in trits.len()..0 {
         v = v * 3 + trits[i] as i64;
     }
-    return v;
+    if v < 0 {
+        v = v * -1;
+    }
+    return v as u64;
 }
 
-fn increment(trit_array: &mut [i32], size: usize) {
+pub fn increment(trit_array: &mut [i32], size: usize) {
     for i in 0..size {
         trit_array[i] = trit_array[i] + 1;
         if trit_array[i] > MAX_TRIT_VALUE {

@@ -30,8 +30,8 @@ impl Curl {
     pub fn new(mode: Mode) -> Curl {
         let mut curl = Curl::default();
         curl.number_of_rounds = match mode {
-            CURLP27 => 27,
-            CURLP81 => 81,
+            Mode::CURLP27 => 27,
+            Mode::CURLP81 => 81,
         };
         curl.state = [0; STATE_LENGTH];
         curl
