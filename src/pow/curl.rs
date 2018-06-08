@@ -1,7 +1,6 @@
-use super::traits::ICurl;
+use super::traits::{ICurl, HASH_LENGTH};
 use utils::converter::array_copy;
 
-const HASH_LENGTH: usize = 243;
 const STATE_LENGTH: usize = 3 * HASH_LENGTH;
 const TRUTH_TABLE: [i32; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 pub enum Mode {
@@ -64,23 +63,38 @@ impl Curl {
 
 impl ICurl for Curl {
     fn absorb(&mut self, trits: &[i32]) {
-        let length = if trits.len() < HASH_LENGTH {
-            trits.len()
+        self.absorb_offset(trits, 0, trits.len());
+    }
+
+    fn absorb_offset(&mut self, trits: &[i32], offset: usize, length: usize) {
+        let mut offset = offset;
+        let mut length = if length < HASH_LENGTH {
+            length
         } else {
             HASH_LENGTH
         };
-        array_copy(trits, 0, &mut self.state, 0, length)
+        while length > 0 {
+            array_copy(trits, offset, &mut self.state, 0, length);
+            self.transform();
+            offset += HASH_LENGTH;
+            length -= HASH_LENGTH;
+        }
     }
 
     fn squeeze(&mut self, trits: &mut [i32]) {
-        let mut length = trits.len();
-        let mut offset = 0;
+        let len = trits.len();
+        self.squeeze_offset(trits, 0, len);
+    }
+
+    fn squeeze_offset(&mut self, out: &mut [i32], offset: usize, length: usize) {
+        let mut length = length;
+        let mut tmp_offset = offset;
         while length > 0 {
             array_copy(
                 &mut self.state,
                 0,
-                trits,
-                offset,
+                out,
+                tmp_offset,
                 if length < HASH_LENGTH {
                     length
                 } else {
@@ -88,7 +102,7 @@ impl ICurl for Curl {
                 },
             );
             self.transform();
-            offset += HASH_LENGTH;
+            tmp_offset += HASH_LENGTH;
             length -= HASH_LENGTH;
         }
     }

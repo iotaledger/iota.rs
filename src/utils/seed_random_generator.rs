@@ -1,5 +1,5 @@
-use utils::constants;
 use rand::prelude::*;
+use utils::constants;
 
 pub fn generate_new_seed() -> String {
     let mut rng = thread_rng();
@@ -8,5 +8,5 @@ pub fn generate_new_seed() -> String {
         let x = rng.gen_range(0, constants::TRYTE_ALPHABET.len());
         seed.push(constants::TRYTE_ALPHABET[x]);
     }
-   seed
+    seed
 }

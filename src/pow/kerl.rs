@@ -1,11 +1,10 @@
 use super::curl::*;
-use super::traits::ICurl;
+use super::traits::{ICurl, HASH_LENGTH};
 use core;
 use std::collections::HashSet;
 use tiny_keccak::Keccak;
 use utils::converter::array_copy;
 
-const HASH_LENGTH: usize = 243;
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
 
@@ -38,27 +37,45 @@ impl Default for Kerl {
 
 impl ICurl for Kerl {
     fn absorb(&mut self, trits: &[i32]) {
+        let len = trits.len();
+        self.absorb_offset(trits, 0, len);
+    }
+
+    fn absorb_offset(&mut self, trits: &[i32], offset: usize, length: usize) {
         assert!(trits.len() % HASH_LENGTH == 0);
+        let mut length = length;
+        let mut offset = offset;
         let mut bytes = [0; BYTE_LENGTH];
-        for chunk in trits.chunks(HASH_LENGTH) {
-            trits_to_bytes(chunk, &mut bytes);
+        while length > 0 {
+            trits_to_bytes(&trits[offset..offset + HASH_LENGTH], &mut bytes);
             self.keccak.update(&bytes);
+            offset += HASH_LENGTH;
+            length -= HASH_LENGTH;
         }
     }
 
     fn squeeze(&mut self, out: &mut [i32]) {
+        let len = out.len();
+        self.squeeze_offset(out, 0, len);
+    }
+
+    fn squeeze_offset(&mut self, out: &mut [i32], offset: usize, length: usize) {
         assert!(out.len() % HASH_LENGTH == 0);
+        let mut offset = offset;
+        let mut length = length;
         let mut bytes = [0; BYTE_LENGTH];
-        for chunk in out.chunks_mut(HASH_LENGTH) {
+        while length > 0 {
             self.keccak.pad();
             self.keccak.fill_block();
             self.keccak.squeeze(&mut bytes);
             self.reset();
-            bytes_to_trits(&mut bytes.clone(), chunk);
+            bytes_to_trits(&mut bytes.clone(), &mut out[offset..offset + HASH_LENGTH]);
             for b in bytes.iter_mut() {
                 *b = *b ^ 0xFF;
             }
             self.keccak.update(&bytes);
+            offset += HASH_LENGTH;
+            length -= HASH_LENGTH;
         }
     }
 

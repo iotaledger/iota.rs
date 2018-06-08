@@ -1,9 +1,9 @@
-use utils::input_validator;
 use errors::*;
 use pow::kerl::{self, Kerl};
 use pow::traits::ICurl;
-use utils::converter;
 use utils::constants;
+use utils::converter;
+use utils::input_validator;
 
 pub fn add_checksum(address: &str) -> String {
     assert!(input_validator::check_address(address));
@@ -22,8 +22,9 @@ pub fn remove_checksum(address: &str) -> String {
 }
 
 pub fn is_valid_checksum(address: &str) -> bool {
-    let mut address_without_checksum = remove_checksum(address);
-    let address_with_recalculated_checksum = address_without_checksum.clone() + &calculate_checksum(&address_without_checksum);
+    let address_without_checksum = remove_checksum(address);
+    let address_with_recalculated_checksum =
+        address_without_checksum.clone() + &calculate_checksum(&address_without_checksum);
     address == address_with_recalculated_checksum
 }
 
@@ -32,11 +33,13 @@ fn remove_checksum_from_address(address: &str) -> String {
 }
 
 pub fn is_address_with_checksum(address: &str) -> bool {
-    input_validator::check_address(address) && address.len() == constants::ADDRESS_LENGTH_WITH_CHECKSUM
+    input_validator::check_address(address)
+        && address.len() == constants::ADDRESS_LENGTH_WITH_CHECKSUM
 }
 
 pub fn is_address_without_checksum(address: &str) -> bool {
-    input_validator::check_address(address) && address.len() == constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM
+    input_validator::check_address(address)
+        && address.len() == constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM
 }
 
 fn calculate_checksum(address: &str) -> String {

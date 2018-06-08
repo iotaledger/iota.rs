@@ -12,9 +12,9 @@ extern crate error_chain;
 #[macro_use]
 extern crate crunchy;
 extern crate core;
+extern crate rand;
 extern crate regex;
 extern crate tiny_keccak;
-extern crate rand;
 
 pub mod model;
 pub mod pow;

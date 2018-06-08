@@ -13,11 +13,15 @@ pub struct Bundle {
 }
 
 impl Bundle {
-    fn get_length(&self) -> usize {
+    pub fn transactions(&self) -> &[Transaction] {
+        &self.transactions
+    }
+
+    pub fn length(&self) -> usize {
         self.length
     }
 
-    fn get_length_mut(&mut self) -> &mut usize {
+    pub fn length_mut(&mut self) -> &mut usize {
         &mut self.length
     }
 
