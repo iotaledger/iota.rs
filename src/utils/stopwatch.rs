@@ -1,4 +1,5 @@
 use std::time::{Instant, Duration};
+use std::ops::AddAssign;
 use std::ops::Sub;
 
 pub struct StopWatch {
@@ -24,7 +25,7 @@ impl StopWatch {
 
     pub fn stop(mut self) -> Duration {
         self.running = false;
-        self.duration.add_assign(Instant::now().sub(self.last_start_time))
+        self.duration.add_assign(Instant::now().sub(self.last_start_time));
         self.duration
     }
 

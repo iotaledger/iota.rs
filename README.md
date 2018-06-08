@@ -19,7 +19,7 @@ Things that are done:
     - [x] Transaction
     - [x] Transfer
 - [ ] Utils
-    - [ ] Checksum
+    - [x] Checksum
     - [x] Constants
     - [x] Converter
     - [x] InputValidator
