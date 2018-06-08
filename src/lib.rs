@@ -12,6 +12,7 @@ extern crate error_chain;
 #[macro_use]
 extern crate crunchy;
 extern crate core;
+extern crate regex;
 extern crate tiny_keccak;
 
 pub mod model;

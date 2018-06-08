@@ -19,59 +19,59 @@ impl fmt::Display for Transfer {
 }
 
 impl Transfer {
-    pub fn get_address(&self) -> &str {
+    pub fn address(&self) -> &str {
         &self.address
     }
 
-    pub fn get_address_mut(&mut self) -> &mut str {
+    pub fn address_mut(&mut self) -> &mut str {
         &mut self.address
     }
 
-    pub fn get_hash(&self) -> &Option<String> {
+    pub fn hash(&self) -> &Option<String> {
         &self.hash
     }
 
-    pub fn get_hash_mut(&mut self) -> &mut Option<String> {
+    pub fn hash_mut(&mut self) -> &mut Option<String> {
         &mut self.hash
     }
 
-    pub fn get_persistence(&self) -> &Option<bool> {
+    pub fn persistence(&self) -> &Option<bool> {
         &self.persistence
     }
 
-    pub fn get_persistence_mut(&mut self) -> &mut Option<bool> {
+    pub fn persistence_mut(&mut self) -> &mut Option<bool> {
         &mut self.persistence
     }
 
-    pub fn get_timestamp(&self) -> &Option<String> {
+    pub fn timestamp(&self) -> &Option<String> {
         &self.timestamp
     }
 
-    pub fn get_timestamp_mut(&mut self) -> &mut Option<String> {
+    pub fn timestamp_mut(&mut self) -> &mut Option<String> {
         &mut self.timestamp
     }
 
-    pub fn get_value(&self) -> &u64 {
+    pub fn value(&self) -> &u64 {
         &self.value
     }
 
-    pub fn get_value_mut(&mut self) -> &mut u64 {
+    pub fn value_mut(&mut self) -> &mut u64 {
         &mut self.value
     }
 
-    pub fn get_message(&self) -> &Option<String> {
+    pub fn message(&self) -> &Option<String> {
         &self.message
     }
 
-    pub fn get_message_mut(&mut self) -> &mut Option<String> {
+    pub fn message_mut(&mut self) -> &mut Option<String> {
         &mut self.message
     }
 
-    pub fn get_tag(&self) -> &Option<String> {
+    pub fn tag(&self) -> &Option<String> {
         &self.tag
     }
 
-    pub fn get_tag_mut(&mut self) -> &mut Option<String> {
+    pub fn tag_mut(&mut self) -> &mut Option<String> {
         &mut self.tag
     }
 }
