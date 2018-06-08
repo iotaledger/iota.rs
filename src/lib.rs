@@ -14,6 +14,7 @@ extern crate crunchy;
 extern crate core;
 extern crate regex;
 extern crate tiny_keccak;
+extern crate rand;
 
 pub mod model;
 pub mod pow;

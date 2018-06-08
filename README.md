@@ -27,9 +27,9 @@ Things that are done:
     - [ ] IotaUnitConversion
     - [ ] IotaUnits
     - [ ] Multisig
-    - [ ] SeedRandomGenerator
+    - [x] SeedRandomGenerator
     - [ ] Signing
-    - [ ] StopWatch
+    - [x] StopWatch
     - [x] TrytesConverter
 - [ ] API
     - [ ] IotaAPI
