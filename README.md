@@ -24,8 +24,8 @@ Things that are done:
     - [x] Converter
     - [x] InputValidator
     - [ ] IotaAPIUtils
-    - [ ] IotaUnitConversion
-    - [ ] IotaUnits
+    - [x] IotaUnitConversion
+    - [x] IotaUnits
     - [ ] Multisig
     - [x] SeedRandomGenerator
     - [x] Signing

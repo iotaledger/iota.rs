@@ -8,11 +8,6 @@ use utils::input_validator;
 
 const KEY_LENGTH: usize = 6561;
 
-#[derive(Default)]
-struct Signing {
-    curl: Kerl,
-}
-
 pub fn key(in_seed: &[i32], index: usize, security: i32) -> Vec<i32> {
     if security < 1 {
         panic!(constants::INVALID_SECURITY_LEVEL_INPUT_ERROR);
