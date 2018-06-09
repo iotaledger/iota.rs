@@ -3,9 +3,9 @@ use std::fmt;
 #[derive(Default, Serialize, Deserialize)]
 pub struct Input {
     address: String,
-    balance: i64,
-    key_index: i32,
-    security: i32,
+    balance: u64,
+    key_index: usize,
+    security: usize,
 }
 
 impl fmt::Display for Input {
@@ -19,7 +19,7 @@ impl fmt::Display for Input {
 }
 
 impl Input {
-    pub fn new(address: String, balance: i64, key_index: i32, security: i32) -> Input {
+    pub fn new(address: String, balance: u64, key_index: usize, security: usize) -> Input {
         Input {
             address,
             balance,
@@ -28,35 +28,35 @@ impl Input {
         }
     }
 
-    pub fn get_address(&self) -> &str {
+    pub fn address(&self) -> &str {
         &self.address
     }
 
-    pub fn set_address(&mut self, address: String) {
-        self.address = address;
+    pub fn address_mut(&mut self) -> &mut str {
+        &mut self.address
     }
 
-    pub fn get_balance(&self) -> i64 {
+    pub fn balance(&self) -> u64 {
         self.balance
     }
 
-    pub fn set_balance(&mut self, balance: i64) {
-        self.balance = balance;
+    pub fn balance_mut(&mut self) -> &mut u64 {
+        &mut self.balance
     }
 
-    pub fn get_key_index(&self) -> i32 {
+    pub fn key_index(&self) -> usize {
         self.key_index
     }
 
-    pub fn set_key_index(&mut self, key_index: i32) {
-        self.key_index = key_index;
+    pub fn key_index_mut(&mut self) -> &mut usize {
+        &mut self.key_index
     }
 
-    pub fn get_security(&self) -> i32 {
+    pub fn security(&self) -> usize {
         self.security
     }
 
-    pub fn set_security(&mut self, security: i32) {
-        self.security = security;
+    pub fn security_mut(&mut self) -> &mut usize {
+        &mut self.security
     }
 }

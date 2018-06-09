@@ -23,7 +23,7 @@ Things that are done:
     - [x] Constants
     - [x] Converter
     - [x] InputValidator
-    - [ ] IotaAPIUtils
+    - [x] IotaAPIUtils
     - [x] IotaUnitConversion
     - [x] IotaUnits
     - [ ] Multisig

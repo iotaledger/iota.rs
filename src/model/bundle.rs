@@ -17,6 +17,10 @@ impl Bundle {
         &self.transactions
     }
 
+    pub fn transactions_mut(&mut self) -> &mut [Transaction] {
+        &mut self.transactions
+    }
+
     pub fn length(&self) -> usize {
         self.length
     }
@@ -45,7 +49,7 @@ impl Bundle {
         }
     }
 
-    fn finalize(&mut self) {
+    pub fn finalize(&mut self) {
         let mut curl = Kerl::default();
         let mut valid = true;
         let mut hash = [0; 243];
@@ -103,7 +107,7 @@ impl Bundle {
         }
     }
 
-    pub fn add_trytes(&mut self, signature_fragments: Vec<String>) {
+    pub fn add_trytes(&mut self, signature_fragments: &[String]) {
         let mut empty_signature_fragment = String::new();
         let empty_hash = EMPTY_HASH;
         let empty_timestamp = 999999999;

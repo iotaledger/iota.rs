@@ -8,7 +8,7 @@ use utils::input_validator;
 
 const KEY_LENGTH: usize = 6561;
 
-pub fn key(in_seed: &[i32], index: usize, security: i32) -> Vec<i32> {
+pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
     if security < 1 {
         panic!(constants::INVALID_SECURITY_LEVEL_INPUT_ERROR);
     }
@@ -30,7 +30,7 @@ pub fn key(in_seed: &[i32], index: usize, security: i32) -> Vec<i32> {
     curl.reset();
     curl.absorb(&seed);
 
-    let mut key = vec![0; (security * HASH_LENGTH as i32 * 27) as usize];
+    let mut key = vec![0; (security * HASH_LENGTH * 27) as usize];
     let mut buffer = vec![0; seed.len()];
     let mut offset = 0;
 
