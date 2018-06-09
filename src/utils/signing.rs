@@ -14,10 +14,10 @@ pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
     }
     let mut seed = in_seed.to_owned();
     for i in 0..index {
-        for j in 0..seed.len() {
-            seed[j] += 1;
-            if seed[j] > 1 {
-                seed[j] = -1;
+        for trit in &mut seed {
+            *trit += 1;
+            if *trit > 1 {
+                *trit = -1;
             } else {
                 break;
             }
@@ -49,9 +49,9 @@ pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
 pub fn signature_fragment(normalized_bundle_fragment: &[i32], key_fragment: &[i32]) -> Vec<i32> {
     let mut signature_fragment = key_fragment.to_owned();
     let mut curl = Kerl::default();
-    for i in 0..27 {
+    for (i, fragment) in normalized_bundle_fragment.iter().enumerate().take(27) {
         let mut j = 0;
-        while j < 13 - normalized_bundle_fragment[i] {
+        while j < 13 - fragment {
             curl.reset();
             curl.absorb_offset(&signature_fragment, i * HASH_LENGTH, HASH_LENGTH);
             curl.squeeze_offset(&mut signature_fragment, i * HASH_LENGTH, HASH_LENGTH);
@@ -111,7 +111,7 @@ pub fn digest(normalized_bundle_fragment: &[i32], signature_fragment: &[i32]) ->
     buffer
 }
 
-pub fn validate_bundle_signatures(signed_bundle: Bundle, address: &str) -> bool {
+pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> bool {
     let mut bundle_hash = String::new();
     let mut trx: Transaction;
     let mut signature_fragments: Vec<String> = Vec::new();

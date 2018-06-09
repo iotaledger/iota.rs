@@ -1,12 +1,12 @@
 use utils::iota_units::IotaUnits;
 
-pub fn convert_units(amount: u64, from: IotaUnits, to: IotaUnits) -> u64 {
-    let amount_in_source = amount * 10_u64.pow(from.value() as u32);
+pub fn convert_units(amount: u64, from: &IotaUnits, to: &IotaUnits) -> u64 {
+    let amount_in_source = amount * 10_u64.pow(u32::from(from.value()));
     convert_units_helper(amount_in_source, to)
 }
 
-fn convert_units_helper(amount: u64, to: IotaUnits) -> u64 {
-    amount / 10_u64.pow(to.value() as u32)
+fn convert_units_helper(amount: u64, to: &IotaUnits) -> u64 {
+    amount / 10_u64.pow(u32::from(to.value()))
 }
 
 pub fn convert_raw_iota_amount_to_display_text(amount: u64, extended: bool) -> String {
@@ -36,7 +36,7 @@ pub fn create_amount_display_text(amount: &u64, unit: &IotaUnits, extended: bool
 }
 
 pub fn convert_amount_to(amount: &u64, target: &IotaUnits) -> u64 {
-    amount / 10_u64.pow(target.value() as u32)
+    amount / 10_u64.pow(u32::from(target.value()))
 }
 
 pub fn find_optimal_iota_unit_to_display(amount: &u64) -> IotaUnits {

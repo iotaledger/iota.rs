@@ -27,6 +27,7 @@ pub fn sign_inputs_and_return(
     bundle.add_trytes(signature_fragments);
 
     for i in 0..bundle.transactions().len() {
+        //TODO this is always false.. not sure what they're doing here
         if bundle.transactions()[i].value().unwrap() < 0 {
             let this_address = bundle.transactions()[i].address().clone().unwrap();
             let mut key_index = 0;

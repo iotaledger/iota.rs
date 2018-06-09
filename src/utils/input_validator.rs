@@ -78,7 +78,7 @@ pub fn is_array_of_hashes(hashes: Vec<String>) -> bool {
     true
 }
 
-pub fn is_valid_transfer(transfer: Transfer) -> bool {
+pub fn is_valid_transfer(transfer: &Transfer) -> bool {
     if !is_address(transfer.address()) {
         return false;
     }
@@ -104,7 +104,7 @@ pub fn is_transfers_collection_valid(transfers: Vec<Transfer>) -> bool {
         return false;
     }
     for transfer in transfers {
-        if !is_valid_transfer(transfer) {
+        if !is_valid_transfer(&transfer) {
             return false;
         }
     }

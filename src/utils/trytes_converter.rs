@@ -53,7 +53,7 @@ pub fn to_string(input: &str) -> Result<String> {
         }
         let decimal = (first + second * 27) as u8;
         tmp.push(AsciiChar::from(decimal).chain_err(|| "")?.as_char());
-        i = i + 2;
+        i += 2;
     }
     Ok(tmp)
 }

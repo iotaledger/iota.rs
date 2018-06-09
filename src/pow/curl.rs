@@ -3,6 +3,8 @@ use utils::converter::array_copy;
 
 const STATE_LENGTH: usize = 3 * HASH_LENGTH;
 const TRUTH_TABLE: [i32; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
+
+#[derive(Clone, Copy)]
 pub enum Mode {
     CURLP27,
     CURLP81,
@@ -22,13 +24,14 @@ impl Default for Curl {
             scratchpad: [0; STATE_LENGTH],
             state: [0; STATE_LENGTH],
         }
+        
     }
 }
 
 impl Curl {
-    pub fn new(mode: Mode) -> Curl {
+    pub fn new(mode: &Mode) -> Curl {
         let mut curl = Curl::default();
-        curl.number_of_rounds = match mode {
+        curl.number_of_rounds = match *mode {
             Mode::CURLP27 => 27,
             Mode::CURLP81 => 81,
         };
@@ -40,7 +43,7 @@ impl Curl {
         let mut scratchpad_index = 0;
         let mut prev_scratchpad_index = 0;
         for _round in 0..self.number_of_rounds {
-            array_copy(&mut self.state, 0, &mut self.scratchpad, 0, STATE_LENGTH);
+            array_copy(&self.state, 0, &mut self.scratchpad, 0, STATE_LENGTH);
             for state_index in 0..STATE_LENGTH {
                 prev_scratchpad_index = scratchpad_index;
                 if scratchpad_index < 365 {
@@ -91,7 +94,7 @@ impl ICurl for Curl {
         let mut tmp_offset = offset;
         while length > 0 {
             array_copy(
-                &mut self.state,
+                &self.state,
                 0,
                 out,
                 tmp_offset,

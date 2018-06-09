@@ -69,9 +69,9 @@ impl ICurl for Kerl {
             self.keccak.fill_block();
             self.keccak.squeeze(&mut bytes);
             self.reset();
-            bytes_to_trits(&mut bytes.clone(), &mut out[offset..offset + HASH_LENGTH]);
+            bytes_to_trits(&mut bytes.to_owned(), &mut out[offset..offset + HASH_LENGTH]);
             for b in bytes.iter_mut() {
-                *b = *b ^ 0xFF;
+                *b ^= 0xFF
             }
             self.keccak.update(&bytes);
             offset += HASH_LENGTH;
@@ -125,11 +125,11 @@ pub fn trits_to_bytes(trits: &[i32], bytes: &mut [u8]) {
                 let sz = size;
                 let mut carry: u32 = 0;
 
-                for j in 0..sz {
-                    let v = (base[j] as u64) * (RADIX as u64) + (carry as u64);
+                for b in base.iter_mut().take(sz) {
+                    let v = u64::from(*b) * (RADIX as u64) + u64::from(carry);
                     let (newcarry, newbase) = ((v >> 32) as u32, v as u32);
                     carry = newcarry;
-                    base[j] = newbase;
+                    *b = newbase;
                 }
 
                 if carry > 0 {
@@ -156,7 +156,7 @@ pub fn trits_to_bytes(trits: &[i32], bytes: &mut [u8]) {
             } else {
                 // we don't have a wrapping sub.
                 // so let's use some bit magic to achieve it
-                let mut tmp = HALF_3.clone();
+                let mut tmp = HALF_3;
                 bigint_sub(&mut tmp, &base);
                 bigint_not(&mut tmp);
                 bigint_add_base(&mut tmp, 1);
@@ -198,17 +198,17 @@ pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i32]) {
             flip_trits = true;
         } else {
             bigint_add_base(base, 1);
-            let mut tmp = HALF_3.clone();
+            let mut tmp = HALF_3;
             bigint_sub(&mut tmp, &base);
             base.clone_from_slice(&tmp);
         }
     }
 
     let mut rem;
-    for i in 0..HASH_LENGTH - 1 {
+    for trit in trits.iter_mut().take(HASH_LENGTH - 1) {
         rem = 0;
         for j in (0..INT_LENGTH).rev() {
-            let lhs = ((rem as u64) << 32) | (base[j] as u64);
+            let lhs = (u64::from(rem) << 32) | (u64::from(base[j]));
             let rhs = RADIX as u64;
             let q = (lhs / rhs) as u32;
             let r = (lhs % rhs) as u32;
@@ -216,7 +216,7 @@ pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i32]) {
             base[j] = q;
             rem = r;
         }
-        trits[i] = rem as i32 - 1;
+        *trit = rem as i32 - 1;
     }
 
     if flip_trits {
@@ -285,8 +285,8 @@ fn is_null(base: &[u32]) -> bool {
 }
 
 fn full_add(ia: u32, ib: u32, carry: bool) -> (u32, bool) {
-    let a = ia as u64;
-    let b = ib as u64;
+    let a = u64::from(ia);
+    let b = u64::from(ib);
 
     let mut v = a + b;
     let mut l = v >> 32;

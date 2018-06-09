@@ -212,7 +212,7 @@ impl FromStr for Transaction {
         let mut hash = [0; 243];
 
         let mut transaction = Transaction::default();
-        let mut curl = curl::Curl::new(curl::Mode::CURLP81);
+        let mut curl = curl::Curl::new(&curl::Mode::CURLP81);
         curl.reset();
         curl.absorb(&transaction_trits);
         curl.squeeze(&mut hash);

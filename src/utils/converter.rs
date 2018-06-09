@@ -12,11 +12,10 @@ use utils::constants;
 
 lazy_static! {
     pub static ref BYTE_TO_TRITS_MAPPINGS: [[i32; NUMBER_OF_TRITS_IN_A_BYTE]; 243] = {
-        //let mut trits = [0; NUMBER_OF_TRITS_IN_A_BYTE];
         let mut trits: [i32; NUMBER_OF_TRITS_IN_A_BYTE] = [0; NUMBER_OF_TRITS_IN_A_BYTE];
         let mut tmp = [[0; NUMBER_OF_TRITS_IN_A_BYTE]; 243];
-        for i in 0..243 {
-            tmp[i].copy_from_slice(&trits[0..NUMBER_OF_TRITS_IN_A_BYTE]);
+        for tmp_entry in tmp.iter_mut().take(243) {
+            tmp_entry.copy_from_slice(&trits[0..NUMBER_OF_TRITS_IN_A_BYTE]);
             increment(&mut trits, NUMBER_OF_TRITS_IN_A_BYTE);
         }
         tmp
@@ -25,8 +24,8 @@ lazy_static! {
 pub static ref TRYTE_TO_TRITS_MAPPINGS: [[i32; NUMBER_OF_TRITS_IN_A_TRYTE]; 27] = {
         let mut trits: [i32; NUMBER_OF_TRITS_IN_A_BYTE] = [0; NUMBER_OF_TRITS_IN_A_BYTE];
         let mut tmp = [[0; NUMBER_OF_TRITS_IN_A_TRYTE]; 27];
-        for i in 0..27 {
-            tmp[i].copy_from_slice(&trits[0..NUMBER_OF_TRITS_IN_A_TRYTE]);
+        for tmp_entry in tmp.iter_mut().take(27) {
+            tmp_entry.copy_from_slice(&trits[0..NUMBER_OF_TRITS_IN_A_TRYTE]);
             increment(&mut trits, NUMBER_OF_TRITS_IN_A_TRYTE);
         }
         tmp
@@ -38,15 +37,14 @@ pub fn bytes_custom(trits: &[i32], offset: usize, size: usize) -> Vec<u8> {
     let mut bytes = Vec::new();
     for i in 0..len {
         let mut value = 0;
-        let mut j = 0;
-        if size - i * NUMBER_OF_TRITS_IN_A_BYTE < 5 {
-            j = size - i * NUMBER_OF_TRITS_IN_A_BYTE;
+        let mut j = if size - i * NUMBER_OF_TRITS_IN_A_BYTE < 5 {
+            size - i * NUMBER_OF_TRITS_IN_A_BYTE
         } else {
-            j = NUMBER_OF_TRITS_IN_A_BYTE;
-        }
+            NUMBER_OF_TRITS_IN_A_BYTE
+        };
         while j > 0 {
             value = value * RADIX + trits[offset + i + NUMBER_OF_TRITS_IN_A_BYTE + j];
-            j = j - 1;
+            j -= 1;
         }
         bytes[i] = value as u8;
     }
@@ -61,12 +59,11 @@ pub fn get_trits(bytes: &[u8], trits: &mut [i32]) {
     let mut offset = 0;
     let mut i = 0;
     while i < bytes.len() && offset < trits.len() {
-        let mut length = 0;
-        if trits.len() - offset < NUMBER_OF_TRITS_IN_A_BYTE {
-            length = trits.len() - offset;
+        let mut length = if trits.len() - offset < NUMBER_OF_TRITS_IN_A_BYTE {
+            trits.len() - offset
         } else {
-            length = NUMBER_OF_TRITS_IN_A_BYTE;
-        }
+            NUMBER_OF_TRITS_IN_A_BYTE
+        };
         array_copy(
             &BYTE_TO_TRITS_MAPPINGS[bytes[i] as usize],
             0,
@@ -75,11 +72,11 @@ pub fn get_trits(bytes: &[u8], trits: &mut [i32]) {
             length,
         );
         offset += NUMBER_OF_TRITS_IN_A_BYTE;
-        i = i + 1;
+        i += 1;
     }
     while offset < trits.len() {
         trits[offset] = 0;
-        offset = offset + 1;
+        offset += 1;
     }
 }
 
@@ -88,9 +85,9 @@ pub fn trits_from_string(trytes: &str) -> Vec<i32> {
 }
 
 pub fn char_to_trits(tryte: char) -> &'static [i32; constants::TRITS_PER_TRYTE] {
-    for i in 0..constants::TRYTE_ALPHABET.len() {
+    for (i, letter) in TRYTE_TO_TRITS_MAPPINGS.iter().enumerate().take(constants::TRYTE_ALPHABET.len()) {
         if constants::TRYTE_ALPHABET[i] == tryte {
-            return &TRYTE_TO_TRITS_MAPPINGS[i];
+            return &letter;
         }
     }
 
@@ -146,28 +143,28 @@ pub fn trytes(trits: &[i32]) -> String {
 
 pub fn value(trits: &[i32]) -> i32 {
     let mut value = 0;
-    for i in trits.len()..0 {
-        value = value * 3 + trits[i];
+    for trit in trits.iter().rev().take(trits.len()) {
+        value = value * 3 + trit;
     }
     value
 }
 
 pub fn long_value(trits: &[i32]) -> u64 {
     let mut v: i64 = 0;
-    for i in trits.len()..0 {
-        v = v * 3 + trits[i] as i64;
+    for trit in trits.iter().rev().take(trits.len()) {
+        v = v * 3 + i64::from(*trit);
     }
     if v < 0 {
-        v = v * -1;
+        v *= -1;
     }
     return v as u64;
 }
 
 pub fn increment(trit_array: &mut [i32], size: usize) {
-    for i in 0..size {
-        trit_array[i] = trit_array[i] + 1;
-        if trit_array[i] > MAX_TRIT_VALUE {
-            trit_array[i] = MIN_TRIT_VALUE;
+    for trit in trit_array.iter_mut().take(size) {
+        *trit += 1;
+        if *trit > MAX_TRIT_VALUE {
+            *trit = MIN_TRIT_VALUE;
         } else {
             break;
         }
@@ -178,7 +175,5 @@ pub fn array_copy<T>(src: &[T], src_pos: usize, dest: &mut [T], dest_pos: usize,
 where
     T: Clone,
 {
-    for i in 0..length {
-        dest[dest_pos + i] = src[src_pos + i].clone();
-    }
+    dest[dest_pos..(length + dest_pos)].clone_from_slice(&src[src_pos..(length + src_pos)]);
 }

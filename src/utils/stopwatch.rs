@@ -8,6 +8,12 @@ pub struct StopWatch {
     duration: Duration,
 }
 
+impl Default for StopWatch {
+fn default() -> Self {
+    Self::new()
+   }
+}
+
 impl StopWatch {
     pub fn new() -> StopWatch {
         StopWatch {
