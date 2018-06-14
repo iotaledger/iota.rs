@@ -15,7 +15,7 @@ pub fn check_address(address: &str) -> bool {
     true
 }
 
-pub fn is_addresses_collection_valid(addresses: Vec<String>) -> bool {
+pub fn is_addresses_collection_valid(addresses: &[String]) -> bool {
     for address in addresses {
         if !check_address(&address) {
             return false;
@@ -54,7 +54,7 @@ pub fn is_value(value: &str) -> bool {
     }
 }
 
-pub fn is_array_of_trytes(trytes: Vec<String>) -> bool {
+pub fn is_array_of_trytes(trytes: &[String]) -> bool {
     for tryte in trytes {
         if !is_trytes(&tryte, 2673) {
             return false;
@@ -63,7 +63,7 @@ pub fn is_array_of_trytes(trytes: Vec<String>) -> bool {
     true
 }
 
-pub fn is_array_of_hashes(hashes: Vec<String>) -> bool {
+pub fn is_array_of_hashes(hashes: &[String]) -> bool {
     for hash in hashes {
         if hash.len() == 90 {
             if !is_trytes(&hash, 90) {
@@ -115,7 +115,7 @@ pub fn is_valid_seed(seed: &str) -> bool {
     is_trytes(seed, seed.len())
 }
 
-pub fn is_hashes(hashes: Vec<String>) -> bool {
+pub fn is_hashes(hashes: &[String]) -> bool {
     for hash in hashes {
         if !is_trytes(&hash, 81) {
             return false;
@@ -128,7 +128,7 @@ pub fn is_hash(hash: &str) -> bool {
     is_trytes(hash, 81)
 }
 
-pub fn is_array_of_attached_trytes(trytes: Vec<String>) -> bool {
+pub fn is_array_of_attached_trytes(trytes: &[String]) -> bool {
     for tryte_value in trytes {
         if !is_trytes(&tryte_value, 2673) {
             return false;

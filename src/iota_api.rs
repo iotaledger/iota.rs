@@ -2,6 +2,7 @@ use errors::*;
 use reqwest::header::{ContentType, Headers};
 use reqwest::{self, Response};
 use serde_json::Value;
+use utils::input_validator;
 
 const REQUEST_FAILED: &'static str = "API request failed";
 const PARSE_FAILED: &'static str = "Failed to parse json response";
@@ -148,6 +149,8 @@ pub fn find_transactions(
 }
 
 pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<Value> {
+    assert!(input_validator::is_array_of_hashes(hashes));
+
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -169,6 +172,9 @@ pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<Value> {
 }
 
 pub fn get_inclusion_states(uri: &str, transactions: &[String], tips: &[String]) -> Result<Value> {
+    assert!(input_validator::is_array_of_hashes(transactions));
+    assert!(input_validator::is_array_of_hashes(tips));
+
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -240,6 +246,10 @@ pub fn attach_to_tangle(
     min_weight_magnitude: i32,
     trytes: &[String],
 ) -> Result<Value> {
+    assert!(input_validator::is_hash(trunk_transaction));
+    assert!(input_validator::is_hash(branch_transaction));
+    assert!(input_validator::is_array_of_trytes(trytes));
+
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -269,6 +279,8 @@ pub fn interrupt_attaching_to_tangle(uri: &str) -> Result<Response> {
 }
 
 pub fn broadcast_transactions(uri: &str, trytes: &[String]) -> Result<Value> {
+    assert!(input_validator::is_array_of_attached_trytes(trytes));
+
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
