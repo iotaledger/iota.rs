@@ -1,323 +1,56 @@
 use errors::*;
-use reqwest::header::{ContentType, Headers};
-use reqwest::{self, Response};
-use serde_json::Value;
-use utils::input_validator;
+use iri_api;
+use std::time::Duration;
+use utils::api_utils;
+use utils::stopwatch::StopWatch;
+use serde_json;
 
-const REQUEST_FAILED: &'static str = "API request failed";
-const PARSE_FAILED: &'static str = "Failed to parse json response";
-
-pub fn get_node_info(uri: &str) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "getNodeInfo",
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
+pub struct API {
+    uri: &'static str,
 }
 
-pub fn get_neighbors(uri: &str) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
+impl API {
+    pub fn get_new_address(
+        &self,
+        seed: &str,
+        security: usize,
+        index: usize,
+        checksum: bool,
+        total: usize,
+        return_all: bool,
+    ) -> Result<(Vec<String>, Duration)> {
+        let stopwatch = StopWatch::default();
+        let mut all_addresses: Vec<String> = Vec::new();
+        if total != 0 {
+            for i in 0..index + total {
+                all_addresses.push(api_utils::new_address(seed, security, i, checksum));
+            }
+            return Ok((all_addresses, stopwatch.elapsed_time()));
+        }
 
-    let body = json!({
-        "command": "getNeighbors",
-    });
+        let mut i = index;
+        loop {
+            let new_address = api_utils::new_address(seed, security, i, checksum);
+            let resp = iri_api::find_transactions(
+                self.uri,
+                None,
+                Some(&vec![new_address.clone()]),
+                None,
+                None,
+            ).chain_err(|| "")?;
 
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
+            all_addresses.push(new_address);
+            let hashes: Vec<String> = serde_json::from_value(resp["hashes"].clone()).chain_err(|| "")?;
+            if hashes.len() == 0 {
+                break;
+            }
+            i += 1;
+        }
 
-pub fn add_neighbors(uri: &str, uris: &[String]) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
+        if !return_all {
+            all_addresses = all_addresses[all_addresses.len()-1..].to_vec();
+        }
 
-    let body = json!({
-        "command": "addNeighbors",
-        "uris": uris,
-    });
-
-   Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn remove_neighbors(uri: &str, uris: &[String]) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "removeNeighbors",
-        "uris": uris,
-    });
-
-  Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn get_tips(uri: &str) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "getTips",
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn find_transactions(
-    uri: &str,
-    bundles: Option<&[String]>,
-    addresses: Option<&[String]>,
-    tags: Option<&[String]>,
-    approvees: Option<&[String]>,
-) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let mut body = json!({
-        "command": "findTransactions",
-    });
-
-    if let Some(b) = bundles {
-        body["bundles"] = json!(b);
+        Ok((all_addresses, stopwatch.elapsed_time()))
     }
-    if let Some(a) = addresses {
-        body["addresses"] = json!(a);
-    }
-    if let Some(t) = tags {
-        body["tags"] = json!(t);
-    }
-    if let Some(a) = approvees {
-        body["approvees"] = json!(a);
-    }
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<Value> {
-    assert!(input_validator::is_array_of_hashes(hashes));
-
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "getTrytes",
-        "hashes": hashes,
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn get_inclusion_states(uri: &str, transactions: &[String], tips: &[String]) -> Result<Value> {
-    assert!(input_validator::is_array_of_hashes(transactions));
-    assert!(input_validator::is_array_of_hashes(tips));
-
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "getInclusionStates",
-        "transactions": transactions,
-        "tips": tips,
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn get_balances(uri: &str, addresses: &[String], threshold: i32) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "getBalances",
-        "addresses": addresses,
-        "threshold": threshold,
-    });
-
-   Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn get_transactions_to_approve(uri: &str, depth: i32) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "getTransactionsToApprove",
-        "depth": depth,
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn attach_to_tangle(
-    uri: &str,
-    trunk_transaction: &str,
-    branch_transaction: &str,
-    min_weight_magnitude: i32,
-    trytes: &[String],
-) -> Result<Value> {
-    assert!(input_validator::is_hash(trunk_transaction));
-    assert!(input_validator::is_hash(branch_transaction));
-    assert!(input_validator::is_array_of_trytes(trytes));
-
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "attachToTangle",
-        "trunkTransaction": trunk_transaction,
-        "branchTransaction": branch_transaction,
-        "minWeightMagnitude": min_weight_magnitude,
-        "trytes": trytes,
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn interrupt_attaching_to_tangle(uri: &str) -> Result<Response> {
-    let client = reqwest::Client::new();
-    Ok(client.post(uri).send().chain_err(|| REQUEST_FAILED)?)
-}
-
-pub fn broadcast_transactions(uri: &str, trytes: &[String]) -> Result<Value> {
-    assert!(input_validator::is_array_of_attached_trytes(trytes));
-
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "broadcastTransactions",
-        "trytes": trytes,
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
-}
-
-pub fn store_transactions(uri: &str, trytes: &[String]) -> Result<Value> {
-    let client = reqwest::Client::new();
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
-    let body = json!({
-        "command": "storeTransactions",
-        "trytes": trytes,
-    });
-
-    Ok(client
-        .post(uri)
-        .headers(headers)
-        .body(body.to_string())
-        .send()
-        .chain_err(|| REQUEST_FAILED)?
-        .json()
-        .chain_err(|| PARSE_FAILED)?)
 }

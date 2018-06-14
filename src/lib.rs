@@ -26,3 +26,4 @@ pub mod errors {
     error_chain!{}
 }
 pub mod iota_api;
+pub mod iri_api;
