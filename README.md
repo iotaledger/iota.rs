@@ -33,7 +33,7 @@ Things that are done:
     - [x] TrytesConverter
 - [ ] API
     - [ ] IotaAPI
-    - [ ] IotaAPICommands
-    - [ ] IotaAPICore
-    - [ ] IotaAPIService
+    - [x] IotaAPICommands
+    - [x] IotaAPICore
+    - [x] IotaAPIService
     - [ ] IotaLocalPoW
