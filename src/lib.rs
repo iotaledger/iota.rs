@@ -1,6 +1,7 @@
 #![recursion_limit = "1024"]
 
 extern crate serde;
+#[macro_use]
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
@@ -14,6 +15,7 @@ extern crate crunchy;
 extern crate core;
 extern crate rand;
 extern crate regex;
+extern crate reqwest;
 extern crate tiny_keccak;
 
 pub mod model;
@@ -23,3 +25,4 @@ pub mod errors {
     // Create the Error, ErrorKind, ResultExt, and Result types
     error_chain!{}
 }
+pub mod iota_api;

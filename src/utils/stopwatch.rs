@@ -9,9 +9,9 @@ pub struct StopWatch {
 }
 
 impl Default for StopWatch {
-fn default() -> Self {
-    Self::new()
-   }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl StopWatch {

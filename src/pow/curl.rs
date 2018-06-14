@@ -24,7 +24,6 @@ impl Default for Curl {
             scratchpad: [0; STATE_LENGTH],
             state: [0; STATE_LENGTH],
         }
-        
     }
 }
 

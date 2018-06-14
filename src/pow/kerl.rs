@@ -69,7 +69,10 @@ impl ICurl for Kerl {
             self.keccak.fill_block();
             self.keccak.squeeze(&mut bytes);
             self.reset();
-            bytes_to_trits(&mut bytes.to_owned(), &mut out[offset..offset + HASH_LENGTH]);
+            bytes_to_trits(
+                &mut bytes.to_owned(),
+                &mut out[offset..offset + HASH_LENGTH],
+            );
             for b in bytes.iter_mut() {
                 *b ^= 0xFF
             }
@@ -97,12 +100,7 @@ pub fn trits_to_bytes(trits: &[i32], bytes: &mut [u8]) {
     assert_eq!(trits.len(), HASH_LENGTH);
     assert_eq!(bytes.len(), BYTE_LENGTH);
 
-    // We _know_ that the sizes match.
-    // So this is safe enough to do and saves us a few allocations.
-    let base: &mut [u32] =
-        unsafe { core::slice::from_raw_parts_mut(bytes.as_mut_ptr() as *mut u32, 12) };
-
-    base.clone_from_slice(&[0; 12]);
+    let mut base = [0; INT_LENGTH];
 
     let mut size = 1;
     let mut all_minus_1 = true;
@@ -116,8 +114,8 @@ pub fn trits_to_bytes(trits: &[i32], bytes: &mut [u8]) {
 
     if all_minus_1 {
         base.clone_from_slice(&HALF_3);
-        bigint_not(base);
-        bigint_add_base(base, 1_u32);
+        bigint_not(&mut base);
+        bigint_add_base(&mut base, 1_u32);
     } else {
         for t in trits[0..HASH_LENGTH - 1].iter().rev() {
             // multiply by radix
@@ -141,18 +139,18 @@ pub fn trits_to_bytes(trits: &[i32], bytes: &mut [u8]) {
             let trit = (t + 1) as u32;
             // addition
             {
-                let sz = bigint_add_base(base, trit) as usize;
+                let sz = bigint_add_base(&mut base, trit) as usize;
                 if sz > size {
                     size = sz;
                 }
             }
         }
 
-        if !is_null(base) {
+        if !is_null(&base) {
             if bigint_cmp(&HALF_3, &base) <= 0 {
                 // base >= HALF_3
                 // just do base - HALF_3
-                bigint_sub(base, &HALF_3);
+                bigint_sub(&mut base, &HALF_3);
             } else {
                 // we don't have a wrapping sub.
                 // so let's use some bit magic to achieve it
@@ -164,24 +162,29 @@ pub fn trits_to_bytes(trits: &[i32], bytes: &mut [u8]) {
             }
         }
     }
-    bytes.reverse();
+
+    let mut out = vec![0; BYTE_LENGTH];
+    for i in 0..INT_LENGTH {
+        out[i * 4] = ((base[INT_LENGTH - 1 - i] & 0xFF000000) >> 24) as u8;
+        out[i * 4 + 1] = ((base[INT_LENGTH - 1 - i] & 0x00FF0000) >> 16) as u8;
+        out[i * 4 + 2] = ((base[INT_LENGTH - 1 - i] & 0x0000FF00) >> 8) as u8;
+        out[i * 4 + 3] = (base[INT_LENGTH - 1 - i] & 0x000000FF) as u8;
+    }
+    bytes.clone_from_slice(&out);
 }
 
 pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i32]) {
     assert_eq!(bytes.len(), BYTE_LENGTH);
     assert_eq!(trits.len(), HASH_LENGTH);
 
+    let mut base = vec![0; INT_LENGTH];
     trits[HASH_LENGTH - 1] = 0;
 
-    bytes.reverse();
-    // We _know_ that the sizes match.
-    // So this is safe enough to do and saves us a few allocations.
-    let base: &mut [u32] =
-        unsafe { core::slice::from_raw_parts_mut(bytes.as_mut_ptr() as *mut u32, 12) };
-
-    if is_null(&base) {
-        trits.clone_from_slice(&[0; HASH_LENGTH]);
-        return;
+    for i in 0..INT_LENGTH {
+        base[INT_LENGTH - 1 - i] = u32::from(bytes[i * 4]) << 24;
+        base[INT_LENGTH - 1 - i] |= u32::from(bytes[i * 4 + 1]) << 16;
+        base[INT_LENGTH - 1 - i] |= u32::from(bytes[i * 4 + 2]) << 8;
+        base[INT_LENGTH - 1 - i] |= u32::from(bytes[i * 4 + 3]);
     }
 
     let mut flip_trits = false;
@@ -189,15 +192,15 @@ pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i32]) {
     if base[INT_LENGTH - 1] >> 31 == 0 {
         // positive number
         // we need to add HALF_3 to move it into positvie unsigned space
-        bigint_add(base, &HALF_3);
+        bigint_add(&mut base, &HALF_3);
     } else {
         // negative number
-        bigint_not(base);
+        bigint_not(&mut base);
         if bigint_cmp(&base, &HALF_3) > 0 {
-            bigint_sub(base, &HALF_3);
+            bigint_sub(&mut base, &HALF_3);
             flip_trits = true;
         } else {
-            bigint_add_base(base, 1);
+            bigint_add_base(&mut base, 1);
             let mut tmp = HALF_3;
             bigint_sub(&mut tmp, &base);
             base.clone_from_slice(&tmp);

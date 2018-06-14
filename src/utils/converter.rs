@@ -20,8 +20,7 @@ lazy_static! {
         }
         tmp
     };
-
-pub static ref TRYTE_TO_TRITS_MAPPINGS: [[i32; NUMBER_OF_TRITS_IN_A_TRYTE]; 27] = {
+    pub static ref TRYTE_TO_TRITS_MAPPINGS: [[i32; NUMBER_OF_TRITS_IN_A_TRYTE]; 27] = {
         let mut trits: [i32; NUMBER_OF_TRITS_IN_A_BYTE] = [0; NUMBER_OF_TRITS_IN_A_BYTE];
         let mut tmp = [[0; NUMBER_OF_TRITS_IN_A_TRYTE]; 27];
         for tmp_entry in tmp.iter_mut().take(27) {
@@ -85,7 +84,11 @@ pub fn trits_from_string(trytes: &str) -> Vec<i32> {
 }
 
 pub fn char_to_trits(tryte: char) -> &'static [i32; constants::TRITS_PER_TRYTE] {
-    for (i, letter) in TRYTE_TO_TRITS_MAPPINGS.iter().enumerate().take(constants::TRYTE_ALPHABET.len()) {
+    for (i, letter) in TRYTE_TO_TRITS_MAPPINGS
+        .iter()
+        .enumerate()
+        .take(constants::TRYTE_ALPHABET.len())
+    {
         if constants::TRYTE_ALPHABET[i] == tryte {
             return &letter;
         }
