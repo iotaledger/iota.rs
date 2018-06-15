@@ -4,7 +4,7 @@ use num_integer::Integer;
 use num_traits::pow;
 use num_traits::{Signed, ToPrimitive, Zero};
 use tiny_keccak::Keccak;
-use utils::converter::{self, array_copy, MAX_TRIT_VALUE, MIN_TRIT_VALUE, RADIX};
+use utils::converter;
 
 use failure::Error;
 use std::ops::{Add, Mul};
