@@ -1,12 +1,11 @@
 const HIGH_INTEGER_BITS: u32 = 0xFFFF_FFFF;
 const HIGH_LONG_BITS: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 pub const RADIX: i32 = 3;
-const MAX_TRIT_VALUE: i32 = (RADIX - 1) / 2;
-const MIN_TRIT_VALUE: i32 = -MAX_TRIT_VALUE;
+pub const MAX_TRIT_VALUE: i32 = (RADIX - 1) / 2;
+pub const MIN_TRIT_VALUE: i32 = -MAX_TRIT_VALUE;
 const NUMBER_OF_TRITS_IN_A_BYTE: usize = 5;
 const NUMBER_OF_TRITS_IN_A_TRYTE: usize = 3;
 
-use errors::*;
 use utils::constants;
 
 lazy_static! {
@@ -129,6 +128,25 @@ pub fn trits(trytes: u64) -> Vec<i32> {
         trits.push(remainder);
     }
     trits
+}
+
+pub fn copy_trits(value: i64, destination: &mut [i32], offset: usize, size: usize) {
+    let mut abs = value.abs();
+    for i in 0..size {
+        let mut remainder = (abs % i64::from(RADIX)) as i32;
+        abs /= i64::from(RADIX);
+        if remainder > MAX_TRIT_VALUE {
+            remainder = MIN_TRIT_VALUE;
+            abs += 1;
+        }
+        destination[offset + i] = remainder;
+    }
+
+    if value < 0 {
+        for i in 0..size {
+            destination[offset + i] = -destination[offset + i];
+        }
+    }
 }
 
 pub fn trytes(trits: &[i32]) -> String {

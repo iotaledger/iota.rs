@@ -121,7 +121,7 @@ pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> bool
         if trx.address().clone().unwrap() == address {
             bundle_hash = trx.bundle().clone().unwrap();
             let signature_fragment = trx.signature_fragments().clone().unwrap();
-            if input_validator::is_nine_trytes(&signature_fragment, signature_fragment.len()) {
+            if input_validator::is_nine_trytes(&signature_fragment) {
                 break;
             }
             signature_fragments.push(signature_fragment);

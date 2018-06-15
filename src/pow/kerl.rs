@@ -77,10 +77,7 @@ impl ICurl for Kerl {
         while length > 0 {
             self.keccak.clone().finalize(&mut self.byte_state);
             self.reset();
-            bytes_to_trits(
-                &mut self.byte_state,
-                &mut self.trit_state,
-            );
+            bytes_to_trits(&mut self.byte_state, &mut self.trit_state);
             self.trit_state[HASH_LENGTH - 1] = 0;
             array_copy(&self.trit_state, 0, trits, offset, HASH_LENGTH);
             for b in self.byte_state.iter_mut() {

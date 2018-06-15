@@ -1,4 +1,3 @@
-use errors::*;
 use pow::kerl::Kerl;
 use pow::traits::{ICurl, HASH_LENGTH};
 use utils::constants;
@@ -74,7 +73,7 @@ mod tests {
         );
     }
 
-     #[test]
+    #[test]
     fn test_is_valid_checksum() {
         assert!(is_valid_checksum(TEST_ADDRESS_WITH_CHECKSUM));
     }

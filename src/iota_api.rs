@@ -1,4 +1,4 @@
-use errors::*;
+use failure::Error;
 use iri_api;
 use serde_json;
 use std::time::Duration;
@@ -18,7 +18,7 @@ impl API {
         checksum: bool,
         total: usize,
         return_all: bool,
-    ) -> Result<(Vec<String>, Duration)> {
+    ) -> Result<(Vec<String>, Duration), Error> {
         let stopwatch = StopWatch::default();
         let mut all_addresses: Vec<String> = Vec::new();
         if total != 0 {
@@ -37,11 +37,10 @@ impl API {
                 Some(&[new_address.clone()]),
                 None,
                 None,
-            ).chain_err(|| "")?;
+            )?;
 
             all_addresses.push(new_address);
-            let hashes: Vec<String> =
-                serde_json::from_value(resp["hashes"].clone()).chain_err(|| "")?;
+            let hashes: Vec<String> = serde_json::from_value(resp["hashes"].clone())?;
             if hashes.is_empty() {
                 break;
             }
