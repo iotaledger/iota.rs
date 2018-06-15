@@ -1,7 +1,5 @@
 use pow::curl;
 use pow::traits::ICurl;
-use std::error;
-use std::fmt;
 use std::str::FromStr;
 use utils::converter::{long_value, trits, trits_from_string, trits_to_string};
 
@@ -10,9 +8,9 @@ pub struct Transaction {
     hash: Option<String>,
     signature_fragments: Option<String>,
     address: Option<String>,
-    value: Option<u64>,
+    value: Option<i64>,
     obsolete_tag: Option<String>,
-    timestamp: Option<u64>,
+    timestamp: Option<i64>,
     current_index: Option<usize>,
     last_index: Option<usize>,
     bundle: Option<String>,
@@ -20,23 +18,23 @@ pub struct Transaction {
     branch_transaction: Option<String>,
     nonce: Option<String>,
     persistence: Option<bool>,
-    attachment_timestamp: Option<u64>,
+    attachment_timestamp: Option<i64>,
     tag: Option<String>,
-    attachment_timestamp_lower_bound: Option<u64>,
-    attachment_timestamp_upper_bound: Option<u64>,
+    attachment_timestamp_lower_bound: Option<i64>,
+    attachment_timestamp_upper_bound: Option<i64>,
 }
 
 impl Transaction {
-    pub fn attachment_timestamp_lower_bound(&self) -> &Option<u64> {
+    pub fn attachment_timestamp_lower_bound(&self) -> &Option<i64> {
         &self.attachment_timestamp_lower_bound
     }
-    pub fn attachment_timestamp_lower_bound_mut(&mut self) -> &mut Option<u64> {
+    pub fn attachment_timestamp_lower_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_lower_bound
     }
-    pub fn attachment_timestamp_upper_bound(&self) -> &Option<u64> {
+    pub fn attachment_timestamp_upper_bound(&self) -> &Option<i64> {
         &self.attachment_timestamp_upper_bound
     }
-    pub fn attachment_timestamp_upper_bound_mut(&mut self) -> &mut Option<u64> {
+    pub fn attachment_timestamp_upper_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_upper_bound
     }
     pub fn hash(&self) -> &Option<String> {
@@ -57,10 +55,10 @@ impl Transaction {
     pub fn address_mut(&mut self) -> &mut Option<String> {
         &mut self.address
     }
-    pub fn value(&self) -> &Option<u64> {
+    pub fn value(&self) -> &Option<i64> {
         &self.value
     }
-    pub fn value_mut(&mut self) -> &mut Option<u64> {
+    pub fn value_mut(&mut self) -> &mut Option<i64> {
         &mut self.value
     }
     pub fn tag(&self) -> &Option<String> {
@@ -69,10 +67,10 @@ impl Transaction {
     pub fn tag_mut(&mut self) -> &mut Option<String> {
         &mut self.tag
     }
-    pub fn timestamp(&self) -> &Option<u64> {
+    pub fn timestamp(&self) -> &Option<i64> {
         &self.timestamp
     }
-    pub fn timestamp_mut(&mut self) -> &mut Option<u64> {
+    pub fn timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.timestamp
     }
     pub fn current_index(&self) -> &Option<usize> {
@@ -123,10 +121,10 @@ impl Transaction {
     pub fn obsolete_tag_mut(&mut self) -> &mut Option<String> {
         &mut self.obsolete_tag
     }
-    pub fn attachment_timestamp(&self) -> &Option<u64> {
+    pub fn attachment_timestamp(&self) -> &Option<i64> {
         &self.attachment_timestamp
     }
-    pub fn attachment_timestamp_mut(&mut self) -> &mut Option<u64> {
+    pub fn attachment_timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp
     }
     pub fn to_trytes(&self) -> String {
@@ -147,10 +145,10 @@ impl Transaction {
             res += &trits_to_string(&trits(timestamp)[0..27]).unwrap();
         }
         if let Some(current_index) = self.current_index {
-            res += &trits_to_string(&trits(current_index as u64)[0..27]).unwrap();
+            res += &trits_to_string(&trits(current_index as i64)[0..27]).unwrap();
         }
         if let Some(last_index) = self.last_index {
-            res += &trits_to_string(&trits(last_index as u64)[0..27]).unwrap();
+            res += &trits_to_string(&trits(last_index as i64)[0..27]).unwrap();
         }
         if let Some(bundle) = &self.bundle {
             res += &bundle;
@@ -177,23 +175,12 @@ impl Transaction {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct TransactionParseError;
-
-impl fmt::Display for TransactionParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Failed to parse string into an IOTA transaction")
-    }
-}
-
-impl error::Error for TransactionParseError {
-    fn description(&self) -> &str {
-        "Failed to parse string into an IOTA transaction"
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
-        None
-    }
+#[derive(Debug, Fail)]
+pub enum TransactionParseError {
+    #[fail(display = "tryte string is empty")]
+    TryteStringEmpty,
+    #[fail(display = "Should be sixteen 9's at index 2279")]
+    NineSectionMissing,
 }
 
 impl FromStr for Transaction {
@@ -201,20 +188,20 @@ impl FromStr for Transaction {
 
     fn from_str(trytes: &str) -> Result<Self, Self::Err> {
         if trytes.is_empty() {
-            return Err(TransactionParseError);
+            return Err(TransactionParseError::TryteStringEmpty);
         }
         for i in 2279..2295 {
             if trytes.chars().nth(i).unwrap() != '9' {
-                return Err(TransactionParseError);
+                return Err(TransactionParseError::NineSectionMissing);
             }
         }
-        let transaction_trits = trits_from_string(trytes);
+        let mut transaction_trits = trits_from_string(trytes);
         let mut hash = [0; 243];
 
         let mut transaction = Transaction::default();
         let mut curl = curl::Curl::new(&curl::Mode::CURLP81);
         curl.reset();
-        curl.absorb(&transaction_trits);
+        curl.absorb(&mut transaction_trits);
         curl.squeeze(&mut hash);
 
         *transaction.hash_mut() = Some(trits_to_string(&hash).unwrap());

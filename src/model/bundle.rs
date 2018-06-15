@@ -33,9 +33,9 @@ impl Bundle {
         &mut self,
         signature_message_length: usize,
         address: &str,
-        value: u64,
+        value: i64,
         tag: &str,
-        timestamp: u64,
+        timestamp: i64,
     ) {
         for i in 0..signature_message_length {
             let mut trx = Transaction::default();
@@ -56,7 +56,7 @@ impl Bundle {
         let mut hash = [0; 243];
         let mut hash_in_trytes = String::new();
         let mut normalized_bundle_value = [0; 81];
-        let mut obsolete_tag_trits: Vec<i32>;
+        let mut obsolete_tag_trits: Vec<i8>;
         while valid {
             curl.reset();
             for i in 0..self.transactions.len() {
@@ -66,15 +66,15 @@ impl Bundle {
                 *self.transactions[i].current_index_mut() = Some(i);
 
                 let current_index_trits =
-                    converter::trits(self.transactions[i].current_index().unwrap() as u64);
+                    converter::trits(self.transactions[i].current_index().unwrap() as i64);
 
                 *self.transactions[i].last_index_mut() = Some(self.transactions.len() - 1);
 
                 let last_index_trits =
-                    converter::trits(self.transactions[i].last_index().unwrap() as u64);
+                    converter::trits(self.transactions[i].last_index().unwrap() as i64);
                 let address = self.transactions[i].address().clone().unwrap();
                 let obsolete_tag = self.transactions[i].obsolete_tag().clone().unwrap();
-                let t = converter::trits_from_string(&format!(
+                let mut t = converter::trits_from_string(&format!(
                     "{}{}{}{}{}{}",
                     address,
                     converter::trytes(&value_trits),
@@ -83,7 +83,7 @@ impl Bundle {
                     converter::trytes(&current_index_trits),
                     converter::trytes(&last_index_trits)
                 ));
-                curl.absorb(&t);
+                curl.absorb(&mut t);
             }
             curl.squeeze(&mut hash);
             hash_in_trytes = converter::trytes(&hash);
@@ -131,7 +131,7 @@ impl Bundle {
     }
 }
 
-pub fn normalized_bundle(bundle_hash: &str) -> [i32; 81] {
+pub fn normalized_bundle(bundle_hash: &str) -> [i8; 81] {
     let mut normalized_bundle = [0; 81];
     for i in 0..3 {
         let mut sum = 0;

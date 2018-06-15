@@ -4,14 +4,8 @@ pub trait ICurl
 where
     Self: Default + Clone + Send + 'static,
 {
-    /// Absorb a `&[Trit]` into the sponge
-    fn absorb(&mut self, trits: &[i32]);
-    fn absorb_offset(&mut self, trits: &[i32], offset: usize, length: usize);
+    /// Absorb a `&[i8]` into the sponge
+    fn absorb(&mut self, trits: &mut [i8]);
     /// Squeeze the sponge and writes to the provided output slice.
-    fn squeeze(&mut self, out: &mut [i32]);
-    fn squeeze_offset(&mut self, out: &mut [i32], offset: usize, length: usize);
-    /// Exposes the complete state
-    fn trit_state(&self) -> &[i32];
-    /// Exposes the complete mutable state
-    fn trit_state_mut(&mut self) -> &mut [i32];
+    fn squeeze(&mut self, out: &mut [i8]);
 }

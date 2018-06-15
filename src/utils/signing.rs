@@ -8,7 +8,7 @@ use utils::input_validator;
 
 const KEY_LENGTH: usize = 6561;
 
-pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
+pub fn key(in_seed: &[i8], index: usize, security: usize) -> Vec<i8> {
     if security < 1 {
         panic!(constants::INVALID_SECURITY_LEVEL_INPUT_ERROR);
     }
@@ -25,10 +25,10 @@ pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
     }
     let mut curl = Kerl::default();
     curl.reset();
-    curl.absorb(&seed);
+    curl.absorb(&mut seed);
     curl.squeeze(&mut seed);
     curl.reset();
-    curl.absorb(&seed);
+    curl.absorb(&mut seed);
 
     let mut key = vec![0; (security * HASH_LENGTH * 27) as usize];
     let mut buffer = vec![0; seed.len()];
@@ -46,31 +46,32 @@ pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
     key
 }
 
-pub fn signature_fragment(normalized_bundle_fragment: &[i32], key_fragment: &[i32]) -> Vec<i32> {
+pub fn signature_fragment(normalized_bundle_fragment: &[i8], key_fragment: &[i8]) -> Vec<i8> {
     let mut signature_fragment = key_fragment.to_owned();
     let mut curl = Kerl::default();
     for (i, fragment) in normalized_bundle_fragment.iter().enumerate().take(27) {
         let mut j = 0;
         while j < 13 - fragment {
             curl.reset();
-            curl.absorb_offset(&signature_fragment, i * HASH_LENGTH, HASH_LENGTH);
-            curl.squeeze_offset(&mut signature_fragment, i * HASH_LENGTH, HASH_LENGTH);
+            let offset = i * HASH_LENGTH;
+            curl.absorb(&mut signature_fragment[offset..offset+HASH_LENGTH]);
+            curl.squeeze(&mut signature_fragment[offset..offset+HASH_LENGTH]);
             j += 1;
         }
     }
     signature_fragment
 }
 
-pub fn address(digests: &[i32]) -> [i32; HASH_LENGTH] {
+pub fn address(digests: &mut [i8]) -> [i8; HASH_LENGTH] {
     let mut address = [0; HASH_LENGTH];
     let mut curl = Kerl::default();
     curl.reset();
-    curl.absorb(&digests);
+    curl.absorb(digests);
     curl.squeeze(&mut address);
     address
 }
 
-pub fn digests(key: &[i32]) -> Vec<i32> {
+pub fn digests(key: &[i8]) -> Vec<i8> {
     let security = (key.len() as f64 / KEY_LENGTH as f64).floor() as usize;
     let mut digests = vec![0; security * HASH_LENGTH];
     let mut key_fragment = [0; KEY_LENGTH];
@@ -80,18 +81,20 @@ pub fn digests(key: &[i32]) -> Vec<i32> {
         for j in 0..27 {
             for _k in 0..26 {
                 curl.reset();
-                curl.absorb_offset(&key_fragment, j * HASH_LENGTH, HASH_LENGTH);
-                curl.squeeze_offset(&mut key_fragment, j * HASH_LENGTH, HASH_LENGTH);
+                let offset = j * HASH_LENGTH;
+                curl.absorb(&mut key_fragment[offset..offset + HASH_LENGTH]);
+                curl.squeeze(&mut key_fragment[offset..offset + HASH_LENGTH]);
             }
         }
         curl.reset();
-        curl.absorb(&key_fragment);
-        curl.squeeze_offset(&mut digests, i * HASH_LENGTH, HASH_LENGTH);
+        curl.absorb(&mut key_fragment);
+        let offset = i * HASH_LENGTH;
+        curl.squeeze(&mut digests[offset..offset+HASH_LENGTH]);
     }
     digests
 }
 
-pub fn digest(normalized_bundle_fragment: &[i32], signature_fragment: &[i32]) -> Vec<i32> {
+pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> Vec<i8> {
     let mut curl = Kerl::default();
     curl.reset();
     let mut j_curl = Kerl::default();
@@ -101,11 +104,11 @@ pub fn digest(normalized_bundle_fragment: &[i32], signature_fragment: &[i32]) ->
         let mut j = normalized_bundle_fragment[i] + 13;
         while j > 0 {
             j_curl.reset();
-            j_curl.absorb(&buffer);
+            j_curl.absorb(&mut buffer);
             j_curl.squeeze(&mut buffer);
             j -= 1;
         }
-        curl.absorb(&buffer);
+        curl.absorb(&mut buffer);
     }
     curl.squeeze(&mut buffer);
     buffer
@@ -156,7 +159,7 @@ pub fn validate_signatures(
             HASH_LENGTH,
         );
     }
-    let address = converter::trytes(&address(&digests));
+    let address = converter::trytes(&address(&mut digests));
     expected_address == address
 }
 

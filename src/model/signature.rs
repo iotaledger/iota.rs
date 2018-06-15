@@ -5,15 +5,19 @@ struct Signature {
 }
 
 impl Signature {
-    fn get_address(&self) -> &str {
+    fn address(&self) -> &str {
         &self.address
     }
 
-    fn set_address(&mut self, address: String) {
-        self.address = address;
+    fn address_mut(&mut self) -> &mut String {
+        &mut self.address
     }
 
-    fn get_signature_fragments(&self) -> &Vec<String> {
+    fn signature_fragments(&self) -> &[String] {
         &self.signature_fragments
+    }
+
+    fn signature_fragments_mut(&mut self) -> &mut [String] {
+        &mut self.signature_fragments
     }
 }

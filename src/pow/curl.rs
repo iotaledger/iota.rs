@@ -2,7 +2,7 @@ use super::traits::{ICurl, HASH_LENGTH};
 use utils::converter::array_copy;
 
 const STATE_LENGTH: usize = 3 * HASH_LENGTH;
-const TRUTH_TABLE: [i32; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
+const TRUTH_TABLE: [i8; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
 #[derive(Clone, Copy)]
 pub enum Mode {
@@ -13,8 +13,8 @@ pub enum Mode {
 #[derive(Clone)]
 pub struct Curl {
     number_of_rounds: i32,
-    scratchpad: [i32; STATE_LENGTH],
-    state: [i32; STATE_LENGTH],
+    scratchpad: [i8; STATE_LENGTH],
+    state: [i8; STATE_LENGTH],
 }
 
 impl Default for Curl {
@@ -64,14 +64,10 @@ impl Curl {
 }
 
 impl ICurl for Curl {
-    fn absorb(&mut self, trits: &[i32]) {
-        self.absorb_offset(trits, 0, trits.len());
-    }
-
-    fn absorb_offset(&mut self, trits: &[i32], offset: usize, length: usize) {
-        let mut offset = offset;
-        let mut length = if length < HASH_LENGTH {
-            length
+    fn absorb(&mut self, trits: &mut [i8]) {
+        let mut offset = 0;
+        let mut length = if trits.len() < HASH_LENGTH {
+            trits.len()
         } else {
             HASH_LENGTH
         };
@@ -83,20 +79,15 @@ impl ICurl for Curl {
         }
     }
 
-    fn squeeze(&mut self, trits: &mut [i32]) {
-        let len = trits.len();
-        self.squeeze_offset(trits, 0, len);
-    }
-
-    fn squeeze_offset(&mut self, out: &mut [i32], offset: usize, length: usize) {
-        let mut length = length;
-        let mut tmp_offset = offset;
+    fn squeeze(&mut self, out: &mut [i8]) {
+        let mut length = out.len();
+        let mut offset = 0;
         while length > 0 {
             array_copy(
                 &self.state,
                 0,
                 out,
-                tmp_offset,
+                offset,
                 if length < HASH_LENGTH {
                     length
                 } else {
@@ -104,16 +95,18 @@ impl ICurl for Curl {
                 },
             );
             self.transform();
-            tmp_offset += HASH_LENGTH;
+            offset += HASH_LENGTH;
             length -= HASH_LENGTH;
         }
     }
+}
 
-    fn trit_state(&self) -> &[i32] {
+impl Curl {
+    fn trit_state(&self) -> &[i8] {
         &self.state
     }
 
-    fn trit_state_mut(&mut self) -> &mut [i32] {
+    fn trit_state_mut(&mut self) -> &mut [i8] {
         &mut self.state
     }
 }

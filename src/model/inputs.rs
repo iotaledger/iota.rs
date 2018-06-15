@@ -15,19 +15,19 @@ impl fmt::Display for Inputs {
 }
 
 impl Inputs {
-    fn get_inputs_list(&self) -> &Vec<Input> {
+    fn inputs_list(&self) -> &[Input] {
         &self.inputs_list
     }
 
-    fn set_inputs_list(&mut self, inputs_list: Vec<Input>) {
-        self.inputs_list = inputs_list;
+    fn inputs_list_mut(&mut self) -> &mut [Input] {
+        &mut self.inputs_list
     }
 
-    fn get_total_balance(&self) -> i64 {
+    fn total_balance(&self) -> i64 {
         self.total_balance
     }
 
-    fn set_total_balance(&mut self, total_balance: i64) {
-        self.total_balance = total_balance;
+    fn total_balance_mut(&mut self) -> &mut i64 {
+        &mut self.total_balance
     }
 }

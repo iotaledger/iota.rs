@@ -4,8 +4,8 @@ use utils::{checksum, converter, signing};
 
 pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> String {
     let key = signing::key(&converter::trits_from_string(seed), index, security);
-    let digests = signing::digests(&key);
-    let address_trits = signing::address(&digests);
+    let mut digests = signing::digests(&key);
+    let address_trits = signing::address(&mut digests);
 
     let mut address = converter::trytes(&address_trits);
 
