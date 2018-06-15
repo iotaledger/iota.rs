@@ -41,6 +41,7 @@ impl Bundle {
             let mut trx = Transaction::default();
             *trx.address_mut() = Some(address.to_string());
             *trx.timestamp_mut() = Some(timestamp);
+            *trx.tag_mut() = Some(tag.to_string());
             match i {
                 0 => *trx.value_mut() = Some(value),
                 _ => *trx.value_mut() = Some(0),
@@ -110,7 +111,7 @@ impl Bundle {
     pub fn add_trytes(&mut self, signature_fragments: &[String]) {
         let mut empty_signature_fragment = String::new();
         let empty_hash = EMPTY_HASH;
-        let empty_timestamp = 999999999;
+        let empty_timestamp = 999_999_999;
         empty_signature_fragment = iter::repeat("9").take(2187).collect::<String>();
         for i in 0..self.transactions.len() {
             *self.transactions[i].signature_fragments_mut() =

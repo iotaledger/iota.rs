@@ -1,9 +1,9 @@
 use errors::*;
 use iri_api;
+use serde_json;
 use std::time::Duration;
 use utils::api_utils;
 use utils::stopwatch::StopWatch;
-use serde_json;
 
 pub struct API {
     uri: &'static str,
@@ -34,21 +34,22 @@ impl API {
             let resp = iri_api::find_transactions(
                 self.uri,
                 None,
-                Some(&vec![new_address.clone()]),
+                Some(&[new_address.clone()]),
                 None,
                 None,
             ).chain_err(|| "")?;
 
             all_addresses.push(new_address);
-            let hashes: Vec<String> = serde_json::from_value(resp["hashes"].clone()).chain_err(|| "")?;
-            if hashes.len() == 0 {
+            let hashes: Vec<String> =
+                serde_json::from_value(resp["hashes"].clone()).chain_err(|| "")?;
+            if hashes.is_empty() {
                 break;
             }
             i += 1;
         }
 
         if !return_all {
-            all_addresses = all_addresses[all_addresses.len()-1..].to_vec();
+            all_addresses = all_addresses[all_addresses.len() - 1..].to_vec();
         }
 
         Ok((all_addresses, stopwatch.elapsed_time()))

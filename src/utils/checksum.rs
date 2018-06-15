@@ -1,6 +1,6 @@
 use errors::*;
-use pow::kerl::{self, Kerl};
-use pow::traits::ICurl;
+use pow::kerl::Kerl;
+use pow::traits::{ICurl, HASH_LENGTH};
 use utils::constants;
 use utils::converter;
 use utils::input_validator;
@@ -44,10 +44,38 @@ pub fn is_address_without_checksum(address: &str) -> bool {
 
 fn calculate_checksum(address: &str) -> String {
     let mut curl = Kerl::default();
-    curl.reset();
     curl.absorb(&converter::trits_from_string(address));
-    let mut checksum_trits = [0; 243];
+    let mut checksum_trits = [0; HASH_LENGTH];
     curl.squeeze(&mut checksum_trits);
     let checksum = converter::trytes(&checksum_trits);
     checksum[72..81].to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    const TEST_ADDRESS_WITHOUT_CHECKSUM: &str =
+        "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZC";
+    const TEST_ADDRESS_WITH_CHECKSUM: &str = "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC";
+
+    #[test]
+    fn test_add_checksum() {
+        assert_eq!(
+            add_checksum(TEST_ADDRESS_WITHOUT_CHECKSUM),
+            TEST_ADDRESS_WITH_CHECKSUM
+        );
+    }
+
+    #[test]
+    fn test_remove_checksum() {
+        assert_eq!(
+            remove_checksum(TEST_ADDRESS_WITH_CHECKSUM),
+            TEST_ADDRESS_WITHOUT_CHECKSUM
+        );
+    }
+
+     #[test]
+    fn test_is_valid_checksum() {
+        assert!(is_valid_checksum(TEST_ADDRESS_WITH_CHECKSUM));
+    }
 }

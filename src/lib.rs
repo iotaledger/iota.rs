@@ -1,4 +1,5 @@
 #![recursion_limit = "1024"]
+#![allow(dead_code)]
 
 extern crate serde;
 #[macro_use]
@@ -10,9 +11,8 @@ extern crate lazy_static;
 extern crate ascii;
 #[macro_use]
 extern crate error_chain;
-#[macro_use]
-extern crate crunchy;
 extern crate core;
+extern crate crunchy;
 extern crate rand;
 extern crate regex;
 extern crate reqwest;

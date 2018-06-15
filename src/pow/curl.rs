@@ -109,11 +109,11 @@ impl ICurl for Curl {
         }
     }
 
-    fn state(&self) -> &[i32] {
+    fn trit_state(&self) -> &[i32] {
         &self.state
     }
 
-    fn state_mut(&mut self) -> &mut [i32] {
+    fn trit_state_mut(&mut self) -> &mut [i32] {
         &mut self.state
     }
 }

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod api_utils;
 pub mod checksum;
 pub mod constants;

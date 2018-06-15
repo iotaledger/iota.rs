@@ -11,7 +11,7 @@ where
     fn squeeze(&mut self, out: &mut [i32]);
     fn squeeze_offset(&mut self, out: &mut [i32], offset: usize, length: usize);
     /// Exposes the complete state
-    fn state(&self) -> &[i32];
+    fn trit_state(&self) -> &[i32];
     /// Exposes the complete mutable state
-    fn state_mut(&mut self) -> &mut [i32];
+    fn trit_state_mut(&mut self) -> &mut [i32];
 }

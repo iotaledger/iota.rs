@@ -1,7 +1,5 @@
 use model::bundle::{self, Bundle};
 use model::input::Input;
-use pow::kerl::Kerl;
-use pow::traits::ICurl;
 use utils::{checksum, converter, signing};
 
 pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> String {

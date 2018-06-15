@@ -1,5 +1,5 @@
-const HIGH_INTEGER_BITS: u32 = 0xFFFFFFFF;
-const HIGH_LONG_BITS: u64 = 0xFFFFFFFFFFFFFFFF;
+const HIGH_INTEGER_BITS: u32 = 0xFFFF_FFFF;
+const HIGH_LONG_BITS: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 pub const RADIX: i32 = 3;
 const MAX_TRIT_VALUE: i32 = (RADIX - 1) / 2;
 const MIN_TRIT_VALUE: i32 = -MAX_TRIT_VALUE;
@@ -7,7 +7,6 @@ const NUMBER_OF_TRITS_IN_A_BYTE: usize = 5;
 const NUMBER_OF_TRITS_IN_A_TRYTE: usize = 3;
 
 use errors::*;
-use std::collections::HashMap;
 use utils::constants;
 
 lazy_static! {
@@ -51,14 +50,14 @@ pub fn bytes_custom(trits: &[i32], offset: usize, size: usize) -> Vec<u8> {
 }
 
 pub fn bytes(trits: &[i32]) -> Vec<u8> {
-    return bytes_custom(trits, 0, trits.len());
+    bytes_custom(trits, 0, trits.len())
 }
 
 pub fn get_trits(bytes: &[u8], trits: &mut [i32]) {
     let mut offset = 0;
     let mut i = 0;
     while i < bytes.len() && offset < trits.len() {
-        let mut length = if trits.len() - offset < NUMBER_OF_TRITS_IN_A_BYTE {
+        let length = if trits.len() - offset < NUMBER_OF_TRITS_IN_A_BYTE {
             trits.len() - offset
         } else {
             NUMBER_OF_TRITS_IN_A_BYTE
@@ -160,7 +159,7 @@ pub fn long_value(trits: &[i32]) -> u64 {
     if v < 0 {
         v *= -1;
     }
-    return v as u64;
+    v as u64
 }
 
 pub fn increment(trit_array: &mut [i32], size: usize) {

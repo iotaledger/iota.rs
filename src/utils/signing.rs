@@ -1,6 +1,6 @@
 use model::bundle::{self, Bundle};
 use model::transaction::Transaction;
-use pow::kerl::{self, Kerl};
+use pow::kerl::Kerl;
 use pow::traits::{ICurl, HASH_LENGTH};
 use utils::constants;
 use utils::converter::{self, array_copy};
@@ -13,7 +13,7 @@ pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
         panic!(constants::INVALID_SECURITY_LEVEL_INPUT_ERROR);
     }
     let mut seed = in_seed.to_owned();
-    for i in 0..index {
+    for _i in 0..index {
         for trit in &mut seed {
             *trit += 1;
             if *trit > 1 {
@@ -36,7 +36,7 @@ pub fn key(in_seed: &[i32], index: usize, security: usize) -> Vec<i32> {
 
     let mut tmp_sec = security;
     while tmp_sec > 0 {
-        for i in 0..27 {
+        for _i in 0..27 {
             curl.squeeze(&mut buffer);
             array_copy(&buffer, 0, &mut key, offset, HASH_LENGTH);
             offset += HASH_LENGTH;
@@ -78,7 +78,7 @@ pub fn digests(key: &[i32]) -> Vec<i32> {
     for i in 0..security {
         array_copy(&key, i * KEY_LENGTH, &mut key_fragment, 0, KEY_LENGTH);
         for j in 0..27 {
-            for k in 0..26 {
+            for _k in 0..26 {
                 curl.reset();
                 curl.absorb_offset(&key_fragment, j * HASH_LENGTH, HASH_LENGTH);
                 curl.squeeze_offset(&mut key_fragment, j * HASH_LENGTH, HASH_LENGTH);
@@ -135,7 +135,6 @@ pub fn validate_signatures(
     signature_fragments: &[String],
     bundle_hash: &str,
 ) -> bool {
-    let bundle = Bundle::default();
     let mut normalized_bundle_fragments = vec![vec![0; 3]; 27];
     let normalized_bundle_hash = bundle::normalized_bundle(bundle_hash);
 
@@ -159,4 +158,16 @@ pub fn validate_signatures(
     }
     let address = converter::trytes(&address(&digests));
     expected_address == address
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use utils::api_utils;
+    const TEST_SEED: &str =
+        "IHDEENZYITYVYSPKAURUZAQKGVJEREFDJMYTANNXXGPZ9GJWTEOJJ9IPMXOGZNQLSNMFDSQOTZAEETUEA";
+    #[test]
+    fn test_address_generation() {
+        assert_eq!(api_utils::new_address(TEST_SEED, 2, 0, true), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC")
+    }
 }

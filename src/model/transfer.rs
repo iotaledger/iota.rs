@@ -8,8 +8,8 @@ pub struct Transfer {
     hash: Option<String>,
     persistence: Option<bool>,
     value: u64,
-    message: Option<String>,
-    tag: Option<String>,
+    message: String,
+    tag: String,
 }
 
 impl fmt::Display for Transfer {
@@ -23,7 +23,7 @@ impl Transfer {
         &self.address
     }
 
-    pub fn address_mut(&mut self) -> &mut str {
+    pub fn address_mut(&mut self) -> &mut String {
         &mut self.address
     }
 
@@ -59,19 +59,19 @@ impl Transfer {
         &mut self.value
     }
 
-    pub fn message(&self) -> &Option<String> {
+    pub fn message(&self) -> &str {
         &self.message
     }
 
-    pub fn message_mut(&mut self) -> &mut Option<String> {
+    pub fn message_mut(&mut self) -> &mut String {
         &mut self.message
     }
 
-    pub fn tag(&self) -> &Option<String> {
+    pub fn tag(&self) -> &str {
         &self.tag
     }
 
-    pub fn tag_mut(&mut self) -> &mut Option<String> {
+    pub fn tag_mut(&mut self) -> &mut String {
         &mut self.tag
     }
 }

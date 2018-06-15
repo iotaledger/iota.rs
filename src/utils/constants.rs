@@ -10,7 +10,7 @@ pub const TRYTE_ALPHABET: [char; 27] = [
 ];
 pub const TRITS_PER_BYTE: usize = 5;
 pub const TRITS_PER_TRYTE: usize = 3;
-pub const SEED_LENGTH_MAX: i32 = 81;
+pub const SEED_LENGTH_MAX: usize = 81;
 pub const ADDRESS_LENGTH_WITHOUT_CHECKSUM: usize = 81;
 pub const ADDRESS_LENGTH_WITH_CHECKSUM: usize = 90;
 pub const MESSAGE_LENGTH: usize = 2187;

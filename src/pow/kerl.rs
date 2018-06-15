@@ -1,7 +1,4 @@
-use super::curl::*;
 use super::traits::{ICurl, HASH_LENGTH};
-use core;
-use std::collections::HashSet;
 use tiny_keccak::Keccak;
 use utils::converter::array_copy;
 
@@ -16,21 +13,33 @@ const BYTE_LENGTH: usize = 48;
 const INT_LENGTH: usize = BYTE_LENGTH / 4;
 
 const HALF_3: [u32; 12] = [
-    0xa5ce8964, 0x9f007669, 0x1484504f, 0x3ade00d9, 0x0c24486e, 0x50979d57, 0x79a4c702, 0x48bbae36,
-    0xa9f6808b, 0xaa06a805, 0xa87fabdf, 0x5e69ebef,
+    0xa5ce_8964,
+    0x9f00_7669,
+    0x1484_504f,
+    0x3ade_00d9,
+    0x0c24_486e,
+    0x5097_9d57,
+    0x79a4_c702,
+    0x48bb_ae36,
+    0xa9f6_808b,
+    0xaa06_a805,
+    0xa87f_abdf,
+    0x5e69_ebef,
 ];
 
 #[derive(Clone)]
 pub struct Kerl {
     keccak: Keccak,
-    state: [i32; HASH_LENGTH],
+    byte_state: [u8; BYTE_HASH_LENGTH],
+    trit_state: [i32; HASH_LENGTH],
 }
 
 impl Default for Kerl {
     fn default() -> Kerl {
         Kerl {
             keccak: Keccak::new_keccak384(),
-            state: [0; HASH_LENGTH],
+            byte_state: [0; BYTE_HASH_LENGTH],
+            trit_state: [0; HASH_LENGTH],
         }
     }
 }
@@ -47,6 +56,8 @@ impl ICurl for Kerl {
         let mut offset = offset;
         let mut bytes = [0; BYTE_LENGTH];
         while length > 0 {
+            array_copy(trits, offset, &mut self.trit_state, 0, HASH_LENGTH);
+            self.trit_state[HASH_LENGTH - 1] = 0;
             trits_to_bytes(&trits[offset..offset + HASH_LENGTH], &mut bytes);
             self.keccak.update(&bytes);
             offset += HASH_LENGTH;
@@ -54,39 +65,38 @@ impl ICurl for Kerl {
         }
     }
 
-    fn squeeze(&mut self, out: &mut [i32]) {
-        let len = out.len();
-        self.squeeze_offset(out, 0, len);
+    fn squeeze(&mut self, trits: &mut [i32]) {
+        let len = trits.len();
+        self.squeeze_offset(trits, 0, len);
     }
 
-    fn squeeze_offset(&mut self, out: &mut [i32], offset: usize, length: usize) {
-        assert!(out.len() % HASH_LENGTH == 0);
+    fn squeeze_offset(&mut self, trits: &mut [i32], offset: usize, length: usize) {
+        assert!(trits.len() % HASH_LENGTH == 0);
         let mut offset = offset;
         let mut length = length;
-        let mut bytes = [0; BYTE_LENGTH];
         while length > 0 {
-            self.keccak.pad();
-            self.keccak.fill_block();
-            self.keccak.squeeze(&mut bytes);
+            self.keccak.clone().finalize(&mut self.byte_state);
             self.reset();
             bytes_to_trits(
-                &mut bytes.to_owned(),
-                &mut out[offset..offset + HASH_LENGTH],
+                &mut self.byte_state,
+                &mut self.trit_state,
             );
-            for b in bytes.iter_mut() {
-                *b ^= 0xFF
+            self.trit_state[HASH_LENGTH - 1] = 0;
+            array_copy(&self.trit_state, 0, trits, offset, HASH_LENGTH);
+            for b in self.byte_state.iter_mut() {
+                *b ^= 0xFF;
             }
-            self.keccak.update(&bytes);
+            self.keccak.update(&self.byte_state);
             offset += HASH_LENGTH;
             length -= HASH_LENGTH;
         }
     }
 
-    fn state(&self) -> &[i32] {
-        &self.state
+    fn trit_state(&self) -> &[i32] {
+        &self.trit_state
     }
-    fn state_mut(&mut self) -> &mut [i32] {
-        &mut self.state
+    fn trit_state_mut(&mut self) -> &mut [i32] {
+        &mut self.trit_state
     }
 }
 
@@ -165,10 +175,10 @@ pub fn trits_to_bytes(trits: &[i32], bytes: &mut [u8]) {
 
     let mut out = vec![0; BYTE_LENGTH];
     for i in 0..INT_LENGTH {
-        out[i * 4] = ((base[INT_LENGTH - 1 - i] & 0xFF000000) >> 24) as u8;
-        out[i * 4 + 1] = ((base[INT_LENGTH - 1 - i] & 0x00FF0000) >> 16) as u8;
-        out[i * 4 + 2] = ((base[INT_LENGTH - 1 - i] & 0x0000FF00) >> 8) as u8;
-        out[i * 4 + 3] = (base[INT_LENGTH - 1 - i] & 0x000000FF) as u8;
+        out[i * 4] = ((base[INT_LENGTH - 1 - i] & 0xFF00_0000) >> 24) as u8;
+        out[i * 4 + 1] = ((base[INT_LENGTH - 1 - i] & 0x00FF_0000) >> 16) as u8;
+        out[i * 4 + 2] = ((base[INT_LENGTH - 1 - i] & 0x0000_FF00) >> 8) as u8;
+        out[i * 4 + 3] = (base[INT_LENGTH - 1 - i] & 0x0000_00FF) as u8;
     }
     bytes.clone_from_slice(&out);
 }
@@ -191,7 +201,7 @@ pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i32]) {
 
     if base[INT_LENGTH - 1] >> 31 == 0 {
         // positive number
-        // we need to add HALF_3 to move it into positvie unsigned space
+        // we need to add HALF_3 to move it into positive unsigned space
         bigint_add(&mut base, &HALF_3);
     } else {
         // negative number
@@ -265,7 +275,7 @@ fn bigint_cmp(lh: &[u32], rh: &[u32]) -> i8 {
             return 1;
         }
     }
-    return 0;
+    0
 }
 
 fn bigint_sub(base: &mut [u32], rh: &[u32]) {
@@ -284,7 +294,7 @@ fn is_null(base: &[u32]) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
 
 fn full_add(ia: u32, ib: u32, carry: bool) -> (u32, bool) {
@@ -293,15 +303,15 @@ fn full_add(ia: u32, ib: u32, carry: bool) -> (u32, bool) {
 
     let mut v = a + b;
     let mut l = v >> 32;
-    let mut r = v & 0xFFFFFFFF;
+    let mut r = v & 0xFFFF_FFFF;
 
     let carry1 = l != 0;
 
     if carry {
         v = r + 1;
     }
-    l = (v >> 32) & 0xFFFFFFFF;
-    r = v & 0xFFFFFFFF;
+    l = (v >> 32) & 0xFFFF_FFFF;
+    r = v & 0xFFFF_FFFF;
     let carry2 = l != 0;
     (r as u32, carry1 || carry2)
 }
