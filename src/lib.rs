@@ -9,10 +9,10 @@ extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 
-extern crate num_bigint;
-extern crate num_traits;
-extern crate num_integer; 
 extern crate ascii;
+extern crate num_bigint;
+extern crate num_integer;
+extern crate num_traits;
 extern crate rand;
 extern crate regex;
 extern crate reqwest;

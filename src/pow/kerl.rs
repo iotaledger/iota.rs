@@ -87,11 +87,7 @@ enum BigIntConversionError {
     InvalidTritArray { value: i8, index: usize },
 }
 
-fn big_int_from_trits(
-    trits: &[i8],
-    offset: usize,
-    size: usize,
-) -> Result<BigInt, Error> {
+fn big_int_from_trits(trits: &[i8], offset: usize, size: usize) -> Result<BigInt, Error> {
     for i in offset..offset + size {
         ensure!(
             trits[i] >= -1 && trits[i] <= 1,
@@ -170,6 +166,7 @@ fn bytes_from_big_int(value: &BigInt, destination: &mut [u8]) -> Result<(), Erro
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::{thread_rng, Rng};
     use utils::converter;
 
     #[test]
@@ -220,7 +217,7 @@ mod tests {
         );
         let mut k = Kerl::default();
         k.absorb(&mut initial);
-        let mut hash_value = vec![0; HASH_LENGTH*2];
+        let mut hash_value = vec![0; HASH_LENGTH * 2];
         k.squeeze(&mut hash_value);
         let hash = converter::trytes(&hash_value);
         assert_eq!(
@@ -236,7 +233,7 @@ mod tests {
         );
         let mut k = Kerl::default();
         k.absorb(&mut initial);
-        let mut hash_value = vec![0; HASH_LENGTH*2];
+        let mut hash_value = vec![0; HASH_LENGTH * 2];
         k.squeeze(&mut hash_value);
         let hash = converter::trytes(&hash_value);
         assert_eq!(

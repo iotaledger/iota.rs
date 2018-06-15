@@ -80,7 +80,7 @@ impl Neighbor {
     fn connection_type(&self) -> &str {
         &self.connection_type
     }
-    
+
     fn connection_type_mut(&mut self) -> &mut String {
         &mut self.connection_type
     }

@@ -54,8 +54,8 @@ pub fn signature_fragment(normalized_bundle_fragment: &[i8], key_fragment: &[i8]
         while j < 13 - fragment {
             curl.reset();
             let offset = i * HASH_LENGTH;
-            curl.absorb(&mut signature_fragment[offset..offset+HASH_LENGTH]);
-            curl.squeeze(&mut signature_fragment[offset..offset+HASH_LENGTH]);
+            curl.absorb(&mut signature_fragment[offset..offset + HASH_LENGTH]);
+            curl.squeeze(&mut signature_fragment[offset..offset + HASH_LENGTH]);
             j += 1;
         }
     }
@@ -89,7 +89,7 @@ pub fn digests(key: &[i8]) -> Vec<i8> {
         curl.reset();
         curl.absorb(&mut key_fragment);
         let offset = i * HASH_LENGTH;
-        curl.squeeze(&mut digests[offset..offset+HASH_LENGTH]);
+        curl.squeeze(&mut digests[offset..offset + HASH_LENGTH]);
     }
     digests
 }
