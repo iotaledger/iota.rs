@@ -197,7 +197,7 @@ pub fn increment(trit_array: &mut [i8], size: usize) {
 
 pub fn array_copy<T>(src: &[T], src_pos: usize, dest: &mut [T], dest_pos: usize, length: usize)
 where
-    T: Clone,
+    T: Copy,
 {
-    dest[dest_pos..(length + dest_pos)].clone_from_slice(&src[src_pos..(length + src_pos)]);
+    dest[dest_pos..(length + dest_pos)].copy_from_slice(&src[src_pos..(length + src_pos)]);
 }

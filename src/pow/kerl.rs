@@ -6,9 +6,6 @@ use num_traits::{Signed, ToPrimitive, Zero};
 use tiny_keccak::Keccak;
 use utils::converter;
 
-use failure::Error;
-use std::ops::{Add, Mul};
-
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
 const MAX_POWERS_LONG: usize = 40;
@@ -45,12 +42,9 @@ impl ICurl for Kerl {
         assert!(trits.len() % HASH_LENGTH == 0);
         let mut pos = 0;
         while pos < trits.len() {
-            let mut bytes = vec![0; BYTE_HASH_LENGTH];
+            let mut bytes = [0; BYTE_HASH_LENGTH];
             trits[pos + HASH_LENGTH - 1] = 0;
-            bytes_from_big_int(
-                &big_int_from_trits(trits, pos, HASH_LENGTH).unwrap(),
-                &mut bytes,
-            ).unwrap();
+            bytes_from_big_int(&big_int_from_trits(trits, pos, HASH_LENGTH), &mut bytes);
             self.keccak.update(&bytes);
             pos += HASH_LENGTH;
         }
@@ -60,15 +54,15 @@ impl ICurl for Kerl {
         assert!(trits.len() % HASH_LENGTH == 0);
         let mut pos = 0;
         while pos < trits.len() {
-            let mut state = vec![0; BYTE_HASH_LENGTH];
+            let mut state = [0; BYTE_HASH_LENGTH];
             self.keccak.pad();
             self.keccak.fill_block();
             self.keccak.squeeze(&mut state);
             self.keccak = Keccak::new_keccak384();
             let value = BigInt::from_signed_bytes_be(&state);
-            trits_from_big_int(&value, trits, pos, HASH_LENGTH).unwrap();
+            trits_from_big_int(&value, trits, pos, HASH_LENGTH);
             trits[pos + HASH_LENGTH - 1] = 0;
-            for b in &mut state {
+            for b in state.iter_mut() {
                 *b ^= 0xFF;
             }
             self.keccak.update(&state);
@@ -89,21 +83,15 @@ enum BigIntConversionError {
     InvalidTritArray { value: i8, index: usize },
 }
 
-fn big_int_from_trits(trits: &[i8], offset: usize, size: usize) -> Result<BigInt, Error> {
-    for (i, trit) in trits.iter().enumerate().take(offset + size).skip(offset) {
-        ensure!(
-            *trit >= -1 && *trit <= 1,
-            BigIntConversionError::InvalidTritArray {
-                value: *trit,
-                index: i
-            }
-        );
+fn big_int_from_trits(trits: &[i8], offset: usize, size: usize) -> BigInt {
+    for trit in trits.iter().take(offset + size).skip(offset) {
+        assert!(*trit >= -1 && *trit <= 1);
     }
     let mut value = BigInt::zero();
     let mut n = offset + size - 1;
     while n >= offset {
         let mut count = 0;
-        let mut num = BigInt::from(0);
+        let mut num = BigInt::zero();
         while n >= offset && count < MAX_POWERS_LONG {
             num = 3 * num + trits[n];
             count += 1;
@@ -112,21 +100,16 @@ fn big_int_from_trits(trits: &[i8], offset: usize, size: usize) -> Result<BigInt
             }
             n -= 1;
         }
-        value = value.mul(MAX_POWERS[count].clone()).add(num);
+        value = value * &MAX_POWERS[count] + num;
         if n == 0 {
             break;
         }
     }
-    Ok(value)
+    value
 }
 
-fn trits_from_big_int(
-    value: &BigInt,
-    destination: &mut [i8],
-    offset: usize,
-    size: usize,
-) -> Result<(), Error> {
-    ensure!(destination.len() - offset >= size, "Error");
+fn trits_from_big_int(value: &BigInt, destination: &mut [i8], offset: usize, size: usize) {
+    assert!(destination.len() - offset >= size);
     if *value == BigInt::zero() {
         for entry in destination[offset..size].iter_mut() {
             *entry = 0;
@@ -149,20 +132,18 @@ fn trits_from_big_int(
             remainder as i8
         }
     }
-    Ok(())
 }
 
-fn bytes_from_big_int(value: &BigInt, destination: &mut [u8]) -> Result<(), Error> {
-    ensure!(destination.len() >= BYTE_HASH_LENGTH, "Error");
+fn bytes_from_big_int(value: &BigInt, destination: &mut [u8]) {
+    assert!(destination.len() >= BYTE_HASH_LENGTH);
     let bytes = value.to_signed_bytes_be();
     let mut start = BYTE_HASH_LENGTH - bytes.len();
     let sign: u8 = if value.sign() == Sign::Minus { 255 } else { 0 };
-    destination[0..start].clone_from_slice(&vec![sign; start]);
+    destination[0..start].copy_from_slice(&vec![sign; start]);
     for byte in &bytes {
         destination[start] = *byte;
         start += 1;
     }
-    Ok(())
 }
 
 #[cfg(test)]
@@ -178,9 +159,9 @@ mod tests {
         let len = trits.len();
         converter::copy_trits(value, &mut trits, 0, len);
         let len = trits.len();
-        let big = big_int_from_trits(&mut trits, 0, len).unwrap();
+        let big = big_int_from_trits(&mut trits, 0, len);
         let mut out = vec![0; size];
-        trits_from_big_int(&big, &mut out, 0, size).unwrap();
+        trits_from_big_int(&big, &mut out, 0, size);
         assert_eq!(trits, out);
     }
 
@@ -189,7 +170,7 @@ mod tests {
         let byte_size = 48;
         let big_int: BigInt = "13190295509826637194583200125168488859623001289643321872497025844241981297292953903419783680940401133507992851240799".parse().unwrap();
         let mut out_bytes = vec![0; byte_size];
-        bytes_from_big_int(&big_int, &mut out_bytes).unwrap();
+        bytes_from_big_int(&big_int, &mut out_bytes);
         let out_big_int = BigInt::from_signed_bytes_be(&out_bytes);
         assert_eq!(big_int, out_big_int);
     }

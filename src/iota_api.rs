@@ -1,5 +1,6 @@
 use failure::Error;
 use iri_api;
+use model::bundle::Bundle;
 use serde_json;
 use std::time::Duration;
 use utils::api_utils;
@@ -52,5 +53,16 @@ impl API {
         }
 
         Ok((all_addresses, stopwatch.elapsed_time()))
+    }
+
+    fn get_transfers(
+        seed: &str,
+        security: usize,
+        start: usize,
+        end: usize,
+        inclusion_states: bool,
+    ) -> (Bundle, Duration) {
+        let stopwatch = StopWatch::default();
+        (Bundle::default(), stopwatch.elapsed_time())
     }
 }
