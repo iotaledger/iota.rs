@@ -55,7 +55,7 @@ impl Bundle {
         let mut valid = true;
         let mut hash = [0; 243];
         let mut hash_in_trytes = String::new();
-        let mut normalized_bundle_value = [0; 81];
+        let mut normalized_bundle_value: [i8; 81];
         let mut obsolete_tag_trits: Vec<i8>;
         while valid {
             curl.reset();
@@ -109,10 +109,9 @@ impl Bundle {
     }
 
     pub fn add_trytes(&mut self, signature_fragments: &[String]) {
-        let mut empty_signature_fragment = String::new();
+        let empty_signature_fragment = iter::repeat("9").take(2187).collect::<String>();
         let empty_hash = EMPTY_HASH;
         let empty_timestamp = 999_999_999;
-        empty_signature_fragment = iter::repeat("9").take(2187).collect::<String>();
         for i in 0..self.transactions.len() {
             *self.transactions[i].signature_fragments_mut() =
                 if signature_fragments.len() <= 1 || signature_fragments[i].is_empty() {

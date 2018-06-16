@@ -56,13 +56,24 @@ impl API {
     }
 
     fn get_transfers(
+        &self,
         seed: &str,
         security: usize,
         start: usize,
         end: usize,
         inclusion_states: bool,
-    ) -> (Bundle, Duration) {
+    ) -> (Vec<Bundle>, Duration) {
         let stopwatch = StopWatch::default();
-        (Bundle::default(), stopwatch.elapsed_time())
+        if let Ok(resp) = self.get_new_address(seed, security, start, false, end, true) {
+            return (
+                bundles_from_addresses(&resp.0, inclusion_states),
+                stopwatch.elapsed_time(),
+            );
+        }
+        (vec![Bundle::default()], stopwatch.elapsed_time())
     }
+}
+
+pub fn bundles_from_addresses(addresses: &[String], inclusion_states: bool) -> Vec<Bundle> {
+    vec![Bundle::default()]
 }

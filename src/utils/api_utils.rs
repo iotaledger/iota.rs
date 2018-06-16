@@ -78,7 +78,6 @@ pub fn sign_inputs_and_return(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utils::api_utils;
     const TEST_SEED: &str =
         "IHDEENZYITYVYSPKAURUZAQKGVJEREFDJMYTANNXXGPZ9GJWTEOJJ9IPMXOGZNQLSNMFDSQOTZAEETUEA";
     const ADDR_SEED: &str =
@@ -86,33 +85,33 @@ mod tests {
 
     #[test]
     fn test_address_generation() {
-        assert_eq!(api_utils::new_address(TEST_SEED, 2, 0, true), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
-        assert_eq!(api_utils::new_address(TEST_SEED, 2, 5, true), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
+        assert_eq!(new_address(TEST_SEED, 2, 0, true), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
+        assert_eq!(new_address(TEST_SEED, 2, 5, true), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
 
         assert_eq!(
-            api_utils::new_address(ADDR_SEED, 1, 0, false),
+            new_address(ADDR_SEED, 1, 0, false),
             "HIPPOUPZFMHJUQBLBVWORCNJWAOSFLHDWF9IOFEYVHPTTAAF9NIBMRKBICAPHYCDKMEEOXOYHJBMONJ9D"
         );
         assert_eq!(
-            api_utils::new_address(ADDR_SEED, 2, 0, false),
+            new_address(ADDR_SEED, 2, 0, false),
             "BPYZABTUMEIOARZTMCDNUDAPUOFCGKNGJWUGUXUKNNBVKQARCZIXFVBZAAMDAFRS9YOIXWOTEUNSXVOG9"
         );
         assert_eq!(
-            api_utils::new_address(ADDR_SEED, 3, 0, false),
+            new_address(ADDR_SEED, 3, 0, false),
             "BYWHJJYSHSEGVZKKYTJTYILLEYBSIDLSPXDLDZSWQ9XTTRLOSCBCQ9TKXJYQAVASYCMUCWXZHJYRGDOBW"
         );
 
         let concat = ADDR_SEED.to_string() + ADDR_SEED;
         assert_eq!(
-            api_utils::new_address(&concat, 1, 0, false),
+            new_address(&concat, 1, 0, false),
             "VKPCVHWKSCYQNHULMPYDZTNKOQHZNPEGJVPEHPTDIUYUBFKFICDRLLSIULHCVHOHZRHJOHNASOFRWFWZC"
         );
         assert_eq!(
-            api_utils::new_address(&concat, 2, 0, false),
+            new_address(&concat, 2, 0, false),
             "PTHVACKMXOKIERJOFSRPBWCNKVEXQ9CWUTIJGEUORSKWEDDJCBFQCCBQZLTYXQCXEDWLTMRQM9OQPUGNC"
         );
         assert_eq!(
-            api_utils::new_address(&concat, 3, 0, false),
+            new_address(&concat, 3, 0, false),
             "AGSAAETPMSBCDOSNXFXIOBAE9MVEJCSWVP9PAULQ9VABOTWLDMXID9MXCCWQIWRTJBASWPIJDFUC9ISWD"
         );
     }
