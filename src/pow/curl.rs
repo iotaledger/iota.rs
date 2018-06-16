@@ -1,5 +1,4 @@
 use super::traits::{ICurl, HASH_LENGTH};
-use failure::Error;
 use utils::converter::array_copy;
 
 const STATE_LENGTH: usize = 3 * HASH_LENGTH;
@@ -28,21 +27,14 @@ impl Default for Curl {
     }
 }
 
-#[derive(Debug, Fail)]
-enum CurlError {
-    #[fail(display = "invalid curl mode provided")]
-    InvalidCurlMode,
-}
-
 impl Curl {
-    pub fn new(mode: &Mode) -> Result<Curl, Error> {
+    pub fn new(mode: &Mode) -> Curl {
         let mut curl = Curl::default();
         curl.number_of_rounds = match *mode {
             Mode::CURLP27 => 27,
             Mode::CURLP81 => 81,
-            _ => return Err(Error::from(CurlError::InvalidCurlMode)),
         };
-        Ok(curl)
+        curl
     }
 
     fn transform(&mut self) {
