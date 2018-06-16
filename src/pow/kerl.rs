@@ -89,22 +89,45 @@ fn big_int_from_trits(trits: &[i8], offset: usize, size: usize) -> BigInt {
     }
     let mut value = BigInt::zero();
     let mut n = offset + size - 1;
+
+    let mut count = 0;
+    let mut num = BigInt::zero();
     while n >= offset {
-        let mut count = 0;
-        let mut num = BigInt::zero();
-        while n >= offset && count < MAX_POWERS_LONG {
+        if count < MAX_POWERS_LONG {
             num = 3 * num + trits[n];
             count += 1;
+            if n == 0 || n == offset {
+                value = value * &MAX_POWERS[count] + &num;
+                break;
+            } else {
+                n -= 1;
+            }
+        } else {
+            value = value * &MAX_POWERS[count] + &num;
             if n == 0 {
                 break;
             }
-            n -= 1;
-        }
-        value = value * &MAX_POWERS[count] + num;
-        if n == 0 {
-            break;
+            count = 0;
+            num = BigInt::zero();
         }
     }
+
+    // while n >= offset {
+    //     let mut count = 0;
+    //     let mut num = BigInt::zero();
+    //     while n >= offset && count < MAX_POWERS_LONG {
+    //         num = 3 * num + trits[n];
+    //         count += 1;
+    //         if n == 0 {
+    //             break;
+    //         }
+    //         n -= 1;
+    //     }
+    //     value = value * &MAX_POWERS[count] + &num;
+    //     if n == 0 {
+    //         break;
+    //     }
+    // }
     value
 }
 

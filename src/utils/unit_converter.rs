@@ -124,7 +124,7 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_raw_iota_amount_to_dsiplay_text() {
+    fn test_convert_raw_iota_amount_to_display_text() {
         assert_eq!(convert_raw_iota_amount_to_display_text(1, false), "1 i");
         assert_eq!(convert_raw_iota_amount_to_display_text(1000, false), "1 Ki");
         assert_eq!(
