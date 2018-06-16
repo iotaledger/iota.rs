@@ -130,7 +130,7 @@ pub fn trits(trytes: i64) -> Vec<i8> {
         position += 1;
     }
     if trytes < 0 {
-        for trit in trits.iter_mut() {
+        for trit in &mut trits {
             *trit = -*trit;
         }
     }
