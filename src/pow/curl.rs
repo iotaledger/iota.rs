@@ -56,6 +56,28 @@ impl Curl {
         }
     }
 
+    fn duplex(&mut self, trits: &[i8], out: &mut [i8]) {
+        assert!(
+            out.len() % HASH_LENGTH == 0,
+            "Output length must be a multiple of HASH_LENGTH"
+        );
+
+        for (i, c) in trits.chunks(HASH_LENGTH).enumerate() {
+            self.state[0..HASH_LENGTH].clone_from_slice(c);
+            self.transform();
+            out[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
+                .clone_from_slice(&self.state[0..HASH_LENGTH]);
+        }
+    }
+
+    fn state(&self) -> &[i8] {
+        &self.state
+    }
+
+    fn state_mut(&mut self) -> &mut [i8] {
+        &mut self.state
+    }
+
     pub fn reset(&mut self) {
         self.state = [0; STATE_LENGTH];
     }
@@ -83,16 +105,6 @@ impl ICurl for Curl {
         if trit_length % HASH_LENGTH != 0 {
             self.transform();
         }
-    }
-}
-
-impl Curl {
-    fn state(&self) -> &[i8] {
-        &self.state
-    }
-
-    fn state_mut(&mut self) -> &mut [i8] {
-        &mut self.state
     }
 }
 

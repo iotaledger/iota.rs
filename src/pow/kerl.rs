@@ -1,3 +1,8 @@
+//! This module currently uses a custom implementation of bigint
+//! Due to num-bigint being significantly slower, the plan is to
+//! use this until ApInt or ramp are good enough, then use those
+//! instead.
+
 use super::traits::{ICurl, HASH_LENGTH};
 use tiny_keccak::Keccak;
 

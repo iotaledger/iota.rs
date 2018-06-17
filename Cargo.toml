@@ -1,6 +1,6 @@
 [package]
 name = "iota-lib-rs"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 description = "A rust implementation of the IOTA API"
 license = "MIT"
@@ -23,6 +23,7 @@ failure = "0.1"
 num-bigint = "0.2"
 num-traits = "0.2"
 num-integer = "0.1"
+num_cpus = "1.8"
 
 [dev-dependencies]
 criterion = "0.2"

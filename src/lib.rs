@@ -11,6 +11,7 @@ extern crate serde_json;
 
 extern crate ascii;
 extern crate num_bigint;
+extern crate num_cpus;
 extern crate num_integer;
 extern crate num_traits;
 extern crate rand;
