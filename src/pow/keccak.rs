@@ -36,32 +36,44 @@
 //! but not liability.
 
 const RHO: [u32; 24] = [
-     1,  3,  6, 10, 15, 21,
-    28, 36, 45, 55,  2, 14,
-    27, 41, 56,  8, 25, 43,
-    62, 18, 39, 61, 20, 44
+    1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 2, 14, 27, 41, 56, 8, 25, 43, 62, 18, 39, 61, 20, 44,
 ];
 
 const PI: [usize; 24] = [
-    10,  7, 11, 17, 18, 3,
-     5, 16,  8, 21, 24, 4,
-    15, 23, 19, 13, 12, 2,
-    20, 14, 22,  9,  6, 1
+    10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4, 15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1,
 ];
 
 const RC: [u64; 24] = [
-    1u64, 0x8082u64, 0x800000000000808au64, 0x8000000080008000u64,
-    0x808bu64, 0x80000001u64, 0x8000000080008081u64, 0x8000000000008009u64,
-    0x8au64, 0x88u64, 0x80008009u64, 0x8000000au64,
-    0x8000808bu64, 0x800000000000008bu64, 0x8000000000008089u64, 0x8000000000008003u64,
-    0x8000000000008002u64, 0x8000000000000080u64, 0x800au64, 0x800000008000000au64,
-    0x8000000080008081u64, 0x8000000000008080u64, 0x80000001u64, 0x8000000080008008u64
+    1u64,
+    0x8082u64,
+    0x8000_0000_0000_808au64,
+    0x8000_0000_8000_8000u64,
+    0x808bu64,
+    0x8000_0001u64,
+    0x8000_0000_8000_8081u64,
+    0x8000_0000_0000_8009u64,
+    0x8au64,
+    0x88u64,
+    0x8000_8009u64,
+    0x8000_000au64,
+    0x8000_808bu64,
+    0x8000_0000_0000_008bu64,
+    0x8000_0000_0000_8089u64,
+    0x8000_0000_0000_8003u64,
+    0x8000_0000_0000_8002u64,
+    0x8000_0000_0000_0080u64,
+    0x800au64,
+    0x8000_0000_8000_000au64,
+    0x8000_0000_8000_8081u64,
+    0x8000_0000_0000_8080u64,
+    0x8000_0001u64,
+    0x8000_0000_8000_8008u64,
 ];
 
 #[allow(unused_assignments)]
 /// keccak-f[1600]
 pub fn keccakf(a: &mut [u64; PLEN]) {
-    for i in 0..24 {
+    for rc in RC.iter().take(24) {
         let mut array: [u64; 5] = [0; 5];
 
         // Theta
@@ -117,7 +129,7 @@ pub fn keccakf(a: &mut [u64; PLEN]) {
         };
 
         // Iota
-        a[0] ^= RC[i];
+        a[0] ^= rc;
     }
 }
 
@@ -176,7 +188,7 @@ pub struct Keccak {
     a: [u64; PLEN],
     offset: usize,
     rate: usize,
-    delim: u8
+    delim: u8,
 }
 
 // impl Clone for Keccak {
@@ -189,68 +201,67 @@ pub struct Keccak {
 // }
 
 macro_rules! impl_constructor {
-    ($name: ident, $alias: ident, $bits: expr, $delim: expr) => {
+    ($name:ident, $alias:ident, $bits:expr, $delim:expr) => {
         pub fn $name() -> Keccak {
-            Keccak::new(200 - $bits/4, $delim)
+            Keccak::new(200 - $bits / 4, $delim)
         }
 
         pub fn $alias(data: &[u8], result: &mut [u8]) {
             let mut keccak = Keccak::$name();
             keccak.update(data);
             keccak.finalize(result);
-
         }
-    }
+    };
 }
 
 macro_rules! impl_global_alias {
-    ($alias: ident, $size: expr) => {
+    ($alias:ident, $size:expr) => {
         pub fn $alias(data: &[u8]) -> [u8; $size / 8] {
             let mut result = [0u8; $size / 8];
             Keccak::$alias(data, &mut result);
             result
         }
-    }
+    };
 }
 
-impl_global_alias!(shake128,  128);
-impl_global_alias!(shake256,  256);
+impl_global_alias!(shake128, 128);
+impl_global_alias!(shake256, 256);
 impl_global_alias!(keccak224, 224);
 impl_global_alias!(keccak256, 256);
 impl_global_alias!(keccak384, 384);
 impl_global_alias!(keccak512, 512);
-impl_global_alias!(sha3_224,  224);
-impl_global_alias!(sha3_256,  256);
-impl_global_alias!(sha3_384,  384);
-impl_global_alias!(sha3_512,  512);
+impl_global_alias!(sha3_224, 224);
+impl_global_alias!(sha3_256, 256);
+impl_global_alias!(sha3_384, 384);
+impl_global_alias!(sha3_512, 512);
 
 impl Keccak {
     pub fn new(rate: usize, delim: u8) -> Keccak {
         Keccak {
             a: [0; PLEN],
             offset: 0,
-            rate: rate,
-            delim: delim
+            rate,
+            delim,
         }
     }
 
-    impl_constructor!(new_shake128,  shake128,  128, 0x1f);
-    impl_constructor!(new_shake256,  shake256,  256, 0x1f);
+    impl_constructor!(new_shake128, shake128, 128, 0x1f);
+    impl_constructor!(new_shake256, shake256, 256, 0x1f);
     impl_constructor!(new_keccak224, keccak224, 224, 0x01);
     impl_constructor!(new_keccak256, keccak256, 256, 0x01);
     impl_constructor!(new_keccak384, keccak384, 384, 0x01);
     impl_constructor!(new_keccak512, keccak512, 512, 0x01);
-    impl_constructor!(new_sha3_224,  sha3_224,  224, 0x06);
-    impl_constructor!(new_sha3_256,  sha3_256,  256, 0x06);
-    impl_constructor!(new_sha3_384,  sha3_384,  384, 0x06);
-    impl_constructor!(new_sha3_512,  sha3_512,  512, 0x06);
+    impl_constructor!(new_sha3_224, sha3_224, 224, 0x06);
+    impl_constructor!(new_sha3_256, sha3_256, 256, 0x06);
+    impl_constructor!(new_sha3_384, sha3_384, 384, 0x06);
+    impl_constructor!(new_sha3_512, sha3_512, 512, 0x06);
 
     fn a_bytes(&self) -> &[u8; PLEN * 8] {
-        unsafe { ::core::mem::transmute(&self.a) }
+        unsafe { &*(&self.a as *const [u64; 25] as *const [u8; 200]) }
     }
 
     fn a_mut_bytes(&mut self) -> &mut [u8; PLEN * 8] {
-        unsafe { ::core::mem::transmute(&mut self.a) }
+        unsafe { &mut *(&mut self.a as *mut [u64; 25] as *mut [u8; 200]) }
     }
 
     pub fn update(&mut self, input: &[u8]) {
@@ -328,13 +339,16 @@ impl Keccak {
 
         keccakf(&mut self.a);
 
-        XofReader { keccak: self, offset: 0 }
+        XofReader {
+            keccak: self,
+            offset: 0,
+        }
     }
 }
 
 pub struct XofReader {
     keccak: Keccak,
-    offset: usize
+    offset: usize,
 }
 
 impl XofReader {

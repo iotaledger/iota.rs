@@ -1,4 +1,6 @@
 use std::fmt;
+use serde_json;
+use failure::{Compat, Error};
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Input {
@@ -10,11 +12,7 @@ pub struct Input {
 
 impl fmt::Display for Input {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Write strictly the first element into the supplied output
-        // stream: `f`. Returns `fmt::Result` which indicates whether the
-        // operation succeeded or failed. Note that `write!` uses syntax which
-        // is very similar to `println!`.
-        write!(f, "{}", self.address)
+        write!(f, "{}", serde_json::to_string_pretty(self).unwrap_or_default())
     }
 }
 

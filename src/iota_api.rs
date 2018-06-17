@@ -6,6 +6,7 @@ use std::time::Duration;
 use utils::api_utils;
 use utils::stopwatch::StopWatch;
 
+#[derive(Clone, Copy, Debug)]
 pub struct API {
     uri: &'static str,
 }

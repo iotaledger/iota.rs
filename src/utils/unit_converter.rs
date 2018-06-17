@@ -63,10 +63,7 @@ mod tests {
 
     #[test]
     fn test_convert_unit_i_to_ki() {
-        assert_eq!(
-            1,
-            convert_units(1000, IotaUnits::Iota, IotaUnits::KiloIota)
-        );
+        assert_eq!(1, convert_units(1000, IotaUnits::Iota, IotaUnits::KiloIota));
     }
 
     #[test]

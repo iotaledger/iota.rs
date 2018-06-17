@@ -1,3 +1,6 @@
+use std::fmt;
+use serde_json;
+
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 struct Neighbor {
     address: String,
@@ -7,6 +10,12 @@ struct Neighbor {
     number_of_random_transactions: i32,
     number_of_sent_transactions: i32,
     connection_type: String,
+}
+
+impl fmt::Display for Neighbor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", serde_json::to_string_pretty(self).unwrap_or_default())
+    }
 }
 
 impl Neighbor {

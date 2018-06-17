@@ -3,13 +3,22 @@ use pow::kerl::Kerl;
 use pow::traits::ICurl;
 use std::iter;
 use utils::converter;
+use std::fmt;
+use serde_json;
+
 const EMPTY_HASH: &str =
     "999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
-#[derive(Default, PartialEq, Clone, Debug)]
+#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Bundle {
     transactions: Vec<Transaction>,
     length: usize,
+}
+
+impl fmt::Display for Bundle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", serde_json::to_string_pretty(self).unwrap_or_default())
+    }
 }
 
 impl Bundle {

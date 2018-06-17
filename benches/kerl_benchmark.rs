@@ -22,8 +22,8 @@ fn basic_kerl(amount: usize) {
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("Kerl on 243 trits", |b| b.iter(|| basic_kerl(1)));
-    //c.bench_function("Kerl on 24300 trits", |b| b.iter(|| basic_kerl(100)));
-    //c.bench_function("Kerl on 243000 trits", |b| b.iter(|| basic_kerl(1000)));
+    c.bench_function("Kerl on 24300 trits", |b| b.iter(|| basic_kerl(100)));
+    c.bench_function("Kerl on 243000 trits", |b| b.iter(|| basic_kerl(1000)));
 }
 
 criterion_group!(benches, criterion_benchmark);

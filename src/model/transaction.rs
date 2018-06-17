@@ -2,6 +2,8 @@ use pow::curl;
 use pow::traits::ICurl;
 use std::str::FromStr;
 use utils::converter::{long_value, trits, trits_from_string, trits_to_string};
+use std::fmt;
+use serde_json;
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Transaction {
@@ -22,6 +24,12 @@ pub struct Transaction {
     tag: Option<String>,
     attachment_timestamp_lower_bound: Option<i64>,
     attachment_timestamp_upper_bound: Option<i64>,
+}
+
+impl fmt::Display for Transaction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", serde_json::to_string_pretty(self).unwrap_or_default())
+    }
 }
 
 impl Transaction {

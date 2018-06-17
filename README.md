@@ -4,10 +4,10 @@ This is a port of the IOTA Java API into Rust. The plan is to do a straight port
 
 Things that are done:
 
-- [ ] PearlDiver
 - [x] PoW
     - [x] Curl
     - [x] Kerl
+    - [x] PearlDiver
 - [x] Model
     - [x] Bundle
     - [x] Input

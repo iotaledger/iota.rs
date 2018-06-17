@@ -13,18 +13,26 @@ pub enum State {
 const TRANSACTION_LENGTH: usize = 8019;
 const CURL_HASH_LENGTH: usize = 243;
 const CURL_STATE_LENGTH: usize = CURL_HASH_LENGTH * 3;
-const HIGH_BITS: u64 = 0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111;
-const LOW_BITS: u64 = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000;
+const HIGH_BITS: u64 =
+    0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111;
+const LOW_BITS: u64 =
+    0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 
 pub struct PearlDiver {
     state: Arc<Mutex<State>>,
 }
 
-impl PearlDiver {
-    pub fn new() -> PearlDiver {
+impl Default for PearlDiver {
+    fn default() -> Self {
         PearlDiver {
             state: Arc::new(Mutex::new(State::Running)),
         }
+    }
+}
+
+impl PearlDiver {
+    pub fn new() -> PearlDiver {
+        PearlDiver::default()
     }
 
     pub fn cancel(&mut self) {
@@ -34,7 +42,7 @@ impl PearlDiver {
 
     pub fn search(
         &mut self,
-        transaction_trits_arc: Arc<Mutex<Vec<i8>>>,
+        transaction_trits_arc: &Arc<Mutex<Vec<i8>>>,
         min_weight_magnitude: usize,
     ) -> bool {
         validate_parameters(
@@ -58,12 +66,12 @@ impl PearlDiver {
                 let mut mid_state_copy_low = mid_state_low.to_vec();
                 let mut mid_state_copy_high = mid_state_high.to_vec();
                 let local_state_arc = Arc::clone(&self.state);
-                let local_transaction_trits_arc = Arc::clone(&transaction_trits_arc);
+                let local_transaction_trits_arc = Arc::clone(transaction_trits_arc);
                 thread::spawn(move || {
                     get_runnable(
-                        local_state_arc,
+                        &local_state_arc,
                         i,
-                        local_transaction_trits_arc,
+                        &local_transaction_trits_arc,
                         min_weight_magnitude,
                         &mut mid_state_copy_low,
                         &mut mid_state_copy_high,
@@ -76,14 +84,14 @@ impl PearlDiver {
             h.join().unwrap();
         }
         let state = self.state.lock().unwrap();
-        return *state == State::Completed;
+        *state == State::Completed
     }
 }
 
 pub fn get_runnable(
-    state: Arc<Mutex<State>>,
+    state: &Arc<Mutex<State>>,
     thread_index: usize,
-    transaction_trits: Arc<Mutex<Vec<i8>>>,
+    transaction_trits: &Arc<Mutex<Vec<i8>>>,
     min_weight_magnitude: usize,
     mid_state_copy_low: &mut [u64],
     mid_state_copy_high: &mut [u64],
@@ -221,14 +229,22 @@ fn initialize_mid_curl_states(
         }
         offset += 1;
     }
-    mid_state_low[162] = 0b1101101101101101101101101101101101101101101101101101101101101101;
-    mid_state_high[162] = 0b1011011011011011011011011011011011011011011011011011011011011011;
-    mid_state_low[162 + 1] = 0b1111000111111000111111000111111000111111000111111000111111000111;
-    mid_state_high[162 + 1] = 0b1000111111000111111000111111000111111000111111000111111000111111;
-    mid_state_low[162 + 2] = 0b0111111111111111111000000000111111111111111111000000000111111111;
-    mid_state_high[162 + 2] = 0b1111111111000000000111111111111111111000000000111111111111111111;
-    mid_state_low[162 + 3] = 0b1111111111000000000000000000000000000111111111111111111111111111;
-    mid_state_high[162 + 3] = 0b0000000000111111111111111111111111111111111111111111111111111111;
+    mid_state_low[162] =
+        0b1101_1011_0110_1101_1011_0110_1101_1011_0110_1101_1011_0110_1101_1011_0110_1101;
+    mid_state_high[162] =
+        0b1011_0110_1101_1011_0110_1101_1011_0110_1101_1011_0110_1101_1011_0110_1101_1011;
+    mid_state_low[162 + 1] =
+        0b1111_0001_1111_1000_1111_1100_0111_1110_0011_1111_0001_1111_1000_1111_1100_0111;
+    mid_state_high[162 + 1] =
+        0b1000_1111_1100_0111_1110_0011_1111_0001_1111_1000_1111_1100_0111_1110_0011_1111;
+    mid_state_low[162 + 2] =
+        0b0111_1111_1111_1111_1110_0000_0000_1111_1111_1111_1111_1100_0000_0001_1111_1111;
+    mid_state_high[162 + 2] =
+        0b1111_1111_1100_0000_0001_1111_1111_1111_1111_1000_0000_0011_1111_1111_1111_1111;
+    mid_state_low[162 + 3] =
+        0b1111_1111_1100_0000_0000_0000_0000_0000_0000_0111_1111_1111_1111_1111_1111_1111;
+    mid_state_high[162 + 3] =
+        0b0000_0000_0011_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111;
 }
 
 fn transform(
@@ -303,7 +319,7 @@ mod tests {
         for _ in 0..5 {
             let mut trits: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
             let t = Arc::new(Mutex::new(trits));
-            pearl_diver.search(Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
+            pearl_diver.search(&Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
             let mut hash_trits = [0; HASH_SIZE];
 
             curl.reset();
