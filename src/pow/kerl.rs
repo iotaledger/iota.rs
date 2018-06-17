@@ -4,7 +4,7 @@
 //! instead.
 
 use super::traits::{ICurl, HASH_LENGTH};
-use tiny_keccak::Keccak;
+use pow::keccak::Keccak;
 
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
@@ -297,7 +297,7 @@ mod tests {
     use utils::converter::*;
 
     #[test]
-    fn old_kerl_one_absorb() {
+    fn kerl_one_absorb() {
         let mut trits: Vec<i8> = trits_from_string(
             "GYOMKVTSNHVJNCNFBBAH9AAMXLPLLLROQY99QN9DLSJUHDPBLCFFAIQXZA9BKMBJCYSFHFPXAHDWZFEIZ",
         );
@@ -311,7 +311,7 @@ mod tests {
     }
 
     #[test]
-    fn old_kerl_multi_squeeze_multi_absorb() {
+    fn kerl_multi_squeeze_multi_absorb() {
         let mut trits: Vec<i8> = "G9JYBOMPUXHYHKSNRNMMSSZCSHOFYOYNZRSZMAAYWDYEIMVVOGKPJBVBM9TD\
 PULSFUNMTVXRKFIDOHUXXVYDLFSZYZTWQYTE9SPYYWYTXJYQ9IFGYOLZXWZBKWZN9QOOTBQMWMUBLEWUEEASRHRTNIQW\
 JQNDWRYLCA"
@@ -334,7 +334,7 @@ JQNDWRYLCA"
     }
 
     #[test]
-    fn old_kerl_multi_squeeze() {
+    fn kerl_multi_squeeze() {
         let mut trits: Vec<i8> =
             "9MIDYNHBWMBCXVDEFOFWINXTERALUKYYPPHKP9JJFGJEIUY9MUDVNFZHMMWZUYUSWAIOWEVTHNWMHANBH"
                 .chars()

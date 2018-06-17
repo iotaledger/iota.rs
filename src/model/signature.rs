@@ -1,4 +1,4 @@
-#[derive(Default)]
+#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 struct Signature {
     address: String,
     signature_fragments: Vec<String>,

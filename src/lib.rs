@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
 #[macro_use]
+extern crate crunchy;
+#[macro_use]
 extern crate failure;
 #[macro_use]
 extern crate lazy_static;
@@ -10,6 +12,7 @@ extern crate serde_derive;
 extern crate serde_json;
 
 extern crate ascii;
+extern crate core;
 extern crate num_bigint;
 extern crate num_cpus;
 extern crate num_integer;

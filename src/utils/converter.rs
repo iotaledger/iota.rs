@@ -118,7 +118,6 @@ pub fn trits_to_string(t: &[i8]) -> Option<String> {
 pub fn trits(trytes: i64) -> Vec<i8> {
     let mut trits = Vec::new();
     let mut abs = trytes.abs();
-    let mut position = 0;
     while abs > 0 {
         let mut remainder = (abs % i64::from(RADIX)) as i8;
         abs /= i64::from(RADIX);
@@ -127,7 +126,6 @@ pub fn trits(trytes: i64) -> Vec<i8> {
             abs += 1;
         }
         trits.push(remainder);
-        position += 1;
     }
     if trytes < 0 {
         for trit in &mut trits {

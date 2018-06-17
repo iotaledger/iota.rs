@@ -1,21 +1,21 @@
 use utils::iota_units::IotaUnits;
 
-pub fn convert_units(amount: u64, from: &IotaUnits, to: &IotaUnits) -> u64 {
+pub fn convert_units(amount: u64, from: IotaUnits, to: IotaUnits) -> u64 {
     let amount_in_source = amount * 10_u64.pow(u32::from(from.value()));
     convert_units_helper(amount_in_source, to)
 }
 
-fn convert_units_helper(amount: u64, to: &IotaUnits) -> u64 {
+fn convert_units_helper(amount: u64, to: IotaUnits) -> u64 {
     amount / 10_u64.pow(u32::from(to.value()))
 }
 
 pub fn convert_raw_iota_amount_to_display_text(amount: u64, extended: bool) -> String {
     let unit = find_optimal_iota_unit_to_display(amount);
-    let amount_in_display_unit = convert_amount_to(amount, &unit);
-    create_amount_with_unit_display_text(amount_in_display_unit, &unit, extended)
+    let amount_in_display_unit = convert_amount_to(amount, unit);
+    create_amount_with_unit_display_text(amount_in_display_unit, unit, extended)
 }
 
-fn create_amount_with_unit_display_text(amount: u64, unit: &IotaUnits, extended: bool) -> String {
+fn create_amount_with_unit_display_text(amount: u64, unit: IotaUnits, extended: bool) -> String {
     format!(
         "{} {}",
         create_amount_display_text(amount, unit, extended),
@@ -23,8 +23,8 @@ fn create_amount_with_unit_display_text(amount: u64, unit: &IotaUnits, extended:
     )
 }
 
-pub fn create_amount_display_text(amount: u64, unit: &IotaUnits, extended: bool) -> String {
-    if *unit == IotaUnits::Iota {
+pub fn create_amount_display_text(amount: u64, unit: IotaUnits, extended: bool) -> String {
+    if unit == IotaUnits::Iota {
         amount.to_string()
     } else if extended {
         format!("{0:.18}", amount)
@@ -33,7 +33,7 @@ pub fn create_amount_display_text(amount: u64, unit: &IotaUnits, extended: bool)
     }
 }
 
-pub fn convert_amount_to(amount: u64, target: &IotaUnits) -> u64 {
+pub fn convert_amount_to(amount: u64, target: IotaUnits) -> u64 {
     amount / 10_u64.pow(u32::from(target.value()))
 }
 
@@ -65,7 +65,7 @@ mod tests {
     fn test_convert_unit_i_to_ki() {
         assert_eq!(
             1,
-            convert_units(1000, &IotaUnits::Iota, &IotaUnits::KiloIota)
+            convert_units(1000, IotaUnits::Iota, IotaUnits::KiloIota)
         );
     }
 
@@ -73,7 +73,7 @@ mod tests {
     fn test_convert_unit_ki_to_mi() {
         assert_eq!(
             1,
-            convert_units(1000, &IotaUnits::KiloIota, &IotaUnits::MegaIota)
+            convert_units(1000, IotaUnits::KiloIota, IotaUnits::MegaIota)
         );
     }
 
@@ -81,7 +81,7 @@ mod tests {
     fn test_convert_unit_mi_to_gi() {
         assert_eq!(
             1,
-            convert_units(1000, &IotaUnits::MegaIota, &IotaUnits::GigaIota)
+            convert_units(1000, IotaUnits::MegaIota, IotaUnits::GigaIota)
         );
     }
 
@@ -89,7 +89,7 @@ mod tests {
     fn test_convert_unit_gi_to_ti() {
         assert_eq!(
             1,
-            convert_units(1000, &IotaUnits::GigaIota, &IotaUnits::TeraIota)
+            convert_units(1000, IotaUnits::GigaIota, IotaUnits::TeraIota)
         );
     }
 
@@ -97,7 +97,7 @@ mod tests {
     fn test_convert_unit_ti_to_pi() {
         assert_eq!(
             1,
-            convert_units(1000, &IotaUnits::TeraIota, &IotaUnits::PetaIota)
+            convert_units(1000, IotaUnits::TeraIota, IotaUnits::PetaIota)
         );
     }
 

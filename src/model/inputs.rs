@@ -2,7 +2,7 @@ use model::input::Input;
 use serde_json;
 use std::fmt;
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 struct Inputs {
     inputs_list: Vec<Input>,
     total_balance: i64,

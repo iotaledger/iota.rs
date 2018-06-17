@@ -9,7 +9,7 @@ pub enum IotaUnits {
 }
 
 impl IotaUnits {
-    pub fn unit(&self) -> &'static str {
+    pub fn unit(self) -> &'static str {
         match self {
             IotaUnits::Iota => "i",
             IotaUnits::KiloIota => "Ki",
@@ -20,7 +20,7 @@ impl IotaUnits {
         }
     }
 
-    pub fn value(&self) -> u8 {
+    pub fn value(self) -> u8 {
         match self {
             IotaUnits::Iota => 0,
             IotaUnits::KiloIota => 3,

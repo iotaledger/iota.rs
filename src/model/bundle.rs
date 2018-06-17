@@ -6,7 +6,7 @@ use utils::converter;
 const EMPTY_HASH: &str =
     "999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Clone, Debug)]
 pub struct Bundle {
     transactions: Vec<Transaction>,
     length: usize,

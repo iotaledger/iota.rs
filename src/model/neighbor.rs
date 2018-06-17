@@ -1,3 +1,4 @@
+#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 struct Neighbor {
     address: String,
     number_of_all_transactions: i32,

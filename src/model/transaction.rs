@@ -3,7 +3,7 @@ use pow::traits::ICurl;
 use std::str::FromStr;
 use utils::converter::{long_value, trits, trits_from_string, trits_to_string};
 
-#[derive(Default, Clone)]
+#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Transaction {
     hash: Option<String>,
     signature_fragments: Option<String>,

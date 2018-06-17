@@ -1,7 +1,7 @@
 use serde_json;
 use std::fmt;
 
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Transfer {
     timestamp: Option<String>,
     address: String,

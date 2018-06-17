@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Input {
     address: String,
     balance: u64,
