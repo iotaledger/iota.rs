@@ -20,10 +20,6 @@
 //!
 //! and this to your crate root:
 //!
-//! ```rust
-//! extern crate tiny_keccak;
-//! ```
-//!
 //! Original implemntation in C:
 //! https://github.com/coruus/keccak-tiny
 //!
@@ -157,8 +153,8 @@ const PLEN: usize = 25;
 /// This structure should be used to create keccak/sha3 hash.
 ///
 /// ```rust
-/// extern crate tiny_keccak;
-/// use tiny_keccak::Keccak;
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::pow::keccak::Keccak;
 ///
 /// fn main() {
 ///     let mut sha3 = Keccak::new_sha3_256();

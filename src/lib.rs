@@ -15,6 +15,7 @@ extern crate ascii;
 extern crate core;
 extern crate num_cpus;
 extern crate rand;
+extern crate rayon;
 extern crate regex;
 extern crate reqwest;
 extern crate serde;

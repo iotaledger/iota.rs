@@ -1,5 +1,5 @@
-use std::fmt;
 use serde_json;
+use std::fmt;
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 struct Neighbor {
@@ -14,7 +14,11 @@ struct Neighbor {
 
 impl fmt::Display for Neighbor {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", serde_json::to_string_pretty(self).unwrap_or_default())
+        write!(
+            f,
+            "{}",
+            serde_json::to_string_pretty(self).unwrap_or_default()
+        )
     }
 }
 

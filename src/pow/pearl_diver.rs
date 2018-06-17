@@ -1,4 +1,5 @@
 use num_cpus;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use utils::converter::array_copy;
@@ -19,13 +20,13 @@ const LOW_BITS: u64 =
     0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 
 pub struct PearlDiver {
-    state: Arc<Mutex<State>>,
+    running: AtomicBool,
 }
 
 impl Default for PearlDiver {
     fn default() -> Self {
         PearlDiver {
-            state: Arc::new(Mutex::new(State::Running)),
+            running: AtomicBool::new(false),
         }
     }
 }
@@ -36,62 +37,54 @@ impl PearlDiver {
     }
 
     pub fn cancel(&mut self) {
-        let mut state = self.state.lock().unwrap();
-        *state = State::Cancelled;
-    }
-
-    pub fn search(
-        &mut self,
-        transaction_trits_arc: &Arc<Mutex<Vec<i8>>>,
-        min_weight_magnitude: usize,
-    ) -> bool {
-        validate_parameters(
-            &(transaction_trits_arc.lock().unwrap()),
-            min_weight_magnitude,
-        );
-        {
-            let mut locked_state = self.state.lock().unwrap();
-            *locked_state = State::Running;
-        }
-        let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
-        let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
-        initialize_mid_curl_states(
-            &(transaction_trits_arc.lock().unwrap()),
-            &mut mid_state_low,
-            &mut mid_state_high,
-        );
-
-        let handles: Vec<thread::JoinHandle<_>> = (0..num_cpus::get())
-            .map(|i| {
-                let mut mid_state_copy_low = mid_state_low.to_vec();
-                let mut mid_state_copy_high = mid_state_high.to_vec();
-                let local_state_arc = Arc::clone(&self.state);
-                let local_transaction_trits_arc = Arc::clone(transaction_trits_arc);
-                thread::spawn(move || {
-                    get_runnable(
-                        &local_state_arc,
-                        i,
-                        &local_transaction_trits_arc,
-                        min_weight_magnitude,
-                        &mut mid_state_copy_low,
-                        &mut mid_state_copy_high,
-                    );
-                })
-            })
-            .collect();
-
-        for h in handles {
-            h.join().unwrap();
-        }
-        let state = self.state.lock().unwrap();
-        *state == State::Completed
+        self.running.store(false, Ordering::SeqCst);
     }
 }
 
+pub fn search(transaction_trits_arc: &Arc<Mutex<[i8; 8019]>>, min_weight_magnitude: usize) -> bool {
+    let state = AtomicBool::new(true);
+    validate_parameters(
+        &*(transaction_trits_arc.lock().unwrap()),
+        min_weight_magnitude,
+    );
+    let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
+    let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
+    initialize_mid_curl_states(
+        &*(transaction_trits_arc.lock().unwrap()),
+        &mut mid_state_low,
+        &mut mid_state_high,
+    );
+    let state_arc = Arc::new(state);
+    let handles: Vec<thread::JoinHandle<_>> = (0..num_cpus::get())
+        .rev()
+        .map(|i| {
+            let mut mid_state_copy_low = mid_state_low.to_vec();
+            let mut mid_state_copy_high = mid_state_high.to_vec();
+            let local_state_arc = Arc::clone(&state_arc);
+            let local_transaction_trits_arc = Arc::clone(transaction_trits_arc);
+            thread::spawn(move || {
+                get_runnable(
+                    &local_state_arc,
+                    i,
+                    &local_transaction_trits_arc,
+                    min_weight_magnitude,
+                    &mut mid_state_copy_low,
+                    &mut mid_state_copy_high,
+                );
+            })
+        })
+        .collect();
+
+    for h in handles {
+        h.join().unwrap();
+    }
+    !state_arc.load(Ordering::SeqCst)
+}
+
 pub fn get_runnable(
-    state: &Arc<Mutex<State>>,
+    state: &Arc<AtomicBool>,
     thread_index: usize,
-    transaction_trits: &Arc<Mutex<Vec<i8>>>,
+    transaction_trits: &Arc<Mutex<[i8; 8019]>>,
     min_weight_magnitude: usize,
     mid_state_copy_low: &mut [u64],
     mid_state_copy_high: &mut [u64],
@@ -112,7 +105,8 @@ pub fn get_runnable(
 
     let mask_start_index = CURL_HASH_LENGTH - min_weight_magnitude;
     let mut mask = 0;
-    while *(state.lock().unwrap()) == State::Running && mask == 0 {
+
+    while mask == 0 && state.load(Ordering::SeqCst) {
         increment(
             mid_state_copy_low,
             mid_state_copy_high,
@@ -141,10 +135,8 @@ pub fn get_runnable(
         }
     }
 
-    if mask != 0 {
-        let mut locked_state = state.lock().unwrap();
-        if *locked_state == State::Running {
-            *locked_state = State::Completed;
+    if mask != 0 && state.load(Ordering::SeqCst) {
+            state.store(false, Ordering::SeqCst);
             let mut out_mask = 1;
             while (out_mask & mask) == 0 {
                 out_mask <<= 1;
@@ -160,12 +152,11 @@ pub fn get_runnable(
                         0
                     };
             }
-        }
     }
 }
 
 fn validate_parameters(transaction_trits: &[i8], min_weight_magnitude: usize) {
-    assert!(transaction_trits.len() == TRANSACTION_LENGTH);
+    assert_eq!(transaction_trits.len(), TRANSACTION_LENGTH);
     assert!(min_weight_magnitude <= CURL_HASH_LENGTH);
 }
 
@@ -253,10 +244,9 @@ fn transform(
     scratchpad_low: &mut [u64],
     scratchpad_high: &mut [u64],
 ) {
+    let mut scratch_index = 0;
     for _ in 0..81 {
         copy(state_low, state_high, scratchpad_low, scratchpad_high);
-
-        let mut scratch_index = 0;
         for state_index in 0..CURL_STATE_LENGTH {
             let alpha = scratchpad_low[scratch_index];
             let beta = scratchpad_high[scratch_index];
@@ -274,24 +264,31 @@ fn transform(
     }
 }
 
-fn increment(
-    mid_curl_state_copy_low: &mut [u64],
-    mid_curl_state_copy_high: &mut [u64],
-    from_index: usize,
-    to_index: usize,
-) {
-    for i in from_index..to_index {
-        if mid_curl_state_copy_low[i] == LOW_BITS {
-            mid_curl_state_copy_low[i] = HIGH_BITS;
-            mid_curl_state_copy_high[i] = LOW_BITS;
-        } else if mid_curl_state_copy_high[i] == LOW_BITS {
-            mid_curl_state_copy_high[i] = HIGH_BITS;
-            break;
-        } else {
-            mid_curl_state_copy_low[i] = LOW_BITS;
-            break;
-        }
+fn increment(mid_low: &mut [u64], mid_high: &mut [u64], from_index: usize, to_index: usize) {
+    let mut carry = 1;
+    let mut low: u64;
+    let mut hi: u64;
+    let mut i = from_index;
+    while i < to_index && carry != 0 {
+        low = mid_low[i];
+        hi = mid_high[i];
+        mid_low[i] = hi ^ low;
+        mid_high[i] = low;
+        carry = hi & (!low);
+        i += 1;
     }
+    // for i in from_index..to_index {
+    //     if mid_curl_state_copy_low[i] == LOW_BITS {
+    //         mid_curl_state_copy_low[i] = HIGH_BITS;
+    //         mid_curl_state_copy_high[i] = LOW_BITS;
+    //     } else if mid_curl_state_copy_high[i] == LOW_BITS {
+    //         mid_curl_state_copy_high[i] = HIGH_BITS;
+    //         break;
+    //     } else {
+    //         mid_curl_state_copy_low[i] = LOW_BITS;
+    //         break;
+    //     }
+    // }
 }
 
 #[cfg(test)]
@@ -300,7 +297,6 @@ mod tests {
     use pow::curl::Curl;
     use pow::traits::ICurl;
     use rand::{thread_rng, Rng};
-    use utils::converter;
 
     const HASH_SIZE: usize = 243;
     const MIN_WEIGHT_MAGNITUDE: usize = 9;
@@ -312,44 +308,44 @@ mod tests {
     }
 
     #[test]
-    fn testing() {
+    fn test_pow_works() {
         let mut rng = thread_rng();
-        let mut pearl_diver = PearlDiver::new();
         let mut curl = Curl::default();
-        for _ in 0..5 {
-            let mut trits: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
-            let t = Arc::new(Mutex::new(trits));
-            pearl_diver.search(&Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
-            let mut hash_trits = [0; HASH_SIZE];
+        let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
+        let mut trits = [0; 8019];
+        trits.copy_from_slice(&vec);
+        let t = Arc::new(Mutex::new(trits));
+        search(&Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
+        let mut hash_trits = [0; HASH_SIZE];
+        curl.reset();
+        curl.absorb(&mut *(t.lock().unwrap()));
+        curl.squeeze(&mut hash_trits);
+        for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
+            assert_eq!(hash_trits[j], 0);
+        }
+    }
 
+    // Recommended to run this with --release
+    // #[test] 
+    fn test_no_random_fail() {
+        let mut rng = thread_rng();
+        let mut curl = Curl::default();
+        for i in 0..300 {
+            let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
+            let mut trits = [0; 8019];
+            trits.copy_from_slice(&vec);
+            let t = Arc::new(Mutex::new(trits));
+            search(&Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
+            let mut hash_trits = [0; HASH_SIZE];
             curl.reset();
-            curl.absorb(&mut t.lock().unwrap());
+            curl.absorb(&mut *(t.lock().unwrap()));
             curl.squeeze(&mut hash_trits);
             for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
                 assert_eq!(hash_trits[j], 0);
             }
+            if i % 100 == 0 {
+                println!("{} successful hashes.", i);
+            }
         }
     }
-
-    // #[test]
-    // fn test_no_random_fail() {
-    //     let mut rng = thread_rng();
-    //     let mut pearl_diver = PearlDiver::new();
-    //     let mut curl = Curl::default();
-    //     for i in 0..200 {
-    //         let mut trits: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
-    //         let t = Arc::new(Mutex::new(trits));
-    //         pearl_diver.search(Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
-    //         let mut hash_trits = [0; HASH_SIZE];
-    //         curl.reset();
-    //         curl.absorb(&mut t.lock().unwrap());
-    //         curl.squeeze(&mut hash_trits);
-    //         for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
-    //             assert_eq!(hash_trits[j], 0);
-    //         }
-    //         if i % 100 == 0 {
-    //             println!("{} successful hashes.", i);
-    //         }
-    //     }
-    // }
 }

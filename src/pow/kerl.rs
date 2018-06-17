@@ -50,10 +50,10 @@ impl Default for Kerl {
 
 impl ICurl for Kerl {
     fn absorb(&mut self, trits: &mut [i8]) {
-        assert!(trits.len() % HASH_LENGTH == 0);
+        assert_eq!(trits.len() % HASH_LENGTH, 0);
         let mut bytes = [0; BYTE_LENGTH];
         for chunk in trits.chunks(HASH_LENGTH) {
-            self.trit_state.clone_from_slice(chunk);
+            self.trit_state.copy_from_slice(chunk);
             self.trit_state[HASH_LENGTH - 1] = 0;
             trits_to_bytes(chunk, &mut bytes);
             self.keccak.update(&bytes);
@@ -61,7 +61,7 @@ impl ICurl for Kerl {
     }
 
     fn squeeze(&mut self, trits: &mut [i8]) {
-        assert!(trits.len() % HASH_LENGTH == 0);
+        assert_eq!(trits.len() % HASH_LENGTH, 0);
         for chunk in trits.chunks_mut(HASH_LENGTH) {
             self.keccak.pad();
             self.keccak.fill_block();
@@ -69,7 +69,7 @@ impl ICurl for Kerl {
             self.keccak = Keccak::new_keccak384();
             bytes_to_trits(&mut self.byte_state, &mut self.trit_state);
             self.trit_state[HASH_LENGTH - 1] = 0;
-            chunk.clone_from_slice(&self.trit_state[0..HASH_LENGTH]);
+            chunk.copy_from_slice(&self.trit_state[0..HASH_LENGTH]);
             for b in self.byte_state.iter_mut() {
                 *b ^= 0xFF;
             }
@@ -146,7 +146,7 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) {
                 bigint_sub(&mut tmp, &base);
                 bigint_not(&mut tmp);
                 bigint_add_base(&mut tmp, 1);
-                base.clone_from_slice(&tmp);
+                base.copy_from_slice(&tmp);
             }
         }
     }
@@ -158,7 +158,7 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) {
         out[i * 4 + 2] = ((base[INT_LENGTH - 1 - i] & 0x0000_FF00) >> 8) as u8;
         out[i * 4 + 3] = (base[INT_LENGTH - 1 - i] & 0x0000_00FF) as u8;
     }
-    bytes.clone_from_slice(&out);
+    bytes.copy_from_slice(&out);
 }
 
 pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) {
@@ -188,7 +188,7 @@ pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) {
             bigint_add_base(&mut base, 1);
             let mut tmp = HALF_3;
             bigint_sub(&mut tmp, &base);
-            base.clone_from_slice(&tmp);
+            base.copy_from_slice(&tmp);
         }
     }
 

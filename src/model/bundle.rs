@@ -1,10 +1,10 @@
 use model::transaction::Transaction;
 use pow::kerl::Kerl;
 use pow::traits::ICurl;
+use serde_json;
+use std::fmt;
 use std::iter;
 use utils::converter;
-use std::fmt;
-use serde_json;
 
 const EMPTY_HASH: &str =
     "999999999999999999999999999999999999999999999999999999999999999999999999999999999";
@@ -17,7 +17,11 @@ pub struct Bundle {
 
 impl fmt::Display for Bundle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", serde_json::to_string_pretty(self).unwrap_or_default())
+        write!(
+            f,
+            "{}",
+            serde_json::to_string_pretty(self).unwrap_or_default()
+        )
     }
 }
 
