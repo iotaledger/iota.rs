@@ -31,3 +31,7 @@ criterion = "0.2"
 [[bench]]
 name = "kerl_benchmark"
 harness = false
+
+[[bench]]
+name = "pow_benchmark"
+harness = false
