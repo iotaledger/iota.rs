@@ -13,15 +13,11 @@ extern crate serde_json;
 
 extern crate ascii;
 extern crate core;
-extern crate num_bigint;
 extern crate num_cpus;
-extern crate num_integer;
-extern crate num_traits;
 extern crate rand;
 extern crate regex;
 extern crate reqwest;
 extern crate serde;
-extern crate tiny_keccak;
 
 pub mod iota_api;
 pub mod iri_api;

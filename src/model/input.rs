@@ -1,6 +1,5 @@
 use std::fmt;
 use serde_json;
-use failure::{Compat, Error};
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Input {

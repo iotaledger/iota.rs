@@ -9,7 +9,6 @@ use criterion::Criterion;
 use rand::{thread_rng, Rng};
 
 use std::sync::{Arc, Mutex};
-use std::thread;
 
 use iota_lib_rs::pow::curl::Curl;
 use iota_lib_rs::pow::pearl_diver::PearlDiver;
@@ -36,7 +35,7 @@ fn basic_pow(amount: usize) {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    //c.bench_function("Pow 1 time", |b| b.iter(|| basic_pow(1)));
+    c.bench_function("Pow 1 time", |b| b.iter(|| basic_pow(1)));
     //c.bench_function("Pow 5 times", |b| b.iter(|| basic_pow(5)));
     //c.bench_function("Pow 10 times", |b| b.iter(|| basic_pow(10)));
 }
