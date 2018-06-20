@@ -67,9 +67,8 @@ pub fn search(transaction_trits: [i8; 8019], min_weight_magnitude: usize) -> (bo
             });
         }
     });
-    let q = transaction_trits_arc.lock().unwrap();
-    let r = (*q).to_vec();
-    (!state_arc.load(Ordering::SeqCst), r)
+    let result = (*(transaction_trits_arc.lock().unwrap())).to_vec();
+    (!state_arc.load(Ordering::SeqCst), result)
 }
 
 pub fn get_runnable(
