@@ -1,3 +1,4 @@
+use crossbeam;
 use num_cpus;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -41,28 +42,21 @@ impl PearlDiver {
     }
 }
 
-pub fn search(transaction_trits_arc: &Arc<Mutex<[i8; 8019]>>, min_weight_magnitude: usize) -> bool {
+pub fn search(transaction_trits: [i8; 8019], min_weight_magnitude: usize) -> (bool, Vec<i8>) {
     let state = AtomicBool::new(true);
-    validate_parameters(
-        &*(transaction_trits_arc.lock().unwrap()),
-        min_weight_magnitude,
-    );
+    validate_parameters(&transaction_trits, min_weight_magnitude);
     let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
     let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
-    initialize_mid_curl_states(
-        &*(transaction_trits_arc.lock().unwrap()),
-        &mut mid_state_low,
-        &mut mid_state_high,
-    );
+    initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
     let state_arc = Arc::new(state);
-    let handles: Vec<thread::JoinHandle<_>> = (0..num_cpus::get())
-        .rev()
-        .map(|i| {
+    let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
+    crossbeam::scope(|scope| {
+        for i in (0..num_cpus::get()).rev() {
             let mut mid_state_copy_low = mid_state_low.to_vec();
             let mut mid_state_copy_high = mid_state_high.to_vec();
             let local_state_arc = Arc::clone(&state_arc);
-            let local_transaction_trits_arc = Arc::clone(transaction_trits_arc);
-            thread::spawn(move || {
+            let local_transaction_trits_arc = Arc::clone(&transaction_trits_arc);
+            scope.spawn(move || {
                 get_runnable(
                     &local_state_arc,
                     i,
@@ -71,14 +65,12 @@ pub fn search(transaction_trits_arc: &Arc<Mutex<[i8; 8019]>>, min_weight_magnitu
                     &mut mid_state_copy_low,
                     &mut mid_state_copy_high,
                 );
-            })
-        })
-        .collect();
-
-    for h in handles {
-        h.join().unwrap();
-    }
-    !state_arc.load(Ordering::SeqCst)
+            });
+        }
+    });
+    let q = transaction_trits_arc.lock().unwrap();
+    let r = (*q).to_vec();
+    (!state_arc.load(Ordering::SeqCst), r)
 }
 
 pub fn get_runnable(
@@ -136,22 +128,22 @@ pub fn get_runnable(
     }
 
     if mask != 0 && state.load(Ordering::SeqCst) {
-            state.store(false, Ordering::SeqCst);
-            let mut out_mask = 1;
-            while (out_mask & mask) == 0 {
-                out_mask <<= 1;
-            }
-            for i in 0..CURL_HASH_LENGTH {
-                let mut locked_transaction_trits = transaction_trits.lock().unwrap();
-                locked_transaction_trits[TRANSACTION_LENGTH - CURL_HASH_LENGTH + i] =
-                    if (mid_state_copy_low[i] & out_mask) == 0 {
-                        1
-                    } else if (mid_state_copy_high[i] & out_mask) == 0 {
-                        -1
-                    } else {
-                        0
-                    };
-            }
+        state.store(false, Ordering::SeqCst);
+        let mut out_mask = 1;
+        while (out_mask & mask) == 0 {
+            out_mask <<= 1;
+        }
+        for i in 0..CURL_HASH_LENGTH {
+            let mut locked_transaction_trits = transaction_trits.lock().unwrap();
+            locked_transaction_trits[TRANSACTION_LENGTH - CURL_HASH_LENGTH + i] =
+                if (mid_state_copy_low[i] & out_mask) == 0 {
+                    1
+                } else if (mid_state_copy_high[i] & out_mask) == 0 {
+                    -1
+                } else {
+                    0
+                };
+        }
     }
 }
 
@@ -314,11 +306,10 @@ mod tests {
         let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
         let mut trits = [0; 8019];
         trits.copy_from_slice(&vec);
-        let t = Arc::new(Mutex::new(trits));
-        search(&Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
+        let (b, mut t) = search(trits, MIN_WEIGHT_MAGNITUDE);
         let mut hash_trits = [0; HASH_SIZE];
         curl.reset();
-        curl.absorb(&mut *(t.lock().unwrap()));
+        curl.absorb(&mut t);
         curl.squeeze(&mut hash_trits);
         for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
             assert_eq!(hash_trits[j], 0);
@@ -326,19 +317,18 @@ mod tests {
     }
 
     // Recommended to run this with --release
-    // #[test] 
+    //#[test]
     fn test_no_random_fail() {
         let mut rng = thread_rng();
         let mut curl = Curl::default();
-        for i in 0..300 {
+        for i in 0..1000 {
             let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
             let mut trits = [0; 8019];
             trits.copy_from_slice(&vec);
-            let t = Arc::new(Mutex::new(trits));
-            search(&Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
+            let (b, mut t) = search(trits, MIN_WEIGHT_MAGNITUDE);
             let mut hash_trits = [0; HASH_SIZE];
             curl.reset();
-            curl.absorb(&mut *(t.lock().unwrap()));
+            curl.absorb(&mut t);
             curl.squeeze(&mut hash_trits);
             for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
                 assert_eq!(hash_trits[j], 0);

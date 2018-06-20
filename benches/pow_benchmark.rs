@@ -17,8 +17,7 @@ use iota_lib_rs::pow::traits::*;
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
 fn basic_pow(curl: &mut Curl, trits: [i8; 8019]) {
-    let t = Arc::new(Mutex::new(trits));
-    search(&Arc::clone(&t), MIN_WEIGHT_MAGNITUDE);
+    search(trits, MIN_WEIGHT_MAGNITUDE);
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
