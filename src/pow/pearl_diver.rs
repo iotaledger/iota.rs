@@ -2,7 +2,6 @@ use crossbeam;
 use num_cpus;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use std::thread;
 use utils::converter::array_copy;
 
 #[derive(Copy, Clone, PartialEq)]
@@ -269,18 +268,6 @@ fn increment(mid_low: &mut [u64], mid_high: &mut [u64], from_index: usize, to_in
         carry = hi & (!low);
         i += 1;
     }
-    // for i in from_index..to_index {
-    //     if mid_curl_state_copy_low[i] == LOW_BITS {
-    //         mid_curl_state_copy_low[i] = HIGH_BITS;
-    //         mid_curl_state_copy_high[i] = LOW_BITS;
-    //     } else if mid_curl_state_copy_high[i] == LOW_BITS {
-    //         mid_curl_state_copy_high[i] = HIGH_BITS;
-    //         break;
-    //     } else {
-    //         mid_curl_state_copy_low[i] = LOW_BITS;
-    //         break;
-    //     }
-    // }
 }
 
 #[cfg(test)]
