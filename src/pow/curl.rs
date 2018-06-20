@@ -42,7 +42,7 @@ impl Curl {
         for _ in 0..self.number_of_rounds {
             array_copy(&self.state, 0, &mut self.scratchpad, 0, STATE_LENGTH);
             for state_index in 0..STATE_LENGTH {
-                let mut prev_scratchpad_index = scratchpad_index;
+                let prev_scratchpad_index = scratchpad_index;
                 if scratchpad_index < 365 {
                     scratchpad_index += 364;
                 } else {

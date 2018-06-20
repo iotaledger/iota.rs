@@ -4,9 +4,6 @@ use reqwest::{self, Response};
 use serde_json::Value;
 use utils::input_validator;
 
-const REQUEST_FAILED: &str = "API request failed";
-const PARSE_FAILED: &str = "Failed to parse json response";
-
 pub fn get_node_info(uri: &str) -> Result<Value, Error> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();

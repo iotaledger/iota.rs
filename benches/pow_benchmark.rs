@@ -3,12 +3,10 @@ extern crate criterion;
 extern crate iota_lib_rs;
 extern crate num_cpus;
 extern crate rand;
-extern crate rayon;
 
 use criterion::Criterion;
 
 use rand::{thread_rng, Rng};
-use rayon::prelude::*;
 
 use std::sync::{Arc, Mutex};
 

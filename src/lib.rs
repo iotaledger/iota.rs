@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![feature(nll)]
 
 #[macro_use]
 extern crate crunchy;
@@ -13,9 +14,9 @@ extern crate serde_json;
 
 extern crate ascii;
 extern crate core;
+extern crate crossbeam;
 extern crate num_cpus;
 extern crate rand;
-extern crate rayon;
 extern crate regex;
 extern crate reqwest;
 extern crate serde;
