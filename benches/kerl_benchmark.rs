@@ -32,25 +32,22 @@ fn basic_kerl3(mut trits: [i8; HASH_LENGTH * 1000]) {
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
-    let mut vec: Vec<i8> = (0..HASH_LENGTH).map(|_| rng.gen_range(-1, 2)).collect();
-    let mut trits1 = [0; HASH_LENGTH];
-    trits1.copy_from_slice(&vec);
-    c.bench_function("Kerl on 243 trits", move |b| b.iter(|| basic_kerl(trits1)));
-
-    vec = (0..HASH_LENGTH * 100)
+    let mut vec: Vec<i8> = (0..HASH_LENGTH * 1000)
         .map(|_| rng.gen_range(-1, 2))
         .collect();
+    
+    let mut trits1 = [0; HASH_LENGTH];
+    trits1.copy_from_slice(&vec[..243]);
+    c.bench_function("Kerl on 243 trits", move |b| b.iter(|| basic_kerl(trits1)));
+
     let mut trits2 = [0; HASH_LENGTH * 100];
-    trits2.copy_from_slice(&vec);
+    trits2.copy_from_slice(&vec[..24300]);
     c.bench_function("Kerl on 24300 trits", move |b| {
         b.iter(|| basic_kerl2(trits2))
     });
 
-    vec = (0..HASH_LENGTH * 1000)
-        .map(|_| rng.gen_range(-1, 2))
-        .collect();
     let mut trits3 = [0; HASH_LENGTH * 1000];
-    trits3.copy_from_slice(&vec);
+    trits3.copy_from_slice(&vec[0..243000]);
     c.bench_function("Kerl on 243000 trits", move |b| {
         b.iter(|| basic_kerl3(trits3))
     });
