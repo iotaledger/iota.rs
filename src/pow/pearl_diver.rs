@@ -278,7 +278,7 @@ mod tests {
     use rand::{thread_rng, Rng};
 
     const HASH_SIZE: usize = 243;
-    const MIN_WEIGHT_MAGNITUDE: usize = 9;
+    const MIN_WEIGHT_MAGNITUDE: usize = 14;
 
     #[test]
     fn test_cancel() {
