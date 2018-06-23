@@ -1,6 +1,6 @@
 use ascii::{AsciiChar, AsciiStr};
 use failure::Error;
-use utils::constants;
+use super::constants;
 
 #[derive(Debug, Fail)]
 enum TryteConverterError {
@@ -63,22 +63,22 @@ pub fn to_string(input_trytes: &str) -> Result<String, Error> {
 mod tests {
     use rand::distributions::Alphanumeric;
     use rand::{self, Rng};
-    use utils::trytes_converter;
+    use super::*;
 
     #[test]
     fn should_convert_string_to_trytes() {
-        assert_eq!(trytes_converter::to_trytes("Z").unwrap(), "IC");
+        assert_eq!(to_trytes("Z").unwrap(), "IC");
         assert_eq!(
-            trytes_converter::to_trytes("JOTA JOTA").unwrap(),
+            to_trytes("JOTA JOTA").unwrap(),
             "TBYBCCKBEATBYBCCKB"
         );
     }
 
     #[test]
     fn should_convert_trytes_to_string() {
-        assert_eq!(trytes_converter::to_string("IC").unwrap(), "Z");
+        assert_eq!(to_string("IC").unwrap(), "Z");
         assert_eq!(
-            trytes_converter::to_string("TBYBCCKBEATBYBCCKB").unwrap(),
+            to_string("TBYBCCKBEATBYBCCKB").unwrap(),
             "JOTA JOTA"
         );
     }
@@ -89,7 +89,7 @@ mod tests {
             .sample_iter(&Alphanumeric)
             .take(1000)
             .collect();
-        let back = trytes_converter::to_string(&trytes_converter::to_trytes(&s).unwrap()).unwrap();
+        let back = to_string(&to_trytes(&s).unwrap()).unwrap();
         assert_eq!(s, back);
     }
 }

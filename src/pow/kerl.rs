@@ -4,7 +4,7 @@
 //! instead.
 
 use super::traits::{ICurl, HASH_LENGTH};
-use pow::keccak::Keccak;
+use super::keccak::Keccak;
 
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
@@ -294,7 +294,7 @@ fn full_add(ia: u32, ib: u32, carry: bool) -> (u32, bool) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utils::converter::*;
+    use crate::utils::converter::*;
 
     #[test]
     fn kerl_one_absorb() {

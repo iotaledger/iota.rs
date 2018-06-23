@@ -2,7 +2,7 @@ use failure::Error;
 use reqwest::header::{ContentType, Headers};
 use reqwest::{self, Response};
 use serde_json::Value;
-use utils::input_validator;
+use super::utils::input_validator;
 
 pub fn get_node_info(uri: &str) -> Result<Value, Error> {
     let client = reqwest::Client::new();

@@ -1,10 +1,10 @@
 use failure::Error;
-use iri_api;
-use model::bundle::Bundle;
+use super::iri_api;
+use super::model::bundle::Bundle;
 use serde_json;
 use std::time::Duration;
-use utils::api_utils;
-use utils::stopwatch::StopWatch;
+use super::utils::api_utils;
+use super::utils::stopwatch::StopWatch;
 
 #[derive(Clone, Copy, Debug)]
 pub struct API {
@@ -75,6 +75,6 @@ impl API {
     }
 }
 
-pub fn bundles_from_addresses(addresses: &[String], inclusion_states: bool) -> Vec<Bundle> {
+pub fn bundles_from_addresses(_addresses: &[String], _inclusion_states: bool) -> Vec<Bundle> {
     vec![Bundle::default()]
 }

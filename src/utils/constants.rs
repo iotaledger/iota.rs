@@ -1,4 +1,5 @@
 use ascii::AsciiStr;
+
 lazy_static! {
     pub static ref TRYTE_ALPHABET_ASCII: &'static AsciiStr =
         AsciiStr::from_ascii("9ABCDEFGHIJKLMNOPQRSTUVWXYZ").unwrap();

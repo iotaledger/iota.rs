@@ -1,8 +1,8 @@
-use pow::kerl::Kerl;
-use pow::traits::{ICurl, HASH_LENGTH};
-use utils::constants;
-use utils::converter;
-use utils::input_validator;
+use crate::pow::kerl::Kerl;
+use crate::pow::traits::{ICurl, HASH_LENGTH};
+use super::constants;
+use super::converter;
+use super::input_validator;
 
 pub fn add_checksum(address: &str) -> String {
     assert!(input_validator::check_address(address));

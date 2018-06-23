@@ -1,4 +1,4 @@
-use model::input::Input;
+use super::input::Input;
 use serde_json;
 use std::fmt;
 

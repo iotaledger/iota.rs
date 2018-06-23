@@ -1,6 +1,6 @@
-use model::transfer::Transfer;
+use crate::model::transfer::Transfer;
 use regex::Regex;
-use utils::constants;
+use super::constants;
 
 pub fn is_address(address: &str) -> bool {
     address.len() == constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM

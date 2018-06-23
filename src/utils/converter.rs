@@ -6,7 +6,7 @@ pub const MIN_TRIT_VALUE: i8 = -MAX_TRIT_VALUE;
 const NUMBER_OF_TRITS_IN_A_BYTE: usize = 5;
 const NUMBER_OF_TRITS_IN_A_TRYTE: usize = 3;
 
-use utils::constants;
+use super::constants;
 
 lazy_static! {
     pub static ref BYTE_TO_TRITS_MAPPINGS: [[i8; NUMBER_OF_TRITS_IN_A_BYTE]; 243] = {

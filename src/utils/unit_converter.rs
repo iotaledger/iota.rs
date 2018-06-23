@@ -1,4 +1,4 @@
-use utils::iota_units::IotaUnits;
+use super::iota_units::IotaUnits;
 
 pub fn convert_units(amount: u64, from: IotaUnits, to: IotaUnits) -> u64 {
     let amount_in_source = amount * 10_u64.pow(u32::from(from.value()));

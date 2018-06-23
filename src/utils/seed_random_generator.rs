@@ -1,5 +1,5 @@
 use rand::prelude::*;
-use utils::constants;
+use super::constants;
 
 pub fn generate_new_seed() -> String {
     let mut rng = thread_rng();
@@ -13,9 +13,9 @@ pub fn generate_new_seed() -> String {
 
 #[cfg(test)]
 mod tests {
-    use utils::constants;
-    use utils::input_validator;
-    use utils::seed_random_generator::generate_new_seed;
+    use crate::utils::constants;
+    use crate::utils::input_validator;
+    use super::generate_new_seed;
 
     #[test]
     fn generate_valid_seed() {
