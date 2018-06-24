@@ -8,18 +8,16 @@ use criterion::Criterion;
 
 use rand::{thread_rng, Rng};
 
-use iota_lib_rs::pow::curl::Curl;
 use iota_lib_rs::pow::pearl_diver::search;
 
-const MIN_WEIGHT_MAGNITUDE: usize = 14;
+const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
 fn basic_pow(trits: [i8; 8019]) {
-    let (_, t) = search(trits, MIN_WEIGHT_MAGNITUDE);
+    search(trits, MIN_WEIGHT_MAGNITUDE);
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
-    let mut curl = Curl::default();
     let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
     let mut trits = [0; 8019];
     trits.copy_from_slice(&vec);

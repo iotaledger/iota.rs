@@ -2,7 +2,7 @@ use serde_json;
 use std::fmt;
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
-struct Signature {
+pub struct Signature {
     address: String,
     signature_fragments: Vec<String>,
 }
@@ -18,19 +18,19 @@ impl fmt::Display for Signature {
 }
 
 impl Signature {
-    fn address(&self) -> &str {
+    pub fn address(&self) -> &str {
         &self.address
     }
 
-    fn address_mut(&mut self) -> &mut String {
+    pub fn address_mut(&mut self) -> &mut String {
         &mut self.address
     }
 
-    fn signature_fragments(&self) -> &[String] {
+    pub fn signature_fragments(&self) -> &[String] {
         &self.signature_fragments
     }
 
-    fn signature_fragments_mut(&mut self) -> &mut [String] {
+    pub fn signature_fragments_mut(&mut self) -> &mut [String] {
         &mut self.signature_fragments
     }
 }

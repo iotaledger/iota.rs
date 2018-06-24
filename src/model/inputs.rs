@@ -3,7 +3,7 @@ use serde_json;
 use std::fmt;
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
-struct Inputs {
+pub struct Inputs {
     inputs_list: Vec<Input>,
     total_balance: i64,
 }
@@ -19,19 +19,19 @@ impl fmt::Display for Inputs {
 }
 
 impl Inputs {
-    fn inputs_list(&self) -> &[Input] {
+    pub fn inputs_list(&self) -> &[Input] {
         &self.inputs_list
     }
 
-    fn inputs_list_mut(&mut self) -> &mut [Input] {
+    pub fn inputs_list_mut(&mut self) -> &mut [Input] {
         &mut self.inputs_list
     }
 
-    fn total_balance(&self) -> i64 {
+    pub fn total_balance(&self) -> i64 {
         self.total_balance
     }
 
-    fn total_balance_mut(&mut self) -> &mut i64 {
+    pub fn total_balance_mut(&mut self) -> &mut i64 {
         &mut self.total_balance
     }
 }

@@ -42,7 +42,7 @@ impl Bundle {
         &mut self.length
     }
 
-    fn add_entry(
+    pub fn add_entry(
         &mut self,
         signature_message_length: usize,
         address: &str,
