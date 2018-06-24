@@ -22,10 +22,11 @@ pub trait Sponge
 where
     Self: Default + Clone + Send + 'static,
 {
-    /// Absorb a `&[i8]` into the sponge
-    fn absorb(&mut self, trits: &mut [i8]);
-    /// Squeeze the sponge and writes to the provided output slice.
+    /// Absorb trits into the sponge
+    fn absorb(&mut self, trits: &[i8]);
+    /// Squeeze trits out of the sponge
     fn squeeze(&mut self, out: &mut [i8]);
+    /// Reset the sponge to initial state
     fn reset(&mut self);
 }
 

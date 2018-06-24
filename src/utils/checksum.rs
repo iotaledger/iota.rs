@@ -43,7 +43,7 @@ pub fn is_address_without_checksum(address: &str) -> bool {
 
 fn calculate_checksum(address: &str) -> String {
     let mut curl = Kerl::default();
-    curl.absorb(&mut converter::trits_from_string(address));
+    curl.absorb(&converter::trits_from_string(address));
     let mut checksum_trits = [0; HASH_LENGTH];
     curl.squeeze(&mut checksum_trits);
     let checksum = converter::trytes(&checksum_trits);

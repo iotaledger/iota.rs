@@ -28,7 +28,7 @@ impl Curl {
         curl.number_of_rounds = match mode {
             Mode::CURLP27 => 27,
             Mode::CURLP81 => 81,
-            a => return Err(format_err!("Invalid mode: {}", a)),
+            other => return Err(format_err!("Invalid mode: {}", other)),
         };
         Ok(curl)
     }
@@ -62,9 +62,9 @@ impl Curl {
 }
 
 impl Sponge for Curl {
-    fn absorb(&mut self, trits: &mut [i8]) {
+    fn absorb(&mut self, trits: &[i8]) {
         for chunk in trits.chunks(HASH_LENGTH) {
-            self.state[0..HASH_LENGTH].clone_from_slice(chunk);
+            self.state[0..HASH_LENGTH].copy_from_slice(chunk);
             self.transform();
         }
     }
@@ -74,12 +74,12 @@ impl Sponge for Curl {
         let hash_length = trit_length / HASH_LENGTH;
 
         for chunk in out.chunks_mut(HASH_LENGTH) {
-            chunk.clone_from_slice(&self.state[0..HASH_LENGTH]);
+            chunk.copy_from_slice(&self.state[0..HASH_LENGTH]);
             self.transform();
         }
 
         let last = trit_length - hash_length * HASH_LENGTH;
-        out[trit_length - last..].clone_from_slice(&self.state[0..last]);
+        out[trit_length - last..].copy_from_slice(&self.state[0..last]);
         if trit_length % HASH_LENGTH != 0 {
             self.transform();
         }
@@ -105,7 +105,7 @@ mod tests {
         let mut in_trits = converter::trits_from_string(TRYTES);
         let mut hash_trits = vec![0; HASH_LENGTH];
         let mut curl = Curl::default();
-        curl.absorb(&mut in_trits[0..size]);
+        curl.absorb(&mut in_trits[..size]);
         curl.squeeze(&mut hash_trits);
         let out_trytes = converter::trytes(&hash_trits);
         assert_eq!(HASH, out_trytes);

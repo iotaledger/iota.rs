@@ -96,7 +96,7 @@ impl Bundle {
                     converter::trytes(&current_index_trits),
                     converter::trytes(&last_index_trits)
                 ));
-                curl.absorb(&mut t);
+                curl.absorb(&t);
             }
             curl.squeeze(&mut hash);
             hash_in_trytes = converter::trytes(&hash);

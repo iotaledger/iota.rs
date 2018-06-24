@@ -49,7 +49,7 @@ impl Default for Kerl {
 }
 
 impl Sponge for Kerl {
-    fn absorb(&mut self, trits: &mut [i8]) {
+    fn absorb(&mut self, trits: &[i8]) {
         assert_eq!(trits.len() % HASH_LENGTH, 0);
         let mut bytes = [0; BYTE_LENGTH];
         for chunk in trits.chunks(HASH_LENGTH) {

@@ -25,10 +25,10 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Vec<i8> {
     }
     let mut curl = Kerl::default();
     curl.reset();
-    curl.absorb(&mut seed);
+    curl.absorb(&seed);
     curl.squeeze(&mut seed);
     curl.reset();
-    curl.absorb(&mut seed);
+    curl.absorb(&seed);
 
     let mut key = vec![0; (security * HASH_LENGTH * 27) as usize];
     let mut buffer = vec![0; seed.len()];
@@ -54,7 +54,7 @@ pub fn signature_fragment(normalized_bundle_fragment: &[i8], key_fragment: &[i8]
         while j < 13 - fragment {
             curl.reset();
             let offset = i * HASH_LENGTH;
-            curl.absorb(&mut signature_fragment[offset..offset + HASH_LENGTH]);
+            curl.absorb(&signature_fragment[offset..offset + HASH_LENGTH]);
             curl.squeeze(&mut signature_fragment[offset..offset + HASH_LENGTH]);
             j += 1;
         }
@@ -82,12 +82,12 @@ pub fn digests(key: &[i8]) -> Vec<i8> {
             for _k in 0..26 {
                 curl.reset();
                 let offset = j * HASH_LENGTH;
-                curl.absorb(&mut key_fragment[offset..offset + HASH_LENGTH]);
+                curl.absorb(&key_fragment[offset..offset + HASH_LENGTH]);
                 curl.squeeze(&mut key_fragment[offset..offset + HASH_LENGTH]);
             }
         }
         curl.reset();
-        curl.absorb(&mut key_fragment);
+        curl.absorb(&key_fragment);
         let offset = i * HASH_LENGTH;
         curl.squeeze(&mut digests[offset..offset + HASH_LENGTH]);
     }
@@ -104,11 +104,11 @@ pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> V
         let mut j = normalized_bundle_fragment[i] + 13;
         while j > 0 {
             j_curl.reset();
-            j_curl.absorb(&mut buffer);
+            j_curl.absorb(&buffer);
             j_curl.squeeze(&mut buffer);
             j -= 1;
         }
-        curl.absorb(&mut buffer);
+        curl.absorb(&buffer);
     }
     curl.squeeze(&mut buffer);
     buffer

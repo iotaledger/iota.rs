@@ -13,10 +13,10 @@ const NORMALIZED_FRAGMENT_LENGTH: usize = HASH_LENGTH / TRYTE_WIDTH / NUMBER_OF_
 pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> [i8; HASH_LENGTH] {
     let mut subseed_preimage = seed.to_vec();
     for _ in 0..index {
-        for i in 0..subseed_preimage.len() {
-            subseed_preimage[i] += 1;
-            if subseed_preimage[i] > constants::MAX_TRIT_VALUE {
-                subseed_preimage[i] = constants::MIN_TRIT_VALUE;
+         for trit in &mut subseed_preimage {
+            *trit += 1;
+            if *trit > constants::MAX_TRIT_VALUE {
+                *trit = constants::MIN_TRIT_VALUE;
             } else {
                 break;
             }
@@ -42,7 +42,7 @@ pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result
 
 pub fn digests(mode: Mode, key: &[i8]) -> Result<Vec<i8>, Error> {
     ensure!(
-        key.len() > 0 && key.len() % FRAGMENT_LENGTH == 0,
+        !key.is_empty() &&key.len() % FRAGMENT_LENGTH == 0,
         "Invalid key length: {}",
         key.len()
     );
@@ -66,12 +66,12 @@ fn digests_helper(hash: &mut impl Sponge, key: &[i8]) -> Vec<i8> {
             for _ in 0..constants::MAX_TRYTE_VALUE - constants::MIN_TRYTE_VALUE {
                 hash.reset();
                 let offset = j * HASH_LENGTH;
-                hash.absorb(&mut buffer[offset..offset + HASH_LENGTH]);
+                hash.absorb(&buffer[offset..offset + HASH_LENGTH]);
                 hash.squeeze(&mut buffer[offset..offset + HASH_LENGTH]);
             }
         }
         hash.reset();
-        hash.absorb(&mut buffer);
+        hash.absorb(&buffer);
         let offset = i * HASH_LENGTH;
         hash.squeeze(&mut digests[offset..offset + HASH_LENGTH]);
     }
@@ -80,7 +80,7 @@ fn digests_helper(hash: &mut impl Sponge, key: &[i8]) -> Vec<i8> {
 
 pub fn address(mode: Mode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH], Error> {
     ensure!(
-        digests.len() > 0 && digests.len() % HASH_LENGTH == 0,
+        !digests.is_empty() &&digests.len() % HASH_LENGTH == 0,
         "Invalid key length: {}",
         digests.len()
     );
@@ -112,9 +112,9 @@ pub fn normalized_bundle_in_place(bundle: &[i8], normalized_bundle: &mut [i8]) {
         }
         if sum > 0 {
             while sum > 0 {
-                for j in i * offset..(i + 1) * offset {
-                    if normalized_bundle[j] > constants::MIN_TRYTE_VALUE {
-                        normalized_bundle[j] -= 1;
+                for trit in normalized_bundle.iter_mut().skip(i * offset).take((i + 1) * offset) {
+                    if *trit > constants::MIN_TRYTE_VALUE {
+                        *trit -= 1;
                         break;
                     }
                 }
@@ -122,9 +122,9 @@ pub fn normalized_bundle_in_place(bundle: &[i8], normalized_bundle: &mut [i8]) {
             }
         } else {
             while sum < 0 {
-                for j in i * offset..(i + 1) * offset {
-                    if normalized_bundle[j] < constants::MAX_TRYTE_VALUE {
-                        normalized_bundle[j] += 1;
+                for trit in normalized_bundle.iter_mut().skip(i * offset).take((i + 1) * offset) {
+                    if *trit < constants::MAX_TRYTE_VALUE {
+                        *trit += 1;
                         break;
                     }
                 }
@@ -176,11 +176,11 @@ fn signature_fragment_helper(
     normalized_bundle_fragment: &[i8],
     out: &mut [i8],
 ) {
-    for j in 0..NUMBER_OF_FRAGMENT_CHUNKS {
-        for _ in 0..constants::MAX_TRYTE_VALUE - normalized_bundle_fragment[j] {
+    for (j, trit) in normalized_bundle_fragment.iter().enumerate().take(NUMBER_OF_FRAGMENT_CHUNKS) {
+        for _ in 0..constants::MAX_TRYTE_VALUE - *trit {
             hash.reset();
             let offset = j * HASH_LENGTH;
-            hash.absorb(&mut out[offset..offset + HASH_LENGTH]);
+            hash.absorb(&out[offset..offset + HASH_LENGTH]);
             hash.squeeze(&mut out[offset..offset + HASH_LENGTH]);
         }
     }
@@ -232,16 +232,16 @@ pub fn digest_in_place(
     digest: &mut [i8],
 ) {
     let mut buffer = signature_fragment[0..FRAGMENT_LENGTH].to_vec();
-    for j in 0..NUMBER_OF_FRAGMENT_CHUNKS {
-        for _ in 0..normalized_bundle_fragment[j] - constants::MIN_TRYTE_VALUE {
+    for (j, trit) in normalized_bundle_fragment.iter().enumerate().take(NUMBER_OF_FRAGMENT_CHUNKS) {
+        for _ in 0..*trit - constants::MIN_TRYTE_VALUE {
             hash.reset();
             let offset = j * HASH_LENGTH;
-            hash.absorb(&mut buffer[offset..offset + HASH_LENGTH]);
+            hash.absorb(&buffer[offset..offset + HASH_LENGTH]);
             hash.squeeze(&mut buffer[offset..offset + HASH_LENGTH]);
         }
     }
     hash.reset();
-    hash.absorb(&mut buffer);
+    hash.absorb(&buffer);
     hash.squeeze(digest);
 }
 
@@ -277,13 +277,13 @@ fn get_merkle_root_helper(
     let mut index = index;
     for i in 0..size {
         curl.reset();
-        if (index & 1) == 0 {
+        if (index &1) == 0 {
             curl.absorb(hash);
             let offset = offset + i * HASH_LENGTH;
-            curl.absorb(&mut trits[offset..offset + HASH_LENGTH]);
+            curl.absorb(&trits[offset..offset + HASH_LENGTH]);
         } else {
             let offset = offset + i * HASH_LENGTH;
-            curl.absorb(&mut trits[offset..offset + HASH_LENGTH]);
+            curl.absorb(&trits[offset..offset + HASH_LENGTH]);
             curl.absorb(hash);
         }
         curl.squeeze(hash);
@@ -341,7 +341,7 @@ mod tests {
 
             let mut kerl = Kerl::default();
             let mut message_trits = converter::trits_from_string(MESSAGE);
-            kerl.absorb(&mut message_trits);
+            kerl.absorb(&message_trits);
             let mut message_hash = [0; HASH_LENGTH];
             kerl.squeeze(&mut message_hash);
             let normalized_fragment =

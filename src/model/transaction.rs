@@ -207,13 +207,13 @@ impl FromStr for Transaction {
                 return Err(TransactionParseError::NineSectionMissing);
             }
         }
-        let mut transaction_trits = trits_from_string(trytes);
+        let transaction_trits = trits_from_string(trytes);
         let mut hash = [0; 243];
 
         let mut transaction = Transaction::default();
         let mut curl = curl::Curl::default();
         curl.reset();
-        curl.absorb(&mut transaction_trits);
+        curl.absorb(&transaction_trits);
         curl.squeeze(&mut hash);
 
         *transaction.hash_mut() = Some(trits_to_string(&hash).unwrap());

@@ -293,10 +293,10 @@ mod tests {
         let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
         let mut trits = [0; 8019];
         trits.copy_from_slice(&vec);
-        let (_b, mut t) = search(trits, MIN_WEIGHT_MAGNITUDE);
+        let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE);
         let mut hash_trits = [0; HASH_SIZE];
         curl.reset();
-        curl.absorb(&mut t);
+        curl.absorb(&t);
         curl.squeeze(&mut hash_trits);
         for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
             assert_eq!(hash_trits[j], 0);
@@ -312,10 +312,10 @@ mod tests {
             let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
             let mut trits = [0; 8019];
             trits.copy_from_slice(&vec);
-            let (_b, mut t) = search(trits, MIN_WEIGHT_MAGNITUDE);
+            let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE);
             let mut hash_trits = [0; HASH_SIZE];
             curl.reset();
-            curl.absorb(&mut t);
+            curl.absorb(&t);
             curl.squeeze(&mut hash_trits);
             for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
                 assert_eq!(hash_trits[j], 0);
