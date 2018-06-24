@@ -1,3 +1,6 @@
+use super::array_copy;
+use super::constants;
+
 const HIGH_INTEGER_BITS: u32 = 0xFFFF_FFFF;
 const HIGH_LONG_BITS: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 pub const RADIX: i8 = 3;
@@ -5,8 +8,6 @@ pub const MAX_TRIT_VALUE: i8 = (RADIX - 1) / 2;
 pub const MIN_TRIT_VALUE: i8 = -MAX_TRIT_VALUE;
 const NUMBER_OF_TRITS_IN_A_BYTE: usize = 5;
 const NUMBER_OF_TRITS_IN_A_TRYTE: usize = 3;
-
-use super::constants;
 
 lazy_static! {
     pub static ref BYTE_TO_TRITS_MAPPINGS: [[i8; NUMBER_OF_TRITS_IN_A_BYTE]; 243] = {
@@ -191,11 +192,4 @@ pub fn increment(trit_array: &mut [i8], size: usize) {
             break;
         }
     }
-}
-
-pub fn array_copy<T>(src: &[T], src_pos: usize, dest: &mut [T], dest_pos: usize, length: usize)
-where
-    T: Copy,
-{
-    dest[dest_pos..(length + dest_pos)].copy_from_slice(&src[src_pos..(length + src_pos)]);
 }

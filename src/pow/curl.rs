@@ -1,5 +1,5 @@
 use super::sponge::{Mode, Sponge, HASH_LENGTH};
-use crate::utils::converter::array_copy;
+use crate::utils::array_copy;
 use failure::Error;
 
 const STATE_LENGTH: usize = 3 * HASH_LENGTH;

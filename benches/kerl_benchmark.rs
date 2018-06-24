@@ -9,9 +9,9 @@ use rand::{thread_rng, Rng};
 use iota_lib_rs::pow::kerl::Kerl;
 use iota_lib_rs::pow::sponge::{Sponge, HASH_LENGTH};
 
-fn basic_kerl(mut trits: [i8; HASH_LENGTH]) {
+fn basic_kerl(trits: [i8; HASH_LENGTH]) {
     let mut kerl = Kerl::default();
-    kerl.absorb(&mut trits);
+    kerl.absorb(&trits);
     let mut bytes = vec![0; HASH_LENGTH];
     kerl.squeeze(&mut bytes);
 }

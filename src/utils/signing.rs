@@ -1,5 +1,6 @@
 use super::constants;
-use super::converter::{self, array_copy};
+use super::converter;
+use super::array_copy;
 use super::input_validator;
 use crate::model::bundle::{self, Bundle};
 use crate::model::transaction::Transaction;

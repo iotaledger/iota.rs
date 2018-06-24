@@ -1,4 +1,4 @@
-use crate::utils::converter::array_copy;
+use crate::utils::array_copy;
 use crossbeam;
 use num_cpus;
 use std::sync::atomic::{AtomicBool, Ordering};
