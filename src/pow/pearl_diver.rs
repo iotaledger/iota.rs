@@ -1,8 +1,8 @@
+use crate::utils::converter::array_copy;
 use crossbeam;
 use num_cpus;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use crate::utils::converter::array_copy;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum State {
@@ -273,7 +273,7 @@ fn increment(mid_low: &mut [u64], mid_high: &mut [u64], from_index: usize, to_in
 mod tests {
     use super::*;
     use crate::pow::curl::Curl;
-    use crate::pow::traits::ICurl;
+    use crate::pow::sponge::Sponge;
 
     use rand::{thread_rng, Rng};
 

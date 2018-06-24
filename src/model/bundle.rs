@@ -1,10 +1,10 @@
 use super::transaction::Transaction;
 use crate::pow::kerl::Kerl;
-use crate::pow::traits::ICurl;
+use crate::pow::sponge::Sponge;
+use crate::utils::converter;
 use serde_json;
 use std::fmt;
 use std::iter;
-use crate::utils::converter;
 
 const EMPTY_HASH: &str =
     "999999999999999999999999999999999999999999999999999999999999999999999999999999999";

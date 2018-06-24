@@ -1,10 +1,10 @@
-use crate::model::bundle::{self, Bundle};
-use crate::model::transaction::Transaction;
-use crate::pow::kerl::Kerl;
-use crate::pow::traits::{ICurl, HASH_LENGTH};
 use super::constants;
 use super::converter::{self, array_copy};
 use super::input_validator;
+use crate::model::bundle::{self, Bundle};
+use crate::model::transaction::Transaction;
+use crate::pow::kerl::Kerl;
+use crate::pow::sponge::{Sponge, HASH_LENGTH};
 
 const KEY_LENGTH: usize = 6561;
 
@@ -167,8 +167,8 @@ pub fn validate_signatures(
 mod tests {
     use super::*;
     use crate::model::bundle;
-    use crate::utils::converter;
     use crate::utils::checksum::remove_checksum;
+    use crate::utils::converter;
 
     const TEST_SEED: &str =
         "IHDEENZYITYVYSPKAURUZAQKGVJEREFDJMYTANNXXGPZ9GJWTEOJJ9IPMXOGZNQLSNMFDSQOTZAEETUEA";

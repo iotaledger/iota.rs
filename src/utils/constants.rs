@@ -9,6 +9,12 @@ pub const TRYTE_ALPHABET: [char; 27] = [
     '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
     'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 ];
+
+pub const MIN_TRIT_VALUE: i8 = -1;
+pub const MAX_TRIT_VALUE: i8 = 1;
+pub const MIN_TRYTE_VALUE: i8 = -13;
+pub const MAX_TRYTE_VALUE: i8 = 13;
+
 pub const TRITS_PER_BYTE: usize = 5;
 pub const TRITS_PER_TRYTE: usize = 3;
 pub const SEED_LENGTH_MAX: usize = 81;

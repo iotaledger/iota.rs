@@ -1,9 +1,9 @@
 use crate::pow::curl;
-use crate::pow::traits::ICurl;
+use crate::pow::sponge::Sponge;
+use crate::utils::converter::{long_value, trits, trits_from_string, trits_to_string};
 use serde_json;
 use std::fmt;
 use std::str::FromStr;
-use crate::utils::converter::{long_value, trits, trits_from_string, trits_to_string};
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Transaction {

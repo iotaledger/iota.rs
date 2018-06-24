@@ -14,7 +14,7 @@ use iota_lib_rs::pow::pearl_diver::search;
 const MIN_WEIGHT_MAGNITUDE: usize = 14;
 
 fn basic_pow(trits: [i8; 8019]) {
-   let (_, t) = search(trits, MIN_WEIGHT_MAGNITUDE);
+    let (_, t) = search(trits, MIN_WEIGHT_MAGNITUDE);
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

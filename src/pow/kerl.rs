@@ -3,8 +3,8 @@
 //! use this until ApInt or ramp are good enough, then use those
 //! instead.
 
-use super::traits::{ICurl, HASH_LENGTH};
 use super::keccak::Keccak;
+use super::sponge::{Sponge, HASH_LENGTH};
 
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
@@ -48,7 +48,7 @@ impl Default for Kerl {
     }
 }
 
-impl ICurl for Kerl {
+impl Sponge for Kerl {
     fn absorb(&mut self, trits: &mut [i8]) {
         assert_eq!(trits.len() % HASH_LENGTH, 0);
         let mut bytes = [0; BYTE_LENGTH];
@@ -76,12 +76,13 @@ impl ICurl for Kerl {
             self.keccak.update(&self.byte_state);
         }
     }
+
+    fn reset(&mut self) {
+        self.keccak = Keccak::new_keccak384();
+    }
 }
 
 impl Kerl {
-    pub fn reset(&mut self) {
-        self.keccak = Keccak::new_keccak384();
-    }
     fn trit_state(&self) -> &[i8] {
         &self.trit_state
     }

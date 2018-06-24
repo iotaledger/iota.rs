@@ -1,10 +1,10 @@
-use failure::Error;
 use super::iri_api;
 use super::model::bundle::Bundle;
-use serde_json;
-use std::time::Duration;
 use super::utils::api_utils;
 use super::utils::stopwatch::StopWatch;
+use failure::Error;
+use serde_json;
+use std::time::Duration;
 
 #[derive(Clone, Copy, Debug)]
 pub struct API {

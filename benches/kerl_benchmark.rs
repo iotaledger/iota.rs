@@ -7,7 +7,7 @@ use criterion::Criterion;
 use rand::{thread_rng, Rng};
 
 use iota_lib_rs::pow::kerl::Kerl;
-use iota_lib_rs::pow::traits::{ICurl, HASH_LENGTH};
+use iota_lib_rs::pow::sponge::{Sponge, HASH_LENGTH};
 
 fn basic_kerl(mut trits: [i8; HASH_LENGTH]) {
     let mut kerl = Kerl::default();
@@ -35,7 +35,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let vec: Vec<i8> = (0..HASH_LENGTH * 1000)
         .map(|_| rng.gen_range(-1, 2))
         .collect();
-    
+
     let mut trits1 = [0; HASH_LENGTH];
     trits1.copy_from_slice(&vec[..243]);
     c.bench_function("Kerl on 243 trits", move |b| b.iter(|| basic_kerl(trits1)));

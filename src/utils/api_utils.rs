@@ -1,6 +1,6 @@
+use super::{checksum, converter, signing};
 use crate::model::bundle::{self, Bundle};
 use crate::model::input::Input;
-use super::{checksum, converter, signing};
 
 pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> String {
     let key = signing::key(&converter::trits_from_string(seed), index, security);
