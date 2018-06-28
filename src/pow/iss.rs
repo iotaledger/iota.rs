@@ -4,11 +4,11 @@ use super::sponge::*;
 use crate::utils::constants;
 use failure::Error;
 
-const NUMBER_OF_FRAGMENT_CHUNKS: usize = 27;
-const FRAGMENT_LENGTH: usize = HASH_LENGTH * NUMBER_OF_FRAGMENT_CHUNKS;
-const NUMBER_OF_SECURITY_LEVELS: usize = 3;
-const TRYTE_WIDTH: usize = 3;
-const NORMALIZED_FRAGMENT_LENGTH: usize = HASH_LENGTH / TRYTE_WIDTH / NUMBER_OF_SECURITY_LEVELS;
+pub const NUMBER_OF_FRAGMENT_CHUNKS: usize = 27;
+pub const FRAGMENT_LENGTH: usize = HASH_LENGTH * NUMBER_OF_FRAGMENT_CHUNKS;
+pub const NUMBER_OF_SECURITY_LEVELS: usize = 3;
+pub const TRYTE_WIDTH: usize = 3;
+pub const NORMALIZED_FRAGMENT_LENGTH: usize = HASH_LENGTH / TRYTE_WIDTH / NUMBER_OF_SECURITY_LEVELS;
 
 pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> [i8; HASH_LENGTH] {
     let mut subseed_preimage = seed.to_vec();
@@ -247,7 +247,7 @@ pub fn digest_in_place(
 
 pub fn get_merkle_root(
     mode: Mode,
-    hash: &mut [i8],
+    hash: &[i8],
     trits: &mut [i8],
     offset: usize,
     index: usize,
@@ -267,14 +267,15 @@ pub fn get_merkle_root(
 
 fn get_merkle_root_helper(
     curl: &mut impl Sponge,
-    hash: &mut [i8],
-    trits: &mut [i8],
+    hash: &[i8],
+    trits: &[i8],
     offset: usize,
     index: usize,
     size: usize,
 ) -> [i8; HASH_LENGTH] {
-    let mut result = [0; HASH_LENGTH];
+    let empty = [0; HASH_LENGTH];
     let mut index = index;
+    let mut tmp = [0; HASH_LENGTH];
     for i in 0..size {
         curl.reset();
         if (index &1) == 0 {
@@ -286,14 +287,13 @@ fn get_merkle_root_helper(
             curl.absorb(&trits[offset..offset + HASH_LENGTH]);
             curl.absorb(hash);
         }
-        curl.squeeze(hash);
+        curl.squeeze(&mut tmp);
         index >>= 1;
     }
     if index != 0 {
-        return result;
+        return empty;
     }
-    result.copy_from_slice(hash);
-    result
+    tmp
 }
 
 #[cfg(test)]

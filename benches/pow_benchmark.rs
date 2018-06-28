@@ -18,9 +18,10 @@ fn basic_pow(trits: [i8; 8019]) {
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
-    let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
     let mut trits = [0; 8019];
-    trits.copy_from_slice(&vec);
+    for trit in trits.iter_mut() {
+        *trit = rng.gen_range(-1, 2);
+    }
     c.bench_function("Run PoW", move |b| b.iter(|| basic_pow(trits)));
 }
 
