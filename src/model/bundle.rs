@@ -26,6 +26,13 @@ impl fmt::Display for Bundle {
 }
 
 impl Bundle {
+    pub fn new(transactions: &[Transaction], length: usize) -> Bundle {
+        Bundle {
+            transactions: transactions.to_vec(),
+            length,
+        }
+    }
+
     pub fn transactions(&self) -> &[Transaction] {
         &self.transactions
     }

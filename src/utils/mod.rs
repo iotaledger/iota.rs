@@ -6,6 +6,7 @@ pub mod constants;
 pub mod converter;
 pub mod input_validator;
 pub mod iota_units;
+pub mod multi_sig;
 pub mod seed_random_generator;
 pub mod signing;
 pub mod stopwatch;

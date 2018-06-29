@@ -2,7 +2,7 @@ use super::sponge::{Mode, Sponge, HASH_LENGTH};
 use crate::utils::array_copy;
 use failure::Error;
 
-const STATE_LENGTH: usize = 3 * HASH_LENGTH;
+pub const STATE_LENGTH: usize = 3 * HASH_LENGTH;
 const TRUTH_TABLE: [i8; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
 #[derive(Clone, Copy)]
@@ -52,11 +52,11 @@ impl Curl {
         }
     }
 
-    fn state(&self) -> &[i8] {
+    pub fn state(&self) -> &[i8] {
         &self.state
     }
 
-    fn state_mut(&mut self) -> &mut [i8] {
+    pub fn state_mut(&mut self) -> &mut [i8] {
         &mut self.state
     }
 }

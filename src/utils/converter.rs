@@ -82,6 +82,18 @@ pub fn trits_from_string(trytes: &str) -> Vec<i8> {
     trytes.chars().flat_map(char_to_trits).cloned().collect()
 }
 
+pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
+    let tmp: Vec<i8> = trytes.chars().flat_map(char_to_trits).cloned().collect();
+    if tmp.len() < length {
+        let mut result = vec![0; length];
+        for i in 0..tmp.len() {
+            result[i] = tmp[i];
+        }
+        return result;
+    }
+    tmp
+}
+
 pub fn char_to_trits(tryte: char) -> &'static [i8; constants::TRITS_PER_TRYTE] {
     for (i, mapping) in TRYTE_TO_TRITS_MAPPINGS
         .iter()

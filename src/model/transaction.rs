@@ -37,104 +37,104 @@ impl fmt::Display for Transaction {
 }
 
 impl Transaction {
-    pub fn attachment_timestamp_lower_bound(&self) -> &Option<i64> {
-        &self.attachment_timestamp_lower_bound
+    pub fn attachment_timestamp_lower_bound(&self) -> Option<i64> {
+        self.attachment_timestamp_lower_bound.clone()
     }
     pub fn attachment_timestamp_lower_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_lower_bound
     }
-    pub fn attachment_timestamp_upper_bound(&self) -> &Option<i64> {
-        &self.attachment_timestamp_upper_bound
+    pub fn attachment_timestamp_upper_bound(&self) -> Option<i64> {
+        self.attachment_timestamp_upper_bound.clone()
     }
     pub fn attachment_timestamp_upper_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_upper_bound
     }
-    pub fn hash(&self) -> &Option<String> {
-        &self.hash
+    pub fn hash(&self) -> Option<String> {
+        self.hash.clone()
     }
     pub fn hash_mut(&mut self) -> &mut Option<String> {
         &mut self.hash
     }
-    pub fn signature_fragments(&self) -> &Option<String> {
-        &self.signature_fragments
+    pub fn signature_fragments(&self) -> Option<String> {
+        self.signature_fragments.clone()
     }
     pub fn signature_fragments_mut(&mut self) -> &mut Option<String> {
         &mut self.signature_fragments
     }
-    pub fn address(&self) -> &Option<String> {
-        &self.address
+    pub fn address(&self) -> Option<String> {
+        self.address.clone()
     }
     pub fn address_mut(&mut self) -> &mut Option<String> {
         &mut self.address
     }
-    pub fn value(&self) -> &Option<i64> {
-        &self.value
+    pub fn value(&self) -> Option<i64> {
+        self.value.clone()
     }
     pub fn value_mut(&mut self) -> &mut Option<i64> {
         &mut self.value
     }
-    pub fn tag(&self) -> &Option<String> {
-        &self.tag
+    pub fn tag(&self) -> Option<String> {
+        self.tag.clone()
     }
     pub fn tag_mut(&mut self) -> &mut Option<String> {
         &mut self.tag
     }
-    pub fn timestamp(&self) -> &Option<i64> {
-        &self.timestamp
+    pub fn timestamp(&self) -> Option<i64> {
+        self.timestamp.clone()
     }
     pub fn timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.timestamp
     }
-    pub fn current_index(&self) -> &Option<usize> {
-        &self.current_index
+    pub fn current_index(&self) -> Option<usize> {
+        self.current_index.clone()
     }
     pub fn current_index_mut(&mut self) -> &mut Option<usize> {
         &mut self.current_index
     }
-    pub fn last_index(&self) -> &Option<usize> {
-        &self.last_index
+    pub fn last_index(&self) -> Option<usize> {
+        self.last_index.clone()
     }
     pub fn last_index_mut(&mut self) -> &mut Option<usize> {
         &mut self.last_index
     }
-    pub fn bundle(&self) -> &Option<String> {
-        &self.bundle
+    pub fn bundle(&self) -> Option<String> {
+        self.bundle.clone()
     }
     pub fn bundle_mut(&mut self) -> &mut Option<String> {
         &mut self.bundle
     }
-    pub fn trunk_transaction(&self) -> &Option<String> {
-        &self.trunk_transaction
+    pub fn trunk_transaction(&self) -> Option<String> {
+        self.trunk_transaction.clone()
     }
     pub fn trunk_transaction_mut(&mut self) -> &mut Option<String> {
         &mut self.trunk_transaction
     }
-    pub fn branch_transaction(&self) -> &Option<String> {
-        &self.branch_transaction
+    pub fn branch_transaction(&self) -> Option<String> {
+        self.branch_transaction.clone()
     }
     pub fn branch_transaction_mut(&mut self) -> &mut Option<String> {
         &mut self.branch_transaction
     }
-    pub fn nonce(&self) -> &Option<String> {
-        &self.nonce
+    pub fn nonce(&self) -> Option<String> {
+        self.nonce.clone()
     }
     pub fn nonce_mut(&mut self) -> &mut Option<String> {
         &mut self.nonce
     }
-    pub fn persistence(&self) -> &Option<bool> {
-        &self.persistence
+    pub fn persistence(&self) -> Option<bool> {
+        self.persistence.clone()
     }
     pub fn persistence_mut(&mut self) -> &mut Option<bool> {
         &mut self.persistence
     }
-    pub fn obsolete_tag(&self) -> &Option<String> {
-        &self.obsolete_tag
+    pub fn obsolete_tag(&self) -> Option<String> {
+        self.obsolete_tag.clone()
     }
     pub fn obsolete_tag_mut(&mut self) -> &mut Option<String> {
         &mut self.obsolete_tag
     }
-    pub fn attachment_timestamp(&self) -> &Option<i64> {
-        &self.attachment_timestamp
+    pub fn attachment_timestamp(&self) -> Option<i64> {
+        self.attachment_timestamp.clone()
     }
     pub fn attachment_timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp

@@ -15,6 +15,7 @@ edition = '2018'
 [dependencies]
 ascii = "0.9"
 crossbeam = "0.3"
+chrono = "0.4"
 crunchy = "0.1"
 failure = "0.1"
 lazy_static = "1.0"
