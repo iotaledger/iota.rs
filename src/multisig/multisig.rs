@@ -1,10 +1,10 @@
-use super::constants;
-use super::converter;
-use super::input_validator;
-use super::signing;
+use crate::utils::constants;
+use crate::utils::converter;
+use crate::utils::input_validator;
+use crate::utils::signing;
 use crate::model::bundle::{self, Bundle};
 use crate::pow::curl::{Curl, STATE_LENGTH};
-use crate::pow::sponge::{Sponge, HASH_LENGTH};
+use crate::pow::{Sponge, HASH_LENGTH};
 
 pub fn get_digest(seed: &str, security: usize, index: usize) -> String {
     let key = signing::key(&converter::trits_from_string_with_length(&seed, 243), index, security);

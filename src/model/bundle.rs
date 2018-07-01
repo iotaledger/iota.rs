@@ -1,6 +1,6 @@
 use super::transaction::Transaction;
 use crate::pow::kerl::Kerl;
-use crate::pow::sponge::Sponge;
+use crate::pow::Sponge;
 use crate::utils::converter;
 use serde_json;
 use std::fmt;

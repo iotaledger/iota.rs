@@ -1,4 +1,4 @@
-use super::sponge::{Mode, Sponge, HASH_LENGTH};
+use super::{Mode, Sponge, HASH_LENGTH};
 use crate::utils::array_copy;
 use failure::Error;
 

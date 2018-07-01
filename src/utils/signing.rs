@@ -4,7 +4,7 @@ use super::converter;
 use super::input_validator;
 use crate::model::bundle::{self, Bundle};
 use crate::pow::kerl::Kerl;
-use crate::pow::sponge::{Sponge, HASH_LENGTH};
+use crate::pow::{Sponge, HASH_LENGTH};
 
 const KEY_LENGTH: usize = 6561;
 

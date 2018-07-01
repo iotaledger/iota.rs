@@ -1,5 +1,5 @@
 use crate::pow::curl;
-use crate::pow::sponge::Sponge;
+use crate::pow::Sponge;
 use crate::utils::converter::{long_value, trits, trits_from_string, trits_to_string};
 use serde_json;
 use std::fmt;
@@ -202,8 +202,8 @@ impl FromStr for Transaction {
         if trytes.is_empty() {
             return Err(TransactionParseError::TryteStringEmpty);
         }
-        for i in 2279..2295 {
-            if trytes.chars().nth(i).unwrap() != '9' {
+        for c in trytes.chars().skip(2279).take(16) {
+            if c != '9' {
                 return Err(TransactionParseError::NineSectionMissing);
             }
         }

@@ -2,7 +2,7 @@ use super::constants;
 use super::converter;
 use super::input_validator;
 use crate::pow::kerl::Kerl;
-use crate::pow::sponge::{Sponge, HASH_LENGTH};
+use crate::pow::{Sponge, HASH_LENGTH};
 
 pub fn add_checksum(address: &str) -> String {
     assert!(input_validator::check_address(address));

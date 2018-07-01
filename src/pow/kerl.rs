@@ -4,7 +4,7 @@
 //! instead.
 
 use super::keccak::Keccak;
-use super::sponge::{Sponge, HASH_LENGTH};
+use super::{Sponge, HASH_LENGTH};
 
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;

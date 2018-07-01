@@ -273,7 +273,7 @@ fn increment(mid_low: &mut [u64], mid_high: &mut [u64], from_index: usize, to_in
 mod tests {
     use super::*;
     use crate::pow::curl::Curl;
-    use crate::pow::sponge::Sponge;
+    use crate::pow::Sponge;
 
     use rand::{thread_rng, Rng};
 

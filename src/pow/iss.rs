@@ -1,6 +1,6 @@
 use super::curl::Curl;
 use super::kerl::Kerl;
-use super::sponge::*;
+use super::{Mode, Sponge, HASH_LENGTH, hash_with_mode};
 use crate::utils::constants;
 use failure::Error;
 
