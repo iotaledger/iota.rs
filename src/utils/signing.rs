@@ -3,7 +3,6 @@ use super::constants;
 use super::converter;
 use super::input_validator;
 use crate::model::bundle::{self, Bundle};
-use crate::model::transaction::Transaction;
 use crate::pow::kerl::Kerl;
 use crate::pow::sponge::{Sponge, HASH_LENGTH};
 
@@ -63,7 +62,7 @@ pub fn signature_fragment(normalized_bundle_fragment: &[i8], key_fragment: &[i8]
     signature_fragment
 }
 
-pub fn address(digests: &mut [i8]) -> [i8; HASH_LENGTH] {
+pub fn address(digests: &[i8]) -> [i8; HASH_LENGTH] {
     let mut address = [0; HASH_LENGTH];
     let mut curl = Kerl::default();
     curl.reset();
@@ -117,14 +116,11 @@ pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> V
 
 pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> bool {
     let mut bundle_hash = String::new();
-    let mut trx: Transaction;
     let mut signature_fragments: Vec<String> = Vec::new();
-
-    for i in 0..signed_bundle.transactions().len() {
-        trx = signed_bundle.transactions()[i].clone();
-        if trx.address().clone().unwrap() == address {
-            bundle_hash = trx.bundle().clone().unwrap();
-            let signature_fragment = trx.signature_fragments().clone().unwrap();
+    for transaction in signed_bundle.transactions() {
+        if transaction.address().unwrap() == address {
+            bundle_hash = transaction.bundle().unwrap();
+            let signature_fragment = transaction.signature_fragments().unwrap();
             if input_validator::is_nine_trytes(&signature_fragment) {
                 break;
             }
@@ -139,11 +135,11 @@ pub fn validate_signatures(
     signature_fragments: &[String],
     bundle_hash: &str,
 ) -> bool {
-    let mut normalized_bundle_fragments = vec![vec![0; 3]; 27];
+    let mut normalized_bundle_fragments = [[0; 27]; 3];
     let normalized_bundle_hash = bundle::normalized_bundle(bundle_hash);
 
     for i in 0..3 {
-        normalized_bundle_fragments[i] = normalized_bundle_hash[i * 27..(i + 1) * 27].to_vec();
+        normalized_bundle_fragments[i].copy_from_slice(&normalized_bundle_hash[i * 27..(i + 1) * 27]);
     }
     let mut digests = vec![0; signature_fragments.len() * HASH_LENGTH];
 
@@ -160,7 +156,7 @@ pub fn validate_signatures(
             HASH_LENGTH,
         );
     }
-    let address = converter::trytes(&address(&mut digests));
+    let address = converter::trytes(&address(&digests));
     expected_address == address
 }
 

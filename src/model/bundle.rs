@@ -70,30 +70,37 @@ impl Bundle {
         }
     }
 
-    pub fn finalize(&mut self) {
-        let mut curl = Kerl::default();
+    pub fn finalize(&mut self, sponge: Option<impl Sponge>) {
+        match sponge {
+            Some(mut curl) => self.finalize_helper(&mut curl),
+            None => self.finalize_helper(&mut Kerl::default())
+        }
+    }
+
+    pub fn finalize_helper(&mut self, curl: &mut impl Sponge) {
         let mut valid = true;
         let mut hash = [0; 243];
         let mut hash_in_trytes = String::new();
         let mut normalized_bundle_value: [i8; 81];
         let mut obsolete_tag_trits: Vec<i8>;
+        let transactions_len = self.transactions.len();
         while valid {
             curl.reset();
-            for i in 0..self.transactions.len() {
-                let value_trits = converter::trits(self.transactions[i].value().unwrap());
-                let timestamp_trits = converter::trits(self.transactions[i].timestamp().unwrap());
+            for (i, transaction) in self.transactions.iter_mut().enumerate() {
+                let value_trits = converter::trits_with_length(transaction.value().unwrap(), 81);
+                let timestamp_trits = converter::trits_with_length(transaction.timestamp().unwrap(), 27);
 
-                *self.transactions[i].current_index_mut() = Some(i);
+                *transaction.current_index_mut() = Some(i);
 
                 let current_index_trits =
-                    converter::trits(self.transactions[i].current_index().unwrap() as i64);
+                    converter::trits_with_length(transaction.current_index().unwrap() as i64, 27);
 
-                *self.transactions[i].last_index_mut() = Some(self.transactions.len() - 1);
+                *transaction.last_index_mut() = Some(transactions_len - 1);
 
                 let last_index_trits =
-                    converter::trits(self.transactions[i].last_index().unwrap() as i64);
-                let address = self.transactions[i].address().clone().unwrap();
-                let obsolete_tag = self.transactions[i].obsolete_tag().clone().unwrap();
+                    converter::trits_with_length(transaction.last_index().unwrap() as i64, 27);
+                let address = transaction.address().clone().unwrap();
+                let obsolete_tag = "";//transaction.obsolete_tag().clone().unwrap();
                 let mut t = converter::trits_from_string(&format!(
                     "{}{}{}{}{}{}",
                     address,
@@ -114,7 +121,7 @@ impl Bundle {
                 if *b == 13 {
                     found_value = true;
                     obsolete_tag_trits = converter::trits_from_string(
-                        &self.transactions[0].obsolete_tag().clone().unwrap(),
+                        &self.transactions[0].obsolete_tag().clone().unwrap_or_default(),
                     );
                     converter::increment(&mut obsolete_tag_trits, 81);
                     *self.transactions[0].obsolete_tag_mut() =

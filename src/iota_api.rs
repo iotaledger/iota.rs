@@ -2,6 +2,7 @@ use super::iri_api;
 use super::model::bundle::Bundle;
 use super::model::transfer::Transfer;
 use super::model::transaction::Transaction;
+use super::pow::curl::Curl;
 use super::utils::api_utils;
 use super::utils::input_validator;
 use super::utils::checksum;
@@ -144,7 +145,7 @@ pub fn initiate_transfer(security_sum: usize, input_address: &str, remainder_add
             bundle.add_entry(1, remainder_address, remainder, &tag, timestamp);
         }
 
-        bundle.finalize();
+        bundle.finalize(Some(Curl::default()));
         bundle.add_trytes(&signature_fragments);
         return Ok(bundle.transactions().to_vec());
 

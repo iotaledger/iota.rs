@@ -64,7 +64,11 @@ impl Curl {
 impl Sponge for Curl {
     fn absorb(&mut self, trits: &[i8]) {
         for chunk in trits.chunks(HASH_LENGTH) {
+            if chunk.len() < HASH_LENGTH {
+                self.state[0..chunk.len()].copy_from_slice(chunk);
+            } else {
             self.state[0..HASH_LENGTH].copy_from_slice(chunk);
+            }
             self.transform();
         }
     }

@@ -38,13 +38,13 @@ impl fmt::Display for Transaction {
 
 impl Transaction {
     pub fn attachment_timestamp_lower_bound(&self) -> Option<i64> {
-        self.attachment_timestamp_lower_bound.clone()
+        self.attachment_timestamp_lower_bound
     }
     pub fn attachment_timestamp_lower_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_lower_bound
     }
     pub fn attachment_timestamp_upper_bound(&self) -> Option<i64> {
-        self.attachment_timestamp_upper_bound.clone()
+        self.attachment_timestamp_upper_bound
     }
     pub fn attachment_timestamp_upper_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_upper_bound
@@ -68,7 +68,7 @@ impl Transaction {
         &mut self.address
     }
     pub fn value(&self) -> Option<i64> {
-        self.value.clone()
+        self.value
     }
     pub fn value_mut(&mut self) -> &mut Option<i64> {
         &mut self.value
@@ -80,19 +80,19 @@ impl Transaction {
         &mut self.tag
     }
     pub fn timestamp(&self) -> Option<i64> {
-        self.timestamp.clone()
+        self.timestamp
     }
     pub fn timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.timestamp
     }
     pub fn current_index(&self) -> Option<usize> {
-        self.current_index.clone()
+        self.current_index
     }
     pub fn current_index_mut(&mut self) -> &mut Option<usize> {
         &mut self.current_index
     }
     pub fn last_index(&self) -> Option<usize> {
-        self.last_index.clone()
+        self.last_index
     }
     pub fn last_index_mut(&mut self) -> &mut Option<usize> {
         &mut self.last_index
@@ -122,7 +122,7 @@ impl Transaction {
         &mut self.nonce
     }
     pub fn persistence(&self) -> Option<bool> {
-        self.persistence.clone()
+        self.persistence
     }
     pub fn persistence_mut(&mut self) -> &mut Option<bool> {
         &mut self.persistence
@@ -134,7 +134,7 @@ impl Transaction {
         &mut self.obsolete_tag
     }
     pub fn attachment_timestamp(&self) -> Option<i64> {
-        self.attachment_timestamp.clone()
+        self.attachment_timestamp
     }
     pub fn attachment_timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp

@@ -12,8 +12,8 @@ pub fn get_digest(seed: &str, security: usize, index: usize) -> String {
 }
 
 pub fn add_address_digest(digest_trytes: &str, curl_state_trytes: &str) -> String {
-    let digest = converter::trits_from_string(digest_trytes);
     let offset = digest_trytes.len() * 3;
+    let digest = converter::trits_from_string_with_length(digest_trytes, offset);
     let mut curl_state = vec![0; offset];
     if !curl_state_trytes.is_empty() {
         curl_state.copy_from_slice(&converter::trits_from_string_with_length(curl_state_trytes, offset));
@@ -26,7 +26,7 @@ pub fn add_address_digest(digest_trytes: &str, curl_state_trytes: &str) -> Strin
 
 pub fn get_key(seed: &str, index: usize, security: usize) -> String {
     converter::trytes(&signing::key(
-        &converter::trits_from_string(seed)[0..81 * security],
+        &converter::trits_from_string_with_length(seed, 81 * security),
         index,
         security,
     ))
@@ -71,9 +71,9 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key_tryte
                     let mut normalized_bundle_fragments = [[0; 27]; 3];
                     let normalized_bundle_hash = bundle::normalized_bundle(&bundle_hash);
 
-                    for k in 0..3 {
+                    for (k, fragment) in normalized_bundle_fragments.iter_mut().enumerate().take(3) {
                         let offset = k * 27;
-                        normalized_bundle_fragments[k]
+                        fragment
                             .copy_from_slice(&normalized_bundle_hash[offset..offset + 27]);
                     }
 
@@ -144,6 +144,7 @@ mod tests {
         let mut transfers = vec![tmp_transfer];
 
         let transactions = iota_api::initiate_transfer(6, &multi_sig_address, REMAINDER_ADDRESS, &mut transfers, true).unwrap();
+        println!("{:?}", transactions);
         let mut bundle = Bundle::new(&transactions, transactions.len());
         add_signature(&mut bundle, &multi_sig_address, &get_key(TEST_SEED1, 0, 3));
         add_signature(&mut bundle, &multi_sig_address, &get_key(TEST_SEED2, 0, 3));

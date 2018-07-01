@@ -1,11 +1,12 @@
 use super::{checksum, converter, signing};
 use crate::model::bundle::{self, Bundle};
 use crate::model::input::Input;
+use crate::pow::sponge::Sponge;
 
 pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> String {
     let key = signing::key(&converter::trits_from_string(seed), index, security);
-    let mut digests = signing::digests(&key);
-    let address_trits = signing::address(&mut digests);
+    let digests = signing::digests(&key);
+    let address_trits = signing::address(&digests);
 
     let mut address = converter::trytes(&address_trits);
 
@@ -20,8 +21,9 @@ pub fn sign_inputs_and_return(
     inputs: &[Input],
     bundle: &mut Bundle,
     signature_fragments: &[String],
+    curl: Option<impl Sponge>,
 ) -> Vec<String> {
-    bundle.finalize();
+    bundle.finalize(curl);
     bundle.add_trytes(signature_fragments);
 
     for i in 0..bundle.transactions().len() {

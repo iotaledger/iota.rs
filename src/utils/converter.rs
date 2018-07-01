@@ -86,9 +86,7 @@ pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
     let tmp: Vec<i8> = trytes.chars().flat_map(char_to_trits).cloned().collect();
     if tmp.len() < length {
         let mut result = vec![0; length];
-        for i in 0..tmp.len() {
-            result[i] = tmp[i];
-        }
+        result[..tmp.len()].clone_from_slice(&tmp[..]);
         return result;
     }
     tmp
@@ -146,6 +144,16 @@ pub fn trits(trytes: i64) -> Vec<i8> {
         }
     }
     trits
+}
+
+pub fn trits_with_length(trytes: i64, length: usize) -> Vec<i8> {
+    let tmp: Vec<i8> = trits(trytes);
+    if tmp.len() < length {
+        let mut result = vec![0; length];
+        result[..tmp.len()].clone_from_slice(&tmp[..]);
+        return result;
+    }
+    tmp
 }
 
 pub fn copy_trits(value: i64, destination: &mut [i8], offset: usize, size: usize) {
