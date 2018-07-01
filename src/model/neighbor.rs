@@ -1,14 +1,18 @@
 use serde_json;
 use std::fmt;
-use std::net::SocketAddr;
 
 #[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Neighbor {
-    address: SocketAddr,
+    address: String,
+    #[serde(rename = "numberOfAllTransactions")]
     number_of_all_transactions: i32,
+    #[serde(rename = "numberOfInvalidTransactions")]
     number_of_invalid_transactions: i32,
+    #[serde(rename = "numberOfNewTransactions")]
     number_of_new_transactions: i32,
+     #[serde(rename = "numberOfRandomTransactionRequests")]
     number_of_random_transactions: i32,
+     #[serde(rename = "numberOfSentTransactions")]
     number_of_sent_transactions: i32,
 }
 
@@ -37,7 +41,7 @@ impl fmt::Display for Neighbor {
 
 impl Neighbor {
     pub fn new(
-        address: SocketAddr,
+        address: &str,
         number_of_all_transactions: i32,
         number_of_invalid_transactions: i32,
         number_of_new_transactions: i32,
@@ -45,7 +49,7 @@ impl Neighbor {
         number_of_sent_transactions: i32,
     ) -> Neighbor {
         Neighbor {
-            address,
+            address: address.to_string(),
             number_of_all_transactions,
             number_of_invalid_transactions,
             number_of_new_transactions,
@@ -54,11 +58,11 @@ impl Neighbor {
         }
     }
 
-    pub fn address(&self) -> &SocketAddr {
+    pub fn address(&self) -> &str {
         &self.address
     }
 
-    pub fn address_mut(&mut self) -> &mut SocketAddr {
+    pub fn address_mut(&mut self) -> &mut String {
         &mut self.address
     }
 

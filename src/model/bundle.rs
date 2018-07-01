@@ -73,7 +73,7 @@ impl Bundle {
     pub fn finalize(&mut self, sponge: Option<impl Sponge>) {
         match sponge {
             Some(mut curl) => self.finalize_helper(&mut curl),
-            None => self.finalize_helper(&mut Kerl::default())
+            None => self.finalize_helper(&mut Kerl::default()),
         }
     }
 
@@ -88,7 +88,8 @@ impl Bundle {
             curl.reset();
             for (i, transaction) in self.transactions.iter_mut().enumerate() {
                 let value_trits = converter::trits_with_length(transaction.value().unwrap(), 81);
-                let timestamp_trits = converter::trits_with_length(transaction.timestamp().unwrap(), 27);
+                let timestamp_trits =
+                    converter::trits_with_length(transaction.timestamp().unwrap(), 27);
 
                 *transaction.current_index_mut() = Some(i);
 
@@ -100,7 +101,7 @@ impl Bundle {
                 let last_index_trits =
                     converter::trits_with_length(transaction.last_index().unwrap() as i64, 27);
                 let address = transaction.address().clone().unwrap();
-                let obsolete_tag = "";//transaction.obsolete_tag().clone().unwrap();
+                let obsolete_tag = ""; //transaction.obsolete_tag().clone().unwrap();
                 let mut t = converter::trits_from_string(&format!(
                     "{}{}{}{}{}{}",
                     address,
@@ -121,7 +122,10 @@ impl Bundle {
                 if *b == 13 {
                     found_value = true;
                     obsolete_tag_trits = converter::trits_from_string(
-                        &self.transactions[0].obsolete_tag().clone().unwrap_or_default(),
+                        &self.transactions[0]
+                            .obsolete_tag()
+                            .clone()
+                            .unwrap_or_default(),
                     );
                     converter::increment(&mut obsolete_tag_trits, 81);
                     *self.transactions[0].obsolete_tag_mut() =

@@ -20,3 +20,11 @@ where
 {
     dest[dest_pos..(length + dest_pos)].copy_from_slice(&src[src_pos..(length + src_pos)]);
 }
+
+pub fn right_pad(x: &mut String, len: usize, pad: char) {
+    if x.len() < len {
+        for _ in x.len()..len {
+            x.push(pad);
+        }
+    }
+}

@@ -14,6 +14,6 @@ extern crate lazy_static;
 pub mod iota_api;
 pub mod iri_api;
 pub mod model;
+pub mod multisig;
 pub mod pow;
 pub mod utils;
-pub mod multisig;

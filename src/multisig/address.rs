@@ -3,7 +3,7 @@ use crate::pow::{Sponge, HASH_LENGTH};
 use crate::utils::converter;
 
 #[derive(Default, Clone)]
-struct Address {
+pub struct Address {
     kerl: Kerl,
 }
 
@@ -13,9 +13,7 @@ impl Address {
         if let Some(d) = digest {
             kerl.absorb(&converter::trits_from_string(d));
         }
-        Address{
-            kerl,
-        }
+        Address { kerl }
     }
 
     pub fn absorb(&mut self, digests: &[String]) {

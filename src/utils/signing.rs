@@ -139,7 +139,8 @@ pub fn validate_signatures(
     let normalized_bundle_hash = bundle::normalized_bundle(bundle_hash);
 
     for i in 0..3 {
-        normalized_bundle_fragments[i].copy_from_slice(&normalized_bundle_hash[i * 27..(i + 1) * 27]);
+        normalized_bundle_fragments[i]
+            .copy_from_slice(&normalized_bundle_hash[i * 27..(i + 1) * 27]);
     }
     let mut digests = vec![0; signature_fragments.len() * HASH_LENGTH];
 

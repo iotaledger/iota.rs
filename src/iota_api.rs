@@ -1,18 +1,17 @@
 use super::iri_api;
 use super::model::bundle::Bundle;
-use super::model::transfer::Transfer;
 use super::model::transaction::Transaction;
+use super::model::transfer::Transfer;
 use super::pow::curl::Curl;
 use super::utils::api_utils;
-use super::utils::input_validator;
 use super::utils::checksum;
-use super::utils::stopwatch::StopWatch;
 use super::utils::constants;
-use failure::Error;
-use serde_json;
-use std::time::Duration;
+use super::utils::input_validator;
+use super::utils::stopwatch::StopWatch;
 use chrono::prelude::*;
 use chrono::DateTime;
+use failure::Error;
+use std::time::Duration;
 
 #[derive(Clone, Copy, Debug)]
 pub struct API {
@@ -50,8 +49,7 @@ impl API {
             )?;
 
             all_addresses.push(new_address);
-            let hashes: Vec<String> = serde_json::from_value(resp["hashes"].clone())?;
-            if hashes.is_empty() {
+            if resp.hashes().unwrap_or_default().is_empty() {
                 break;
             }
             i += 1;
@@ -87,10 +85,28 @@ pub fn bundles_from_addresses(_addresses: &[String], _inclusion_states: bool) ->
     vec![Bundle::default()]
 }
 
-pub fn initiate_transfer(security_sum: usize, input_address: &str, remainder_address: &str, transfers: &mut [Transfer], test_mode: bool) -> Result<Vec<Transaction>, Error> {
-    ensure!(input_validator::is_address(input_address), "Invalid address [{}]", input_address);
-    ensure!(input_validator::is_address(remainder_address), "Invalid address [{}]", remainder_address);
-    ensure!(input_validator::is_transfers_collection_valid(transfers), "Invalid transfers [{:?}]", transfers);
+pub fn initiate_transfer(
+    security_sum: usize,
+    input_address: &str,
+    remainder_address: &str,
+    transfers: &mut [Transfer],
+    test_mode: bool,
+) -> Result<Vec<Transaction>, Error> {
+    ensure!(
+        input_validator::is_address(input_address),
+        "Invalid address [{}]",
+        input_address
+    );
+    ensure!(
+        input_validator::is_address(remainder_address),
+        "Invalid address [{}]",
+        remainder_address
+    );
+    ensure!(
+        input_validator::is_transfers_collection_valid(transfers),
+        "Invalid transfers [{:?}]",
+        transfers
+    );
 
     let mut bundle = Bundle::default();
     let mut total_value: i64 = 0;
@@ -104,11 +120,18 @@ pub fn initiate_transfer(security_sum: usize, input_address: &str, remainder_add
         let mut signature_message_length = 1;
 
         if transfer.message().len() > constants::MESSAGE_LENGTH {
-            signature_message_length += (transfer.message().len() as f64 / constants::MESSAGE_LENGTH as f64).floor() as usize;
+            signature_message_length += (transfer.message().len() as f64
+                / constants::MESSAGE_LENGTH as f64)
+                .floor() as usize;
             let mut msg_copy = transfer.message().to_string();
             while !msg_copy.is_empty() {
-                let mut fragment: String = msg_copy.chars().take(constants::MESSAGE_LENGTH).collect();
-                msg_copy = msg_copy.chars().skip(constants::MESSAGE_LENGTH).take(msg_copy.len()).collect();
+                let mut fragment: String =
+                    msg_copy.chars().take(constants::MESSAGE_LENGTH).collect();
+                msg_copy = msg_copy
+                    .chars()
+                    .skip(constants::MESSAGE_LENGTH)
+                    .take(msg_copy.len())
+                    .collect();
                 right_pad(&mut fragment, constants::MESSAGE_LENGTH, '9');
                 signature_fragments.push(fragment);
             }
@@ -117,11 +140,17 @@ pub fn initiate_transfer(security_sum: usize, input_address: &str, remainder_add
             right_pad(&mut fragment, constants::MESSAGE_LENGTH, '9');
             signature_fragments.push(fragment);
         }
-        tag = transfer.tag().to_string();
+        tag = transfer.tag().unwrap_or_default();
         right_pad(&mut tag, constants::TAG_LENGTH, '9');
         let utc: DateTime<Utc> = Utc::now();
         let timestamp = utc.timestamp();
-        bundle.add_entry(signature_message_length, transfer.address(), *transfer.value() as i64, &tag, timestamp);
+        bundle.add_entry(
+            signature_message_length,
+            transfer.address(),
+            *transfer.value() as i64,
+            &tag,
+            timestamp,
+        );
         total_value += *transfer.value() as i64;
     }
     if total_value != 0 {
@@ -134,8 +163,8 @@ pub fn initiate_transfer(security_sum: usize, input_address: &str, remainder_add
         }
 
         if total_balance > 0 {
-        let to_subtract = 0 - total_balance;
-        bundle.add_entry(security_sum, input_address, to_subtract, &tag, timestamp);
+            let to_subtract = 0 - total_balance;
+            bundle.add_entry(security_sum, input_address, to_subtract, &tag, timestamp);
         }
 
         ensure!(total_balance >= total_value, "Not enough balance");
@@ -148,7 +177,6 @@ pub fn initiate_transfer(security_sum: usize, input_address: &str, remainder_add
         bundle.finalize(Some(Curl::default()));
         bundle.add_trytes(&signature_fragments);
         return Ok(bundle.transactions().to_vec());
-
     }
 
     Err(format_err!("Invalid value transfer"))

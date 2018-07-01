@@ -9,7 +9,7 @@ pub struct Transfer {
     persistence: Option<bool>,
     value: u64,
     message: String,
-    tag: String,
+    tag: Option<String>,
 }
 
 impl fmt::Display for Transfer {
@@ -71,11 +71,11 @@ impl Transfer {
         &mut self.message
     }
 
-    pub fn tag(&self) -> &str {
-        &self.tag
+    pub fn tag(&self) -> Option<String> {
+        self.tag.clone()
     }
 
-    pub fn tag_mut(&mut self) -> &mut String {
+    pub fn tag_mut(&mut self) -> &mut Option<String> {
         &mut self.tag
     }
 }

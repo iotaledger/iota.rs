@@ -82,7 +82,7 @@ pub fn is_valid_transfer(transfer: &Transfer) -> bool {
     if !is_trytes(transfer.message()) {
         return false;
     }
-    if !is_trytes(transfer.tag()) {
+    if !is_trytes(&transfer.tag().unwrap_or_default()) {
         return false;
     }
     true
@@ -188,7 +188,7 @@ mod tests {
         *t.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();
         *t.value_mut() = 0;
         *t.message_mut() = TEST_MESSAGE.to_string();
-        *t.tag_mut() = TEST_TAG.to_string();
+        *t.tag_mut() = Some(TEST_TAG.to_string());
         assert!(is_valid_transfer(&t));
     }
 
@@ -198,13 +198,13 @@ mod tests {
         *t.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();
         *t.value_mut() = 0;
         *t.message_mut() = TEST_MESSAGE.to_string();
-        *t.tag_mut() = TEST_TAG.to_string();
+        *t.tag_mut() = Some(TEST_TAG.to_string());
 
         let mut t2 = Transfer::default();
         *t2.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();
         *t2.value_mut() = 0;
         *t2.message_mut() = "".to_string();
-        *t2.tag_mut() = "".to_string();
+        *t2.tag_mut() = None;
 
         let mut t3 = Transfer::default();
         *t3.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();

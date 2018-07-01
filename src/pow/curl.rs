@@ -67,7 +67,7 @@ impl Sponge for Curl {
             if chunk.len() < HASH_LENGTH {
                 self.state[0..chunk.len()].copy_from_slice(chunk);
             } else {
-            self.state[0..HASH_LENGTH].copy_from_slice(chunk);
+                self.state[0..HASH_LENGTH].copy_from_slice(chunk);
             }
             self.transform();
         }
