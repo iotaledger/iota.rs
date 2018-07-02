@@ -8,7 +8,7 @@ use criterion::Criterion;
 
 use rand::{thread_rng, Rng};
 
-use iota_lib_rs::pow::pearl_diver::search;
+use iota_lib_rs::pow::search;
 
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 

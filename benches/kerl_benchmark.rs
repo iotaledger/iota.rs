@@ -6,8 +6,7 @@ extern crate rand;
 use criterion::Criterion;
 use rand::{thread_rng, Rng};
 
-use iota_lib_rs::pow::kerl::Kerl;
-use iota_lib_rs::pow::{Sponge, HASH_LENGTH};
+use iota_lib_rs::pow::{Sponge, Kerl, HASH_LENGTH};
 
 fn basic_kerl(trits: [i8; HASH_LENGTH]) {
     let mut kerl = Kerl::default();
