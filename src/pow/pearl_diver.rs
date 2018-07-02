@@ -1,8 +1,8 @@
 use crossbeam;
+use failure::Error;
 use num_cpus;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use failure::Error;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum State {
@@ -41,10 +41,23 @@ impl PearlDiver {
     }
 }
 
-pub fn search(transaction_trits: [i8; 8019], min_weight_magnitude: usize) -> Result<(bool, Vec<i8>), Error> {
+pub fn search(
+    transaction_trits: [i8; 8019],
+    min_weight_magnitude: usize,
+) -> Result<(bool, Vec<i8>), Error> {
     let state = AtomicBool::new(true);
-    ensure!(transaction_trits.len() == TRANSACTION_LENGTH, "Transaction length [{}], expected [{}]", transaction_trits.len(), TRANSACTION_LENGTH);
-    ensure!(min_weight_magnitude <= CURL_HASH_LENGTH, "Min Weight Magnitude must be less than {} but it is {}", min_weight_magnitude, CURL_HASH_LENGTH);
+    ensure!(
+        transaction_trits.len() == TRANSACTION_LENGTH,
+        "Transaction length [{}], expected [{}]",
+        transaction_trits.len(),
+        TRANSACTION_LENGTH
+    );
+    ensure!(
+        min_weight_magnitude <= CURL_HASH_LENGTH,
+        "Min Weight Magnitude must be less than {} but it is {}",
+        min_weight_magnitude,
+        CURL_HASH_LENGTH
+    );
     let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
     let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
     initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);

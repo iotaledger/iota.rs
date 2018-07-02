@@ -52,7 +52,12 @@ impl Default for Kerl {
 
 impl Sponge for Kerl {
     fn absorb(&mut self, trits: &[i8]) -> Result<(), Error> {
-        ensure!(trits.len() % HASH_LENGTH == 0, "Slice length must be a multiple of {}, but remainder was: {}", HASH_LENGTH, trits.len() % HASH_LENGTH);
+        ensure!(
+            trits.len() % HASH_LENGTH == 0,
+            "Slice length must be a multiple of {}, but remainder was: {}",
+            HASH_LENGTH,
+            trits.len() % HASH_LENGTH
+        );
         let mut bytes = [0; BYTE_LENGTH];
         for chunk in trits.chunks(HASH_LENGTH) {
             self.trit_state.copy_from_slice(chunk);
@@ -64,7 +69,12 @@ impl Sponge for Kerl {
     }
 
     fn squeeze(&mut self, trits: &mut [i8]) -> Result<(), Error> {
-        ensure!(trits.len() % HASH_LENGTH == 0, "Slice length must be a multiple of {}, but remainder was: {}", HASH_LENGTH, trits.len() % HASH_LENGTH);
+        ensure!(
+            trits.len() % HASH_LENGTH == 0,
+            "Slice length must be a multiple of {}, but remainder was: {}",
+            HASH_LENGTH,
+            trits.len() % HASH_LENGTH
+        );
         for chunk in trits.chunks_mut(HASH_LENGTH) {
             self.keccak.pad();
             self.keccak.fill_block();
@@ -96,8 +106,18 @@ impl Kerl {
 }
 
 pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<(), Error> {
-    ensure!(trits.len() == HASH_LENGTH, "Trit slice should have length {}, but had length: {}", HASH_LENGTH, trits.len());
-    ensure!(bytes.len() == BYTE_LENGTH, "Byte slice should have length {}, but had length: {}", BYTE_LENGTH, bytes.len());
+    ensure!(
+        trits.len() == HASH_LENGTH,
+        "Trit slice should have length {}, but had length: {}",
+        HASH_LENGTH,
+        trits.len()
+    );
+    ensure!(
+        bytes.len() == BYTE_LENGTH,
+        "Byte slice should have length {}, but had length: {}",
+        BYTE_LENGTH,
+        bytes.len()
+    );
 
     let mut base = [0; INT_LENGTH];
 
@@ -168,8 +188,18 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<(), Error> {
 }
 
 pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) -> Result<(), Error> {
-    ensure!(trits.len() == HASH_LENGTH, "Trit slice should have length {}, but had length: {}", HASH_LENGTH, trits.len());
-    ensure!(bytes.len() == BYTE_LENGTH, "Byte slice should have length {}, but had length: {}", BYTE_LENGTH, bytes.len());
+    ensure!(
+        trits.len() == HASH_LENGTH,
+        "Trit slice should have length {}, but had length: {}",
+        HASH_LENGTH,
+        trits.len()
+    );
+    ensure!(
+        bytes.len() == BYTE_LENGTH,
+        "Byte slice should have length {}, but had length: {}",
+        BYTE_LENGTH,
+        bytes.len()
+    );
 
     let mut base = vec![0; INT_LENGTH];
     trits[HASH_LENGTH - 1] = 0;

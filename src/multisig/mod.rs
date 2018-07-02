@@ -157,7 +157,11 @@ pub fn initiate_transfer(
     ))
 }
 
-pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str) -> Result<(), Error> {
+pub fn add_signature(
+    bundle_to_sign: &mut Bundle,
+    input_address: &str,
+    key: &str,
+) -> Result<(), Error> {
     let security = key.len() / constants::MESSAGE_LENGTH;
     let key = converter::trits_from_string(key);
     let mut num_signed_transactions = 0;

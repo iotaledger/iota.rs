@@ -5,7 +5,6 @@ extern crate num_cpus;
 extern crate rand;
 
 use criterion::Criterion;
-use failure::Error;
 use rand::{thread_rng, Rng};
 
 use iota_lib_rs::pow::search;

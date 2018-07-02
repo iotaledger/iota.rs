@@ -16,14 +16,13 @@ lazy_static! {
             ascii += 1;
         }
         ascii = 48;
-         for c in "0123456789".chars() {
+        for c in "0123456789".chars() {
             res.insert(c, ascii);
             ascii += 1;
         }
         res.insert(' ', 32);
         res
     };
-
     static ref ASCII_TO_CHAR_MAP: HashMap<usize, char> = {
         let mut res: HashMap<usize, char> = HashMap::new();
         for (key, val) in CHAR_TO_ASCII_MAP.iter() {

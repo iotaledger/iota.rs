@@ -1,6 +1,8 @@
 # An unofficial implementation of the IOTA api in rust.
 
-This is a port of the IOTA Java API into Rust. The plan is to do a straight port of the API initially, then improve it using all the greatness that Rust brings to the table.
+This is a port of the IOTA Java/JS API into Rust. The plan is to do a straight port of the API initially, then improve it using all the greatness that Rust brings to the table.
+
+This library currently requires nightly rust to build.
 
 Things that are done:
 

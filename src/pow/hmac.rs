@@ -1,6 +1,6 @@
-use crate::utils::converter;
 use crate::model::Bundle;
-use crate::pow::{Sponge, Mode, Curl};
+use crate::pow::{Curl, Mode, Sponge};
+use crate::utils::converter;
 
 use failure::Error;
 
@@ -22,14 +22,23 @@ impl HMAC {
         let key = self.key.clone();
         for b in bundle.bundle_mut().iter_mut() {
             if b.value().unwrap_or_default() > 0 {
-                let bundle_hash_trits = converter::trits_from_string(&b.bundle().unwrap_or_default());
+                let bundle_hash_trits =
+                    converter::trits_from_string(&b.bundle().unwrap_or_default());
                 let mut hmac = [0; 243];
                 curl.reset();
                 curl.absorb(&key)?;
                 curl.absorb(&bundle_hash_trits)?;
                 curl.squeeze(&mut hmac)?;
                 let hmac_trytes = converter::trytes(&hmac);
-                *b.signature_fragments_mut() = Some(hmac_trytes + &b.signature_fragments().unwrap_or_default().chars().skip(81).take(2106).collect::<String>());
+                *b.signature_fragments_mut() = Some(
+                    hmac_trytes
+                        + &b.signature_fragments()
+                            .unwrap_or_default()
+                            .chars()
+                            .skip(81)
+                            .take(2106)
+                            .collect::<String>(),
+                );
             }
         }
         Ok(())

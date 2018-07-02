@@ -3,7 +3,11 @@ use failure::Error;
 use reqwest::header::{ContentType, Headers};
 
 pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<GetTrytesResponse, Error> {
-    ensure!(input_validator::is_array_of_hashes(hashes), "Provided hashes are not valid: {:?}", hashes);
+    ensure!(
+        input_validator::is_array_of_hashes(hashes),
+        "Provided hashes are not valid: {:?}",
+        hashes
+    );
 
     let client = reqwest::Client::new();
     let mut headers = Headers::new();

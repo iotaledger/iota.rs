@@ -1,7 +1,12 @@
 use super::{checksum, converter, signing};
 use failure::Error;
 
-pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> Result<String, Error> {
+pub fn new_address(
+    seed: &str,
+    security: usize,
+    index: usize,
+    checksum: bool,
+) -> Result<String, Error> {
     let key = signing::key(&converter::trits_from_string(seed), index, security)?;
     let digests = signing::digests(&key)?;
     let address_trits = signing::address(&digests)?;
