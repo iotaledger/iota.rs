@@ -140,7 +140,7 @@ pub fn initiate_transfer(
                     Utc::now().timestamp(),
                 );
             }
-            bundle.finalize(Some(Curl::default()));
+            bundle.finalize();
             bundle.add_trytes(&signature_fragments);
             Ok(bundle)
         };
@@ -150,7 +150,7 @@ pub fn initiate_transfer(
             let resp =
                 iri_api::get_balances("https://field.carriota.com", &[address.to_string()], 100)?;
             create_bundle(resp.balances().unwrap()[0].parse()?)
-        }?.transactions()
+        }?.bundle()
             .to_vec());
     }
 
@@ -164,21 +164,17 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str
     let key = converter::trits_from_string(key);
     let mut num_signed_transactions = 0;
 
-    for i in 0..bundle_to_sign.transactions().len() {
-        let address = bundle_to_sign.transactions()[i]
-            .address()
-            .unwrap_or_default();
+    for i in 0..bundle_to_sign.bundle().len() {
+        let address = bundle_to_sign.bundle()[i].address().unwrap_or_default();
         if address == input_address {
             if input_validator::is_nine_trytes(
-                &bundle_to_sign.transactions()[i]
+                &bundle_to_sign.bundle()[i]
                     .signature_fragments()
                     .unwrap_or_default(),
             ) {
                 num_signed_transactions += 1;
             } else {
-                let bundle_hash = bundle_to_sign.transactions()[i]
-                    .bundle()
-                    .unwrap_or_default();
+                let bundle_hash = bundle_to_sign.bundle()[i].bundle().unwrap_or_default();
                 let first_fragment = key[0..6561].to_vec();
                 let mut normalized_bundle_fragments = [[0; 27]; 3];
                 let normalized_bundle_hash = bundle::normalized_bundle(&bundle_hash);
@@ -192,7 +188,7 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str
                 let first_signed_fragment =
                     signing::signature_fragment(&first_bundle_fragment, &first_fragment);
 
-                *bundle_to_sign.transactions_mut()[i].signature_fragments_mut() =
+                *bundle_to_sign.bundle_mut()[i].signature_fragments_mut() =
                     Some(converter::trytes(&first_signed_fragment));
 
                 for j in 1..security {
@@ -201,7 +197,7 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str
                         normalized_bundle_fragments[(num_signed_transactions + j) % 3];
                     let next_signed_fragment =
                         signing::signature_fragment(&next_bundle_fragment, &next_fragment);
-                    *bundle_to_sign.transactions_mut()[i + j].signature_fragments_mut() =
+                    *bundle_to_sign.bundle_mut()[i + j].signature_fragments_mut() =
                         Some(converter::trytes(&next_signed_fragment));
                 }
                 break;
@@ -279,13 +275,13 @@ mod tests {
             true,
         ).unwrap();
         println!("{:?}", transactions);
-        let mut bundle = Bundle::new(&transactions, transactions.len());
+        let mut bundle = Bundle::new(&transactions);
         add_signature(&mut bundle, &multi_sig_address, &get_key(TEST_SEED1, 0, 3));
         add_signature(&mut bundle, &multi_sig_address, &get_key(TEST_SEED2, 0, 3));
         let is_valid_sig = signing::validate_bundle_signatures(&bundle, &multi_sig_address);
         assert!(is_valid_sig, "not valid");
     }
-//https://pow2.iota.community
+    //https://pow2.iota.community
     #[test]
     fn test_basic_multi_sig2() {
         println!("{:?}", iri_api::attach_to_tangle("https://trinity.iota.fm", "RWPF9JABLCVCD9XZEOOD9DPCJOTVFILURFQYDITPDBBXVZVXXAMQNQAEIVVYQGPSIBAIKGWDTMKSA9999", "ROYAHQAWSLEFQWBVJBPMWJDIBNYH9RZAOAPPNYSPKYUJGHZFJRTXHYTCWWJNKFGSYWXQE9KOIQRFZ9999", 14, &["BYSWEAUTWXHXZ9YBZISEK9LUHWGMHXCGEVNZHRLUWQFCUSDXZHOFHWHL9MQPVJXXZLIXPXPXF9KYEREFSKCPKYIIKPZVLHUTDFQKKVVBBN9ATTLPCNPJDWDEVIYYLGPZGCWXOBDXMLJC9VO9QXTTBLAXTTBFUAROYEGQIVB9MJWJKXJMCUPTWAUGFZBTZCSJVRBGMYXTVBDDS9MYUJCPZ9YDWWQNIPUAIJXXSNLKUBSCOIJPCLEFPOXFJREXQCUVUMKSDOVQGGHRNILCO9GNCLWFM9APMNMWYASHXQAYBEXF9QRIHIBHYEJOYHRQJAOKAQ9AJJFQ9WEIWIJOTZATIBOXQLBMIJU9PCGBLVDDVFP9CFFSXTDUXMEGOOFXWRTLFGV9XXMYWEMGQEEEDBTIJ9OJOXFAPFQXCDAXOUDMLVYRMRLUDBETOLRJQAEDDLNVIRQJUBZBO9CCFDHIX9MSQCWYAXJVWHCUPTRSXJDESISQPRKZAFKFRULCGVRSBLVFOPEYLEE99JD9SEBALQINPDAZHFAB9RNBH9AZWIJOTLBZVIEJIAYGMC9AZGNFWGRSWAXTYSXVROVNKCOQQIWGPNQZKHUNODGYADPYLZZZUQRTJRTODOUKAOITNOMWNGHJBBA99QUMBHRENGBHTH9KHUAOXBVIVDVYYZMSEYSJWIOGGXZVRGN999EEGQMCOYVJQRIRROMPCQBLDYIGQO9AMORPYFSSUGACOJXGAQSPDY9YWRRPESNXXBDQ9OZOXVIOMLGTSWAMKMTDRSPGJKGBXQIVNRJRFRYEZ9VJDLHIKPSKMYC9YEGHFDS9SGVDHRIXBEMLFIINOHVPXIFAZCJKBHVMQZEVWCOSNWQRDYWVAIBLSCBGESJUIBWZECPUCAYAWMTQKRMCHONIPKJYYTEGZCJYCT9ABRWTJLRQXKMWY9GWZMHYZNWPXULNZAPVQLPMYQZCYNEPOCGOHBJUZLZDPIXVHLDMQYJUUBEDXXPXFLNRGIPWBRNQQZJSGSJTTYHIGGFAWJVXWL9THTPWOOHTNQWCNYOYZXALHAZXVMIZE9WMQUDCHDJMIBWKTYH9AC9AFOT9DPCADCV9ZWUTE9QNOMSZPTZDJLJZCJGHXUNBJFUBJWQUEZDMHXGBPTNSPZBR9TGSKVOHMOQSWPGFLSWNESFKSAZY9HHERAXALZCABFYPOVLAHMIHVDBGKUMDXC9WHHTIRYHZVWNXSVQUWCR9M9RAGMFEZZKZ9XEOQGOSLFQCHHOKLDSA9QCMDGCGMRYJZLBVIFOLBIJPROKMHOYTBTJIWUZWJMCTKCJKKTR9LCVYPVJI9AHGI9JOWMIWZAGMLDFJA9WU9QAMEFGABIBEZNNAL9OXSBFLOEHKDGHWFQSHMPLYFCNXAAZYJLMQDEYRGL9QKCEUEJ9LLVUOINVSZZQHCIKPAGMT9CAYIIMTTBCPKWTYHOJIIY9GYNPAJNUJ9BKYYXSV9JSPEXYMCFAIKTGNRSQGUNIYZCRT9FOWENSZQPD9ALUPYYAVICHVYELYFPUYDTWUSWNIYFXPX9MICCCOOZIWRNJIDALWGWRATGLJXNAYTNIZWQ9YTVDBOFZRKO9CFWRPAQQRXTPACOWCPRLYRYSJARRKSQPR9TCFXDVIXLP9XVL99ERRDSOHBFJDJQQGGGCZNDQ9NYCTQJWVZIAELCRBJJFDMCNZU9FIZRPGNURTXOCDSQGXTQHKHUECGWFUUYS9J9NYQ9U9P9UUP9YMZHWWWCIASCFLCMSKTELZWUGCDE9YOKVOVKTAYPHDF9ZCCQAYPJIJNGSHUIHHCOSSOOBUDOKE9CJZGYSSGNCQJVBEFTZFJ9SQUHOASKRRGBSHWKBCBWBTJHOGQ9WOMQFHWJVEG9NYX9KWBTCAIXNXHEBDIOFO9ALYMFGRICLCKKLG9FOBOX9PDWNQRGHBKHGKKRLWTBEQMCWQRLHAVYYZDIIPKVQTHYTWQMTOACXZOQCDTJTBAAUWXSGJF9PNQIJ9AJRUMUVCPWYVYVARKR9RKGOUHHNKNVGGPDDLGKPQNOYHNKAVVKCXWXOQPZNSLATUJT9AUWRMPPSWHSTTYDFAQDXOCYTZHOYYGAIM9CELMZ9AZPWB9MJXGHOKDNNSZVUDAGXTJJSSZCPZVPZBYNNTUQABSXQWZCHDQSLGK9UOHCFKBIBNETK999999999999999999999999999999999999999999999999999999999999999999999999999999999NOXDXXKUDWLOFJLIPQIBRBMGDYCPGDNLQOLQS99EQYKBIU9VHCJVIPFUYCQDNY9APGEVYLCENJIOBLWNB999999999XKBRHUD99C99999999NKZKEKWLDKMJCI9N9XQOLWEPAYWSH9999999999999999999999999KDDTGZLIPBNZKMLTOLOXQVNGLASESDQVPTXALEKRMIOHQLUHD9ELQDBQETS9QFGTYOYWLNTSKKMVJAUXSIROUICDOXKSYZTDPEDKOQENTJOWJONDEWROCEJIEWFWLUAACVSJFTMCHHXJBJRKAAPUDXXVXFWP9X9999IROUICDOXKSYZTDPEDKOQENTJOWJONDEWROCEJIEWFWLUAACVSJFTMCHHXJBJRKAAPUDXXVXFWP9X9999".to_string()]).unwrap());

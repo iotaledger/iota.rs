@@ -1,6 +1,6 @@
+use crate::utils::input_validator;
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
-use crate::utils::input_validator;
 
 pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<GetTrytesResponse, Error> {
     assert!(input_validator::is_array_of_hashes(hashes));

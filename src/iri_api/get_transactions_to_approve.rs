@@ -1,7 +1,11 @@
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
 
-pub fn get_transactions_to_approve(uri: &str, depth: i32, reference: &str) -> Result<GetTransactionsToApprove, Error> {
+pub fn get_transactions_to_approve(
+    uri: &str,
+    depth: i32,
+    reference: &str,
+) -> Result<GetTransactionsToApprove, Error> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -25,8 +29,8 @@ pub fn get_transactions_to_approve(uri: &str, depth: i32, reference: &str) -> Re
 pub struct GetTransactionsToApprove {
     duration: i64,
     error: Option<String>,
-     #[serde(rename = "trunkTransaction")]
+    #[serde(rename = "trunkTransaction")]
     trunk_transaction: Option<String>,
-     #[serde(rename = "branchTransaction")]
+    #[serde(rename = "branchTransaction")]
     branch_transaction: Option<String>,
 }

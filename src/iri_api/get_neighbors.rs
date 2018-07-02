@@ -1,6 +1,6 @@
+use crate::model::neighbor::Neighbor;
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
-use crate::model::neighbor::Neighbor;
 
 pub fn get_neighbors(uri: &str) -> Result<GetNeighborsResponse, Error> {
     let client = reqwest::Client::new();

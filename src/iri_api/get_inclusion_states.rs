@@ -1,6 +1,6 @@
+use crate::utils::input_validator;
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
-use crate::utils::input_validator;
 
 pub fn get_inclusion_states(
     uri: &str,

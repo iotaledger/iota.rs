@@ -10,9 +10,9 @@ pub struct Neighbor {
     number_of_invalid_transactions: i32,
     #[serde(rename = "numberOfNewTransactions")]
     number_of_new_transactions: i32,
-     #[serde(rename = "numberOfRandomTransactionRequests")]
+    #[serde(rename = "numberOfRandomTransactionRequests")]
     number_of_random_transactions: i32,
-     #[serde(rename = "numberOfSentTransactions")]
+    #[serde(rename = "numberOfSentTransactions")]
     number_of_sent_transactions: i32,
 }
 

@@ -1,7 +1,7 @@
 use super::transaction::Transaction;
 use crate::pow::kerl::Kerl;
-use crate::pow::Sponge;
-use crate::utils::converter;
+use crate::pow::{Sponge, HASH_LENGTH};
+use crate::utils::{trit_adder, converter, right_pad};
 use serde_json;
 use std::fmt;
 use std::iter;
@@ -11,8 +11,7 @@ const EMPTY_HASH: &str =
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Bundle {
-    transactions: Vec<Transaction>,
-    length: usize,
+    bundle: Vec<Transaction>,
 }
 
 impl fmt::Display for Bundle {
@@ -26,27 +25,18 @@ impl fmt::Display for Bundle {
 }
 
 impl Bundle {
-    pub fn new(transactions: &[Transaction], length: usize) -> Bundle {
+    pub fn new(transactions: &[Transaction]) -> Bundle {
         Bundle {
-            transactions: transactions.to_vec(),
-            length,
+            bundle: transactions.to_vec(),
         }
     }
 
-    pub fn transactions(&self) -> &[Transaction] {
-        &self.transactions
+    pub fn bundle(&self) -> &[Transaction] {
+        &self.bundle
     }
 
-    pub fn transactions_mut(&mut self) -> &mut [Transaction] {
-        &mut self.transactions
-    }
-
-    pub fn length(&self) -> usize {
-        self.length
-    }
-
-    pub fn length_mut(&mut self) -> &mut usize {
-        &mut self.length
+    pub fn bundle_mut(&mut self) -> &mut [Transaction] {
+        &mut self.bundle
     }
 
     pub fn add_entry(
@@ -66,97 +56,66 @@ impl Bundle {
                 0 => *trx.value_mut() = Some(value),
                 _ => *trx.value_mut() = Some(0),
             }
-            self.transactions.push(trx);
-        }
-    }
-
-    pub fn finalize(&mut self, sponge: Option<impl Sponge>) {
-        match sponge {
-            Some(mut curl) => self.finalize_helper(&mut curl),
-            None => self.finalize_helper(&mut Kerl::default()),
-        }
-    }
-
-    pub fn finalize_helper(&mut self, curl: &mut impl Sponge) {
-        let mut valid = true;
-        let mut hash = [0; 243];
-        let mut hash_in_trytes = String::new();
-        let mut normalized_bundle_value: [i8; 81];
-        let mut obsolete_tag_trits: Vec<i8>;
-        let transactions_len = self.transactions.len();
-        while valid {
-            curl.reset();
-            for (i, transaction) in self.transactions.iter_mut().enumerate() {
-                let value_trits = converter::trits_with_length(transaction.value().unwrap(), 81);
-                let timestamp_trits =
-                    converter::trits_with_length(transaction.timestamp().unwrap(), 27);
-
-                *transaction.current_index_mut() = Some(i);
-
-                let current_index_trits =
-                    converter::trits_with_length(transaction.current_index().unwrap() as i64, 27);
-
-                *transaction.last_index_mut() = Some(transactions_len - 1);
-
-                let last_index_trits =
-                    converter::trits_with_length(transaction.last_index().unwrap() as i64, 27);
-                let address = transaction.address().clone().unwrap();
-                let obsolete_tag = ""; //transaction.obsolete_tag().clone().unwrap();
-                let mut t = converter::trits_from_string(&format!(
-                    "{}{}{}{}{}{}",
-                    address,
-                    converter::trytes(&value_trits),
-                    obsolete_tag,
-                    converter::trytes(&timestamp_trits),
-                    converter::trytes(&current_index_trits),
-                    converter::trytes(&last_index_trits)
-                ));
-                curl.absorb(&t);
-            }
-            curl.squeeze(&mut hash);
-            hash_in_trytes = converter::trytes(&hash);
-            normalized_bundle_value = normalized_bundle(&hash_in_trytes);
-
-            let mut found_value = false;
-            for b in normalized_bundle_value.iter() {
-                if *b == 13 {
-                    found_value = true;
-                    obsolete_tag_trits = converter::trits_from_string(
-                        &self.transactions[0]
-                            .obsolete_tag()
-                            .clone()
-                            .unwrap_or_default(),
-                    );
-                    converter::increment(&mut obsolete_tag_trits, 81);
-                    *self.transactions[0].obsolete_tag_mut() =
-                        Some(converter::trytes(&obsolete_tag_trits));
-                }
-            }
-            valid = !found_value;
-        }
-        for i in 0..self.transactions.len() {
-            *self.transactions[i].bundle_mut() = Some(hash_in_trytes.clone());
+            self.bundle.push(trx);
         }
     }
 
     pub fn add_trytes(&mut self, signature_fragments: &[String]) {
-        let empty_signature_fragment = iter::repeat("9").take(2187).collect::<String>();
+        let empty_signature_fragment = "9".repeat(2187);
         let empty_hash = EMPTY_HASH;
-        let empty_timestamp = 999_999_999;
-        for i in 0..self.transactions.len() {
-            *self.transactions[i].signature_fragments_mut() =
+        let empty_timestamp = "9".repeat(9);
+
+        for (i, bundle) in self.bundle.iter_mut().enumerate() {
+            *bundle.signature_fragments_mut() =
                 if signature_fragments.len() <= 1 || signature_fragments[i].is_empty() {
                     Some(empty_signature_fragment.clone())
                 } else {
                     Some(signature_fragments[i].clone())
                 };
-            *self.transactions[i].trunk_transaction_mut() = Some(empty_hash.to_string());
-            *self.transactions[i].branch_transaction_mut() = Some(empty_hash.to_string());
-            *self.transactions[i].attachment_timestamp_mut() = Some(empty_timestamp);
-            *self.transactions[i].attachment_timestamp_lower_bound_mut() = Some(empty_timestamp);
-            *self.transactions[i].attachment_timestamp_upper_bound_mut() = Some(empty_timestamp);
-            *self.transactions[i].nonce_mut() =
-                Some(iter::repeat("9").take(27).collect::<String>());
+            *bundle.trunk_transaction_mut() = Some(empty_hash.to_string());
+            *bundle.branch_transaction_mut() = Some(empty_hash.to_string());
+            *bundle.attachment_timestamp_mut() = Some(empty_timestamp.clone());
+            *bundle.attachment_timestamp_lower_bound_mut() = Some(empty_timestamp.clone());
+            *bundle.attachment_timestamp_upper_bound_mut() = Some(empty_timestamp.clone());
+            *bundle.nonce_mut() = Some("9".repeat(27));
+        }
+    }
+
+    pub fn finalize(&mut self) {
+        let mut valid_bundle = false;
+        let mut kerl = Kerl::default();
+        while !valid_bundle {
+            kerl.reset();
+            for (i, bundle) in self.bundle.iter_mut().enumerate() {
+                let value_trits = converter::trits_with_length(bundle.value().unwrap(), 81);
+                let timestamp_trits = converter::trits_with_length(bundle.timestamp().unwrap(), 27);
+                let current_index_trits =
+                    converter::trits_with_length(bundle.current_index().unwrap(), 27);
+                let last_index_trits =
+                    converter::trits_with_length(bundle.last_index().unwrap(), 27);
+                let bundle_essence = converter::trits_from_string(
+                    &(bundle.address().unwrap_or_default().to_string()
+                        + &converter::trytes(&value_trits)
+                        + &bundle.obsolete_tag().unwrap_or_default()
+                        + &converter::trytes(&timestamp_trits)
+                        + &converter::trytes(&current_index_trits)
+                        + &converter::trytes(&last_index_trits)),
+                );
+                kerl.absorb(&bundle_essence);
+            }
+            let mut hash = [0; HASH_LENGTH];
+            kerl.squeeze(&mut hash);
+            let hash_trytes = converter::trytes(&hash);
+            for bundle in self.bundle.iter_mut() {
+                *bundle.bundle_mut() = Some(hash_trytes.clone());
+            }
+            let normalized_hash = normalized_bundle(&hash_trytes.clone());
+            if normalized_hash.contains(&13) {
+                let increased_tag = trit_adder::add(&converter::trits_from_string(&self.bundle[0].obsolete_tag().unwrap_or_default()), &[1]);
+                *self.bundle[0].obsolete_tag_mut() = Some(converter::trytes(&increased_tag));
+            } else {
+                valid_bundle = true;
+            }
         }
     }
 }

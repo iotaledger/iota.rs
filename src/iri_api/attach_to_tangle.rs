@@ -1,6 +1,6 @@
+use crate::utils::input_validator;
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
-use crate::utils::input_validator;
 
 pub fn attach_to_tangle(
     uri: &str,

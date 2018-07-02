@@ -117,7 +117,7 @@ pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> V
 pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> bool {
     let mut bundle_hash = String::new();
     let mut signature_fragments: Vec<String> = Vec::new();
-    for transaction in signed_bundle.transactions() {
+    for transaction in signed_bundle.bundle() {
         if transaction.address().unwrap() == address {
             bundle_hash = transaction.bundle().unwrap();
             let signature_fragment = transaction.signature_fragments().unwrap();

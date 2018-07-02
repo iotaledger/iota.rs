@@ -1,7 +1,10 @@
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
 
-pub fn store_transactions(uri: &str, trytes: &[String]) -> Result<StoreTransactionsResponse, Error> {
+pub fn store_transactions(
+    uri: &str,
+    trytes: &[String],
+) -> Result<StoreTransactionsResponse, Error> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());

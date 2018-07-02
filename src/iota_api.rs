@@ -174,9 +174,9 @@ pub fn initiate_transfer(
             bundle.add_entry(1, remainder_address, remainder, &tag, timestamp);
         }
 
-        bundle.finalize(Some(Curl::default()));
+        bundle.finalize();
         bundle.add_trytes(&signature_fragments);
-        return Ok(bundle.transactions().to_vec());
+        return Ok(bundle.bundle().to_vec());
     }
 
     Err(format_err!("Invalid value transfer"))

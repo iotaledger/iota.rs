@@ -9,6 +9,7 @@ pub mod iota_units;
 pub mod seed_random_generator;
 pub mod signing;
 pub mod stopwatch;
+pub mod trit_adder;
 pub mod trytes_converter;
 pub mod types;
 pub mod unit_converter;
