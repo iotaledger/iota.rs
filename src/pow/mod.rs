@@ -5,12 +5,14 @@ mod iss;
 mod keccak;
 mod kerl;
 mod pearl_diver;
+mod hmac;
 
 pub use self::curl::*;
 pub use self::iss::*;
 pub use self::keccak::Keccak;
 pub use self::kerl::*;
 pub use self::pearl_diver::*;
+pub use self::hmac::*;
 
 use std::fmt;
 use failure::Error;

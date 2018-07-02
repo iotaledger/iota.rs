@@ -8,6 +8,8 @@ Things that are done:
     - [x] Curl
     - [x] Kerl
     - [x] PearlDiver
+    - [x] ISS
+    - [x] HMAC
 - [x] Model
     - [x] Bundle
     - [x] Input
