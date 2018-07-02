@@ -11,9 +11,9 @@ extern crate serde_json;
 #[macro_use]
 extern crate lazy_static;
 
+pub mod crypto;
 pub mod iota_api;
 pub mod iri_api;
 pub mod model;
 pub mod multisig;
-pub mod crypto;
 pub mod utils;

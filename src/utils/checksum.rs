@@ -1,7 +1,7 @@
 use super::constants;
 use super::converter;
 use super::input_validator;
-use crate::crypto::{Sponge, Kerl, HASH_LENGTH};
+use crate::crypto::{Kerl, Sponge, HASH_LENGTH};
 
 use failure::Error;
 

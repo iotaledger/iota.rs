@@ -1,5 +1,5 @@
 use super::transaction::Transaction;
-use crate::crypto::{Sponge, Kerl, HASH_LENGTH};
+use crate::crypto::{Kerl, Sponge, HASH_LENGTH};
 use crate::utils::{converter, trit_adder};
 use serde_json;
 use std::fmt;

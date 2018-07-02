@@ -4,7 +4,7 @@ extern crate iota_lib_rs;
 extern crate rand;
 
 use criterion::Criterion;
-use iota_lib_rs::pow::{Kerl, Sponge, HASH_LENGTH};
+use iota_lib_rs::crypto::{Kerl, Sponge, HASH_LENGTH};
 use rand::{thread_rng, Rng};
 
 fn basic_kerl(trits: [i8; HASH_LENGTH]) {

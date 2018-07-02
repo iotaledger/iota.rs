@@ -7,7 +7,7 @@ extern crate rand;
 use criterion::Criterion;
 use rand::{thread_rng, Rng};
 
-use iota_lib_rs::pow::search;
+use iota_lib_rs::crypto::pearl_diver::search;
 
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
