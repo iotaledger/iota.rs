@@ -1,4 +1,3 @@
-use crate::utils::array_copy;
 use crossbeam;
 use num_cpus;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -151,8 +150,8 @@ fn validate_parameters(transaction_trits: &[i8], min_weight_magnitude: usize) {
 }
 
 fn copy(src_low: &[u64], src_high: &[u64], dest_low: &mut [u64], dest_high: &mut [u64]) {
-    array_copy(src_low, 0, dest_low, 0, CURL_STATE_LENGTH);
-    array_copy(src_high, 0, dest_high, 0, CURL_STATE_LENGTH);
+    dest_low[0..CURL_STATE_LENGTH].copy_from_slice(&src_low[0..CURL_STATE_LENGTH]);
+    dest_high[0..CURL_STATE_LENGTH].copy_from_slice(&src_high[0..CURL_STATE_LENGTH]);
 }
 
 fn initialize_mid_curl_states(

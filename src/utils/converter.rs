@@ -1,4 +1,3 @@
-use super::array_copy;
 use super::constants;
 
 const HIGH_INTEGER_BITS: u32 = 0xFFFF_FFFF;
@@ -62,13 +61,8 @@ pub fn get_trits(bytes: &[u8], trits: &mut [i8]) {
         } else {
             NUMBER_OF_TRITS_IN_A_BYTE
         };
-        array_copy(
-            &BYTE_TO_TRITS_MAPPINGS[bytes[i] as usize],
-            0,
-            trits,
-            offset,
-            length,
-        );
+        trits[offset..offset + length]
+            .copy_from_slice(&BYTE_TO_TRITS_MAPPINGS[bytes[i] as usize][0..length]);
         offset += NUMBER_OF_TRITS_IN_A_BYTE;
         i += 1;
     }

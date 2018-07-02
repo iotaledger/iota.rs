@@ -1,4 +1,3 @@
-use super::array_copy;
 use super::constants;
 use super::converter;
 use super::input_validator;
@@ -38,7 +37,7 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Vec<i8> {
     while tmp_sec > 0 {
         for _i in 0..27 {
             curl.squeeze(&mut buffer);
-            array_copy(&buffer, 0, &mut key, offset, HASH_LENGTH);
+            key[offset..offset+HASH_LENGTH].copy_from_slice(&buffer[0..HASH_LENGTH]);
             offset += HASH_LENGTH;
         }
         tmp_sec -= 1;
@@ -77,7 +76,8 @@ pub fn digests(key: &[i8]) -> Vec<i8> {
     let mut key_fragment = [0; KEY_LENGTH];
     let mut curl = Kerl::default();
     for i in 0..security {
-        array_copy(&key, i * KEY_LENGTH, &mut key_fragment, 0, KEY_LENGTH);
+        let offset = i * KEY_LENGTH;
+        key_fragment[0..KEY_LENGTH].copy_from_slice(&key[offset..offset+KEY_LENGTH]);
         for j in 0..27 {
             for _k in 0..26 {
                 curl.reset();
@@ -149,13 +149,8 @@ pub fn validate_signatures(
             &normalized_bundle_fragments[i % 3],
             &converter::trits_from_string(&signature_fragments[i]),
         );
-        array_copy(
-            &digest_buffer,
-            0,
-            &mut digests,
-            i * HASH_LENGTH,
-            HASH_LENGTH,
-        );
+        let offset = i * HASH_LENGTH;
+        digests[offset..offset + HASH_LENGTH].copy_from_slice(&digest_buffer[0..HASH_LENGTH]);
     }
     let address = converter::trytes(&address(&digests));
     expected_address == address

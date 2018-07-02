@@ -1,10 +1,3 @@
-use ascii::AsciiStr;
-
-lazy_static! {
-    pub static ref TRYTE_ALPHABET_ASCII: &'static AsciiStr =
-        AsciiStr::from_ascii("9ABCDEFGHIJKLMNOPQRSTUVWXYZ").unwrap();
-}
-
 pub const TRYTE_ALPHABET: [char; 27] = [
     '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
     'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',

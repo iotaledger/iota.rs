@@ -1,5 +1,4 @@
 use super::{Mode, Sponge, HASH_LENGTH};
-use crate::utils::array_copy;
 use failure::Error;
 
 pub const STATE_LENGTH: usize = 3 * HASH_LENGTH;
@@ -36,7 +35,7 @@ impl Curl {
     fn transform(&mut self) {
         let mut scratchpad_index = 0;
         for _ in 0..self.number_of_rounds {
-            array_copy(&self.state, 0, &mut self.scratchpad, 0, STATE_LENGTH);
+            self.scratchpad[0..STATE_LENGTH].copy_from_slice(&self.state[0..STATE_LENGTH]);
             for state_index in 0..STATE_LENGTH {
                 let prev_scratchpad_index = scratchpad_index;
                 if scratchpad_index < 365 {
