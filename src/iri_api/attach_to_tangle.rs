@@ -9,9 +9,9 @@ pub fn attach_to_tangle(
     min_weight_magnitude: i32,
     trytes: &[String],
 ) -> Result<AttachToTangleResponse, Error> {
-    assert!(input_validator::is_hash(trunk_transaction));
-    assert!(input_validator::is_hash(branch_transaction));
-    assert!(input_validator::is_array_of_trytes(trytes));
+    ensure!(input_validator::is_hash(trunk_transaction), "Provided trunk transaction is not valid: {:?}", trunk_transaction);
+    ensure!(input_validator::is_hash(branch_transaction), "Provided branch transaction is not valid: {:?}", branch_transaction);
+    ensure!(input_validator::is_array_of_trytes(trytes), "Provided trytes are not valid: {:?}", trytes);
 
     let client = reqwest::Client::new();
     let mut headers = Headers::new();

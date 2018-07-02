@@ -19,31 +19,31 @@ use crate::iri_api;
 use chrono::prelude::*;
 use failure::Error;
 
-pub fn get_key(seed: &str, index: usize, security: usize) -> String {
-    converter::trytes(&signing::key(
+pub fn get_key(seed: &str, index: usize, security: usize) -> Result<String, Error> {
+    Ok(converter::trytes(&signing::key(
         &converter::trits_from_string_with_length(seed, 81 * security),
         index,
         security,
-    ))
+    )?))
 }
 
-pub fn get_digest(seed: &str, security: usize, index: usize) -> String {
+pub fn get_digest(seed: &str, security: usize, index: usize) -> Result<String, Error> {
     let key = signing::key(
         &converter::trits_from_string_with_length(&seed, 243),
         index,
         security,
-    );
-    converter::trytes(&signing::digests(&key))
+    )?;
+    Ok(converter::trytes(&signing::digests(&key)?))
 }
 
-pub fn validate_address(address: &str, digests: &[String]) -> bool {
+pub fn validate_address(address: &str, digests: &[String]) -> Result<bool, Error> {
     let mut kerl = Kerl::default();
     for digest in digests {
-        kerl.absorb(&converter::trits_from_string(digest));
+        kerl.absorb(&converter::trits_from_string(digest))?;
     }
     let mut address_trits = [0; HASH_LENGTH];
-    kerl.squeeze(&mut address_trits);
-    converter::trytes(&address_trits) == address
+    kerl.squeeze(&mut address_trits)?;
+    Ok(converter::trytes(&address_trits) == address)
 }
 
 pub fn initiate_transfer(
@@ -138,7 +138,7 @@ pub fn initiate_transfer(
                     Utc::now().timestamp(),
                 );
             }
-            bundle.finalize();
+            bundle.finalize()?;
             bundle.add_trytes(&signature_fragments);
             Ok(bundle)
         };
@@ -157,7 +157,7 @@ pub fn initiate_transfer(
     ))
 }
 
-pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str) {
+pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str) -> Result<(), Error> {
     let security = key.len() / constants::MESSAGE_LENGTH;
     let key = converter::trits_from_string(key);
     let mut num_signed_transactions = 0;
@@ -184,7 +184,7 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str
                 let first_bundle_fragment =
                     normalized_bundle_fragments[num_signed_transactions % 3];
                 let first_signed_fragment =
-                    signing::signature_fragment(&first_bundle_fragment, &first_fragment);
+                    signing::signature_fragment(&first_bundle_fragment, &first_fragment)?;
 
                 *bundle_to_sign.bundle_mut()[i].signature_fragments_mut() =
                     Some(converter::trytes(&first_signed_fragment));
@@ -194,7 +194,7 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str
                     let next_bundle_fragment =
                         normalized_bundle_fragments[(num_signed_transactions + j) % 3];
                     let next_signed_fragment =
-                        signing::signature_fragment(&next_bundle_fragment, &next_fragment);
+                        signing::signature_fragment(&next_bundle_fragment, &next_fragment)?;
                     *bundle_to_sign.bundle_mut()[i + j].signature_fragments_mut() =
                         Some(converter::trytes(&next_signed_fragment));
                 }
@@ -202,9 +202,10 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str
             }
         }
     }
+    Ok(())
 }
 
-pub fn add_address_digest(digest_trytes: &str, curl_state_trytes: &str) -> String {
+pub fn add_address_digest(digest_trytes: &str, curl_state_trytes: &str) -> Result<String, Error> {
     let offset = digest_trytes.len() * 3;
     let digest = converter::trits_from_string_with_length(digest_trytes, offset);
     let mut curl_state = vec![0; offset];
@@ -217,17 +218,17 @@ pub fn add_address_digest(digest_trytes: &str, curl_state_trytes: &str) -> Strin
     let mut curl = Curl::default();
     curl.state_mut()
         .copy_from_slice(&curl_state[0..STATE_LENGTH]);
-    curl.absorb(&digest);
-    converter::trytes(curl.state())
+    curl.absorb(&digest)?;
+    Ok(converter::trytes(curl.state()))
 }
 
-pub fn finalize_address(curl_state_trytes: &str) -> String {
+pub fn finalize_address(curl_state_trytes: &str) -> Result<String, Error> {
     let curl_state = converter::trits_from_string(curl_state_trytes);
     let mut curl = Curl::default();
     curl.state_mut().copy_from_slice(&curl_state);
     let mut address_trits = [0; HASH_LENGTH];
-    curl.squeeze(&mut address_trits);
-    converter::trytes(&address_trits)
+    curl.squeeze(&mut address_trits)?;
+    Ok(converter::trytes(&address_trits))
 }
 
 #[cfg(test)]

@@ -61,7 +61,7 @@ impl Curl {
 }
 
 impl Sponge for Curl {
-    fn absorb(&mut self, trits: &[i8]) {
+    fn absorb(&mut self, trits: &[i8]) -> Result<(), Error> {
         for chunk in trits.chunks(HASH_LENGTH) {
             if chunk.len() < HASH_LENGTH {
                 self.state[0..chunk.len()].copy_from_slice(chunk);
@@ -70,9 +70,10 @@ impl Sponge for Curl {
             }
             self.transform();
         }
+        Ok(())
     }
 
-    fn squeeze(&mut self, out: &mut [i8]) {
+    fn squeeze(&mut self, out: &mut [i8]) -> Result<(), Error> {
         let trit_length = out.len();
         let hash_length = trit_length / HASH_LENGTH;
 
@@ -86,6 +87,7 @@ impl Sponge for Curl {
         if trit_length % HASH_LENGTH != 0 {
             self.transform();
         }
+        Ok(())
     }
 
     fn reset(&mut self) {
@@ -108,8 +110,8 @@ mod tests {
         let mut in_trits = converter::trits_from_string(TRYTES);
         let mut hash_trits = vec![0; HASH_LENGTH];
         let mut curl = Curl::default();
-        curl.absorb(&mut in_trits[..size]);
-        curl.squeeze(&mut hash_trits);
+        curl.absorb(&mut in_trits[..size]).unwrap();
+        curl.squeeze(&mut hash_trits).unwrap();
         let out_trytes = converter::trytes(&hash_trits);
         assert_eq!(HASH, out_trytes);
     }

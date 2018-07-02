@@ -10,7 +10,7 @@ pub fn interrupt_attaching_to_tangle(uri: &str) -> Result<Response, Error> {
 }
 
 pub fn broadcast_transactions(uri: &str, trytes: &[String]) -> Result<Value, Error> {
-    assert!(input_validator::is_array_of_attached_trytes(trytes));
+    ensure!(input_validator::is_array_of_attached_trytes(trytes), "Provided trytes are not valid: {:?}", trytes);
 
     let client = reqwest::Client::new();
     let mut headers = Headers::new();

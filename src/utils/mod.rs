@@ -9,7 +9,6 @@ pub mod signing;
 pub mod stopwatch;
 pub mod trit_adder;
 pub mod trytes_converter;
-pub mod types;
 pub mod unit_converter;
 
 pub fn right_pad(x: &mut String, len: usize, pad: char) {

@@ -6,6 +6,8 @@
 use super::keccak::Keccak;
 use super::{Sponge, HASH_LENGTH};
 
+use failure::Error;
+
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
 
@@ -49,25 +51,26 @@ impl Default for Kerl {
 }
 
 impl Sponge for Kerl {
-    fn absorb(&mut self, trits: &[i8]) {
-        assert_eq!(trits.len() % HASH_LENGTH, 0);
+    fn absorb(&mut self, trits: &[i8]) -> Result<(), Error> {
+        ensure!(trits.len() % HASH_LENGTH == 0, "Slice length must be a multiple of {}, but remainder was: {}", HASH_LENGTH, trits.len() % HASH_LENGTH);
         let mut bytes = [0; BYTE_LENGTH];
         for chunk in trits.chunks(HASH_LENGTH) {
             self.trit_state.copy_from_slice(chunk);
             self.trit_state[HASH_LENGTH - 1] = 0;
-            trits_to_bytes(chunk, &mut bytes);
+            trits_to_bytes(chunk, &mut bytes)?;
             self.keccak.update(&bytes);
         }
+        Ok(())
     }
 
-    fn squeeze(&mut self, trits: &mut [i8]) {
-        assert_eq!(trits.len() % HASH_LENGTH, 0);
+    fn squeeze(&mut self, trits: &mut [i8]) -> Result<(), Error> {
+        ensure!(trits.len() % HASH_LENGTH == 0, "Slice length must be a multiple of {}, but remainder was: {}", HASH_LENGTH, trits.len() % HASH_LENGTH);
         for chunk in trits.chunks_mut(HASH_LENGTH) {
             self.keccak.pad();
             self.keccak.fill_block();
             self.keccak.squeeze(&mut self.byte_state);
             self.keccak = Keccak::new_keccak384();
-            bytes_to_trits(&mut self.byte_state, &mut self.trit_state);
+            bytes_to_trits(&mut self.byte_state, &mut self.trit_state)?;
             self.trit_state[HASH_LENGTH - 1] = 0;
             chunk.copy_from_slice(&self.trit_state[0..HASH_LENGTH]);
             for b in self.byte_state.iter_mut() {
@@ -75,6 +78,7 @@ impl Sponge for Kerl {
             }
             self.keccak.update(&self.byte_state);
         }
+        Ok(())
     }
 
     fn reset(&mut self) {
@@ -91,9 +95,9 @@ impl Kerl {
     }
 }
 
-pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) {
-    assert_eq!(trits.len(), HASH_LENGTH);
-    assert_eq!(bytes.len(), BYTE_LENGTH);
+pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<(), Error> {
+    ensure!(trits.len() == HASH_LENGTH, "Trit slice should have length {}, but had length: {}", HASH_LENGTH, trits.len());
+    ensure!(bytes.len() == BYTE_LENGTH, "Byte slice should have length {}, but had length: {}", BYTE_LENGTH, bytes.len());
 
     let mut base = [0; INT_LENGTH];
 
@@ -160,11 +164,12 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) {
         out[i * 4 + 3] = (base[INT_LENGTH - 1 - i] & 0x0000_00FF) as u8;
     }
     bytes.copy_from_slice(&out);
+    Ok(())
 }
 
-pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) {
-    assert_eq!(bytes.len(), BYTE_LENGTH);
-    assert_eq!(trits.len(), HASH_LENGTH);
+pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) -> Result<(), Error> {
+    ensure!(trits.len() == HASH_LENGTH, "Trit slice should have length {}, but had length: {}", HASH_LENGTH, trits.len());
+    ensure!(bytes.len() == BYTE_LENGTH, "Byte slice should have length {}, but had length: {}", BYTE_LENGTH, bytes.len());
 
     let mut base = vec![0; INT_LENGTH];
     trits[HASH_LENGTH - 1] = 0;
@@ -213,6 +218,7 @@ pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) {
             *v = -*v;
         }
     }
+    Ok(())
 }
 
 fn bigint_not(base: &mut [u32]) {
@@ -303,8 +309,8 @@ mod tests {
             "GYOMKVTSNHVJNCNFBBAH9AAMXLPLLLROQY99QN9DLSJUHDPBLCFFAIQXZA9BKMBJCYSFHFPXAHDWZFEIZ",
         );
         let mut kerl = Kerl::default();
-        kerl.absorb(&mut trits);
-        kerl.squeeze(&mut trits);
+        kerl.absorb(&mut trits).unwrap();
+        kerl.squeeze(&mut trits).unwrap();
         assert_eq!(
             trits_to_string(&trits).unwrap(),
             "OXJCNFHUNAHWDLKKPELTBFUCVW9KLXKOGWERKTJXQMXTKFKNWNNXYD9DMJJABSEIONOSJTTEVKVDQEWTW"
@@ -322,11 +328,11 @@ JQNDWRYLCA"
 .collect();
 
         let mut kerl = Kerl::default();
-        kerl.absorb(&mut trits);
+        kerl.absorb(&mut trits).unwrap();
 
         let mut out = vec![0; 486];
 
-        kerl.squeeze(&mut out);
+        kerl.squeeze(&mut out).unwrap();
         assert_eq!(
             trits_to_string(&out).unwrap(),
             "LUCKQVACOGBFYSPPVSSOXJEKNSQQRQKPZC9NXFSMQNRQCGGUL9OHVVKBDSKEQEBKXRNUJSRXYVHJTXBPD\
@@ -343,10 +349,10 @@ JQNDWRYLCA"
                 .cloned()
                 .collect();
         let mut kerl = Kerl::default();
-        kerl.absorb(&mut trits);
+        kerl.absorb(&mut trits).unwrap();
 
         let mut out = vec![0; 486];
-        kerl.squeeze(&mut out);
+        kerl.squeeze(&mut out).unwrap();
         assert_eq!(
             trits_to_string(&out).unwrap(),
             "G9JYBOMPUXHYHKSNRNMMSSZCSHOFYOYNZRSZMAAYWDYEIMVVOGKPJBVBM9TDPULSFUNMTVXRKFIDOHUXX\

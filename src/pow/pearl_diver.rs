@@ -2,6 +2,7 @@ use crossbeam;
 use num_cpus;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use failure::Error;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum State {
@@ -40,9 +41,10 @@ impl PearlDiver {
     }
 }
 
-pub fn search(transaction_trits: [i8; 8019], min_weight_magnitude: usize) -> (bool, Vec<i8>) {
+pub fn search(transaction_trits: [i8; 8019], min_weight_magnitude: usize) -> Result<(bool, Vec<i8>), Error> {
     let state = AtomicBool::new(true);
-    validate_parameters(&transaction_trits, min_weight_magnitude);
+    ensure!(transaction_trits.len() == TRANSACTION_LENGTH, "Transaction length [{}], expected [{}]", transaction_trits.len(), TRANSACTION_LENGTH);
+    ensure!(min_weight_magnitude <= CURL_HASH_LENGTH, "Min Weight Magnitude must be less than {} but it is {}", min_weight_magnitude, CURL_HASH_LENGTH);
     let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
     let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
     initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
@@ -67,7 +69,7 @@ pub fn search(transaction_trits: [i8; 8019], min_weight_magnitude: usize) -> (bo
         }
     });
     let result = (*(transaction_trits_arc.lock().unwrap())).to_vec();
-    (!state_arc.load(Ordering::SeqCst), result)
+    Ok((!state_arc.load(Ordering::SeqCst), result))
 }
 
 pub fn get_runnable(
@@ -142,11 +144,6 @@ pub fn get_runnable(
                 };
         }
     }
-}
-
-fn validate_parameters(transaction_trits: &[i8], min_weight_magnitude: usize) {
-    assert_eq!(transaction_trits.len(), TRANSACTION_LENGTH);
-    assert!(min_weight_magnitude <= CURL_HASH_LENGTH);
 }
 
 fn copy(src_low: &[u64], src_high: &[u64], dest_low: &mut [u64], dest_high: &mut [u64]) {
@@ -292,11 +289,11 @@ mod tests {
         let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
         let mut trits = [0; 8019];
         trits.copy_from_slice(&vec);
-        let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE);
+        let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
         let mut hash_trits = [0; HASH_SIZE];
         curl.reset();
-        curl.absorb(&t);
-        curl.squeeze(&mut hash_trits);
+        curl.absorb(&t).unwrap();
+        curl.squeeze(&mut hash_trits).unwrap();
         for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
             assert_eq!(hash_trits[j], 0);
         }
@@ -311,11 +308,11 @@ mod tests {
             let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
             let mut trits = [0; 8019];
             trits.copy_from_slice(&vec);
-            let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE);
+            let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
             let mut hash_trits = [0; HASH_SIZE];
             curl.reset();
-            curl.absorb(&t);
-            curl.squeeze(&mut hash_trits);
+            curl.absorb(&t).unwrap();
+            curl.squeeze(&mut hash_trits).unwrap();
             for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
                 assert_eq!(hash_trits[j], 0);
             }

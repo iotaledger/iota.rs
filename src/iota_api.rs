@@ -31,14 +31,14 @@ impl API {
         let mut all_addresses: Vec<String> = Vec::new();
         if total != 0 {
             for i in 0..index + total {
-                all_addresses.push(api_utils::new_address(seed, security, i, checksum));
+                all_addresses.push(api_utils::new_address(seed, security, i, checksum)?);
             }
             return Ok((all_addresses, stopwatch.elapsed_time()));
         }
 
         let mut i = index;
         loop {
-            let new_address = api_utils::new_address(seed, security, i, checksum);
+            let new_address = api_utils::new_address(seed, security, i, checksum)?;
             let resp = iri_api::find_transactions(
                 self.uri,
                 None,
@@ -112,7 +112,7 @@ pub fn initiate_transfer(
     let mut signature_fragments: Vec<String> = Vec::new();
     let mut tag = "".to_string();
     for transfer in transfers.iter_mut() {
-        if checksum::is_valid_checksum(transfer.address()) {
+        if checksum::is_valid_checksum(transfer.address())? {
             *transfer.address_mut() = checksum::remove_checksum(transfer.address());
         }
 
@@ -173,7 +173,7 @@ pub fn initiate_transfer(
             bundle.add_entry(1, remainder_address, remainder, &tag, timestamp);
         }
 
-        bundle.finalize();
+        bundle.finalize()?;
         bundle.add_trytes(&signature_fragments);
         return Ok(bundle.bundle().to_vec());
     }

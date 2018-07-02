@@ -5,6 +5,8 @@ use crate::utils::{converter, trit_adder};
 use serde_json;
 use std::fmt;
 
+use failure::Error;
+
 const EMPTY_HASH: &str =
     "999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
@@ -80,7 +82,7 @@ impl Bundle {
         }
     }
 
-    pub fn finalize(&mut self) {
+    pub fn finalize(&mut self) -> Result<(), Error> {
         let mut valid_bundle = false;
         let mut kerl = Kerl::default();
         while !valid_bundle {
@@ -100,10 +102,10 @@ impl Bundle {
                         + &converter::trytes(&current_index_trits)
                         + &converter::trytes(&last_index_trits)),
                 );
-                kerl.absorb(&bundle_essence);
+                kerl.absorb(&bundle_essence)?;
             }
             let mut hash = [0; HASH_LENGTH];
-            kerl.squeeze(&mut hash);
+            kerl.squeeze(&mut hash)?;
             let hash_trytes = converter::trytes(&hash);
             for bundle in &mut self.bundle {
                 *bundle.bundle_mut() = Some(hash_trytes.clone());
@@ -121,6 +123,7 @@ impl Bundle {
                 valid_bundle = true;
             }
         }
+        Ok(())
     }
 
     pub fn normalized_bundle(bundle_hash: &str) -> [i8; 81] {

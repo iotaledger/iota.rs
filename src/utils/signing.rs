@@ -4,10 +4,11 @@ use super::input_validator;
 use crate::model::Bundle;
 use crate::pow::Kerl;
 use crate::pow::{Sponge, HASH_LENGTH};
+use failure::Error;
 
 const KEY_LENGTH: usize = 6561;
 
-pub fn key(in_seed: &[i8], index: usize, security: usize) -> Vec<i8> {
+pub fn key(in_seed: &[i8], index: usize, security: usize) -> Result<Vec<i8>, Error> {
     if security < 1 {
         panic!(constants::INVALID_SECURITY_LEVEL_INPUT_ERROR);
     }
@@ -24,10 +25,10 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Vec<i8> {
     }
     let mut curl = Kerl::default();
     curl.reset();
-    curl.absorb(&seed);
-    curl.squeeze(&mut seed);
+    curl.absorb(&seed)?;
+    curl.squeeze(&mut seed)?;
     curl.reset();
-    curl.absorb(&seed);
+    curl.absorb(&seed)?;
 
     let mut key = vec![0; (security * HASH_LENGTH * 27) as usize];
     let mut buffer = vec![0; seed.len()];
@@ -36,16 +37,16 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Vec<i8> {
     let mut tmp_sec = security;
     while tmp_sec > 0 {
         for _i in 0..27 {
-            curl.squeeze(&mut buffer);
+            curl.squeeze(&mut buffer)?;
             key[offset..offset+HASH_LENGTH].copy_from_slice(&buffer[0..HASH_LENGTH]);
             offset += HASH_LENGTH;
         }
         tmp_sec -= 1;
     }
-    key
+    Ok(key)
 }
 
-pub fn signature_fragment(normalized_bundle_fragment: &[i8], key_fragment: &[i8]) -> Vec<i8> {
+pub fn signature_fragment(normalized_bundle_fragment: &[i8], key_fragment: &[i8]) -> Result<Vec<i8>, Error> {
     let mut signature_fragment = key_fragment.to_owned();
     let mut curl = Kerl::default();
     for (i, fragment) in normalized_bundle_fragment.iter().enumerate().take(27) {
@@ -53,24 +54,24 @@ pub fn signature_fragment(normalized_bundle_fragment: &[i8], key_fragment: &[i8]
         while j < 13 - fragment {
             curl.reset();
             let offset = i * HASH_LENGTH;
-            curl.absorb(&signature_fragment[offset..offset + HASH_LENGTH]);
-            curl.squeeze(&mut signature_fragment[offset..offset + HASH_LENGTH]);
+            curl.absorb(&signature_fragment[offset..offset + HASH_LENGTH])?;
+            curl.squeeze(&mut signature_fragment[offset..offset + HASH_LENGTH])?;
             j += 1;
         }
     }
-    signature_fragment
+    Ok(signature_fragment)
 }
 
-pub fn address(digests: &[i8]) -> [i8; HASH_LENGTH] {
+pub fn address(digests: &[i8]) -> Result<[i8; HASH_LENGTH], Error> {
     let mut address = [0; HASH_LENGTH];
     let mut curl = Kerl::default();
     curl.reset();
-    curl.absorb(digests);
-    curl.squeeze(&mut address);
-    address
+    curl.absorb(digests)?;
+    curl.squeeze(&mut address)?;
+    Ok(address)
 }
 
-pub fn digests(key: &[i8]) -> Vec<i8> {
+pub fn digests(key: &[i8]) -> Result<Vec<i8>, Error> {
     let security = (key.len() as f64 / KEY_LENGTH as f64).floor() as usize;
     let mut digests = vec![0; security * HASH_LENGTH];
     let mut key_fragment = [0; KEY_LENGTH];
@@ -82,19 +83,19 @@ pub fn digests(key: &[i8]) -> Vec<i8> {
             for _k in 0..26 {
                 curl.reset();
                 let offset = j * HASH_LENGTH;
-                curl.absorb(&key_fragment[offset..offset + HASH_LENGTH]);
-                curl.squeeze(&mut key_fragment[offset..offset + HASH_LENGTH]);
+                curl.absorb(&key_fragment[offset..offset + HASH_LENGTH])?;
+                curl.squeeze(&mut key_fragment[offset..offset + HASH_LENGTH])?;
             }
         }
         curl.reset();
-        curl.absorb(&key_fragment);
+        curl.absorb(&key_fragment)?;
         let offset = i * HASH_LENGTH;
-        curl.squeeze(&mut digests[offset..offset + HASH_LENGTH]);
+        curl.squeeze(&mut digests[offset..offset + HASH_LENGTH])?;
     }
-    digests
+    Ok(digests)
 }
 
-pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> Vec<i8> {
+pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> Result<Vec<i8>, Error> {
     let mut curl = Kerl::default();
     curl.reset();
     let mut j_curl = Kerl::default();
@@ -104,17 +105,17 @@ pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> V
         let mut j = normalized_bundle_fragment[i] + 13;
         while j > 0 {
             j_curl.reset();
-            j_curl.absorb(&buffer);
-            j_curl.squeeze(&mut buffer);
+            j_curl.absorb(&buffer)?;
+            j_curl.squeeze(&mut buffer)?;
             j -= 1;
         }
-        curl.absorb(&buffer);
+        curl.absorb(&buffer)?;
     }
-    curl.squeeze(&mut buffer);
-    buffer
+    curl.squeeze(&mut buffer)?;
+    Ok(buffer)
 }
 
-pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> bool {
+pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> Result<bool, Error> {
     let mut bundle_hash = String::new();
     let mut signature_fragments: Vec<String> = Vec::new();
     for transaction in signed_bundle.bundle() {
@@ -134,7 +135,7 @@ pub fn validate_signatures(
     expected_address: &str,
     signature_fragments: &[String],
     bundle_hash: &str,
-) -> bool {
+) -> Result<bool, Error> {
     let mut normalized_bundle_fragments = [[0; 27]; 3];
     let normalized_bundle_hash = Bundle::normalized_bundle(bundle_hash);
 
@@ -148,12 +149,12 @@ pub fn validate_signatures(
         let digest_buffer = digest(
             &normalized_bundle_fragments[i % 3],
             &converter::trits_from_string(&signature_fragments[i]),
-        );
+        )?;
         let offset = i * HASH_LENGTH;
         digests[offset..offset + HASH_LENGTH].copy_from_slice(&digest_buffer[0..HASH_LENGTH]);
     }
-    let address = converter::trytes(&address(&digests));
-    expected_address == address
+    let address = converter::trytes(&address(&digests)?);
+    Ok(expected_address == address)
 }
 
 #[cfg(test)]
@@ -176,19 +177,19 @@ mod tests {
             "EV9QRJFJZVFNLYUFXWKXMCRRPNAZYQVEYB9VEPUHQNXJCWKZFVUCTQJFCUAMXAHMMIUQUJDG9UGGQBPIY";
 
         for i in 1..5 {
-            let key1 = key(&converter::trits_from_string(seed), 0, i);
+            let key1 = key(&converter::trits_from_string(seed), 0, i).unwrap();
             assert_eq!(KEY_LENGTH * i, key1.len());
             let key2 = key(
                 &converter::trits_from_string(&(seed.to_string() + seed)),
                 0,
                 i,
-            );
+            ).unwrap();
             assert_eq!(KEY_LENGTH * i, key2.len());
             let key3 = key(
                 &converter::trits_from_string(&(seed.to_string() + seed + seed)),
                 0,
                 i,
-            );
+            ).unwrap();
             assert_eq!(KEY_LENGTH * i, key3.len());
         }
     }
@@ -196,21 +197,21 @@ mod tests {
     #[test]
     fn test_signing() {
         let hash_to_sign = remove_checksum("LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
-        let key = key(&converter::trits_from_string(TEST_SEED), 5, 2);
+        let key = key(&converter::trits_from_string(TEST_SEED), 5, 2).unwrap();
         let normalized_hash = Bundle::normalized_bundle(&hash_to_sign);
-        let signature = signature_fragment(&normalized_hash[0..27], &key[0..6561]);
+        let signature = signature_fragment(&normalized_hash[0..27], &key[0..6561]).unwrap();
         assert_eq!(converter::trytes(&signature), SIG1);
-        let signature2 = signature_fragment(&normalized_hash[27..27 * 2], &key[6561..6561 * 2]);
+        let signature2 = signature_fragment(&normalized_hash[27..27 * 2], &key[6561..6561 * 2]).unwrap();
         assert_eq!(converter::trytes(&signature2), SIG2);
     }
 
     #[test]
     fn test_key_length() {
-        let mut test_key = key(&converter::trits_from_string(TEST_SEED), 5, 1);
+        let mut test_key = key(&converter::trits_from_string(TEST_SEED), 5, 1).unwrap();
         assert_eq!(KEY_LENGTH, test_key.len());
-        test_key = key(&converter::trits_from_string(TEST_SEED), 5, 2);
+        test_key = key(&converter::trits_from_string(TEST_SEED), 5, 2).unwrap();
         assert_eq!(KEY_LENGTH * 2, test_key.len());
-        test_key = key(&converter::trits_from_string(TEST_SEED), 5, 3);
+        test_key = key(&converter::trits_from_string(TEST_SEED), 5, 3).unwrap();
         assert_eq!(KEY_LENGTH * 3, test_key.len());
     }
 
@@ -220,6 +221,6 @@ mod tests {
             &remove_checksum(ADDR),
             &vec![SIG1.to_string(), SIG2.to_string()],
             &remove_checksum(FIRST_ADDR)
-        ));
+        ).unwrap());
     }
 }

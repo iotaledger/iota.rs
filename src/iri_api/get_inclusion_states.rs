@@ -7,8 +7,8 @@ pub fn get_inclusion_states(
     transactions: &[String],
     tips: &[String],
 ) -> Result<GetInclusionStatesResponse, Error> {
-    assert!(input_validator::is_array_of_hashes(transactions));
-    assert!(input_validator::is_array_of_hashes(tips));
+    ensure!(input_validator::is_array_of_hashes(transactions), "Provided transactions are not valid: {:?}", transactions);
+    ensure!(input_validator::is_array_of_hashes(tips), "Provided tips are not valid: {:?}", tips);
 
     let client = reqwest::Client::new();
     let mut headers = Headers::new();

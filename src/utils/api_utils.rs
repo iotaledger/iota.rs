@@ -1,16 +1,17 @@
 use super::{checksum, converter, signing};
+use failure::Error;
 
-pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> String {
-    let key = signing::key(&converter::trits_from_string(seed), index, security);
-    let digests = signing::digests(&key);
-    let address_trits = signing::address(&digests);
+pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> Result<String, Error> {
+    let key = signing::key(&converter::trits_from_string(seed), index, security)?;
+    let digests = signing::digests(&key)?;
+    let address_trits = signing::address(&digests)?;
 
     let mut address = converter::trytes(&address_trits);
 
     if checksum {
-        address = checksum::add_checksum(&address);
+        address = checksum::add_checksum(&address)?;
     }
-    address
+    Ok(address)
 }
 
 // pub fn sign_inputs_and_return(
@@ -84,33 +85,33 @@ mod tests {
 
     #[test]
     fn test_address_generation() {
-        assert_eq!(new_address(TEST_SEED, 2, 0, true), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
-        assert_eq!(new_address(TEST_SEED, 2, 5, true), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
+        assert_eq!(new_address(TEST_SEED, 2, 0, true).unwrap(), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
+        assert_eq!(new_address(TEST_SEED, 2, 5, true).unwrap(), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
 
         assert_eq!(
-            new_address(ADDR_SEED, 1, 0, false),
+            new_address(ADDR_SEED, 1, 0, false).unwrap(),
             "HIPPOUPZFMHJUQBLBVWORCNJWAOSFLHDWF9IOFEYVHPTTAAF9NIBMRKBICAPHYCDKMEEOXOYHJBMONJ9D"
         );
         assert_eq!(
-            new_address(ADDR_SEED, 2, 0, false),
+            new_address(ADDR_SEED, 2, 0, false).unwrap(),
             "BPYZABTUMEIOARZTMCDNUDAPUOFCGKNGJWUGUXUKNNBVKQARCZIXFVBZAAMDAFRS9YOIXWOTEUNSXVOG9"
         );
         assert_eq!(
-            new_address(ADDR_SEED, 3, 0, false),
+            new_address(ADDR_SEED, 3, 0, false).unwrap(),
             "BYWHJJYSHSEGVZKKYTJTYILLEYBSIDLSPXDLDZSWQ9XTTRLOSCBCQ9TKXJYQAVASYCMUCWXZHJYRGDOBW"
         );
 
         let concat = ADDR_SEED.to_string() + ADDR_SEED;
         assert_eq!(
-            new_address(&concat, 1, 0, false),
+            new_address(&concat, 1, 0, false).unwrap(),
             "VKPCVHWKSCYQNHULMPYDZTNKOQHZNPEGJVPEHPTDIUYUBFKFICDRLLSIULHCVHOHZRHJOHNASOFRWFWZC"
         );
         assert_eq!(
-            new_address(&concat, 2, 0, false),
+            new_address(&concat, 2, 0, false).unwrap(),
             "PTHVACKMXOKIERJOFSRPBWCNKVEXQ9CWUTIJGEUORSKWEDDJCBFQCCBQZLTYXQCXEDWLTMRQM9OQPUGNC"
         );
         assert_eq!(
-            new_address(&concat, 3, 0, false),
+            new_address(&concat, 3, 0, false).unwrap(),
             "AGSAAETPMSBCDOSNXFXIOBAE9MVEJCSWVP9PAULQ9VABOTWLDMXID9MXCCWQIWRTJBASWPIJDFUC9ISWD"
         );
     }

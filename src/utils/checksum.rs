@@ -4,11 +4,13 @@ use super::input_validator;
 use crate::pow::Kerl;
 use crate::pow::{Sponge, HASH_LENGTH};
 
-pub fn add_checksum(address: &str) -> String {
+use failure::Error;
+
+pub fn add_checksum(address: &str) -> Result<String, Error> {
     assert!(input_validator::check_address(address));
     let mut address_with_checksum = address.to_string();
-    address_with_checksum += &calculate_checksum(address);
-    address_with_checksum
+    address_with_checksum += &calculate_checksum(address)?;
+    Ok(address_with_checksum)
 }
 
 pub fn remove_checksum(address: &str) -> String {
@@ -20,11 +22,11 @@ pub fn remove_checksum(address: &str) -> String {
     panic!(constants::INVALID_ADDRESSES_INPUT_ERROR);
 }
 
-pub fn is_valid_checksum(address: &str) -> bool {
+pub fn is_valid_checksum(address: &str) -> Result<bool, Error> {
     let address_without_checksum = remove_checksum(address);
     let address_with_recalculated_checksum =
-        address_without_checksum.clone() + &calculate_checksum(&address_without_checksum);
-    address == address_with_recalculated_checksum
+        address_without_checksum.clone() + &calculate_checksum(&address_without_checksum)?;
+    Ok(address == address_with_recalculated_checksum)
 }
 
 fn remove_checksum_from_address(address: &str) -> String {
@@ -41,13 +43,13 @@ pub fn is_address_without_checksum(address: &str) -> bool {
         && address.len() == constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM
 }
 
-fn calculate_checksum(address: &str) -> String {
+fn calculate_checksum(address: &str) -> Result<String, Error> {
     let mut curl = Kerl::default();
-    curl.absorb(&converter::trits_from_string(address));
+    curl.absorb(&converter::trits_from_string(address))?;
     let mut checksum_trits = [0; HASH_LENGTH];
-    curl.squeeze(&mut checksum_trits);
+    curl.squeeze(&mut checksum_trits)?;
     let checksum = converter::trytes(&checksum_trits);
-    checksum[72..81].to_string()
+    Ok(checksum[72..81].to_string())
 }
 
 #[cfg(test)]
@@ -60,7 +62,7 @@ mod tests {
     #[test]
     fn test_add_checksum() {
         assert_eq!(
-            add_checksum(TEST_ADDRESS_WITHOUT_CHECKSUM),
+            add_checksum(TEST_ADDRESS_WITHOUT_CHECKSUM).unwrap(),
             TEST_ADDRESS_WITH_CHECKSUM
         );
     }
@@ -75,6 +77,6 @@ mod tests {
 
     #[test]
     fn test_is_valid_checksum() {
-        assert!(is_valid_checksum(TEST_ADDRESS_WITH_CHECKSUM));
+        assert!(is_valid_checksum(TEST_ADDRESS_WITH_CHECKSUM).unwrap());
     }
 }

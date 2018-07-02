@@ -1,5 +1,6 @@
 use crate::pow::{Kerl, Sponge, HASH_LENGTH};
 use crate::utils::converter;
+use failure::Error;
 
 #[derive(Default, Clone)]
 pub struct Address {
@@ -7,26 +8,27 @@ pub struct Address {
 }
 
 impl Address {
-    pub fn new(digest: Option<&str>) -> Address {
+    pub fn new(digest: Option<&str>) -> Result<Address, Error> {
         let mut kerl = Kerl::default();
         if let Some(d) = digest {
-            kerl.absorb(&converter::trits_from_string(d));
+            kerl.absorb(&converter::trits_from_string(d))?;
         }
-        Address { kerl }
+        Ok(Address { kerl })
     }
 
-    pub fn absorb(&mut self, digests: &[String]) {
+    pub fn absorb(&mut self, digests: &[String]) -> Result<(), Error> {
         for digest in digests {
-            self.kerl.absorb(&converter::trits_from_string(digest));
+            self.kerl.absorb(&converter::trits_from_string(digest))?;
         }
+        Ok(())
     }
 
-    pub fn finalize(&mut self, digest: Option<&str>) -> String {
+    pub fn finalize(&mut self, digest: Option<&str>) -> Result<String, Error> {
         if let Some(d) = digest {
-            self.kerl.absorb(&converter::trits_from_string(d));
+            self.kerl.absorb(&converter::trits_from_string(d))?;
         }
         let mut address_trits = [0; HASH_LENGTH];
-        self.kerl.squeeze(&mut address_trits);
-        converter::trytes(&address_trits)
+        self.kerl.squeeze(&mut address_trits)?;
+        Ok(converter::trytes(&address_trits))
     }
 }

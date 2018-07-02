@@ -5,7 +5,7 @@ extern crate num_cpus;
 extern crate rand;
 
 use criterion::Criterion;
-
+use failure::Error;
 use rand::{thread_rng, Rng};
 
 use iota_lib_rs::pow::search;
@@ -13,7 +13,7 @@ use iota_lib_rs::pow::search;
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
 fn basic_pow(trits: [i8; 8019]) {
-    search(trits, MIN_WEIGHT_MAGNITUDE);
+    search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
