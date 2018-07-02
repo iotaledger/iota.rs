@@ -1,11 +1,11 @@
 use crossbeam;
 use failure::Error;
 use num_cpus;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum State {
+    NotStarted,
     Running,
     Cancelled,
     Completed,
@@ -20,13 +20,13 @@ const LOW_BITS: u64 =
     0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 
 pub struct PearlDiver {
-    running: AtomicBool,
+    running: Arc<RwLock<State>>,
 }
 
 impl Default for PearlDiver {
     fn default() -> Self {
         PearlDiver {
-            running: AtomicBool::new(false),
+            running: Arc::new(RwLock::new(State::NotStarted)),
         }
     }
 }
@@ -37,56 +37,61 @@ impl PearlDiver {
     }
 
     pub fn cancel(&mut self) {
-        self.running.store(false, Ordering::SeqCst);
+        *self.running.write().unwrap() = State::Cancelled;
+    }
+
+    pub fn search(
+        &mut self,
+        transaction_trits: [i8; 8019],
+        min_weight_magnitude: usize,
+    ) -> Result<Vec<i8>, Error> {
+        ensure!(
+            transaction_trits.len() == TRANSACTION_LENGTH,
+            "Transaction length [{}], expected [{}]",
+            transaction_trits.len(),
+            TRANSACTION_LENGTH
+        );
+        ensure!(
+            min_weight_magnitude <= CURL_HASH_LENGTH,
+            "Min Weight Magnitude must be less than {} but it is {}",
+            min_weight_magnitude,
+            CURL_HASH_LENGTH
+        );
+        *self.running.write().unwrap() = State::Running;
+
+        let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
+        let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
+        initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
+        let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
+        crossbeam::scope(|scope| {
+            for i in (0..num_cpus::get()).rev() {
+                let mut mid_state_copy_low = mid_state_low.to_vec();
+                let mut mid_state_copy_high = mid_state_high.to_vec();
+                let local_state_arc = Arc::clone(&self.running);
+                let local_transaction_trits_arc = Arc::clone(&transaction_trits_arc);
+                scope.spawn(move || {
+                    get_runnable(
+                        &local_state_arc,
+                        i,
+                        &local_transaction_trits_arc,
+                        min_weight_magnitude,
+                        &mut mid_state_copy_low,
+                        &mut mid_state_copy_high,
+                    );
+                });
+            }
+        });
+        let result = (*(transaction_trits_arc.lock().unwrap())).to_vec();
+        ensure!(
+            *self.running.read().unwrap() == State::Completed,
+            "Something went wrong."
+        );
+        Ok(result)
     }
 }
 
-pub fn search(
-    transaction_trits: [i8; 8019],
-    min_weight_magnitude: usize,
-) -> Result<(bool, Vec<i8>), Error> {
-    let state = AtomicBool::new(true);
-    ensure!(
-        transaction_trits.len() == TRANSACTION_LENGTH,
-        "Transaction length [{}], expected [{}]",
-        transaction_trits.len(),
-        TRANSACTION_LENGTH
-    );
-    ensure!(
-        min_weight_magnitude <= CURL_HASH_LENGTH,
-        "Min Weight Magnitude must be less than {} but it is {}",
-        min_weight_magnitude,
-        CURL_HASH_LENGTH
-    );
-    let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
-    let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
-    initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
-    let state_arc = Arc::new(state);
-    let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
-    crossbeam::scope(|scope| {
-        for i in (0..num_cpus::get()).rev() {
-            let mut mid_state_copy_low = mid_state_low.to_vec();
-            let mut mid_state_copy_high = mid_state_high.to_vec();
-            let local_state_arc = Arc::clone(&state_arc);
-            let local_transaction_trits_arc = Arc::clone(&transaction_trits_arc);
-            scope.spawn(move || {
-                get_runnable(
-                    &local_state_arc,
-                    i,
-                    &local_transaction_trits_arc,
-                    min_weight_magnitude,
-                    &mut mid_state_copy_low,
-                    &mut mid_state_copy_high,
-                );
-            });
-        }
-    });
-    let result = (*(transaction_trits_arc.lock().unwrap())).to_vec();
-    Ok((!state_arc.load(Ordering::SeqCst), result))
-}
-
 pub fn get_runnable(
-    state: &Arc<AtomicBool>,
+    state: &Arc<RwLock<State>>,
     thread_index: usize,
     transaction_trits: &Arc<Mutex<[i8; 8019]>>,
     min_weight_magnitude: usize,
@@ -110,7 +115,7 @@ pub fn get_runnable(
     let mask_start_index = CURL_HASH_LENGTH - min_weight_magnitude;
     let mut mask = 0;
 
-    while mask == 0 && state.load(Ordering::SeqCst) {
+    while mask == 0 && *state.read().unwrap() == State::Running {
         increment(
             mid_state_copy_low,
             mid_state_copy_high,
@@ -139,8 +144,8 @@ pub fn get_runnable(
         }
     }
 
-    if mask != 0 && state.load(Ordering::SeqCst) {
-        state.store(false, Ordering::SeqCst);
+    if mask != 0 && *state.read().unwrap() == State::Running {
+        *state.write().unwrap() = State::Completed;
         let mut out_mask = 1;
         while (out_mask & mask) == 0 {
             out_mask <<= 1;
@@ -301,7 +306,8 @@ mod tests {
         let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
         let mut trits = [0; 8019];
         trits.copy_from_slice(&vec);
-        let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
+        let mut pearl_diver = PearlDiver::default();
+        let t = pearl_diver.search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
         let mut hash_trits = [0; HASH_SIZE];
         curl.reset();
         curl.absorb(&t).unwrap();
@@ -320,7 +326,8 @@ mod tests {
             let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
             let mut trits = [0; 8019];
             trits.copy_from_slice(&vec);
-            let (_b, t) = search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
+            let mut pearl_diver = PearlDiver::default();
+            let t = pearl_diver.search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
             let mut hash_trits = [0; HASH_SIZE];
             curl.reset();
             curl.absorb(&t).unwrap();
