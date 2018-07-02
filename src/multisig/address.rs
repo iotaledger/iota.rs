@@ -1,4 +1,4 @@
-use crate::pow::{Kerl, Sponge, HASH_LENGTH};
+use crate::crypto::{Kerl, Sponge, HASH_LENGTH};
 use crate::utils::converter;
 use failure::Error;
 

@@ -60,7 +60,7 @@ pub fn to_trytes(input: &str) -> Result<String, Error> {
 }
 
 pub fn to_string(input_trytes: &str) -> Result<String, Error> {
-    ensure!(input_trytes.len() % 2 == 0, "Invalid input tryte length.");
+    ensure!(input_trytes.len() % 2 == 0, constants::INVALID_TRYTES_INPUT_ERROR);
     let mut tmp = String::new();
     let chars: Vec<char> = input_trytes.chars().collect();
     for letters in chars.chunks(2) {

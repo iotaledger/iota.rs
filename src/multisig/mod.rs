@@ -2,17 +2,16 @@ mod address;
 
 pub use self::address::*;
 
-use crate::utils::checksum;
+use crate::utils;
 use crate::utils::constants;
 use crate::utils::converter;
 use crate::utils::input_validator;
 use crate::utils::right_pad;
-use crate::utils::signing;
 
 use crate::model::Bundle;
 use crate::model::Transaction;
 use crate::model::Transfer;
-use crate::pow::{Curl, Kerl, Sponge, HASH_LENGTH, STATE_LENGTH};
+use crate::crypto::{Curl, Kerl, Sponge, signing, HASH_LENGTH, STATE_LENGTH};
 
 use crate::iri_api;
 
@@ -54,7 +53,7 @@ pub fn initiate_transfer(
     transfers: &mut [Transfer],
 ) -> Result<Vec<Transaction>, Error> {
     for transfer in transfers.iter_mut() {
-        *transfer.address_mut() = checksum::remove_checksum(transfer.address());
+        *transfer.address_mut() = utils::remove_checksum(transfer.address());
     }
     ensure!(
         input_validator::is_address(address),

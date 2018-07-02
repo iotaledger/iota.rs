@@ -3,10 +3,10 @@ use super::model::Bundle;
 use super::model::Transaction;
 use super::model::Transfer;
 use super::utils::api_utils;
-use super::utils::checksum;
+use super::utils;
 use super::utils::constants;
 use super::utils::input_validator;
-use super::utils::stopwatch::StopWatch;
+use super::utils::StopWatch;
 use chrono::prelude::*;
 use chrono::DateTime;
 use failure::Error;
@@ -112,8 +112,8 @@ pub fn initiate_transfer(
     let mut signature_fragments: Vec<String> = Vec::new();
     let mut tag = "".to_string();
     for transfer in transfers.iter_mut() {
-        if checksum::is_valid_checksum(transfer.address())? {
-            *transfer.address_mut() = checksum::remove_checksum(transfer.address());
+        if utils::is_valid_checksum(transfer.address())? {
+            *transfer.address_mut() = utils::remove_checksum(transfer.address());
         }
 
         let mut signature_message_length = 1;

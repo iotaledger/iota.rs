@@ -15,5 +15,5 @@ pub mod iota_api;
 pub mod iri_api;
 pub mod model;
 pub mod multisig;
-pub mod pow;
+pub mod crypto;
 pub mod utils;

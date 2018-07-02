@@ -6,12 +6,13 @@ This library currently requires nightly rust to build.
 
 Things that are done:
 
-- [x] PoW
+- [x] Crypto
     - [x] Curl
     - [x] Kerl
     - [x] PearlDiver
     - [x] ISS
     - [x] HMAC
+    - [x] Signing
 - [x] Model
     - [x] Bundle
     - [x] Input
@@ -30,7 +31,6 @@ Things that are done:
     - [x] IotaUnits
     - [x] Multisig
     - [x] SeedRandomGenerator
-    - [x] Signing
     - [x] StopWatch
     - [x] TrytesConverter
 - [ ] API

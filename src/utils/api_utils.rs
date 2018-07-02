@@ -1,4 +1,5 @@
-use super::{checksum, converter, signing};
+use super::{checksum, converter};
+use crate::crypto::signing;
 use failure::Error;
 
 pub fn new_address(
