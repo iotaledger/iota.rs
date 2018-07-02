@@ -16,7 +16,7 @@ Things that are done:
     - [x] Signature
     - [x] Transaction
     - [x] Transfer
-- [ ] Utils
+- [x] Utils
     - [x] Checksum
     - [x] Constants
     - [x] Converter
@@ -24,7 +24,7 @@ Things that are done:
     - [x] IotaAPIUtils
     - [x] IotaUnitConversion
     - [x] IotaUnits
-    - [ ] Multisig
+    - [x] Multisig
     - [x] SeedRandomGenerator
     - [x] Signing
     - [x] StopWatch
