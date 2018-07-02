@@ -1,8 +1,7 @@
 use super::iri_api;
-use super::model::bundle::Bundle;
-use super::model::transaction::Transaction;
-use super::model::transfer::Transfer;
-use super::pow::curl::Curl;
+use super::model::Bundle;
+use super::model::Transaction;
+use super::model::Transfer;
 use super::utils::api_utils;
 use super::utils::checksum;
 use super::utils::constants;

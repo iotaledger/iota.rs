@@ -1,4 +1,4 @@
-use crate::model::neighbor::Neighbor;
+use crate::model::Neighbor;
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
 

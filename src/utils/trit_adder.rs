@@ -35,7 +35,7 @@ fn full_add(a: i8, b: i8, c: i8) -> (i8, i8) {
     let c_out = any(c_a, c_b);
     let s_out = sum(s_a, c);
 
-    return (s_out, c_out);
+    (s_out, c_out)
 }
 
 pub fn add(a: &[i8], b: &[i8]) -> Vec<i8> {
@@ -45,16 +45,8 @@ pub fn add(a: &[i8], b: &[i8]) -> Vec<i8> {
     let mut b_i: i8;
 
     for i in 0..out.len() {
-        a_i = if i < a.len() {
-            a[i]
-        } else {
-            0
-        };
-        b_i = if i < b.len() {
-            b[i]
-        } else {
-            0
-        };
+        a_i = if i < a.len() { a[i] } else { 0 };
+        b_i = if i < b.len() { b[i] } else { 0 };
         let f_a = full_add(a_i, b_i, carry);
         out[i] = f_a.0;
         carry = f_a.1;

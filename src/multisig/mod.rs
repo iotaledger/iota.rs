@@ -9,12 +9,10 @@ use crate::utils::input_validator;
 use crate::utils::right_pad;
 use crate::utils::signing;
 
-use crate::model::bundle::{self, Bundle};
-use crate::model::transaction::Transaction;
-use crate::model::transfer::Transfer;
-use crate::pow::curl::{Curl, STATE_LENGTH};
-use crate::pow::kerl::Kerl;
-use crate::pow::{Sponge, HASH_LENGTH};
+use crate::model::Bundle;
+use crate::model::Transaction;
+use crate::model::Transfer;
+use crate::pow::{Curl, Kerl, Sponge, HASH_LENGTH, STATE_LENGTH};
 
 use crate::iri_api;
 
@@ -177,7 +175,7 @@ pub fn add_signature(bundle_to_sign: &mut Bundle, input_address: &str, key: &str
                 let bundle_hash = bundle_to_sign.bundle()[i].bundle().unwrap_or_default();
                 let first_fragment = key[0..6561].to_vec();
                 let mut normalized_bundle_fragments = [[0; 27]; 3];
-                let normalized_bundle_hash = bundle::normalized_bundle(&bundle_hash);
+                let normalized_bundle_hash = Bundle::normalized_bundle(&bundle_hash);
 
                 for (k, fragment) in normalized_bundle_fragments.iter_mut().enumerate().take(3) {
                     fragment.copy_from_slice(&normalized_bundle_hash[k * 27..(k + 1) * 27]);

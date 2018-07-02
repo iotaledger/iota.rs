@@ -1,5 +1,4 @@
-use crate::pow::kerl::Kerl;
-use crate::pow::{Sponge, HASH_LENGTH};
+use crate::pow::{Kerl, Sponge, HASH_LENGTH};
 use crate::utils::converter;
 
 #[derive(Default, Clone)]

@@ -156,7 +156,7 @@ const PLEN: usize = 25;
 ///
 /// ```rust
 /// extern crate iota_lib_rs;
-/// use iota_lib_rs::pow::keccak::Keccak;
+/// use iota_lib_rs::pow::Keccak;
 ///
 /// fn main() {
 ///     let mut sha3 = Keccak::new_sha3_256();

@@ -1,9 +1,17 @@
 #![allow(dead_code)]
 
-pub mod bundle;
-pub mod input;
-pub mod inputs;
-pub mod neighbor;
-pub mod signature;
-pub mod transaction;
-pub mod transfer;
+mod bundle;
+mod input;
+mod inputs;
+mod neighbor;
+mod signature;
+mod transaction;
+mod transfer;
+
+pub use self::bundle::*;
+pub use self::input::*;
+pub use self::inputs::*;
+pub use self::neighbor::*;
+pub use self::signature::*;
+pub use self::transaction::*;
+pub use self::transfer::*;

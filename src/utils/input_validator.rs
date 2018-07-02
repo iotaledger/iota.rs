@@ -1,5 +1,5 @@
 use super::constants;
-use crate::model::transfer::Transfer;
+use crate::model::Transfer;
 use regex::Regex;
 
 pub fn is_address(address: &str) -> bool {

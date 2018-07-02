@@ -1,13 +1,16 @@
 #![allow(dead_code)]
 
-pub mod curl;
-pub mod iss;
-pub mod keccak;
-pub mod kerl;
-pub mod pearl_diver;
+mod curl;
+mod iss;
+mod keccak;
+mod kerl;
+mod pearl_diver;
 
-use crate::pow::curl::Curl;
-use crate::pow::kerl::Kerl;
+pub use self::curl::*;
+pub use self::iss::*;
+pub use self::keccak::Keccak;
+pub use self::kerl::*;
+pub use self::pearl_diver::*;
 
 use std::fmt;
 

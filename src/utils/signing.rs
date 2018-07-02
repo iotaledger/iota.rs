@@ -2,8 +2,8 @@ use super::array_copy;
 use super::constants;
 use super::converter;
 use super::input_validator;
-use crate::model::bundle::{self, Bundle};
-use crate::pow::kerl::Kerl;
+use crate::model::Bundle;
+use crate::pow::Kerl;
 use crate::pow::{Sponge, HASH_LENGTH};
 
 const KEY_LENGTH: usize = 6561;
@@ -136,7 +136,7 @@ pub fn validate_signatures(
     bundle_hash: &str,
 ) -> bool {
     let mut normalized_bundle_fragments = [[0; 27]; 3];
-    let normalized_bundle_hash = bundle::normalized_bundle(bundle_hash);
+    let normalized_bundle_hash = Bundle::normalized_bundle(bundle_hash);
 
     for i in 0..3 {
         normalized_bundle_fragments[i]
@@ -164,7 +164,7 @@ pub fn validate_signatures(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::bundle;
+    use crate::model::Bundle;
     use crate::utils::checksum::remove_checksum;
     use crate::utils::converter;
 
@@ -202,7 +202,7 @@ mod tests {
     fn test_signing() {
         let hash_to_sign = remove_checksum("LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
         let key = key(&converter::trits_from_string(TEST_SEED), 5, 2);
-        let normalized_hash = bundle::normalized_bundle(&hash_to_sign);
+        let normalized_hash = Bundle::normalized_bundle(&hash_to_sign);
         let signature = signature_fragment(&normalized_hash[0..27], &key[0..6561]);
         assert_eq!(converter::trytes(&signature), SIG1);
         let signature2 = signature_fragment(&normalized_hash[27..27 * 2], &key[6561..6561 * 2]);
