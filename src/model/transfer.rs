@@ -7,9 +7,10 @@ pub struct Transfer {
     address: String,
     hash: Option<String>,
     persistence: Option<bool>,
-    value: u64,
+    value: i64,
     message: String,
     tag: Option<String>,
+    obsolete_tag: Option<String>,
 }
 
 impl fmt::Display for Transfer {
@@ -55,11 +56,11 @@ impl Transfer {
         &mut self.timestamp
     }
 
-    pub fn value(&self) -> &u64 {
+    pub fn value(&self) -> &i64 {
         &self.value
     }
 
-    pub fn value_mut(&mut self) -> &mut u64 {
+    pub fn value_mut(&mut self) -> &mut i64 {
         &mut self.value
     }
 
@@ -77,5 +78,13 @@ impl Transfer {
 
     pub fn tag_mut(&mut self) -> &mut Option<String> {
         &mut self.tag
+    }
+
+    pub fn obsolete_tag(&self) -> Option<String> {
+        self.obsolete_tag.clone()
+    }
+
+    pub fn obsolete_tag_mut(&mut self) -> &mut Option<String> {
+        &mut self.obsolete_tag
     }
 }

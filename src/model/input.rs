@@ -4,7 +4,7 @@ use std::fmt;
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Input {
     address: String,
-    balance: u64,
+    balance: i64,
     key_index: usize,
     security: usize,
 }
@@ -20,7 +20,7 @@ impl fmt::Display for Input {
 }
 
 impl Input {
-    pub fn new(address: String, balance: u64, key_index: usize, security: usize) -> Input {
+    pub fn new(address: String, balance: i64, key_index: usize, security: usize) -> Input {
         Input {
             address,
             balance,
@@ -37,11 +37,11 @@ impl Input {
         &mut self.address
     }
 
-    pub fn balance(&self) -> u64 {
+    pub fn balance(&self) -> i64 {
         self.balance
     }
 
-    pub fn balance_mut(&mut self) -> &mut u64 {
+    pub fn balance_mut(&mut self) -> &mut i64 {
         &mut self.balance
     }
 

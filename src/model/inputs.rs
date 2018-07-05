@@ -27,6 +27,10 @@ impl Inputs {
         &mut self.inputs_list
     }
 
+    pub fn add(&mut self, input: Input) {
+        self.inputs_list.push(input);
+    }
+
     pub fn total_balance(&self) -> i64 {
         self.total_balance
     }

@@ -1,5 +1,5 @@
 use super::constants;
-use crate::model::Transfer;
+use crate::model::*;
 use regex::Regex;
 
 pub fn is_address(address: &str) -> bool {
@@ -98,6 +98,56 @@ pub fn is_transfers_collection_valid(transfers: &[Transfer]) -> bool {
         }
     }
     true
+}
+
+pub fn is_slice_of_transactions(bundle: &[Transaction]) -> bool {
+    if bundle.is_empty() {
+        return false;
+    }
+
+    let mut valid = true;
+    for tx in bundle {
+        if tx.hash() == None {
+            return false;
+        }
+        valid &= is_hash(&tx.hash().unwrap_or_default());
+        if tx.signature_fragments() == None {
+            return false;
+        }
+        valid &= is_trytes(&tx.signature_fragments().unwrap_or_default());
+        if tx.address() == None {
+            return false;
+        }
+        valid &= is_hash(&tx.address().unwrap_or_default());
+        if tx.tag() == None {
+            return false;
+        }
+        valid &= is_trytes(&tx.tag().unwrap_or_default());
+        if tx.obsolete_tag() == None {
+            return false;
+        }
+        valid &= is_trytes(&tx.obsolete_tag().unwrap_or_default());
+        if tx.bundle() == None {
+            return false;
+        }
+        valid &= is_hash(&tx.bundle().unwrap_or_default());
+        if tx.trunk_transaction() == None {
+            return false;
+        }
+        valid &= is_hash(&tx.trunk_transaction().unwrap_or_default());
+        if tx.branch_transaction() == None {
+            return false;
+        }
+        valid &= is_hash(&tx.branch_transaction().unwrap_or_default());
+        if tx.nonce() == None {
+            return false;
+        }
+        valid &= is_trytes(&tx.nonce().unwrap_or_default());
+        if !valid {
+            return false;
+        }
+    }
+    valid
 }
 
 pub fn is_valid_seed(seed: &str) -> bool {

@@ -34,8 +34,22 @@ Things that are done:
     - [x] StopWatch
     - [x] TrytesConverter
 - [ ] API
-    - [ ] IotaAPI
-    - [x] IotaAPICommands
-    - [x] IotaAPICore
-    - [x] IotaAPIService
-    - [ ] IotaLocalPoW
+    - [x] IRI API calls and responses
+        - [x] add neighbors
+        - [x] attach_to_tangle
+        - [x] find_transactions
+        - [x] get_balances
+        - [x] broadcastTransactions
+        - [x] storeTransactions
+        - [x] get_inclusion_states
+        - [x] get_neighbors
+        - [x] get_node_info
+        - [x] get_tips
+        - [x] get_transactions_to_approve
+        - [x] get_trytes
+        - [x] remove_neighbor
+        - [x] were_addresses_spent_from
+        - [x] check_consistency
+
+    - [ ] Ease of use wrappers/helpers
+

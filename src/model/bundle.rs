@@ -63,7 +63,7 @@ impl Bundle {
     pub fn add_trytes(&mut self, signature_fragments: &[String]) {
         let empty_signature_fragment = "9".repeat(2187);
         let empty_hash = EMPTY_HASH;
-        let empty_timestamp = "9".repeat(9);
+        let empty_timestamp = 999999999;
 
         for (i, bundle) in self.bundle.iter_mut().enumerate() {
             *bundle.signature_fragments_mut() =
@@ -90,9 +90,9 @@ impl Bundle {
                 let value_trits = converter::trits_with_length(bundle.value().unwrap(), 81);
                 let timestamp_trits = converter::trits_with_length(bundle.timestamp().unwrap(), 27);
                 let current_index_trits =
-                    converter::trits_with_length(bundle.current_index().unwrap(), 27);
+                    converter::trits_with_length(bundle.current_index().unwrap() as i64, 27);
                 let last_index_trits =
-                    converter::trits_with_length(bundle.last_index().unwrap(), 27);
+                    converter::trits_with_length(bundle.last_index().unwrap() as i64, 27);
                 let bundle_essence = converter::trits_from_string(
                     &(bundle.address().unwrap_or_default().to_string()
                         + &converter::trytes(&value_trits)

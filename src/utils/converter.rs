@@ -1,4 +1,5 @@
 use super::constants;
+use failure::Error;
 
 const HIGH_INTEGER_BITS: u32 = 0xFFFF_FFFF;
 const HIGH_LONG_BITS: u64 = 0xFFFF_FFFF_FFFF_FFFF;
@@ -108,16 +109,12 @@ pub fn trits_to_char(trits: &[i8]) -> char {
     }
 }
 
-pub fn trits_to_string(t: &[i8]) -> Option<String> {
-    if t.len() % 3 != 0 {
-        return None;
-    }
+pub fn trits_to_string(t: &[i8]) -> Result<String, Error> {
+    ensure!(t.len() % 3 == 0, "Invalid trit length.");
 
-    Some(
-        t.chunks(constants::TRITS_PER_TRYTE)
-            .map(trits_to_char)
-            .collect(),
-    )
+    Ok(t.chunks(constants::TRITS_PER_TRYTE)
+        .map(trits_to_char)
+        .collect())
 }
 
 pub fn trits(trytes: i64) -> Vec<i8> {

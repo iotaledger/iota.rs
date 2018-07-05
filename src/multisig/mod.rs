@@ -6,7 +6,7 @@ use crate::utils;
 use crate::utils::constants;
 use crate::utils::converter;
 use crate::utils::input_validator;
-use crate::utils::right_pad;
+use crate::utils::right_pad_string;
 
 use crate::crypto::{signing, Curl, Kerl, Sponge, HASH_LENGTH, STATE_LENGTH};
 use crate::model::Bundle;
@@ -91,7 +91,7 @@ pub fn initiate_transfer(
                     .skip(constants::MESSAGE_LENGTH)
                     .take(msg_copy.len())
                     .collect();
-                right_pad(&mut fragment, constants::MESSAGE_LENGTH, '9');
+                right_pad_string(&mut fragment, constants::MESSAGE_LENGTH, '9');
                 signature_fragments.push(fragment);
             }
         } else {
@@ -100,11 +100,11 @@ pub fn initiate_transfer(
                 .chars()
                 .take(constants::MESSAGE_LENGTH)
                 .collect();
-            right_pad(&mut fragment, constants::MESSAGE_LENGTH, '9');
+            right_pad_string(&mut fragment, constants::MESSAGE_LENGTH, '9');
             signature_fragments.push(fragment);
         }
         tag = transfer.tag().unwrap_or_default();
-        right_pad(&mut tag, constants::TAG_LENGTH, '9');
+        right_pad_string(&mut tag, constants::TAG_LENGTH, '9');
         bundle.add_entry(
             signature_message_length,
             transfer.address(),

@@ -33,4 +33,8 @@ impl Signature {
     pub fn signature_fragments_mut(&mut self) -> &mut [String] {
         &mut self.signature_fragments
     }
+
+    pub fn add_fragment(&mut self, fragment: &str) {
+        self.signature_fragments.push(fragment.to_string());
+    }
 }

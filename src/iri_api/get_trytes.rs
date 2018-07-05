@@ -32,3 +32,15 @@ pub struct GetTrytesResponse {
     duration: i64,
     trytes: Vec<String>,
 }
+
+impl GetTrytesResponse {
+    pub fn duration(&self) -> i64 {
+        self.duration
+    }
+    pub fn trytes(&self) -> &[String] {
+        &self.trytes
+    }
+    pub fn take_trytes(self) -> Vec<String> {
+        self.trytes
+    }
+}
