@@ -64,7 +64,9 @@ impl API {
                 }
                 index += 1;
                 let new_address_vec = vec![new_address];
-                if !self.were_addresses_spent_from(&new_address_vec)? {
+                let were_addr_spent =
+                    iri_api::were_addresses_spent_from(self.uri, &new_address_vec)?;
+                if !were_addr_spent.state(0) {
                     let resp = iri_api::find_transactions(
                         self.uri,
                         None,
@@ -82,6 +84,38 @@ impl API {
                 }
             },
         }
+    }
+
+    pub fn send_trytes(
+        &self,
+        trytes: &[String],
+        depth: usize,
+        min_weight_magnitude: usize,
+        reference: Option<String>,
+    ) -> Result<Vec<Transaction>, Error> {
+        let to_approve =
+            iri_api::get_transactions_to_approve(self.uri, depth, &reference.unwrap_or_default())?;
+        let attached = iri_api::attach_to_tangle(
+            self.uri,
+            &to_approve.trunk_transaction().unwrap(),
+            &to_approve.branch_transaction().unwrap(),
+            min_weight_magnitude,
+            trytes,
+        )?;
+        let trytes_list = attached.trytes().unwrap();
+        self.store_and_broadcast(&trytes_list)?;
+        Ok(trytes_list
+            .iter()
+            .map(|trytes| trytes.parse().unwrap())
+            .collect())
+    }
+
+    pub fn store_and_broadcast(
+        &self,
+        trytes: &[String],
+    ) -> Result<iri_api::BroadcastTransactionsResponse, Error> {
+        iri_api::store_transactions(self.uri, trytes)?;
+        return iri_api::broadcast_transactions(self.uri, trytes);
     }
 
     pub fn get_inputs(
@@ -282,6 +316,29 @@ impl API {
         }
     }
 
+    pub fn send_transfer(
+        &self,
+        seed: &str,
+        depth: usize,
+        min_weight_magnitude: usize,
+        transfers: &[Transfer],
+        inputs: Option<Inputs>,
+        reference: Option<String>,
+        remainder_address: Option<String>,
+        security: Option<usize>,
+        hmac_key: Option<String>,
+    ) -> Result<Vec<Transaction>, Error> {
+        let trytes = self.prepare_transfers(
+            seed,
+            transfers,
+            inputs,
+            remainder_address,
+            security,
+            hmac_key,
+        )?;
+        self.send_trytes(&trytes, depth, min_weight_magnitude, reference)
+    }
+
     pub fn traverse_bundle(
         &self,
         trunk_tx: &str,
@@ -319,17 +376,6 @@ impl API {
         let bundle = self.traverse_bundle(transaction, None, Vec::new())?;
         ensure!(utils::is_bundle(&bundle)?, "Invalid bundle provided.");
         Ok(bundle)
-    }
-
-    pub fn were_addresses_spent_from(&self, addresses: &[String]) -> Result<bool, Error> {
-        let addresses: Vec<String> = addresses
-            .iter()
-            .filter(|address| input_validator::is_address(address))
-            .map(|address| utils::remove_checksum(address))
-            .collect();
-        ensure!(!addresses.is_empty(), "No valid addresses provided.");
-        iri_api::were_addresses_spent_from(self.uri, &addresses)?;
-        Ok(true)
     }
 
     fn add_remainder(

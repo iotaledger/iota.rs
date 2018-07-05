@@ -6,7 +6,7 @@ pub fn attach_to_tangle(
     uri: &str,
     trunk_transaction: &str,
     branch_transaction: &str,
-    min_weight_magnitude: i32,
+    min_weight_magnitude: usize,
     trytes: &[String],
 ) -> Result<AttachToTangleResponse, Error> {
     ensure!(
@@ -49,6 +49,22 @@ pub fn attach_to_tangle(
 #[derive(Deserialize, Debug)]
 pub struct AttachToTangleResponse {
     duration: i64,
+    id: Option<String>,
     exception: Option<String>,
     trytes: Option<Vec<String>>,
+}
+
+impl AttachToTangleResponse {
+    pub fn duration(&self) -> i64 {
+        self.duration
+    }
+    pub fn id(&self) -> Option<String> {
+        self.id.clone()
+    }
+    pub fn exception(&self) -> Option<String> {
+        self.exception.clone()
+    }
+    pub fn trytes(self) -> Option<Vec<String>> {
+        self.trytes
+    }
 }

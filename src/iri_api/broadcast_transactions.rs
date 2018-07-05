@@ -2,9 +2,11 @@ use crate::utils::input_validator;
 use failure::Error;
 use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
-use serde_json::Value;
 
-pub fn broadcast_transactions(uri: &str, trytes: &[String]) -> Result<Value, Error> {
+pub fn broadcast_transactions(
+    uri: &str,
+    trytes: &[String],
+) -> Result<BroadcastTransactionsResponse, Error> {
     ensure!(
         input_validator::is_array_of_attached_trytes(trytes),
         "Provided trytes are not valid: {:?}",
@@ -27,4 +29,9 @@ pub fn broadcast_transactions(uri: &str, trytes: &[String]) -> Result<Value, Err
         .body(body.to_string())
         .send()?
         .json()?)
+}
+
+#[derive(Deserialize, Debug)]
+pub struct BroadcastTransactionsResponse {
+    error: Option<String>,
 }

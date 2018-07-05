@@ -50,6 +50,14 @@ Things that are done:
         - [x] remove_neighbor
         - [x] were_addresses_spent_from
         - [x] check_consistency
-
     - [ ] Ease of use wrappers/helpers
-
+        - [x] new_address
+        - [x] get_new_address
+        - [x] send_trytes
+        - [x] store_and_broadcast
+        - [x] get_inputs
+        - [x] prepare_transfers
+        - [x] traverse_bundle
+        - [x] send_transfer
+        - [x] get_bundle
+        
