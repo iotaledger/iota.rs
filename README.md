@@ -2,6 +2,13 @@
 
 This is a port of the IOTA Java/JS API into Rust. It works, but I wouldn't trust it with real money yet. Having said that, please let me know if you have any suggestions or run into any issues.
 
+Here are some reasons you might want to use this library:
+1. It has a very fast implementation of local PoW (4-6ms on my laptop)
+2. You'll benefit from Rust's very nice type system
+3. This library is more actively maintain than Jota
+4. Now that the library is working, I'm going to be obsessively going over it to improve safety, performance, and usability
+5. It would make me personally happy :)
+
 This library currently requires nightly rust to build.
 
 Things that are done:
@@ -63,7 +70,14 @@ Things that are done:
 
 Here's an example of how to send a transaction: (Note that we're using the address as the seed in `send_transfer()`...don't do this)
 ```
-let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
+extern crate iota_lib_rs;
+
+use iota_lib_rs::iota_api;
+use iota_lib_rs::utils::trytes_converter;
+use iota_lib_rs::model::*;
+
+fn main() {
+    let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
     let message = trytes_converter::to_trytes("Hello World").unwrap();
     let mut transfer = Transfer::default();
     *transfer.value_mut() = 0;
@@ -73,4 +87,5 @@ let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOW
     let api = iota_api::API::new("https://trinity.iota.fm");
     let tx = api.send_transfer(trytes, 3, 14, &transfers, true, None, &None, &None, None, None).unwrap();
     println!("{:?}", tx);
+}
 ```
