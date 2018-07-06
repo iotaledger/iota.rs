@@ -10,6 +10,11 @@ use crate::Result;
 use std::cmp;
 
 /// Generates a new address
+///
+/// * `seed` - seed used to generate new address
+/// * `index` - how many iterations of generating to skip
+/// * `security` - security factor 1-3 with 3 being most secure
+/// * `checksum` - whether or not to checksum address
 pub fn new_address(seed: &str, index: usize, security: usize, checksum: bool) -> Result<String> {
     let key = crypto::signing::key(&converter::trits_from_string(seed), index, security)?;
     let digests = crypto::signing::digests(&key)?;
@@ -29,6 +34,8 @@ pub struct API {
 
 impl API {
     /// Create a new instance of the API
+    ///
+    /// * `uri` - the uri to use for all querys, currently only https IRI node are supported
     pub fn new(uri: &str) -> API {
         API {
             uri: uri.to_string(),
@@ -36,12 +43,13 @@ impl API {
     }
 
     /// Generates a new address
-    /// `seed` - seed used to generate new address
-    /// `index` - how many iterations of generating to skip
-    /// `security` - security factor 1-3 with 3 being most secure
-    /// `checksum` - whether or not to checksum address
-    /// `total` - Number of addresses to generate. If total isn't provided, we generate until we find an unused address
-    /// `return_all` - whether to return all generated addresses, or just the last one
+    ///
+    /// * `seed` - seed used to generate new address
+    /// * `index` - how many iterations of generating to skip
+    /// * `security` - security factor 1-3 with 3 being most secure
+    /// * `checksum` - whether or not to checksum address
+    /// * `total` - Number of addresses to generate. If total isn't provided, we generate until we find an unused address
+    /// * `return_all` - whether to return all generated addresses, or just the last one
     pub fn get_new_address(
         &self,
         seed: &str,
@@ -96,10 +104,19 @@ impl API {
         }
     }
 
-    /// Send trytes is a helper function that
-    /// 1. gets transactions to approve
-    /// 2. does PoW
-    /// 3. sends them to the IRI
+    /// Send trytes is a helper function that:
+    ///
+    /// 1. Gets transactions to approve
+    /// 2. Does PoW
+    /// 3. Sends your transactions to the IRI
+    ///
+    /// You should probably use `send_transfers`
+    ///
+    /// * `trytes` - a slice of strings that are tryte-encoded transactions
+    /// * `depth` - the depth to search for transactions to approve
+    /// * `min_weight_magnitude` - the PoW difficulty factor (14 on mainnet, 9 on testnet)
+    /// * `local_pow` - whether or not to do local PoW
+    /// * `reference` - Optionally used as the reference to start searching for transactions to approve
     pub fn send_trytes(
         &self,
         trytes: &[String],
@@ -137,6 +154,8 @@ impl API {
 
     /// Helper function that both stores, and broadcast trytes to
     /// the IRI. Trytes must have been PoW-ed.
+    ///
+    /// * `trytes` - PoW-ed slice of tryte-encoded transaction strings
     pub fn store_and_broadcast(&self, trytes: &[String]) -> Result<()> {
         iri_api::store_transactions(&self.uri, trytes)?;
         iri_api::broadcast_transactions(&self.uri, trytes)?;
@@ -145,6 +164,12 @@ impl API {
 
     /// Given a seed, iterates through addresses looking for
     /// enough funds to meet specified threshold
+    ///
+    /// * `seed` - The wallet seed to use
+    /// * `start` - The start index for addresses to search
+    /// * `end` - The end index for addresses to search
+    /// * `threshold` - The amount of Iota you're trying to find in the wallet
+    /// * `security` - The security to use for address generation
     pub fn get_inputs(
         &self,
         seed: &str,
@@ -206,6 +231,13 @@ impl API {
 
     /// Prepares a slice of transfers and converts them into a
     /// slice of tryte-encoded strings
+    ///
+    /// * `seed` - The wallet seed to use
+    /// * `transfers` - A slice of transfers to prepare
+    /// * `inputs` - Optional inputs to use if you're sending iota
+    /// * `remainder_address` - Optional remainder address to use, if not provided, one will be generated
+    /// * `security` - Security to use when generating addresses (1-3)
+    /// * `hmac_key` - Optional key to use if you want to hmac the transfers
     pub fn prepare_transfers(
         &self,
         seed: &str,
@@ -349,7 +381,18 @@ impl API {
 
     /// Prepares and sends a slice of transfers
     /// This helper does everything for you, PoW and such
-    pub fn send_transfer(
+    ///
+    /// * `seed` - The wallet seed to use
+    /// * `depth` - The depth to search when looking for transactions to approve
+    /// * `min_weight_magnitude` - The PoW difficulty factor (14 on mainnet, 9 on testnet)
+    /// * `transfers` - A slice of transfers to send
+    /// * `local_pow` - Whether or not to do local PoW
+    /// * `inputs` - Optionally specify which inputs to use when trying to find funds for transfers
+    /// * `reference` - Optionally specify where to start searching for transactions to approve
+    /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
+    /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
+    /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
+    pub fn send_transfers(
         &self,
         seed: &str,
         depth: usize,
@@ -376,6 +419,10 @@ impl API {
 
     /// Traverses a bundle by going through trunk transactions until
     /// the bundle hash of the transaction is no longer the same.
+    ///
+    /// * `trunk_tx` - The trunk transaction to start searching at
+    /// * `bundle_hash` - The bundle hash to compare against while searching
+    /// * `bundle` - The bundle add transactions to, until hash no longer matches
     pub fn traverse_bundle(
         &self,
         trunk_tx: &str,
@@ -407,6 +454,8 @@ impl API {
 
     /// Gets the associated bundle transactions of a transaction
     /// Validates the signatures, total sum, and bundle order
+    ///
+    /// * `transaction` - The transaction hash to search for
     pub fn get_bundle(&self, transaction: &str) -> Result<Vec<Transaction>> {
         ensure!(
             input_validator::is_hash(transaction),

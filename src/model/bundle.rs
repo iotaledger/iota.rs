@@ -10,7 +10,7 @@ const EMPTY_HASH: &str =
     "999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
 /// Represents a bundle of transactions
-#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Bundle {
     bundle: Vec<Transaction>,
 }
@@ -42,6 +42,14 @@ impl Bundle {
     /// this bundle
     pub fn bundle_mut(&mut self) -> &mut [Transaction] {
         &mut self.bundle
+    }
+
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_bundle<T>(&mut self, new_value: T)
+    where
+        T: Into<Vec<Transaction>>,
+    {
+        self.bundle = new_value.into();
     }
 
     /// Adds an entry into the bundle

@@ -1,5 +1,4 @@
-use crate::model::Neighbor;
-
+use super::responses::GetNeighborsResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -28,27 +27,4 @@ pub fn get_neighbors(uri: &str) -> Result<GetNeighborsResponse> {
     }
 
     Ok(resp)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
-pub struct GetNeighborsResponse {
-    duration: i64,
-    error: Option<String>,
-    neighbors: Option<Vec<Neighbor>>,
-}
-
-impl GetNeighborsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    /// Returns the error attribute
-    fn error(&self) -> &Option<String> {
-        &self.error
-    }
-    /// Returns the neighbors attribute
-    pub fn neighbors(self) -> Option<Vec<Neighbor>> {
-        self.neighbors
-    }
 }

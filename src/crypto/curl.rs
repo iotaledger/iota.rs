@@ -9,6 +9,17 @@ const TRUTH_TABLE: [i8; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
 /// The Curl struct is a Sponge that uses the Curl
 /// hashing algorithm.
+///```rust
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::crypto::{Sponge, Curl};
+/// // Create an array of 243 1s
+/// let input = [1; 243];
+/// // Create an array of 243 0s
+/// let mut out = [0; 243];
+/// let mut curl = Curl::default();
+/// curl.absorb(&input);
+/// curl.squeeze(&mut out);
+///```
 #[derive(Clone, Copy)]
 pub struct Curl {
     number_of_rounds: i32,

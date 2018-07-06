@@ -1,3 +1,4 @@
+use super::responses::BroadcastTransactionsResponse;
 use crate::utils::input_validator;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
@@ -40,25 +41,4 @@ pub fn broadcast_transactions(
     }
 
     Ok(resp)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
-pub struct BroadcastTransactionsResponse {
-    duration: i64,
-    error: Option<String>,
-    exception: Option<String>,
-}
-
-impl BroadcastTransactionsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    fn error(&self) -> Option<String> {
-        self.error.clone()
-    }
-    fn exception(&self) -> Option<String> {
-        self.exception.clone()
-    }
 }

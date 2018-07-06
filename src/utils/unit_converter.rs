@@ -1,6 +1,13 @@
 use super::iota_units::IotaUnits;
 
 /// Converts an amount of iotas to a new unit
+///```
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::utils::{IotaUnits, unit_converter};
+///
+/// let amount_in_new_unit = unit_converter::convert_units(1000, IotaUnits::TeraIota, IotaUnits::PetaIota);
+/// assert_eq!(amount_in_new_unit, 1);
+///```
 pub fn convert_units(amount: u64, from: IotaUnits, to: IotaUnits) -> u64 {
     let amount_in_source = amount * 10_u64.pow(u32::from(from.value()));
     convert_units_helper(amount_in_source, to)
@@ -11,36 +18,49 @@ fn convert_units_helper(amount: u64, to: IotaUnits) -> u64 {
 }
 
 /// Converts an iota amount into the optimal unit for display
+///```
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::utils::{IotaUnits, unit_converter};
+///
+/// let s = unit_converter::convert_raw_iota_amount_to_display_text(1000000, false);
+/// assert_eq!(s, "1.00 Mi");
+///```
 pub fn convert_raw_iota_amount_to_display_text(amount: u64, extended: bool) -> String {
     let unit = find_optimal_iota_unit_to_display(amount);
     let amount_in_display_unit = convert_amount_to(amount, unit);
     create_amount_with_unit_display_text(amount_in_display_unit, unit, extended)
 }
 
-fn create_amount_with_unit_display_text(amount: u64, unit: IotaUnits, extended: bool) -> String {
-    format!(
-        "{} {}",
-        create_amount_display_text(amount, unit, extended),
-        unit.unit()
-    )
-}
-/// Converts an amount of iotas into a string for display
-pub fn create_amount_display_text(amount: u64, unit: IotaUnits, extended: bool) -> String {
+fn create_amount_with_unit_display_text(amount: f64, unit: IotaUnits, extended: bool) -> String {
     if unit == IotaUnits::Iota {
-        amount.to_string()
+        format!("{} {}", amount, unit.unit())
     } else if extended {
-        format!("{0:.18}", amount)
+        format!("{:.18} {}", amount, unit.unit())
     } else {
-        format!("{0:.2}", amount)
+        format!("{:.2} {}", amount, unit.unit())
     }
 }
 
 /// Converts an amount of iota to a unit
-pub fn convert_amount_to(amount: u64, target: IotaUnits) -> u64 {
-    amount / 10_u64.pow(u32::from(target.value()))
+///```
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::utils::{IotaUnits, unit_converter};
+///
+/// let unit = unit_converter::convert_amount_to(1000000, IotaUnits::GigaIota);
+/// assert_eq!(unit, 0.001);
+///```
+pub fn convert_amount_to(amount: u64, target: IotaUnits) -> f64 {
+    amount as f64 / 10_u64.pow(u32::from(target.value())) as f64
 }
 
 /// Finds the optimal unit for displaying an iota amount
+///```
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::utils::{IotaUnits, unit_converter};
+///
+/// let unit = unit_converter::find_optimal_iota_unit_to_display(1000000);
+/// assert_eq!(unit, IotaUnits::MegaIota);
+///```
 pub fn find_optimal_iota_unit_to_display(amount: u64) -> IotaUnits {
     let length = amount.to_string().len();
 

@@ -2,7 +2,7 @@ use serde_json;
 use std::fmt;
 
 /// This represents a neighbor node
-#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Neighbor {
     address: String,
     #[serde(rename = "numberOfAllTransactions")]
@@ -15,19 +15,6 @@ pub struct Neighbor {
     number_of_random_transactions: i32,
     #[serde(rename = "numberOfSentTransactions")]
     number_of_sent_transactions: i32,
-}
-
-impl Default for Neighbor {
-    fn default() -> Neighbor {
-        Neighbor {
-            address: "127.0.0.1:8080".to_string(),
-            number_of_all_transactions: 0,
-            number_of_invalid_transactions: 0,
-            number_of_new_transactions: 0,
-            number_of_random_transactions: 0,
-            number_of_sent_transactions: 0,
-        }
-    }
 }
 
 impl fmt::Display for Neighbor {
@@ -70,6 +57,13 @@ impl Neighbor {
         &mut self.address
     }
 
+    pub fn set_address<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.address = new_value.into();
+    }
+
     /// Provides a view of the number_of_all_transactions
     pub fn number_of_all_transactions(&self) -> i32 {
         self.number_of_all_transactions
@@ -78,6 +72,13 @@ impl Neighbor {
     /// Provides a mutable view of the number_of_all_transactions
     pub fn number_of_all_transactions_mut(&mut self) -> &mut i32 {
         &mut self.number_of_all_transactions
+    }
+
+    pub fn set_number_of_all_transactions<T>(&mut self, new_value: T)
+    where
+        T: Into<i32>,
+    {
+        self.number_of_all_transactions = new_value.into();
     }
 
     /// Provides a view of the number_of_invalid_transactions
@@ -90,6 +91,14 @@ impl Neighbor {
         &mut self.number_of_invalid_transactions
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_number_of_invalid_transactions<T>(&mut self, new_value: T)
+    where
+        T: Into<i32>,
+    {
+        self.number_of_invalid_transactions = new_value.into();
+    }
+
     /// Provides a view of the number_of_new_transactions
     pub fn number_of_new_transactions(&self) -> i32 {
         self.number_of_new_transactions
@@ -98,6 +107,14 @@ impl Neighbor {
     /// Provides a mutable view of the number_of_new_transactions
     pub fn number_of_new_transactions_mut(&mut self) -> &mut i32 {
         &mut self.number_of_new_transactions
+    }
+
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_number_of_new_transactions<T>(&mut self, new_value: T)
+    where
+        T: Into<i32>,
+    {
+        self.number_of_new_transactions = new_value.into();
     }
 
     /// Provides a view of the number_of_random_transactions
@@ -110,6 +127,14 @@ impl Neighbor {
         &mut self.number_of_random_transactions
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_number_of_random_transactions<T>(&mut self, new_value: T)
+    where
+        T: Into<i32>,
+    {
+        self.number_of_random_transactions = new_value.into();
+    }
+
     /// Provides a view of the number_of_sent_transactions
     pub fn number_of_sent_transactions(&self) -> i32 {
         self.number_of_sent_transactions
@@ -118,5 +143,13 @@ impl Neighbor {
     /// Provides a mutable view of the number_of_sent_transactions
     pub fn number_of_sent_transactions_mut(&mut self) -> &mut i32 {
         &mut self.number_of_sent_transactions
+    }
+
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_number_of_sent_transactions<T>(&mut self, new_value: T)
+    where
+        T: Into<i32>,
+    {
+        self.number_of_sent_transactions = new_value.into();
     }
 }

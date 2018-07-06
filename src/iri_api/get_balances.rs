@@ -1,3 +1,4 @@
+use super::responses::GetBalancesResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -28,45 +29,4 @@ pub fn get_balances(
         .body(body.to_string())
         .send()?
         .json()?)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Clone, Deserialize, Debug)]
-pub struct GetBalancesResponse {
-    duration: i64,
-    error: Option<String>,
-    balances: Option<Vec<String>>,
-    #[serde(rename = "milestoneIndex")]
-    milestone_index: Option<i64>,
-    references: Option<Vec<String>>,
-}
-
-impl GetBalancesResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    fn error(&self) -> &Option<String> {
-        &self.error
-    }
-    /// Returns the duration attribute
-    pub fn balances(&self) -> &Option<Vec<String>> {
-        &self.balances
-    }
-    /// Returns the duration attribute
-    pub fn take_balances(self) -> Option<Vec<String>> {
-        self.balances
-    }
-    /// Returns the duration attribute
-    pub fn milestone_index(&self) -> Option<i64> {
-        self.milestone_index
-    }
-    /// Returns the duration attribute
-    pub fn references(&self) -> &Option<Vec<String>> {
-        &self.references
-    }
-    /// Returns the duration attribute
-    pub fn take_references(self) -> Option<Vec<String>> {
-        self.references
-    }
 }

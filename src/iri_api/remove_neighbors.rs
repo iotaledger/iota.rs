@@ -1,3 +1,4 @@
+use super::responses::RemoveNeighborsResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -22,11 +23,4 @@ pub fn remove_neighbors(uri: &str, uris: &[String]) -> Result<RemoveNeighborsRes
         .body(body.to_string())
         .send()?
         .json()?)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Copy, Clone, Deserialize, Debug)]
-pub struct RemoveNeighborsResponse {
-    #[serde(rename = "removedNeighbors")]
-    removed_neighbors: usize,
 }

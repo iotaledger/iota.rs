@@ -24,6 +24,10 @@ pub use self::stopwatch::StopWatch;
 pub use self::validators::*;
 
 /// Right pads a string to a certain length in place
+///
+/// * `x` - the string to be padded
+/// * `len` - the target length of the string
+/// * `pad` - the char to pad with
 pub fn right_pad_string(x: &mut String, len: usize, pad: char) {
     while x.len() < len {
         x.push(pad);
@@ -31,6 +35,10 @@ pub fn right_pad_string(x: &mut String, len: usize, pad: char) {
 }
 
 /// Right pads a vector to a certain length in place
+///
+/// * `x` - the vec to be padded
+/// * `len` - the target length of the string`
+/// * `pad` - the element to pad with
 pub fn right_pad_vec<T>(x: &mut Vec<T>, len: usize, pad: T)
 where
     T: Copy,

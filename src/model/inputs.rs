@@ -1,9 +1,10 @@
-use super::input::Input;
 use serde_json;
 use std::fmt;
 
+use super::Input;
+
 /// Represents a grouping of inputs and their cumulative balance
-#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Inputs {
     inputs_list: Vec<Input>,
     total_balance: i64,
@@ -30,9 +31,20 @@ impl Inputs {
         &mut self.inputs_list
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_inputs_list<T>(&mut self, new_value: T)
+    where
+        T: Into<Vec<Input>>,
+    {
+        self.inputs_list = new_value.into();
+    }
+
     /// Provides a view of the inputs address
-    pub fn add(&mut self, input: Input) {
-        self.inputs_list.push(input);
+    pub fn add<T>(&mut self, new_value: T)
+    where
+        T: Into<Input>,
+    {
+        self.inputs_list.push(new_value.into());
     }
 
     /// Provides a view of the total_balance
@@ -43,5 +55,13 @@ impl Inputs {
     /// Provides a mutable view of the total_balance
     pub fn total_balance_mut(&mut self) -> &mut i64 {
         &mut self.total_balance
+    }
+
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_total_balance<T>(&mut self, new_value: T)
+    where
+        T: Into<i64>,
+    {
+        self.total_balance = new_value.into();
     }
 }

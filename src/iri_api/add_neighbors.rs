@@ -1,3 +1,4 @@
+use super::responses::AddNeighborsResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -21,11 +22,4 @@ pub fn add_neighbors(uri: &str, uris: &[String]) -> Result<AddNeighborsResponse>
         .body(body.to_string())
         .send()?
         .json()?)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Copy, Clone, Deserialize, Debug)]
-pub struct AddNeighborsResponse {
-    #[serde(rename = "addedNeighbors")]
-    added_neighbors: usize,
 }

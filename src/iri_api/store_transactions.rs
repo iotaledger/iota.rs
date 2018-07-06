@@ -1,3 +1,4 @@
+use super::responses::StoreTransactionsResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -21,27 +22,4 @@ pub fn store_transactions(uri: &str, trytes: &[String]) -> Result<StoreTransacti
         .body(body.to_string())
         .send()?
         .json()?)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
-pub struct StoreTransactionsResponse {
-    duration: i64,
-    error: Option<String>,
-    exception: Option<String>,
-}
-
-impl StoreTransactionsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    /// Returns the duration attribute
-    fn error(&self) -> &Option<String> {
-        &self.error
-    }
-    /// Returns the duration attribute
-    fn exception(&self) -> &Option<String> {
-        &self.exception
-    }
 }

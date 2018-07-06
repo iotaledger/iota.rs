@@ -1,13 +1,14 @@
-use crate::crypto::{Curl, Sponge};
-use crate::utils::{self, converter};
-use crate::Result;
 use failure::Error;
 use serde_json;
 use std::fmt;
 use std::str::FromStr;
 
+use crate::crypto::{Curl, Sponge};
+use crate::utils::{self, converter};
+use crate::Result;
+
 /// Represents an IOTA transaction
-#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Transaction {
     hash: Option<String>,
     signature_fragments: Option<String>,
@@ -47,6 +48,14 @@ impl Transaction {
     pub fn attachment_timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_attachment_timestamp<T>(&mut self, new_value: T)
+    where
+        T: Into<i64>,
+    {
+        self.attachment_timestamp = Some(new_value.into());
+    }
+
     /// Provides a view of the attachment_timestamp_lower_bound
     pub fn attachment_timestamp_lower_bound(&self) -> Option<i64> {
         self.attachment_timestamp_lower_bound
@@ -55,6 +64,14 @@ impl Transaction {
     pub fn attachment_timestamp_lower_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_lower_bound
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_attachment_timestamp_lower_bound<T>(&mut self, new_value: T)
+    where
+        T: Into<i64>,
+    {
+        self.attachment_timestamp_lower_bound = Some(new_value.into());
+    }
+
     /// Provides a view of the attachment_timestamp_upper_bound
     pub fn attachment_timestamp_upper_bound(&self) -> Option<i64> {
         self.attachment_timestamp_upper_bound
@@ -63,6 +80,14 @@ impl Transaction {
     pub fn attachment_timestamp_upper_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_upper_bound
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_attachment_timestamp_upper_bound<T>(&mut self, new_value: T)
+    where
+        T: Into<i64>,
+    {
+        self.attachment_timestamp_upper_bound = Some(new_value.into());
+    }
+
     /// Provides a view of the hash
     pub fn hash(&self) -> Option<String> {
         self.hash.clone()
@@ -71,6 +96,14 @@ impl Transaction {
     pub fn hash_mut(&mut self) -> &mut Option<String> {
         &mut self.hash
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_hash<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.hash = Some(new_value.into());
+    }
+
     /// Provides a view of the signature_fragments
     pub fn signature_fragments(&self) -> Option<String> {
         self.signature_fragments.clone()
@@ -79,6 +112,14 @@ impl Transaction {
     pub fn signature_fragments_mut(&mut self) -> &mut Option<String> {
         &mut self.signature_fragments
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_signature_fragments<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.signature_fragments = Some(new_value.into());
+    }
+
     /// Provides a view of the address
     pub fn address(&self) -> Option<String> {
         self.address.clone()
@@ -87,6 +128,14 @@ impl Transaction {
     pub fn address_mut(&mut self) -> &mut Option<String> {
         &mut self.address
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_address<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.address = Some(new_value.into());
+    }
+
     /// Provides a view of the value
     pub fn value(&self) -> Option<i64> {
         self.value
@@ -95,6 +144,14 @@ impl Transaction {
     pub fn value_mut(&mut self) -> &mut Option<i64> {
         &mut self.value
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_value<T>(&mut self, new_value: T)
+    where
+        T: Into<i64>,
+    {
+        self.value = Some(new_value.into());
+    }
+
     /// Provides a view of the tag
     pub fn tag(&self) -> Option<String> {
         self.tag.clone()
@@ -103,6 +160,14 @@ impl Transaction {
     pub fn tag_mut(&mut self) -> &mut Option<String> {
         &mut self.tag
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_tag<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.tag = Some(new_value.into());
+    }
+
     /// Provides a view of the timestamp
     pub fn timestamp(&self) -> Option<i64> {
         self.timestamp
@@ -111,6 +176,14 @@ impl Transaction {
     pub fn timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.timestamp
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_timestamp<T>(&mut self, new_value: T)
+    where
+        T: Into<i64>,
+    {
+        self.timestamp = Some(new_value.into());
+    }
+
     /// Provides a view of the current_index
     pub fn current_index(&self) -> Option<usize> {
         self.current_index
@@ -119,6 +192,14 @@ impl Transaction {
     pub fn current_index_mut(&mut self) -> &mut Option<usize> {
         &mut self.current_index
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_current_index<T>(&mut self, new_value: T)
+    where
+        T: Into<usize>,
+    {
+        self.current_index = Some(new_value.into());
+    }
+
     /// Provides a view of the last_index
     pub fn last_index(&self) -> Option<usize> {
         self.last_index
@@ -127,6 +208,14 @@ impl Transaction {
     pub fn last_index_mut(&mut self) -> &mut Option<usize> {
         &mut self.last_index
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_last_index<T>(&mut self, new_value: T)
+    where
+        T: Into<usize>,
+    {
+        self.last_index = Some(new_value.into());
+    }
+
     /// Provides a view of the bundle
     pub fn bundle(&self) -> Option<String> {
         self.bundle.clone()
@@ -135,6 +224,14 @@ impl Transaction {
     pub fn bundle_mut(&mut self) -> &mut Option<String> {
         &mut self.bundle
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_bundle<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.bundle = Some(new_value.into());
+    }
+
     /// Provides a view of the trunk_transaction
     pub fn trunk_transaction(&self) -> Option<String> {
         self.trunk_transaction.clone()
@@ -143,6 +240,14 @@ impl Transaction {
     pub fn trunk_transaction_mut(&mut self) -> &mut Option<String> {
         &mut self.trunk_transaction
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_trunk_transaction<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.trunk_transaction = Some(new_value.into());
+    }
+
     /// Provides a view of the branch_transaction
     pub fn branch_transaction(&self) -> Option<String> {
         self.branch_transaction.clone()
@@ -151,6 +256,14 @@ impl Transaction {
     pub fn branch_transaction_mut(&mut self) -> &mut Option<String> {
         &mut self.branch_transaction
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_branch_transaction<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.branch_transaction = Some(new_value.into());
+    }
+
     /// Provides a view of the nonce
     pub fn nonce(&self) -> Option<String> {
         self.nonce.clone()
@@ -159,6 +272,14 @@ impl Transaction {
     pub fn nonce_mut(&mut self) -> &mut Option<String> {
         &mut self.nonce
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_nonce<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.nonce = Some(new_value.into());
+    }
+
     /// Provides a view of the persistence
     pub fn persistence(&self) -> Option<bool> {
         self.persistence
@@ -167,6 +288,14 @@ impl Transaction {
     pub fn persistence_mut(&mut self) -> &mut Option<bool> {
         &mut self.persistence
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_persistence<T>(&mut self, new_value: T)
+    where
+        T: Into<bool>,
+    {
+        self.persistence = Some(new_value.into());
+    }
+
     /// Provides a view of the obsolete_tag
     pub fn obsolete_tag(&self) -> Option<String> {
         self.obsolete_tag.clone()
@@ -175,8 +304,15 @@ impl Transaction {
     pub fn obsolete_tag_mut(&mut self) -> &mut Option<String> {
         &mut self.obsolete_tag
     }
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_obsolete_tag<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.obsolete_tag = Some(new_value.into());
+    }
 
-    /// Converts the transaction into a string of trytes
+    /// Converts the transaction into a tryte-encoded string
     /// This DOES NOT consume the transaction
     pub fn to_trytes(&self) -> String {
         let mut value_trits = converter::trits(self.value.unwrap_or_default());

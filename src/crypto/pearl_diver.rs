@@ -1,7 +1,9 @@
-use crate::Result;
+use std::sync::{Arc, Mutex, RwLock};
+
 use crossbeam;
 use num_cpus;
-use std::sync::{Arc, Mutex, RwLock};
+
+use crate::Result;
 
 /// State represents the various states that PearlDiver
 /// will be in throughout its life
@@ -27,6 +29,32 @@ const LOW_BITS: u64 =
 
 /// The PearlDiver struct allows you to start, stop, and check in on
 /// PoW while its working
+///```rust
+/// extern crate iota_lib_rs;
+///
+/// use iota_lib_rs::crypto::{Curl, PearlDiver, Sponge};
+/// use rand::{thread_rng, Rng};
+///
+/// const HASH_SIZE: usize = 243;
+/// const MIN_WEIGHT_MAGNITUDE: usize = 9;
+///
+/// let mut rng = thread_rng();
+/// let mut curl = Curl::default();
+/// let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
+/// let mut trits = [0; 8019];
+/// trits.copy_from_slice(&vec);
+/// let mut pearl_diver = PearlDiver::default();
+/// pearl_diver
+///     .search(&mut trits, MIN_WEIGHT_MAGNITUDE)
+///     .unwrap();
+/// let mut hash_trits = [0; HASH_SIZE];
+/// curl.reset();
+/// curl.absorb(&trits).unwrap();
+/// curl.squeeze(&mut hash_trits).unwrap();
+/// for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
+///     assert_eq!(hash_trits[j], 0);
+/// }
+///```
 #[derive(Debug)]
 pub struct PearlDiver {
     running: Arc<RwLock<PearlDiverState>>,
@@ -47,14 +75,23 @@ impl PearlDiver {
     }
 
     /// If you have multiple references to the same PearlDriver, this will allow
-    /// you to cancel the proof of work
+    /// you to cancel the proof of work. For this to be useful, you'll probably need
+    /// to wrap the PearlDiver in an `Arc`
+    ///```rust
+    /// extern crate iota_lib_rs;
+    /// use iota_lib_rs::crypto::{PearlDiver};
+    /// let mut pearl_diver = PearlDiver::new();
+    /// // ... start running a pearl diver on another thread ...
+    /// pearl_diver.cancel();
+    ///```
     pub fn cancel(&mut self) {
         *self.running.write().unwrap() = PearlDiverState::Cancelled;
     }
 
     /// Performs proof of work in place
-    /// `transaction_trits` - Trits to perform proof of work against
-    /// `min_weight_magnitude` - Difficulty factor to use when performing PoW
+    ///
+    /// * `transaction_trits` - Trits to perform proof of work against, modified in-place
+    /// * `min_weight_magnitude` - Difficulty factor to use when performing PoW
     pub fn search(
         &mut self,
         transaction_trits: &mut [i8],
@@ -294,68 +331,5 @@ fn increment(mid_low: &mut [u64], mid_high: &mut [u64], from_index: usize, to_in
         mid_high[i] = low;
         carry = hi & (!low);
         i += 1;
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::crypto::{Curl, Sponge};
-
-    use rand::{thread_rng, Rng};
-
-    const HASH_SIZE: usize = 243;
-    const MIN_WEIGHT_MAGNITUDE: usize = 14;
-
-    #[test]
-    fn test_cancel() {
-        let mut pearl_diver = PearlDiver::new();
-        pearl_diver.cancel();
-    }
-
-    #[test]
-    fn test_pow_works() {
-        let mut rng = thread_rng();
-        let mut curl = Curl::default();
-        let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
-        let mut trits = [0; 8019];
-        trits.copy_from_slice(&vec);
-        let mut pearl_diver = PearlDiver::default();
-        pearl_diver
-            .search(&mut trits, MIN_WEIGHT_MAGNITUDE)
-            .unwrap();
-        let mut hash_trits = [0; HASH_SIZE];
-        curl.reset();
-        curl.absorb(&trits).unwrap();
-        curl.squeeze(&mut hash_trits).unwrap();
-        for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
-            assert_eq!(hash_trits[j], 0);
-        }
-    }
-
-    // Recommended to run this with --release
-    //#[test]
-    fn test_no_random_fail() {
-        let mut rng = thread_rng();
-        let mut curl = Curl::default();
-        for i in 0..1000 {
-            let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
-            let mut trits = [0; 8019];
-            trits.copy_from_slice(&vec);
-            let mut pearl_diver = PearlDiver::default();
-            pearl_diver
-                .search(&mut trits, MIN_WEIGHT_MAGNITUDE)
-                .unwrap();
-            let mut hash_trits = [0; HASH_SIZE];
-            curl.reset();
-            curl.absorb(&trits).unwrap();
-            curl.squeeze(&mut hash_trits).unwrap();
-            for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
-                assert_eq!(hash_trits[j], 0);
-            }
-            if i % 100 == 0 {
-                println!("{} successful hashes.", i);
-            }
-        }
     }
 }

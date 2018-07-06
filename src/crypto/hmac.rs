@@ -7,6 +7,15 @@ const HMAC_ROUNDS: usize = 27;
 
 /// HMAC uses curl to provide an extra layer of verification
 /// to bundles
+///```rust
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::crypto::{self, HMAC};
+/// use iota_lib_rs::model::Bundle;
+///
+/// let mut bundle = Bundle::default();
+/// let hmac = HMAC::new("apples");
+/// hmac.add_hmac(&mut bundle);
+///```
 #[derive(Clone, Debug)]
 pub struct HMAC {
     key: Vec<i8>,

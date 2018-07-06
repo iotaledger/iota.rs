@@ -4,7 +4,7 @@ use std::fmt;
 /// Represents an address associated with a seed, that can be used as
 /// an "input" when trying to meet a minimum threshold of funds for a
 /// transaction
-#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Input {
     address: String,
     balance: i64,
@@ -39,8 +39,16 @@ impl Input {
     }
 
     /// Provides a mutable view of the inputs address
-    pub fn address_mut(&mut self) -> &mut str {
+    pub fn address_mut(&mut self) -> &mut String {
         &mut self.address
+    }
+
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_address<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.address = new_value.into();
     }
 
     /// Provides a view of the inputs balance
@@ -53,6 +61,14 @@ impl Input {
         &mut self.balance
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_balance<T>(&mut self, new_value: T)
+    where
+        T: Into<i64>,
+    {
+        self.balance = new_value.into();
+    }
+
     /// Provides a view of the inputs key_index
     pub fn key_index(&self) -> usize {
         self.key_index
@@ -63,6 +79,14 @@ impl Input {
         &mut self.key_index
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_key_index<T>(&mut self, new_value: T)
+    where
+        T: Into<usize>,
+    {
+        self.key_index = new_value.into();
+    }
+
     /// Provides a view of the inputs security
     pub fn security(&self) -> usize {
         self.security
@@ -71,5 +95,13 @@ impl Input {
     /// Provides a mutable view of the inputs security
     pub fn security_mut(&mut self) -> &mut usize {
         &mut self.security
+    }
+
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_security<T>(&mut self, new_value: T)
+    where
+        T: Into<usize>,
+    {
+        self.security = new_value.into();
     }
 }

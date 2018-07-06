@@ -2,7 +2,7 @@ use serde_json;
 use std::fmt;
 
 /// Represents an address and a grouping of signature fragments
-#[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Signature {
     address: String,
     signature_fragments: Vec<String>,
@@ -29,6 +29,14 @@ impl Signature {
         &mut self.address
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_address<T>(&mut self, new_value: T)
+    where
+        T: Into<String>,
+    {
+        self.address = new_value.into();
+    }
+
     /// Provides a view of the signature_fragments
     pub fn signature_fragments(&self) -> &[String] {
         &self.signature_fragments
@@ -37,6 +45,14 @@ impl Signature {
     /// Provides a mutable view of the address
     pub fn signature_fragments_mut(&mut self) -> &mut [String] {
         &mut self.signature_fragments
+    }
+
+    /// Setter accepting anything that can be turned into the relevant type
+    pub fn set_signature_fragments<T>(&mut self, new_value: T)
+    where
+        T: Into<Vec<String>>,
+    {
+        self.signature_fragments = new_value.into();
     }
 
     /// Inserts a fragment into the signature

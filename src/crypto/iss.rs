@@ -16,9 +16,10 @@ pub const TRYTE_WIDTH: usize = 3;
 pub const NORMALIZED_FRAGMENT_LENGTH: usize = HASH_LENGTH / TRYTE_WIDTH / NUMBER_OF_SECURITY_LEVELS;
 
 /// Create a subseed
-/// `mode` - the Curl mode to use
-/// `seed` - the generation seed
-/// `index` - how many address permutations to iterate through
+///
+/// * `mode` - The hashing mode to use
+/// * `seed` - The generation seed
+/// * `index` - How many address permutations to iterate through
 pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH]> {
     let mut subseed_preimage = seed.to_vec();
     for _ in 0..index {
@@ -32,11 +33,15 @@ pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH
         }
     }
     let mut subseed = [0; HASH_LENGTH];
-    hash_with_mode(mode, &mut subseed_preimage, &mut subseed)?;
+    hash_with_mode(mode, &subseed_preimage, &mut subseed)?;
     Ok(subseed)
 }
 
 /// Key a subseed
+///
+/// * `mode` - The hashing mode to use
+/// * `subseed` - Subseed used for key generation
+/// * `number_of_fragments` - Number of fragments to generate
 pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result<Vec<i8>> {
     ensure!(
         subseed.len() == HASH_LENGTH,
@@ -51,6 +56,9 @@ pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result
 }
 
 /// Generate digests
+///
+/// * `mode` - The hashing mode to use
+/// * `key` - kKey slice used to generate digests
 pub fn digests(mode: Mode, key: &[i8]) -> Result<Vec<i8>> {
     ensure!(
         !key.is_empty() && key.len() % FRAGMENT_LENGTH == 0,
@@ -90,6 +98,9 @@ fn digests_helper(hash: &mut impl Sponge, key: &[i8]) -> Result<Vec<i8>> {
 }
 
 /// Generate address
+///
+/// * `mode` - The hashing mode to use
+/// * `digests` - Digests used to generate address
 pub fn address(mode: Mode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH]> {
     ensure!(
         !digests.is_empty() && digests.len() % HASH_LENGTH == 0,
@@ -102,6 +113,8 @@ pub fn address(mode: Mode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH]> {
 }
 
 /// Generate normalize bundle
+///
+/// * `bundle` - Bundle to normalize
 pub fn normalized_bundle(bundle: &[i8]) -> Result<[i8; HASH_LENGTH / TRYTE_WIDTH]> {
     ensure!(
         bundle.len() == HASH_LENGTH,
@@ -114,6 +127,9 @@ pub fn normalized_bundle(bundle: &[i8]) -> Result<[i8; HASH_LENGTH / TRYTE_WIDTH
 }
 
 /// Normalize a bundle in place
+///
+/// * `bundle` - Bundle to normalize
+/// * `normalized_bundle` - Destination slice to modify in place
 pub fn normalized_bundle_in_place(bundle: &[i8], normalized_bundle: &mut [i8]) {
     for i in 0..NUMBER_OF_SECURITY_LEVELS {
         let mut sum = 0;
@@ -157,6 +173,10 @@ pub fn normalized_bundle_in_place(bundle: &[i8], normalized_bundle: &mut [i8]) {
 }
 
 /// Generate a signature fragment
+///
+/// * `mode` - The hashing mode to use
+/// * `normalized_bundle_fragment` - Normalized bundle fragment to sign
+/// * `key_fragment` -  Key fragment to use
 pub fn signature_fragment(
     mode: Mode,
     normalized_bundle_fragment: &[i8],
@@ -215,6 +235,10 @@ fn signature_fragment_helper(
 }
 
 /// Generate a digest
+///
+/// * `mode` - The hashing mode to use
+/// * `normalized_bundle_fragment` - Normalized bundle fragment to digest
+/// * `signature_fragment` -  Signature fragment to use
 pub fn digest(
     mode: Mode,
     normalized_bundle_fragment: &[i8],
@@ -255,6 +279,11 @@ pub fn digest(
 }
 
 /// Hash digest in place
+///
+/// * `mode` - The hashing mode to use
+/// * `normalized_bundle_fragment` - Normalized bundle fragment to digest
+/// * `signature_fragment` -  Signature fragment to use
+/// * `digest` - Destination slice to modify in place
 pub fn digest_in_place(
     hash: &mut impl Sponge,
     normalized_bundle_fragment: &[i8],
@@ -281,6 +310,13 @@ pub fn digest_in_place(
 }
 
 /// Retrieve the merkle root
+///
+/// * `mode` - The hashing mode to use
+/// * `hash` - Hash to absorb
+/// * `trits` - Trits to absorb
+/// * `offset` - Trit offset to start at
+/// * `index` - Used to alternate the order trits and hash are absorbed
+/// * `size` - Number of hash iterations
 pub fn get_merkle_root(
     mode: Mode,
     hash: &[i8],

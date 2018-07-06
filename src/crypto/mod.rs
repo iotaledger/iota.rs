@@ -46,16 +46,27 @@ where
     Self: Default + Clone + Send + 'static,
 {
     /// Absorb trits into the sponge
+    ///
+    /// * `trits` - A slice of trits whose length is a multiple of 243
     fn absorb(&mut self, trits: &[i8]) -> Result<(), Error>;
-    /// Squeeze trits out of the sponge and copy them into
-    /// `out`. `out` must have length of 243
+    /// Squeeze trits out of the sponge and copy them into `out`
+    ///
+    /// * `out` - A slice of trits whose length is a multiple of 243
     fn squeeze(&mut self, out: &mut [i8]) -> Result<(), Error>;
     /// Reset the sponge to initial state
     fn reset(&mut self);
 }
 
-/// Allows you to hash``trits` into `out` using the `mode` of your choosing
-pub fn hash_with_mode(mode: Mode, trits: &mut [i8], out: &mut [i8]) -> Result<(), Error> {
+/// Allows you to hash `trits` into `out` using the `mode` of your choosing
+///```rust
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::crypto::{self, Mode};
+///
+/// let input = [0; 243];
+/// let mut out = [0; 243];
+/// crypto::hash_with_mode(Mode::Kerl, &input, &mut out);
+///```
+pub fn hash_with_mode(mode: Mode, trits: &[i8], out: &mut [i8]) -> Result<(), Error> {
     match mode {
         Mode::CURLP27 | Mode::CURLP81 => {
             let mut curl = Curl::new(mode).unwrap();

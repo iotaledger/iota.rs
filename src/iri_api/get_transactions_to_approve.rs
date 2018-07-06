@@ -1,3 +1,4 @@
+use super::responses::GetTransactionsToApprove;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -42,34 +43,4 @@ pub fn get_transactions_to_approve(
     }
 
     Ok(to_approve)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
-pub struct GetTransactionsToApprove {
-    duration: i64,
-    error: Option<String>,
-    #[serde(rename = "trunkTransaction")]
-    trunk_transaction: Option<String>,
-    #[serde(rename = "branchTransaction")]
-    branch_transaction: Option<String>,
-}
-
-impl GetTransactionsToApprove {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    /// Returns the error attribute
-    fn error(&self) -> &Option<String> {
-        &self.error
-    }
-    /// Returns the trunk_transaction attribute
-    pub fn trunk_transaction(&self) -> Option<String> {
-        self.trunk_transaction.clone()
-    }
-    /// Returns the branch_transaction attribute
-    pub fn branch_transaction(&self) -> Option<String> {
-        self.branch_transaction.clone()
-    }
 }

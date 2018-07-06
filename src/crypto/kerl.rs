@@ -3,10 +3,10 @@
 //! use this until ApInt or ramp are good enough, then use those
 //! instead.
 
-use super::keccak::Keccak;
-use super::{Sponge, HASH_LENGTH};
 use std::fmt;
 
+use super::keccak::Keccak;
+use super::{Sponge, HASH_LENGTH};
 use crate::Result;
 
 const BIT_HASH_LENGTH: usize = 384;
@@ -36,6 +36,18 @@ const HALF_3: [u32; 12] = [
 
 /// The Kerl struct is a Sponge that uses the Keccak
 /// hashing algorithm.
+///```
+/// extern crate iota_lib_rs;
+/// use iota_lib_rs::crypto::{Sponge, Kerl};
+///
+/// // Create an array of 243 1s
+/// let input = [1; 243];
+/// // Create a mutable array of 243 0s
+/// let mut out = [0; 243];
+/// let mut kerl = Kerl::default();
+/// kerl.absorb(&input);
+/// kerl.squeeze(&mut out);
+///```
 #[derive(Clone, Copy)]
 pub struct Kerl {
     keccak: Keccak,

@@ -31,6 +31,10 @@ lazy_static! {
 }
 
 /// Converts trits into bytes with an offset and size limit
+///
+/// * `trits` - trits to read
+/// * `offset` - offset to start at
+/// * `size` - index to read until
 pub fn bytes_with_offset(trits: &[i8], offset: usize, size: usize) -> Vec<u8> {
     let len = (size + NUMBER_OF_TRITS_IN_A_BYTE - 1) / NUMBER_OF_TRITS_IN_A_BYTE;
     let mut bytes = Vec::new();
@@ -82,15 +86,16 @@ pub fn trits_from_string(trytes: &str) -> Vec<i8> {
     trytes.chars().flat_map(char_to_trits).cloned().collect()
 }
 
-/// Converts a string into trits and ensures an the output length
+/// Converts a string into trits and ensures the output length
 pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
     let tmp: Vec<i8> = trytes.chars().flat_map(char_to_trits).cloned().collect();
     if tmp.len() < length {
         let mut result = vec![0; length];
         result[..tmp.len()].clone_from_slice(&tmp[..]);
-        return result;
+        result
+    } else {
+        tmp[0..length].to_vec()
     }
-    tmp
 }
 
 /// Converts a char into and array of trits
@@ -153,9 +158,10 @@ pub fn trits_with_length(trytes: i64, length: usize) -> Vec<i8> {
     if tmp.len() < length {
         let mut result = vec![0; length];
         result[..tmp.len()].clone_from_slice(&tmp[..]);
-        return result;
+        result
+    } else {
+        tmp[0..length].to_vec()
     }
-    tmp[0..length].to_vec()
 }
 
 /// Copy
@@ -209,7 +215,7 @@ pub fn long_value(trits: &[i8]) -> i64 {
     v
 }
 
-/// Increments a trit slice in place
+/// Increments a trit slice in place, only considering trits until index `size`
 pub fn increment(trit_array: &mut [i8], size: usize) {
     for trit in trit_array.iter_mut().take(size) {
         *trit += 1;

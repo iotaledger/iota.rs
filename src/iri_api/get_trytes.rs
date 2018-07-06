@@ -1,5 +1,5 @@
+use super::responses::GetTrytesResponse;
 use crate::utils::input_validator;
-
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -30,26 +30,4 @@ pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<GetTrytesResponse> {
         .body(body.to_string())
         .send()?
         .json()?)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
-pub struct GetTrytesResponse {
-    duration: i64,
-    trytes: Vec<String>,
-}
-
-impl GetTrytesResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    /// Returns the trytes attribute
-    pub fn trytes(&self) -> &[String] {
-        &self.trytes
-    }
-    /// Takes ownership the trytes attribute
-    pub fn take_trytes(self) -> Vec<String> {
-        self.trytes
-    }
 }

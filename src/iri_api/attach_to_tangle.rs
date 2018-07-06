@@ -1,3 +1,4 @@
+use super::responses::AttachToTangleResponse;
 use chrono::prelude::*;
 use crate::crypto::PearlDiver;
 use crate::model::*;
@@ -13,11 +14,12 @@ lazy_static! {
 }
 
 /// Performs proof of work
-/// `uri` - If None, local PoW is done, otherwise, we ask IRI
-/// `trunk_transaction` - trunk transaction to confirm
-/// `branch_transaction` - branch transaction to confirm
-/// `min_weight_magnitude` - Difficulty of PoW
-/// `trytes` - tryes to use for PoW
+///
+/// * `uri` - the uri used to make the request, if `None` then local PoW is done.
+/// * `trunk_transaction` - trunk transaction to confirm
+/// * `branch_transaction` - branch transaction to confirm
+/// * `min_weight_magnitude` - Difficulty of PoW
+/// * `trytes` - tryes to use for PoW
 pub fn attach_to_tangle(
     uri: Option<String>,
     trunk_transaction: &str,
@@ -71,13 +73,13 @@ pub fn attach_to_tangle(
             previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
         }
         result_trytes.reverse();
-        return Ok(AttachToTangleResponse {
-            duration: 0,
-            id: None,
-            error: None,
-            exception: None,
-            trytes: Some(result_trytes),
-        });
+        return Ok(AttachToTangleResponse::new(
+            0,
+            None,
+            None,
+            None,
+            Some(result_trytes),
+        ));
     }
 
     let client = reqwest::Client::builder()
@@ -111,38 +113,4 @@ pub fn attach_to_tangle(
     }
 
     Ok(attach_resp)
-}
-
-/// This is a typed representation of the JSON response
-/// `duration` will be zero if local PoW is selected.
-#[derive(Deserialize, Debug)]
-pub struct AttachToTangleResponse {
-    duration: i64,
-    id: Option<String>,
-    error: Option<String>,
-    exception: Option<String>,
-    trytes: Option<Vec<String>>,
-}
-
-impl AttachToTangleResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    /// Returns the id attribute
-    pub fn id(&self) -> Option<String> {
-        self.id.clone()
-    }
-    /// Returns the error attribute
-    fn error(&self) -> Option<String> {
-        self.error.clone()
-    }
-    /// Returns the exception attribute
-    fn exception(&self) -> Option<String> {
-        self.exception.clone()
-    }
-    /// Returns the trytes attribute
-    pub fn trytes(self) -> Option<Vec<String>> {
-        self.trytes
-    }
 }

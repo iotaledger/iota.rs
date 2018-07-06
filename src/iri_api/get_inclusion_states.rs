@@ -1,5 +1,5 @@
+use super::responses::GetInclusionStatesResponse;
 use crate::utils::input_validator;
-
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
@@ -50,30 +50,4 @@ pub fn get_inclusion_states(
     }
 
     Ok(resp)
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
-pub struct GetInclusionStatesResponse {
-    duration: i64,
-    error: Option<String>,
-    states: Option<Vec<bool>>,
-}
-
-impl GetInclusionStatesResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    fn error(&self) -> Option<String> {
-        self.error.clone()
-    }
-    /// Returns the states attribute
-    pub fn states(self) -> Option<Vec<bool>> {
-        self.states
-    }
-    /// Returns a specfic index into the states attribute
-    pub fn state(self, index: usize) -> bool {
-        self.states.unwrap_or_default()[index]
-    }
 }
