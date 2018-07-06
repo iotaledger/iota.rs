@@ -71,7 +71,7 @@ Things that are done:
         - [x] get_bundle
 
 Here's an example of how to send a transaction: (Note that we're using the address as the seed in `send_transfer()`...don't do this)
-```
+```rust
 extern crate iota_lib_rs;
 
 use iota_lib_rs::iota_api;
