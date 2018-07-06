@@ -6,6 +6,7 @@ use super::utils::converter;
 use super::utils::input_validator;
 use chrono::prelude::*;
 use crate::crypto;
+use crate::crypto::pearl_diver::PearlDiver;
 use failure::Error;
 use std::cmp;
 
@@ -15,6 +16,10 @@ pub struct API {
 }
 
 impl API {
+    pub fn new(uri: &'static str) -> API {
+        API { uri }
+    }
+
     pub fn new_address(
         &self,
         seed: &str,
@@ -91,19 +96,37 @@ impl API {
         trytes: &[String],
         depth: usize,
         min_weight_magnitude: usize,
+        local_pow: bool,
         reference: Option<String>,
     ) -> Result<Vec<Transaction>, Error> {
-        let to_approve =
-            iri_api::get_transactions_to_approve(self.uri, depth, &reference.unwrap_or_default())?;
-        let attached = iri_api::attach_to_tangle(
-            self.uri,
-            &to_approve.trunk_transaction().unwrap(),
-            &to_approve.branch_transaction().unwrap(),
-            min_weight_magnitude,
-            trytes,
-        )?;
-        let trytes_list = attached.trytes().unwrap();
-        self.store_and_broadcast(&trytes_list)?;
+        let to_approve = iri_api::get_transactions_to_approve(self.uri, depth, &reference)?;
+        println!("{:?}", to_approve);
+        if let Some(error) = to_approve.error() {
+            return Err(format_err!("{}", error));
+        }
+        let trytes_list = if local_pow {
+            let res = iri_api::attach_to_tangle(
+                None,
+                &to_approve.trunk_transaction().unwrap(),
+                &to_approve.branch_transaction().unwrap(),
+                min_weight_magnitude,
+                trytes)?;
+            res.trytes().unwrap()
+        } else {
+            let attached = iri_api::attach_to_tangle(
+                Some(self.uri.to_string()),
+                &to_approve.trunk_transaction().unwrap(),
+                &to_approve.branch_transaction().unwrap(),
+                min_weight_magnitude,
+                trytes)?;
+            if let Some(error) = attached.error() {
+                return Err(format_err!("{}", error));
+            }
+            attached.trytes().unwrap()
+        };
+
+        let resp = self.store_and_broadcast(&trytes_list)?;
+        println!("{:?}", resp);
         Ok(trytes_list
             .iter()
             .map(|trytes| trytes.parse().unwrap())
@@ -210,7 +233,7 @@ impl API {
             input_validator::is_transfers_collection_valid(&transfers),
             "Invalid transfers."
         );
-        let security = security.unwrap_or(2);
+        let security = security.unwrap_or_else(|| 2);
         let mut bundle = Bundle::default();
         let mut total_value = 0;
         let mut signature_fragments: Vec<String> = Vec::new();
@@ -310,7 +333,7 @@ impl API {
             bundle.add_trytes(&signature_fragments);
             let mut bundle_trytes: Vec<String> = Vec::new();
             for b in bundle.bundle().iter().rev() {
-                bundle_trytes.push(b.to_trytes());
+                bundle_trytes.push(b.to_trytes()?);
             }
             Ok(bundle_trytes)
         }
@@ -336,7 +359,8 @@ impl API {
             security,
             hmac_key,
         )?;
-        self.send_trytes(&trytes, depth, min_weight_magnitude, reference)
+        let t = self.send_trytes(&trytes, depth, min_weight_magnitude, false, reference)?;
+        Ok(t)
     }
 
     pub fn traverse_bundle(
@@ -516,7 +540,7 @@ impl API {
         }
         let mut bundle_trytes: Vec<String> = Vec::new();
         for tx in bundle.bundle().iter().rev() {
-            bundle_trytes.push(tx.to_trytes());
+            bundle_trytes.push(tx.to_trytes()?);
         }
         Ok(bundle_trytes)
     }

@@ -144,7 +144,7 @@ pub fn trits_with_length(trytes: i64, length: usize) -> Vec<i8> {
         result[..tmp.len()].clone_from_slice(&tmp[..]);
         return result;
     }
-    tmp
+    tmp[0..length].to_vec()
 }
 
 pub fn copy_trits(value: i64, destination: &mut [i8], offset: usize, size: usize) {

@@ -1,3 +1,4 @@
+use crate::utils::converter;
 use crossbeam;
 use failure::Error;
 use num_cpus;
@@ -42,9 +43,9 @@ impl PearlDiver {
 
     pub fn search(
         &mut self,
-        transaction_trits: [i8; 8019],
+        transaction_trits: &mut [i8],
         min_weight_magnitude: usize,
-    ) -> Result<Vec<i8>, Error> {
+    ) -> Result<String, Error> {
         ensure!(
             transaction_trits.len() == TRANSACTION_LENGTH,
             "Transaction length [{}], expected [{}]",
@@ -86,14 +87,14 @@ impl PearlDiver {
             *self.running.read().unwrap() == State::Completed,
             "Something went wrong."
         );
-        Ok(result)
+        Ok(converter::trytes(&result))
     }
 }
 
 pub fn get_runnable(
     state: &Arc<RwLock<State>>,
     thread_index: usize,
-    transaction_trits: &Arc<Mutex<[i8; 8019]>>,
+    transaction_trits: &Arc<Mutex<&mut [i8]>>,
     min_weight_magnitude: usize,
     mid_state_copy_low: &mut [u64],
     mid_state_copy_high: &mut [u64],
@@ -137,10 +138,10 @@ pub fn get_runnable(
 
         mask = HIGH_BITS;
         for i in mask_start_index..CURL_HASH_LENGTH {
+            mask &= !(state_low[i] ^ state_high[i]);
             if mask == 0 {
                 break;
             }
-            mask &= !(state_low[i] ^ state_high[i]);
         }
     }
 
@@ -307,10 +308,12 @@ mod tests {
         let mut trits = [0; 8019];
         trits.copy_from_slice(&vec);
         let mut pearl_diver = PearlDiver::default();
-        let t = pearl_diver.search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
+        pearl_diver
+            .search(&mut trits, MIN_WEIGHT_MAGNITUDE)
+            .unwrap();
         let mut hash_trits = [0; HASH_SIZE];
         curl.reset();
-        curl.absorb(&t).unwrap();
+        curl.absorb(&trits).unwrap();
         curl.squeeze(&mut hash_trits).unwrap();
         for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
             assert_eq!(hash_trits[j], 0);
@@ -327,10 +330,12 @@ mod tests {
             let mut trits = [0; 8019];
             trits.copy_from_slice(&vec);
             let mut pearl_diver = PearlDiver::default();
-            let t = pearl_diver.search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
+            pearl_diver
+                .search(&mut trits, MIN_WEIGHT_MAGNITUDE)
+                .unwrap();
             let mut hash_trits = [0; HASH_SIZE];
             curl.reset();
-            curl.absorb(&t).unwrap();
+            curl.absorb(&trits).unwrap();
             curl.squeeze(&mut hash_trits).unwrap();
             for j in (HASH_SIZE - MIN_WEIGHT_MAGNITUDE..HASH_SIZE - 1).rev() {
                 assert_eq!(hash_trits[j], 0);

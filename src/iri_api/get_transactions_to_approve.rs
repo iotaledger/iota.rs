@@ -4,18 +4,21 @@ use reqwest::header::{ContentType, Headers};
 pub fn get_transactions_to_approve(
     uri: &str,
     depth: usize,
-    reference: &str,
+    reference: &Option<String>,
 ) -> Result<GetTransactionsToApprove, Error> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");
 
-    let body = json!({
+    let mut body = json!({
         "command": "getTransactionsToApprove",
         "depth": depth,
-        "reference": reference,
     });
+
+    if let Some(reference) = reference {
+        body["reference"] = json!(reference);
+    }
 
     Ok(client
         .post(uri)

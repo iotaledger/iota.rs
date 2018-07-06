@@ -55,7 +55,7 @@ pub fn is_value(value: &str) -> bool {
 
 pub fn is_array_of_trytes(trytes: &[String]) -> bool {
     for tryte in trytes {
-        if !is_trytes(&tryte[0..2673]) {
+        if !is_trytes(&tryte) {
             return false;
         }
     }

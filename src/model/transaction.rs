@@ -37,6 +37,12 @@ impl fmt::Display for Transaction {
 }
 
 impl Transaction {
+    pub fn attachment_timestamp(&self) -> Option<i64> {
+        self.attachment_timestamp.clone()
+    }
+    pub fn attachment_timestamp_mut(&mut self) -> &mut Option<i64> {
+        &mut self.attachment_timestamp
+    }
     pub fn attachment_timestamp_lower_bound(&self) -> Option<i64> {
         self.attachment_timestamp_lower_bound.clone()
     }
@@ -133,16 +139,8 @@ impl Transaction {
     pub fn obsolete_tag_mut(&mut self) -> &mut Option<String> {
         &mut self.obsolete_tag
     }
-    pub fn attachment_timestamp(&self) -> Option<i64> {
-        self.attachment_timestamp.clone()
-    }
-    pub fn attachment_timestamp_mut(&mut self) -> &mut Option<i64> {
-        &mut self.attachment_timestamp
-    }
 
-    pub fn to_trytes(&self) -> String {
-        let mut res = String::new();
-
+    pub fn to_trytes(&self) -> Result<String, Error> {
         let mut value_trits = converter::trits(self.value.unwrap_or_default());
         utils::right_pad_vec(&mut value_trits, 81, 0);
 
@@ -152,56 +150,39 @@ impl Transaction {
         let mut current_index_trits =
             converter::trits(self.current_index.unwrap_or_default() as i64);
         utils::right_pad_vec(&mut current_index_trits, 27, 0);
+
         let mut last_index_trits = converter::trits(self.last_index.unwrap_or_default() as i64);
         utils::right_pad_vec(&mut last_index_trits, 27, 0);
 
-        if let Some(current_index) = self.current_index {
-            res += &converter::trits_to_string(&converter::trits(current_index as i64)[0..27])
-                .unwrap();
-        }
-        if let Some(last_index) = self.last_index {
-            res +=
-                &converter::trits_to_string(&converter::trits(last_index as i64)[0..27]).unwrap();
-        }
+        let mut attachment_timestamp_trits =
+            converter::trits(self.attachment_timestamp.unwrap_or_default());
+        utils::right_pad_vec(&mut attachment_timestamp_trits, 27, 0);
 
-        if let Some(signature_fragments) = &self.signature_fragments {
-            res += &signature_fragments;
-        }
-        if let Some(address) = &self.address {
-            res += &address;
-        }
+        let mut attachment_timestamp_lower_bound_trits =
+            converter::trits(self.attachment_timestamp_lower_bound.unwrap_or_default());
+        utils::right_pad_vec(&mut attachment_timestamp_lower_bound_trits, 27, 0);
 
-        if let Some(obsolete_tag) = &self.obsolete_tag {
-            res += &obsolete_tag;
-        }
+        let mut attachment_timestamp_upper_bound_trits =
+            converter::trits(self.attachment_timestamp_upper_bound.unwrap_or_default());
+        utils::right_pad_vec(&mut attachment_timestamp_upper_bound_trits, 27, 0);
 
-        if let Some(bundle) = &self.bundle {
-            res += &bundle;
-        }
-        if let Some(trunk_transaction) = &self.trunk_transaction {
-            res += &trunk_transaction;
-        }
-        if let Some(branch_transaction) = &self.branch_transaction {
-            res += &branch_transaction;
-        }
-        if let Some(tag) = &self.tag {
-            res += &tag;
-        }
-        if let Some(attachment_timestamp) = self.attachment_timestamp {
-            res += &converter::trits_to_string(&converter::trits(attachment_timestamp)[0..27])
-                .unwrap();
-        }
-        if let Some(attachment_timestamp_lower_bound) = self.attachment_timestamp_lower_bound {
-            res += &converter::trits_to_string(
-                &converter::trits(attachment_timestamp_lower_bound)[0..27],
-            ).unwrap();
-        }
-        if let Some(attachment_timestamp_upper_bound) = self.attachment_timestamp_upper_bound {
-            res += &converter::trits_to_string(
-                &converter::trits(attachment_timestamp_upper_bound)[0..27],
-            ).unwrap();
-        }
-        res
+        let res = self.signature_fragments().unwrap_or_default()
+            + &self.address().unwrap_or_default()
+            + &converter::trytes(&value_trits)
+            + &self.obsolete_tag().unwrap_or_default()
+            + &converter::trytes(&timestamp_trits)
+            + &converter::trytes(&current_index_trits)
+            + &converter::trytes(&last_index_trits)
+            + &self.bundle().unwrap_or_default()
+            + &self.trunk_transaction().unwrap_or_default()
+            + &self.branch_transaction().unwrap_or_default()
+            + &self.tag().unwrap_or_default()
+            + &converter::trytes(&attachment_timestamp_trits)
+            + &converter::trytes(&attachment_timestamp_lower_bound_trits)
+            + &converter::trytes(&attachment_timestamp_upper_bound_trits)
+            + &self.nonce().unwrap_or_default();
+
+        Ok(res)
     }
 }
 

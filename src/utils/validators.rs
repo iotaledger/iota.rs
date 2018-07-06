@@ -21,7 +21,7 @@ pub fn is_bundle(bundle: &[Transaction]) -> Result<bool, Error> {
         if index != tx.current_index().unwrap_or_default() as usize {
             return Ok(false);
         }
-        let tx_trytes = tx.to_trytes();
+        let tx_trytes = tx.to_trytes()?;
         let tx_trits = converter::trits_from_string(&tx_trytes[2187..2187 + 162]);
         kerl.absorb(&tx_trits)?;
         if tx_value < 0 {

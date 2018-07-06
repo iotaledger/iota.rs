@@ -50,8 +50,9 @@ impl Bundle {
         for i in 0..signature_message_length {
             let mut trx = Transaction::default();
             *trx.address_mut() = Some(address.to_string());
-            *trx.timestamp_mut() = Some(timestamp);
             *trx.tag_mut() = Some(tag.to_string());
+            *trx.obsolete_tag_mut() = Some(tag.to_string());
+            *trx.timestamp_mut() = Some(timestamp);
             match i {
                 0 => *trx.value_mut() = Some(value),
                 _ => *trx.value_mut() = Some(0),
@@ -67,7 +68,7 @@ impl Bundle {
 
         for (i, bundle) in self.bundle.iter_mut().enumerate() {
             *bundle.signature_fragments_mut() =
-                if signature_fragments.len() <= 1 || signature_fragments[i].is_empty() {
+                if signature_fragments.is_empty() || signature_fragments[i].is_empty() {
                     Some(empty_signature_fragment.clone())
                 } else {
                     Some(signature_fragments[i].clone())
@@ -89,10 +90,14 @@ impl Bundle {
             for bundle in &mut self.bundle {
                 let value_trits = converter::trits_with_length(bundle.value().unwrap(), 81);
                 let timestamp_trits = converter::trits_with_length(bundle.timestamp().unwrap(), 27);
-                let current_index_trits =
-                    converter::trits_with_length(bundle.current_index().unwrap() as i64, 27);
-                let last_index_trits =
-                    converter::trits_with_length(bundle.last_index().unwrap() as i64, 27);
+                let current_index_trits = converter::trits_with_length(
+                    bundle.current_index().unwrap_or_default() as i64,
+                    27,
+                );
+                let last_index_trits = converter::trits_with_length(
+                    bundle.last_index().unwrap_or_default() as i64,
+                    27,
+                );
                 let bundle_essence = converter::trits_from_string(
                     &(bundle.address().unwrap_or_default().to_string()
                         + &converter::trytes(&value_trits)
@@ -128,12 +133,12 @@ impl Bundle {
     pub fn normalized_bundle(bundle_hash: &str) -> [i8; 81] {
         let mut normalized_bundle = [0; 81];
         for i in 0..3 {
-            let mut sum = 0;
+            let mut sum: i64 = 0;
             for j in 0..27 {
                 let mut t = String::new();
                 t.push(bundle_hash.chars().nth(i * 27 + j).unwrap());
                 normalized_bundle[i * 27 + j] = converter::value(&converter::trits_from_string(&t));
-                sum += normalized_bundle[i * 27 + j];
+                sum += normalized_bundle[i * 27 + j] as i64;
             }
             if sum >= 0 {
                 while sum > 0 {
