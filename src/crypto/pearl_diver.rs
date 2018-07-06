@@ -1,4 +1,3 @@
-use crate::utils::converter;
 use crossbeam;
 use failure::Error;
 use num_cpus;
@@ -45,7 +44,7 @@ impl PearlDiver {
         &mut self,
         transaction_trits: &mut [i8],
         min_weight_magnitude: usize,
-    ) -> Result<String, Error> {
+    ) -> Result<(), Error> {
         ensure!(
             transaction_trits.len() == TRANSACTION_LENGTH,
             "Transaction length [{}], expected [{}]",
@@ -82,12 +81,11 @@ impl PearlDiver {
                 });
             }
         });
-        let result = (*(transaction_trits_arc.lock().unwrap())).to_vec();
         ensure!(
             *self.running.read().unwrap() == State::Completed,
             "Something went wrong."
         );
-        Ok(converter::trytes(&result))
+        Ok(())
     }
 }
 

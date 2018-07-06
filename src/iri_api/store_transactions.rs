@@ -25,5 +25,19 @@ pub fn store_transactions(
 
 #[derive(Deserialize, Debug)]
 pub struct StoreTransactionsResponse {
+    duration: i64,
     error: Option<String>,
+    exception: Option<String>,
+}
+
+impl StoreTransactionsResponse {
+    pub fn duration(&self) -> i64 {
+        self.duration
+    }
+    pub fn error(&self) -> Option<String> {
+        self.error.clone()
+    }
+    pub fn exception(&self) -> Option<String> {
+        self.exception.clone()
+    }
 }

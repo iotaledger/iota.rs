@@ -64,7 +64,7 @@ impl Bundle {
     pub fn add_trytes(&mut self, signature_fragments: &[String]) {
         let empty_signature_fragment = "9".repeat(2187);
         let empty_hash = EMPTY_HASH;
-        let empty_timestamp = 999999999;
+        let empty_timestamp = 999_999_999;
 
         for (i, bundle) in self.bundle.iter_mut().enumerate() {
             *bundle.signature_fragments_mut() =
@@ -75,9 +75,9 @@ impl Bundle {
                 };
             *bundle.trunk_transaction_mut() = Some(empty_hash.to_string());
             *bundle.branch_transaction_mut() = Some(empty_hash.to_string());
-            *bundle.attachment_timestamp_mut() = Some(empty_timestamp.clone());
-            *bundle.attachment_timestamp_lower_bound_mut() = Some(empty_timestamp.clone());
-            *bundle.attachment_timestamp_upper_bound_mut() = Some(empty_timestamp.clone());
+            *bundle.attachment_timestamp_mut() = Some(empty_timestamp);
+            *bundle.attachment_timestamp_lower_bound_mut() = Some(empty_timestamp);
+            *bundle.attachment_timestamp_upper_bound_mut() = Some(empty_timestamp);
             *bundle.nonce_mut() = Some("9".repeat(27));
         }
     }
@@ -138,7 +138,7 @@ impl Bundle {
                 let mut t = String::new();
                 t.push(bundle_hash.chars().nth(i * 27 + j).unwrap());
                 normalized_bundle[i * 27 + j] = converter::value(&converter::trits_from_string(&t));
-                sum += normalized_bundle[i * 27 + j] as i64;
+                sum += i64::from(normalized_bundle[i * 27 + j]);
             }
             if sum >= 0 {
                 while sum > 0 {

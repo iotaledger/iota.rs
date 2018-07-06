@@ -38,19 +38,19 @@ impl fmt::Display for Transaction {
 
 impl Transaction {
     pub fn attachment_timestamp(&self) -> Option<i64> {
-        self.attachment_timestamp.clone()
+        self.attachment_timestamp
     }
     pub fn attachment_timestamp_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp
     }
     pub fn attachment_timestamp_lower_bound(&self) -> Option<i64> {
-        self.attachment_timestamp_lower_bound.clone()
+        self.attachment_timestamp_lower_bound
     }
     pub fn attachment_timestamp_lower_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_lower_bound
     }
     pub fn attachment_timestamp_upper_bound(&self) -> Option<i64> {
-        self.attachment_timestamp_upper_bound.clone()
+        self.attachment_timestamp_upper_bound
     }
     pub fn attachment_timestamp_upper_bound_mut(&mut self) -> &mut Option<i64> {
         &mut self.attachment_timestamp_upper_bound
@@ -183,6 +183,10 @@ impl Transaction {
             + &self.nonce().unwrap_or_default();
 
         Ok(res)
+    }
+
+    pub fn validate(&mut self) -> bool {
+        true
     }
 }
 

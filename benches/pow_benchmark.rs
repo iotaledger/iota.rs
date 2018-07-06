@@ -11,9 +11,9 @@ use iota_lib_rs::crypto::pearl_diver::PearlDiver;
 
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
-fn basic_pow(trits: [i8; 8019]) {
+fn basic_pow(mut trits: [i8; 8019]) {
     let mut pearl_diver = PearlDiver::default();
-    pearl_diver.search(trits, MIN_WEIGHT_MAGNITUDE).unwrap();
+    pearl_diver.search(&mut trits, MIN_WEIGHT_MAGNITUDE).unwrap();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

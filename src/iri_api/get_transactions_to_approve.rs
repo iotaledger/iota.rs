@@ -20,12 +20,18 @@ pub fn get_transactions_to_approve(
         body["reference"] = json!(reference);
     }
 
-    Ok(client
+    let to_approve: GetTransactionsToApprove = client
         .post(uri)
         .headers(headers)
         .body(body.to_string())
         .send()?
-        .json()?)
+        .json()?;
+
+    if let Some(error) = to_approve.error() {
+        return Err(format_err!("{}", error));
+    }
+
+    Ok(to_approve)
 }
 
 #[derive(Deserialize, Debug)]

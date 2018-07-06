@@ -6,7 +6,6 @@ use super::utils::converter;
 use super::utils::input_validator;
 use chrono::prelude::*;
 use crate::crypto;
-use crate::crypto::pearl_diver::PearlDiver;
 use failure::Error;
 use std::cmp;
 
@@ -97,10 +96,9 @@ impl API {
         depth: usize,
         min_weight_magnitude: usize,
         local_pow: bool,
-        reference: Option<String>,
+        reference: &Option<String>,
     ) -> Result<Vec<Transaction>, Error> {
         let to_approve = iri_api::get_transactions_to_approve(self.uri, depth, &reference)?;
-        println!("{:?}", to_approve);
         if let Some(error) = to_approve.error() {
             return Err(format_err!("{}", error));
         }
@@ -124,9 +122,7 @@ impl API {
             }
             attached.trytes().unwrap()
         };
-
-        let resp = self.store_and_broadcast(&trytes_list)?;
-        println!("{:?}", resp);
+        self.store_and_broadcast(&trytes_list)?;
         Ok(trytes_list
             .iter()
             .map(|trytes| trytes.parse().unwrap())
@@ -136,9 +132,10 @@ impl API {
     pub fn store_and_broadcast(
         &self,
         trytes: &[String],
-    ) -> Result<iri_api::BroadcastTransactionsResponse, Error> {
+    ) -> Result<(), Error> {
         iri_api::store_transactions(self.uri, trytes)?;
-        return iri_api::broadcast_transactions(self.uri, trytes);
+        iri_api::broadcast_transactions(self.uri, trytes)?;
+        Ok(())
     }
 
     pub fn get_inputs(
@@ -162,10 +159,10 @@ impl API {
                 None => true,
             };
 
-            for i in 0..addresses.len() {
+            for (i, address) in addresses.iter().enumerate() {
                 let balance: i64 = resp.balances().unwrap_or_default()[i].clone().parse()?;
                 if balance > 0 {
-                    let new_entry = Input::new(addresses[i].clone(), balance, start + i, security);
+                    let new_entry = Input::new(address.clone(), balance, start + i, security);
                     inputs.add(new_entry);
                     *inputs.total_balance_mut() += balance;
                     if let Some(threshold) = threshold {
@@ -204,7 +201,7 @@ impl API {
         seed: &str,
         transfers: &[Transfer],
         inputs: Option<Inputs>,
-        remainder_address: Option<String>,
+        remainder_address: &Option<String>,
         security: Option<usize>,
         hmac_key: Option<String>,
     ) -> Result<Vec<String>, Error> {
@@ -216,7 +213,7 @@ impl API {
             ensure!(input_validator::is_trytes(&hmac_key), "Invalid trytes.");
             add_hmac = true;
         }
-        for transfer in transfers.iter_mut() {
+        for transfer in &mut transfers {
             if add_hmac && *transfer.value() > 0 {
                 *transfer.message_mut() = "9".repeat(243) + transfer.message();
                 added_hmac = true;
@@ -254,10 +251,7 @@ impl API {
                     signature_fragments.push(fragment);
                 }
             } else {
-                let mut fragment = String::new();
-                if !transfer.message().is_empty() {
-                    fragment = transfer.message().chars().take(2187).collect();
-                }
+                let mut fragment = if !transfer.message().is_empty() { transfer.message().chars().take(2187).collect() } else { String::new() };
                 utils::right_pad_string(&mut fragment, constants::MESSAGE_LENGTH, '9');
                 signature_fragments.push(fragment);
             }
@@ -284,8 +278,8 @@ impl API {
                     let resp = iri_api::get_balances(self.uri, &input_addresses, 100)?;
                     let mut confirmed_inputs = Inputs::default();
                     let balances = resp.balances().unwrap_or_default();
-                    for i in 0..balances.len() {
-                        let b: i64 = balances[i].parse()?;
+                    for (i, balance) in balances.iter().enumerate() {
+                        let b: i64 = balance.parse()?;
                         if b > 0 {
                             *confirmed_inputs.total_balance_mut() += b;
                             let mut confirmed_input = inputs.inputs_list()[i].clone();
@@ -302,10 +296,10 @@ impl API {
                     );
                     self.add_remainder(
                         seed,
-                        confirmed_inputs,
+                        &confirmed_inputs,
                         &mut bundle,
                         &tag,
-                        remainder_address,
+                        &remainder_address,
                         &signature_fragments,
                         added_hmac,
                         hmac_key,
@@ -317,10 +311,10 @@ impl API {
                         self.get_inputs(seed, None, None, Some(total_value), Some(security))?;
                     self.add_remainder(
                         seed,
-                        inputs,
+                        &inputs,
                         &mut bundle,
                         &tag,
-                        remainder_address,
+                        &remainder_address,
                         &signature_fragments,
                         added_hmac,
                         hmac_key,
@@ -346,8 +340,8 @@ impl API {
         min_weight_magnitude: usize,
         transfers: &[Transfer],
         inputs: Option<Inputs>,
-        reference: Option<String>,
-        remainder_address: Option<String>,
+        reference: &Option<String>,
+        remainder_address: &Option<String>,
         security: Option<usize>,
         hmac_key: Option<String>,
     ) -> Result<Vec<Transaction>, Error> {
@@ -355,11 +349,11 @@ impl API {
             seed,
             transfers,
             inputs,
-            remainder_address,
+            &remainder_address,
             security,
             hmac_key,
         )?;
-        let t = self.send_trytes(&trytes, depth, min_weight_magnitude, false, reference)?;
+        let t = self.send_trytes(&trytes, depth, min_weight_magnitude, false, &reference)?;
         Ok(t)
     }
 
@@ -370,7 +364,7 @@ impl API {
         mut bundle: Vec<Transaction>,
     ) -> Result<Vec<Transaction>, Error> {
         let tryte_list = iri_api::get_trytes(self.uri, &[trunk_tx.to_string()])?.take_trytes();
-        ensure!(tryte_list.len() > 0, "Bundle transactions not visible");
+        ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;
         let tx_bundle = tx.bundle().unwrap_or_default();
@@ -389,7 +383,7 @@ impl API {
 
         let trunk_tx = tx.trunk_transaction().unwrap_or_default();
         bundle.push(tx);
-        return self.traverse_bundle(&trunk_tx, Some(bundle_hash), bundle);
+        self.traverse_bundle(&trunk_tx, Some(bundle_hash), bundle)
     }
 
     pub fn get_bundle(&self, transaction: &str) -> Result<Vec<Transaction>, Error> {
@@ -405,10 +399,10 @@ impl API {
     fn add_remainder(
         &self,
         seed: &str,
-        inputs: Inputs,
+        inputs: &Inputs,
         bundle: &mut Bundle,
         tag: &str,
-        remainder_address: Option<String>,
+        remainder_address: &Option<String>,
         signature_fragments: &[String],
         added_hmac: bool,
         hmac_key: Option<String>,
@@ -430,7 +424,7 @@ impl API {
                         bundle.add_entry(1, remainder_address, remainder, tag, timestamp);
                         return self.sign_inputs_and_return(
                             seed,
-                            inputs.clone(),
+                            inputs,
                             bundle,
                             signature_fragments,
                             added_hmac,
@@ -455,7 +449,7 @@ impl API {
                     bundle.add_entry(1, &new_address, remainder, tag, Utc::now().timestamp());
                     return self.sign_inputs_and_return(
                         seed,
-                        inputs.clone(),
+                        inputs,
                         bundle,
                         signature_fragments,
                         added_hmac,
@@ -464,7 +458,7 @@ impl API {
                 } else {
                     return self.sign_inputs_and_return(
                         seed,
-                        inputs.clone(),
+                        inputs,
                         bundle,
                         signature_fragments,
                         added_hmac,
@@ -481,7 +475,7 @@ impl API {
     fn sign_inputs_and_return(
         &self,
         seed: &str,
-        inputs: Inputs,
+        inputs: &Inputs,
         bundle: &mut Bundle,
         signature_fragments: &[String],
         added_hmac: bool,

@@ -33,5 +33,19 @@ pub fn broadcast_transactions(
 
 #[derive(Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
+    duration: i64,
     error: Option<String>,
+    exception: Option<String>,
+}
+
+impl BroadcastTransactionsResponse {
+    pub fn duration(&self) -> i64 {
+        self.duration
+    }
+    pub fn error(&self) -> Option<String> {
+        self.error.clone()
+    }
+    pub fn exception(&self) -> Option<String> {
+        self.exception.clone()
+    }
 }
