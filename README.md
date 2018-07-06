@@ -5,7 +5,7 @@ This is a port of the IOTA Java/JS API into Rust. It works, but I wouldn't trust
 Here are some reasons you might want to use this library:
 1. It has a very fast implementation of local PoW (1-2s with MwM = 14, 4-6ms with MwM = 9 on my laptop)
 2. You'll benefit from Rust's very nice type system
-3. This library is more actively maintain than Jota
+3. This library is more actively maintained than Jota
 4. Now that the library is working, I'm going to be obsessively going over it to improve safety, performance, and usability
 5. It would make me personally happy :)
 
