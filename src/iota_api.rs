@@ -339,6 +339,7 @@ impl API {
         depth: usize,
         min_weight_magnitude: usize,
         transfers: &[Transfer],
+        local_pow: bool,
         inputs: Option<Inputs>,
         reference: &Option<String>,
         remainder_address: &Option<String>,
@@ -353,7 +354,7 @@ impl API {
             security,
             hmac_key,
         )?;
-        let t = self.send_trytes(&trytes, depth, min_weight_magnitude, false, &reference)?;
+        let t = self.send_trytes(&trytes, depth, min_weight_magnitude, local_pow, &reference)?;
         Ok(t)
     }
 

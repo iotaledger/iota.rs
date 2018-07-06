@@ -1,6 +1,6 @@
 # An unofficial implementation of the IOTA api in rust.
 
-This is a port of the IOTA Java/JS API into Rust. The plan is to do a straight port of the API initially, then improve it using all the greatness that Rust brings to the table.
+This is a port of the IOTA Java/JS API into Rust. It works, but I wouldn't trust it with real money yet. Having said that, please let me know if you have any suggestions or run into any issues.
 
 This library currently requires nightly rust to build.
 
@@ -60,4 +60,17 @@ Things that are done:
         - [x] traverse_bundle
         - [x] send_transfer
         - [x] get_bundle
-        
+
+Here's an example of how to send a transaction: (Note that we're using the address as the seed in `send_transfer()`...don't do this)
+```
+let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
+    let message = trytes_converter::to_trytes("Hello World").unwrap();
+    let mut transfer = Transfer::default();
+    *transfer.value_mut() = 0;
+    *transfer.address_mut() = trytes.to_string();
+    *transfer.message_mut() = message;
+    let transfers = [transfer];
+    let api = iota_api::API::new("https://trinity.iota.fm");
+    let tx = api.send_transfer(trytes, 3, 14, &transfers, true, None, &None, &None, None, None).unwrap();
+    println!("{:?}", tx);
+```
