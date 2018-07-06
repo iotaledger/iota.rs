@@ -9,7 +9,9 @@ Here are some reasons you might want to use this library:
 4. Now that the library is working, I'm going to be obsessively going over it to improve safety, performance, and usability
 5. It would make me personally happy :)
 
-(Documentation coming soon...)
+# Documentation
+
+https://docs.rs/iota-lib-rs
 
 This library currently requires nightly rust to build.
 
