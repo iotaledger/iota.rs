@@ -6,36 +6,42 @@ use super::utils::converter;
 use super::utils::input_validator;
 use chrono::prelude::*;
 use crate::crypto;
-use failure::Error;
+use crate::Result;
 use std::cmp;
 
-#[derive(Clone, Copy, Debug)]
+/// Generates a new address
+pub fn new_address(seed: &str, index: usize, security: usize, checksum: bool) -> Result<String> {
+    let key = crypto::signing::key(&converter::trits_from_string(seed), index, security)?;
+    let digests = crypto::signing::digests(&key)?;
+    let address_trits = crypto::signing::address(&digests)?;
+    let mut address = converter::trytes(&address_trits);
+    if checksum {
+        address = utils::add_checksum(&address)?;
+    }
+    Ok(address)
+}
+
+/// An instance of the api using the same IRI URI throughout
+#[derive(Clone, Debug)]
 pub struct API {
-    uri: &'static str,
+    uri: String,
 }
 
 impl API {
-    pub fn new(uri: &'static str) -> API {
-        API { uri }
-    }
-
-    pub fn new_address(
-        &self,
-        seed: &str,
-        index: usize,
-        security: usize,
-        checksum: bool,
-    ) -> Result<String, Error> {
-        let key = crypto::signing::key(&converter::trits_from_string(seed), index, security)?;
-        let digests = crypto::signing::digests(&key)?;
-        let address_trits = crypto::signing::address(&digests)?;
-        let mut address = converter::trytes(&address_trits);
-        if checksum {
-            address = utils::add_checksum(&address)?;
+    /// Create a new instance of the API
+    pub fn new(uri: &str) -> API {
+        API {
+            uri: uri.to_string(),
         }
-        Ok(address)
     }
 
+    /// Generates a new address
+    /// `seed` - seed used to generate new address
+    /// `index` - how many iterations of generating to skip
+    /// `security` - security factor 1-3 with 3 being most secure
+    /// `checksum` - whether or not to checksum address
+    /// `total` - Number of addresses to generate. If total isn't provided, we generate until we find an unused address
+    /// `return_all` - whether to return all generated addresses, or just the last one
     pub fn get_new_address(
         &self,
         seed: &str,
@@ -44,7 +50,7 @@ impl API {
         checksum: bool,
         total: Option<usize>,
         return_all: bool,
-    ) -> Result<Vec<String>, Error> {
+    ) -> Result<Vec<String>> {
         let mut index = index.unwrap_or_default();
         let security = security.unwrap_or(2);
         ensure!(input_validator::is_trytes(seed), "Invalid seed.");
@@ -55,30 +61,30 @@ impl API {
         match total {
             Some(total) => {
                 ensure!(total > 0, "Invalid total.");
-                for _ in 0..total {
-                    let address = self.new_address(seed, index, security, checksum)?;
+                for i in index..total {
+                    let address = new_address(seed, i, security, checksum)?;
                     all_addresses.push(address);
                 }
                 Ok(all_addresses)
             }
             None => loop {
-                let new_address = self.new_address(seed, index, security, checksum)?;
+                let new_address = new_address(seed, index, security, checksum)?;
                 if return_all {
                     all_addresses.push(new_address.clone());
                 }
                 index += 1;
                 let new_address_vec = vec![new_address];
                 let were_addr_spent =
-                    iri_api::were_addresses_spent_from(self.uri, &new_address_vec)?;
+                    iri_api::were_addresses_spent_from(&self.uri, &new_address_vec)?;
                 if !were_addr_spent.state(0) {
                     let resp = iri_api::find_transactions(
-                        self.uri,
+                        &self.uri,
                         None,
                         Some(&new_address_vec),
                         None,
                         None,
                     )?;
-                    if resp.hashes().unwrap_or_default().is_empty() {
+                    if resp.take_hashes().unwrap_or_default().is_empty() {
                         if return_all {
                             return Ok(all_addresses);
                         } else {
@@ -90,6 +96,10 @@ impl API {
         }
     }
 
+    /// Send trytes is a helper function that
+    /// 1. gets transactions to approve
+    /// 2. does PoW
+    /// 3. sends them to the IRI
     pub fn send_trytes(
         &self,
         trytes: &[String],
@@ -97,18 +107,16 @@ impl API {
         min_weight_magnitude: usize,
         local_pow: bool,
         reference: &Option<String>,
-    ) -> Result<Vec<Transaction>, Error> {
-        let to_approve = iri_api::get_transactions_to_approve(self.uri, depth, &reference)?;
-        if let Some(error) = to_approve.error() {
-            return Err(format_err!("{}", error));
-        }
+    ) -> Result<Vec<Transaction>> {
+        let to_approve = iri_api::get_transactions_to_approve(&self.uri, depth, &reference)?;
         let trytes_list = if local_pow {
             let res = iri_api::attach_to_tangle(
                 None,
                 &to_approve.trunk_transaction().unwrap(),
                 &to_approve.branch_transaction().unwrap(),
                 min_weight_magnitude,
-                trytes)?;
+                trytes,
+            )?;
             res.trytes().unwrap()
         } else {
             let attached = iri_api::attach_to_tangle(
@@ -116,10 +124,8 @@ impl API {
                 &to_approve.trunk_transaction().unwrap(),
                 &to_approve.branch_transaction().unwrap(),
                 min_weight_magnitude,
-                trytes)?;
-            if let Some(error) = attached.error() {
-                return Err(format_err!("{}", error));
-            }
+                trytes,
+            )?;
             attached.trytes().unwrap()
         };
         self.store_and_broadcast(&trytes_list)?;
@@ -129,15 +135,16 @@ impl API {
             .collect())
     }
 
-    pub fn store_and_broadcast(
-        &self,
-        trytes: &[String],
-    ) -> Result<(), Error> {
-        iri_api::store_transactions(self.uri, trytes)?;
-        iri_api::broadcast_transactions(self.uri, trytes)?;
+    /// Helper function that both stores, and broadcast trytes to
+    /// the IRI. Trytes must have been PoW-ed.
+    pub fn store_and_broadcast(&self, trytes: &[String]) -> Result<()> {
+        iri_api::store_transactions(&self.uri, trytes)?;
+        iri_api::broadcast_transactions(&self.uri, trytes)?;
         Ok(())
     }
 
+    /// Given a seed, iterates through addresses looking for
+    /// enough funds to meet specified threshold
     pub fn get_inputs(
         &self,
         seed: &str,
@@ -145,13 +152,13 @@ impl API {
         end: Option<usize>,
         threshold: Option<i64>,
         security: Option<usize>,
-    ) -> Result<Inputs, Error> {
+    ) -> Result<Inputs> {
         ensure!(input_validator::is_trytes(seed), "Invalid seed.");
         let start = start.unwrap_or(0);
         let security = security.unwrap_or(2);
 
-        let get_balance_and_format = |addresses: &[String]| -> Result<Inputs, Error> {
-            let resp = iri_api::get_balances(self.uri, addresses, 100)?;
+        let get_balance_and_format = |addresses: &[String]| -> Result<Inputs> {
+            let resp = iri_api::get_balances(&self.uri, addresses, 100)?;
             let mut inputs = Inputs::default();
 
             let mut threshold_reached = match threshold {
@@ -159,8 +166,9 @@ impl API {
                 None => true,
             };
 
+            let balances = resp.take_balances().unwrap_or_default();
             for (i, address) in addresses.iter().enumerate() {
-                let balance: i64 = resp.balances().unwrap_or_default()[i].clone().parse()?;
+                let balance: i64 = balances[i].clone().parse()?;
                 if balance > 0 {
                     let new_entry = Input::new(address.clone(), balance, start + i, security);
                     inputs.add(new_entry);
@@ -186,7 +194,7 @@ impl API {
             );
             let mut all_addresses: Vec<String> = Vec::new();
             for i in start..end {
-                all_addresses.push(self.new_address(seed, i, security, false)?);
+                all_addresses.push(new_address(seed, i, security, false)?);
             }
             get_balance_and_format(&all_addresses)
         } else {
@@ -196,6 +204,8 @@ impl API {
         }
     }
 
+    /// Prepares a slice of transfers and converts them into a
+    /// slice of tryte-encoded strings
     pub fn prepare_transfers(
         &self,
         seed: &str,
@@ -204,7 +214,7 @@ impl API {
         remainder_address: &Option<String>,
         security: Option<usize>,
         hmac_key: Option<String>,
-    ) -> Result<Vec<String>, Error> {
+    ) -> Result<Vec<String>> {
         let mut add_hmac = false;
         let mut added_hmac = false;
         let mut transfers = transfers.to_owned();
@@ -251,7 +261,11 @@ impl API {
                     signature_fragments.push(fragment);
                 }
             } else {
-                let mut fragment = if !transfer.message().is_empty() { transfer.message().chars().take(2187).collect() } else { String::new() };
+                let mut fragment = if !transfer.message().is_empty() {
+                    transfer.message().chars().take(2187).collect()
+                } else {
+                    String::new()
+                };
                 utils::right_pad_string(&mut fragment, constants::MESSAGE_LENGTH, '9');
                 signature_fragments.push(fragment);
             }
@@ -260,7 +274,7 @@ impl API {
             bundle.add_entry(
                 signature_message_length,
                 transfer.address(),
-                *transfer.value() as i64,
+                *transfer.value(),
                 &tag,
                 Utc::now().timestamp(),
             );
@@ -275,9 +289,9 @@ impl API {
                         .iter()
                         .map(|input| input.address().to_string())
                         .collect();
-                    let resp = iri_api::get_balances(self.uri, &input_addresses, 100)?;
+                    let resp = iri_api::get_balances(&self.uri, &input_addresses, 100)?;
                     let mut confirmed_inputs = Inputs::default();
-                    let balances = resp.balances().unwrap_or_default();
+                    let balances = resp.take_balances().unwrap_or_default();
                     for (i, balance) in balances.iter().enumerate() {
                         let b: i64 = balance.parse()?;
                         if b > 0 {
@@ -327,12 +341,14 @@ impl API {
             bundle.add_trytes(&signature_fragments);
             let mut bundle_trytes: Vec<String> = Vec::new();
             for b in bundle.bundle().iter().rev() {
-                bundle_trytes.push(b.to_trytes()?);
+                bundle_trytes.push(b.to_trytes());
             }
             Ok(bundle_trytes)
         }
     }
 
+    /// Prepares and sends a slice of transfers
+    /// This helper does everything for you, PoW and such
     pub fn send_transfer(
         &self,
         seed: &str,
@@ -345,7 +361,7 @@ impl API {
         remainder_address: &Option<String>,
         security: Option<usize>,
         hmac_key: Option<String>,
-    ) -> Result<Vec<Transaction>, Error> {
+    ) -> Result<Vec<Transaction>> {
         let trytes = self.prepare_transfers(
             seed,
             transfers,
@@ -358,13 +374,15 @@ impl API {
         Ok(t)
     }
 
+    /// Traverses a bundle by going through trunk transactions until
+    /// the bundle hash of the transaction is no longer the same.
     pub fn traverse_bundle(
         &self,
         trunk_tx: &str,
         bundle_hash: Option<String>,
         mut bundle: Vec<Transaction>,
-    ) -> Result<Vec<Transaction>, Error> {
-        let tryte_list = iri_api::get_trytes(self.uri, &[trunk_tx.to_string()])?.take_trytes();
+    ) -> Result<Vec<Transaction>> {
+        let tryte_list = iri_api::get_trytes(&self.uri, &[trunk_tx.to_string()])?.take_trytes();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;
@@ -387,7 +405,9 @@ impl API {
         self.traverse_bundle(&trunk_tx, Some(bundle_hash), bundle)
     }
 
-    pub fn get_bundle(&self, transaction: &str) -> Result<Vec<Transaction>, Error> {
+    /// Gets the associated bundle transactions of a transaction
+    /// Validates the signatures, total sum, and bundle order
+    pub fn get_bundle(&self, transaction: &str) -> Result<Vec<Transaction>> {
         ensure!(
             input_validator::is_hash(transaction),
             "Invalid transaction."
@@ -408,7 +428,7 @@ impl API {
         added_hmac: bool,
         hmac_key: Option<String>,
         security: usize,
-    ) -> Result<Vec<String>, Error> {
+    ) -> Result<Vec<String>> {
         let mut total_transfer_value = inputs.total_balance();
         for input in inputs.inputs_list() {
             let this_balance = input.balance();
@@ -481,7 +501,7 @@ impl API {
         signature_fragments: &[String],
         added_hmac: bool,
         hmac_key: Option<String>,
-    ) -> Result<Vec<String>, Error> {
+    ) -> Result<Vec<String>> {
         bundle.finalize()?;
         bundle.add_trytes(&signature_fragments);
         for i in 0..bundle.bundle().len() {
@@ -535,8 +555,51 @@ impl API {
         }
         let mut bundle_trytes: Vec<String> = Vec::new();
         for tx in bundle.bundle().iter().rev() {
-            bundle_trytes.push(tx.to_trytes()?);
+            bundle_trytes.push(tx.to_trytes());
         }
         Ok(bundle_trytes)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_SEED: &str =
+        "IHDEENZYITYVYSPKAURUZAQKGVJEREFDJMYTANNXXGPZ9GJWTEOJJ9IPMXOGZNQLSNMFDSQOTZAEETUEA";
+    const ADDR_SEED: &str =
+        "LIESNFZLPFNWAPWXBLKEABZEEWUDCXKTRKZIRTPCKLKWOMJSEREWKMMMODUOFWM9ELEVXADTSQWMSNFVD";
+
+    #[test]
+    fn test_address_generation() {
+        assert_eq!(new_address(TEST_SEED, 0, 2, true).unwrap(), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
+        assert_eq!(new_address(TEST_SEED, 5, 2, true).unwrap(), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
+
+        assert_eq!(
+            new_address(ADDR_SEED, 0, 1, false).unwrap(),
+            "HIPPOUPZFMHJUQBLBVWORCNJWAOSFLHDWF9IOFEYVHPTTAAF9NIBMRKBICAPHYCDKMEEOXOYHJBMONJ9D"
+        );
+        assert_eq!(
+            new_address(ADDR_SEED, 0, 2, false).unwrap(),
+            "BPYZABTUMEIOARZTMCDNUDAPUOFCGKNGJWUGUXUKNNBVKQARCZIXFVBZAAMDAFRS9YOIXWOTEUNSXVOG9"
+        );
+        assert_eq!(
+            new_address(ADDR_SEED, 0, 3, false).unwrap(),
+            "BYWHJJYSHSEGVZKKYTJTYILLEYBSIDLSPXDLDZSWQ9XTTRLOSCBCQ9TKXJYQAVASYCMUCWXZHJYRGDOBW"
+        );
+
+        let concat = ADDR_SEED.to_string() + ADDR_SEED;
+        assert_eq!(
+            new_address(&concat, 0, 1, false).unwrap(),
+            "VKPCVHWKSCYQNHULMPYDZTNKOQHZNPEGJVPEHPTDIUYUBFKFICDRLLSIULHCVHOHZRHJOHNASOFRWFWZC"
+        );
+        assert_eq!(
+            new_address(&concat, 0, 2, false).unwrap(),
+            "PTHVACKMXOKIERJOFSRPBWCNKVEXQ9CWUTIJGEUORSKWEDDJCBFQCCBQZLTYXQCXEDWLTMRQM9OQPUGNC"
+        );
+        assert_eq!(
+            new_address(&concat, 0, 3, false).unwrap(),
+            "AGSAAETPMSBCDOSNXFXIOBAE9MVEJCSWVP9PAULQ9VABOTWLDMXID9MXCCWQIWRTJBASWPIJDFUC9ISWD"
+        );
     }
 }

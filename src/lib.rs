@@ -11,9 +11,21 @@ extern crate serde_json;
 #[macro_use]
 extern crate lazy_static;
 
+/// Provides all crypto algorithms and data structures used by Iota
 pub mod crypto;
+/// Provides helper functions that make interacting with IRI easier
 pub mod iota_api;
+/// Provides methods to call IRI APIs
 pub mod iri_api;
+/// Provides the various struces used by Iota
 pub mod model;
+/// Provides multi-sig functionality
 pub mod multisig;
+/// Provides many useful helper functions that are used throughout
+/// the library
 pub mod utils;
+
+use std::result;
+
+/// This is the result type used throughout the library
+pub type Result<T> = result::Result<T, failure::Error>;

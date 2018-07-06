@@ -1,7 +1,11 @@
-use failure::Error;
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
-pub fn remove_neighbors(uri: &str, uris: &[String]) -> Result<RemoveNeighborsResponse, Error> {
+/// Removes a list of neighbors to your node.
+/// This is only temporary, and if you have your neighbors
+/// added via the command line, they will be retained after
+/// you restart your node.
+pub fn remove_neighbors(uri: &str, uris: &[String]) -> Result<RemoveNeighborsResponse> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -20,7 +24,8 @@ pub fn remove_neighbors(uri: &str, uris: &[String]) -> Result<RemoveNeighborsRes
         .json()?)
 }
 
-#[derive(Deserialize, Debug)]
+/// This is a typed representation of the JSON response
+#[derive(Copy, Clone, Deserialize, Debug)]
 pub struct RemoveNeighborsResponse {
     #[serde(rename = "removedNeighbors")]
     removed_neighbors: usize,

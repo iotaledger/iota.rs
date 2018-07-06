@@ -2,47 +2,38 @@ use super::constants;
 use crate::model::*;
 use regex::Regex;
 
+lazy_static! {
+    static ref TRYTE_REGEX: Regex = Regex::new("^[A-Z9]*$").expect("Failed to parse regex");
+    static ref NINE_TRYTE_REGEX: Regex = Regex::new("^[9]*$").expect("Failed to parse regex");
+}
+
+/// Validates that the provided string is an address
 pub fn is_address(address: &str) -> bool {
     address.len() == constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM
         || address.len() == constants::ADDRESS_LENGTH_WITH_CHECKSUM && is_trytes(address)
 }
 
-pub fn check_address(address: &str) -> bool {
-    if !is_address(address) {
-        return false;
-    }
-    true
-}
-
+/// Validates that a slice of strings are all addresses
 pub fn is_addresses_collection_valid(addresses: &[String]) -> bool {
     for address in addresses {
-        if !check_address(&address) {
+        if !is_address(&address) {
             return false;
         }
     }
     true
 }
 
+/// Validates that a string contains only tryte characters
 pub fn is_trytes(trytes: &str) -> bool {
-    let tmp = if trytes.is_empty() {
-        "0,".to_string()
-    } else {
-        trytes.len().to_string()
-    };
-    let re = Regex::new(&format!("{}{}{}", "^[A-Z9]{", tmp, "}$")).expect("Failed to parse regex");
-    re.is_match(trytes)
+    TRYTE_REGEX.is_match(trytes)
 }
 
+/// Validates that a string contains only the number 9
 pub fn is_nine_trytes(trytes: &str) -> bool {
-    let tmp = if trytes.is_empty() {
-        "0,".to_string()
-    } else {
-        trytes.len().to_string()
-    };
-    let re = Regex::new(&format!("{}{}{}", "^[9]{", tmp, "}$")).expect("Failed to parse regex");
-    re.is_match(trytes)
+    NINE_TRYTE_REGEX.is_match(trytes)
 }
 
+/// Validates that a string is an integer
 pub fn is_value(value: &str) -> bool {
     match value.parse::<i64>() {
         Ok(_val) => true,
@@ -53,6 +44,7 @@ pub fn is_value(value: &str) -> bool {
     }
 }
 
+/// Validates that a slice of strings are all valid trytes
 pub fn is_array_of_trytes(trytes: &[String]) -> bool {
     for tryte in trytes {
         if !is_trytes(&tryte) {
@@ -62,6 +54,7 @@ pub fn is_array_of_trytes(trytes: &[String]) -> bool {
     true
 }
 
+/// Validates that a slice of strings are all valid hashes
 pub fn is_array_of_hashes(hashes: &[String]) -> bool {
     for hash in hashes {
         if hash.len() == 90 {
@@ -75,6 +68,7 @@ pub fn is_array_of_hashes(hashes: &[String]) -> bool {
     true
 }
 
+/// Validates a transfer
 pub fn is_valid_transfer(transfer: &Transfer) -> bool {
     if !is_address(transfer.address()) {
         return false;
@@ -88,6 +82,7 @@ pub fn is_valid_transfer(transfer: &Transfer) -> bool {
     true
 }
 
+/// Validates a slice of transfers
 pub fn is_transfers_collection_valid(transfers: &[Transfer]) -> bool {
     if transfers.is_empty() {
         return false;
@@ -100,6 +95,7 @@ pub fn is_transfers_collection_valid(transfers: &[Transfer]) -> bool {
     true
 }
 
+/// Validates a slice of transactions
 pub fn is_slice_of_transactions(bundle: &[Transaction]) -> bool {
     if bundle.is_empty() {
         return false;
@@ -150,10 +146,17 @@ pub fn is_slice_of_transactions(bundle: &[Transaction]) -> bool {
     valid
 }
 
+/// Validates that a string is a seed
 pub fn is_valid_seed(seed: &str) -> bool {
     is_trytes(seed)
 }
 
+/// Validates that a string is a hash
+pub fn is_hash(hash: &str) -> bool {
+    is_trytes(&hash[0..81])
+}
+
+/// Validates that a slice of strings are all hash
 pub fn is_hashes(hashes: &[String]) -> bool {
     for hash in hashes {
         if !is_trytes(&hash[0..81]) {
@@ -163,10 +166,7 @@ pub fn is_hashes(hashes: &[String]) -> bool {
     true
 }
 
-pub fn is_hash(hash: &str) -> bool {
-    is_trytes(&hash[0..81])
-}
-
+/// Validates that a slice of strings contains only attached trytes
 pub fn is_array_of_attached_trytes(trytes: &[String]) -> bool {
     for tryte_value in trytes {
         if !is_trytes(&tryte_value[0..2673]) {
@@ -194,11 +194,6 @@ mod tests {
     #[test]
     fn test_is_address() {
         assert!(is_address(TEST_ADDRESS_WITHOUT_CHECKSUM))
-    }
-
-    #[test]
-    fn test_check_address() {
-        assert!(check_address(TEST_ADDRESS_WITHOUT_CHECKSUM))
     }
 
     #[test]

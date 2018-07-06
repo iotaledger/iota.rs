@@ -1,13 +1,19 @@
+use crate::Result;
 use crossbeam;
-use failure::Error;
 use num_cpus;
 use std::sync::{Arc, Mutex, RwLock};
 
-#[derive(Copy, Clone, PartialEq)]
-pub enum State {
+/// State represents the various states that PearlDiver
+/// will be in throughout its life
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum PearlDiverState {
+    /// Represents an instance of PearlDiver that hasn't been started yet.
     NotStarted,
+    /// Represents an instance of PearlDiver that is currently running
     Running,
+    /// Represents an instance of PearlDiver that has been cancelled
     Cancelled,
+    /// Represents an instance of PearlDiver that has completed
     Completed,
 }
 
@@ -19,32 +25,41 @@ const HIGH_BITS: u64 =
 const LOW_BITS: u64 =
     0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 
+/// The PearlDiver struct allows you to start, stop, and check in on
+/// PoW while its working
+#[derive(Debug)]
 pub struct PearlDiver {
-    running: Arc<RwLock<State>>,
+    running: Arc<RwLock<PearlDiverState>>,
 }
 
 impl Default for PearlDiver {
     fn default() -> Self {
         PearlDiver {
-            running: Arc::new(RwLock::new(State::NotStarted)),
+            running: Arc::new(RwLock::new(PearlDiverState::NotStarted)),
         }
     }
 }
 
 impl PearlDiver {
+    /// Creates a new PearlDiver instance
     pub fn new() -> PearlDiver {
         PearlDiver::default()
     }
 
+    /// If you have multiple references to the same PearlDriver, this will allow
+    /// you to cancel the proof of work
     pub fn cancel(&mut self) {
-        *self.running.write().unwrap() = State::Cancelled;
+        *self.running.write().unwrap() = PearlDiverState::Cancelled;
     }
 
+    /// Performs proof of work in place
+    /// `transaction_trits` - Trits to perform proof of work against
+    /// `min_weight_magnitude` - Difficulty factor to use when performing PoW
     pub fn search(
         &mut self,
         transaction_trits: &mut [i8],
         min_weight_magnitude: usize,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         ensure!(
             transaction_trits.len() == TRANSACTION_LENGTH,
             "Transaction length [{}], expected [{}]",
@@ -57,7 +72,7 @@ impl PearlDiver {
             min_weight_magnitude,
             CURL_HASH_LENGTH
         );
-        *self.running.write().unwrap() = State::Running;
+        *self.running.write().unwrap() = PearlDiverState::Running;
 
         let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
         let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
@@ -82,15 +97,15 @@ impl PearlDiver {
             }
         });
         ensure!(
-            *self.running.read().unwrap() == State::Completed,
+            *self.running.read().unwrap() == PearlDiverState::Completed,
             "Something went wrong."
         );
         Ok(())
     }
 }
 
-pub fn get_runnable(
-    state: &Arc<RwLock<State>>,
+fn get_runnable(
+    state: &Arc<RwLock<PearlDiverState>>,
     thread_index: usize,
     transaction_trits: &Arc<Mutex<&mut [i8]>>,
     min_weight_magnitude: usize,
@@ -114,7 +129,7 @@ pub fn get_runnable(
     let mask_start_index = CURL_HASH_LENGTH - min_weight_magnitude;
     let mut mask = 0;
 
-    while mask == 0 && *state.read().unwrap() == State::Running {
+    while mask == 0 && *state.read().unwrap() == PearlDiverState::Running {
         increment(
             mid_state_copy_low,
             mid_state_copy_high,
@@ -143,8 +158,8 @@ pub fn get_runnable(
         }
     }
 
-    if mask != 0 && *state.read().unwrap() == State::Running {
-        *state.write().unwrap() = State::Completed;
+    if mask != 0 && *state.read().unwrap() == PearlDiverState::Running {
+        *state.write().unwrap() = PearlDiverState::Completed;
         let mut out_mask = 1;
         while (out_mask & mask) == 0 {
             out_mask <<= 1;

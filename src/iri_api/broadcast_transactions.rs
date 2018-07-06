@@ -1,12 +1,14 @@
 use crate::utils::input_validator;
-use failure::Error;
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 
+/// Broadcast a list of transactions to all neighbors.
+/// The input trytes for this call are provided by attachToTangle.
 pub fn broadcast_transactions(
     uri: &str,
     trytes: &[String],
-) -> Result<BroadcastTransactionsResponse, Error> {
+) -> Result<BroadcastTransactionsResponse> {
     ensure!(
         input_validator::is_array_of_attached_trytes(trytes),
         "Provided trytes are not valid: {:?}",
@@ -23,14 +25,24 @@ pub fn broadcast_transactions(
         "trytes": trytes,
     });
 
-    Ok(client
+    let resp: BroadcastTransactionsResponse = client
         .post(uri)
         .headers(headers)
         .body(body.to_string())
         .send()?
-        .json()?)
+        .json()?;
+
+    if let Some(error) = resp.error() {
+        return Err(format_err!("{}", error));
+    }
+    if let Some(exception) = resp.exception() {
+        return Err(format_err!("{}", exception));
+    }
+
+    Ok(resp)
 }
 
+/// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
     duration: i64,
@@ -39,13 +51,14 @@ pub struct BroadcastTransactionsResponse {
 }
 
 impl BroadcastTransactionsResponse {
+    /// Returns the duration attribute
     pub fn duration(&self) -> i64 {
         self.duration
     }
-    pub fn error(&self) -> Option<String> {
+    fn error(&self) -> Option<String> {
         self.error.clone()
     }
-    pub fn exception(&self) -> Option<String> {
+    fn exception(&self) -> Option<String> {
         self.exception.clone()
     }
 }

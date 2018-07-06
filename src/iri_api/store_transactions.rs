@@ -1,10 +1,10 @@
-use failure::Error;
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
-pub fn store_transactions(
-    uri: &str,
-    trytes: &[String],
-) -> Result<StoreTransactionsResponse, Error> {
+/// Store transactions into the local storage.
+/// The trytes to be used for this call are
+/// returned by attachToTangle.
+pub fn store_transactions(uri: &str, trytes: &[String]) -> Result<StoreTransactionsResponse> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -23,6 +23,7 @@ pub fn store_transactions(
         .json()?)
 }
 
+/// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct StoreTransactionsResponse {
     duration: i64,
@@ -31,13 +32,16 @@ pub struct StoreTransactionsResponse {
 }
 
 impl StoreTransactionsResponse {
+    /// Returns the duration attribute
     pub fn duration(&self) -> i64 {
         self.duration
     }
-    pub fn error(&self) -> Option<String> {
-        self.error.clone()
+    /// Returns the duration attribute
+    fn error(&self) -> &Option<String> {
+        &self.error
     }
-    pub fn exception(&self) -> Option<String> {
-        self.exception.clone()
+    /// Returns the duration attribute
+    fn exception(&self) -> &Option<String> {
+        &self.exception
     }
 }

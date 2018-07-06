@@ -1,8 +1,13 @@
 use crate::utils::input_validator;
-use failure::Error;
+
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
-pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<GetTrytesResponse, Error> {
+/// Returns the raw transaction data (trytes) of a specific
+/// transaction. These trytes can then be easily converted
+/// into the actual transaction object. See utility functions
+/// for more details.
+pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<GetTrytesResponse> {
     ensure!(
         input_validator::is_array_of_hashes(hashes),
         "Provided hashes are not valid: {:?}",
@@ -27,6 +32,7 @@ pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<GetTrytesResponse, Err
         .json()?)
 }
 
+/// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetTrytesResponse {
     duration: i64,
@@ -34,12 +40,15 @@ pub struct GetTrytesResponse {
 }
 
 impl GetTrytesResponse {
+    /// Returns the duration attribute
     pub fn duration(&self) -> i64 {
         self.duration
     }
+    /// Returns the trytes attribute
     pub fn trytes(&self) -> &[String] {
         &self.trytes
     }
+    /// Takes ownership the trytes attribute
     pub fn take_trytes(self) -> Vec<String> {
         self.trytes
     }

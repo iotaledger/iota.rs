@@ -1,11 +1,13 @@
 use crate::utils::{self, input_validator};
-use failure::Error;
+
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
+/// Check if a list of addresses was ever spent from.
 pub fn were_addresses_spent_from(
     uri: &str,
     addresses: &[String],
-) -> Result<WereAddressesSpentFromResponse, Error> {
+) -> Result<WereAddressesSpentFromResponse> {
     let addresses: Vec<String> = addresses
         .iter()
         .filter(|address| input_validator::is_address(address))
@@ -31,6 +33,7 @@ pub fn were_addresses_spent_from(
         .json()?)
 }
 
+/// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct WereAddressesSpentFromResponse {
     duration: i64,
@@ -39,15 +42,19 @@ pub struct WereAddressesSpentFromResponse {
 }
 
 impl WereAddressesSpentFromResponse {
+    /// Returns the duration attribute
     pub fn duration(&self) -> i64 {
         self.duration
     }
-    pub fn error(&self) -> Option<String> {
-        self.error.clone()
+    /// Returns the error attribute
+    fn error(&self) -> &Option<String> {
+        &self.error
     }
+    /// Returns the states attribute
     pub fn states(self) -> Option<Vec<bool>> {
         self.states
     }
+    /// Returns a specfic index into the states attribute
     pub fn state(self, index: usize) -> bool {
         self.states.unwrap_or_default()[index]
     }

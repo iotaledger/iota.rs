@@ -1,6 +1,7 @@
 use super::constants;
 use rand::prelude::*;
 
+/// Generates a cryptographically secure random seed
 pub fn generate_new_seed() -> String {
     let mut rng = thread_rng();
     let mut seed = String::new();

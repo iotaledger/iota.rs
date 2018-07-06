@@ -1,14 +1,18 @@
 use crate::crypto::{Kerl, Sponge, HASH_LENGTH};
 use crate::utils::converter;
-use failure::Error;
+use crate::Result;
 
-#[derive(Default, Clone)]
+/// Facilitates the creation of a multisig address
+/// using provided digests
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Address {
     kerl: Kerl,
 }
 
 impl Address {
-    pub fn new(digest: Option<&str>) -> Result<Address, Error> {
+    /// Creates an instance of Address, with an optional
+    /// digest to initialize with
+    pub fn new(digest: Option<&str>) -> Result<Address> {
         let mut kerl = Kerl::default();
         if let Some(d) = digest {
             kerl.absorb(&converter::trits_from_string(d))?;
@@ -16,14 +20,16 @@ impl Address {
         Ok(Address { kerl })
     }
 
-    pub fn absorb(&mut self, digests: &[String]) -> Result<(), Error> {
+    /// Absorbs the provided digest into the address
+    pub fn absorb(&mut self, digests: &[String]) -> Result<()> {
         for digest in digests {
             self.kerl.absorb(&converter::trits_from_string(digest))?;
         }
         Ok(())
     }
 
-    pub fn finalize(&mut self, digest: Option<&str>) -> Result<String, Error> {
+    /// Consumes self and returns the address string
+    pub fn finalize(mut self, digest: Option<&str>) -> Result<String> {
         if let Some(d) = digest {
             self.kerl.absorb(&converter::trits_from_string(d))?;
         }

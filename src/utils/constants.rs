@@ -1,19 +1,32 @@
+/// A char array holding all acceptable characters in the tryte
+/// alphabet. Used because strings can't be cheaply indexed in rust.
 pub const TRYTE_ALPHABET: [char; 27] = [
     '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
     'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 ];
 
+/// The minimum value a trit can have
 pub const MIN_TRIT_VALUE: i8 = -1;
+/// The maximum value a trit can have
 pub const MAX_TRIT_VALUE: i8 = 1;
+/// The minimum value a tryte can have
 pub const MIN_TRYTE_VALUE: i8 = -13;
+/// The maximum value a tryte can have
 pub const MAX_TRYTE_VALUE: i8 = 13;
 
+/// The number of trits in a byte
 pub const TRITS_PER_BYTE: usize = 5;
+/// The number of trits in a tryte
 pub const TRITS_PER_TRYTE: usize = 3;
+/// The maximum allowed seed length
 pub const SEED_LENGTH_MAX: usize = 81;
+/// The length of an address without a checksum
 pub const ADDRESS_LENGTH_WITHOUT_CHECKSUM: usize = 81;
+/// The length of an address with a checksum
 pub const ADDRESS_LENGTH_WITH_CHECKSUM: usize = 90;
+/// The mandatory length of a message segment
 pub const MESSAGE_LENGTH: usize = 2187;
+/// The mandatory length of a tag segment
 pub const TAG_LENGTH: usize = 27;
 
 pub const INVALID_TRYTES_INPUT_ERROR: &str = "Invalid trytes provided.";

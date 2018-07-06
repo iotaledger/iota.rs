@@ -1,13 +1,14 @@
-use failure::Error;
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
+/// Finds transactions the match any of the provided parameters
 pub fn find_transactions(
     uri: &str,
     bundles: Option<&[String]>,
     addresses: Option<&[String]>,
     tags: Option<&[String]>,
     approvees: Option<&[String]>,
-) -> Result<FindTransactionsResponse, Error> {
+) -> Result<FindTransactionsResponse> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -30,14 +31,21 @@ pub fn find_transactions(
         body["approvees"] = json!(a);
     }
 
-    Ok(client
+    let resp: FindTransactionsResponse = client
         .post(uri)
         .headers(headers)
         .body(body.to_string())
         .send()?
-        .json()?)
+        .json()?;
+
+    if let Some(error) = resp.error() {
+        return Err(format_err!("{}", error));
+    }
+
+    Ok(resp)
 }
 
+/// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct FindTransactionsResponse {
     duration: i64,
@@ -46,13 +54,19 @@ pub struct FindTransactionsResponse {
 }
 
 impl FindTransactionsResponse {
+    /// Returns the duration attribute
     pub fn duration(&self) -> i64 {
         self.duration
     }
-    pub fn error(&self) -> Option<String> {
-        self.error.clone()
+    fn error(&self) -> &Option<String> {
+        &self.error
     }
-    pub fn hashes(&self) -> Option<Vec<String>> {
-        self.hashes.clone()
+    /// Returns the hashes attribute
+    pub fn hashes(&self) -> &Option<Vec<String>> {
+        &self.hashes
+    }
+    /// Takes ownership of the hashes attribute
+    pub fn take_hashes(self) -> Option<Vec<String>> {
+        self.hashes
     }
 }

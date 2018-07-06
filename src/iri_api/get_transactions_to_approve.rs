@@ -1,11 +1,21 @@
-use failure::Error;
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 
+/// Tip selection which returns `trunkTransaction` and
+/// `branchTransaction`. The input value depth determines
+/// how many milestones to go back to for finding the
+/// transactions to approve. The higher your depth value,
+/// the more work you have to do as you are confirming more
+/// transactions. If the depth is too large (usually above 15,
+/// it depends on the node's configuration) an error will be
+/// returned. The reference is an optional hash of a transaction
+/// you want to approve. If it can't be found at the specified
+/// depth then an error will be returned.
 pub fn get_transactions_to_approve(
     uri: &str,
     depth: usize,
     reference: &Option<String>,
-) -> Result<GetTransactionsToApprove, Error> {
+) -> Result<GetTransactionsToApprove> {
     let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -34,6 +44,7 @@ pub fn get_transactions_to_approve(
     Ok(to_approve)
 }
 
+/// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetTransactionsToApprove {
     duration: i64,
@@ -45,15 +56,19 @@ pub struct GetTransactionsToApprove {
 }
 
 impl GetTransactionsToApprove {
+    /// Returns the duration attribute
     pub fn duration(&self) -> i64 {
         self.duration
     }
-    pub fn error(&self) -> Option<String> {
-        self.error.clone()
+    /// Returns the error attribute
+    fn error(&self) -> &Option<String> {
+        &self.error
     }
+    /// Returns the trunk_transaction attribute
     pub fn trunk_transaction(&self) -> Option<String> {
         self.trunk_transaction.clone()
     }
+    /// Returns the branch_transaction attribute
     pub fn branch_transaction(&self) -> Option<String> {
         self.branch_transaction.clone()
     }

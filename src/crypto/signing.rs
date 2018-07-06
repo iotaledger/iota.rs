@@ -3,11 +3,12 @@ use crate::model::Bundle;
 use crate::utils::constants;
 use crate::utils::converter;
 use crate::utils::input_validator;
-use failure::Error;
+use crate::Result;
 
 const KEY_LENGTH: usize = 6561;
 
-pub fn key(in_seed: &[i8], index: usize, security: usize) -> Result<Vec<i8>, Error> {
+/// Key
+pub fn key(in_seed: &[i8], index: usize, security: usize) -> Result<Vec<i8>> {
     if security < 1 {
         panic!(constants::INVALID_SECURITY_LEVEL_INPUT_ERROR);
     }
@@ -29,7 +30,7 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Result<Vec<i8>, Err
     curl.reset();
     curl.absorb(&seed)?;
 
-    let mut key = vec![0; (security * HASH_LENGTH * 27) as usize];
+    let mut key = vec![0; security * HASH_LENGTH * 27];
     let mut buffer = vec![0; seed.len()];
     let mut offset = 0;
 
@@ -45,10 +46,11 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Result<Vec<i8>, Err
     Ok(key)
 }
 
+/// Signs a signature fragment
 pub fn signature_fragment(
     normalized_bundle_fragment: &[i8],
     key_fragment: &[i8],
-) -> Result<Vec<i8>, Error> {
+) -> Result<Vec<i8>> {
     let mut signature_fragment = key_fragment.to_owned();
     let mut curl = Kerl::default();
     for (i, fragment) in normalized_bundle_fragment.iter().enumerate().take(27) {
@@ -64,7 +66,8 @@ pub fn signature_fragment(
     Ok(signature_fragment)
 }
 
-pub fn address(digests: &[i8]) -> Result<[i8; HASH_LENGTH], Error> {
+/// Signs an address
+pub fn address(digests: &[i8]) -> Result<[i8; HASH_LENGTH]> {
     let mut address = [0; HASH_LENGTH];
     let mut curl = Kerl::default();
     curl.reset();
@@ -73,7 +76,8 @@ pub fn address(digests: &[i8]) -> Result<[i8; HASH_LENGTH], Error> {
     Ok(address)
 }
 
-pub fn digests(key: &[i8]) -> Result<Vec<i8>, Error> {
+/// Signs digests
+pub fn digests(key: &[i8]) -> Result<Vec<i8>> {
     let security = (key.len() as f64 / KEY_LENGTH as f64).floor() as usize;
     let mut digests = vec![0; security * HASH_LENGTH];
     let mut key_fragment = [0; KEY_LENGTH];
@@ -97,10 +101,8 @@ pub fn digests(key: &[i8]) -> Result<Vec<i8>, Error> {
     Ok(digests)
 }
 
-pub fn digest(
-    normalized_bundle_fragment: &[i8],
-    signature_fragment: &[i8],
-) -> Result<Vec<i8>, Error> {
+/// Signs a digest
+pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> Result<Vec<i8>> {
     let mut curl = Kerl::default();
     curl.reset();
     let mut j_curl = Kerl::default();
@@ -120,7 +122,8 @@ pub fn digest(
     Ok(buffer)
 }
 
-pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> Result<bool, Error> {
+/// Validates signatures for a bundle
+pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> Result<bool> {
     let mut bundle_hash = String::new();
     let mut signature_fragments: Vec<String> = Vec::new();
     for transaction in signed_bundle.bundle() {
@@ -136,11 +139,12 @@ pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> Resu
     validate_signatures(address, &signature_fragments, &bundle_hash)
 }
 
+/// Validates signatures
 pub fn validate_signatures(
     expected_address: &str,
     signature_fragments: &[String],
     bundle_hash: &str,
-) -> Result<bool, Error> {
+) -> Result<bool> {
     let mut normalized_bundle_fragments = [[0; 27]; 3];
     let normalized_bundle_hash = Bundle::normalized_bundle(bundle_hash);
 

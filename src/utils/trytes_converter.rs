@@ -1,4 +1,5 @@
 use super::constants;
+use crate::Result;
 use failure::Error;
 use std::collections::HashMap;
 
@@ -38,7 +39,8 @@ enum TryteConverterError {
     StringNotAscii { string: String },
 }
 
-pub fn to_trytes(input: &str) -> Result<String, Error> {
+/// Converts a UTF-8 string containing ascii into a tryte-encoded string
+pub fn to_trytes(input: &str) -> Result<String> {
     let mut trytes = String::new();
     let mut tmp_ascii = Vec::new();
     for c in input.chars() {
@@ -59,7 +61,8 @@ pub fn to_trytes(input: &str) -> Result<String, Error> {
     Ok(trytes)
 }
 
-pub fn to_string(input_trytes: &str) -> Result<String, Error> {
+/// Converts a tryte-encoded string into a UTF-8 string containing ascii characters
+pub fn to_string(input_trytes: &str) -> Result<String> {
     ensure!(
         input_trytes.len() % 2 == 0,
         constants::INVALID_TRYTES_INPUT_ERROR

@@ -1,10 +1,11 @@
 use crate::utils::input_validator;
-use failure::Error;
+use crate::Result;
 use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 use serde_json::Value;
 
-pub fn check_consistency(uri: &str, hashes: &[String]) -> Result<Value, Error> {
+/// Checks for consistency of given hashes, not part of the public api
+pub fn check_consistency(uri: &str, hashes: &[String]) -> Result<Value> {
     for hash in hashes {
         ensure!(
             input_validator::is_hash(hash),

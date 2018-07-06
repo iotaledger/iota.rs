@@ -1,9 +1,14 @@
 use super::{Mode, Sponge, HASH_LENGTH};
-use failure::Error;
+use crate::Result;
+use std::fmt;
 
+/// The length of the internal state
 pub const STATE_LENGTH: usize = 3 * HASH_LENGTH;
+
 const TRUTH_TABLE: [i8; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
+/// The Curl struct is a Sponge that uses the Curl
+/// hashing algorithm.
 #[derive(Clone, Copy)]
 pub struct Curl {
     number_of_rounds: i32,
@@ -21,8 +26,21 @@ impl Default for Curl {
     }
 }
 
+impl fmt::Debug for Curl {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Curl: [rounds: [{}], scratchpad: {:?}, state: {:?}",
+            self.number_of_rounds,
+            self.scratchpad.to_vec(),
+            self.scratchpad.to_vec(),
+        )
+    }
+}
+
 impl Curl {
-    pub fn new(mode: Mode) -> Result<Curl, Error> {
+    /// Creates a new instance of Curl using the provided mode
+    pub fn new(mode: Mode) -> Result<Curl> {
         let mut curl = Curl::default();
         curl.number_of_rounds = match mode {
             Mode::CURLP27 => 27,
@@ -51,17 +69,19 @@ impl Curl {
         }
     }
 
+    /// Provides a view into the internal state
     pub fn state(&self) -> &[i8] {
         &self.state
     }
 
+    /// Provides a mutable view into the internal state
     pub fn state_mut(&mut self) -> &mut [i8] {
         &mut self.state
     }
 }
 
 impl Sponge for Curl {
-    fn absorb(&mut self, trits: &[i8]) -> Result<(), Error> {
+    fn absorb(&mut self, trits: &[i8]) -> Result<()> {
         for chunk in trits.chunks(HASH_LENGTH) {
             if chunk.len() < HASH_LENGTH {
                 self.state[0..chunk.len()].copy_from_slice(chunk);
@@ -73,7 +93,7 @@ impl Sponge for Curl {
         Ok(())
     }
 
-    fn squeeze(&mut self, out: &mut [i8]) -> Result<(), Error> {
+    fn squeeze(&mut self, out: &mut [i8]) -> Result<()> {
         let trit_length = out.len();
         let hash_length = trit_length / HASH_LENGTH;
 

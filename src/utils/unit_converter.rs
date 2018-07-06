@@ -1,5 +1,6 @@
 use super::iota_units::IotaUnits;
 
+/// Converts an amount of iotas to a new unit
 pub fn convert_units(amount: u64, from: IotaUnits, to: IotaUnits) -> u64 {
     let amount_in_source = amount * 10_u64.pow(u32::from(from.value()));
     convert_units_helper(amount_in_source, to)
@@ -9,6 +10,7 @@ fn convert_units_helper(amount: u64, to: IotaUnits) -> u64 {
     amount / 10_u64.pow(u32::from(to.value()))
 }
 
+/// Converts an iota amount into the optimal unit for display
 pub fn convert_raw_iota_amount_to_display_text(amount: u64, extended: bool) -> String {
     let unit = find_optimal_iota_unit_to_display(amount);
     let amount_in_display_unit = convert_amount_to(amount, unit);
@@ -22,7 +24,7 @@ fn create_amount_with_unit_display_text(amount: u64, unit: IotaUnits, extended: 
         unit.unit()
     )
 }
-
+/// Converts an amount of iotas into a string for display
 pub fn create_amount_display_text(amount: u64, unit: IotaUnits, extended: bool) -> String {
     if unit == IotaUnits::Iota {
         amount.to_string()
@@ -33,10 +35,12 @@ pub fn create_amount_display_text(amount: u64, unit: IotaUnits, extended: bool) 
     }
 }
 
+/// Converts an amount of iota to a unit
 pub fn convert_amount_to(amount: u64, target: IotaUnits) -> u64 {
     amount / 10_u64.pow(u32::from(target.value()))
 }
 
+/// Finds the optimal unit for displaying an iota amount
 pub fn find_optimal_iota_unit_to_display(amount: u64) -> IotaUnits {
     let length = amount.to_string().len();
 

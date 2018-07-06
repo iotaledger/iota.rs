@@ -4,11 +4,12 @@ use crate::utils::{converter, trit_adder};
 use serde_json;
 use std::fmt;
 
-use failure::Error;
+use crate::Result;
 
 const EMPTY_HASH: &str =
     "999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
+/// Represents a bundle of transactions
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Bundle {
     bundle: Vec<Transaction>,
@@ -25,20 +26,25 @@ impl fmt::Display for Bundle {
 }
 
 impl Bundle {
+    /// Greates a new bundle using the provided transactions
     pub fn new(transactions: &[Transaction]) -> Bundle {
         Bundle {
             bundle: transactions.to_vec(),
         }
     }
 
+    /// Provides a view into the transactions inside this bundle
     pub fn bundle(&self) -> &[Transaction] {
         &self.bundle
     }
 
+    /// Provides a mutable view into the transactions inside
+    /// this bundle
     pub fn bundle_mut(&mut self) -> &mut [Transaction] {
         &mut self.bundle
     }
 
+    /// Adds an entry into the bundle
     pub fn add_entry(
         &mut self,
         signature_message_length: usize,
@@ -61,6 +67,7 @@ impl Bundle {
         }
     }
 
+    /// Adds trytes into the bundle
     pub fn add_trytes(&mut self, signature_fragments: &[String]) {
         let empty_signature_fragment = "9".repeat(2187);
         let empty_hash = EMPTY_HASH;
@@ -82,7 +89,8 @@ impl Bundle {
         }
     }
 
-    pub fn finalize(&mut self) -> Result<(), Error> {
+    /// Finalizes the bundle
+    pub fn finalize(&mut self) -> Result<()> {
         let mut valid_bundle = false;
         let mut kerl = Kerl::default();
         while !valid_bundle {
@@ -130,6 +138,7 @@ impl Bundle {
         Ok(())
     }
 
+    /// Normalizes a bundle hash
     pub fn normalized_bundle(bundle_hash: &str) -> [i8; 81] {
         let mut normalized_bundle = [0; 81];
         for i in 0..3 {

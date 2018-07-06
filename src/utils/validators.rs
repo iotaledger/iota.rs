@@ -2,9 +2,10 @@ use super::converter;
 use super::input_validator;
 use crate::crypto::{self, Kerl, Sponge};
 use crate::model::*;
-use failure::Error;
+use crate::Result;
 
-pub fn is_bundle(bundle: &[Transaction]) -> Result<bool, Error> {
+/// Validates that a slice of transactions is a valid bundle
+pub fn is_bundle(bundle: &[Transaction]) -> Result<bool> {
     if !input_validator::is_slice_of_transactions(bundle) {
         return Ok(false);
     }
@@ -18,10 +19,10 @@ pub fn is_bundle(bundle: &[Transaction]) -> Result<bool, Error> {
     for (index, tx) in bundle.iter().enumerate() {
         let tx_value = tx.value().unwrap_or_default();
         total_sum += tx_value;
-        if index != tx.current_index().unwrap_or_default() as usize {
+        if index != tx.current_index().unwrap_or_default() {
             return Ok(false);
         }
-        let tx_trytes = tx.to_trytes()?;
+        let tx_trytes: String = tx.to_trytes();
         let tx_trits = converter::trits_from_string(&tx_trytes[2187..2187 + 162]);
         kerl.absorb(&tx_trits)?;
         if tx_value < 0 {

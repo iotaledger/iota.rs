@@ -1,15 +1,14 @@
 use super::constants;
-use failure::Error;
+use crate::Result;
 
 const HIGH_INTEGER_BITS: u32 = 0xFFFF_FFFF;
 const HIGH_LONG_BITS: u64 = 0xFFFF_FFFF_FFFF_FFFF;
-pub const RADIX: i8 = 3;
-pub const MAX_TRIT_VALUE: i8 = (RADIX - 1) / 2;
-pub const MIN_TRIT_VALUE: i8 = -MAX_TRIT_VALUE;
+const RADIX: i8 = 3;
 const NUMBER_OF_TRITS_IN_A_BYTE: usize = 5;
 const NUMBER_OF_TRITS_IN_A_TRYTE: usize = 3;
 
 lazy_static! {
+    /// Provides a byte to trits mapping
     pub static ref BYTE_TO_TRITS_MAPPINGS: [[i8; NUMBER_OF_TRITS_IN_A_BYTE]; 243] = {
         let mut trits: [i8; NUMBER_OF_TRITS_IN_A_BYTE] = [0; NUMBER_OF_TRITS_IN_A_BYTE];
         let mut tmp = [[0; NUMBER_OF_TRITS_IN_A_BYTE]; 243];
@@ -19,6 +18,7 @@ lazy_static! {
         }
         tmp
     };
+    /// Provides a trytes to trits mapping
     pub static ref TRYTE_TO_TRITS_MAPPINGS: [[i8; NUMBER_OF_TRITS_IN_A_TRYTE]; 27] = {
         let mut trits: [i8; NUMBER_OF_TRITS_IN_A_BYTE] = [0; NUMBER_OF_TRITS_IN_A_BYTE];
         let mut tmp = [[0; NUMBER_OF_TRITS_IN_A_TRYTE]; 27];
@@ -30,7 +30,8 @@ lazy_static! {
     };
 }
 
-pub fn bytes_custom(trits: &[i8], offset: usize, size: usize) -> Vec<u8> {
+/// Converts trits into bytes with an offset and size limit
+pub fn bytes_with_offset(trits: &[i8], offset: usize, size: usize) -> Vec<u8> {
     let len = (size + NUMBER_OF_TRITS_IN_A_BYTE - 1) / NUMBER_OF_TRITS_IN_A_BYTE;
     let mut bytes = Vec::new();
     for i in 0..len {
@@ -49,10 +50,13 @@ pub fn bytes_custom(trits: &[i8], offset: usize, size: usize) -> Vec<u8> {
     bytes
 }
 
+/// Converts a slice of trits into bytes
 pub fn bytes(trits: &[i8]) -> Vec<u8> {
-    bytes_custom(trits, 0, trits.len())
+    bytes_with_offset(trits, 0, trits.len())
 }
 
+/// Converts a provided slice of bytes into trits and stores them
+/// in place into `trits`
 pub fn get_trits(bytes: &[u8], trits: &mut [i8]) {
     let mut offset = 0;
     let mut i = 0;
@@ -73,10 +77,12 @@ pub fn get_trits(bytes: &[u8], trits: &mut [i8]) {
     }
 }
 
+/// Converts a string into trits
 pub fn trits_from_string(trytes: &str) -> Vec<i8> {
     trytes.chars().flat_map(char_to_trits).cloned().collect()
 }
 
+/// Converts a string into trits and ensures an the output length
 pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
     let tmp: Vec<i8> = trytes.chars().flat_map(char_to_trits).cloned().collect();
     if tmp.len() < length {
@@ -87,6 +93,7 @@ pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
     tmp
 }
 
+/// Converts a char into and array of trits
 pub fn char_to_trits(tryte: char) -> &'static [i8; constants::TRITS_PER_TRYTE] {
     for (i, mapping) in TRYTE_TO_TRITS_MAPPINGS
         .iter()
@@ -101,6 +108,7 @@ pub fn char_to_trits(tryte: char) -> &'static [i8; constants::TRITS_PER_TRYTE] {
     &TRYTE_TO_TRITS_MAPPINGS[0]
 }
 
+/// Converts a slice of trits into a char
 pub fn trits_to_char(trits: &[i8]) -> char {
     assert!(trits.len() <= constants::TRITS_PER_TRYTE);
     match TRYTE_TO_TRITS_MAPPINGS.iter().position(|&x| x == trits) {
@@ -109,7 +117,8 @@ pub fn trits_to_char(trits: &[i8]) -> char {
     }
 }
 
-pub fn trits_to_string(t: &[i8]) -> Result<String, Error> {
+/// Converts a slice of trits into a string
+pub fn trits_to_string(t: &[i8]) -> Result<String> {
     ensure!(t.len() % 3 == 0, "Invalid trit length.");
 
     Ok(t.chunks(constants::TRITS_PER_TRYTE)
@@ -117,14 +126,15 @@ pub fn trits_to_string(t: &[i8]) -> Result<String, Error> {
         .collect())
 }
 
+/// Converts a numeric representation of trytes into a vec of trits
 pub fn trits(trytes: i64) -> Vec<i8> {
     let mut trits = Vec::new();
     let mut abs = trytes.abs();
     while abs > 0 {
         let mut remainder = (abs % i64::from(RADIX)) as i8;
         abs /= i64::from(RADIX);
-        if remainder > MAX_TRIT_VALUE {
-            remainder = MIN_TRIT_VALUE;
+        if remainder > constants::MAX_TRIT_VALUE {
+            remainder = constants::MIN_TRIT_VALUE;
             abs += 1;
         }
         trits.push(remainder);
@@ -137,6 +147,7 @@ pub fn trits(trytes: i64) -> Vec<i8> {
     trits
 }
 
+/// Converts a numeric representation of trytes into a vec of trits with a guaranteed length
 pub fn trits_with_length(trytes: i64, length: usize) -> Vec<i8> {
     let tmp: Vec<i8> = trits(trytes);
     if tmp.len() < length {
@@ -147,13 +158,14 @@ pub fn trits_with_length(trytes: i64, length: usize) -> Vec<i8> {
     tmp[0..length].to_vec()
 }
 
-pub fn copy_trits(value: i64, destination: &mut [i8], offset: usize, size: usize) {
+/// Copy
+fn copy_trits(value: i64, destination: &mut [i8], offset: usize, size: usize) {
     let mut abs = value.abs();
     for i in 0..size {
         let mut remainder = (abs % i64::from(RADIX)) as i8;
         abs /= i64::from(RADIX);
-        if remainder > MAX_TRIT_VALUE {
-            remainder = MIN_TRIT_VALUE;
+        if remainder > constants::MAX_TRIT_VALUE {
+            remainder = constants::MIN_TRIT_VALUE;
             abs += 1;
         }
         destination[offset + i] = remainder;
@@ -166,6 +178,7 @@ pub fn copy_trits(value: i64, destination: &mut [i8], offset: usize, size: usize
     }
 }
 
+/// Converts a slice of trits into a tryte string
 pub fn trytes(trits: &[i8]) -> String {
     let mut trytes = String::new();
     for i in 0..(trits.len() + NUMBER_OF_TRITS_IN_A_TRYTE - 1) / NUMBER_OF_TRITS_IN_A_TRYTE {
@@ -178,6 +191,7 @@ pub fn trytes(trits: &[i8]) -> String {
     trytes
 }
 
+/// Converts a slice of trits into a numeric value
 pub fn value(trits: &[i8]) -> i8 {
     let mut value = 0;
     for trit in trits.iter().rev() {
@@ -186,6 +200,7 @@ pub fn value(trits: &[i8]) -> i8 {
     value
 }
 
+/// Converts a slice of trits into a numeric value
 pub fn long_value(trits: &[i8]) -> i64 {
     let mut v: i64 = 0;
     for trit in trits.iter().rev() {
@@ -194,11 +209,12 @@ pub fn long_value(trits: &[i8]) -> i64 {
     v
 }
 
+/// Increments a trit slice in place
 pub fn increment(trit_array: &mut [i8], size: usize) {
     for trit in trit_array.iter_mut().take(size) {
         *trit += 1;
-        if *trit > MAX_TRIT_VALUE {
-            *trit = MIN_TRIT_VALUE;
+        if *trit > constants::MAX_TRIT_VALUE {
+            *trit = constants::MIN_TRIT_VALUE;
         } else {
             break;
         }

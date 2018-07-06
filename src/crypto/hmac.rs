@@ -1,23 +1,28 @@
 use crate::crypto::{Curl, Mode, Sponge};
 use crate::model::Bundle;
 use crate::utils::converter;
-
-use failure::Error;
+use crate::Result;
 
 const HMAC_ROUNDS: usize = 27;
 
+/// HMAC uses curl to provide an extra layer of verification
+/// to bundles
+#[derive(Clone, Debug)]
 pub struct HMAC {
     key: Vec<i8>,
 }
 
 impl HMAC {
+    /// Creates a new HMAC instance using the provided key
     pub fn new(key: &str) -> HMAC {
         HMAC {
             key: converter::trits_from_string(key),
         }
     }
 
-    pub fn add_hmac(&self, bundle: &mut Bundle) -> Result<(), Error> {
+    /// Using the key provided earlier, add an HMAC to provided
+    /// Bundle
+    pub fn add_hmac(&self, bundle: &mut Bundle) -> Result<()> {
         let mut curl = Curl::new(Mode::CURLP27)?;
         let key = self.key.clone();
         for b in bundle.bundle_mut().iter_mut() {

@@ -5,8 +5,9 @@
 
 use super::keccak::Keccak;
 use super::{Sponge, HASH_LENGTH};
+use std::fmt;
 
-use failure::Error;
+use crate::Result;
 
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
@@ -33,7 +34,9 @@ const HALF_3: [u32; 12] = [
     0x5e69_ebef,
 ];
 
-#[derive(Clone)]
+/// The Kerl struct is a Sponge that uses the Keccak
+/// hashing algorithm.
+#[derive(Clone, Copy)]
 pub struct Kerl {
     keccak: Keccak,
     byte_state: [u8; BYTE_HASH_LENGTH],
@@ -50,8 +53,19 @@ impl Default for Kerl {
     }
 }
 
+impl fmt::Debug for Kerl {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Curl: [byte_state: {:?}, trit_state: {:?}",
+            self.byte_state.to_vec(),
+            self.trit_state.to_vec(),
+        )
+    }
+}
+
 impl Sponge for Kerl {
-    fn absorb(&mut self, trits: &[i8]) -> Result<(), Error> {
+    fn absorb(&mut self, trits: &[i8]) -> Result<()> {
         ensure!(
             trits.len() % HASH_LENGTH == 0,
             "Slice length must be a multiple of {}, but remainder was: {}",
@@ -68,7 +82,7 @@ impl Sponge for Kerl {
         Ok(())
     }
 
-    fn squeeze(&mut self, trits: &mut [i8]) -> Result<(), Error> {
+    fn squeeze(&mut self, trits: &mut [i8]) -> Result<()> {
         ensure!(
             trits.len() % HASH_LENGTH == 0,
             "Slice length must be a multiple of {}, but remainder was: {}",
@@ -105,7 +119,8 @@ impl Kerl {
     }
 }
 
-pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<(), Error> {
+/// Converts trits to bytes
+pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<()> {
     ensure!(
         trits.len() == HASH_LENGTH,
         "Trit slice should have length {}, but had length: {}",
@@ -187,7 +202,8 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) -> Result<(), Error> {
+/// Converts bytes to trits
+pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) -> Result<()> {
     ensure!(
         trits.len() == HASH_LENGTH,
         "Trit slice should have length {}, but had length: {}",

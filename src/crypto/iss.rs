@@ -2,15 +2,24 @@ use super::curl::Curl;
 use super::kerl::Kerl;
 use super::{hash_with_mode, Mode, Sponge, HASH_LENGTH};
 use crate::utils::constants;
-use failure::Error;
+use crate::Result;
 
+/// Number of fragment chunks
 pub const NUMBER_OF_FRAGMENT_CHUNKS: usize = 27;
+/// Length of a fragment
 pub const FRAGMENT_LENGTH: usize = HASH_LENGTH * NUMBER_OF_FRAGMENT_CHUNKS;
+/// The amount of valid security levels
 pub const NUMBER_OF_SECURITY_LEVELS: usize = 3;
+/// The width of tryte
 pub const TRYTE_WIDTH: usize = 3;
+/// Normalized fragment length
 pub const NORMALIZED_FRAGMENT_LENGTH: usize = HASH_LENGTH / TRYTE_WIDTH / NUMBER_OF_SECURITY_LEVELS;
 
-pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH], Error> {
+/// Create a subseed
+/// `mode` - the Curl mode to use
+/// `seed` - the generation seed
+/// `index` - how many address permutations to iterate through
+pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH]> {
     let mut subseed_preimage = seed.to_vec();
     for _ in 0..index {
         for trit in &mut subseed_preimage {
@@ -27,7 +36,8 @@ pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH
     Ok(subseed)
 }
 
-pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result<Vec<i8>, Error> {
+/// Key a subseed
+pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result<Vec<i8>> {
     ensure!(
         subseed.len() == HASH_LENGTH,
         "Invalid subseed length: {}",
@@ -40,7 +50,8 @@ pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result
     Ok(key)
 }
 
-pub fn digests(mode: Mode, key: &[i8]) -> Result<Vec<i8>, Error> {
+/// Generate digests
+pub fn digests(mode: Mode, key: &[i8]) -> Result<Vec<i8>> {
     ensure!(
         !key.is_empty() && key.len() % FRAGMENT_LENGTH == 0,
         "Invalid key length: {}",
@@ -58,7 +69,7 @@ pub fn digests(mode: Mode, key: &[i8]) -> Result<Vec<i8>, Error> {
     }
 }
 
-fn digests_helper(hash: &mut impl Sponge, key: &[i8]) -> Result<Vec<i8>, Error> {
+fn digests_helper(hash: &mut impl Sponge, key: &[i8]) -> Result<Vec<i8>> {
     let mut digests = vec![0; key.len() / FRAGMENT_LENGTH * HASH_LENGTH];
     for i in 0..key.len() / FRAGMENT_LENGTH {
         let mut buffer = key[i * FRAGMENT_LENGTH..(i + 1) * FRAGMENT_LENGTH].to_vec();
@@ -78,7 +89,8 @@ fn digests_helper(hash: &mut impl Sponge, key: &[i8]) -> Result<Vec<i8>, Error> 
     Ok(digests)
 }
 
-pub fn address(mode: Mode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH], Error> {
+/// Generate address
+pub fn address(mode: Mode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH]> {
     ensure!(
         !digests.is_empty() && digests.len() % HASH_LENGTH == 0,
         "Invalid key length: {}",
@@ -89,7 +101,8 @@ pub fn address(mode: Mode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH], Erro
     Ok(address)
 }
 
-pub fn normalized_bundle(bundle: &[i8]) -> Result<[i8; HASH_LENGTH / TRYTE_WIDTH], Error> {
+/// Generate normalize bundle
+pub fn normalized_bundle(bundle: &[i8]) -> Result<[i8; HASH_LENGTH / TRYTE_WIDTH]> {
     ensure!(
         bundle.len() == HASH_LENGTH,
         "Invalid bundle length: {}",
@@ -100,6 +113,7 @@ pub fn normalized_bundle(bundle: &[i8]) -> Result<[i8; HASH_LENGTH / TRYTE_WIDTH
     Ok(normalized_bundle)
 }
 
+/// Normalize a bundle in place
 pub fn normalized_bundle_in_place(bundle: &[i8], normalized_bundle: &mut [i8]) {
     for i in 0..NUMBER_OF_SECURITY_LEVELS {
         let mut sum = 0;
@@ -142,11 +156,12 @@ pub fn normalized_bundle_in_place(bundle: &[i8], normalized_bundle: &mut [i8]) {
     }
 }
 
+/// Generate a signature fragment
 pub fn signature_fragment(
     mode: Mode,
     normalized_bundle_fragment: &[i8],
     key_fragment: &[i8],
-) -> Result<Vec<i8>, Error> {
+) -> Result<Vec<i8>> {
     ensure!(
         normalized_bundle_fragment.len() == NORMALIZED_FRAGMENT_LENGTH,
         "Invalid normalized bundle fragment length: {}",
@@ -183,7 +198,7 @@ fn signature_fragment_helper(
     hash: &mut impl Sponge,
     normalized_bundle_fragment: &[i8],
     out: &mut [i8],
-) -> Result<(), Error> {
+) -> Result<()> {
     for (j, trit) in normalized_bundle_fragment
         .iter()
         .enumerate()
@@ -199,11 +214,12 @@ fn signature_fragment_helper(
     Ok(())
 }
 
+/// Generate a digest
 pub fn digest(
     mode: Mode,
     normalized_bundle_fragment: &[i8],
     signature_fragment: &[i8],
-) -> Result<[i8; HASH_LENGTH], Error> {
+) -> Result<[i8; HASH_LENGTH]> {
     ensure!(
         normalized_bundle_fragment.len() == HASH_LENGTH / TRYTE_WIDTH / NUMBER_OF_SECURITY_LEVELS,
         "Invalid normalized bundle fragment length: {}",
@@ -238,12 +254,13 @@ pub fn digest(
     Ok(digest)
 }
 
+/// Hash digest in place
 pub fn digest_in_place(
     hash: &mut impl Sponge,
     normalized_bundle_fragment: &[i8],
     signature_fragment: &[i8],
     digest: &mut [i8],
-) -> Result<(), Error> {
+) -> Result<()> {
     let mut buffer = signature_fragment[0..FRAGMENT_LENGTH].to_vec();
     for (j, trit) in normalized_bundle_fragment
         .iter()
@@ -263,6 +280,7 @@ pub fn digest_in_place(
     Ok(())
 }
 
+/// Retrieve the merkle root
 pub fn get_merkle_root(
     mode: Mode,
     hash: &[i8],
@@ -270,7 +288,7 @@ pub fn get_merkle_root(
     offset: usize,
     index: usize,
     size: usize,
-) -> Result<[i8; HASH_LENGTH], Error> {
+) -> Result<[i8; HASH_LENGTH]> {
     match mode {
         Mode::CURLP27 | Mode::CURLP81 => {
             let mut curl = Curl::new(mode).unwrap();
@@ -290,7 +308,7 @@ fn get_merkle_root_helper(
     offset: usize,
     index: usize,
     size: usize,
-) -> Result<[i8; HASH_LENGTH], Error> {
+) -> Result<[i8; HASH_LENGTH]> {
     let empty = [0; HASH_LENGTH];
     let mut index = index;
     let mut tmp = [0; HASH_LENGTH];
