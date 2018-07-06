@@ -93,9 +93,6 @@ fn main() {
 ```
 
 # Donations:
-If you feel so inclined, you can send donations to the following address:
-`NVVBJERMSOUSAUZUTSHGTSJQLGPGJMRPQRCUHJWKTWWTUEGWY9UDIAUBQBFLSZJR9QOGWOYGNAWDNIVT9WVAAIKATX`
-
-or you can go here to find it as well:
+If you feel so inclined, you can find my address for donations at:
 
 https://ecosystem.iota.org/projects/iota-lib-rs
