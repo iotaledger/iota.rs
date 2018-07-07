@@ -387,29 +387,28 @@ impl FromStr for Transaction {
         curl.squeeze(&mut hash)?;
 
         let mut transaction = Transaction::default();
-        *transaction.hash_mut() = Some(converter::trits_to_string(&hash)?);
+        transaction.set_hash(converter::trits_to_string(&hash)?);
+        transaction.set_signature_fragments(&trytes[0..2187]);
+        transaction.set_address(&trytes[2187..2268]);
+        transaction.set_value(converter::long_value(&transaction_trits[6804..6837]));
+        transaction.set_obsolete_tag(&trytes[2295..2322]);
+        transaction.set_timestamp(converter::long_value(&transaction_trits[6966..6993]));
+        transaction
+            .set_current_index(converter::long_value(&transaction_trits[6993..7020]) as usize);
+        transaction.set_last_index(converter::long_value(&transaction_trits[7020..7047]) as usize);
+        transaction.set_bundle(&trytes[2349..2430]);
+        transaction.set_trunk_transaction(&trytes[2430..2511]);
+        transaction.set_branch_transaction(&trytes[2511..2592]);
 
-        *transaction.signature_fragments_mut() = Some(trytes[0..2187].to_string());
-        *transaction.address_mut() = Some(trytes[2187..2268].to_string());
-        *transaction.value_mut() = Some(converter::long_value(&transaction_trits[6804..6837]));
-        *transaction.obsolete_tag_mut() = Some(trytes[2295..2322].to_string());
-        *transaction.timestamp_mut() = Some(converter::long_value(&transaction_trits[6966..6993]));
-        *transaction.current_index_mut() =
-            Some(converter::long_value(&transaction_trits[6993..7020]) as usize);
-        *transaction.last_index_mut() =
-            Some(converter::long_value(&transaction_trits[7020..7047]) as usize);
-        *transaction.bundle_mut() = Some(trytes[2349..2430].to_string());
-        *transaction.trunk_transaction_mut() = Some(trytes[2430..2511].to_string());
-        *transaction.branch_transaction_mut() = Some(trytes[2511..2592].to_string());
-
-        *transaction.tag_mut() = Some(trytes[2592..2619].to_string());
-        *transaction.attachment_timestamp_mut() =
-            Some(converter::long_value(&transaction_trits[7857..7884]));
-        *transaction.attachment_timestamp_lower_bound_mut() =
-            Some(converter::long_value(&transaction_trits[7884..7911]));
-        *transaction.attachment_timestamp_upper_bound_mut() =
-            Some(converter::long_value(&transaction_trits[7911..7938]));
-        *transaction.nonce_mut() = Some(trytes[2646..2673].to_string());
+        transaction.set_tag(&trytes[2592..2619]);
+        transaction.set_attachment_timestamp(converter::long_value(&transaction_trits[7857..7884]));
+        transaction.set_attachment_timestamp_lower_bound(converter::long_value(
+            &transaction_trits[7884..7911],
+        ));
+        transaction.set_attachment_timestamp_upper_bound(converter::long_value(
+            &transaction_trits[7911..7938],
+        ));
+        transaction.set_nonce(&trytes[2646..2673]);
         Ok(transaction)
     }
 }

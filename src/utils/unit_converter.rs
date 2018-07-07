@@ -1,6 +1,10 @@
 use super::iota_units::IotaUnits;
 
 /// Converts an amount of iotas to a new unit
+///
+/// * `amount` - Amount to convert
+/// * `from` - IotaUnit that `amount` is in
+/// * `to` - Target IotaUnit
 ///```
 /// extern crate iota_lib_rs;
 /// use iota_lib_rs::utils::{IotaUnits, unit_converter};
@@ -18,12 +22,18 @@ fn convert_units_helper(amount: u64, to: IotaUnits) -> u64 {
 }
 
 /// Converts an iota amount into the optimal unit for display
+///
+/// * `amount` - amount in base Iota unit
+/// * `extended` - Whether to use two significant digests, or 15
 ///```
 /// extern crate iota_lib_rs;
 /// use iota_lib_rs::utils::{IotaUnits, unit_converter};
 ///
 /// let s = unit_converter::convert_raw_iota_amount_to_display_text(1000000, false);
 /// assert_eq!(s, "1.00 Mi");
+///
+/// let extended_s = unit_converter::convert_raw_iota_amount_to_display_text(1900000000000002, true);
+/// assert_eq!(extended_s, "1.900000000000002 Pi");
 ///```
 pub fn convert_raw_iota_amount_to_display_text(amount: u64, extended: bool) -> String {
     let unit = find_optimal_iota_unit_to_display(amount);
@@ -42,6 +52,9 @@ fn create_amount_with_unit_display_text(amount: f64, unit: IotaUnits, extended: 
 }
 
 /// Converts an amount of iota to a unit
+///
+/// * `amount` - Amount in base Iota unit
+/// * `target` - Target IotaUnit
 ///```
 /// extern crate iota_lib_rs;
 /// use iota_lib_rs::utils::{IotaUnits, unit_converter};
@@ -54,6 +67,8 @@ pub fn convert_amount_to(amount: u64, target: IotaUnits) -> f64 {
 }
 
 /// Finds the optimal unit for displaying an iota amount
+///
+/// * `amount` - Amount in base Iota unit
 ///```
 /// extern crate iota_lib_rs;
 /// use iota_lib_rs::utils::{IotaUnits, unit_converter};
@@ -147,7 +162,10 @@ mod tests {
     #[test]
     fn test_convert_raw_iota_amount_to_display_text() {
         assert_eq!(convert_raw_iota_amount_to_display_text(1, false), "1 i");
-        assert_eq!(convert_raw_iota_amount_to_display_text(1000, false), "1.00 Ki");
+        assert_eq!(
+            convert_raw_iota_amount_to_display_text(1000, false),
+            "1.00 Ki"
+        );
         assert_eq!(
             convert_raw_iota_amount_to_display_text(1000000, false),
             "1.00 Mi"

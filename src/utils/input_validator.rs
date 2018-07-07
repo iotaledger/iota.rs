@@ -230,31 +230,27 @@ mod tests {
     #[test]
     fn test_is_valid_transfer() {
         let mut t = Transfer::default();
-        *t.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();
-        *t.value_mut() = 0;
-        *t.message_mut() = TEST_MESSAGE.to_string();
-        *t.tag_mut() = Some(TEST_TAG.to_string());
+        t.set_address(TEST_ADDRESS_WITH_CHECKSUM.to_string());
+        t.set_value(0);
+        t.set_message(TEST_MESSAGE.to_string());
+        t.set_tag(TEST_TAG.to_string());
         assert!(is_valid_transfer(&t));
     }
 
     #[test]
     fn test_is_transfers_collection_valid() {
         let mut t = Transfer::default();
-        *t.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();
-        *t.value_mut() = 0;
-        *t.message_mut() = TEST_MESSAGE.to_string();
-        *t.tag_mut() = Some(TEST_TAG.to_string());
+        t.set_address(TEST_ADDRESS_WITH_CHECKSUM.to_string());
+        t.set_value(0);
+        t.set_message(TEST_MESSAGE.to_string());
+        t.set_tag(TEST_TAG.to_string());
 
         let mut t2 = Transfer::default();
-        *t2.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();
-        *t2.value_mut() = 0;
-        *t2.message_mut() = "".to_string();
-        *t2.tag_mut() = None;
+        t2.set_address(TEST_ADDRESS_WITH_CHECKSUM.to_string());
+        t2.set_value(0);
+        t2.set_message("".to_string());
 
-        let mut t3 = Transfer::default();
-        *t3.address_mut() = TEST_ADDRESS_WITH_CHECKSUM.to_string();
-        *t3.value_mut() = 0;
-        let transfers = vec![t, t2, t3];
+        let transfers = vec![t, t2];
         assert!(is_transfers_collection_valid(&transfers));
     }
 }

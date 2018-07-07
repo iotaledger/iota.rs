@@ -12,6 +12,7 @@ mod get_transactions_to_approve;
 mod get_trytes;
 mod interrupt_attaching_to_tangle;
 mod remove_neighbors;
+/// IRI responses are parsed into typed structs contained in this module
 pub mod responses;
 mod store_transactions;
 mod were_addresses_spent_from;

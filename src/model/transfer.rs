@@ -24,6 +24,18 @@ impl fmt::Display for Transfer {
     }
 }
 
+impl Into<Vec<Transfer>> for Transfer {
+    fn into(self) -> Vec<Transfer> {
+        vec![self]
+    }
+}
+
+impl Into<Vec<Transfer>> for &Transfer {
+    fn into(self) -> Vec<Transfer> {
+        vec![self.clone()]
+    }
+}
+
 impl Transfer {
     /// Provides a view of the address
     pub fn address(&self) -> &str {

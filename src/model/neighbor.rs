@@ -57,6 +57,7 @@ impl Neighbor {
         &mut self.address
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
     pub fn set_address<T>(&mut self, new_value: T)
     where
         T: Into<String>,
@@ -74,6 +75,7 @@ impl Neighbor {
         &mut self.number_of_all_transactions
     }
 
+    /// Setter accepting anything that can be turned into the relevant type
     pub fn set_number_of_all_transactions<T>(&mut self, new_value: T)
     where
         T: Into<i32>,

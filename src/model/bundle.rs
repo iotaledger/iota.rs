@@ -63,13 +63,13 @@ impl Bundle {
     ) {
         for i in 0..signature_message_length {
             let mut trx = Transaction::default();
-            *trx.address_mut() = Some(address.to_string());
-            *trx.tag_mut() = Some(tag.to_string());
-            *trx.obsolete_tag_mut() = Some(tag.to_string());
-            *trx.timestamp_mut() = Some(timestamp);
+            trx.set_address(address);
+            trx.set_tag(tag);
+            trx.set_obsolete_tag(tag);
+            trx.set_timestamp(timestamp);
             match i {
-                0 => *trx.value_mut() = Some(value),
-                _ => *trx.value_mut() = Some(0),
+                0 => trx.set_value(value),
+                _ => trx.set_value(0),
             }
             self.bundle.push(trx);
         }
@@ -82,18 +82,19 @@ impl Bundle {
         let empty_timestamp = 999_999_999;
 
         for (i, bundle) in self.bundle.iter_mut().enumerate() {
-            *bundle.signature_fragments_mut() =
+            let new_sig: String =
                 if signature_fragments.is_empty() || signature_fragments[i].is_empty() {
-                    Some(empty_signature_fragment.clone())
+                    empty_signature_fragment.clone()
                 } else {
-                    Some(signature_fragments[i].clone())
+                    signature_fragments[i].clone()
                 };
-            *bundle.trunk_transaction_mut() = Some(empty_hash.to_string());
-            *bundle.branch_transaction_mut() = Some(empty_hash.to_string());
-            *bundle.attachment_timestamp_mut() = Some(empty_timestamp);
-            *bundle.attachment_timestamp_lower_bound_mut() = Some(empty_timestamp);
-            *bundle.attachment_timestamp_upper_bound_mut() = Some(empty_timestamp);
-            *bundle.nonce_mut() = Some("9".repeat(27));
+            bundle.set_signature_fragments(new_sig);
+            bundle.set_trunk_transaction(empty_hash);
+            bundle.set_branch_transaction(empty_hash);
+            bundle.set_attachment_timestamp(empty_timestamp);
+            bundle.set_attachment_timestamp_lower_bound(empty_timestamp);
+            bundle.set_attachment_timestamp_upper_bound(empty_timestamp);
+            bundle.set_nonce("9".repeat(27));
         }
     }
 
@@ -128,7 +129,7 @@ impl Bundle {
             kerl.squeeze(&mut hash)?;
             let hash_trytes = converter::trytes(&hash);
             for bundle in &mut self.bundle {
-                *bundle.bundle_mut() = Some(hash_trytes.clone());
+                bundle.set_bundle(hash_trytes.clone());
             }
             let normalized_hash = Bundle::normalized_bundle(&hash_trytes.clone());
             if normalized_hash.contains(&13) {
@@ -138,7 +139,7 @@ impl Bundle {
                     ),
                     &[1],
                 );
-                *self.bundle[0].obsolete_tag_mut() = Some(converter::trytes(&increased_tag));
+                self.bundle[0].set_obsolete_tag(converter::trytes(&increased_tag));
             } else {
                 valid_bundle = true;
             }

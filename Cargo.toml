@@ -2,7 +2,7 @@ cargo-features = ["edition"]
 
 [package]
 name = "iota-lib-rs"
-version = "0.0.23"
+version = "0.0.24"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 description = "A rust implementation of the IOTA API"
 license = "MIT"

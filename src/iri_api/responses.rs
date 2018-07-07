@@ -3,10 +3,13 @@ use crate::model::Neighbor;
 /// This is a typed representation of the JSON response
 #[derive(Clone, Debug, Deserialize)]
 pub struct RemoveNeighborsResponse {
-    #[serde(rename = "removedNeighbors")]
-    removed_neighbors: usize,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Any exceptions that occurred
     exception: Option<String>,
+    /// Amount of neighbors removed
+    #[serde(rename = "removedNeighbors")]
+    removed_neighbors: Option<usize>,
 }
 
 impl RemoveNeighborsResponse {
@@ -18,13 +21,24 @@ impl RemoveNeighborsResponse {
     fn exception(&self) -> &Option<String> {
         &self.exception
     }
+    /// Returns a reference to the amount of removed neighbors
+    fn removed_neighbors(&self) -> &Option<usize> {
+        &self.removed_neighbors
+    }
+    /// Consumes the response and returns the amount of removed neighbors if any
+    fn take_removed_neighbors(self) -> Option<usize> {
+        self.removed_neighbors
+    }
 }
 
 /// This is a typed representation of the JSON response
 #[derive(Clone, Debug, Deserialize)]
 pub struct StoreTransactionsResponse {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Any exceptions that occurred
     exception: Option<String>,
 }
 
@@ -46,8 +60,11 @@ impl StoreTransactionsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct WereAddressesSpentFromResponse {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// States of addresses if found
     states: Option<Vec<bool>>,
 }
 
@@ -73,8 +90,12 @@ impl WereAddressesSpentFromResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetTrytesResponse {
+    /// How long response took
     duration: i64,
-    trytes: Vec<String>,
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Trytes if found
+    trytes: Option<Vec<String>>,
 }
 
 impl GetTrytesResponse {
@@ -82,12 +103,16 @@ impl GetTrytesResponse {
     pub fn duration(&self) -> i64 {
         self.duration
     }
+    /// Returns the error attribute
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
     /// Returns the trytes attribute
-    pub fn trytes(&self) -> &[String] {
+    pub fn trytes(&self) -> &Option<Vec<String>> {
         &self.trytes
     }
     /// Takes ownership the trytes attribute
-    pub fn take_trytes(self) -> Vec<String> {
+    pub fn take_trytes(self) -> Option<Vec<String>> {
         self.trytes
     }
 }
@@ -95,10 +120,14 @@ impl GetTrytesResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetTransactionsToApprove {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Trunk transaction to approve
     #[serde(rename = "trunkTransaction")]
     trunk_transaction: Option<String>,
+    /// Branch transaction to approve
     #[serde(rename = "branchTransaction")]
     branch_transaction: Option<String>,
 }
@@ -125,7 +154,9 @@ impl GetTransactionsToApprove {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetTipsResponse {
+    /// How long response took
     duration: i64,
+    /// Hashes of tips
     hashes: Vec<String>,
 }
 
@@ -147,36 +178,54 @@ impl GetTipsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetNodeInfoResponse {
+    /// Name of IRI node
     #[serde(rename = "appName")]
     app_name: String,
+    /// IRI version
     #[serde(rename = "appVersion")]
     app_version: String,
+    /// Duration of request
     duration: i64,
+    /// Number of threads IRI is using
     #[serde(rename = "jreAvailableProcessors")]
     jre_available_processors: usize,
+    /// Amount of free memory on IRI node
     #[serde(rename = "jreFreeMemory")]
     jre_free_memory: usize,
+    /// Max amount of memory on IRI node
     #[serde(rename = "jreMaxMemory")]
     jre_max_memory: usize,
+    /// Total amount of memory on IRI node
     #[serde(rename = "jreTotalMemory")]
     jre_total_memory: usize,
+    /// JRE version of IRI node
     #[serde(rename = "jreVersion")]
     jre_version: String,
+    /// Latest milestone on IRI node
     #[serde(rename = "latestMilestone")]
     latest_milestone: String,
+    /// Latest milestone index on IRI node
     #[serde(rename = "latestMilestoneIndex")]
     latest_milestone_index: usize,
+    /// Latest solid subtangle milestone on IRI node
     #[serde(rename = "latestSolidSubtangleMilestone")]
     latest_solid_subtangle_milestone: String,
+    /// Latest solid subtangle milestone index on IRI node
     #[serde(rename = "latestSolidSubtangleMilestoneIndex")]
     latest_solid_subtangle_milestone_index: usize,
+    /// Milestone start index on IRI node
     #[serde(rename = "milestoneStartIndex")]
     milestone_start_index: usize,
+    /// Amount of neighbors connected to IRI node
     neighbors: usize,
+    /// Packet queue size on IRI node
     #[serde(rename = "packetsQueueSize")]
     packets_queue_size: usize,
+    /// Current time on IRI node (UNIX Seconds),
     time: usize,
+    /// Amount of tips on IRI node
     tips: usize,
+    /// Transactions to request on IRI node
     #[serde(rename = "transactionsToRequest")]
     transactions_to_request: usize,
 }
@@ -259,8 +308,11 @@ impl GetNodeInfoResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetNeighborsResponse {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Neighbors if found
     neighbors: Option<Vec<Neighbor>>,
 }
 
@@ -282,8 +334,11 @@ impl GetNeighborsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct GetInclusionStatesResponse {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// States if found
     states: Option<Vec<bool>>,
 }
 
@@ -292,6 +347,7 @@ impl GetInclusionStatesResponse {
     pub fn duration(&self) -> i64 {
         self.duration
     }
+    /// Returns any potential errors
     pub fn error(&self) -> Option<String> {
         self.error.clone()
     }
@@ -308,11 +364,16 @@ impl GetInclusionStatesResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Deserialize, Debug)]
 pub struct GetBalancesResponse {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Balances if found
     balances: Option<Vec<String>>,
+    /// Milestone index if found
     #[serde(rename = "milestoneIndex")]
     milestone_index: Option<i64>,
+    /// References if found
     references: Option<Vec<String>>,
 }
 
@@ -321,6 +382,7 @@ impl GetBalancesResponse {
     pub fn duration(&self) -> i64 {
         self.duration
     }
+    /// Returns any potential errors
     pub fn error(&self) -> &Option<String> {
         &self.error
     }
@@ -349,8 +411,11 @@ impl GetBalancesResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct FindTransactionsResponse {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Hashes of matching transactions
     hashes: Option<Vec<String>>,
 }
 
@@ -359,6 +424,7 @@ impl FindTransactionsResponse {
     pub fn duration(&self) -> i64 {
         self.duration
     }
+    /// Returns any potential errors
     pub fn error(&self) -> &Option<String> {
         &self.error
     }
@@ -375,8 +441,11 @@ impl FindTransactionsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
+    /// How long response took
     duration: i64,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Any exception that occurred
     exception: Option<String>,
 }
 
@@ -385,9 +454,11 @@ impl BroadcastTransactionsResponse {
     pub fn duration(&self) -> i64 {
         self.duration
     }
+    /// Returns any potential errors
     pub fn error(&self) -> Option<String> {
         self.error.clone()
     }
+    /// Returns any potential exceptions
     pub fn exception(&self) -> Option<String> {
         self.exception.clone()
     }
@@ -397,24 +468,37 @@ impl BroadcastTransactionsResponse {
 /// `duration` will be zero if local PoW is selected.
 #[derive(Deserialize, Debug)]
 pub struct AttachToTangleResponse {
+    /// How long response took
     duration: i64,
-    id: Option<String>,
+    /// This is only used when using PoW Box service
+    #[serde(rename = "jobId")]
+    job_id: Option<String>,
+    /// Any errors that occurred
     error: Option<String>,
+    /// Any exceptions that occurred
     exception: Option<String>,
+    /// Trytes returned by PoW
     trytes: Option<Vec<String>>,
 }
 
 impl AttachToTangleResponse {
-    pub fn new(
+    /// Creates a new repsonse
+    /// 
+    /// * `duration` - How long response took
+    /// * `job_id` - This is only used when using PoW Box service
+    /// * `error` - Any errors that occurred
+    /// * `exception` - Any exceptions that occurred
+    /// * `trytes` -  trytes returned by PoW
+    pub fn new (
         duration: i64,
-        id: Option<String>,
+        job_id: Option<String>,
         error: Option<String>,
         exception: Option<String>,
         trytes: Option<Vec<String>>,
     ) -> AttachToTangleResponse {
         AttachToTangleResponse {
             duration,
-            id,
+            job_id,
             error,
             exception,
             trytes,
@@ -425,8 +509,8 @@ impl AttachToTangleResponse {
         self.duration
     }
     /// Returns the id attribute
-    pub fn id(&self) -> Option<String> {
-        self.id.clone()
+    pub fn job_id(&self) -> Option<String> {
+        self.job_id.clone()
     }
     /// Returns the error attribute
     pub fn error(&self) -> Option<String> {

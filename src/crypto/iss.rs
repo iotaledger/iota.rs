@@ -1,6 +1,6 @@
 use super::curl::Curl;
 use super::kerl::Kerl;
-use super::{hash_with_mode, Mode, Sponge, HASH_LENGTH};
+use super::{hash_with_mode, HashMode, Sponge, HASH_LENGTH};
 use crate::utils::constants;
 use crate::Result;
 
@@ -20,7 +20,7 @@ pub const NORMALIZED_FRAGMENT_LENGTH: usize = HASH_LENGTH / TRYTE_WIDTH / NUMBER
 /// * `mode` - The hashing mode to use
 /// * `seed` - The generation seed
 /// * `index` - How many address permutations to iterate through
-pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH]> {
+pub fn subseed(mode: HashMode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH]> {
     let mut subseed_preimage = seed.to_vec();
     for _ in 0..index {
         for trit in &mut subseed_preimage {
@@ -42,7 +42,7 @@ pub fn subseed(mode: Mode, seed: &[i8], index: usize) -> Result<[i8; HASH_LENGTH
 /// * `mode` - The hashing mode to use
 /// * `subseed` - Subseed used for key generation
 /// * `number_of_fragments` - Number of fragments to generate
-pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result<Vec<i8>> {
+pub fn key(mode: HashMode, subseed: &mut [i8], number_of_fragments: usize) -> Result<Vec<i8>> {
     ensure!(
         subseed.len() == HASH_LENGTH,
         "Invalid subseed length: {}",
@@ -59,18 +59,18 @@ pub fn key(mode: Mode, subseed: &mut [i8], number_of_fragments: usize) -> Result
 ///
 /// * `mode` - The hashing mode to use
 /// * `key` - kKey slice used to generate digests
-pub fn digests(mode: Mode, key: &[i8]) -> Result<Vec<i8>> {
+pub fn digests(mode: HashMode, key: &[i8]) -> Result<Vec<i8>> {
     ensure!(
         !key.is_empty() && key.len() % FRAGMENT_LENGTH == 0,
         "Invalid key length: {}",
         key.len()
     );
     match mode {
-        Mode::CURLP27 | Mode::CURLP81 => {
+        HashMode::CURLP27 | HashMode::CURLP81 => {
             let mut curl = Curl::new(mode)?;
             Ok(digests_helper(&mut curl, key)?)
         }
-        Mode::Kerl => {
+        HashMode::Kerl => {
             let mut kerl = Kerl::default();
             Ok(digests_helper(&mut kerl, key)?)
         }
@@ -101,7 +101,7 @@ fn digests_helper(hash: &mut impl Sponge, key: &[i8]) -> Result<Vec<i8>> {
 ///
 /// * `mode` - The hashing mode to use
 /// * `digests` - Digests used to generate address
-pub fn address(mode: Mode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH]> {
+pub fn address(mode: HashMode, digests: &mut [i8]) -> Result<[i8; HASH_LENGTH]> {
     ensure!(
         !digests.is_empty() && digests.len() % HASH_LENGTH == 0,
         "Invalid key length: {}",
@@ -178,7 +178,7 @@ pub fn normalized_bundle_in_place(bundle: &[i8], normalized_bundle: &mut [i8]) {
 /// * `normalized_bundle_fragment` - Normalized bundle fragment to sign
 /// * `key_fragment` -  Key fragment to use
 pub fn signature_fragment(
-    mode: Mode,
+    mode: HashMode,
     normalized_bundle_fragment: &[i8],
     key_fragment: &[i8],
 ) -> Result<Vec<i8>> {
@@ -194,7 +194,7 @@ pub fn signature_fragment(
     );
     let mut signature_fragment = key_fragment.to_vec();
     match mode {
-        Mode::CURLP27 | Mode::CURLP81 => {
+        HashMode::CURLP27 | HashMode::CURLP81 => {
             let mut curl = Curl::new(mode).unwrap();
             signature_fragment_helper(
                 &mut curl,
@@ -202,7 +202,7 @@ pub fn signature_fragment(
                 &mut signature_fragment,
             )?;
         }
-        Mode::Kerl => {
+        HashMode::Kerl => {
             let mut kerl = Kerl::default();
             signature_fragment_helper(
                 &mut kerl,
@@ -240,7 +240,7 @@ fn signature_fragment_helper(
 /// * `normalized_bundle_fragment` - Normalized bundle fragment to digest
 /// * `signature_fragment` -  Signature fragment to use
 pub fn digest(
-    mode: Mode,
+    mode: HashMode,
     normalized_bundle_fragment: &[i8],
     signature_fragment: &[i8],
 ) -> Result<[i8; HASH_LENGTH]> {
@@ -256,7 +256,7 @@ pub fn digest(
     );
     let mut digest = [0; HASH_LENGTH];
     match mode {
-        Mode::CURLP27 | Mode::CURLP81 => {
+        HashMode::CURLP27 | HashMode::CURLP81 => {
             let mut curl = Curl::new(mode).unwrap();
             digest_in_place(
                 &mut curl,
@@ -265,7 +265,7 @@ pub fn digest(
                 &mut digest,
             )?;
         }
-        Mode::Kerl => {
+        HashMode::Kerl => {
             let mut kerl = Kerl::default();
             digest_in_place(
                 &mut kerl,
@@ -318,7 +318,7 @@ pub fn digest_in_place(
 /// * `index` - Used to alternate the order trits and hash are absorbed
 /// * `size` - Number of hash iterations
 pub fn get_merkle_root(
-    mode: Mode,
+    mode: HashMode,
     hash: &[i8],
     trits: &mut [i8],
     offset: usize,
@@ -326,11 +326,11 @@ pub fn get_merkle_root(
     size: usize,
 ) -> Result<[i8; HASH_LENGTH]> {
     match mode {
-        Mode::CURLP27 | Mode::CURLP81 => {
+        HashMode::CURLP27 | HashMode::CURLP81 => {
             let mut curl = Curl::new(mode).unwrap();
             get_merkle_root_helper(&mut curl, hash, trits, offset, index, size)
         }
-        Mode::Kerl => {
+        HashMode::Kerl => {
             let mut kerl = Kerl::default();
             get_merkle_root_helper(&mut kerl, hash, trits, offset, index, size)
         }
@@ -380,10 +380,10 @@ mod tests {
     #[test]
     fn address_generation_curl() {
         let seed_trits = converter::trits_from_string(SEED);
-        let mut subseed = subseed(Mode::CURLP81, &seed_trits, 0).unwrap();
-        let key = key(Mode::CURLP81, &mut subseed, 2).unwrap();
-        let mut digest = digests(Mode::CURLP81, &key).unwrap();
-        let address = address(Mode::CURLP81, &mut digest).unwrap();
+        let mut subseed = subseed(HashMode::CURLP81, &seed_trits, 0).unwrap();
+        let key = key(HashMode::CURLP81, &mut subseed, 2).unwrap();
+        let mut digest = digests(HashMode::CURLP81, &key).unwrap();
+        let address = address(HashMode::CURLP81, &mut digest).unwrap();
         assert_eq!(
             &converter::trits_to_string(&address).unwrap(),
             "D9XCNSCCAJGLWSQOQAQNFWANPYKYMCQ9VCOMROLDVLONPPLDFVPIZNAPVZLQMPFYJPAHUKIAEKNCQIYJZ"
@@ -393,10 +393,10 @@ mod tests {
     #[test]
     fn address_generation_kerl() {
         let seed_trits = converter::trits_from_string(SEED);
-        let mut subseed = subseed(Mode::Kerl, &seed_trits, 0).unwrap();
-        let key = key(Mode::Kerl, &mut subseed, 2).unwrap();
-        let mut digest = digests(Mode::Kerl, &key).unwrap();
-        let address = address(Mode::Kerl, &mut digest).unwrap();
+        let mut subseed = subseed(HashMode::Kerl, &seed_trits, 0).unwrap();
+        let key = key(HashMode::Kerl, &mut subseed, 2).unwrap();
+        let mut digest = digests(HashMode::Kerl, &key).unwrap();
+        let address = address(HashMode::Kerl, &mut digest).unwrap();
         assert_eq!(
             &converter::trits_to_string(&address).unwrap(),
             "MDWYEJJHJDIUVPKDY9EACGDJUOP9TLYDWETUBOYCBLYXYYYJYUXYUTCTPTDGJYFKMQMCNZDQPTBE9AFIW"
@@ -405,7 +405,7 @@ mod tests {
 
     #[test]
     fn resolve_signature_curl() {
-        let modes = [Mode::CURLP81, Mode::Kerl];
+        let modes = [HashMode::CURLP81, HashMode::Kerl];
         for &mode in modes.iter() {
             let seed_trits = converter::trits_from_string(SEED);
             let mut subseed = subseed(mode, &seed_trits, 10).unwrap();

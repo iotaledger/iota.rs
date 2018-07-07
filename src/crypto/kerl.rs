@@ -39,7 +39,6 @@ const HALF_3: [u32; 12] = [
 ///```
 /// extern crate iota_lib_rs;
 /// use iota_lib_rs::crypto::{Sponge, Kerl};
-///
 /// // Create an array of 243 1s
 /// let input = [1; 243];
 /// // Create a mutable array of 243 0s

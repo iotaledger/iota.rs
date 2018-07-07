@@ -24,7 +24,7 @@ pub const HASH_LENGTH: usize = 243;
 
 /// Mode allows for mode selection to rely on rusts type system
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Mode {
+pub enum HashMode {
     /// Curl with 27 rounds
     CURLP27,
     /// Curl with 81 rounds
@@ -33,7 +33,7 @@ pub enum Mode {
     Kerl,
 }
 
-impl fmt::Display for Mode {
+impl fmt::Display for HashMode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -60,20 +60,20 @@ where
 /// Allows you to hash `trits` into `out` using the `mode` of your choosing
 ///```rust
 /// extern crate iota_lib_rs;
-/// use iota_lib_rs::crypto::{self, Mode};
+/// use iota_lib_rs::crypto::{self, HashMode};
 ///
 /// let input = [0; 243];
 /// let mut out = [0; 243];
-/// crypto::hash_with_mode(Mode::Kerl, &input, &mut out);
+/// crypto::hash_with_mode(HashMode::Kerl, &input, &mut out);
 ///```
-pub fn hash_with_mode(mode: Mode, trits: &[i8], out: &mut [i8]) -> Result<(), Error> {
+pub fn hash_with_mode(mode: HashMode, trits: &[i8], out: &mut [i8]) -> Result<(), Error> {
     match mode {
-        Mode::CURLP27 | Mode::CURLP81 => {
+        HashMode::CURLP27 | HashMode::CURLP81 => {
             let mut curl = Curl::new(mode).unwrap();
             curl.absorb(trits)?;
             curl.squeeze(out)?;
         }
-        Mode::Kerl => {
+        HashMode::Kerl => {
             let mut kerl = Kerl::default();
             kerl.absorb(trits)?;
             kerl.squeeze(out)?;

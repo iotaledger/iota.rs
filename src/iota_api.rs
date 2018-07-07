@@ -241,7 +241,7 @@ impl API {
     pub fn prepare_transfers(
         &self,
         seed: &str,
-        transfers: &[Transfer],
+        mut transfers: Vec<Transfer>,
         inputs: Option<Inputs>,
         remainder_address: &Option<String>,
         security: Option<usize>,
@@ -249,7 +249,6 @@ impl API {
     ) -> Result<Vec<String>> {
         let mut add_hmac = false;
         let mut added_hmac = false;
-        let mut transfers = transfers.to_owned();
         ensure!(input_validator::is_trytes(seed), "Invalid seed.");
         if let Some(hmac_key) = &hmac_key {
             ensure!(input_validator::is_trytes(&hmac_key), "Invalid trytes.");
@@ -276,11 +275,10 @@ impl API {
         let mut bundle = Bundle::default();
         let mut total_value = 0;
         let mut signature_fragments: Vec<String> = Vec::new();
-        let mut tag = "".to_string();
+        let mut tag = String::new();
 
         for transfer in transfers {
             let mut signature_message_length = 1;
-
             if transfer.message().len() > constants::MESSAGE_LENGTH {
                 signature_message_length += (transfer.message().len() as f64
                     / constants::MESSAGE_LENGTH as f64)
@@ -329,7 +327,7 @@ impl API {
                         if b > 0 {
                             *confirmed_inputs.total_balance_mut() += b;
                             let mut confirmed_input = inputs.inputs_list()[i].clone();
-                            *confirmed_input.balance_mut() = b;
+                            confirmed_input.set_balance(b);
                             confirmed_inputs.add(confirmed_input);
                             if confirmed_inputs.total_balance() >= total_value {
                                 break;
@@ -392,22 +390,22 @@ impl API {
     /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
     /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
-    pub fn send_transfers(
+    pub fn send_transfers<T>(
         &self,
         seed: &str,
         depth: usize,
         min_weight_magnitude: usize,
-        transfers: &[Transfer],
+        transfers: T,
         local_pow: bool,
         inputs: Option<Inputs>,
         reference: &Option<String>,
         remainder_address: &Option<String>,
         security: Option<usize>,
         hmac_key: Option<String>,
-    ) -> Result<Vec<Transaction>> {
+    ) -> Result<Vec<Transaction>> where T: Into<Vec<Transfer>> {
         let trytes = self.prepare_transfers(
             seed,
-            transfers,
+            transfers.into(),
             inputs,
             &remainder_address,
             security,
@@ -429,7 +427,7 @@ impl API {
         bundle_hash: Option<String>,
         mut bundle: Vec<Transaction>,
     ) -> Result<Vec<Transaction>> {
-        let tryte_list = iri_api::get_trytes(&self.uri, &[trunk_tx.to_string()])?.take_trytes();
+        let tryte_list = iri_api::get_trytes(&self.uri, &[trunk_tx.to_string()])?.take_trytes().unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;

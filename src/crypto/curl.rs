@@ -1,4 +1,4 @@
-use super::{Mode, Sponge, HASH_LENGTH};
+use super::{HashMode, Sponge, HASH_LENGTH};
 use crate::Result;
 use std::fmt;
 
@@ -9,7 +9,7 @@ const TRUTH_TABLE: [i8; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
 /// The Curl struct is a Sponge that uses the Curl
 /// hashing algorithm.
-///```rust
+///```
 /// extern crate iota_lib_rs;
 /// use iota_lib_rs::crypto::{Sponge, Curl};
 /// // Create an array of 243 1s
@@ -51,11 +51,11 @@ impl fmt::Debug for Curl {
 
 impl Curl {
     /// Creates a new instance of Curl using the provided mode
-    pub fn new(mode: Mode) -> Result<Curl> {
+    pub fn new(mode: HashMode) -> Result<Curl> {
         let mut curl = Curl::default();
         curl.number_of_rounds = match mode {
-            Mode::CURLP27 => 27,
-            Mode::CURLP81 => 81,
+            HashMode::CURLP27 => 27,
+            HashMode::CURLP81 => 81,
             other => return Err(format_err!("Invalid mode: {}", other)),
         };
         Ok(curl)

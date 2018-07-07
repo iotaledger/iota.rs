@@ -1,4 +1,4 @@
-use crate::crypto::{Curl, Mode, Sponge};
+use crate::crypto::{Curl, HashMode, Sponge};
 use crate::model::Bundle;
 use crate::utils::converter;
 use crate::Result;
@@ -32,7 +32,7 @@ impl HMAC {
     /// Using the key provided earlier, add an HMAC to provided
     /// Bundle
     pub fn add_hmac(&self, bundle: &mut Bundle) -> Result<()> {
-        let mut curl = Curl::new(Mode::CURLP27)?;
+        let mut curl = Curl::new(HashMode::CURLP27)?;
         let key = self.key.clone();
         for b in bundle.bundle_mut().iter_mut() {
             if b.value().unwrap_or_default() > 0 {

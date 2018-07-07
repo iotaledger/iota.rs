@@ -49,24 +49,28 @@ pub fn attach_to_tangle(
         let mut pearl_diver = PearlDiver::new();
         for i in 0..trytes.len() {
             let mut tx: Transaction = trytes[i].parse()?;
-            *tx.trunk_transaction_mut() = if let Some(previous_transaction) = &previous_transaction
-            {
-                Some(previous_transaction.to_string())
+
+            let new_trunk_tx = if let Some(previous_transaction) = &previous_transaction {
+                previous_transaction.to_string()
             } else {
-                Some(trunk_transaction.to_string())
+                trunk_transaction.to_string()
             };
-            *tx.branch_transaction_mut() = if previous_transaction.is_some() {
-                Some(trunk_transaction.to_string())
+            tx.set_trunk_transaction(new_trunk_tx);
+
+            let new_branch_tx = if previous_transaction.is_some() {
+                trunk_transaction
             } else {
-                Some(branch_transaction.to_string())
+                branch_transaction
             };
+            tx.set_branch_transaction(new_branch_tx);
+
             let tag = tx.tag().unwrap_or_default();
             if tag.is_empty() || tag == "9".repeat(27) {
                 *tx.tag_mut() = tx.obsolete_tag();
             }
-            *tx.attachment_timestamp_mut() = Some(Utc::now().timestamp_millis());
-            *tx.attachment_timestamp_lower_bound_mut() = Some(0);
-            *tx.attachment_timestamp_upper_bound_mut() = Some(*MAX_TIMESTAMP_VALUE);
+            tx.set_attachment_timestamp(Utc::now().timestamp_millis());
+            tx.set_attachment_timestamp_lower_bound(0);
+            tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
             let mut tx_trits = converter::trits_from_string(&tx.to_trytes());
             pearl_diver.search(&mut tx_trits, min_weight_magnitude)?;
             result_trytes.push(converter::trits_to_string(&tx_trits)?);

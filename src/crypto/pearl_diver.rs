@@ -88,6 +88,10 @@ impl PearlDiver {
         *self.running.write().unwrap() = PearlDiverState::Cancelled;
     }
 
+    pub fn status(&self) -> PearlDiverState {
+        *self.running.read().unwrap()
+    }
+
     /// Performs proof of work in place
     ///
     /// * `transaction_trits` - Trits to perform proof of work against, modified in-place
