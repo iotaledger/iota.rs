@@ -35,7 +35,7 @@ fn create_amount_with_unit_display_text(amount: f64, unit: IotaUnits, extended: 
     if unit == IotaUnits::Iota {
         format!("{} {}", amount, unit.unit())
     } else if extended {
-        format!("{:.18} {}", amount, unit.unit())
+        format!("{:.15} {}", amount, unit.unit())
     } else {
         format!("{:.2} {}", amount, unit.unit())
     }
@@ -147,22 +147,26 @@ mod tests {
     #[test]
     fn test_convert_raw_iota_amount_to_display_text() {
         assert_eq!(convert_raw_iota_amount_to_display_text(1, false), "1 i");
-        assert_eq!(convert_raw_iota_amount_to_display_text(1000, false), "1 Ki");
+        assert_eq!(convert_raw_iota_amount_to_display_text(1000, false), "1.00 Ki");
         assert_eq!(
             convert_raw_iota_amount_to_display_text(1000000, false),
-            "1 Mi"
+            "1.00 Mi"
         );
         assert_eq!(
             convert_raw_iota_amount_to_display_text(1000000000, false),
-            "1 Gi"
+            "1.00 Gi"
         );
         assert_eq!(
             convert_raw_iota_amount_to_display_text(1000000000000, false),
-            "1 Ti"
+            "1.00 Ti"
         );
         assert_eq!(
             convert_raw_iota_amount_to_display_text(1000000000000000, false),
-            "1 Pi"
+            "1.00 Pi"
+        );
+        assert_eq!(
+            convert_raw_iota_amount_to_display_text(1900000000000002, true),
+            "1.900000000000002 Pi"
         );
     }
 }
