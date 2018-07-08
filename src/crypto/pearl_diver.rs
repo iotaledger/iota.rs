@@ -45,7 +45,7 @@ const LOW_BITS: u64 =
 /// trits.copy_from_slice(&vec);
 /// let mut pearl_diver = PearlDiver::default();
 /// pearl_diver
-///     .search(&mut trits, MIN_WEIGHT_MAGNITUDE)
+///     .search(&mut trits, MIN_WEIGHT_MAGNITUDE, None)
 ///     .unwrap();
 /// let mut hash_trits = [0; HASH_SIZE];
 /// curl.reset();
@@ -88,6 +88,8 @@ impl PearlDiver {
         *self.running.write().unwrap() = PearlDiverState::Cancelled;
     }
 
+    /// Returns the current status of PoW. This is only useful if you have multiple references
+    /// to a PearlDiver instance through an `Rc` or `Arc`
     pub fn status(&self) -> PearlDiverState {
         *self.running.read().unwrap()
     }
@@ -96,10 +98,12 @@ impl PearlDiver {
     ///
     /// * `transaction_trits` - Trits to perform proof of work against, modified in-place
     /// * `min_weight_magnitude` - Difficulty factor to use when performing PoW
+    /// * `thread` - Optionally specify how many threads to use for PoW. Defaults to number of CPU threads.
     pub fn search(
         &mut self,
         transaction_trits: &mut [i8],
         min_weight_magnitude: usize,
+        threads: Option<usize>,
     ) -> Result<()> {
         ensure!(
             transaction_trits.len() == TRANSACTION_LENGTH,
@@ -119,8 +123,19 @@ impl PearlDiver {
         let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
         initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
         let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
+        let actual_thread_count = num_cpus::get();
+        let threads_to_use = match threads {
+            Some(t) => if t == 0 {
+                1
+            } else if t > actual_thread_count {
+                actual_thread_count
+            } else {
+                t
+            },
+            None => actual_thread_count,
+        };
         crossbeam::scope(|scope| {
-            for i in (0..num_cpus::get()).rev() {
+            for i in (0..threads_to_use).rev() {
                 let mut mid_state_copy_low = mid_state_low.to_vec();
                 let mut mid_state_copy_high = mid_state_high.to_vec();
                 let local_state_arc = Arc::clone(&self.running);

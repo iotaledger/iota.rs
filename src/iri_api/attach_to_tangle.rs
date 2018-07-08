@@ -15,13 +15,13 @@ lazy_static! {
 
 /// Performs proof of work
 ///
-/// * `uri` - the uri used to make the request, if `None` then local PoW is done.
+/// * `uri` - the uri used to make the request
 /// * `trunk_transaction` - trunk transaction to confirm
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
 pub fn attach_to_tangle(
-    uri: Option<String>,
+    uri: &str,
     trunk_transaction: &str,
     branch_transaction: &str,
     min_weight_magnitude: usize,
@@ -43,49 +43,6 @@ pub fn attach_to_tangle(
         trytes
     );
 
-    if uri == None {
-        let mut result_trytes: Vec<String> = Vec::with_capacity(trytes.len());
-        let mut previous_transaction: Option<String> = None;
-        let mut pearl_diver = PearlDiver::new();
-        for i in 0..trytes.len() {
-            let mut tx: Transaction = trytes[i].parse()?;
-
-            let new_trunk_tx = if let Some(previous_transaction) = &previous_transaction {
-                previous_transaction.to_string()
-            } else {
-                trunk_transaction.to_string()
-            };
-            tx.set_trunk_transaction(new_trunk_tx);
-
-            let new_branch_tx = if previous_transaction.is_some() {
-                trunk_transaction
-            } else {
-                branch_transaction
-            };
-            tx.set_branch_transaction(new_branch_tx);
-
-            let tag = tx.tag().unwrap_or_default();
-            if tag.is_empty() || tag == "9".repeat(27) {
-                *tx.tag_mut() = tx.obsolete_tag();
-            }
-            tx.set_attachment_timestamp(Utc::now().timestamp_millis());
-            tx.set_attachment_timestamp_lower_bound(0);
-            tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
-            let mut tx_trits = converter::trits_from_string(&tx.to_trytes());
-            pearl_diver.search(&mut tx_trits, min_weight_magnitude)?;
-            result_trytes.push(converter::trits_to_string(&tx_trits)?);
-            previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
-        }
-        result_trytes.reverse();
-        return Ok(AttachToTangleResponse::new(
-            0,
-            None,
-            None,
-            None,
-            Some(result_trytes),
-        ));
-    }
-
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(60))
         .build()?;
@@ -103,7 +60,7 @@ pub fn attach_to_tangle(
     });
 
     let attach_resp: AttachToTangleResponse = client
-        .post(&uri.unwrap())
+        .post(uri)
         .headers(headers)
         .body(body.to_string())
         .send()?
@@ -117,4 +74,77 @@ pub fn attach_to_tangle(
     }
 
     Ok(attach_resp)
+}
+
+/// Performs proof of work locally
+///
+/// * `threads` - Optionally specify the number of threads
+/// to use for Pow. Defaults to CPU thread count.
+/// * `trunk_transaction` - trunk transaction to confirm
+/// * `branch_transaction` - branch transaction to confirm
+/// * `min_weight_magnitude` - Difficulty of PoW
+/// * `trytes` - tryes to use for PoW
+pub fn attach_to_tangle_local(
+    threads: Option<usize>,
+    trunk_transaction: &str,
+    branch_transaction: &str,
+    min_weight_magnitude: usize,
+    trytes: &[String],
+) -> Result<AttachToTangleResponse> {
+    ensure!(
+        input_validator::is_hash(trunk_transaction),
+        "Provided trunk transaction is not valid: {:?}",
+        trunk_transaction
+    );
+    ensure!(
+        input_validator::is_hash(branch_transaction),
+        "Provided branch transaction is not valid: {:?}",
+        branch_transaction
+    );
+    ensure!(
+        input_validator::is_array_of_trytes(trytes),
+        "Provided trytes are not valid: {:?}",
+        trytes
+    );
+
+    let mut result_trytes: Vec<String> = Vec::with_capacity(trytes.len());
+    let mut previous_transaction: Option<String> = None;
+    let mut pearl_diver = PearlDiver::new();
+    for i in 0..trytes.len() {
+        let mut tx: Transaction = trytes[i].parse()?;
+
+        let new_trunk_tx = if let Some(previous_transaction) = &previous_transaction {
+            previous_transaction.to_string()
+        } else {
+            trunk_transaction.to_string()
+        };
+        tx.set_trunk_transaction(new_trunk_tx);
+
+        let new_branch_tx = if previous_transaction.is_some() {
+            trunk_transaction
+        } else {
+            branch_transaction
+        };
+        tx.set_branch_transaction(new_branch_tx);
+
+        let tag = tx.tag().unwrap_or_default();
+        if tag.is_empty() || tag == "9".repeat(27) {
+            *tx.tag_mut() = tx.obsolete_tag();
+        }
+        tx.set_attachment_timestamp(Utc::now().timestamp_millis());
+        tx.set_attachment_timestamp_lower_bound(0);
+        tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
+        let mut tx_trits = converter::trits_from_string(&tx.to_trytes());
+        pearl_diver.search(&mut tx_trits, min_weight_magnitude, threads)?;
+        result_trytes.push(converter::trits_to_string(&tx_trits)?);
+        previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
+    }
+    result_trytes.reverse();
+    Ok(AttachToTangleResponse::new(
+        0,
+        None,
+        None,
+        None,
+        Some(result_trytes),
+    ))
 }

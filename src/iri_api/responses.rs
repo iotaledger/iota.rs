@@ -483,13 +483,13 @@ pub struct AttachToTangleResponse {
 
 impl AttachToTangleResponse {
     /// Creates a new repsonse
-    /// 
+    ///
     /// * `duration` - How long response took
     /// * `job_id` - This is only used when using PoW Box service
     /// * `error` - Any errors that occurred
     /// * `exception` - Any exceptions that occurred
     /// * `trytes` -  trytes returned by PoW
-    pub fn new (
+    pub fn new(
         duration: i64,
         job_id: Option<String>,
         error: Option<String>,

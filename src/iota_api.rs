@@ -123,12 +123,13 @@ impl API {
         depth: usize,
         min_weight_magnitude: usize,
         local_pow: bool,
+        threads: Option<usize>,
         reference: &Option<String>,
     ) -> Result<Vec<Transaction>> {
         let to_approve = iri_api::get_transactions_to_approve(&self.uri, depth, &reference)?;
         let trytes_list = if local_pow {
-            let res = iri_api::attach_to_tangle(
-                None,
+            let res = iri_api::attach_to_tangle_local(
+                threads,
                 &to_approve.trunk_transaction().unwrap(),
                 &to_approve.branch_transaction().unwrap(),
                 min_weight_magnitude,
@@ -137,7 +138,7 @@ impl API {
             res.trytes().unwrap()
         } else {
             let attached = iri_api::attach_to_tangle(
-                Some(self.uri.to_string()),
+                &self.uri,
                 &to_approve.trunk_transaction().unwrap(),
                 &to_approve.branch_transaction().unwrap(),
                 min_weight_magnitude,
@@ -397,12 +398,16 @@ impl API {
         min_weight_magnitude: usize,
         transfers: T,
         local_pow: bool,
+        threads: Option<usize>,
         inputs: Option<Inputs>,
         reference: &Option<String>,
         remainder_address: &Option<String>,
         security: Option<usize>,
         hmac_key: Option<String>,
-    ) -> Result<Vec<Transaction>> where T: Into<Vec<Transfer>> {
+    ) -> Result<Vec<Transaction>>
+    where
+        T: Into<Vec<Transfer>>,
+    {
         let trytes = self.prepare_transfers(
             seed,
             transfers.into(),
@@ -411,7 +416,14 @@ impl API {
             security,
             hmac_key,
         )?;
-        let t = self.send_trytes(&trytes, depth, min_weight_magnitude, local_pow, &reference)?;
+        let t = self.send_trytes(
+            &trytes,
+            depth,
+            min_weight_magnitude,
+            local_pow,
+            threads,
+            &reference,
+        )?;
         Ok(t)
     }
 
@@ -427,7 +439,9 @@ impl API {
         bundle_hash: Option<String>,
         mut bundle: Vec<Transaction>,
     ) -> Result<Vec<Transaction>> {
-        let tryte_list = iri_api::get_trytes(&self.uri, &[trunk_tx.to_string()])?.take_trytes().unwrap_or_default();
+        let tryte_list = iri_api::get_trytes(&self.uri, &[trunk_tx.to_string()])?
+            .take_trytes()
+            .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;
