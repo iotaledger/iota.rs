@@ -1,7 +1,7 @@
 use crate::model::Neighbor;
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct RemoveNeighborsResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -32,7 +32,7 @@ impl RemoveNeighborsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StoreTransactionsResponse {
     /// How long response took
     duration: i64,
@@ -58,7 +58,7 @@ impl StoreTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct WereAddressesSpentFromResponse {
     /// How long response took
     duration: i64,
@@ -88,7 +88,7 @@ impl WereAddressesSpentFromResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GetTrytesResponse {
     /// How long response took
     duration: i64,
@@ -118,7 +118,7 @@ impl GetTrytesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GetTransactionsToApprove {
     /// How long response took
     duration: i64,
@@ -152,7 +152,7 @@ impl GetTransactionsToApprove {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GetTipsResponse {
     /// How long response took
     duration: i64,
@@ -176,7 +176,7 @@ impl GetTipsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GetNodeInfoResponse {
     /// Name of IRI node
     #[serde(rename = "appName")]
@@ -306,7 +306,7 @@ impl GetNodeInfoResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GetNeighborsResponse {
     /// How long response took
     duration: i64,
@@ -332,7 +332,7 @@ impl GetNeighborsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GetInclusionStatesResponse {
     /// How long response took
     duration: i64,
@@ -362,7 +362,7 @@ impl GetInclusionStatesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetBalancesResponse {
     /// How long response took
     duration: i64,
@@ -409,7 +409,7 @@ impl GetBalancesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct FindTransactionsResponse {
     /// How long response took
     duration: i64,
@@ -439,7 +439,7 @@ impl FindTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
     /// How long response took
     duration: i64,
@@ -466,7 +466,7 @@ impl BroadcastTransactionsResponse {
 
 /// This is a typed representation of the JSON response
 /// `duration` will be zero if local PoW is selected.
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct AttachToTangleResponse {
     /// How long response took
     duration: i64,
@@ -527,7 +527,7 @@ impl AttachToTangleResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Copy, Clone, Deserialize, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct AddNeighborsResponse {
     #[serde(rename = "addedNeighbors")]
     added_neighbors: usize,
