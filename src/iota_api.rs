@@ -117,16 +117,20 @@ impl API {
     /// * `min_weight_magnitude` - the PoW difficulty factor (14 on mainnet, 9 on testnet)
     /// * `local_pow` - whether or not to do local PoW
     /// * `reference` - Optionally used as the reference to start searching for transactions to approve
-    pub fn send_trytes(
+    pub fn send_trytes<U, S>(
         &self,
         trytes: &[String],
         depth: usize,
         min_weight_magnitude: usize,
         local_pow: bool,
-        threads: Option<usize>,
-        reference: &Option<String>,
-    ) -> Result<Vec<Transaction>> {
-        let to_approve = iri_api::get_transactions_to_approve(&self.uri, depth, &reference)?;
+        threads: U,
+        reference: S,
+    ) -> Result<Vec<Transaction>>
+    where
+        U: Copy + Into<Option<usize>>,
+        S: Into<Option<String>>,
+    {
+        let to_approve = iri_api::get_transactions_to_approve(&self.uri, depth, &reference.into())?;
         let trytes_list = if local_pow {
             let res = iri_api::attach_to_tangle_local(
                 threads,
@@ -239,17 +243,27 @@ impl API {
     /// * `remainder_address` - Optional remainder address to use, if not provided, one will be generated
     /// * `security` - Security to use when generating addresses (1-3)
     /// * `hmac_key` - Optional key to use if you want to hmac the transfers
-    pub fn prepare_transfers(
+    pub fn prepare_transfers<T, U, S>(
         &self,
         seed: &str,
-        mut transfers: Vec<Transfer>,
+        transfers: T,
         inputs: Option<Inputs>,
-        remainder_address: &Option<String>,
-        security: Option<usize>,
-        hmac_key: Option<String>,
-    ) -> Result<Vec<String>> {
+        remainder_address: S,
+        security: U,
+        hmac_key: S,
+    ) -> Result<Vec<String>>
+    where
+        T: Into<Vec<Transfer>>,
+        U: Into<Option<usize>>,
+        S: Into<Option<String>>,
+    {
         let mut add_hmac = false;
         let mut added_hmac = false;
+        let mut transfers = transfers.into();
+        let remainder_address = remainder_address.into();
+        let security = security.into();
+        let hmac_key = hmac_key.into();
+
         ensure!(input_validator::is_trytes(seed), "Invalid seed.");
         if let Some(hmac_key) = &hmac_key {
             ensure!(input_validator::is_trytes(&hmac_key), "Invalid trytes.");
@@ -391,28 +405,30 @@ impl API {
     /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
     /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
-    pub fn send_transfers<T>(
+    pub fn send_transfers<T, U, S>(
         &self,
         seed: &str,
         depth: usize,
         min_weight_magnitude: usize,
         transfers: T,
         local_pow: bool,
-        threads: Option<usize>,
+        threads: U,
         inputs: Option<Inputs>,
-        reference: &Option<String>,
-        remainder_address: &Option<String>,
-        security: Option<usize>,
-        hmac_key: Option<String>,
+        reference: S,
+        remainder_address: S,
+        security: U,
+        hmac_key: S,
     ) -> Result<Vec<Transaction>>
     where
         T: Into<Vec<Transfer>>,
+        U: Copy + Into<Option<usize>>,
+        S: Into<Option<String>>,
     {
         let trytes = self.prepare_transfers(
             seed,
-            transfers.into(),
+            transfers,
             inputs,
-            &remainder_address,
+            remainder_address,
             security,
             hmac_key,
         )?;
@@ -422,7 +438,7 @@ impl API {
             min_weight_magnitude,
             local_pow,
             threads,
-            &reference,
+            reference,
         )?;
         Ok(t)
     }

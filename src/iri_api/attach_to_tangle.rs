@@ -84,8 +84,8 @@ pub fn attach_to_tangle(
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
-pub fn attach_to_tangle_local(
-    threads: Option<usize>,
+pub fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
+    threads: T,
     trunk_transaction: &str,
     branch_transaction: &str,
     min_weight_magnitude: usize,
@@ -135,7 +135,7 @@ pub fn attach_to_tangle_local(
         tx.set_attachment_timestamp_lower_bound(0);
         tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
         let mut tx_trits = converter::trits_from_string(&tx.to_trytes());
-        pearl_diver.search(&mut tx_trits, min_weight_magnitude, threads)?;
+        pearl_diver.search(&mut tx_trits, min_weight_magnitude, threads.into())?;
         result_trytes.push(converter::trits_to_string(&tx_trits)?);
         previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
     }
