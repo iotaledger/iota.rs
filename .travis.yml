@@ -1,0 +1,18 @@
+sudo: false
+dist: trusty
+language: rust
+
+rust:
+  - nightly
+  - beta
+  - stable
+
+matrix:
+  allow_failures:
+    - rust: beta
+    - rust: stable
+  fast_finish: true
+
+script:
+  - cargo build --all
+  - cargo test --verbose --all
