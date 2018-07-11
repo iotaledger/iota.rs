@@ -22,7 +22,7 @@
 //!     // This line is commented out because travis CI can't handle it,
 //!     // but you should uncomment it
 //!     // let tx = api.send_transfers(trytes, 3, 14, &transfer, true, None, None, None, None, None, None).unwrap();
-//!     println!("{:?}", tx);
+//!     // println!("{:?}", tx);
 //! }
 //!```
 #![allow(dead_code)]
