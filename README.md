@@ -87,9 +87,8 @@ fn main() {
     *transfer.value_mut() = 0;
     *transfer.address_mut() = trytes.to_string();
     *transfer.message_mut() = message;
-    let transfers = [transfer];
     let api = iota_api::API::new("https://trinity.iota.fm");
-    let tx = api.send_transfer(trytes, 3, 14, &transfers, true, None, &None, &None, None, None).unwrap();
+    let tx = api.send_transfers(trytes, 3, 14, &transfer, true, None, None, None, None, None, None).unwrap();
     println!("{:?}", tx);
 }
 ```
