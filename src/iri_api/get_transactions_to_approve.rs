@@ -41,6 +41,9 @@ pub fn get_transactions_to_approve(
     if let Some(error) = to_approve.error() {
         return Err(format_err!("{}", error));
     }
+    if let Some(exception) = to_approve.exception() {
+        return Err(format_err!("{}", exception));
+    }
 
     Ok(to_approve)
 }

@@ -124,6 +124,8 @@ pub struct GetTransactionsToApprove {
     duration: i64,
     /// Any errors that occurred
     error: Option<String>,
+    /// Any exceptions that occurred
+    exception: Option<String>,
     /// Trunk transaction to approve
     #[serde(rename = "trunkTransaction")]
     trunk_transaction: Option<String>,
@@ -140,6 +142,10 @@ impl GetTransactionsToApprove {
     /// Returns the error attribute
     pub fn error(&self) -> &Option<String> {
         &self.error
+    }
+    /// Returns the exception attribute
+    pub fn exception(&self) -> &Option<String> {
+        &self.exception
     }
     /// Returns the trunk_transaction attribute
     pub fn trunk_transaction(&self) -> Option<String> {
