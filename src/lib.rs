@@ -1,9 +1,36 @@
+//! This library provides pretty much anything you could need to work with
+//! Iota. The documentation is a work in progress, but if you need any help
+//! I can usually be found on the Iota discord rust or development chats.
+//! 
+//! Heres a quick example of how to send a transaction (Note that trytes is being
+//! used as a seed here...don't do that)
+//!```
+//! extern crate iota_lib_rs;
+//!
+//! use iota_lib_rs::iota_api;
+//! use iota_lib_rs::utils::trytes_converter;
+//! use iota_lib_rs::model::*;
+//! 
+//! fn main() {
+//!     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
+//!     let message = trytes_converter::to_trytes("Hello World").unwrap();
+//!     let mut transfer = Transfer::default();
+//!     *transfer.value_mut() = 0;
+//!     *transfer.address_mut() = trytes.to_string();
+//!     *transfer.message_mut() = message;
+//!     let api = iota_api::API::new("https://trinity.iota.fm");
+//!     let tx = api.send_transfers(trytes, 3, 14, &transfer, true, None, None, None, None, None, None).unwrap();
+//!     println!("{:?}", tx);
+//! }
+//!```
 #![allow(dead_code)]
 #![feature(rust_2018_preview)]
 #![feature(rust_2018_idioms)]
 
 #[macro_use]
 extern crate failure;
+
+
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
