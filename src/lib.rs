@@ -19,7 +19,9 @@
 //!     *transfer.address_mut() = trytes.to_string();
 //!     *transfer.message_mut() = message;
 //!     let api = iota_api::API::new("https://trinity.iota.fm");
-//!     let tx = api.send_transfers(trytes, 3, 14, &transfer, true, None, None, None, None, None, None).unwrap();
+//!     // This line is commented out because travis CI can't handle it,
+//!     // but you should uncomment it
+//!     // let tx = api.send_transfers(trytes, 3, 14, &transfer, true, None, None, None, None, None, None).unwrap();
 //!     println!("{:?}", tx);
 //! }
 //!```
