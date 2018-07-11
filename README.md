@@ -1,4 +1,6 @@
 # An unofficial implementation of the IOTA api in rust.
+[![Build Status](https://travis-ci.org/njaremko/iota-lib-rs.svg?branch=master)](https://travis-ci.org/njaremko/iota-lib-rs)
+
 
 This is a port of the IOTA Java/JS API into Rust. It works, but I wouldn't trust it with real money yet. Having said that, please let me know if you have any suggestions or run into any issues.
 
