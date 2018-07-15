@@ -9,7 +9,7 @@ use rand::{thread_rng, Rng};
 
 use iota_lib_rs::crypto::PearlDiver;
 
-const MIN_WEIGHT_MAGNITUDE: usize = 14;
+const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
 fn basic_pow(mut trits: [i8; 8019]) {
     let mut pearl_diver = PearlDiver::default();
@@ -21,15 +21,15 @@ fn basic_pow(mut trits: [i8; 8019]) {
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
     let mut trits = [0; 8019];
-    for trit in trits.iter_mut() {
-        *trit = rng.gen_range(-1, 2);
-    }
-    c.bench_function("Run PoW", move |b| b.iter(|| basic_pow(trits)));
+    c.bench_function("Run PoW", move |b| {
+        b.iter(|| {
+            for trit in trits.iter_mut() {
+                *trit = rng.gen_range(-1, 2);
+            }
+            basic_pow(trits);
+        })
+    });
 }
 
-criterion_group!{
-    name = benches;
-    config = Criterion::default().sample_size(5);
-    targets = criterion_benchmark
-}
+criterion_group!(benches, criterion_benchmark);
 criterion_main!(benches);

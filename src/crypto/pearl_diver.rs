@@ -119,8 +119,8 @@ impl PearlDiver {
         );
         *self.running.write().unwrap() = PearlDiverState::Running;
 
-        let mut mid_state_low = vec![0; CURL_STATE_LENGTH];
-        let mut mid_state_high = vec![0; CURL_STATE_LENGTH];
+        let mut mid_state_low = [0; CURL_STATE_LENGTH];
+        let mut mid_state_high = [0; CURL_STATE_LENGTH];
         initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
         let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
         let actual_thread_count = num_cpus::get();
@@ -135,19 +135,22 @@ impl PearlDiver {
             None => actual_thread_count,
         };
         crossbeam::scope(|scope| {
-            for i in (0..threads_to_use).rev() {
-                let mut mid_state_copy_low = mid_state_low.to_vec();
-                let mut mid_state_copy_high = mid_state_high.to_vec();
+            for _ in 0..threads_to_use {
+                increment(
+                    &mut mid_state_low,
+                    &mut mid_state_high,
+                    162 + CURL_HASH_LENGTH / 9,
+                    162 + (CURL_HASH_LENGTH / 9) * 2,
+                );
                 let local_state_arc = Arc::clone(&self.running);
                 let local_transaction_trits_arc = Arc::clone(&transaction_trits_arc);
                 scope.spawn(move || {
                     get_runnable(
                         &local_state_arc,
-                        i,
                         &local_transaction_trits_arc,
                         min_weight_magnitude,
-                        &mut mid_state_copy_low,
-                        &mut mid_state_copy_high,
+                        mid_state_low,
+                        mid_state_high,
                     );
                 });
             }
@@ -162,20 +165,11 @@ impl PearlDiver {
 
 fn get_runnable(
     state: &Arc<RwLock<PearlDiverState>>,
-    thread_index: usize,
     transaction_trits: &Arc<Mutex<&mut [i8]>>,
     min_weight_magnitude: usize,
-    mid_state_copy_low: &mut [u64],
-    mid_state_copy_high: &mut [u64],
+    mut mid_state_copy_low: [u64; CURL_STATE_LENGTH],
+    mut mid_state_copy_high: [u64; CURL_STATE_LENGTH],
 ) {
-    for _ in 0..thread_index {
-        increment(
-            mid_state_copy_low,
-            mid_state_copy_high,
-            162 + CURL_HASH_LENGTH / 9,
-            162 + (CURL_HASH_LENGTH / 9) * 2,
-        );
-    }
     let mut state_low = [0; CURL_STATE_LENGTH];
     let mut state_high = [0; CURL_STATE_LENGTH];
 
@@ -187,14 +181,14 @@ fn get_runnable(
 
     while mask == 0 && *state.read().unwrap() == PearlDiverState::Running {
         increment(
-            mid_state_copy_low,
-            mid_state_copy_high,
+            &mut mid_state_copy_low,
+            &mut mid_state_copy_high,
             162 + (CURL_HASH_LENGTH / 9) * 2,
             CURL_HASH_LENGTH,
         );
         copy(
-            mid_state_copy_low,
-            mid_state_copy_high,
+            &mid_state_copy_low,
+            &mid_state_copy_high,
             &mut state_low,
             &mut state_high,
         );
@@ -220,8 +214,8 @@ fn get_runnable(
         while (out_mask & mask) == 0 {
             out_mask <<= 1;
         }
+        let mut locked_transaction_trits = transaction_trits.lock().unwrap();
         for i in 0..CURL_HASH_LENGTH {
-            let mut locked_transaction_trits = transaction_trits.lock().unwrap();
             locked_transaction_trits[TRANSACTION_LENGTH - CURL_HASH_LENGTH + i] =
                 if (mid_state_copy_low[i] & out_mask) == 0 {
                     1
@@ -250,8 +244,8 @@ fn initialize_mid_curl_states(
     }
 
     let mut offset = 0;
-    let mut curl_scratchpad_low = vec![0; CURL_STATE_LENGTH];
-    let mut curl_scratchpad_high = vec![0; CURL_STATE_LENGTH];
+    let mut curl_scratchpad_low = [0; CURL_STATE_LENGTH];
+    let mut curl_scratchpad_high = [0; CURL_STATE_LENGTH];
     for _ in (0..(TRANSACTION_LENGTH - CURL_HASH_LENGTH) / CURL_HASH_LENGTH).rev() {
         for j in 0..CURL_HASH_LENGTH {
             match transaction_trits[offset] {

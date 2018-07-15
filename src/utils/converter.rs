@@ -30,35 +30,6 @@ lazy_static! {
     };
 }
 
-/// Converts trits into bytes with an offset and size limit
-///
-/// * `trits` - trits to read
-/// * `offset` - offset to start at
-/// * `size` - index to read until
-pub fn bytes_with_offset(trits: &[i8], offset: usize, size: usize) -> Vec<u8> {
-    let len = (size + NUMBER_OF_TRITS_IN_A_BYTE - 1) / NUMBER_OF_TRITS_IN_A_BYTE;
-    let mut bytes = Vec::new();
-    for i in 0..len {
-        let mut value = 0;
-        let mut j = if size - i * NUMBER_OF_TRITS_IN_A_BYTE < 5 {
-            size - i * NUMBER_OF_TRITS_IN_A_BYTE
-        } else {
-            NUMBER_OF_TRITS_IN_A_BYTE
-        };
-        while j > 0 {
-            value = value * RADIX + trits[offset + i + NUMBER_OF_TRITS_IN_A_BYTE + j];
-            j -= 1;
-        }
-        bytes[i] = value as u8;
-    }
-    bytes
-}
-
-/// Converts a slice of trits into bytes
-pub fn bytes(trits: &[i8]) -> Vec<u8> {
-    bytes_with_offset(trits, 0, trits.len())
-}
-
 /// Converts a provided slice of bytes into trits and stores them
 /// in place into `trits`
 pub fn get_trits(bytes: &[u8], trits: &mut [i8]) {
@@ -83,15 +54,23 @@ pub fn get_trits(bytes: &[u8], trits: &mut [i8]) {
 
 /// Converts a string into trits
 pub fn trits_from_string(trytes: &str) -> Vec<i8> {
-    trytes.chars().flat_map(char_to_trits).cloned().collect()
+    trytes
+        .chars()
+        .flat_map(char_to_trits)
+        .map(|q| *q)
+        .collect()
 }
 
 /// Converts a string into trits and ensures the output length
 pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
-    let tmp: Vec<i8> = trytes.chars().flat_map(char_to_trits).cloned().collect();
+    let tmp: Vec<i8> = trytes
+        .chars()
+        .flat_map(char_to_trits)
+        .map(|q| *q)
+        .collect();
     if tmp.len() < length {
         let mut result = vec![0; length];
-        result[..tmp.len()].clone_from_slice(&tmp[..]);
+        result[..tmp.len()].copy_from_slice(&tmp[..]);
         result
     } else {
         tmp[0..length].to_vec()
@@ -99,14 +78,14 @@ pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
 }
 
 /// Converts a char into and array of trits
-pub fn char_to_trits(tryte: char) -> &'static [i8; constants::TRITS_PER_TRYTE] {
+pub fn char_to_trits(tryte: char) -> &'static [i8] {
     for (i, mapping) in TRYTE_TO_TRITS_MAPPINGS
         .iter()
         .enumerate()
         .take(constants::TRYTE_ALPHABET.len())
     {
         if constants::TRYTE_ALPHABET[i] == tryte {
-            return &mapping;
+            return mapping;
         }
     }
 
@@ -157,7 +136,7 @@ pub fn trits_with_length(trytes: i64, length: usize) -> Vec<i8> {
     let tmp: Vec<i8> = trits(trytes);
     if tmp.len() < length {
         let mut result = vec![0; length];
-        result[..tmp.len()].clone_from_slice(&tmp[..]);
+        result[..tmp.len()].copy_from_slice(&tmp[..]);
         result
     } else {
         tmp[0..length].to_vec()

@@ -158,7 +158,7 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<()> {
     }
 
     if all_minus_1 {
-        base.clone_from_slice(&HALF_3);
+        base.copy_from_slice(&HALF_3);
         bigint_not(&mut base);
         bigint_add_base(&mut base, 1_u32);
     } else {
@@ -204,10 +204,12 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<()> {
 
     let mut out = vec![0; BYTE_LENGTH];
     for i in 0..INT_LENGTH {
-        out[i * 4] = ((base[INT_LENGTH - 1 - i] & 0xFF00_0000) >> 24) as u8;
-        out[i * 4 + 1] = ((base[INT_LENGTH - 1 - i] & 0x00FF_0000) >> 16) as u8;
-        out[i * 4 + 2] = ((base[INT_LENGTH - 1 - i] & 0x0000_FF00) >> 8) as u8;
-        out[i * 4 + 3] = (base[INT_LENGTH - 1 - i] & 0x0000_00FF) as u8;
+        let offset = i * 4;
+        let tmp_base = base[INT_LENGTH - 1 - i];
+        out[offset] = ((tmp_base & 0xFF00_0000) >> 24) as u8;
+        out[offset + 1] = ((tmp_base & 0x00FF_0000) >> 16) as u8;
+        out[offset + 2] = ((tmp_base & 0x0000_FF00) >> 8) as u8;
+        out[offset + 3] = (tmp_base & 0x0000_00FF) as u8;
     }
     bytes.copy_from_slice(&out);
     Ok(())

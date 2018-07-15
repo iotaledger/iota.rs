@@ -243,19 +243,20 @@ impl API {
     /// * `remainder_address` - Optional remainder address to use, if not provided, one will be generated
     /// * `security` - Security to use when generating addresses (1-3)
     /// * `hmac_key` - Optional key to use if you want to hmac the transfers
-    pub fn prepare_transfers<T, U, S>(
+    pub fn prepare_transfers<T, U, S, R>(
         &self,
         seed: &str,
         transfers: T,
         inputs: Option<Inputs>,
         remainder_address: S,
         security: U,
-        hmac_key: S,
+        hmac_key: R,
     ) -> Result<Vec<String>>
     where
         T: Into<Vec<Transfer>>,
         U: Into<Option<usize>>,
         S: Into<Option<String>>,
+        R: Into<Option<String>>,
     {
         let mut add_hmac = false;
         let mut added_hmac = false;
