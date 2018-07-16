@@ -3,11 +3,7 @@ environment:
     - channel: nightly
       target: x86_64-pc-windows-msvc
     - channel: nightly
-      target: i686-pc-windows-msvc
-    - channel: nightly
       target: x86_64-pc-windows-gnu
-    - channel: nightly
-      target: i686-pc-windows-gnu
 
 install:
   - ps: >-
