@@ -35,7 +35,14 @@ pub struct API {
     client: reqwest::Client,
 }
 
+/// SendTransferOptions
+///
+/// * `threads` - optionally specify the number of threads to use for PoW. This is ignored if `local_pow` is false.
 pub struct SendTransferOptions {
+    pub seed: String,
+    pub depth: usize,
+    pub min_weight_magnitude: usize,
+    pub local_pow: bool,
     pub threads: Option<usize>,
     pub inputs: Option<Inputs>,
     pub reference: Option<String>,
@@ -446,18 +453,14 @@ impl API {
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
     pub fn send_transfers<T>(
         &self,
-        seed: &str,
-        depth: usize,
-        min_weight_magnitude: usize,
         transfers: T,
-        local_pow: bool,
         options: SendTransferOptions,
     ) -> Result<Vec<Transaction>>
     where
         T: Into<Vec<Transfer>>,
     {
         let trytes = self.prepare_transfers(
-            seed,
+            &options.seed,
             transfers,
             options.inputs,
             options.remainder_address,
@@ -466,9 +469,9 @@ impl API {
         )?;
         let t = self.send_trytes(
             &trytes,
-            depth,
-            min_weight_magnitude,
-            local_pow,
+            options.depth,
+            options.min_weight_magnitude,
+            options.local_pow,
             options.threads,
             options.reference,
         )?;

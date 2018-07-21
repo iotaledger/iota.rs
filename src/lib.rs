@@ -21,6 +21,10 @@
 //!     *transfer.message_mut() = message;
 //!     let api = iota_api::API::new("https://field.carriota.com");
 //!     let options = SendTransferOptions{
+//!         seed: trytes.to_string(),
+//!         depth: 3,
+//!         min_weight_magnitude: 14,
+//!         local_pow: true,
 //!         threads: None,
 //!         inputs: None,
 //!         reference: None,
@@ -30,7 +34,7 @@
 //!     };    
 //!     // This line is commented out because travis CI can't handle it,
 //!     // but you should uncomment it
-//!     let tx = api.send_transfers(trytes, 3, 14, &transfer, true, options).unwrap();
+//!     let tx = api.send_transfers(&transfer, options).unwrap();
 //!     println!("{:?}", tx);
 //! }
 //!```
