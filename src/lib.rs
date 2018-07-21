@@ -30,8 +30,9 @@
 #![feature(rust_2018_idioms)]
 
 #[macro_use]
+extern crate crunchy;
+#[macro_use]
 extern crate failure;
-
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
@@ -41,7 +42,6 @@ extern crate lazy_static;
 
 extern crate chrono;
 extern crate crossbeam;
-extern crate crunchy;
 extern crate num_cpus;
 extern crate rand;
 extern crate regex;

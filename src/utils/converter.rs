@@ -54,20 +54,12 @@ pub fn get_trits(bytes: &[u8], trits: &mut [i8]) {
 
 /// Converts a string into trits
 pub fn trits_from_string(trytes: &str) -> Vec<i8> {
-    trytes
-        .chars()
-        .flat_map(char_to_trits)
-        .map(|q| *q)
-        .collect()
+    trytes.chars().flat_map(char_to_trits).cloned().collect()
 }
 
 /// Converts a string into trits and ensures the output length
 pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
-    let tmp: Vec<i8> = trytes
-        .chars()
-        .flat_map(char_to_trits)
-        .map(|q| *q)
-        .collect();
+    let tmp: Vec<i8> = trits_from_string(trytes);
     if tmp.len() < length {
         let mut result = vec![0; length];
         result[..tmp.len()].copy_from_slice(&tmp[..]);

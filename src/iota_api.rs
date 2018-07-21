@@ -413,33 +413,26 @@ impl API {
         min_weight_magnitude: usize,
         transfers: T,
         local_pow: bool,
-        threads: U,
-        inputs: Option<Inputs>,
-        reference: S,
-        remainder_address: S,
-        security: U,
-        hmac_key: S,
+        options: SendTransferOptions,
     ) -> Result<Vec<Transaction>>
     where
         T: Into<Vec<Transfer>>,
-        U: Copy + Into<Option<usize>>,
-        S: Into<Option<String>>,
     {
         let trytes = self.prepare_transfers(
             seed,
             transfers,
-            inputs,
-            remainder_address,
-            security,
-            hmac_key,
+            options.inputs,
+            options.remainder_address,
+            options.security,
+            options.hmac_key,
         )?;
         let t = self.send_trytes(
             &trytes,
             depth,
             min_weight_magnitude,
             local_pow,
-            threads,
-            reference,
+            options.threads,
+            options.reference,
         )?;
         Ok(t)
     }
@@ -637,6 +630,15 @@ impl API {
         }
         Ok(bundle_trytes)
     }
+}
+
+pub struct SendTransferOptions {
+    pub threads: Option<usize>,
+    pub inputs: Option<Inputs>,
+    pub reference: Option<String>,
+    pub remainder_address: Option<String>,
+    pub security: Option<usize>,
+    pub hmac_key: Option<String>,
 }
 
 #[cfg(test)]
