@@ -6,7 +6,7 @@ use crate::utils::converter;
 use crate::utils::input_validator;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
-use std::time::Duration;
+use reqwest::Client;
 
 lazy_static! {
     /// This is a computed constant that represent the maximum allowed timestamp value
@@ -21,6 +21,7 @@ lazy_static! {
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
 pub fn attach_to_tangle(
+    client: &Client,
     uri: &str,
     trunk_transaction: &str,
     branch_transaction: &str,
@@ -42,10 +43,6 @@ pub fn attach_to_tangle(
         "Provided trytes are not valid: {:?}",
         trytes
     );
-
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(60))
-        .build()?;
 
     let mut headers = Headers::new();
     headers.set(ContentType::json());

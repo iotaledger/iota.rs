@@ -7,7 +7,9 @@ use super::utils::input_validator;
 use chrono::prelude::*;
 use crate::crypto;
 use crate::Result;
+use reqwest::Client;
 use std::cmp;
+use std::time::Duration;
 
 /// Generates a new address
 ///
@@ -30,6 +32,26 @@ pub fn new_address(seed: &str, index: usize, security: usize, checksum: bool) ->
 #[derive(Clone, Debug)]
 pub struct API {
     uri: String,
+    client: reqwest::Client,
+}
+
+pub struct SendTransferOptions {
+    pub threads: Option<usize>,
+    pub inputs: Option<Inputs>,
+    pub reference: Option<String>,
+    pub remainder_address: Option<String>,
+    pub security: Option<usize>,
+    pub hmac_key: Option<String>,
+}
+
+pub struct AddRemainderOptions {
+    pub seed: String,
+    pub tag: String,
+    pub remainder_address: Option<String>,
+    pub signature_fragments: Vec<String>,
+    pub added_hmac: bool,
+    pub hmac_key: Option<String>,
+    pub security: usize,
 }
 
 impl API {
@@ -39,6 +61,10 @@ impl API {
     pub fn new(uri: &str) -> API {
         API {
             uri: uri.to_string(),
+            client: Client::builder()
+                .timeout(Duration::from_secs(60))
+                .build()
+                .unwrap(),
         }
     }
 
@@ -83,9 +109,10 @@ impl API {
                 index += 1;
                 let new_address_vec = vec![new_address];
                 let were_addr_spent =
-                    iri_api::were_addresses_spent_from(&self.uri, &new_address_vec)?;
+                    iri_api::were_addresses_spent_from(&self.client, &self.uri, &new_address_vec)?;
                 if !were_addr_spent.state(0) {
                     let resp = iri_api::find_transactions(
+                        &self.client,
                         &self.uri,
                         None,
                         Some(&new_address_vec),
@@ -130,7 +157,12 @@ impl API {
         U: Copy + Into<Option<usize>>,
         S: Into<Option<String>>,
     {
-        let to_approve = iri_api::get_transactions_to_approve(&self.uri, depth, &reference.into())?;
+        let to_approve = iri_api::get_transactions_to_approve(
+            &self.client,
+            &self.uri,
+            depth,
+            &reference.into(),
+        )?;
         let trytes_list = if local_pow {
             let res = iri_api::attach_to_tangle_local(
                 threads,
@@ -142,6 +174,7 @@ impl API {
             res.trytes().unwrap()
         } else {
             let attached = iri_api::attach_to_tangle(
+                &self.client,
                 &self.uri,
                 &to_approve.trunk_transaction().unwrap(),
                 &to_approve.branch_transaction().unwrap(),
@@ -162,8 +195,8 @@ impl API {
     ///
     /// * `trytes` - PoW-ed slice of tryte-encoded transaction strings
     pub fn store_and_broadcast(&self, trytes: &[String]) -> Result<()> {
-        iri_api::store_transactions(&self.uri, trytes)?;
-        iri_api::broadcast_transactions(&self.uri, trytes)?;
+        iri_api::store_transactions(&self.client, &self.uri, trytes)?;
+        iri_api::broadcast_transactions(&self.client, &self.uri, trytes)?;
         Ok(())
     }
 
@@ -188,7 +221,7 @@ impl API {
         let security = security.unwrap_or(2);
 
         let get_balance_and_format = |addresses: &[String]| -> Result<Inputs> {
-            let resp = iri_api::get_balances(&self.uri, addresses, 100)?;
+            let resp = iri_api::get_balances(&self.client, &self.uri, addresses, 100)?;
             let mut inputs = Inputs::default();
 
             let mut threshold_reached = match threshold {
@@ -335,7 +368,8 @@ impl API {
                         .iter()
                         .map(|input| input.address().to_string())
                         .collect();
-                    let resp = iri_api::get_balances(&self.uri, &input_addresses, 100)?;
+                    let resp =
+                        iri_api::get_balances(&self.client, &self.uri, &input_addresses, 100)?;
                     let mut confirmed_inputs = Inputs::default();
                     let balances = resp.take_balances().unwrap_or_default();
                     for (i, balance) in balances.iter().enumerate() {
@@ -355,30 +389,34 @@ impl API {
                         "Not enough balance."
                     );
                     self.add_remainder(
-                        seed,
                         &confirmed_inputs,
                         &mut bundle,
-                        &tag,
-                        &remainder_address,
-                        &signature_fragments,
-                        added_hmac,
-                        hmac_key,
-                        security,
+                        AddRemainderOptions {
+                            seed: seed.to_string(),
+                            tag,
+                            remainder_address,
+                            signature_fragments,
+                            added_hmac,
+                            hmac_key,
+                            security,
+                        },
                     )
                 }
                 None => {
                     let inputs =
                         self.get_inputs(seed, None, None, Some(total_value), Some(security))?;
                     self.add_remainder(
-                        seed,
                         &inputs,
                         &mut bundle,
-                        &tag,
-                        &remainder_address,
-                        &signature_fragments,
-                        added_hmac,
-                        hmac_key,
-                        security,
+                        AddRemainderOptions {
+                            seed: seed.to_string(),
+                            tag,
+                            remainder_address,
+                            signature_fragments,
+                            added_hmac,
+                            hmac_key,
+                            security,
+                        },
                     )
                 }
             }
@@ -406,7 +444,7 @@ impl API {
     /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
     /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
-    pub fn send_transfers<T, U, S>(
+    pub fn send_transfers<T>(
         &self,
         seed: &str,
         depth: usize,
@@ -449,7 +487,7 @@ impl API {
         bundle_hash: Option<String>,
         mut bundle: Vec<Transaction>,
     ) -> Result<Vec<Transaction>> {
-        let tryte_list = iri_api::get_trytes(&self.uri, &[trunk_tx.to_string()])?
+        let tryte_list = iri_api::get_trytes(&self.client, &self.uri, &[trunk_tx.to_string()])?
             .take_trytes()
             .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
@@ -490,15 +528,9 @@ impl API {
 
     fn add_remainder(
         &self,
-        seed: &str,
         inputs: &Inputs,
         bundle: &mut Bundle,
-        tag: &str,
-        remainder_address: &Option<String>,
-        signature_fragments: &[String],
-        added_hmac: bool,
-        hmac_key: Option<String>,
-        security: usize,
+        options: AddRemainderOptions,
     ) -> Result<Vec<String>> {
         let mut total_transfer_value = inputs.total_balance();
         for input in inputs.inputs_list() {
@@ -507,20 +539,26 @@ impl API {
             let timestamp = Utc::now().timestamp();
             let address = utils::remove_checksum(input.address());
 
-            bundle.add_entry(input.security(), &address, to_subtract, tag, timestamp);
+            bundle.add_entry(
+                input.security(),
+                &address,
+                to_subtract,
+                &options.tag,
+                timestamp,
+            );
 
             if this_balance >= total_transfer_value {
                 let remainder = this_balance - total_transfer_value;
-                if let Some(remainder_address) = &remainder_address {
+                if let Some(remainder_address) = &options.remainder_address {
                     if remainder > 0 {
-                        bundle.add_entry(1, remainder_address, remainder, tag, timestamp);
+                        bundle.add_entry(1, remainder_address, remainder, &options.tag, timestamp);
                         return self.sign_inputs_and_return(
-                            seed,
+                            &options.seed,
                             inputs,
                             bundle,
-                            signature_fragments,
-                            added_hmac,
-                            hmac_key,
+                            &options.signature_fragments,
+                            options.added_hmac,
+                            options.hmac_key,
                         );
                     }
                 } else if remainder > 0 {
@@ -530,31 +568,37 @@ impl API {
                     }
                     start_index += 1;
                     let new_address = self.get_new_address(
-                        seed,
+                        &options.seed,
                         Some(start_index),
-                        Some(security),
+                        Some(options.security),
                         false,
                         None,
                         false,
                     )?[0]
                         .clone();
-                    bundle.add_entry(1, &new_address, remainder, tag, Utc::now().timestamp());
+                    bundle.add_entry(
+                        1,
+                        &new_address,
+                        remainder,
+                        &options.tag,
+                        Utc::now().timestamp(),
+                    );
                     return self.sign_inputs_and_return(
-                        seed,
+                        &options.seed,
                         inputs,
                         bundle,
-                        signature_fragments,
-                        added_hmac,
-                        hmac_key,
+                        &options.signature_fragments,
+                        options.added_hmac,
+                        options.hmac_key,
                     );
                 } else {
                     return self.sign_inputs_and_return(
-                        seed,
+                        &options.seed,
                         inputs,
                         bundle,
-                        signature_fragments,
-                        added_hmac,
-                        hmac_key,
+                        &options.signature_fragments,
+                        options.added_hmac,
+                        options.hmac_key,
                     );
                 }
             } else {
@@ -630,15 +674,6 @@ impl API {
         }
         Ok(bundle_trytes)
     }
-}
-
-pub struct SendTransferOptions {
-    pub threads: Option<usize>,
-    pub inputs: Option<Inputs>,
-    pub reference: Option<String>,
-    pub remainder_address: Option<String>,
-    pub security: Option<usize>,
-    pub hmac_key: Option<String>,
 }
 
 #[cfg(test)]

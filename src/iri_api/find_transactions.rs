@@ -1,16 +1,16 @@
 use super::responses::FindTransactionsResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
-
+use reqwest::Client;
 /// Finds transactions the match any of the provided parameters
 pub fn find_transactions(
+    client: &Client,
     uri: &str,
     bundles: Option<&[String]>,
     addresses: Option<&[String]>,
     tags: Option<&[String]>,
     approvees: Option<&[String]>,
 ) -> Result<FindTransactionsResponse> {
-    let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");

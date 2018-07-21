@@ -5,7 +5,7 @@ use reqwest::Client;
 use serde_json::Value;
 
 /// Checks for consistency of given hashes, not part of the public api
-pub fn check_consistency(uri: &str, hashes: &[String]) -> Result<Value> {
+pub fn check_consistency(client: &Client, uri: &str, hashes: &[String]) -> Result<Value> {
     for hash in hashes {
         ensure!(
             input_validator::is_hash(hash),
@@ -14,7 +14,6 @@ pub fn check_consistency(uri: &str, hashes: &[String]) -> Result<Value> {
         );
     }
 
-    let client = Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");

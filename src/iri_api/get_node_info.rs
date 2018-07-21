@@ -1,10 +1,9 @@
 use super::responses::GetNodeInfoResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
-
+use reqwest::Client;
 /// Gets information about the specified node
-pub fn get_node_info(uri: &str) -> Result<GetNodeInfoResponse> {
-    let client = reqwest::Client::new();
+pub fn get_node_info(client: &Client, uri: &str) -> Result<GetNodeInfoResponse> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");

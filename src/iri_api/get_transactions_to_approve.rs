@@ -1,7 +1,7 @@
 use super::responses::GetTransactionsToApprove;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
-
+use reqwest::Client;
 /// Tip selection which returns `trunkTransaction` and
 /// `branchTransaction`. The input value depth determines
 /// how many milestones to go back to for finding the
@@ -13,11 +13,11 @@ use reqwest::header::{ContentType, Headers};
 /// you want to approve. If it can't be found at the specified
 /// depth then an error will be returned.
 pub fn get_transactions_to_approve(
+    client: &Client,
     uri: &str,
     depth: usize,
     reference: &Option<String>,
 ) -> Result<GetTransactionsToApprove> {
-    let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");

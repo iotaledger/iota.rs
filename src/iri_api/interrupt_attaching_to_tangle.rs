@@ -1,8 +1,8 @@
 use crate::Result;
-use reqwest::{self, Response};
+use reqwest::Client;
+use reqwest::Response;
 
 /// Interupts an existing PoW request if you made one
-pub fn interrupt_attaching_to_tangle(uri: &str) -> Result<Response> {
-    let client = reqwest::Client::new();
+pub fn interrupt_attaching_to_tangle(client: &Client, uri: &str) -> Result<Response> {
     Ok(client.post(uri).send()?)
 }

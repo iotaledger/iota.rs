@@ -2,7 +2,7 @@ use super::responses::GetInclusionStatesResponse;
 use crate::utils::input_validator;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
-
+use reqwest::Client;
 /// Get the inclusion states of a set of transactions. This is
 /// for determining if a transaction was accepted and confirmed
 /// by the network or not. You can search for multiple tips (and
@@ -12,6 +12,7 @@ use reqwest::header::{ContentType, Headers};
 /// same order as the transaction list you submitted, thus you get
 /// a true/false whether a transaction is confirmed or not.
 pub fn get_inclusion_states(
+    client: &Client,
     uri: &str,
     transactions: &[String],
     tips: &[String],
@@ -27,7 +28,6 @@ pub fn get_inclusion_states(
         tips
     );
 
-    let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");

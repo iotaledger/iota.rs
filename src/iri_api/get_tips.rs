@@ -1,10 +1,9 @@
 use super::responses::GetTipsResponse;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
-
+use reqwest::Client;
 /// Returns the list of tups
-pub fn get_tips(uri: &str) -> Result<GetTipsResponse> {
-    let client = reqwest::Client::new();
+pub fn get_tips(client: &Client, uri: &str) -> Result<GetTipsResponse> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");

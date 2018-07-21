@@ -8,6 +8,7 @@
 //! extern crate iota_lib_rs;
 //!
 //! use iota_lib_rs::iota_api;
+//! use iota_lib_rs::iota_api::SendTransferOptions;
 //! use iota_lib_rs::utils::trytes_converter;
 //! use iota_lib_rs::model::*;
 //!
@@ -18,11 +19,19 @@
 //!     *transfer.value_mut() = 0;
 //!     *transfer.address_mut() = trytes.to_string();
 //!     *transfer.message_mut() = message;
-//!     let api = iota_api::API::new("https://trinity.iota.fm");
+//!     let api = iota_api::API::new("https://field.carriota.com");
+//!     let options = SendTransferOptions{
+//!         threads: None,
+//!         inputs: None,
+//!         reference: None,
+//!         remainder_address: None,
+//!         security: None,
+//!         hmac_key: None,
+//!     };    
 //!     // This line is commented out because travis CI can't handle it,
 //!     // but you should uncomment it
-//!     // let tx = api.send_transfers(trytes, 3, 14, &transfer, true, None, None, None, None, None, None).unwrap();
-//!     // println!("{:?}", tx);
+//!     let tx = api.send_transfers(trytes, 3, 14, &transfer, true, options).unwrap();
+//!     println!("{:?}", tx);
 //! }
 //!```
 #![allow(dead_code)]

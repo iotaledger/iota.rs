@@ -2,9 +2,10 @@ use super::responses::WereAddressesSpentFromResponse;
 use crate::utils::{self, input_validator};
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
-
+use reqwest::Client;
 /// Check if a list of addresses was ever spent from.
 pub fn were_addresses_spent_from(
+    client: &Client,
     uri: &str,
     addresses: &[String],
 ) -> Result<WereAddressesSpentFromResponse> {
@@ -15,7 +16,6 @@ pub fn were_addresses_spent_from(
         .collect();
     ensure!(!addresses.is_empty(), "No valid addresses provided.");
 
-    let client = reqwest::Client::new();
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");
