@@ -10,6 +10,7 @@ use crate::Result;
 use reqwest::Client;
 use std::cmp;
 use std::time::Duration;
+use futures::future::Future;
 
 /// Generates a new address
 ///
@@ -17,7 +18,7 @@ use std::time::Duration;
 /// * `index` - how many iterations of generating to skip
 /// * `security` - security factor 1-3 with 3 being most secure
 /// * `checksum` - whether or not to checksum address
-pub fn new_address(seed: &str, index: usize, security: usize, checksum: bool) -> Result<String> {
+pub async fn new_address(seed: &str, index: usize, security: usize, checksum: bool) -> Result<String> {
     let key = crypto::signing::key(&converter::trits_from_string(seed), index, security)?;
     let digests = crypto::signing::digests(&key)?;
     let address_trits = crypto::signing::address(&digests)?;
@@ -37,7 +38,16 @@ pub struct API {
 
 /// SendTransferOptions
 ///
-/// * `threads` - optionally specify the number of threads to use for PoW. This is ignored if `local_pow` is false.
+/// * `seed` - Seed to use for transaction
+/// * `depth` - Depth to use when finding transactions to confirm
+/// * `min_weight_magnitude` - MwM to use when doing PoW
+/// * `local_pow` - Whether or not to do local PoW
+/// * `threads` - Optionally specify the number of threads to use for PoW. This is ignored if `local_pow` is false
+/// * `inputs` - Optionally, specify input addresses to check for sufficient funds if sending non-zero transaction
+/// * `reference` - Optionally specify which transaction to reference when looking for transaction to approve
+/// * `remainder_address` - Optionally specify remainder address to send remaining fund to, generated if not specified
+/// * `security` - Optionally specify security to use for transaction `1-3` with default being `2`
+/// * `hmac_key` - Optionally specify an HMAC key if you want to HMAC the transaction
 pub struct SendTransferOptions {
     pub seed: String,
     pub depth: usize,
@@ -51,14 +61,22 @@ pub struct SendTransferOptions {
     pub hmac_key: Option<String>,
 }
 
-pub struct AddRemainderOptions {
-    pub seed: String,
-    pub tag: String,
-    pub remainder_address: Option<String>,
-    pub signature_fragments: Vec<String>,
-    pub added_hmac: bool,
-    pub hmac_key: Option<String>,
-    pub security: usize,
+/// AddRemainderOptions
+///
+/// * `seed` - Seed to use for transaction
+/// * `tag` - Tag to use for remainder transfer
+/// * `remainder_address` - address to use for remainder transfer
+/// * `signature_fragments` - signature fragments used for remainder transfer
+/// * `hmac_key` - Optionally specify an HMAC key if you want to HMAC the transaction
+/// * `security` - Optionally specify security to use for transaction `1-3` with default being `2`
+struct AddRemainderOptions {
+    seed: String,
+    tag: String,
+    remainder_address: Option<String>,
+    signature_fragments: Vec<String>,
+    added_hmac: bool,
+    hmac_key: Option<String>,
+    security: usize,
 }
 
 impl API {
@@ -83,9 +101,9 @@ impl API {
     /// * `checksum` - whether or not to checksum address
     /// * `total` - Number of addresses to generate. If total isn't provided, we generate until we find an unused address
     /// * `return_all` - whether to return all generated addresses, or just the last one
-    pub fn get_new_address(
+    pub async fn get_new_address(
         &self,
-        seed: &str,
+        seed: String,
         index: Option<usize>,
         security: Option<usize>,
         checksum: bool,
@@ -94,7 +112,7 @@ impl API {
     ) -> Result<Vec<String>> {
         let mut index = index.unwrap_or_default();
         let security = security.unwrap_or(2);
-        ensure!(input_validator::is_trytes(seed), "Invalid seed.");
+        ensure!(input_validator::is_trytes(&seed), "Invalid seed.");
         ensure!(security > 0 && security < 4, "Invalid security.");
 
         let mut all_addresses: Vec<String> = Vec::new();
@@ -103,13 +121,13 @@ impl API {
             Some(total) => {
                 ensure!(total > 0, "Invalid total.");
                 for i in index..total {
-                    let address = new_address(seed, i, security, checksum)?;
+                    let address = await!(new_address(&seed, i, security, checksum))?;
                     all_addresses.push(address);
                 }
                 Ok(all_addresses)
             }
             None => loop {
-                let new_address = new_address(seed, index, security, checksum)?;
+                let new_address = await!(new_address(&seed, index, security, checksum))?;
                 if return_all {
                     all_addresses.push(new_address.clone());
                 }
@@ -215,15 +233,15 @@ impl API {
     /// * `end` - The end index for addresses to search
     /// * `threshold` - The amount of Iota you're trying to find in the wallet
     /// * `security` - The security to use for address generation
-    pub fn get_inputs(
+    pub async fn get_inputs(
         &self,
-        seed: &str,
+        seed: String,
         start: Option<usize>,
         end: Option<usize>,
         threshold: Option<i64>,
         security: Option<usize>,
     ) -> Result<Inputs> {
-        ensure!(input_validator::is_trytes(seed), "Invalid seed.");
+        ensure!(input_validator::is_trytes(&seed), "Invalid seed.");
         let start = start.unwrap_or(0);
         let security = security.unwrap_or(2);
 
@@ -264,12 +282,12 @@ impl API {
             );
             let mut all_addresses: Vec<String> = Vec::new();
             for i in start..end {
-                all_addresses.push(new_address(seed, i, security, false)?);
+                all_addresses.push(await!(new_address(&seed, i, security, false))?);
             }
             get_balance_and_format(&all_addresses)
         } else {
             let new_address =
-                self.get_new_address(seed, Some(start), Some(security), false, None, true)?;
+                await!(self.get_new_address(seed, Some(start), Some(security), false, None, true))?;
             get_balance_and_format(&new_address)
         }
     }
@@ -283,9 +301,9 @@ impl API {
     /// * `remainder_address` - Optional remainder address to use, if not provided, one will be generated
     /// * `security` - Security to use when generating addresses (1-3)
     /// * `hmac_key` - Optional key to use if you want to hmac the transfers
-    pub fn prepare_transfers<T, U, S, R>(
-        &self,
-        seed: &str,
+    pub async fn prepare_transfers<'a, T, U, S, R>(
+        &'a self,
+        seed: String,
         transfers: T,
         inputs: Option<Inputs>,
         remainder_address: S,
@@ -305,7 +323,7 @@ impl API {
         let security = security.into();
         let hmac_key = hmac_key.into();
 
-        ensure!(input_validator::is_trytes(seed), "Invalid seed.");
+        ensure!(input_validator::is_trytes(&seed), "Invalid seed.");
         if let Some(hmac_key) = &hmac_key {
             ensure!(input_validator::is_trytes(&hmac_key), "Invalid trytes.");
             add_hmac = true;
@@ -411,7 +429,7 @@ impl API {
                 }
                 None => {
                     let inputs =
-                        self.get_inputs(seed, None, None, Some(total_value), Some(security))?;
+                        await!(self.get_inputs(seed, None, None, Some(total_value), Some(security)))?;
                     self.add_remainder(
                         &inputs,
                         &mut bundle,
@@ -451,22 +469,21 @@ impl API {
     /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
     /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
-    pub fn send_transfers<T>(
+    pub async fn send_transfers(
         &self,
-        transfers: T,
+        transfers: Vec<Transfer>,
         options: SendTransferOptions,
     ) -> Result<Vec<Transaction>>
     where
-        T: Into<Vec<Transfer>>,
     {
-        let trytes = self.prepare_transfers(
-            &options.seed,
+        let trytes = await!(self.prepare_transfers(
+            options.seed,
             transfers,
             options.inputs,
             options.remainder_address,
             options.security,
             options.hmac_key,
-        )?;
+        ))?;
         let t = self.send_trytes(
             &trytes,
             options.depth,

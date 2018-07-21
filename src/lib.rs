@@ -32,8 +32,6 @@
 //!         security: None,
 //!         hmac_key: None,
 //!     };    
-//!     // This line is commented out because travis CI can't handle it,
-//!     // but you should uncomment it
 //!     let tx = api.send_transfers(&transfer, options).unwrap();
 //!     println!("{:?}", tx);
 //! }
@@ -41,6 +39,10 @@
 #![allow(dead_code)]
 #![feature(rust_2018_preview)]
 #![feature(rust_2018_idioms)]
+#![feature(futures_api)]
+#![feature(async_await)]
+#![feature(await_macro)]
+#![feature(nll)]
 
 #[macro_use]
 extern crate crunchy;
@@ -59,6 +61,7 @@ extern crate num_cpus;
 extern crate rand;
 extern crate regex;
 extern crate reqwest;
+extern crate futures;
 
 /// Provides all crypto algorithms and data structures used by Iota
 pub mod crypto;
