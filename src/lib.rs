@@ -1,43 +1,41 @@
 //! This library provides pretty much anything you could need to work with
 //! Iota. The documentation is a work in progress, but if you need any help
 //! I can usually be found on the Iota discord rust or development chats.
-//!
-//! Heres a quick example of how to send a transaction (Note that trytes is being
-//! used as a seed here...don't do that)
-//!```
-//! extern crate iota_lib_rs;
-//!
-//! use iota_lib_rs::iota_api;
-//! use iota_lib_rs::iota_api::SendTransferOptions;
-//! use iota_lib_rs::utils::trytes_converter;
-//! use iota_lib_rs::model::*;
-//!
-//! fn main() {
-//!     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
-//!     let message = trytes_converter::to_trytes("Hello World").unwrap();
-//!     let mut transfer = Transfer::default();
-//!     *transfer.value_mut() = 0;
-//!     *transfer.address_mut() = trytes.to_string();
-//!     *transfer.message_mut() = message;
-//!     let api = iota_api::API::new("https://field.carriota.com");
-//!     let options = SendTransferOptions{
-//!         seed: trytes.to_string(),
-//!         depth: 3,
-//!         min_weight_magnitude: 14,
-//!         local_pow: true,
-//!         threads: None,
-//!         inputs: None,
-//!         reference: None,
-//!         remainder_address: None,
-//!         security: None,
-//!         hmac_key: None,
-//!     };    
-//!     // This line is commented out because travis CI can't handle it,
-//!     // but you should uncomment it
-//!     let tx = api.send_transfers(&transfer, options).unwrap();
-//!     println!("{:?}", tx);
-//! }
-//!```
+
+/// Heres a quick example of how to send a transaction (Note that trytes is being
+/// used as a seed here...don't do that)
+///```
+/// extern crate iota_lib_rs;
+///
+/// use iota_lib_rs::iota_api;
+/// use iota_lib_rs::iota_api::SendTransferOptions;
+/// use iota_lib_rs::utils::trytes_converter;
+/// use iota_lib_rs::model::*;
+///
+/// fn main() {
+///     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
+///     let message = trytes_converter::to_trytes("Hello World").unwrap();
+///     let mut transfer = Transfer::default();
+///     *transfer.value_mut() = 0;
+///     *transfer.address_mut() = trytes.to_string();
+///     *transfer.message_mut() = message;
+///     let api = iota_api::API::new("https://field.carriota.com");
+///     let options = SendTransferOptions{
+///         seed: trytes.to_string(),
+///         depth: 3,
+///         min_weight_magnitude: 14,
+///         local_pow: true,
+///         threads: None,
+///         inputs: None,
+///         reference: None,
+///         remainder_address: None,
+///         security: None,
+///         hmac_key: None,
+///     };    
+///     let tx = api.send_transfers(&transfer, options).unwrap();
+///     println!("{:?}", tx);
+/// }
+///```
 #![allow(dead_code)]
 #![feature(rust_2018_preview)]
 #![feature(rust_2018_idioms)]
