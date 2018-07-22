@@ -31,21 +31,20 @@ const LOW_BITS: u64 =
 /// PoW while its working
 ///```rust
 /// extern crate iota_lib_rs;
-///
+/// extern crate futures;
+/// 
 /// use iota_lib_rs::crypto::{Curl, PearlDiver, Sponge};
 /// use rand::{thread_rng, Rng};
-///
+/// use futures::executor::block_on;
+/// 
 /// const HASH_SIZE: usize = 243;
 /// const MIN_WEIGHT_MAGNITUDE: usize = 9;
 ///
 /// let mut rng = thread_rng();
 /// let mut curl = Curl::default();
-/// let vec: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
-/// let mut trits = [0; 8019];
-/// trits.copy_from_slice(&vec);
+/// let mut trits: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
 /// let mut pearl_diver = PearlDiver::default();
-/// pearl_diver
-///     .search(&mut trits, MIN_WEIGHT_MAGNITUDE, None)
+/// trits = block_on(pearl_diver.search(trits, MIN_WEIGHT_MAGNITUDE, None))
 ///     .unwrap();
 /// let mut hash_trits = [0; HASH_SIZE];
 /// curl.reset();
@@ -99,12 +98,12 @@ impl PearlDiver {
     /// * `transaction_trits` - Trits to perform proof of work against, modified in-place
     /// * `min_weight_magnitude` - Difficulty factor to use when performing PoW
     /// * `thread` - Optionally specify how many threads to use for PoW. Defaults to number of CPU threads.
-    pub fn search(
-        &mut self,
-        transaction_trits: &mut [i8],
+    pub async fn search(
+        &self,
+        transaction_trits: Vec<i8>,
         min_weight_magnitude: usize,
         threads: Option<usize>,
-    ) -> Result<()> {
+    ) -> Result<Vec<i8>> {
         ensure!(
             transaction_trits.len() == TRANSACTION_LENGTH,
             "Transaction length [{}], expected [{}]",
@@ -159,13 +158,14 @@ impl PearlDiver {
             *self.running.read().unwrap() == PearlDiverState::Completed,
             "Something went wrong."
         );
-        Ok(())
+        let res = transaction_trits_arc.lock().unwrap().clone();
+        Ok(res)
     }
 }
 
 fn get_runnable(
     state: &Arc<RwLock<PearlDiverState>>,
-    transaction_trits: &Arc<Mutex<&mut [i8]>>,
+    transaction_trits: &Arc<Mutex<Vec<i8>>>,
     min_weight_magnitude: usize,
     mut mid_state_copy_low: [u64; CURL_STATE_LENGTH],
     mut mid_state_copy_high: [u64; CURL_STATE_LENGTH],

@@ -35,7 +35,7 @@ impl RemoveNeighborsResponse {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StoreTransactionsResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// Any exceptions that occurred
@@ -44,7 +44,7 @@ pub struct StoreTransactionsResponse {
 
 impl StoreTransactionsResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the duration attribute
@@ -61,7 +61,7 @@ impl StoreTransactionsResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WereAddressesSpentFromResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// States of addresses if found
@@ -70,7 +70,7 @@ pub struct WereAddressesSpentFromResponse {
 
 impl WereAddressesSpentFromResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the error attribute
@@ -91,7 +91,7 @@ impl WereAddressesSpentFromResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetTrytesResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// Trytes if found
@@ -100,7 +100,7 @@ pub struct GetTrytesResponse {
 
 impl GetTrytesResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the error attribute
@@ -121,7 +121,7 @@ impl GetTrytesResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetTransactionsToApprove {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// Any exceptions that occurred
@@ -136,7 +136,7 @@ pub struct GetTransactionsToApprove {
 
 impl GetTransactionsToApprove {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the error attribute
@@ -161,14 +161,14 @@ impl GetTransactionsToApprove {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetTipsResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Hashes of tips
     hashes: Vec<String>,
 }
 
 impl GetTipsResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the hashes attribute
@@ -191,7 +191,7 @@ pub struct GetNodeInfoResponse {
     #[serde(rename = "appVersion")]
     app_version: String,
     /// Duration of request
-    duration: i64,
+    duration: Option<i64>,
     /// Number of threads IRI is using
     #[serde(rename = "jreAvailableProcessors")]
     jre_available_processors: usize,
@@ -246,7 +246,7 @@ impl GetNodeInfoResponse {
         &self.app_version
     }
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the jre_available_processors attribute
@@ -315,7 +315,7 @@ impl GetNodeInfoResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetNeighborsResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// Neighbors if found
@@ -324,7 +324,7 @@ pub struct GetNeighborsResponse {
 
 impl GetNeighborsResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the error attribute
@@ -341,7 +341,7 @@ impl GetNeighborsResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetInclusionStatesResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// States if found
@@ -350,7 +350,7 @@ pub struct GetInclusionStatesResponse {
 
 impl GetInclusionStatesResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns any potential errors
@@ -371,7 +371,7 @@ impl GetInclusionStatesResponse {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetBalancesResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// Balances if found
@@ -385,7 +385,7 @@ pub struct GetBalancesResponse {
 
 impl GetBalancesResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns any potential errors
@@ -418,7 +418,7 @@ impl GetBalancesResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FindTransactionsResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// Hashes of matching transactions
@@ -427,7 +427,7 @@ pub struct FindTransactionsResponse {
 
 impl FindTransactionsResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns any potential errors
@@ -448,7 +448,7 @@ impl FindTransactionsResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// Any errors that occurred
     error: Option<String>,
     /// Any exception that occurred
@@ -457,7 +457,7 @@ pub struct BroadcastTransactionsResponse {
 
 impl BroadcastTransactionsResponse {
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns any potential errors
@@ -475,7 +475,7 @@ impl BroadcastTransactionsResponse {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct AttachToTangleResponse {
     /// How long response took
-    duration: i64,
+    duration: Option<i64>,
     /// This is only used when using PoW Box service
     #[serde(rename = "jobId")]
     job_id: Option<String>,
@@ -496,7 +496,7 @@ impl AttachToTangleResponse {
     /// * `exception` - Any exceptions that occurred
     /// * `trytes` -  trytes returned by PoW
     pub fn new(
-        duration: i64,
+        duration: Option<i64>,
         job_id: Option<String>,
         error: Option<String>,
         exception: Option<String>,
@@ -511,7 +511,7 @@ impl AttachToTangleResponse {
         }
     }
     /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
+    pub fn duration(&self) -> Option<i64> {
         self.duration
     }
     /// Returns the id attribute

@@ -110,7 +110,7 @@ pub async fn attach_to_tangle_local(
 
     let mut result_trytes: Vec<String> = Vec::with_capacity(trytes.len());
     let mut previous_transaction: Option<String> = None;
-    let mut pearl_diver = PearlDiver::new();
+    let pearl_diver = PearlDiver::new();
     for i in 0..trytes.len() {
         let mut tx: Transaction = trytes[i].parse()?;
 
@@ -136,13 +136,13 @@ pub async fn attach_to_tangle_local(
         tx.set_attachment_timestamp_lower_bound(0);
         tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
         let mut tx_trits = converter::trits_from_string(&tx.to_trytes());
-        pearl_diver.search(&mut tx_trits, min_weight_magnitude, threads)?;
+        tx_trits = await!(pearl_diver.search(tx_trits, min_weight_magnitude, threads))?;
         result_trytes.push(converter::trits_to_string(&tx_trits)?);
         previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
     }
     result_trytes.reverse();
     Ok(AttachToTangleResponse::new(
-        0,
+        None,
         None,
         None,
         None,
