@@ -6,10 +6,10 @@ use reqwest::Client;
 pub fn find_transactions(
     client: &Client,
     uri: &str,
-    bundles: Option<&[String]>,
-    addresses: Option<&[String]>,
-    tags: Option<&[String]>,
-    approvees: Option<&[String]>,
+    bundles: Option<Vec<String>>,
+    addresses: Option<Vec<String>>,
+    tags: Option<Vec<String>>,
+    approvees: Option<Vec<String>>,
 ) -> Result<FindTransactionsResponse> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());

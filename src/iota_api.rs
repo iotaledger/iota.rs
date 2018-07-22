@@ -122,7 +122,7 @@ impl API {
                         &self.client,
                         &self.uri,
                         None,
-                        Some(&new_address_vec),
+                        Some(new_address_vec.clone()),
                         None,
                         None,
                     )?;
