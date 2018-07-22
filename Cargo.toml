@@ -15,7 +15,7 @@ description = "A rust implementation of the IOTA API"
 categories = ["asynchronous"]
 
 [lib]
-name = "iota-lib-rs"
+name = "iota_lib_rs"
 
 [badges]
 travis-ci = { repository = "njaremko/iota-lib-rs" }
