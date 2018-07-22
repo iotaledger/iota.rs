@@ -1,6 +1,27 @@
 //! This library provides pretty much anything you could need to work with
 //! Iota. The documentation is a work in progress, but if you need any help
 //! I can usually be found on the Iota discord rust or development chats.
+#![allow(dead_code)]
+#![feature(rust_2018_preview)]
+#![feature(rust_2018_idioms)]
+
+#[macro_use]
+extern crate crunchy;
+#[macro_use]
+extern crate failure;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
+#[macro_use]
+extern crate lazy_static;
+
+extern crate chrono;
+extern crate crossbeam;
+extern crate num_cpus;
+extern crate rand;
+extern crate regex;
+extern crate reqwest;
 
 /// Heres a quick example of how to send a transaction (Note that trytes is being
 /// used as a seed here...don't do that)
@@ -36,27 +57,6 @@
 ///     println!("{:?}", tx);
 /// }
 ///```
-#![allow(dead_code)]
-#![feature(rust_2018_preview)]
-#![feature(rust_2018_idioms)]
-
-#[macro_use]
-extern crate crunchy;
-#[macro_use]
-extern crate failure;
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate serde_json;
-#[macro_use]
-extern crate lazy_static;
-
-extern crate chrono;
-extern crate crossbeam;
-extern crate num_cpus;
-extern crate rand;
-extern crate regex;
-extern crate reqwest;
 
 /// Provides all crypto algorithms and data structures used by Iota
 pub mod crypto;
