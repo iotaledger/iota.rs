@@ -3,7 +3,7 @@ cargo-features = ["edition"]
 [package]
 name = "iota-lib-rs-preview"
 edition = '2018'
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 license = "MIT"
 readme = "README.md"
