@@ -6,11 +6,13 @@
 //! used as a seed here...don't do that)
 //!```
 //! extern crate iota_lib_rs;
-//!
+//! extern crate futures;
+//! 
 //! use iota_lib_rs::iota_api;
 //! use iota_lib_rs::iota_api::SendTransferOptions;
 //! use iota_lib_rs::utils::trytes_converter;
 //! use iota_lib_rs::model::*;
+//! use futures::executor::block_on;
 //!
 //! fn main() {
 //!     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
@@ -24,7 +26,7 @@
 //!         seed: trytes.to_string(),
 //!         depth: 3,
 //!         min_weight_magnitude: 14,
-//!         local_pow: true,
+//!         local_pow: false,
 //!         threads: None,
 //!         inputs: None,
 //!         reference: None,
@@ -32,7 +34,7 @@
 //!         security: None,
 //!         hmac_key: None,
 //!     };    
-//!     let tx = api.send_transfers(&transfer, options).unwrap();
+//!     let tx = block_on(api.send_transfers(vec![transfer], options)).unwrap();
 //!     println!("{:?}", tx);
 //! }
 //!```
@@ -42,7 +44,6 @@
 #![feature(futures_api)]
 #![feature(async_await)]
 #![feature(await_macro)]
-#![feature(nll)]
 
 #[macro_use]
 extern crate crunchy;
@@ -57,11 +58,12 @@ extern crate lazy_static;
 
 extern crate chrono;
 extern crate crossbeam;
+extern crate futures;
 extern crate num_cpus;
 extern crate rand;
 extern crate regex;
 extern crate reqwest;
-extern crate futures;
+
 
 /// Provides all crypto algorithms and data structures used by Iota
 pub mod crypto;

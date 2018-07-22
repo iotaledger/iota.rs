@@ -3,13 +3,13 @@ use crate::Result;
 use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 /// Finds transactions the match any of the provided parameters
-pub fn find_transactions(
+pub async fn find_transactions(
     client: &Client,
-    uri: &str,
-    bundles: Option<&[String]>,
-    addresses: Option<&[String]>,
-    tags: Option<&[String]>,
-    approvees: Option<&[String]>,
+    uri: String,
+    bundles: Option<Vec<String>>,
+    addresses: Option<Vec<String>>,
+    tags: Option<Vec<String>>,
+    approvees: Option<Vec<String>>,
 ) -> Result<FindTransactionsResponse> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -33,7 +33,7 @@ pub fn find_transactions(
     }
 
     let resp: FindTransactionsResponse = client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

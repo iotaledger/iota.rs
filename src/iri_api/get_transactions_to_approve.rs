@@ -2,6 +2,7 @@ use super::responses::GetTransactionsToApprove;
 use crate::Result;
 use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
+
 /// Tip selection which returns `trunkTransaction` and
 /// `branchTransaction`. The input value depth determines
 /// how many milestones to go back to for finding the
@@ -12,11 +13,11 @@ use reqwest::Client;
 /// returned. The reference is an optional hash of a transaction
 /// you want to approve. If it can't be found at the specified
 /// depth then an error will be returned.
-pub fn get_transactions_to_approve(
+pub async fn get_transactions_to_approve(
     client: &Client,
-    uri: &str,
+    uri: String,
     depth: usize,
-    reference: &Option<String>,
+    reference: Option<String>,
 ) -> Result<GetTransactionsToApprove> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -32,7 +33,7 @@ pub fn get_transactions_to_approve(
     }
 
     let to_approve: GetTransactionsToApprove = client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

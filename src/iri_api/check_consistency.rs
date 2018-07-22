@@ -5,10 +5,10 @@ use reqwest::Client;
 use serde_json::Value;
 
 /// Checks for consistency of given hashes, not part of the public api
-pub fn check_consistency(client: &Client, uri: &str, hashes: &[String]) -> Result<Value> {
-    for hash in hashes {
+pub async fn check_consistency(client: &Client, uri: String, hashes: Vec<String>) -> Result<Value> {
+    for hash in &hashes {
         ensure!(
-            input_validator::is_hash(hash),
+            input_validator::is_hash(&hash),
             "Provided hash is not valid: {:?}",
             hash
         );
@@ -24,7 +24,7 @@ pub fn check_consistency(client: &Client, uri: &str, hashes: &[String]) -> Resul
     });
 
     Ok(client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?
