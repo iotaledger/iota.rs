@@ -83,6 +83,7 @@ Here's an example of how to send a transaction: (Note that we're using the addre
 extern crate iota_lib_rs;
 
 use iota_lib_rs::iota_api;
+use iota_lib_rs::iota_api::SendTransferOptions;
 use iota_lib_rs::utils::trytes_converter;
 use iota_lib_rs::model::*;
 
@@ -94,7 +95,19 @@ fn main() {
     *transfer.address_mut() = trytes.to_string();
     *transfer.message_mut() = message;
     let api = iota_api::API::new("https://trinity.iota.fm");
-    let tx = api.send_transfers(trytes, 3, 14, &transfer, true, None, None, None, None, None, None).unwrap();
+    let options = SendTransferOptions{
+        seed: trytes.to_string(),
+        depth: 3,
+        min_weight_magnitude: 14,
+        local_pow: true,
+        threads: None,
+        inputs: None,
+        reference: None,
+        remainder_address: None,
+        security: None,
+        hmac_key: None,
+    };        
+    let tx = api.send_transfers(&transfer, options).unwrap();
     println!("{:?}", tx);
 }
 ```
