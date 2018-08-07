@@ -3,18 +3,20 @@ extern crate criterion;
 extern crate iota_lib_rs;
 extern crate num_cpus;
 extern crate rand;
+extern crate futures;
 
 use criterion::Criterion;
 use rand::{thread_rng, Rng};
 
 use iota_lib_rs::crypto::PearlDiver;
+use futures::executor::block_on;
 
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
-fn basic_pow(mut trits: [i8; 8019]) {
-    let mut pearl_diver = PearlDiver::default();
-    pearl_diver
-        .search(&mut trits, MIN_WEIGHT_MAGNITUDE, None)
+fn basic_pow(trits: [i8; 8019]) {
+    let pearl_diver = PearlDiver::default();
+    block_on(pearl_diver
+        .search(trits.to_vec(), MIN_WEIGHT_MAGNITUDE, None))
         .unwrap();
 }
 

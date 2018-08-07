@@ -83,6 +83,7 @@ extern crate iota_lib_rs;
 extern crate futures;
 
 use iota_lib_rs::iota_api;
+use iota_lib_rs::iota_api::SendTransferOptions;
 use iota_lib_rs::utils::trytes_converter;
 use iota_lib_rs::model::*;
 use futures::executor::block_on;
@@ -96,17 +97,17 @@ fn main() {
     *transfer.message_mut() = message;
     let api = iota_api::API::new("https://trinity.iota.fm");
     let options = SendTransferOptions{
-         seed: trytes.to_string(),
-         depth: 3,
-         min_weight_magnitude: 14,
-         local_pow: true,
-         threads: None,
-         inputs: None,
-         reference: None,
-         remainder_address: None,
-         security: None,
-         hmac_key: None,
-     };
+        seed: trytes.to_string(),
+        depth: 3,
+        min_weight_magnitude: 14,
+        local_pow: true,
+        threads: None,
+        inputs: None,
+        reference: None,
+        remainder_address: None,
+        security: None,
+        hmac_key: None,
+    };    
     let tx = block_on(api.send_transfers(vec![transfer], options)).unwrap();
     println!("{:?}", tx);
 }

@@ -412,7 +412,7 @@ mod tests {
             let key = key(mode, &mut subseed, 1).unwrap();
 
             let mut kerl = Kerl::default();
-            let mut message_trits = converter::trits_from_string(MESSAGE);
+            let message_trits = converter::trits_from_string(MESSAGE);
             kerl.absorb(&message_trits).unwrap();
             let mut message_hash = [0; HASH_LENGTH];
             kerl.squeeze(&mut message_hash).unwrap();
