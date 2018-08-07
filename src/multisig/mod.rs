@@ -169,7 +169,7 @@ pub fn initiate_transfer(
             let resp = iri_api::get_balances(client, uri, &[address.to_string()], 100)?;
             create_bundle(resp.take_balances().unwrap()[0].parse()?)
         }?.bundle()
-            .to_vec());
+        .to_vec());
     }
 
     Err(format_err!(

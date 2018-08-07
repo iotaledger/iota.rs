@@ -19,7 +19,7 @@
 //!     *transfer.value_mut() = 0;
 //!     *transfer.address_mut() = trytes.to_string();
 //!     *transfer.message_mut() = message;
-//!     let api = iota_api::API::new("https://field.carriota.com");
+//!     let api = iota_api::API::new("https://trinity.iota.fm");
 //!     let options = SendTransferOptions{
 //!         seed: trytes.to_string(),
 //!         depth: 3,
