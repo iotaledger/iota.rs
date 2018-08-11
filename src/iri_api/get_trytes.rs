@@ -7,9 +7,9 @@ use reqwest::Client;
 /// transaction. These trytes can then be easily converted
 /// into the actual transaction object. See utility functions
 /// for more details.
-pub fn get_trytes(client: &Client, uri: &str, hashes: &[String]) -> Result<GetTrytesResponse> {
+pub async fn get_trytes(client: Client, uri: String, hashes: Vec<String>) -> Result<GetTrytesResponse> {
     ensure!(
-        input_validator::is_array_of_hashes(hashes),
+        input_validator::is_array_of_hashes(&hashes),
         "Provided hashes are not valid: {:?}",
         hashes
     );
@@ -24,7 +24,7 @@ pub fn get_trytes(client: &Client, uri: &str, hashes: &[String]) -> Result<GetTr
     });
 
     Ok(client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

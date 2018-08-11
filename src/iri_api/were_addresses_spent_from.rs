@@ -4,10 +4,10 @@ use crate::Result;
 use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 /// Check if a list of addresses was ever spent from.
-pub fn were_addresses_spent_from(
-    client: &Client,
-    uri: &str,
-    addresses: &[String],
+pub async fn were_addresses_spent_from(
+    client: Client,
+    uri: String,
+    addresses: Vec<String>,
 ) -> Result<WereAddressesSpentFromResponse> {
     let addresses: Vec<String> = addresses
         .iter()
@@ -26,7 +26,7 @@ pub fn were_addresses_spent_from(
     });
 
     Ok(client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

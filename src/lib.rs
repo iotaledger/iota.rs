@@ -6,12 +6,15 @@
 //! used as a seed here...don't do that)
 //!```
 //! extern crate iota_lib_rs;
-//!
+//! extern crate futures;
+//! 
 //! use iota_lib_rs::iota_api;
 //! use iota_lib_rs::iota_api::SendTransferOptions;
 //! use iota_lib_rs::utils::trytes_converter;
 //! use iota_lib_rs::model::*;
 //!
+//! use futures::executor::block_on;
+//! 
 //! fn main() {
 //!     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
 //!     let message = trytes_converter::to_trytes("Hello World").unwrap();
@@ -34,13 +37,17 @@
 //!     };    
 //!     // This line is commented out because travis CI can't handle it,
 //!     // but you should uncomment it
-//!     let tx = api.send_transfers(&transfer, options).unwrap();
+//!     let tx = block_on(api.send_transfers(vec![transfer], options)).unwrap();
 //!     println!("{:?}", tx);
 //! }
 //!```
 #![allow(dead_code)]
 #![feature(rust_2018_preview)]
 #![feature(rust_2018_idioms)]
+#![feature(futures_api)]
+#![feature(async_await)]
+#![feature(await_macro)]
+#![feature(nll)]
 
 #[macro_use]
 extern crate crunchy;

@@ -11,19 +11,19 @@ use reqwest::Client;
 /// This API call simply returns a list of boolean values in the
 /// same order as the transaction list you submitted, thus you get
 /// a true/false whether a transaction is confirmed or not.
-pub fn get_inclusion_states(
-    client: &Client,
-    uri: &str,
-    transactions: &[String],
-    tips: &[String],
+pub async fn get_inclusion_states(
+    client: Client,
+    uri: String,
+    transactions: Vec<String>,
+    tips: Vec<String>,
 ) -> Result<GetInclusionStatesResponse> {
     ensure!(
-        input_validator::is_array_of_hashes(transactions),
+        input_validator::is_array_of_hashes(&transactions),
         "Provided transactions are not valid: {:?}",
         transactions
     );
     ensure!(
-        input_validator::is_array_of_hashes(tips),
+        input_validator::is_array_of_hashes(&tips),
         "Provided tips are not valid: {:?}",
         tips
     );
@@ -39,7 +39,7 @@ pub fn get_inclusion_states(
     });
 
     let resp: GetInclusionStatesResponse = client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

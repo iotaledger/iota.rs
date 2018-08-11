@@ -5,10 +5,10 @@ use reqwest::Client;
 /// Store transactions into the local storage.
 /// The trytes to be used for this call are
 /// returned by attachToTangle.
-pub fn store_transactions(
-    client: &Client,
-    uri: &str,
-    trytes: &[String],
+pub async fn store_transactions(
+    client: Client,
+    uri: String,
+    trytes: Vec<String>,
 ) -> Result<StoreTransactionsResponse> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -20,7 +20,7 @@ pub fn store_transactions(
     });
 
     Ok(client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

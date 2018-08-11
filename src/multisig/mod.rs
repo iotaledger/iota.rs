@@ -16,6 +16,7 @@ use crate::Result;
 
 use chrono::prelude::*;
 use reqwest::Client;
+use futures::executor::block_on;
 
 /// Gets a key using the provided parameters
 ///
@@ -166,7 +167,7 @@ pub fn initiate_transfer(
         return Ok(if let Some(b) = balance {
             create_bundle(b)
         } else {
-            let resp = iri_api::get_balances(client, uri, &[address.to_string()], 100)?;
+            let resp = block_on(iri_api::get_balances(client.clone(), uri.to_string(), vec![address.to_string()], 100))?;
             create_bundle(resp.take_balances().unwrap()[0].parse()?)
         }?.bundle()
         .to_vec());

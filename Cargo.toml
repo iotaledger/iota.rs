@@ -1,15 +1,26 @@
 cargo-features = ["edition"]
 
 [package]
-name = "iota-lib-rs"
-version = "0.0.34"
+name = "iota-lib-rs-preview"
+edition = '2018'
+version = "0.1.4"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
-description = "A rust implementation of the IOTA API"
 license = "MIT"
 readme = "README.md"
-keywords = ["iota", "api"]
+keywords = ["iota", "api", "async"]
 repository = "https://github.com/njaremko/iota-lib-rs"
-edition = '2018'
+homepage = "https://github.com/njaremko/iota-lib-rs"
+documentation = "https://docs.rs/iota-lib-rs"
+description = "A rust implementation of the IOTA API"
+categories = ["asynchronous"]
+
+[lib]
+name = "iota_lib_rs"
+
+
+[badges]
+travis-ci = { repository = "njaremko/iota-lib-rs", branch = "async" }
+appveyor = { repository = "njaremko/iota-lib-rs", branch = "async" }
 
 [dependencies]
 crossbeam = "0.3"
@@ -24,6 +35,7 @@ reqwest = "0.8"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
+futures-preview = "0.3.0-alpha.2"
 
 [dev-dependencies]
 criterion = "0.2"

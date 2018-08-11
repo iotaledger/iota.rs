@@ -12,11 +12,11 @@ use reqwest::Client;
 /// returned. The reference is an optional hash of a transaction
 /// you want to approve. If it can't be found at the specified
 /// depth then an error will be returned.
-pub fn get_transactions_to_approve(
-    client: &Client,
-    uri: &str,
+pub async fn get_transactions_to_approve<R: Into<Option<String>>>(
+    client: Client,
+    uri: String,
     depth: usize,
-    reference: &Option<String>,
+    reference: R,
 ) -> Result<GetTransactionsToApprove> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -27,12 +27,12 @@ pub fn get_transactions_to_approve(
         "depth": depth,
     });
 
-    if let Some(reference) = reference {
+    if let Some(reference) = reference.into() {
         body["reference"] = json!(reference);
     }
 
     let to_approve: GetTransactionsToApprove = client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

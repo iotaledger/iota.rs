@@ -7,10 +7,10 @@ use reqwest::Client;
 /// as well as the index with which the confirmed balance was
 /// determined. The balances is returned as a list in the same
 /// order as the addresses were provided as input.
-pub fn get_balances(
-    client: &Client,
-    uri: &str,
-    addresses: &[String],
+pub async fn get_balances(
+    client: Client,
+    uri: String,
+    addresses: Vec<String>,
     threshold: i32,
 ) -> Result<GetBalancesResponse> {
     let mut headers = Headers::new();
@@ -24,7 +24,7 @@ pub fn get_balances(
     });
 
     Ok(client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

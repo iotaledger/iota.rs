@@ -6,10 +6,10 @@ use reqwest::Client;
 /// This is only temporary, and if you have your neighbors
 /// added via the command line, they will be retained after
 /// you restart your node.
-pub fn remove_neighbors(
-    client: &Client,
-    uri: &str,
-    uris: &[String],
+pub async fn remove_neighbors(
+    client: Client,
+    uri: String,
+    uris: Vec<String>,
 ) -> Result<RemoveNeighborsResponse> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -21,7 +21,7 @@ pub fn remove_neighbors(
     });
 
     Ok(client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

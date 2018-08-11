@@ -5,7 +5,7 @@ use reqwest::Client;
 /// Returns the set of neighbors you are connected with, as
 /// well as their activity count. The activity counter is reset
 /// after restarting IRI.
-pub fn get_neighbors(client: &Client, uri: &str) -> Result<GetNeighborsResponse> {
+pub async fn get_neighbors(client: Client, uri: String) -> Result<GetNeighborsResponse> {
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     headers.set_raw("X-IOTA-API-Version", "1");
@@ -15,7 +15,7 @@ pub fn get_neighbors(client: &Client, uri: &str) -> Result<GetNeighborsResponse>
     });
 
     let resp: GetNeighborsResponse = client
-        .post(uri)
+        .post(&uri)
         .headers(headers)
         .body(body.to_string())
         .send()?

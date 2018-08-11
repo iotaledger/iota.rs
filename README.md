@@ -81,11 +81,14 @@ Things that are done:
 Here's an example of how to send a transaction: (Note that we're using the address as the seed in `send_transfer()`...don't do this)
 ```rust
 extern crate iota_lib_rs;
- 
+extern crate futures;
+
 use iota_lib_rs::iota_api;
 use iota_lib_rs::iota_api::SendTransferOptions;
 use iota_lib_rs::utils::trytes_converter;
 use iota_lib_rs::model::*;
+
+use futures::executor::block_on;
 
 fn main() {
     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
@@ -109,7 +112,7 @@ fn main() {
     };    
     // This line is commented out because travis CI can't handle it,
     // but you should uncomment it
-    let tx = api.send_transfers(&transfer, options).unwrap();
+    let tx = block_on(api.send_transfers(vec![transfer], options)).unwrap();
     println!("{:?}", tx);
 }
 ```
