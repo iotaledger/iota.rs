@@ -1,8 +1,10 @@
 # An unofficial implementation of the IOTA api in rust.
-[![Build Status](https://travis-ci.org/njaremko/iota-lib-rs.svg?branch=master)](https://travis-ci.org/njaremko/iota-lib-rs) 
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/m1g0ddlgxk8wq9es?svg=true)](https://ci.appveyor.com/project/njaremko/iota-lib-rs)
-[![Version](https://img.shields.io/crates/v/iota-lib-rs.svg)](https://crates.io/crates/iota-lib-rs)
-[![Documentation](https://docs.rs/iota-lib-rs/badge.svg)](https://docs.rs/iota-lib-rs/)
+[![Build Status](https://travis-ci.org/njaremko/iota-lib-rs.svg?branch=async)](https://travis-ci.org/njaremko/iota-lib-rs) 
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/m1g0ddlgxk8wq9es/branch/async?svg=true)](https://ci.appveyor.com/project/njaremko/iota-lib-rs/branch/async)
+
+
+[![Version](https://img.shields.io/crates/v/iota-lib-rs-preview.svg)](https://crates.io/crates/iota-lib-rs-preview)
+[![Documentation](https://docs.rs/iota-lib-rs-preview/badge.svg)](https://docs.rs/iota-lib-rs-preview/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/njaremko/iota-lib-rs/master/LICENSE)
 
 
@@ -17,7 +19,7 @@ Here are some reasons you might want to use this library:
 
 # Documentation
 
-https://docs.rs/iota-lib-rs
+https://docs.rs/iota-lib-rs-preview
 
 This library currently requires nightly rust to build.
 
