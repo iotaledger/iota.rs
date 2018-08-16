@@ -132,7 +132,8 @@ pub async fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
         tx.set_attachment_timestamp_lower_bound(0);
         tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
         let tx_trits = converter::trits_from_string(&tx.to_trytes());
-        let result_trits = await!(pearl_diver.search(tx_trits, min_weight_magnitude, threads.into()))?;
+        let result_trits =
+            await!(pearl_diver.search(tx_trits, min_weight_magnitude, threads.into()))?;
         result_trytes.push(converter::trits_to_string(&result_trits)?);
         previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
     }

@@ -32,7 +32,7 @@ const LOW_BITS: u64 =
 ///```rust
 /// extern crate iota_lib_rs;
 /// extern crate futures;
-/// 
+///
 /// use iota_lib_rs::crypto::{Curl, PearlDiver, Sponge};
 /// use futures::executor::block_on;
 /// use rand::{thread_rng, Rng};

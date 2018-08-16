@@ -33,7 +33,7 @@ pub fn is_bundle(bundle: &[Transaction]) -> Result<bool> {
                 if new_tx.address().unwrap_or_default() == this_address
                     && new_tx.value().unwrap_or_default() == 0
                 {
-                    new_signature.add_fragment(&new_tx.signature_fragments().unwrap_or_default());
+                    new_signature.add_fragment(new_tx.signature_fragments().unwrap_or_default());
                 }
             }
             signatures_to_validate.push(new_signature);

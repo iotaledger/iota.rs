@@ -19,7 +19,12 @@ use futures::executor::block_on;
 /// * `index` - how many iterations of generating to skip
 /// * `security` - security factor 1-3 with 3 being most secure
 /// * `checksum` - whether or not to checksum address
-pub async fn new_address(seed: String, index: usize, security: usize, checksum: bool) -> Result<String> {
+pub async fn new_address(
+    seed: String,
+    index: usize,
+    security: usize,
+    checksum: bool,
+) -> Result<String> {
     let key = crypto::signing::key(&converter::trits_from_string(&seed), index, security)?;
     let digests = crypto::signing::digests(&key)?;
     let address_trits = crypto::signing::address(&digests)?;
@@ -117,8 +122,11 @@ impl API {
                 }
                 index += 1;
                 let new_address_vec = vec![new_address];
-                let were_addr_spent =
-                    block_on(iri_api::were_addresses_spent_from(self.client.clone(), self.uri.clone(), new_address_vec.clone()))?;
+                let were_addr_spent = block_on(iri_api::were_addresses_spent_from(
+                    self.client.clone(),
+                    self.uri.clone(),
+                    new_address_vec.clone(),
+                ))?;
                 if !were_addr_spent.state(0) {
                     let resp = block_on(iri_api::find_transactions(
                         self.client.clone(),
@@ -161,8 +169,7 @@ impl API {
         local_pow: bool,
         threads: Option<usize>,
         reference: Option<String>,
-    ) -> Result<Vec<Transaction>>
-    {
+    ) -> Result<Vec<Transaction>> {
         let to_approve = await!(iri_api::get_transactions_to_approve(
             self.client.clone(),
             self.uri.clone(),
@@ -201,8 +208,16 @@ impl API {
     ///
     /// * `trytes` - PoW-ed slice of tryte-encoded transaction strings
     pub async fn store_and_broadcast(&self, trytes: Vec<String>) -> Result<()> {
-        await!(iri_api::store_transactions(self.client.clone(), self.uri.clone(), trytes.clone()))?;
-        await!(iri_api::broadcast_transactions(self.client.clone(), self.uri.clone(), trytes))?;
+        await!(iri_api::store_transactions(
+            self.client.clone(),
+            self.uri.clone(),
+            trytes.clone()
+        ))?;
+        await!(iri_api::broadcast_transactions(
+            self.client.clone(),
+            self.uri.clone(),
+            trytes
+        ))?;
         Ok(())
     }
 
@@ -231,47 +246,58 @@ impl API {
                 start <= end && end <= start + 500,
                 "Invalid inputs provided."
             );
-            let mut all_addresses: Vec<String> = Vec::new();
+            let mut all_addresses: Vec<String> = vec![];
             for i in start..end {
                 all_addresses.push(await!(new_address(seed.clone(), i, security, false))?);
             }
-            self.get_balance_and_format(all_addresses, start, threshold, security)
+            self.get_balance_and_format(&all_addresses, start, threshold, security)
         } else {
             let new_address =
                 await!(self.get_new_address(seed, Some(start), Some(security), false, None, true))?;
-            self.get_balance_and_format(new_address, start, threshold, security)
+            self.get_balance_and_format(&new_address, start, threshold, security)
         }
     }
 
-    fn get_balance_and_format(&self, addresses: Vec<String>, start: usize, threshold: Option<i64>,  security: usize)-> Result<Inputs> {
-            let resp = block_on(iri_api::get_balances(self.client.clone(), self.uri.clone(), addresses.clone(), 100))?;
-            let mut inputs = Inputs::default();
+    fn get_balance_and_format(
+        &self,
+        addresses: &[String],
+        start: usize,
+        threshold: Option<i64>,
+        security: usize,
+    ) -> Result<Inputs> {
+        let resp = block_on(iri_api::get_balances(
+            self.client.clone(),
+            self.uri.clone(),
+            addresses.to_owned(),
+            100,
+        ))?;
+        let mut inputs = Inputs::default();
 
-            let mut threshold_reached = match threshold {
-                Some(_) => false,
-                None => true,
-            };
+        let mut threshold_reached = match threshold {
+            Some(_) => false,
+            None => true,
+        };
 
-            let balances = resp.take_balances().unwrap_or_default();
-            for (i, address) in addresses.iter().enumerate() {
-                let balance: i64 = balances[i].clone().parse()?;
-                if balance > 0 {
-                    let new_entry = Input::new(address.clone(), balance, start + i, security);
-                    inputs.add(new_entry);
-                    *inputs.total_balance_mut() += balance;
-                    if let Some(threshold) = threshold {
-                        if inputs.total_balance() >= threshold {
-                            threshold_reached = true;
-                        }
+        let balances = resp.take_balances().unwrap_or_default();
+        for (i, address) in addresses.iter().enumerate() {
+            let balance: i64 = balances[i].clone().parse()?;
+            if balance > 0 {
+                let new_entry = Input::new(address.clone(), balance, start + i, security);
+                inputs.add(new_entry);
+                *inputs.total_balance_mut() += balance;
+                if let Some(threshold) = threshold {
+                    if inputs.total_balance() >= threshold {
+                        threshold_reached = true;
                     }
                 }
             }
-            if threshold_reached {
-                Ok(inputs)
-            } else {
-                Err(format_err!("Not enough balance."))
-            }
         }
+        if threshold_reached {
+            Ok(inputs)
+        } else {
+            Err(format_err!("Not enough balance."))
+        }
+    }
 
     /// Prepares a slice of transfers and converts them into a
     /// slice of tryte-encoded strings
@@ -290,8 +316,7 @@ impl API {
         remainder_address: Option<String>,
         security: Option<usize>,
         hmac_key: Option<String>,
-    ) -> Result<Vec<String>>
-    {
+    ) -> Result<Vec<String>> {
         let mut add_hmac = false;
         let mut added_hmac = false;
 
@@ -365,8 +390,12 @@ impl API {
                         .iter()
                         .map(|input| input.address().to_string())
                         .collect();
-                    let resp =
-                        await!(iri_api::get_balances(self.client.clone(), self.uri.clone(), input_addresses, 100))?;
+                    let resp = await!(iri_api::get_balances(
+                        self.client.clone(),
+                        self.uri.clone(),
+                        input_addresses,
+                        100
+                    ))?;
                     let mut confirmed_inputs = Inputs::default();
                     let balances = resp.take_balances().unwrap_or_default();
                     for (i, balance) in balances.iter().enumerate() {
@@ -400,8 +429,13 @@ impl API {
                     )
                 }
                 None => {
-                    let inputs =
-                        await!(self.get_inputs(seed.clone(), None, None, Some(total_value), Some(security)))?;
+                    let inputs = await!(self.get_inputs(
+                        seed.clone(),
+                        None,
+                        None,
+                        Some(total_value),
+                        Some(security)
+                    ))?;
                     self.add_remainder(
                         &inputs,
                         &mut bundle,
@@ -445,8 +479,7 @@ impl API {
         &self,
         transfers: Vec<Transfer>,
         options: SendTransferOptions,
-    ) -> Result<Vec<Transaction>>
-    {
+    ) -> Result<Vec<Transaction>> {
         let trytes = await!(self.prepare_transfers(
             options.seed,
             transfers,
@@ -472,15 +505,23 @@ impl API {
     /// * `trunk_tx` - The trunk transaction to start searching at
     /// * `bundle_hash` - The bundle hash to compare against while searching
     /// * `bundle` - The bundle add transactions to, until hash no longer matches
-    pub fn traverse_bundle(
+    pub fn traverse_bundle<S, T>(
         &self,
         trunk_tx: &str,
-        bundle_hash: Option<String>,
-        mut bundle: Vec<Transaction>,
-    ) -> Result<Vec<Transaction>> {
-        let tryte_list = block_on(iri_api::get_trytes(self.client.clone(), self.uri.clone(), vec![trunk_tx.to_string()]))?
-            .take_trytes()
-            .unwrap_or_default();
+        bundle_hash: S,
+        bundle: T,
+    ) -> Result<Vec<Transaction>>
+    where
+        S: Into<Option<String>>,
+        T: Into<Vec<Transaction>>,
+    {
+        let mut bundle = bundle.into();
+        let tryte_list = block_on(iri_api::get_trytes(
+            self.client.clone(),
+            self.uri.clone(),
+            vec![trunk_tx.to_string()],
+        ))?.take_trytes()
+        .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;
@@ -489,9 +530,9 @@ impl API {
             tx.current_index().unwrap_or_default() == 0,
             "Invalid tail transaction supplied."
         );
-        let bundle_hash = bundle_hash.unwrap_or_else(|| tx_bundle.clone());
+        let bundle_hash = bundle_hash.into().unwrap_or_else(|| tx_bundle.clone());
         if bundle_hash != tx_bundle {
-            return Ok(bundle.to_vec());
+            return Ok(bundle);
         }
 
         if tx.last_index().unwrap_or_default() == 0 && tx.current_index().unwrap_or_default() == 0 {

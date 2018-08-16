@@ -7,14 +7,14 @@
 //!```
 //! extern crate iota_lib_rs;
 //! extern crate futures;
-//! 
+//!
 //! use iota_lib_rs::iota_api;
 //! use iota_lib_rs::iota_api::SendTransferOptions;
 //! use iota_lib_rs::utils::trytes_converter;
 //! use iota_lib_rs::model::*;
 //!
 //! use futures::executor::block_on;
-//! 
+//!
 //! fn main() {
 //!     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
 //!     let message = trytes_converter::to_trytes("Hello World").unwrap();
@@ -43,7 +43,6 @@
 //!```
 #![allow(dead_code)]
 #![feature(rust_2018_preview)]
-#![feature(rust_2018_idioms)]
 #![feature(futures_api)]
 #![feature(async_await)]
 #![feature(await_macro)]
