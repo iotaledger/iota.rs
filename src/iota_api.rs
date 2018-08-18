@@ -171,7 +171,7 @@ impl API {
         reference: Option<String>,
     ) -> Result<Vec<Transaction>> {
         let to_approve = await!(iri_api::get_transactions_to_approve(
-            self.client.clone(),
+            &self.client,
             self.uri.clone(),
             depth,
             reference,

@@ -58,7 +58,7 @@ impl StoreTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct WereAddressesSpentFromResponse {
     /// How long response took
     duration: i64,
@@ -88,7 +88,7 @@ impl WereAddressesSpentFromResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetTrytesResponse {
     /// How long response took
     duration: i64,
@@ -118,7 +118,7 @@ impl GetTrytesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetTransactionsToApprove {
     /// How long response took
     duration: i64,
@@ -158,7 +158,7 @@ impl GetTransactionsToApprove {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetTipsResponse {
     /// How long response took
     duration: i64,
@@ -312,7 +312,7 @@ impl GetNodeInfoResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetNeighborsResponse {
     /// How long response took
     duration: i64,
@@ -338,7 +338,7 @@ impl GetNeighborsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetInclusionStatesResponse {
     /// How long response took
     duration: i64,
@@ -415,7 +415,7 @@ impl GetBalancesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct FindTransactionsResponse {
     /// How long response took
     duration: i64,
@@ -445,7 +445,7 @@ impl FindTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
     /// How long response took
     duration: i64,
