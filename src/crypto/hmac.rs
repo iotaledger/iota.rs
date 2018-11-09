@@ -45,13 +45,13 @@ impl HMAC {
                 curl.squeeze(&mut hmac)?;
                 let hmac_trytes = converter::trytes(&hmac);
                 *b.signature_fragments_mut() = Some(
-                    hmac_trytes + &b
-                        .signature_fragments()
-                        .unwrap_or_default()
-                        .chars()
-                        .skip(81)
-                        .take(2106)
-                        .collect::<String>(),
+                    hmac_trytes
+                        + &b.signature_fragments()
+                            .unwrap_or_default()
+                            .chars()
+                            .skip(81)
+                            .take(2106)
+                            .collect::<String>(),
                 );
             }
         }

@@ -1,7 +1,6 @@
 use super::responses::GetTrytesResponse;
 use crate::utils::input_validator;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 /// Returns the raw transaction data (trytes) of a specific
 /// transaction. These trytes can then be easily converted
@@ -18,10 +17,6 @@ pub async fn get_trytes(
         hashes
     );
 
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let body = json!({
         "command": "getTrytes",
         "hashes": hashes,
@@ -29,7 +24,8 @@ pub async fn get_trytes(
 
     Ok(client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?)

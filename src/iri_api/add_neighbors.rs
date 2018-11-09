@@ -1,6 +1,5 @@
 use super::responses::AddNeighborsResponse;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 
 /// Add a list of neighbors to your node. It should be noted that
@@ -11,10 +10,6 @@ pub async fn add_neighbors(
     uri: String,
     uris: Vec<String>,
 ) -> Result<AddNeighborsResponse> {
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let body = json!({
         "command": "addNeighbors",
         "uris": uris,
@@ -22,7 +17,8 @@ pub async fn add_neighbors(
 
     Ok(client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?)

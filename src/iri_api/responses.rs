@@ -13,11 +13,11 @@ pub struct RemoveNeighborsResponse {
 }
 
 impl RemoveNeighborsResponse {
-    /// Returns the duration attribute
+    /// Returns the error attribute
     fn error(&self) -> &Option<String> {
         &self.error
     }
-    /// Returns the duration attribute
+    /// Returns the exception attribute
     fn exception(&self) -> &Option<String> {
         &self.exception
     }
@@ -34,8 +34,6 @@ impl RemoveNeighborsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StoreTransactionsResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// Any exceptions that occurred
@@ -43,15 +41,11 @@ pub struct StoreTransactionsResponse {
 }
 
 impl StoreTransactionsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
-    /// Returns the duration attribute
+    /// Returns the error attribute
     fn error(&self) -> &Option<String> {
         &self.error
     }
-    /// Returns the duration attribute
+    /// Returns the exception attribute
     fn exception(&self) -> &Option<String> {
         &self.exception
     }
@@ -60,8 +54,6 @@ impl StoreTransactionsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct WereAddressesSpentFromResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// States of addresses if found
@@ -69,10 +61,6 @@ pub struct WereAddressesSpentFromResponse {
 }
 
 impl WereAddressesSpentFromResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns the error attribute
     fn error(&self) -> &Option<String> {
         &self.error
@@ -90,8 +78,6 @@ impl WereAddressesSpentFromResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetTrytesResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// Trytes if found
@@ -99,10 +85,6 @@ pub struct GetTrytesResponse {
 }
 
 impl GetTrytesResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns the error attribute
     pub fn error(&self) -> &Option<String> {
         &self.error
@@ -120,8 +102,6 @@ impl GetTrytesResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetTransactionsToApprove {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// Any exceptions that occurred
@@ -135,10 +115,6 @@ pub struct GetTransactionsToApprove {
 }
 
 impl GetTransactionsToApprove {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns the error attribute
     pub fn error(&self) -> &Option<String> {
         &self.error
@@ -160,17 +136,11 @@ impl GetTransactionsToApprove {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetTipsResponse {
-    /// How long response took
-    duration: i64,
     /// Hashes of tips
     hashes: Vec<String>,
 }
 
 impl GetTipsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns the hashes attribute
     pub fn hashes(&self) -> &[String] {
         &self.hashes
@@ -190,8 +160,6 @@ pub struct GetNodeInfoResponse {
     /// IRI version
     #[serde(rename = "appVersion")]
     app_version: String,
-    /// Duration of request
-    duration: i64,
     /// Number of threads IRI is using
     #[serde(rename = "jreAvailableProcessors")]
     jre_available_processors: usize,
@@ -244,10 +212,6 @@ impl GetNodeInfoResponse {
     /// Returns the app_version attribute
     pub fn app_version(&self) -> &str {
         &self.app_version
-    }
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
     }
     /// Returns the jre_available_processors attribute
     pub fn jre_available_processors(&self) -> usize {
@@ -314,8 +278,6 @@ impl GetNodeInfoResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetNeighborsResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// Neighbors if found
@@ -323,10 +285,6 @@ pub struct GetNeighborsResponse {
 }
 
 impl GetNeighborsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns the error attribute
     pub fn error(&self) -> &Option<String> {
         &self.error
@@ -340,8 +298,6 @@ impl GetNeighborsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetInclusionStatesResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// States if found
@@ -349,10 +305,6 @@ pub struct GetInclusionStatesResponse {
 }
 
 impl GetInclusionStatesResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns any potential errors
     pub fn error(&self) -> Option<String> {
         self.error.clone()
@@ -370,8 +322,6 @@ impl GetInclusionStatesResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GetBalancesResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// Balances if found
@@ -384,31 +334,27 @@ pub struct GetBalancesResponse {
 }
 
 impl GetBalancesResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns any potential errors
     pub fn error(&self) -> &Option<String> {
         &self.error
     }
-    /// Returns the duration attribute
+    /// Returns the balances attribute
     pub fn balances(&self) -> &Option<Vec<String>> {
         &self.balances
     }
-    /// Returns the duration attribute
+    /// Takes ownership of the balances attribute
     pub fn take_balances(self) -> Option<Vec<String>> {
         self.balances
     }
-    /// Returns the duration attribute
+    /// Returns the milestone_index attribute
     pub fn milestone_index(&self) -> Option<i64> {
         self.milestone_index
     }
-    /// Returns the duration attribute
+    /// Returns the references attribute
     pub fn references(&self) -> &Option<Vec<String>> {
         &self.references
     }
-    /// Returns the duration attribute
+    /// Takes ownership of the references attribute
     pub fn take_references(self) -> Option<Vec<String>> {
         self.references
     }
@@ -417,8 +363,6 @@ impl GetBalancesResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct FindTransactionsResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// Hashes of matching transactions
@@ -426,10 +370,6 @@ pub struct FindTransactionsResponse {
 }
 
 impl FindTransactionsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns any potential errors
     pub fn error(&self) -> &Option<String> {
         &self.error
@@ -447,8 +387,6 @@ impl FindTransactionsResponse {
 /// This is a typed representation of the JSON response
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
-    /// How long response took
-    duration: i64,
     /// Any errors that occurred
     error: Option<String>,
     /// Any exception that occurred
@@ -456,10 +394,6 @@ pub struct BroadcastTransactionsResponse {
 }
 
 impl BroadcastTransactionsResponse {
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
-    }
     /// Returns any potential errors
     pub fn error(&self) -> Option<String> {
         self.error.clone()
@@ -471,11 +405,8 @@ impl BroadcastTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-/// `duration` will be zero if local PoW is selected.
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct AttachToTangleResponse {
-    /// How long response took
-    duration: i64,
     /// This is only used when using PoW Box service
     #[serde(rename = "jobId")]
     job_id: Option<String>,
@@ -490,29 +421,22 @@ pub struct AttachToTangleResponse {
 impl AttachToTangleResponse {
     /// Creates a new repsonse
     ///
-    /// * `duration` - How long response took
     /// * `job_id` - This is only used when using PoW Box service
     /// * `error` - Any errors that occurred
     /// * `exception` - Any exceptions that occurred
     /// * `trytes` -  trytes returned by PoW
     pub fn new(
-        duration: i64,
         job_id: Option<String>,
         error: Option<String>,
         exception: Option<String>,
         trytes: Option<Vec<String>>,
     ) -> AttachToTangleResponse {
         AttachToTangleResponse {
-            duration,
             job_id,
             error,
             exception,
             trytes,
         }
-    }
-    /// Returns the duration attribute
-    pub fn duration(&self) -> i64 {
-        self.duration
     }
     /// Returns the id attribute
     pub fn job_id(&self) -> Option<String> {

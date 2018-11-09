@@ -42,7 +42,6 @@
 //! }
 //!```
 #![allow(dead_code)]
-#![feature(rust_2018_preview)]
 #![feature(futures_api)]
 #![feature(async_await)]
 #![feature(await_macro)]

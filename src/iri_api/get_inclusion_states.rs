@@ -1,7 +1,6 @@
 use super::responses::GetInclusionStatesResponse;
 use crate::utils::input_validator;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 /// Get the inclusion states of a set of transactions. This is
 /// for determining if a transaction was accepted and confirmed
@@ -28,10 +27,6 @@ pub async fn get_inclusion_states(
         tips
     );
 
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let body = json!({
         "command": "getInclusionStates",
         "transactions": transactions,
@@ -40,7 +35,8 @@ pub async fn get_inclusion_states(
 
     let resp: GetInclusionStatesResponse = client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?;

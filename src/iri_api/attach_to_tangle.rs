@@ -5,7 +5,6 @@ use crate::model::*;
 use crate::utils::converter;
 use crate::utils::input_validator;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 
 lazy_static! {
@@ -44,10 +43,6 @@ pub async fn attach_to_tangle(
         trytes
     );
 
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let body = json!({
         "command": "attachToTangle",
         "trunkTransaction": trunk_transaction,
@@ -58,7 +53,8 @@ pub async fn attach_to_tangle(
 
     let attach_resp: AttachToTangleResponse = client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?;
@@ -139,7 +135,6 @@ pub async fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
     }
     result_trytes.reverse();
     Ok(AttachToTangleResponse::new(
-        0,
         None,
         None,
         None,

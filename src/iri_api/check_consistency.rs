@@ -1,6 +1,5 @@
 use crate::utils::input_validator;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 use serde_json::Value;
 
@@ -14,10 +13,6 @@ pub async fn check_consistency(client: Client, uri: String, hashes: Vec<String>)
         );
     }
 
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let body = json!({
         "command": "checkConsistency",
         "tails": hashes,
@@ -25,7 +20,8 @@ pub async fn check_consistency(client: Client, uri: String, hashes: Vec<String>)
 
     Ok(client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?)

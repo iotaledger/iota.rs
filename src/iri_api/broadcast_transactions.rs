@@ -1,7 +1,6 @@
 use super::responses::BroadcastTransactionsResponse;
 use crate::utils::input_validator;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 
 /// Broadcast a list of transactions to all neighbors.
@@ -17,10 +16,6 @@ pub async fn broadcast_transactions(
         trytes
     );
 
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let body = json!({
         "command": "broadcastTransactions",
         "trytes": trytes,
@@ -28,7 +23,8 @@ pub async fn broadcast_transactions(
 
     let resp: BroadcastTransactionsResponse = client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?;

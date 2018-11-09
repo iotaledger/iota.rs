@@ -1,6 +1,5 @@
 use super::responses::GetTransactionsToApprove;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 /// Tip selection which returns `trunkTransaction` and
 /// `branchTransaction`. The input value depth determines
@@ -12,16 +11,12 @@ use reqwest::Client;
 /// returned. The reference is an optional hash of a transaction
 /// you want to approve. If it can't be found at the specified
 /// depth then an error will be returned.
-pub async fn get_transactions_to_approve (
+pub async fn get_transactions_to_approve(
     client: &Client,
     uri: String,
     depth: usize,
     reference: Option<String>,
 ) -> Result<GetTransactionsToApprove> {
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let mut body = json!({
         "command": "getTransactionsToApprove",
         "depth": depth,
@@ -33,7 +28,8 @@ pub async fn get_transactions_to_approve (
 
     let to_approve: GetTransactionsToApprove = client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?;

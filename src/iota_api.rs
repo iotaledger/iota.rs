@@ -16,16 +16,16 @@ use futures::executor::block_on;
 /// Generates a new address
 ///
 /// * `seed` - seed used to generate new address
-/// * `index` - how many iterations of generating to skip
 /// * `security` - security factor 1-3 with 3 being most secure
+/// * `index` - how many iterations of generating to skip
 /// * `checksum` - whether or not to checksum address
 pub async fn new_address(
-    seed: String,
-    index: usize,
+    seed: &str,
     security: usize,
+    index: usize,
     checksum: bool,
 ) -> Result<String> {
-    let key = crypto::signing::key(&converter::trits_from_string(&seed), index, security)?;
+    let key = crypto::signing::key(&converter::trits_from_string(seed), index, security)?;
     let digests = crypto::signing::digests(&key)?;
     let address_trits = crypto::signing::address(&digests)?;
     let mut address = converter::trytes(&address_trits);
@@ -85,16 +85,16 @@ impl API {
     /// Generates a new address
     ///
     /// * `seed` - seed used to generate new address
-    /// * `index` - how many iterations of generating to skip
     /// * `security` - security factor 1-3 with 3 being most secure
+    /// * `index` - how many iterations of generating to skip
     /// * `checksum` - whether or not to checksum address
     /// * `total` - Number of addresses to generate. If total isn't provided, we generate until we find an unused address
     /// * `return_all` - whether to return all generated addresses, or just the last one
     pub async fn get_new_address(
         &self,
         seed: String,
-        index: Option<usize>,
         security: Option<usize>,
+        index: Option<usize>,
         checksum: bool,
         total: Option<usize>,
         return_all: bool,
@@ -110,13 +110,13 @@ impl API {
             Some(total) => {
                 ensure!(total > 0, "Invalid total.");
                 for i in index..total {
-                    let address = await!(new_address(seed.clone(), i, security, checksum))?;
+                    let address = await!(new_address(&seed, security, i, checksum))?;
                     all_addresses.push(address);
                 }
                 Ok(all_addresses)
             }
             None => loop {
-                let new_address = await!(new_address(seed.clone(), index, security, checksum))?;
+                let new_address = await!(new_address(&seed, security, index, checksum))?;
                 if return_all {
                     all_addresses.push(new_address.clone());
                 }
@@ -248,12 +248,12 @@ impl API {
             );
             let mut all_addresses: Vec<String> = vec![];
             for i in start..end {
-                all_addresses.push(await!(new_address(seed.clone(), i, security, false))?);
+                all_addresses.push(await!(new_address(&seed, security, i, false))?);
             }
             self.get_balance_and_format(&all_addresses, start, threshold, security)
         } else {
             let new_address =
-                await!(self.get_new_address(seed, Some(start), Some(security), false, None, true))?;
+                await!(self.get_new_address(seed, Some(security), Some(start), false, None, true))?;
             self.get_balance_and_format(&new_address, start, threshold, security)
         }
     }
@@ -270,13 +270,11 @@ impl API {
             self.uri.clone(),
             addresses.to_owned(),
             100,
+            None,
         ))?;
         let mut inputs = Inputs::default();
 
-        let mut threshold_reached = match threshold {
-            Some(_) => false,
-            None => true,
-        };
+        let mut threshold_reached = threshold.is_none();
 
         let balances = resp.take_balances().unwrap_or_default();
         for (i, address) in addresses.iter().enumerate() {
@@ -394,7 +392,8 @@ impl API {
                         self.client.clone(),
                         self.uri.clone(),
                         input_addresses,
-                        100
+                        100,
+                        None
                     ))?;
                     let mut confirmed_inputs = Inputs::default();
                     let balances = resp.take_balances().unwrap_or_default();
@@ -520,7 +519,8 @@ impl API {
             self.client.clone(),
             self.uri.clone(),
             vec![trunk_tx.to_string()],
-        ))?.take_trytes()
+        ))?
+        .take_trytes()
         .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
@@ -601,8 +601,8 @@ impl API {
                     start_index += 1;
                     let new_address = block_on(self.get_new_address(
                         options.seed.clone(),
-                        Some(start_index),
                         Some(options.security),
+                        Some(start_index),
                         false,
                         None,
                         false,
@@ -719,33 +719,33 @@ mod tests {
 
     #[test]
     fn test_address_generation() {
-        assert_eq!(block_on(new_address(TEST_SEED.to_string(), 0, 2, true)).unwrap(), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
-        assert_eq!(block_on(new_address(TEST_SEED.to_string(), 5, 2, true)).unwrap(), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
+        assert_eq!(block_on(new_address(&TEST_SEED, 2,0,  true)).unwrap(), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
+        assert_eq!(block_on(new_address(&TEST_SEED, 2,5,  true)).unwrap(), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
 
         assert_eq!(
-            block_on(new_address(ADDR_SEED.to_string(), 0, 1, false)).unwrap(),
+            block_on(new_address(&ADDR_SEED, 1, 0, false)).unwrap(),
             "HIPPOUPZFMHJUQBLBVWORCNJWAOSFLHDWF9IOFEYVHPTTAAF9NIBMRKBICAPHYCDKMEEOXOYHJBMONJ9D"
         );
         assert_eq!(
-            block_on(new_address(ADDR_SEED.to_string(), 0, 2, false)).unwrap(),
+            block_on(new_address(&ADDR_SEED, 2, 0, false)).unwrap(),
             "BPYZABTUMEIOARZTMCDNUDAPUOFCGKNGJWUGUXUKNNBVKQARCZIXFVBZAAMDAFRS9YOIXWOTEUNSXVOG9"
         );
         assert_eq!(
-            block_on(new_address(ADDR_SEED.to_string(), 0, 3, false)).unwrap(),
+            block_on(new_address(&ADDR_SEED, 3, 0, false)).unwrap(),
             "BYWHJJYSHSEGVZKKYTJTYILLEYBSIDLSPXDLDZSWQ9XTTRLOSCBCQ9TKXJYQAVASYCMUCWXZHJYRGDOBW"
         );
 
         let concat = ADDR_SEED.to_string() + &ADDR_SEED;
         assert_eq!(
-            block_on(new_address(concat.clone(), 0, 1, false)).unwrap(),
+            block_on(new_address(&concat, 1, 0, false)).unwrap(),
             "VKPCVHWKSCYQNHULMPYDZTNKOQHZNPEGJVPEHPTDIUYUBFKFICDRLLSIULHCVHOHZRHJOHNASOFRWFWZC"
         );
         assert_eq!(
-            block_on(new_address(concat.clone(), 0, 2, false)).unwrap(),
+            block_on(new_address(&concat, 2, 0, false)).unwrap(),
             "PTHVACKMXOKIERJOFSRPBWCNKVEXQ9CWUTIJGEUORSKWEDDJCBFQCCBQZLTYXQCXEDWLTMRQM9OQPUGNC"
         );
         assert_eq!(
-            block_on(new_address(concat.clone(), 0, 3, false)).unwrap(),
+            block_on(new_address(&concat, 3, 0, false)).unwrap(),
             "AGSAAETPMSBCDOSNXFXIOBAE9MVEJCSWVP9PAULQ9VABOTWLDMXID9MXCCWQIWRTJBASWPIJDFUC9ISWD"
         );
     }

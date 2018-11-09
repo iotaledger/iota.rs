@@ -1,6 +1,5 @@
 use super::responses::StoreTransactionsResponse;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 /// Store transactions into the local storage.
 /// The trytes to be used for this call are
@@ -10,10 +9,6 @@ pub async fn store_transactions(
     uri: String,
     trytes: Vec<String>,
 ) -> Result<StoreTransactionsResponse> {
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let body = json!({
         "command": "storeTransactions",
         "trytes": trytes,
@@ -21,7 +16,8 @@ pub async fn store_transactions(
 
     Ok(client
         .post(&uri)
-        .headers(headers)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?)

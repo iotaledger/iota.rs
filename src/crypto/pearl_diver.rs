@@ -125,13 +125,15 @@ impl PearlDiver {
         let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
         let actual_thread_count = num_cpus::get();
         let threads_to_use = match threads {
-            Some(t) => if t == 0 {
-                1
-            } else if t > actual_thread_count {
-                actual_thread_count
-            } else {
-                t
-            },
+            Some(t) => {
+                if t == 0 {
+                    1
+                } else if t > actual_thread_count {
+                    actual_thread_count
+                } else {
+                    t
+                }
+            }
             None => actual_thread_count,
         };
         crossbeam::scope(|scope| {

@@ -172,9 +172,11 @@ pub fn initiate_transfer(
                 uri.to_string(),
                 vec![address.to_string()],
                 100,
+                None,
             ))?;
             create_bundle(resp.take_balances().unwrap()[0].parse()?)
-        }?.bundle()
+        }?
+        .bundle()
         .to_vec());
     }
 
