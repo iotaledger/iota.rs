@@ -1,7 +1,7 @@
 [package]
-name = "iota-lib-rs-preview"
+name = "iota-lib-rs"
 edition = '2018'
-version = "0.1.6"
+version = "0.1.0"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 license = "MIT"
 readme = "README.md"
@@ -13,7 +13,7 @@ description = "A rust implementation of the IOTA API"
 categories = ["asynchronous"]
 
 [dependencies]
-crossbeam = "0.4"
+crossbeam = "0.5"
 chrono = "0.4"
 crunchy = "0.2"
 failure = "0.1"
@@ -30,12 +30,9 @@ futures-preview = "0.3.0-alpha.9"
 [dev-dependencies]
 criterion = "0.2"
 
-[lib]
-name = "iota_lib_rs"
-
 [badges]
-travis-ci = { repository = "njaremko/iota-lib-rs", branch = "async" }
-appveyor = { repository = "njaremko/iota-lib-rs", branch = "async" }
+travis-ci = { repository = "njaremko/iota-lib-rs", branch = "master" }
+appveyor = { repository = "njaremko/iota-lib-rs", branch = "master" }
 
 [[bench]]
 name = "kerl_benchmark"

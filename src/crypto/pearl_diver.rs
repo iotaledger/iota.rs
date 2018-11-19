@@ -146,7 +146,7 @@ impl PearlDiver {
                 );
                 let local_state_arc = Arc::clone(&self.running);
                 let local_transaction_trits_arc = Arc::clone(&transaction_trits_arc);
-                scope.spawn(move || {
+                scope.spawn(move |_| {
                     get_runnable(
                         &local_state_arc,
                         &local_transaction_trits_arc,
@@ -156,7 +156,8 @@ impl PearlDiver {
                     );
                 });
             }
-        });
+        })
+        .unwrap();
         ensure!(
             *self.running.read().unwrap() == PearlDiverState::Completed,
             "Something went wrong."

@@ -1,10 +1,11 @@
 # An unofficial implementation of the IOTA api in rust.
-[![Build Status](https://travis-ci.org/njaremko/iota-lib-rs.svg?branch=async)](https://travis-ci.org/njaremko/iota-lib-rs) 
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/m1g0ddlgxk8wq9es/branch/async?svg=true)](https://ci.appveyor.com/project/njaremko/iota-lib-rs/branch/async)
-[![Version](https://img.shields.io/crates/v/iota-lib-rs-preview.svg)](https://crates.io/crates/iota-lib-rs-preview)
-[![Documentation](https://docs.rs/iota-lib-rs-preview/badge.svg)](https://docs.rs/iota-lib-rs-preview/)
+[![Build Status](https://travis-ci.org/njaremko/iota-lib-rs.svg?branch=master)](https://travis-ci.org/njaremko/iota-lib-rs) 
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/m1g0ddlgxk8wq9es/branch/master?svg=true)](https://ci.appveyor.com/project/njaremko/iota-lib-rs/branch/master)
+[![Version](https://img.shields.io/crates/v/iota-lib-rs.svg)](https://crates.io/crates/iota-lib-rs)
+[![Documentation](https://docs.rs/iota-lib-rs/badge.svg)](https://docs.rs/iota-lib-rs/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/njaremko/iota-lib-rs/master/LICENSE)
 
+This library requires nightly rust until async becomes stable
 
 This is a port of the IOTA Java/JS API into Rust. It works, but I wouldn't trust it with real money yet. Having said that, please let me know if you have any suggestions or run into any issues.
 
@@ -17,7 +18,7 @@ Here are some reasons you might want to use this library:
 
 # Documentation
 
-https://docs.rs/iota-lib-rs-preview
+https://docs.rs/iota-lib-rs
 
 This library currently requires nightly rust to build.
 
@@ -97,7 +98,7 @@ fn main() {
     *transfer.value_mut() = 0;
     *transfer.address_mut() = trytes.to_string();
     *transfer.message_mut() = message;
-    let api = iota_api::API::new("https://trinity.iota.fm");
+    let api = iota_api::API::new("https://pow3.iota.community");
     let options = SendTransferOptions{
         seed: trytes.to_string(),
         depth: 3,
@@ -109,9 +110,7 @@ fn main() {
         remainder_address: None,
         security: None,
         hmac_key: None,
-    };    
-    // This line is commented out because travis CI can't handle it,
-    // but you should uncomment it
+    };
     let tx = block_on(api.send_transfers(vec![transfer], options)).unwrap();
     println!("{:?}", tx);
 }
