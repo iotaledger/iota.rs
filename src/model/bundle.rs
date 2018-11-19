@@ -27,9 +27,12 @@ impl fmt::Display for Bundle {
 
 impl Bundle {
     /// Greates a new bundle using the provided transactions
-    pub fn new(transactions: &[Transaction]) -> Bundle {
+    pub fn new<T>(transactions: T) -> Bundle
+    where
+        T: Into<Vec<Transaction>>,
+    {
         Bundle {
-            bundle: transactions.to_vec(),
+            bundle: transactions.into(),
         }
     }
 

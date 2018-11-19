@@ -5,7 +5,6 @@ use crate::model::*;
 use crate::utils::converter;
 use crate::utils::input_validator;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 
 lazy_static! {
@@ -20,33 +19,29 @@ lazy_static! {
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
-pub fn attach_to_tangle(
-    client: &Client,
-    uri: &str,
-    trunk_transaction: &str,
-    branch_transaction: &str,
+pub async fn attach_to_tangle(
+    client: Client,
+    uri: String,
+    trunk_transaction: String,
+    branch_transaction: String,
     min_weight_magnitude: usize,
-    trytes: &[String],
+    trytes: Vec<String>,
 ) -> Result<AttachToTangleResponse> {
     ensure!(
-        input_validator::is_hash(trunk_transaction),
+        input_validator::is_hash(&trunk_transaction),
         "Provided trunk transaction is not valid: {:?}",
         trunk_transaction
     );
     ensure!(
-        input_validator::is_hash(branch_transaction),
+        input_validator::is_hash(&branch_transaction),
         "Provided branch transaction is not valid: {:?}",
         branch_transaction
     );
     ensure!(
-        input_validator::is_array_of_trytes(trytes),
+        input_validator::is_array_of_trytes(&trytes),
         "Provided trytes are not valid: {:?}",
         trytes
     );
-
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
 
     let body = json!({
         "command": "attachToTangle",
@@ -57,8 +52,9 @@ pub fn attach_to_tangle(
     });
 
     let attach_resp: AttachToTangleResponse = client
-        .post(uri)
-        .headers(headers)
+        .post(&uri)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?;
@@ -81,25 +77,25 @@ pub fn attach_to_tangle(
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
-pub fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
+pub async fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
     threads: T,
-    trunk_transaction: &str,
-    branch_transaction: &str,
+    trunk_transaction: String,
+    branch_transaction: String,
     min_weight_magnitude: usize,
-    trytes: &[String],
+    trytes: Vec<String>,
 ) -> Result<AttachToTangleResponse> {
     ensure!(
-        input_validator::is_hash(trunk_transaction),
+        input_validator::is_hash(&trunk_transaction),
         "Provided trunk transaction is not valid: {:?}",
         trunk_transaction
     );
     ensure!(
-        input_validator::is_hash(branch_transaction),
+        input_validator::is_hash(&branch_transaction),
         "Provided branch transaction is not valid: {:?}",
         branch_transaction
     );
     ensure!(
-        input_validator::is_array_of_trytes(trytes),
+        input_validator::is_array_of_trytes(&trytes),
         "Provided trytes are not valid: {:?}",
         trytes
     );
@@ -111,16 +107,16 @@ pub fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
         let mut tx: Transaction = trytes[i].parse()?;
 
         let new_trunk_tx = if let Some(previous_transaction) = &previous_transaction {
-            previous_transaction.to_string()
+            previous_transaction.clone()
         } else {
-            trunk_transaction.to_string()
+            trunk_transaction.clone()
         };
         tx.set_trunk_transaction(new_trunk_tx);
 
         let new_branch_tx = if previous_transaction.is_some() {
-            trunk_transaction
+            trunk_transaction.clone()
         } else {
-            branch_transaction
+            branch_transaction.clone()
         };
         tx.set_branch_transaction(new_branch_tx);
 
@@ -131,14 +127,14 @@ pub fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
         tx.set_attachment_timestamp(Utc::now().timestamp_millis());
         tx.set_attachment_timestamp_lower_bound(0);
         tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
-        let mut tx_trits = converter::trits_from_string(&tx.to_trytes());
-        pearl_diver.search(&mut tx_trits, min_weight_magnitude, threads.into())?;
-        result_trytes.push(converter::trits_to_string(&tx_trits)?);
+        let tx_trits = converter::trits_from_string(&tx.to_trytes());
+        let result_trits =
+            await!(pearl_diver.search(tx_trits, min_weight_magnitude, threads.into()))?;
+        result_trytes.push(converter::trits_to_string(&result_trits)?);
         previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
     }
     result_trytes.reverse();
     Ok(AttachToTangleResponse::new(
-        0,
         None,
         None,
         None,

@@ -1,31 +1,32 @@
 use super::responses::GetBalancesResponse;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
 /// Returns the balance based on the latest confirmed milestone.
 /// In addition to the balances, it also returns the referencing tips (or milestone),
 /// as well as the index with which the confirmed balance was
 /// determined. The balances is returned as a list in the same
 /// order as the addresses were provided as input.
-pub fn get_balances(
-    client: &Client,
-    uri: &str,
-    addresses: &[String],
+pub async fn get_balances(
+    client: Client,
+    uri: String,
+    addresses: Vec<String>,
     threshold: i32,
+    tips: Option<Vec<String>>,
 ) -> Result<GetBalancesResponse> {
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
+    let mut body = json!({
+            "command": "getBalances",
+            "addresses": addresses,
+            "threshold": threshold,
+        });
 
-    let body = json!({
-        "command": "getBalances",
-        "addresses": addresses,
-        "threshold": threshold,
-    });
+    if let Some(tips) = tips {
+        body["tips"] = json!(tips);
+    }
 
     Ok(client
-        .post(uri)
-        .headers(headers)
+        .post(&uri)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?)

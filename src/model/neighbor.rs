@@ -29,16 +29,19 @@ impl fmt::Display for Neighbor {
 
 impl Neighbor {
     /// Creates a new instance of neighbor
-    pub fn new(
-        address: &str,
+    pub fn new<S>(
+        address: S,
         number_of_all_transactions: i32,
         number_of_invalid_transactions: i32,
         number_of_new_transactions: i32,
         number_of_random_transactions: i32,
         number_of_sent_transactions: i32,
-    ) -> Neighbor {
+    ) -> Neighbor
+    where
+        S: Into<String>,
+    {
         Neighbor {
-            address: address.to_string(),
+            address: address.into(),
             number_of_all_transactions,
             number_of_invalid_transactions,
             number_of_new_transactions,

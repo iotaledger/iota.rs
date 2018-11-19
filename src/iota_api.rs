@@ -11,13 +11,20 @@ use reqwest::Client;
 use std::cmp;
 use std::time::Duration;
 
+use futures::executor::block_on;
+
 /// Generates a new address
 ///
 /// * `seed` - seed used to generate new address
-/// * `index` - how many iterations of generating to skip
 /// * `security` - security factor 1-3 with 3 being most secure
+/// * `index` - how many iterations of generating to skip
 /// * `checksum` - whether or not to checksum address
-pub fn new_address(seed: &str, index: usize, security: usize, checksum: bool) -> Result<String> {
+pub async fn new_address(
+    seed: &str,
+    security: usize,
+    index: usize,
+    checksum: bool,
+) -> Result<String> {
     let key = crypto::signing::key(&converter::trits_from_string(seed), index, security)?;
     let digests = crypto::signing::digests(&key)?;
     let address_trits = crypto::signing::address(&digests)?;
@@ -78,23 +85,23 @@ impl API {
     /// Generates a new address
     ///
     /// * `seed` - seed used to generate new address
-    /// * `index` - how many iterations of generating to skip
     /// * `security` - security factor 1-3 with 3 being most secure
+    /// * `index` - how many iterations of generating to skip
     /// * `checksum` - whether or not to checksum address
     /// * `total` - Number of addresses to generate. If total isn't provided, we generate until we find an unused address
     /// * `return_all` - whether to return all generated addresses, or just the last one
-    pub fn get_new_address(
+    pub async fn get_new_address(
         &self,
-        seed: &str,
-        index: Option<usize>,
+        seed: String,
         security: Option<usize>,
+        index: Option<usize>,
         checksum: bool,
         total: Option<usize>,
         return_all: bool,
     ) -> Result<Vec<String>> {
         let mut index = index.unwrap_or_default();
         let security = security.unwrap_or(2);
-        ensure!(input_validator::is_trytes(seed), "Invalid seed.");
+        ensure!(input_validator::is_trytes(&seed), "Invalid seed.");
         ensure!(security > 0 && security < 4, "Invalid security.");
 
         let mut all_addresses: Vec<String> = Vec::new();
@@ -103,29 +110,32 @@ impl API {
             Some(total) => {
                 ensure!(total > 0, "Invalid total.");
                 for i in index..total {
-                    let address = new_address(seed, i, security, checksum)?;
+                    let address = await!(new_address(&seed, security, i, checksum))?;
                     all_addresses.push(address);
                 }
                 Ok(all_addresses)
             }
             None => loop {
-                let new_address = new_address(seed, index, security, checksum)?;
+                let new_address = await!(new_address(&seed, security, index, checksum))?;
                 if return_all {
                     all_addresses.push(new_address.clone());
                 }
                 index += 1;
                 let new_address_vec = vec![new_address];
-                let were_addr_spent =
-                    iri_api::were_addresses_spent_from(&self.client, &self.uri, &new_address_vec)?;
+                let were_addr_spent = block_on(iri_api::were_addresses_spent_from(
+                    self.client.clone(),
+                    self.uri.clone(),
+                    new_address_vec.clone(),
+                ))?;
                 if !were_addr_spent.state(0) {
-                    let resp = iri_api::find_transactions(
-                        &self.client,
-                        &self.uri,
+                    let resp = block_on(iri_api::find_transactions(
+                        self.client.clone(),
+                        self.uri.clone(),
                         None,
                         Some(new_address_vec.clone()),
                         None,
                         None,
-                    )?;
+                    ))?;
                     if resp.take_hashes().unwrap_or_default().is_empty() {
                         if return_all {
                             return Ok(all_addresses);
@@ -151,46 +161,42 @@ impl API {
     /// * `min_weight_magnitude` - the PoW difficulty factor (14 on mainnet, 9 on testnet)
     /// * `local_pow` - whether or not to do local PoW
     /// * `reference` - Optionally used as the reference to start searching for transactions to approve
-    pub fn send_trytes<U, S>(
+    pub async fn send_trytes(
         &self,
-        trytes: &[String],
+        trytes: Vec<String>,
         depth: usize,
         min_weight_magnitude: usize,
         local_pow: bool,
-        threads: U,
-        reference: S,
-    ) -> Result<Vec<Transaction>>
-    where
-        U: Copy + Into<Option<usize>>,
-        S: Into<Option<String>>,
-    {
-        let to_approve = iri_api::get_transactions_to_approve(
+        threads: Option<usize>,
+        reference: Option<String>,
+    ) -> Result<Vec<Transaction>> {
+        let to_approve = await!(iri_api::get_transactions_to_approve(
             &self.client,
-            &self.uri,
+            self.uri.clone(),
             depth,
-            &reference.into(),
-        )?;
+            reference,
+        ))?;
         let trytes_list = if local_pow {
-            let res = iri_api::attach_to_tangle_local(
+            let res = await!(iri_api::attach_to_tangle_local(
                 threads,
-                &to_approve.trunk_transaction().unwrap(),
-                &to_approve.branch_transaction().unwrap(),
+                to_approve.trunk_transaction().unwrap(),
+                to_approve.branch_transaction().unwrap(),
                 min_weight_magnitude,
-                trytes,
-            )?;
+                trytes.to_vec(),
+            ))?;
             res.trytes().unwrap()
         } else {
-            let attached = iri_api::attach_to_tangle(
-                &self.client,
-                &self.uri,
-                &to_approve.trunk_transaction().unwrap(),
-                &to_approve.branch_transaction().unwrap(),
+            let attached = await!(iri_api::attach_to_tangle(
+                self.client.clone(),
+                self.uri.clone(),
+                to_approve.trunk_transaction().unwrap(),
+                to_approve.branch_transaction().unwrap(),
                 min_weight_magnitude,
-                trytes,
-            )?;
+                trytes.to_vec(),
+            ))?;
             attached.trytes().unwrap()
         };
-        self.store_and_broadcast(&trytes_list)?;
+        await!(self.store_and_broadcast(trytes_list.clone()))?;
         Ok(trytes_list
             .iter()
             .map(|trytes| trytes.parse().unwrap())
@@ -201,9 +207,17 @@ impl API {
     /// the IRI. Trytes must have been PoW-ed.
     ///
     /// * `trytes` - PoW-ed slice of tryte-encoded transaction strings
-    pub fn store_and_broadcast(&self, trytes: &[String]) -> Result<()> {
-        iri_api::store_transactions(&self.client, &self.uri, trytes)?;
-        iri_api::broadcast_transactions(&self.client, &self.uri, trytes)?;
+    pub async fn store_and_broadcast(&self, trytes: Vec<String>) -> Result<()> {
+        await!(iri_api::store_transactions(
+            self.client.clone(),
+            self.uri.clone(),
+            trytes.clone()
+        ))?;
+        await!(iri_api::broadcast_transactions(
+            self.client.clone(),
+            self.uri.clone(),
+            trytes
+        ))?;
         Ok(())
     }
 
@@ -215,62 +229,71 @@ impl API {
     /// * `end` - The end index for addresses to search
     /// * `threshold` - The amount of Iota you're trying to find in the wallet
     /// * `security` - The security to use for address generation
-    pub fn get_inputs(
+    pub async fn get_inputs(
         &self,
-        seed: &str,
+        seed: String,
         start: Option<usize>,
         end: Option<usize>,
         threshold: Option<i64>,
         security: Option<usize>,
     ) -> Result<Inputs> {
-        ensure!(input_validator::is_trytes(seed), "Invalid seed.");
+        ensure!(input_validator::is_trytes(&seed), "Invalid seed.");
         let start = start.unwrap_or(0);
         let security = security.unwrap_or(2);
-
-        let get_balance_and_format = |addresses: &[String]| -> Result<Inputs> {
-            let resp = iri_api::get_balances(&self.client, &self.uri, addresses, 100)?;
-            let mut inputs = Inputs::default();
-
-            let mut threshold_reached = match threshold {
-                Some(_) => false,
-                None => true,
-            };
-
-            let balances = resp.take_balances().unwrap_or_default();
-            for (i, address) in addresses.iter().enumerate() {
-                let balance: i64 = balances[i].clone().parse()?;
-                if balance > 0 {
-                    let new_entry = Input::new(address.clone(), balance, start + i, security);
-                    inputs.add(new_entry);
-                    *inputs.total_balance_mut() += balance;
-                    if let Some(threshold) = threshold {
-                        if inputs.total_balance() >= threshold {
-                            threshold_reached = true;
-                        }
-                    }
-                }
-            }
-            if threshold_reached {
-                Ok(inputs)
-            } else {
-                Err(format_err!("Not enough balance."))
-            }
-        };
 
         if let Some(end) = end {
             ensure!(
                 start <= end && end <= start + 500,
                 "Invalid inputs provided."
             );
-            let mut all_addresses: Vec<String> = Vec::new();
+            let mut all_addresses: Vec<String> = vec![];
             for i in start..end {
-                all_addresses.push(new_address(seed, i, security, false)?);
+                all_addresses.push(await!(new_address(&seed, security, i, false))?);
             }
-            get_balance_and_format(&all_addresses)
+            self.get_balance_and_format(&all_addresses, start, threshold, security)
         } else {
             let new_address =
-                self.get_new_address(seed, Some(start), Some(security), false, None, true)?;
-            get_balance_and_format(&new_address)
+                await!(self.get_new_address(seed, Some(security), Some(start), false, None, true))?;
+            self.get_balance_and_format(&new_address, start, threshold, security)
+        }
+    }
+
+    fn get_balance_and_format(
+        &self,
+        addresses: &[String],
+        start: usize,
+        threshold: Option<i64>,
+        security: usize,
+    ) -> Result<Inputs> {
+        let resp = block_on(iri_api::get_balances(
+            self.client.clone(),
+            self.uri.clone(),
+            addresses.to_owned(),
+            100,
+            None,
+        ))?;
+        let mut inputs = Inputs::default();
+
+        let mut threshold_reached = threshold.is_none();
+
+        let balances = resp.take_balances().unwrap_or_default();
+        for (i, address) in addresses.iter().enumerate() {
+            let balance: i64 = balances[i].clone().parse()?;
+            if balance > 0 {
+                let new_entry = Input::new(address.clone(), balance, start + i, security);
+                inputs.add(new_entry);
+                *inputs.total_balance_mut() += balance;
+                if let Some(threshold) = threshold {
+                    if inputs.total_balance() >= threshold {
+                        threshold_reached = true;
+                    }
+                }
+            }
+        }
+        if threshold_reached {
+            Ok(inputs)
+        } else {
+            Err(format_err!("Not enough balance."))
         }
     }
 
@@ -283,29 +306,19 @@ impl API {
     /// * `remainder_address` - Optional remainder address to use, if not provided, one will be generated
     /// * `security` - Security to use when generating addresses (1-3)
     /// * `hmac_key` - Optional key to use if you want to hmac the transfers
-    pub fn prepare_transfers<T, U, S, R>(
+    pub async fn prepare_transfers(
         &self,
-        seed: &str,
-        transfers: T,
+        seed: String,
+        mut transfers: Vec<Transfer>,
         inputs: Option<Inputs>,
-        remainder_address: S,
-        security: U,
-        hmac_key: R,
-    ) -> Result<Vec<String>>
-    where
-        T: Into<Vec<Transfer>>,
-        U: Into<Option<usize>>,
-        S: Into<Option<String>>,
-        R: Into<Option<String>>,
-    {
+        remainder_address: Option<String>,
+        security: Option<usize>,
+        hmac_key: Option<String>,
+    ) -> Result<Vec<String>> {
         let mut add_hmac = false;
         let mut added_hmac = false;
-        let mut transfers = transfers.into();
-        let remainder_address = remainder_address.into();
-        let security = security.into();
-        let hmac_key = hmac_key.into();
 
-        ensure!(input_validator::is_trytes(seed), "Invalid seed.");
+        ensure!(input_validator::is_trytes(&seed), "Invalid seed.");
         if let Some(hmac_key) = &hmac_key {
             ensure!(input_validator::is_trytes(&hmac_key), "Invalid trytes.");
             add_hmac = true;
@@ -375,8 +388,13 @@ impl API {
                         .iter()
                         .map(|input| input.address().to_string())
                         .collect();
-                    let resp =
-                        iri_api::get_balances(&self.client, &self.uri, &input_addresses, 100)?;
+                    let resp = await!(iri_api::get_balances(
+                        self.client.clone(),
+                        self.uri.clone(),
+                        input_addresses,
+                        100,
+                        None
+                    ))?;
                     let mut confirmed_inputs = Inputs::default();
                     let balances = resp.take_balances().unwrap_or_default();
                     for (i, balance) in balances.iter().enumerate() {
@@ -410,13 +428,18 @@ impl API {
                     )
                 }
                 None => {
-                    let inputs =
-                        self.get_inputs(seed, None, None, Some(total_value), Some(security))?;
+                    let inputs = await!(self.get_inputs(
+                        seed.clone(),
+                        None,
+                        None,
+                        Some(total_value),
+                        Some(security)
+                    ))?;
                     self.add_remainder(
                         &inputs,
                         &mut bundle,
                         AddRemainderOptions {
-                            seed: seed.to_string(),
+                            seed: seed.clone(),
                             tag,
                             remainder_address,
                             signature_fragments,
@@ -451,30 +474,27 @@ impl API {
     /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
     /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
-    pub fn send_transfers<T>(
+    pub async fn send_transfers(
         &self,
-        transfers: T,
+        transfers: Vec<Transfer>,
         options: SendTransferOptions,
-    ) -> Result<Vec<Transaction>>
-    where
-        T: Into<Vec<Transfer>>,
-    {
-        let trytes = self.prepare_transfers(
-            &options.seed,
+    ) -> Result<Vec<Transaction>> {
+        let trytes = await!(self.prepare_transfers(
+            options.seed,
             transfers,
             options.inputs,
             options.remainder_address,
             options.security,
             options.hmac_key,
-        )?;
-        let t = self.send_trytes(
-            &trytes,
+        ))?;
+        let t = await!(self.send_trytes(
+            trytes,
             options.depth,
             options.min_weight_magnitude,
             options.local_pow,
             options.threads,
             options.reference,
-        )?;
+        ))?;
         Ok(t)
     }
 
@@ -484,15 +504,24 @@ impl API {
     /// * `trunk_tx` - The trunk transaction to start searching at
     /// * `bundle_hash` - The bundle hash to compare against while searching
     /// * `bundle` - The bundle add transactions to, until hash no longer matches
-    pub fn traverse_bundle(
+    pub fn traverse_bundle<S, T>(
         &self,
         trunk_tx: &str,
-        bundle_hash: Option<String>,
-        mut bundle: Vec<Transaction>,
-    ) -> Result<Vec<Transaction>> {
-        let tryte_list = iri_api::get_trytes(&self.client, &self.uri, &[trunk_tx.to_string()])?
-            .take_trytes()
-            .unwrap_or_default();
+        bundle_hash: S,
+        bundle: T,
+    ) -> Result<Vec<Transaction>>
+    where
+        S: Into<Option<String>>,
+        T: Into<Vec<Transaction>>,
+    {
+        let mut bundle = bundle.into();
+        let tryte_list = block_on(iri_api::get_trytes(
+            self.client.clone(),
+            self.uri.clone(),
+            vec![trunk_tx.to_string()],
+        ))?
+        .take_trytes()
+        .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;
@@ -501,9 +530,9 @@ impl API {
             tx.current_index().unwrap_or_default() == 0,
             "Invalid tail transaction supplied."
         );
-        let bundle_hash = bundle_hash.unwrap_or_else(|| tx_bundle.clone());
+        let bundle_hash = bundle_hash.into().unwrap_or_else(|| tx_bundle.clone());
         if bundle_hash != tx_bundle {
-            return Ok(bundle.to_vec());
+            return Ok(bundle);
         }
 
         if tx.last_index().unwrap_or_default() == 0 && tx.current_index().unwrap_or_default() == 0 {
@@ -519,12 +548,12 @@ impl API {
     /// Validates the signatures, total sum, and bundle order
     ///
     /// * `transaction` - The transaction hash to search for
-    pub fn get_bundle(&self, transaction: &str) -> Result<Vec<Transaction>> {
+    pub async fn get_bundle(&self, transaction: String) -> Result<Vec<Transaction>> {
         ensure!(
-            input_validator::is_hash(transaction),
+            input_validator::is_hash(&transaction),
             "Invalid transaction."
         );
-        let bundle = self.traverse_bundle(transaction, None, Vec::new())?;
+        let bundle = self.traverse_bundle(&transaction, None, vec![])?;
         ensure!(utils::is_bundle(&bundle)?, "Invalid bundle provided.");
         Ok(bundle)
     }
@@ -570,14 +599,14 @@ impl API {
                         start_index = cmp::max(input.key_index(), start_index);
                     }
                     start_index += 1;
-                    let new_address = self.get_new_address(
-                        &options.seed,
-                        Some(start_index),
+                    let new_address = block_on(self.get_new_address(
+                        options.seed.clone(),
                         Some(options.security),
+                        Some(start_index),
                         false,
                         None,
                         false,
-                    )?[0]
+                    ))?[0]
                         .clone();
                     bundle.add_entry(
                         1,
@@ -690,33 +719,33 @@ mod tests {
 
     #[test]
     fn test_address_generation() {
-        assert_eq!(new_address(TEST_SEED, 0, 2, true).unwrap(), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
-        assert_eq!(new_address(TEST_SEED, 5, 2, true).unwrap(), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
+        assert_eq!(block_on(new_address(&TEST_SEED, 2,0,  true)).unwrap(), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
+        assert_eq!(block_on(new_address(&TEST_SEED, 2,5,  true)).unwrap(), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
 
         assert_eq!(
-            new_address(ADDR_SEED, 0, 1, false).unwrap(),
+            block_on(new_address(&ADDR_SEED, 1, 0, false)).unwrap(),
             "HIPPOUPZFMHJUQBLBVWORCNJWAOSFLHDWF9IOFEYVHPTTAAF9NIBMRKBICAPHYCDKMEEOXOYHJBMONJ9D"
         );
         assert_eq!(
-            new_address(ADDR_SEED, 0, 2, false).unwrap(),
+            block_on(new_address(&ADDR_SEED, 2, 0, false)).unwrap(),
             "BPYZABTUMEIOARZTMCDNUDAPUOFCGKNGJWUGUXUKNNBVKQARCZIXFVBZAAMDAFRS9YOIXWOTEUNSXVOG9"
         );
         assert_eq!(
-            new_address(ADDR_SEED, 0, 3, false).unwrap(),
+            block_on(new_address(&ADDR_SEED, 3, 0, false)).unwrap(),
             "BYWHJJYSHSEGVZKKYTJTYILLEYBSIDLSPXDLDZSWQ9XTTRLOSCBCQ9TKXJYQAVASYCMUCWXZHJYRGDOBW"
         );
 
-        let concat = ADDR_SEED.to_string() + ADDR_SEED;
+        let concat = ADDR_SEED.to_string() + &ADDR_SEED;
         assert_eq!(
-            new_address(&concat, 0, 1, false).unwrap(),
+            block_on(new_address(&concat, 1, 0, false)).unwrap(),
             "VKPCVHWKSCYQNHULMPYDZTNKOQHZNPEGJVPEHPTDIUYUBFKFICDRLLSIULHCVHOHZRHJOHNASOFRWFWZC"
         );
         assert_eq!(
-            new_address(&concat, 0, 2, false).unwrap(),
+            block_on(new_address(&concat, 2, 0, false)).unwrap(),
             "PTHVACKMXOKIERJOFSRPBWCNKVEXQ9CWUTIJGEUORSKWEDDJCBFQCCBQZLTYXQCXEDWLTMRQM9OQPUGNC"
         );
         assert_eq!(
-            new_address(&concat, 0, 3, false).unwrap(),
+            block_on(new_address(&concat, 3, 0, false)).unwrap(),
             "AGSAAETPMSBCDOSNXFXIOBAE9MVEJCSWVP9PAULQ9VABOTWLDMXID9MXCCWQIWRTJBASWPIJDFUC9ISWD"
         );
     }

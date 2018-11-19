@@ -56,7 +56,10 @@ impl Signature {
     }
 
     /// Inserts a fragment into the signature
-    pub fn add_fragment(&mut self, fragment: &str) {
-        self.signature_fragments.push(fragment.to_string());
+    pub fn add_fragment<S>(&mut self, fragment: S)
+    where
+        S: Into<String>,
+    {
+        self.signature_fragments.push(fragment.into());
     }
 }

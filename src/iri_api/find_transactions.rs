@@ -1,20 +1,16 @@
 use super::responses::FindTransactionsResponse;
 use crate::Result;
-use reqwest::header::{ContentType, Headers};
 use reqwest::Client;
+
 /// Finds transactions the match any of the provided parameters
-pub fn find_transactions(
-    client: &Client,
-    uri: &str,
+pub async fn find_transactions(
+    client: Client,
+    uri: String,
     bundles: Option<Vec<String>>,
     addresses: Option<Vec<String>>,
     tags: Option<Vec<String>>,
     approvees: Option<Vec<String>>,
 ) -> Result<FindTransactionsResponse> {
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    headers.set_raw("X-IOTA-API-Version", "1");
-
     let mut body = json!({
         "command": "findTransactions",
     });
@@ -33,8 +29,9 @@ pub fn find_transactions(
     }
 
     let resp: FindTransactionsResponse = client
-        .post(uri)
-        .headers(headers)
+        .post(&uri)
+        .header("ContentType", "application/json")
+        .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()?
         .json()?;

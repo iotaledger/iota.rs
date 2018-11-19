@@ -192,13 +192,15 @@ mod tests {
                 &converter::trits_from_string(&(seed.to_string() + seed)),
                 0,
                 i,
-            ).unwrap();
+            )
+            .unwrap();
             assert_eq!(KEY_LENGTH * i, key2.len());
             let key3 = key(
                 &converter::trits_from_string(&(seed.to_string() + seed + seed)),
                 0,
                 i,
-            ).unwrap();
+            )
+            .unwrap();
             assert_eq!(KEY_LENGTH * i, key3.len());
         }
     }
@@ -227,12 +229,11 @@ mod tests {
 
     #[test]
     fn test_verifying() {
-        assert!(
-            validate_signatures(
-                &remove_checksum(ADDR),
-                &vec![SIG1.to_string(), SIG2.to_string()],
-                &remove_checksum(FIRST_ADDR),
-            ).unwrap()
-        );
+        assert!(validate_signatures(
+            &remove_checksum(ADDR),
+            &vec![SIG1.to_string(), SIG2.to_string()],
+            &remove_checksum(FIRST_ADDR),
+        )
+        .unwrap());
     }
 }
