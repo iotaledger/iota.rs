@@ -5,6 +5,9 @@
 //! Heres a quick example of how to send a transaction (Note that trytes is being
 //! used as a seed here...don't do that)
 //!```
+//! #![feature(futures_api)]
+//! #![feature(async_await)]
+//! #![feature(await_macro)]
 //! extern crate iota_lib_rs;
 //! extern crate futures;
 //!
@@ -14,6 +17,8 @@
 //! use iota_lib_rs::model::*;
 //!
 //! use futures::executor::block_on;
+//! use futures::executor::ThreadPool;
+//! use futures::task::SpawnExt;
 //!
 //! fn main() {
 //!     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
@@ -31,8 +36,20 @@
 //!         security: None,
 //!         hmac_key: None,
 //!     };
-//!     let tx = block_on(api.send_transfers(vec![transfer], trytes.to_string(), 3, 14, true, options)).unwrap();
-//!     println!("{:?}", tx);
+//!    // If you want to do this synchronously and block on the send_transfers call
+//!    let mut tx = block_on(api.send_transfers(vec![transfer.clone()], trytes.to_string(), 3, 14, true, options.clone())).unwrap();
+//!    println!("{:?}", tx);
+//!
+//!    // Create thread pool
+//!    let mut thread_pool = ThreadPool::new().expect("Failed to create threadpool");
+//!    // Spawn async request on pool
+//!    let h = thread_pool.spawn_with_handle(async move {
+//!         await!(api.send_transfers(vec![transfer], trytes.to_string(), 3, 14, true, options)).unwrap()
+//!    }).unwrap();
+//!    // Wait for completion
+//!    tx = thread_pool.run(h);
+//!
+//!    println!("{:?}", tx);
 //! }
 //!```
 #![allow(dead_code)]
