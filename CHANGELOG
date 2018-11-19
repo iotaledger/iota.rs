@@ -1,3 +1,9 @@
+0.1.2
+- Create options structs to make API use more ergonomic
+
+0.1.1
+- Update rand dependency
+
 0.1.0
 - Changes to all http api requests to be async
 - PoW is now async

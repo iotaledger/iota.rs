@@ -1,7 +1,7 @@
 [package]
 name = "iota-lib-rs"
 edition = '2018'
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 license = "MIT"
 readme = "README.md"

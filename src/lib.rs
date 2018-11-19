@@ -9,7 +9,7 @@
 //! extern crate futures;
 //!
 //! use iota_lib_rs::iota_api;
-//! use iota_lib_rs::iota_api::SendTransferOptions;
+//! use iota_lib_rs::options::SendTransferOptions;
 //! use iota_lib_rs::utils::trytes_converter;
 //! use iota_lib_rs::model::*;
 //!
@@ -24,20 +24,14 @@
 //!     *transfer.message_mut() = message;
 //!     let api = iota_api::API::new("https://pow3.iota.community");
 //!     let options = SendTransferOptions{
-//!         seed: trytes.to_string(),
-//!         depth: 3,
-//!         min_weight_magnitude: 14,
-//!         local_pow: true,
 //!         threads: None,
 //!         inputs: None,
 //!         reference: None,
 //!         remainder_address: None,
 //!         security: None,
 //!         hmac_key: None,
-//!     };    
-//!     // This line is commented out because travis CI can't handle it,
-//!     // but you should uncomment it
-//!     let tx = block_on(api.send_transfers(vec![transfer], options)).unwrap();
+//!     };
+//!     let tx = block_on(api.send_transfers(vec![transfer], trytes.to_string(), 3, 14, true, options)).unwrap();
 //!     println!("{:?}", tx);
 //! }
 //!```
@@ -75,6 +69,8 @@ pub mod iri_api;
 pub mod model;
 /// Provides multi-sig functionality
 pub mod multisig;
+/// Provides options structs for use throughout API
+pub mod options;
 /// Provides many useful helper functions that are used throughout
 /// the library
 pub mod utils;
