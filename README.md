@@ -16,8 +16,6 @@ Here are some reasons you might want to use this library:
 4. Now that the library is working, I'm going to be obsessively going over it to improve safety, performance, and usability
 5. It would make me personally happy :)
 
-## Development is currently taking place on the [async](https://github.com/njaremko/iota-lib-rs/tree/async) branch, so if you want to try the latest features, go there, or use [the preview crate](https://crates.io/crates/iota-lib-rs-preview)
-
 # Documentation
 
 https://docs.rs/iota-lib-rs
