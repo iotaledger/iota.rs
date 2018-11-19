@@ -1,0 +1,5 @@
+0.1.0
+- Changes to all http api requests to be async
+- PoW is now async
+- Update all documentation and tests to demonstrate async usage
+- Some changes to APIs due to async only supporting one borrow per function
