@@ -85,7 +85,7 @@ extern crate iota_lib_rs;
 extern crate futures;
 
 use iota_lib_rs::iota_api;
-use iota_lib_rs::iota_api::SendTransferOptions;
+use iota_lib_rs::options::SendTransferOptions;
 use iota_lib_rs::utils::trytes_converter;
 use iota_lib_rs::model::*;
 
@@ -100,10 +100,6 @@ fn main() {
     *transfer.message_mut() = message;
     let api = iota_api::API::new("https://pow3.iota.community");
     let options = SendTransferOptions{
-        seed: trytes.to_string(),
-        depth: 3,
-        min_weight_magnitude: 14,
-        local_pow: true,
         threads: None,
         inputs: None,
         reference: None,
@@ -111,7 +107,7 @@ fn main() {
         security: None,
         hmac_key: None,
     };
-    let tx = block_on(api.send_transfers(vec![transfer], options)).unwrap();
+    let tx = block_on(api.send_transfers(vec![transfer], trytes.to_string(), 3, 14, true, options)).unwrap();
     println!("{:?}", tx);
 }
 ```
