@@ -17,7 +17,7 @@ name = "iota_lib_rs"
 [workspace]
 members = [
     "iota-pow",
-    "iota-curl",
+    "iota-crypto",
     "iota-conversion",
     "iota-model",
     "iota-utils",
@@ -32,7 +32,7 @@ travis-ci = { repository = "njaremko/iota-lib-rs", branch = "master" }
 appveyor = { repository = "njaremko/iota-lib-rs", branch = "master" }
 
 [dependencies]
-iota-curl = { version = "0.1.0", path = "iota-curl" }
+iota-crypto = { version = "0.1.0", path = "iota-crypto" }
 iota-pow = { version = "0.1.0", path = "iota-pow" }
 iota-conversion = { version = "0.1.0", path = "iota-conversion" }
 iota-signing = { version = "0.1.0", path = "iota-signing" }

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use iota_conversion;
-use iota_curl::{Curl, Sponge};
+use iota_crypto::{Curl, Sponge};
 
 use crate::Result;
 

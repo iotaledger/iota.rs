@@ -4,7 +4,7 @@ use std::time::Duration;
 use chrono::prelude::*;
 use reqwest::Client;
 
-use iota_curl;
+use iota_crypto;
 use iota_model::*;
 
 use options::*;

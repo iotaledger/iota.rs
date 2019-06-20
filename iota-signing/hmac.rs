@@ -1,5 +1,5 @@
 use iota_conversion;
-use iota_curl::{Curl, HashMode, Sponge};
+use iota_crypto::{Curl, HashMode, Sponge};
 use iota_model::Bundle;
 
 use crate::Result;

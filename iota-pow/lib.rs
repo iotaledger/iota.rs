@@ -34,7 +34,7 @@ const LOW_BITS: u64 =
 ///```rust
 /// use iota_model::TrinaryData;
 /// use iota_pow::PearlDiver;
-/// use iota_curl::{Curl, Sponge};
+/// use iota_crypto::{Curl, Sponge};
 /// use rand::{thread_rng, Rng};
 ///
 /// const HASH_SIZE: usize = 243;

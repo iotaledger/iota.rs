@@ -38,8 +38,8 @@ const HALF_3: [u32; 12] = [
 /// The Kerl struct is a Sponge that uses the Keccak
 /// hashing algorithm.
 ///```
-/// extern crate iota_curl;
-/// use iota_curl::{Sponge, Kerl};
+/// extern crate iota_crypto;
+/// use iota_crypto::{Sponge, Kerl};
 /// // Create an array of 243 1s
 /// let input = [1; 243];
 /// // Create a mutable array of 243 0s

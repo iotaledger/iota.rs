@@ -3,6 +3,7 @@ name = "iota-signing"
 version = "0.1.0"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 edition = "2018"
+description = "Signing helpers used by Iota"
 
 [lib]
 name = "iota_signing"
@@ -12,7 +13,7 @@ path = "lib.rs"
 iota-constants = { version = "0.1.0", path = "../iota-constants" }
 iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
 iota-model = { version = "0.1.0", path = "../iota-model" }
-iota-curl = { version = "0.1.0", path = "../iota-curl" }
+iota-crypto = { version = "0.1.0", path = "../iota-crypto" }
 iota-utils = { version = "0.1.0", path = "../iota-utils" }
 iota-validation = { version = "0.1.0", path = "../iota-validation" }
 failure = "0.1"

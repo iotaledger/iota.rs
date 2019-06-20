@@ -16,7 +16,7 @@ pub mod prelude;
 pub use iota_client;
 pub use iota_constants;
 pub use iota_conversion;
-pub use iota_curl;
+pub use iota_crypto;
 pub use iota_model;
 pub use iota_pow;
 pub use iota_signing;

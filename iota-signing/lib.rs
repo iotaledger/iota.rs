@@ -1,7 +1,7 @@
 pub use hmac::HMAC;
 use iota_constants;
 use iota_conversion;
-use iota_curl::{Kerl, Sponge, HASH_LENGTH};
+use iota_crypto::{Kerl, Sponge, HASH_LENGTH};
 use iota_model::Bundle;
 use iota_validation::input_validator;
 

@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate criterion;
-extern crate iota_curl;
+extern crate iota_crypto;
 extern crate rand;
 
 use criterion::Criterion;
-use iota_curl::{Kerl, Sponge, HASH_LENGTH};
+use iota_crypto::{Kerl, Sponge, HASH_LENGTH};
 use rand::{thread_rng, Rng};
 
 fn basic_kerl(trits: [i8; HASH_LENGTH]) {

@@ -58,12 +58,12 @@ where
 
 /// Allows you to hash `trits` into `out` using the `mode` of your choosing
 ///```rust
-/// extern crate iota_curl;
-/// use iota_curl::{self, HashMode};
+/// extern crate iota_crypto;
+/// use iota_crypto::{self, HashMode};
 ///
 /// let input = [0; 243];
 /// let mut out = [0; 243];
-/// iota_curl::hash_with_mode(HashMode::Kerl, &input, &mut out);
+/// iota_crypto::hash_with_mode(HashMode::Kerl, &input, &mut out);
 ///```
 pub fn hash_with_mode(mode: HashMode, trits: &[i8], out: &mut [i8]) -> Result<()> {
     match mode {

@@ -1,5 +1,5 @@
 use iota_conversion;
-use iota_curl::{self, Kerl, Sponge};
+use iota_crypto::{self, Kerl, Sponge};
 use iota_model::*;
 
 use crate::Result;

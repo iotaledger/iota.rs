@@ -154,8 +154,8 @@ const PLEN: usize = 25;
 /// This structure should be used to create keccak/sha3 hash.
 ///
 /// ```rust
-/// extern crate iota_curl;
-/// use iota_curl::Keccak;
+/// extern crate iota_crypto;
+/// use iota_crypto::Keccak;
 ///
 /// fn main() {
 ///     let mut sha3 = Keccak::new_sha3_256();
