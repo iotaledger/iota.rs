@@ -1,0 +1,18 @@
+[package]
+name = "iota-signing"
+version = "0.1.0"
+authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
+edition = "2018"
+
+[lib]
+name = "iota_signing"
+path = "lib.rs"
+
+[dependencies]
+iota-constants = { version = "0.1.0", path = "../iota-constants" }
+iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
+iota-model = { version = "0.1.0", path = "../iota-model" }
+iota-curl = { version = "0.1.0", path = "../iota-curl" }
+iota-utils = { version = "0.1.0", path = "../iota-utils" }
+iota-validation = { version = "0.1.0", path = "../iota-validation" }
+failure = "0.1"

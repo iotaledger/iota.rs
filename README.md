@@ -81,20 +81,10 @@ Things that are done:
 
 Here's an example of how to send a transaction: (Note that we're using the address as the seed in `send_transfer()`...don't do this)
 ```rust
-#![feature(futures_api)]
-#![feature(async_await)]
-#![feature(await_macro)]
-extern crate iota_lib_rs;
-extern crate futures;
-
 use iota_lib_rs::iota_api;
 use iota_lib_rs::options::SendTransferOptions;
-use iota_lib_rs::utils::trytes_converter;
-use iota_lib_rs::model::*;
-
-use futures::executor::block_on;
-use futures::executor::ThreadPool;
-use futures::task::SpawnExt;
+use iota_lib_rs::conversion::trytes_converter;
+use iota_lib_rs::model::Transfer;
 
 fn main() {
     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
@@ -103,7 +93,7 @@ fn main() {
     *transfer.value_mut() = 0;
     *transfer.address_mut() = trytes.to_string();
     *transfer.message_mut() = message;
-    let api = iota_api::API::new("https://pow3.iota.community");
+    let api = iota_api::API::new("https://node01.iotatoken.nl");
     let options = SendTransferOptions{
         threads: None,
         inputs: None,
@@ -112,21 +102,8 @@ fn main() {
         security: None,
         hmac_key: None,
     };
-   // If you want to do this synchronously and block on the send_transfers call
-   let mut tx = block_on(api.send_transfers(vec![transfer.clone()], trytes.to_string(), 3, 14, true, options.clone())).unwrap();
+   let tx = api.send_transfers(vec![transfer.clone()], trytes.to_string(), 3, 14, true, options).unwrap();
    println!("{:?}", tx);
-
-   // Create thread pool
-   let mut thread_pool = ThreadPool::new().expect("Failed to create threadpool");
-   // Spawn async request on pool
-   let h = thread_pool.spawn_with_handle(async move {
-        await!(api.send_transfers(vec![transfer], trytes.to_string(), 3, 14, true, options)).unwrap()
-   }).unwrap();
-   // Wait for completion
-   tx = thread_pool.run(h);
-
-   println!("{:?}", tx);
-}
 }
 ```
 
