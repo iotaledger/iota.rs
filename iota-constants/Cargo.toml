@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 edition = "2018"
 description = "Constants used by Iota"
+license = "MIT"
 
 [lib]
 name = "iota_constants"
