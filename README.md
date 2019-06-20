@@ -81,10 +81,10 @@ Things that are done:
 
 Here's an example of how to send a transaction: (Note that we're using the address as the seed in `send_transfer()`...don't do this)
 ```rust
-use iota_lib_rs::iota_api;
-use iota_lib_rs::options::SendTransferOptions;
-use iota_lib_rs::conversion::trytes_converter;
-use iota_lib_rs::model::Transfer;
+use iota_lib_rs::prelude::*;
+use iota_api::options::SendTransferOptions;
+use iota_conversion::trytes_converter;
+use iota_model::Transfer;
 
 fn main() {
     let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
