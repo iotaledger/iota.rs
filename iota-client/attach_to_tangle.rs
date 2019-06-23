@@ -107,7 +107,7 @@ pub fn attach_to_tangle_local<T: Copy + Into<Option<usize>>>(
         tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
         let tx_trits = iota_conversion::trits_from_string(&tx.to_trytes());
         let result_trits = PearlDiver::default().search(
-            TrinaryData::Trits(tx_trits),
+            tx_trits,
             min_weight_magnitude,
             threads.into(),
         )?;

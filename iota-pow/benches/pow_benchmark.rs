@@ -4,15 +4,12 @@ extern crate criterion;
 use criterion::Criterion;
 use rand::{thread_rng, Rng};
 
-use iota_model::TrinaryData;
 use iota_pow::PearlDiver;
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
 fn basic_pow(trits: Vec<i8>) {
     let mut pearl = PearlDiver::default();
-    pearl
-        .search(TrinaryData::Trits(trits), MIN_WEIGHT_MAGNITUDE, None)
-        .unwrap();
+    pearl.search(trits, MIN_WEIGHT_MAGNITUDE, None).unwrap();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

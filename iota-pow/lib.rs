@@ -2,8 +2,7 @@ use failure::ensure;
 
 use std::sync::{Arc, Mutex, RwLock};
 
-use iota_conversion;
-use iota_model::TrinaryData;
+use iota_model::{Trinary, Trit, Trytes};
 
 type Result<T> = ::std::result::Result<T, failure::Error>;
 
@@ -100,14 +99,11 @@ impl PearlDiver {
     /// * `threads` - Optionally specify how many threads to use for PoW. Defaults to number of CPU threads.
     pub fn search(
         &mut self,
-        input: TrinaryData,
+        input: impl Trinary,
         min_weight_magnitude: usize,
         threads: Option<usize>,
-    ) -> Result<Vec<i8>> {
-        let transaction_trits = match input {
-            TrinaryData::Trits(trits) => trits,
-            TrinaryData::Trytes(trytes) => iota_conversion::trits_from_string(&trytes),
-        };
+    ) -> Result<Vec<Trit>> {
+        let transaction_trits = input.trits();
 
         ensure!(
             transaction_trits.len() == TRANSACTION_LENGTH,
@@ -173,7 +169,7 @@ impl PearlDiver {
 
 fn get_runnable(
     state: &Arc<RwLock<PearlDiverState>>,
-    transaction_trits: &Arc<Mutex<Vec<i8>>>,
+    transaction_trits: &Arc<Mutex<Vec<Trit>>>,
     min_weight_magnitude: usize,
     mut mid_state_copy_low: [u64; CURL_STATE_LENGTH],
     mut mid_state_copy_high: [u64; CURL_STATE_LENGTH],
@@ -242,7 +238,7 @@ fn copy(src_low: &[u64], src_high: &[u64], dest_low: &mut [u64], dest_high: &mut
 }
 
 fn initialize_mid_curl_states(
-    transaction_trits: &[i8],
+    transaction_trits: &[Trit],
     mid_state_low: &mut [u64],
     mid_state_high: &mut [u64],
 ) {

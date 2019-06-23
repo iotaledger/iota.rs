@@ -23,7 +23,29 @@ mod trit_adder;
 
 type Result<T> = ::std::result::Result<T, failure::Error>;
 
-pub enum TrinaryData {
-    Trits(Vec<i8>),
-    Trytes(String),
+pub trait Trinary {
+    fn trits(&self) -> Vec<Trit>;
+    fn trytes(&self) -> Trytes;
+}
+
+pub type Trit = i8;
+
+impl Trinary for Vec<Trit> {
+    fn trits(&self) -> Vec<Trit> {
+        self.to_vec()
+    }
+    fn trytes(&self) -> Trytes {
+        iota_conversion::trytes(self)
+    }
+}
+
+pub type Trytes = String;
+
+impl Trinary for Trytes {
+    fn trits(&self) -> Vec<Trit> {
+        iota_conversion::trits_from_string(self)
+    }
+    fn trytes(&self) -> Trytes {
+        self.clone()
+    }
 }
