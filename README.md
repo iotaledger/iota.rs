@@ -102,7 +102,7 @@ fn main() {
         security: None,
         hmac_key: None,
     };
-   let tx = api.send_transfers(vec![transfer.clone()], trytes.to_string(), 3, 14, true, options).unwrap();
+   let tx = api.send_transfers(transfer.into(), trytes.into(), 3, 14, true, options).unwrap();
    println!("{:?}", tx);
 }
 ```
