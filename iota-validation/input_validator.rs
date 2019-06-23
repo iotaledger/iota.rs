@@ -76,16 +76,7 @@ pub fn is_array_of_hashes(hashes: &[String]) -> bool {
 
 /// Validates a transfer
 pub fn is_valid_transfer(transfer: &Transfer) -> bool {
-    if !is_address(&transfer.address) {
-        return false;
-    }
-    if !is_trytes(&transfer.message) {
-        return false;
-    }
-    if !is_trytes(&transfer.tag) {
-        return false;
-    }
-    true
+    is_address(&transfer.address) && is_trytes(&transfer.message) && is_trytes(&transfer.tag)
 }
 
 /// Validates a slice of transfers

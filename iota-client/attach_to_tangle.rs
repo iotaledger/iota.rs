@@ -48,7 +48,7 @@ impl Default for AttachOptions {
 /// * `trytes` - tryes to use for PoW
 pub fn attach_to_tangle(
     client: &Client,
-    uri: String,
+    uri: &str,
     options: AttachOptions,
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
@@ -60,7 +60,7 @@ pub fn attach_to_tangle(
     });
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
@@ -98,18 +98,18 @@ pub fn attach_to_tangle_local(options: AttachOptions) -> Result<AttachToTangleRe
         let mut tx: Transaction = options.trytes[i].parse()?;
 
         let new_trunk_tx = if let Some(previous_transaction) = &previous_transaction {
-            previous_transaction.clone()
+            &previous_transaction
         } else {
-            options.trunk_transaction.clone()
+            &options.trunk_transaction
         };
-        tx.trunk_transaction = new_trunk_tx;
+        tx.trunk_transaction = new_trunk_tx.clone();
 
         let new_branch_tx = if previous_transaction.is_some() {
-            options.trunk_transaction.clone()
+            &options.trunk_transaction
         } else {
-            options.branch_transaction.clone()
+            &options.branch_transaction
         };
-        tx.branch_transaction = new_branch_tx;
+        tx.branch_transaction = new_branch_tx.clone();
 
         let tag = &tx.tag;
         if tag.is_empty() || *tag == "9".repeat(27) {
@@ -118,7 +118,7 @@ pub fn attach_to_tangle_local(options: AttachOptions) -> Result<AttachToTangleRe
         tx.attachment_timestamp = Utc::now().timestamp_millis();
         tx.attachment_timestamp_lower_bound = 0;
         tx.attachment_timestamp_upper_bound = *MAX_TIMESTAMP_VALUE;
-        let tx_trytes: String = (&tx).try_into()?;
+        let tx_trytes: String = tx.try_into()?;
         let tx_trits = tx_trytes.trits();
         let result_trits = PearlDiver::default().search(
             tx_trits,

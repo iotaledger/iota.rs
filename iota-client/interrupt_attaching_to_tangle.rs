@@ -5,7 +5,7 @@ use tokio::prelude::Future;
 /// Interupts an existing PoW request if you made one
 pub fn interrupt_attaching_to_tangle(
     client: &Client,
-    uri: String,
+    uri: &str,
 ) -> impl Future<Item = Response, Error = Error> {
-    client.post(&uri).send()
+    client.post(uri).send()
 }

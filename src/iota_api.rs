@@ -96,13 +96,11 @@ impl API {
                 }
                 index += 1;
                 let new_address_vec = vec![new_address];
-                let were_addr_spent = iota_client::were_addresses_spent_from(
-                    self.uri.clone(),
-                    new_address_vec.clone(),
-                )?;
+                let were_addr_spent =
+                    iota_client::were_addresses_spent_from(&self.uri, &new_address_vec)?;
                 if !were_addr_spent.state(0) {
                     let resp = iota_client::find_transactions(
-                        self.uri.clone(),
+                        &self.uri,
                         FindTransactionsOptions {
                             addresses: new_address_vec.clone(),
                             ..FindTransactionsOptions::default()
@@ -139,7 +137,7 @@ impl API {
         options: SendTrytesOptions,
     ) -> Result<Vec<Transaction>> {
         let to_approve = iota_client::get_transactions_to_approve(
-            self.uri.clone(),
+            &self.uri,
             GetTransactionsToApproveOptions {
                 depth: options.depth,
                 reference: options.reference,
@@ -147,8 +145,14 @@ impl API {
         )?;
         let attach_options = AttachOptions {
             threads: options.threads,
-            trunk_transaction: to_approve.trunk_transaction().unwrap(),
-            branch_transaction: to_approve.branch_transaction().unwrap(),
+            trunk_transaction: to_approve
+                .trunk_transaction()
+                .clone()
+                .ok_or_else(|| format_err!("Trunk transaction is empty"))?,
+            branch_transaction: to_approve
+                .branch_transaction()
+                .clone()
+                .ok_or_else(|| format_err!("Branch transaction is empty"))?,
             trytes,
             ..AttachOptions::default()
         };
@@ -156,10 +160,10 @@ impl API {
             let res = iota_client::attach_to_tangle_local(attach_options)?;
             res.trytes().unwrap()
         } else {
-            let attached = iota_client::attach_to_tangle(self.uri.clone(), attach_options)?;
+            let attached = iota_client::attach_to_tangle(&self.uri, attach_options)?;
             attached.trytes().unwrap()
         };
-        (self.store_and_broadcast(trytes_list.clone()))?;
+        self.store_and_broadcast(&trytes_list)?;
         Ok(trytes_list
             .iter()
             .map(|trytes| trytes.parse().unwrap())
@@ -170,9 +174,9 @@ impl API {
     /// the IRI. Trytes must have been PoW-ed.
     ///
     /// * `trytes` - PoW-ed slice of tryte-encoded transaction strings
-    pub fn store_and_broadcast(&self, trytes: Vec<String>) -> Result<()> {
-        iota_client::store_transactions(self.uri.clone(), trytes.clone())?;
-        iota_client::broadcast_transactions(self.uri.clone(), trytes)?;
+    pub fn store_and_broadcast(&self, trytes: &[String]) -> Result<()> {
+        iota_client::store_transactions(&self.uri, &trytes)?;
+        iota_client::broadcast_transactions(&self.uri, &trytes)?;
         Ok(())
     }
 
@@ -219,7 +223,7 @@ impl API {
         security: usize,
     ) -> Result<Inputs> {
         let resp = iota_client::get_balances(
-            self.uri.clone(),
+            &self.uri,
             GetBalancesOptions {
                 addresses: addresses.to_owned(),
                 ..GetBalancesOptions::default()
@@ -233,10 +237,12 @@ impl API {
         for (i, address) in addresses.iter().enumerate() {
             let balance: i64 = balances[i].clone().parse()?;
             if balance > 0 {
-                let new_entry = Input{address: address.clone(),
-                balance,
-                key_index: start + i,
-                security};
+                let new_entry = Input {
+                    address: address.clone(),
+                    balance,
+                    key_index: start + i,
+                    security,
+                };
                 inputs.add(new_entry);
                 *inputs.total_balance_mut() += balance;
                 if let Some(threshold) = threshold {
@@ -349,7 +355,7 @@ impl API {
                         .map(|input| input.address.to_string())
                         .collect();
                     let resp = iota_client::get_balances(
-                        self.uri.clone(),
+                        &self.uri,
                         GetBalancesOptions {
                             addresses: input_addresses,
                             ..GetBalancesOptions::default()
@@ -478,17 +484,14 @@ impl API {
         T: Into<Vec<Transaction>>,
     {
         let mut bundle = bundle.into();
-        let tryte_list = iota_client::get_trytes(self.uri.clone(), vec![trunk_tx.to_string()])?
+        let tryte_list = iota_client::get_trytes(&self.uri, &vec![trunk_tx.into()])?
             .take_trytes()
             .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;
         let tx_bundle = &tx.bundle;
-        ensure!(
-            tx.current_index == 0,
-            "Invalid tail transaction supplied."
-        );
+        ensure!(tx.current_index == 0, "Invalid tail transaction supplied.");
         let bundle_hash = bundle_hash.into().unwrap_or_else(|| tx_bundle.clone());
         if bundle_hash != *tx_bundle {
             return Ok(bundle);
@@ -561,7 +564,7 @@ impl API {
                         start_index = cmp::max(input.key_index, start_index);
                     }
                     start_index += 1;
-                    let new_address = self.get_new_address(
+                    let new_address = &self.get_new_address(
                         &options.seed,
                         false,
                         false,
@@ -570,8 +573,7 @@ impl API {
                             index: Some(start_index),
                             total: None,
                         },
-                    )?[0]
-                        .clone();
+                    )?[0];
                     bundle.add_entry(
                         1,
                         &new_address,
@@ -638,8 +640,7 @@ impl API {
                 let first_bundle_fragment = normalized_bundle_fragments[0];
                 let first_signed_fragment =
                     iota_signing::signature_fragment(&first_bundle_fragment, &first_fragment)?;
-                bundle.bundle[i].signature_fragments =
-                    first_signed_fragment.trytes()?;
+                bundle.bundle[i].signature_fragments = first_signed_fragment.trytes()?;
                 for j in 1..key_security {
                     if bundle.bundle[i + j].address == *this_address
                         && bundle.bundle[i + j].value == 0
@@ -650,8 +651,7 @@ impl API {
                             &next_bundle_fragment,
                             &next_fragment,
                         )?;
-                        bundle.bundle[i + j].signature_fragments =
-                            next_signed_fragment.trytes()?;
+                        bundle.bundle[i + j].signature_fragments = next_signed_fragment.trytes()?;
                     }
                 }
             }

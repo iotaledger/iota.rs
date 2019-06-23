@@ -31,13 +31,12 @@ impl HMAC {
     /// Bundle
     pub fn add_hmac(&self, bundle: &mut Bundle) -> Result<()> {
         let mut curl = Curl::new(HashMode::CURLP27)?;
-        let key = self.key.clone();
         for b in bundle.bundle.iter_mut() {
             if b.value > 0 {
                 let bundle_hash_trits = b.bundle.trits();
                 let mut hmac = [0; 243];
                 curl.reset();
-                curl.absorb(&key)?;
+                curl.absorb(&self.key)?;
                 curl.absorb(&bundle_hash_trits)?;
                 curl.squeeze(&mut hmac)?;
                 let hmac_trytes = hmac.trytes()?;

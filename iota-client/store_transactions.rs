@@ -7,8 +7,8 @@ use tokio::prelude::Future;
 /// returned by attachToTangle.
 pub fn store_transactions(
     client: &Client,
-    uri: String,
-    trytes: Vec<String>,
+    uri: &str,
+    trytes: &[String],
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "storeTransactions",
@@ -16,7 +16,7 @@ pub fn store_transactions(
     });
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

@@ -30,11 +30,11 @@ pub fn is_bundle(bundle: &[Transaction]) -> Result<bool> {
         let tx_trits = (&tx_trytes[2187..2187 + 162]).trits();
         kerl.absorb(&tx_trits)?;
         if tx_value < 0 {
-            let this_address = tx.address.clone();
+            let this_address = &tx.address;
             let mut new_signature = Signature::default();
             for i in index..bundle.len() - 1 {
                 let new_tx = &bundle[i + 1];
-                if new_tx.address == this_address && new_tx.value == 0 {
+                if new_tx.address == *this_address && new_tx.value == 0 {
                     new_signature.add_fragment(new_tx.signature_fragments.clone());
                 }
             }

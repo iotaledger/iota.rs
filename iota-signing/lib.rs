@@ -129,11 +129,11 @@ pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> R
 
 /// Validates signatures for a bundle
 pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> Result<bool> {
-    let mut bundle_hash = String::new();
+    let mut bundle_hash = "";
     let mut signature_fragments: Vec<String> = Vec::new();
     for transaction in &signed_bundle.bundle {
         if transaction.address == address {
-            bundle_hash = transaction.bundle.clone();
+            bundle_hash = &transaction.bundle;
             let signature_fragment = &transaction.signature_fragments;
             if input_validator::is_nine_trytes(&signature_fragment) {
                 break;

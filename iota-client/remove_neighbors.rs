@@ -8,8 +8,8 @@ use tokio::prelude::Future;
 /// you restart your node.
 pub fn remove_neighbors(
     client: &Client,
-    uri: String,
-    uris: Vec<String>,
+    uri: &str,
+    uris: &[String],
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "removeNeighbors",
@@ -17,7 +17,7 @@ pub fn remove_neighbors(
     });
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

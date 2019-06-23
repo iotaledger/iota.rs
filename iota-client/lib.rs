@@ -57,7 +57,7 @@ lazy_static! {
 /// Add a list of neighbors to your node. It should be noted that
 /// this is only temporary, and the added neighbors will be removed
 /// from your set of neighbors after you relaunch IRI.
-pub fn add_neighbors(uri: String, uris: Vec<String>) -> Result<AddNeighborsResponse> {
+pub fn add_neighbors(uri: &str, uris: &[String]) -> Result<AddNeighborsResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(add_neighbors::add_neighbors(&*CLIENT, uri, uris))
@@ -73,7 +73,7 @@ pub fn add_neighbors(uri: String, uris: Vec<String>) -> Result<AddNeighborsRespo
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
-pub fn attach_to_tangle(uri: String, options: AttachOptions) -> Result<AttachToTangleResponse> {
+pub fn attach_to_tangle(uri: &str, options: AttachOptions) -> Result<AttachToTangleResponse> {
     ensure!(
         input_validator::is_hash(&options.trunk_transaction),
         "Provided trunk transaction is not valid: {:?}",
@@ -109,8 +109,8 @@ pub fn attach_to_tangle(uri: String, options: AttachOptions) -> Result<AttachToT
 /// Broadcast a list of transactions to all neighbors.
 /// The input trytes for this call are provided by attachToTangle.
 pub fn broadcast_transactions(
-    uri: String,
-    trytes: Vec<String>,
+    uri: &str,
+    trytes: &[String],
 ) -> Result<BroadcastTransactionsResponse> {
     ensure!(
         input_validator::is_array_of_attached_trytes(&trytes),
@@ -137,8 +137,8 @@ pub fn broadcast_transactions(
 }
 
 /// Checks for consistency of given hashes, not part of the public api
-pub fn check_consistency(uri: String, hashes: Vec<String>) -> Result<Value> {
-    for hash in &hashes {
+pub fn check_consistency(uri: &str, hashes: &[String]) -> Result<Value> {
+    for hash in hashes {
         ensure!(
             input_validator::is_hash(hash),
             "Provided hash is not valid: {:?}",
@@ -155,7 +155,7 @@ pub fn check_consistency(uri: String, hashes: Vec<String>) -> Result<Value> {
 
 /// Finds transactions the match any of the provided parameters
 pub fn find_transactions(
-    uri: String,
+    uri: &str,
     options: FindTransactionsOptions,
 ) -> Result<FindTransactionsResponse> {
     let mut runtime = RT.lock().unwrap();
@@ -175,7 +175,7 @@ pub fn find_transactions(
 /// as well as the index with which the confirmed balance was
 /// determined. The balances is returned as a list in the same
 /// order as the addresses were provided as input.
-pub fn get_balances(uri: String, options: GetBalancesOptions) -> Result<GetBalancesResponse> {
+pub fn get_balances(uri: &str, options: GetBalancesOptions) -> Result<GetBalancesResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(get_balances::get_balances(&*CLIENT, uri, options))
@@ -193,7 +193,7 @@ pub fn get_balances(uri: String, options: GetBalancesOptions) -> Result<GetBalan
 /// same order as the transaction list you submitted, thus you get
 /// a true/false whether a transaction is confirmed or not.
 pub fn get_inclusion_states(
-    uri: String,
+    uri: &str,
     options: GetInclusionStatesOptions,
 ) -> Result<GetInclusionStatesResponse> {
     ensure!(
@@ -225,7 +225,7 @@ pub fn get_inclusion_states(
 /// Returns the set of neighbors you are connected with, as
 /// well as their activity count. The activity counter is reset
 /// after restarting IRI.
-pub fn get_neighbors(uri: String) -> Result<GetNeighborsResponse> {
+pub fn get_neighbors(uri: &str) -> Result<GetNeighborsResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(get_neighbors::get_neighbors(&*CLIENT, uri))
@@ -240,7 +240,7 @@ pub fn get_neighbors(uri: String) -> Result<GetNeighborsResponse> {
 }
 
 /// Gets information about the specified node
-pub fn get_node_info(uri: String) -> Result<GetNodeInfoResponse> {
+pub fn get_node_info(uri: &str) -> Result<GetNodeInfoResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(get_node_info::get_node_info(&*CLIENT, uri))
@@ -251,7 +251,7 @@ pub fn get_node_info(uri: String) -> Result<GetNodeInfoResponse> {
 }
 
 /// Returns the list of tips
-pub fn get_tips(uri: String) -> Result<GetTipsResponse> {
+pub fn get_tips(uri: &str) -> Result<GetTipsResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime.block_on(get_tips::get_tips(&*CLIENT, uri)).unwrap();
     let parsed_resp: GetTipsResponse = runtime.block_on(resp.json()).unwrap();
@@ -270,7 +270,7 @@ pub fn get_tips(uri: String) -> Result<GetTipsResponse> {
 /// you want to approve. If it can't be found at the specified
 /// depth then an error will be returned.
 pub fn get_transactions_to_approve(
-    uri: String,
+    uri: &str,
     options: GetTransactionsToApproveOptions,
 ) -> Result<GetTransactionsToApprove> {
     let mut runtime = RT.lock().unwrap();
@@ -295,7 +295,7 @@ pub fn get_transactions_to_approve(
 /// transaction. These trytes can then be easily converted
 /// into the actual transaction object. See utility functions
 /// for more details.
-pub fn get_trytes(uri: String, hashes: Vec<String>) -> Result<GetTrytesResponse> {
+pub fn get_trytes(uri: &str, hashes: &[String]) -> Result<GetTrytesResponse> {
     ensure!(
         input_validator::is_array_of_hashes(&hashes),
         "Provided hashes are not valid: {:?}",
@@ -310,7 +310,7 @@ pub fn get_trytes(uri: String, hashes: Vec<String>) -> Result<GetTrytesResponse>
 }
 
 /// Interupts an existing PoW request if you made one
-pub fn interrupt_attaching_to_tangle(uri: String) -> Result<Response> {
+pub fn interrupt_attaching_to_tangle(uri: &str) -> Result<Response> {
     let mut runtime = RT.lock().unwrap();
     let resp = runtime
         .block_on(interrupt_attaching_to_tangle::interrupt_attaching_to_tangle(&*CLIENT, uri))
@@ -322,7 +322,7 @@ pub fn interrupt_attaching_to_tangle(uri: String) -> Result<Response> {
 /// This is only temporary, and if you have your neighbors
 /// added via the command line, they will be retained after
 /// you restart your node.
-pub fn remove_neighbors(uri: String, uris: Vec<String>) -> Result<RemoveNeighborsResponse> {
+pub fn remove_neighbors(uri: &str, uris: &[String]) -> Result<RemoveNeighborsResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(remove_neighbors::remove_neighbors(&*CLIENT, uri, uris))
@@ -334,7 +334,7 @@ pub fn remove_neighbors(uri: String, uris: Vec<String>) -> Result<RemoveNeighbor
 /// Store transactions into the local storage.
 /// The trytes to be used for this call are
 /// returned by attachToTangle.
-pub fn store_transactions(uri: String, trytes: Vec<String>) -> Result<StoreTransactionsResponse> {
+pub fn store_transactions(uri: &str, trytes: &[String]) -> Result<StoreTransactionsResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(store_transactions::store_transactions(
@@ -347,8 +347,8 @@ pub fn store_transactions(uri: String, trytes: Vec<String>) -> Result<StoreTrans
 
 /// Check if a list of addresses was ever spent from.
 pub fn were_addresses_spent_from(
-    uri: String,
-    addresses: Vec<String>,
+    uri: &str,
+    addresses: &[String],
 ) -> Result<WereAddressesSpentFromResponse> {
     let addresses: Vec<String> = addresses
         .iter()
@@ -360,7 +360,7 @@ pub fn were_addresses_spent_from(
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(were_addresses_spent_from::were_addresses_spent_from(
-            &*CLIENT, uri, addresses,
+            &*CLIENT, uri, &addresses,
         ))
         .unwrap();
     let parsed_resp: WereAddressesSpentFromResponse = runtime.block_on(resp.json()).unwrap();

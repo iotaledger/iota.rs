@@ -7,8 +7,8 @@ use tokio::prelude::*;
 /// from your set of neighbors after you relaunch IRI.
 pub fn add_neighbors(
     client: &Client,
-    uri: String,
-    uris: Vec<String>,
+    uri: &str,
+    uris: &[String],
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "addNeighbors",
@@ -16,7 +16,7 @@ pub fn add_neighbors(
     });
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

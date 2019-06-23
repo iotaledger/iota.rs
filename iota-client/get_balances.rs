@@ -26,7 +26,7 @@ impl Default for GetBalancesOptions {
 /// order as the addresses were provided as input.
 pub fn get_balances(
     client: &Client,
-    uri: String,
+    uri: &str,
     options: GetBalancesOptions,
 ) -> impl Future<Item = Response, Error = Error> {
     let mut body = json!({
@@ -40,7 +40,7 @@ pub fn get_balances(
     }
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

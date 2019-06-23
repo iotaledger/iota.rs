@@ -18,7 +18,7 @@ pub struct GetInclusionStatesOptions {
 /// a true/false whether a transaction is confirmed or not.
 pub fn get_inclusion_states(
     client: &Client,
-    uri: String,
+    uri: &str,
     options: GetInclusionStatesOptions,
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
@@ -28,7 +28,7 @@ pub fn get_inclusion_states(
     });
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

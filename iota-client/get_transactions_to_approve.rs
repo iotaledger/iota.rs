@@ -29,7 +29,7 @@ impl Default for GetTransactionsToApproveOptions {
 /// depth then an error will be returned.
 pub fn get_transactions_to_approve(
     client: &Client,
-    uri: String,
+    uri: &str,
     options: GetTransactionsToApproveOptions,
 ) -> impl Future<Item = Response, Error = Error> {
     let mut body = json!({
@@ -42,7 +42,7 @@ pub fn get_transactions_to_approve(
     }
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

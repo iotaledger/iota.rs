@@ -117,47 +117,57 @@ impl FromStr for Transaction {
     }
 }
 
+impl TryInto<String> for Transaction {
+    type Error = failure::Error;
+
+    fn try_into(self) -> Result<String> {
+        to_string(&self)
+    }
+}
+
 impl TryInto<String> for &Transaction {
     type Error = failure::Error;
 
     fn try_into(self) -> Result<String> {
-        let mut value_trits = self.value.trits();
-        right_pad_vec(&mut value_trits, 81, 0);
-
-        let mut timestamp_trits = self.timestamp.trits();
-        right_pad_vec(&mut timestamp_trits, 27, 0);
-
-        let mut current_index_trits = (self.current_index as i64).trits();
-        right_pad_vec(&mut current_index_trits, 27, 0);
-
-        let mut last_index_trits = (self.last_index as i64).trits();
-        right_pad_vec(&mut last_index_trits, 27, 0);
-
-        let mut attachment_timestamp_trits = self.attachment_timestamp.trits();
-        right_pad_vec(&mut attachment_timestamp_trits, 27, 0);
-
-        let mut attachment_timestamp_lower_bound_trits =
-            self.attachment_timestamp_lower_bound.trits();
-        right_pad_vec(&mut attachment_timestamp_lower_bound_trits, 27, 0);
-
-        let mut attachment_timestamp_upper_bound_trits =
-            self.attachment_timestamp_upper_bound.trits();
-        right_pad_vec(&mut attachment_timestamp_upper_bound_trits, 27, 0);
-
-        Ok(self.signature_fragments.clone()
-            + &self.address
-            + &value_trits.trytes()?
-            + &self.obsolete_tag
-            + &timestamp_trits.trytes()?
-            + &current_index_trits.trytes()?
-            + &last_index_trits.trytes()?
-            + &self.bundle
-            + &self.trunk_transaction
-            + &self.branch_transaction
-            + &self.tag
-            + &attachment_timestamp_trits.trytes()?
-            + &attachment_timestamp_lower_bound_trits.trytes()?
-            + &attachment_timestamp_upper_bound_trits.trytes()?
-            + &self.nonce)
+        to_string(self)
     }
+}
+
+fn to_string(tx: &Transaction) -> Result<String> {
+    let mut value_trits = tx.value.trits();
+    right_pad_vec(&mut value_trits, 81, 0);
+
+    let mut timestamp_trits = tx.timestamp.trits();
+    right_pad_vec(&mut timestamp_trits, 27, 0);
+
+    let mut current_index_trits = (tx.current_index as i64).trits();
+    right_pad_vec(&mut current_index_trits, 27, 0);
+
+    let mut last_index_trits = (tx.last_index as i64).trits();
+    right_pad_vec(&mut last_index_trits, 27, 0);
+
+    let mut attachment_timestamp_trits = tx.attachment_timestamp.trits();
+    right_pad_vec(&mut attachment_timestamp_trits, 27, 0);
+
+    let mut attachment_timestamp_lower_bound_trits = tx.attachment_timestamp_lower_bound.trits();
+    right_pad_vec(&mut attachment_timestamp_lower_bound_trits, 27, 0);
+
+    let mut attachment_timestamp_upper_bound_trits = tx.attachment_timestamp_upper_bound.trits();
+    right_pad_vec(&mut attachment_timestamp_upper_bound_trits, 27, 0);
+
+    Ok(tx.signature_fragments.clone()
+        + &tx.address
+        + &value_trits.trytes()?
+        + &tx.obsolete_tag
+        + &timestamp_trits.trytes()?
+        + &current_index_trits.trytes()?
+        + &last_index_trits.trytes()?
+        + &tx.bundle
+        + &tx.trunk_transaction
+        + &tx.branch_transaction
+        + &tx.tag
+        + &attachment_timestamp_trits.trytes()?
+        + &attachment_timestamp_lower_bound_trits.trytes()?
+        + &attachment_timestamp_upper_bound_trits.trytes()?
+        + &tx.nonce)
 }

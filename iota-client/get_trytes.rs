@@ -8,8 +8,8 @@ use tokio::prelude::Future;
 /// for more details.
 pub fn get_trytes(
     client: &Client,
-    uri: String,
-    hashes: Vec<String>,
+    uri: &str,
+    hashes: &[String],
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "getTrytes",
@@ -17,7 +17,7 @@ pub fn get_trytes(
     });
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

@@ -124,12 +124,12 @@ impl GetTransactionsToApprove {
         &self.exception
     }
     /// Returns the trunk_transaction attribute
-    pub fn trunk_transaction(&self) -> Option<String> {
-        self.trunk_transaction.clone()
+    pub fn trunk_transaction(&self) -> &Option<String> {
+        &self.trunk_transaction
     }
     /// Returns the branch_transaction attribute
-    pub fn branch_transaction(&self) -> Option<String> {
-        self.branch_transaction.clone()
+    pub fn branch_transaction(&self) -> &Option<String> {
+        &self.branch_transaction
     }
 }
 
@@ -306,16 +306,12 @@ pub struct GetInclusionStatesResponse {
 
 impl GetInclusionStatesResponse {
     /// Returns any potential errors
-    pub fn error(&self) -> Option<String> {
-        self.error.clone()
+    pub fn error(&self) -> &Option<String> {
+        &self.error
     }
     /// Returns the states attribute
-    pub fn states(self) -> Option<Vec<bool>> {
-        self.states
-    }
-    /// Returns a specfic index into the states attribute
-    pub fn state(self, index: usize) -> bool {
-        self.states.unwrap_or_default()[index]
+    pub fn states(&self) -> &Option<Vec<bool>> {
+        &self.states
     }
 }
 
@@ -395,12 +391,12 @@ pub struct BroadcastTransactionsResponse {
 
 impl BroadcastTransactionsResponse {
     /// Returns any potential errors
-    pub fn error(&self) -> Option<String> {
-        self.error.clone()
+    pub fn error(&self) -> &Option<String> {
+        &self.error
     }
     /// Returns any potential exceptions
-    pub fn exception(&self) -> Option<String> {
-        self.exception.clone()
+    pub fn exception(&self) -> &Option<String> {
+        &self.exception
     }
 }
 
@@ -439,16 +435,16 @@ impl AttachToTangleResponse {
         }
     }
     /// Returns the id attribute
-    pub fn job_id(&self) -> Option<String> {
-        self.job_id.clone()
+    pub fn job_id(&self) -> &Option<String> {
+        &self.job_id
     }
     /// Returns the error attribute
-    pub fn error(&self) -> Option<String> {
-        self.error.clone()
+    pub fn error(&self) -> &Option<String> {
+        &self.error
     }
     /// Returns the exception attribute
-    pub fn exception(&self) -> Option<String> {
-        self.exception.clone()
+    pub fn exception(&self) -> &Option<String> {
+        &self.exception
     }
     /// Returns the trytes attribute
     pub fn trytes(self) -> Option<Vec<String>> {

@@ -6,8 +6,8 @@ use tokio::prelude::*;
 /// The input trytes for this call are provided by attachToTangle.
 pub fn broadcast_transactions(
     client: &Client,
-    uri: String,
-    trytes: Vec<String>,
+    uri: &str,
+    trytes: &[String],
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "broadcastTransactions",
@@ -15,7 +15,7 @@ pub fn broadcast_transactions(
     });
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

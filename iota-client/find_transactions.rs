@@ -13,7 +13,7 @@ pub struct FindTransactionsOptions {
 /// Finds transactions the match any of the provided parameters
 pub fn find_transactions(
     client: &Client,
-    uri: String,
+    uri: &str,
     options: FindTransactionsOptions,
 ) -> impl Future<Item = Response, Error = Error> {
     let mut body = json!({
@@ -34,7 +34,7 @@ pub fn find_transactions(
     }
 
     client
-        .post(&uri)
+        .post(uri)
         .header("ContentType", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())

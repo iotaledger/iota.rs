@@ -67,13 +67,12 @@ impl Bundle {
         let empty_timestamp = 999_999_999;
 
         for (i, bundle) in self.bundle.iter_mut().enumerate() {
-            let new_sig: String =
-                if signature_fragments.is_empty() || signature_fragments[i].is_empty() {
-                    empty_signature_fragment.clone()
-                } else {
-                    signature_fragments[i].clone()
-                };
-            bundle.signature_fragments = new_sig;
+            let new_sig = if signature_fragments.is_empty() || signature_fragments[i].is_empty() {
+                &empty_signature_fragment
+            } else {
+                &signature_fragments[i]
+            };
+            bundle.signature_fragments = new_sig.clone();
             bundle.trunk_transaction = empty_hash.into();
             bundle.branch_transaction = empty_hash.into();
             bundle.attachment_timestamp = empty_timestamp;
@@ -94,14 +93,13 @@ impl Bundle {
                 let timestamp_trits = bundle.timestamp.trits_with_length(27);
                 let current_index_trits = (bundle.current_index as i64).trits_with_length(27);
                 let last_index_trits = (bundle.last_index as i64).trits_with_length(27);
-                let bundle_essence = (bundle.address.clone().to_string()
+                let bundle_essence = bundle.address.clone()
                     + &value_trits.trytes()?
-                    + &bundle.obsolete_tag.clone()
+                    + &bundle.obsolete_tag
                     + &timestamp_trits.trytes()?
                     + &current_index_trits.trytes()?
-                    + &last_index_trits.trytes()?)
-                    .trits();
-                kerl.absorb(&bundle_essence)?;
+                    + &last_index_trits.trytes()?;
+                kerl.absorb(&bundle_essence.trits())?;
             }
             let mut hash = [0; HASH_LENGTH];
             kerl.squeeze(&mut hash)?;
@@ -109,10 +107,10 @@ impl Bundle {
             for bundle in &mut self.bundle {
                 bundle.bundle = hash_trytes.clone();
             }
-            let normalized_hash = Bundle::normalized_bundle(&hash_trytes.clone());
+            let normalized_hash = Bundle::normalized_bundle(&hash_trytes);
             if normalized_hash.contains(&13) {
                 let increased_tag =
-                    crate::trit_adder::add(&self.bundle[0].obsolete_tag.clone().trits(), &[1]);
+                    crate::trit_adder::add(&self.bundle[0].obsolete_tag.trits(), &[1]);
                 self.bundle[0].obsolete_tag = increased_tag.trytes()?;
             } else {
                 valid_bundle = true;

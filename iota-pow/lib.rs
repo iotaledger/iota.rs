@@ -1,8 +1,11 @@
+use crossbeam::Sender;
 use failure::ensure;
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 
 pub use iota_conversion::{Trinary, Trit, Trytes};
+
+use crossbeam::crossbeam_channel::unbounded;
 
 type Result<T> = ::std::result::Result<T, failure::Error>;
 
@@ -67,10 +70,15 @@ impl Default for PearlDiver {
 }
 
 pub struct PowOptions {
+    /// * `min_weight_magnitude` - Difficulty factor to use for Proof of Work
     pub min_weight_magnitude: usize,
+    /// * `threads` - The number of threads to use
     pub threads: usize,
 }
 
+/// Provides reasonable defaults for PoW.
+/// * `min_weight_magnitude` = 14
+/// * `threads` = number of CPUs
 impl Default for PowOptions {
     fn default() -> Self {
         PowOptions {
@@ -99,17 +107,15 @@ impl PearlDiver {
         *self.running.write().unwrap() = PearlDiverState::Cancelled;
     }
 
-    /// Returns the current status of PoW. This is only useful if you have multiple references
-    /// to a PearlDiver instance through an `Rc` or `Arc`
+    /// Returns the current status of PoW.
     pub fn status(&self) -> PearlDiverState {
         *self.running.read().unwrap()
     }
 
     /// Performs proof of work in place
     ///
-    /// * `input` - Either trits or trytes to be processed
-    /// * `min_weight_magnitude` - Difficulty factor to use when performing PoW
-    /// * `threads` - Optionally specify how many threads to use for PoW. Defaults to number of CPU threads.
+    /// * `input` - Anything implementing the Trinary trait
+    /// * `options` - PoW options
     pub fn search(&mut self, input: impl Trinary, options: PowOptions) -> Result<Vec<Trit>> {
         let transaction_trits = input.trits();
         let min_weight_magnitude = options.min_weight_magnitude;
@@ -130,7 +136,6 @@ impl PearlDiver {
         let mut mid_state_low = [0; CURL_STATE_LENGTH];
         let mut mid_state_high = [0; CURL_STATE_LENGTH];
         initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
-        let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
 
         let actual_thread_count = num_cpus::get();
         let threads = if options.threads == 0 {
@@ -141,6 +146,7 @@ impl PearlDiver {
             options.threads
         };
 
+        let (tx, rx) = unbounded();
         crossbeam::scope(|scope| {
             for _ in 0..threads {
                 increment(
@@ -150,11 +156,13 @@ impl PearlDiver {
                     162 + (CURL_HASH_LENGTH / 9) * 2,
                 );
                 let local_state_arc = Arc::clone(&self.running);
-                let local_transaction_trits_arc = Arc::clone(&transaction_trits_arc);
+                let ref_tx_trits = &transaction_trits;
+                let tx_clone = tx.clone();
                 scope.spawn(move |_| {
                     get_runnable(
                         &local_state_arc,
-                        &local_transaction_trits_arc,
+                        &ref_tx_trits,
+                        tx_clone,
                         min_weight_magnitude,
                         mid_state_low,
                         mid_state_high,
@@ -167,14 +175,15 @@ impl PearlDiver {
             *self.running.read().unwrap() == PearlDiverState::Completed,
             "Something went wrong."
         );
-        let res = transaction_trits_arc.lock().unwrap().clone();
+        let res = rx.recv().unwrap();
         Ok(res)
     }
 }
 
 fn get_runnable(
     state: &Arc<RwLock<PearlDiverState>>,
-    transaction_trits: &Arc<Mutex<Vec<Trit>>>,
+    transaction_trits: &[Trit],
+    tx: Sender<Vec<Trit>>,
     min_weight_magnitude: usize,
     mut mid_state_copy_low: [u64; CURL_STATE_LENGTH],
     mut mid_state_copy_high: [u64; CURL_STATE_LENGTH],
@@ -218,12 +227,11 @@ fn get_runnable(
     }
 
     if mask != 0 && *state.read().unwrap() == PearlDiverState::Running {
-        *state.write().unwrap() = PearlDiverState::Completed;
         let mut out_mask = 1;
         while (out_mask & mask) == 0 {
             out_mask <<= 1;
         }
-        let mut locked_transaction_trits = transaction_trits.lock().unwrap();
+        let mut locked_transaction_trits = transaction_trits.to_vec();
         for i in 0..CURL_HASH_LENGTH {
             locked_transaction_trits[TRANSACTION_LENGTH - CURL_HASH_LENGTH + i] =
                 if (mid_state_copy_low[i] & out_mask) == 0 {
@@ -234,6 +242,8 @@ fn get_runnable(
                     0
                 };
         }
+        tx.send(locked_transaction_trits).unwrap();
+        *state.write().unwrap() = PearlDiverState::Completed;
     }
 }
 

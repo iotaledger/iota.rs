@@ -81,29 +81,37 @@ Things that are done:
 
 Here's an example of how to send a transaction: (Note that we're using the address as the seed in `send_transfer()`...don't do this)
 ```rust
-use iota_lib_rs::prelude::*;
 use iota_api::options::SendTransferOptions;
-use iota_conversion::trytes_converter;
+use iota_lib_rs::prelude::*;
 use iota_model::Transfer;
+use iota_conversion::trytes_converter;
 
 fn main() {
-    let trytes = "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
+    let trytes =
+        "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
     let message = trytes_converter::to_trytes("Hello World").unwrap();
-    let mut transfer = Transfer::default();
-    *transfer.value_mut() = 0;
-    *transfer.address_mut() = trytes.to_string();
-    *transfer.message_mut() = message;
-    let api = iota_api::API::new("https://node01.iotatoken.nl");
-    let options = SendTransferOptions{
-        threads: None,
-        inputs: None,
-        reference: None,
-        remainder_address: None,
-        security: None,
-        hmac_key: None,
+    let transfer = Transfer {
+        address: trytes.to_string(),
+        // Don't need to specify the field 
+        // because the field and variable
+        // have the same name
+        message,
+        // Populate the rest of the fields with default values
+        ..Transfer::default()
     };
-   let tx = api.send_transfers(transfer.into(), trytes.into(), 3, 14, true, options).unwrap();
-   println!("{:?}", tx);
+    let api = iota_api::API::new("https://node01.iotatoken.nl");
+    let tx = api
+        .send_transfers(
+            transfer.into(),
+            &trytes,
+            SendTransferOptions {
+                local_pow: true,
+                threads: 2,
+                ..SendTransferOptions::default()
+            },
+        )
+        .unwrap();
+    println!("{:?}", tx);
 }
 ```
 
