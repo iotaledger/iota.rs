@@ -1,5 +1,5 @@
-use iota_conversion::Trinary;
 use iota_conversion;
+use iota_conversion::Trinary;
 use iota_crypto::{self, Kerl, Sponge};
 use iota_model::{Signature, Transaction};
 

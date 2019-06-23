@@ -1,3 +1,15 @@
+0.3.0
+- Cleanup API
+- Documentation Cleanup
+- Implement trinary conversion for various types in a trait
+
+0.2.0
+- Restructured crate into many sub-crates
+    - Other Iota projects and pick and choose individual sub-crates if they want
+- Cleaned up the API a bit
+    - Provide a prelude that includes useful imports
+    - Make doing PoW easier, you can pass trits or trytes now
+
 0.1.2
 - Create options structs to make API use more ergonomic
 
