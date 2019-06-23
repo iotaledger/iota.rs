@@ -1,6 +1,6 @@
 [package]
 name = "iota-crypto"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
 edition = "2018"
 description = "Crypto used by Iota"
@@ -14,8 +14,8 @@ path = "lib.rs"
 lazy_static = "1.3.0"
 failure = "0.1"
 crunchy = "0.2"
-iota-constants = { version = "0.1.0", path = "../iota-constants" }
-iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
+iota-constants = { version = "0.2.0", path = "../iota-constants" }
+iota-conversion = { version = "0.2.0", path = "../iota-conversion" }
 
 [dev-dependencies]
 criterion = "0.2"

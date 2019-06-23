@@ -1,7 +1,9 @@
 0.3.0
 - Cleanup API
-- Documentation Cleanup
-- Implement trinary conversion for various types in a trait
+- Significantly less cloning of data throughout
+- Cleaner PoW implementation
+- Documentation Improvements
+- Implement trinary conversion for various types using the Trinary trait
 
 0.2.0
 - Restructured crate into many sub-crates
