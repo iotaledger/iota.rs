@@ -16,7 +16,7 @@ const EMPTY_HASH: &str =
 /// Represents a bundle of transactions
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Bundle {
-    bundle: Vec<Transaction>,
+    pub bundle: Vec<Transaction>,
 }
 
 impl fmt::Display for Bundle {
@@ -31,32 +31,10 @@ impl fmt::Display for Bundle {
 
 impl Bundle {
     /// Greates a new bundle using the provided transactions
-    pub fn new<T>(transactions: T) -> Bundle
-    where
-        T: Into<Vec<Transaction>>,
-    {
+    pub fn new(transactions: impl Into<Vec<Transaction>>) -> Bundle {
         Bundle {
             bundle: transactions.into(),
         }
-    }
-
-    /// Provides a view into the transactions inside this bundle
-    pub fn bundle(&self) -> &[Transaction] {
-        &self.bundle
-    }
-
-    /// Provides a mutable view into the transactions inside
-    /// this bundle
-    pub fn bundle_mut(&mut self) -> &mut [Transaction] {
-        &mut self.bundle
-    }
-
-    /// Setter accepting anything that can be turned into the relevant type
-    pub fn set_bundle<T>(&mut self, new_value: T)
-    where
-        T: Into<Vec<Transaction>>,
-    {
-        self.bundle = new_value.into();
     }
 
     /// Adds an entry into the bundle
@@ -70,13 +48,13 @@ impl Bundle {
     ) {
         for i in 0..signature_message_length {
             let mut trx = Transaction::default();
-            trx.set_address(address);
-            trx.set_tag(tag);
-            trx.set_obsolete_tag(tag);
-            trx.set_timestamp(timestamp);
+            trx.address = address.into();
+            trx.tag = tag.into();
+            trx.obsolete_tag = tag.into();
+            trx.timestamp = timestamp;
             match i {
-                0 => trx.set_value(value),
-                _ => trx.set_value(0),
+                0 => trx.value = value,
+                _ => trx.value = 0,
             }
             self.bundle.push(trx);
         }
@@ -95,13 +73,13 @@ impl Bundle {
                 } else {
                     signature_fragments[i].clone()
                 };
-            bundle.set_signature_fragments(new_sig);
-            bundle.set_trunk_transaction(empty_hash);
-            bundle.set_branch_transaction(empty_hash);
-            bundle.set_attachment_timestamp(empty_timestamp);
-            bundle.set_attachment_timestamp_lower_bound(empty_timestamp);
-            bundle.set_attachment_timestamp_upper_bound(empty_timestamp);
-            bundle.set_nonce("9".repeat(27));
+            bundle.signature_fragments = new_sig;
+            bundle.trunk_transaction = empty_hash.into();
+            bundle.branch_transaction = empty_hash.into();
+            bundle.attachment_timestamp = empty_timestamp;
+            bundle.attachment_timestamp_lower_bound = empty_timestamp;
+            bundle.attachment_timestamp_upper_bound = empty_timestamp;
+            bundle.nonce = "9".repeat(27);
         }
     }
 
@@ -112,15 +90,13 @@ impl Bundle {
         while !valid_bundle {
             kerl.reset();
             for bundle in &mut self.bundle {
-                let value_trits = bundle.value().unwrap().trits_with_length(81);
-                let timestamp_trits = bundle.timestamp().unwrap().trits_with_length(27);
-                let current_index_trits =
-                    (bundle.current_index().unwrap_or_default() as i64).trits_with_length(27);
-                let last_index_trits =
-                    (bundle.last_index().unwrap_or_default() as i64).trits_with_length(27);
-                let bundle_essence = (bundle.address().unwrap_or_default().to_string()
+                let value_trits = bundle.value.trits_with_length(81);
+                let timestamp_trits = bundle.timestamp.trits_with_length(27);
+                let current_index_trits = (bundle.current_index as i64).trits_with_length(27);
+                let last_index_trits = (bundle.last_index as i64).trits_with_length(27);
+                let bundle_essence = (bundle.address.clone().to_string()
                     + &value_trits.trytes()?
-                    + &bundle.obsolete_tag().unwrap_or_default()
+                    + &bundle.obsolete_tag.clone()
                     + &timestamp_trits.trytes()?
                     + &current_index_trits.trytes()?
                     + &last_index_trits.trytes()?)
@@ -131,15 +107,13 @@ impl Bundle {
             kerl.squeeze(&mut hash)?;
             let hash_trytes = hash.trytes()?;
             for bundle in &mut self.bundle {
-                bundle.set_bundle(hash_trytes.clone());
+                bundle.bundle = hash_trytes.clone();
             }
             let normalized_hash = Bundle::normalized_bundle(&hash_trytes.clone());
             if normalized_hash.contains(&13) {
-                let increased_tag = crate::trit_adder::add(
-                    &self.bundle[0].obsolete_tag().unwrap_or_default().trits(),
-                    &[1],
-                );
-                self.bundle[0].set_obsolete_tag(increased_tag.trytes()?);
+                let increased_tag =
+                    crate::trit_adder::add(&self.bundle[0].obsolete_tag.clone().trits(), &[1]);
+                self.bundle[0].obsolete_tag = increased_tag.trytes()?;
             } else {
                 valid_bundle = true;
             }

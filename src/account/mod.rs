@@ -59,14 +59,14 @@ impl Account {
 
         for target in recipients {
             if !iota_validation::is_trytes_with_length(
-                target.address(),
+                &target.address,
                 iota_constants::HASH_TRYTES_SIZE + iota_constants::ADDRESS_CHECKSUM_TRYTES_SIZE,
             ) {
                 return Err(format_err!(""));
             }
         }
 
-        let transfer_sum: i64 = recipients.iter().fold(0, |sum, val| sum + *val.value());
+        let transfer_sum: i64 = recipients.iter().fold(0, |sum, val| sum + val.value);
         let current_time = Instant::now();
 
         if transfer_sum > 0 {}

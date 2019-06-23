@@ -14,8 +14,6 @@ const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
 
 const RADIX: i32 = 3;
-const MAX_TRIT_VALUE: i32 = (RADIX - 1) / 2;
-const MIN_TRIT_VALUE: i32 = -MAX_TRIT_VALUE;
 
 const BYTE_LENGTH: usize = 48;
 const INT_LENGTH: usize = BYTE_LENGTH / 4;
@@ -38,7 +36,6 @@ const HALF_3: [u32; 12] = [
 /// The Kerl struct is a Sponge that uses the Keccak
 /// hashing algorithm.
 ///```
-/// extern crate iota_crypto;
 /// use iota_crypto::{Sponge, Kerl};
 /// // Create an array of 243 1s
 /// let input = [1; 243];

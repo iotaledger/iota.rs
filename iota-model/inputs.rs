@@ -34,18 +34,12 @@ impl Inputs {
     }
 
     /// Setter accepting anything that can be turned into the relevant type
-    pub fn set_inputs_list<T>(&mut self, new_value: T)
-    where
-        T: Into<Vec<Input>>,
-    {
+    pub fn set_inputs_list(&mut self, new_value: impl Into<Vec<Input>>) {
         self.inputs_list = new_value.into();
     }
 
     /// Provides a view of the inputs address
-    pub fn add<T>(&mut self, new_value: T)
-    where
-        T: Into<Input>,
-    {
+    pub fn add(&mut self, new_value: impl Into<Input>) {
         self.inputs_list.push(new_value.into());
     }
 
@@ -60,10 +54,7 @@ impl Inputs {
     }
 
     /// Setter accepting anything that can be turned into the relevant type
-    pub fn set_total_balance<T>(&mut self, new_value: T)
-    where
-        T: Into<i64>,
-    {
+    pub fn set_total_balance(&mut self, new_value: impl Into<i64>) {
         self.total_balance = new_value.into();
     }
 }

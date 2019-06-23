@@ -32,24 +32,21 @@ impl HMAC {
     pub fn add_hmac(&self, bundle: &mut Bundle) -> Result<()> {
         let mut curl = Curl::new(HashMode::CURLP27)?;
         let key = self.key.clone();
-        for b in bundle.bundle_mut().iter_mut() {
-            if b.value().unwrap_or_default() > 0 {
-                let bundle_hash_trits = b.bundle().unwrap_or_default().trits();
+        for b in bundle.bundle.iter_mut() {
+            if b.value > 0 {
+                let bundle_hash_trits = b.bundle.trits();
                 let mut hmac = [0; 243];
                 curl.reset();
                 curl.absorb(&key)?;
                 curl.absorb(&bundle_hash_trits)?;
                 curl.squeeze(&mut hmac)?;
                 let hmac_trytes = hmac.trytes()?;
-                *b.signature_fragments_mut() = Some(
-                    hmac_trytes
-                        + &b.signature_fragments()
-                            .unwrap_or_default()
-                            .chars()
-                            .skip(81)
-                            .take(2106)
-                            .collect::<String>(),
-                );
+                b.signature_fragments = hmac_trytes
+                    + &b.signature_fragments
+                        .chars()
+                        .skip(81)
+                        .take(2106)
+                        .collect::<String>();
             }
         }
         Ok(())

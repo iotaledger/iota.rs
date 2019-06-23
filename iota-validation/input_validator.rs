@@ -76,13 +76,13 @@ pub fn is_array_of_hashes(hashes: &[String]) -> bool {
 
 /// Validates a transfer
 pub fn is_valid_transfer(transfer: &Transfer) -> bool {
-    if !is_address(transfer.address()) {
+    if !is_address(&transfer.address) {
         return false;
     }
-    if !is_trytes(transfer.message()) {
+    if !is_trytes(&transfer.message) {
         return false;
     }
-    if !is_trytes(&transfer.tag().unwrap_or_default()) {
+    if !is_trytes(&transfer.tag) {
         return false;
     }
     true
@@ -109,42 +109,42 @@ pub fn is_slice_of_transactions(bundle: &[Transaction]) -> bool {
 
     let mut valid = true;
     for tx in bundle {
-        if tx.hash() == None {
+        if tx.hash == "" {
             return false;
         }
-        valid &= is_hash(&tx.hash().unwrap_or_default());
-        if tx.signature_fragments() == None {
+        valid &= is_hash(&tx.hash);
+        if tx.signature_fragments == "" {
             return false;
         }
-        valid &= is_trytes(&tx.signature_fragments().unwrap_or_default());
-        if tx.address() == None {
+        valid &= is_trytes(&tx.signature_fragments);
+        if tx.address == "" {
             return false;
         }
-        valid &= is_hash(&tx.address().unwrap_or_default());
-        if tx.tag() == None {
+        valid &= is_hash(&tx.address);
+        if tx.tag == "" {
             return false;
         }
-        valid &= is_trytes(&tx.tag().unwrap_or_default());
-        if tx.obsolete_tag() == None {
+        valid &= is_trytes(&tx.tag);
+        if tx.obsolete_tag == "" {
             return false;
         }
-        valid &= is_trytes(&tx.obsolete_tag().unwrap_or_default());
-        if tx.bundle() == None {
+        valid &= is_trytes(&tx.obsolete_tag);
+        if tx.bundle == "" {
             return false;
         }
-        valid &= is_hash(&tx.bundle().unwrap_or_default());
-        if tx.trunk_transaction() == None {
+        valid &= is_hash(&tx.bundle);
+        if tx.trunk_transaction == "" {
             return false;
         }
-        valid &= is_hash(&tx.trunk_transaction().unwrap_or_default());
-        if tx.branch_transaction() == None {
+        valid &= is_hash(&tx.trunk_transaction);
+        if tx.branch_transaction == "" {
             return false;
         }
-        valid &= is_hash(&tx.branch_transaction().unwrap_or_default());
-        if tx.nonce() == None {
+        valid &= is_hash(&tx.branch_transaction);
+        if tx.nonce == "" {
             return false;
         }
-        valid &= is_trytes(&tx.nonce().unwrap_or_default());
+        valid &= is_trytes(&tx.nonce);
         if !valid {
             return false;
         }
@@ -236,25 +236,25 @@ mod tests {
     #[test]
     fn test_is_valid_transfer() {
         let mut t = Transfer::default();
-        t.set_address(TEST_ADDRESS_WITH_CHECKSUM.to_string());
-        t.set_value(0);
-        t.set_message(TEST_MESSAGE.to_string());
-        t.set_tag(TEST_TAG.to_string());
+        t.address = TEST_ADDRESS_WITH_CHECKSUM.to_string();
+        t.value = 0;
+        t.message = TEST_MESSAGE.to_string();
+        t.tag = TEST_TAG.to_string();
         assert!(is_valid_transfer(&t));
     }
 
     #[test]
     fn test_is_transfers_collection_valid() {
         let mut t = Transfer::default();
-        t.set_address(TEST_ADDRESS_WITH_CHECKSUM.to_string());
-        t.set_value(0);
-        t.set_message(TEST_MESSAGE.to_string());
-        t.set_tag(TEST_TAG.to_string());
+        t.address = TEST_ADDRESS_WITH_CHECKSUM.to_string();
+        t.value = 0;
+        t.message = TEST_MESSAGE.to_string();
+        t.tag = TEST_TAG.to_string();
 
         let mut t2 = Transfer::default();
-        t2.set_address(TEST_ADDRESS_WITH_CHECKSUM.to_string());
-        t2.set_value(0);
-        t2.set_message("".to_string());
+        t2.address = TEST_ADDRESS_WITH_CHECKSUM.to_string();
+        t2.value = 0;
+        t2.message = "".to_string();
 
         let transfers = vec![t, t2];
         assert!(is_transfers_collection_valid(&transfers));

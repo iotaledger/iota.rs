@@ -10,6 +10,8 @@ use iota_client::*;
 use iota_model::*;
 use options::*;
 
+use std::convert::TryInto;
+
 /// Generates a new address
 ///
 /// * `seed` - Seed used to generate new address
@@ -147,7 +149,7 @@ impl API {
             threads: options.threads,
             trunk_transaction: to_approve.trunk_transaction().unwrap(),
             branch_transaction: to_approve.branch_transaction().unwrap(),
-            trytes: trytes,
+            trytes,
             ..AttachOptions::default()
         };
         let trytes_list = if options.local_pow {
@@ -231,7 +233,10 @@ impl API {
         for (i, address) in addresses.iter().enumerate() {
             let balance: i64 = balances[i].clone().parse()?;
             if balance > 0 {
-                let new_entry = Input::new(address.clone(), balance, start + i, security);
+                let new_entry = Input{address: address.clone(),
+                balance,
+                key_index: start + i,
+                security};
                 inputs.add(new_entry);
                 *inputs.total_balance_mut() += balance;
                 if let Some(threshold) = threshold {
@@ -269,17 +274,17 @@ impl API {
             add_hmac = true;
         }
         for transfer in &mut transfers {
-            if add_hmac && *transfer.value() > 0 {
-                *transfer.message_mut() = "9".repeat(243) + transfer.message();
+            if add_hmac && transfer.value > 0 {
+                transfer.message = "9".repeat(243) + &transfer.message;
                 added_hmac = true;
             }
-            if transfer.address().len() == 90 {
+            if transfer.address.len() == 90 {
                 ensure!(
-                    iota_signing::checksum::is_valid_checksum(transfer.address())?,
+                    iota_signing::checksum::is_valid_checksum(&transfer.address)?,
                     "Invalid address."
                 );
             }
-            *transfer.address_mut() = iota_signing::checksum::remove_checksum(transfer.address());
+            transfer.address = iota_signing::checksum::remove_checksum(&transfer.address);
         }
         ensure!(
             iota_validation::is_transfers_collection_valid(&transfers),
@@ -293,11 +298,11 @@ impl API {
 
         for transfer in transfers {
             let mut signature_message_length = 1;
-            if transfer.message().len() > iota_constants::MESSAGE_LENGTH {
-                signature_message_length += (transfer.message().len() as f64
+            if transfer.message.len() > iota_constants::MESSAGE_LENGTH {
+                signature_message_length += (transfer.message.len() as f64
                     / iota_constants::MESSAGE_LENGTH as f64)
                     .floor() as usize;
-                let mut msg_copy = transfer.message().to_string();
+                let mut msg_copy = transfer.message.to_string();
                 while !msg_copy.is_empty() {
                     let mut fragment = msg_copy
                         .chars()
@@ -315,24 +320,24 @@ impl API {
                     signature_fragments.push(fragment);
                 }
             } else {
-                let mut fragment = if !transfer.message().is_empty() {
-                    transfer.message().chars().take(2187).collect()
+                let mut fragment = if !transfer.message.is_empty() {
+                    transfer.message.chars().take(2187).collect()
                 } else {
                     String::new()
                 };
                 iota_model::right_pad_string(&mut fragment, iota_constants::MESSAGE_LENGTH, '9');
                 signature_fragments.push(fragment);
             }
-            tag = transfer.tag().unwrap_or_default();
+            tag = transfer.tag;
             iota_model::right_pad_string(&mut tag, iota_constants::TAG_LENGTH, '9');
             bundle.add_entry(
                 signature_message_length,
-                transfer.address(),
-                *transfer.value(),
+                &transfer.address,
+                transfer.value,
                 &tag,
                 Utc::now().timestamp(),
             );
-            total_value += *transfer.value();
+            total_value += transfer.value;
         }
 
         if total_value > 0 {
@@ -341,7 +346,7 @@ impl API {
                     let input_addresses: Vec<String> = inputs
                         .inputs_list()
                         .iter()
-                        .map(|input| input.address().to_string())
+                        .map(|input| input.address.to_string())
                         .collect();
                     let resp = iota_client::get_balances(
                         self.uri.clone(),
@@ -357,7 +362,7 @@ impl API {
                         if b > 0 {
                             *confirmed_inputs.total_balance_mut() += b;
                             let mut confirmed_input = inputs.inputs_list()[i].clone();
-                            confirmed_input.set_balance(b);
+                            confirmed_input.balance = b;
                             confirmed_inputs.add(confirmed_input);
                             if confirmed_inputs.total_balance() >= total_value {
                                 break;
@@ -411,8 +416,8 @@ impl API {
             bundle.finalize()?;
             bundle.add_trytes(&signature_fragments);
             let mut bundle_trytes: Vec<String> = Vec::new();
-            for b in bundle.bundle().iter().rev() {
-                bundle_trytes.push(b.to_trytes()?);
+            for b in bundle.bundle.iter().rev() {
+                bundle_trytes.push(b.try_into()?);
             }
             Ok(bundle_trytes)
         }
@@ -479,22 +484,22 @@ impl API {
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
         let trytes = &tryte_list[0];
         let tx: Transaction = trytes.parse()?;
-        let tx_bundle = tx.bundle().unwrap_or_default();
+        let tx_bundle = &tx.bundle;
         ensure!(
-            tx.current_index().unwrap_or_default() == 0,
+            tx.current_index == 0,
             "Invalid tail transaction supplied."
         );
         let bundle_hash = bundle_hash.into().unwrap_or_else(|| tx_bundle.clone());
-        if bundle_hash != tx_bundle {
+        if bundle_hash != *tx_bundle {
             return Ok(bundle);
         }
 
-        if tx.last_index().unwrap_or_default() == 0 && tx.current_index().unwrap_or_default() == 0 {
+        if tx.last_index == 0 && tx.current_index == 0 {
             return Ok(vec![tx]);
         }
 
-        let trunk_tx = tx.trunk_transaction().unwrap_or_default();
-        bundle.push(tx);
+        let trunk_tx = &tx.trunk_transaction;
+        bundle.push(tx.clone());
         self.traverse_bundle(&trunk_tx, Some(bundle_hash), bundle)
     }
 
@@ -523,13 +528,13 @@ impl API {
     ) -> Result<Vec<String>> {
         let mut total_transfer_value = inputs.total_balance();
         for input in inputs.inputs_list() {
-            let this_balance = input.balance();
+            let this_balance = input.balance;
             let to_subtract = 0 - this_balance;
             let timestamp = Utc::now().timestamp();
-            let address = iota_signing::checksum::remove_checksum(input.address());
+            let address = iota_signing::checksum::remove_checksum(&input.address);
 
             bundle.add_entry(
-                input.security(),
+                input.security,
                 &address,
                 to_subtract,
                 &options.tag,
@@ -553,7 +558,7 @@ impl API {
                 } else if remainder > 0 {
                     let mut start_index = 0;
                     for input in inputs.inputs_list() {
-                        start_index = cmp::max(input.key_index(), start_index);
+                        start_index = cmp::max(input.key_index, start_index);
                     }
                     start_index += 1;
                     let new_address = self.get_new_address(
@@ -610,19 +615,19 @@ impl API {
     ) -> Result<Vec<String>> {
         bundle.finalize()?;
         bundle.add_trytes(&signature_fragments);
-        for i in 0..bundle.bundle().len() {
-            if bundle.bundle()[i].value().unwrap_or_default() < 0 {
-                let this_address = bundle.bundle()[i].address().unwrap_or_default();
+        for i in 0..bundle.bundle.len() {
+            if bundle.bundle[i].value < 0 {
+                let this_address = bundle.bundle[i].address.clone();
                 let mut key_index = 0;
                 let mut key_security = 0;
                 for input in inputs.inputs_list() {
-                    if input.address() == this_address {
-                        key_index = input.key_index();
-                        key_security = input.security();
+                    if input.address == *this_address {
+                        key_index = input.key_index;
+                        key_security = input.security;
                         break;
                     }
                 }
-                let bundle_hash = bundle.bundle()[i].bundle().unwrap_or_default();
+                let bundle_hash = &bundle.bundle[i].bundle;
                 let key = iota_signing::key(&seed.trits(), key_index, key_security)?;
                 let normalized_bundle_hash = Bundle::normalized_bundle(&bundle_hash).to_vec();
                 let mut normalized_bundle_fragments = [[0; 27]; 3];
@@ -633,11 +638,11 @@ impl API {
                 let first_bundle_fragment = normalized_bundle_fragments[0];
                 let first_signed_fragment =
                     iota_signing::signature_fragment(&first_bundle_fragment, &first_fragment)?;
-                *bundle.bundle_mut()[i].signature_fragments_mut() =
-                    Some(first_signed_fragment.trytes()?);
+                bundle.bundle[i].signature_fragments =
+                    first_signed_fragment.trytes()?;
                 for j in 1..key_security {
-                    if bundle.bundle()[i + j].address().unwrap_or_default() == this_address
-                        && bundle.bundle()[i + j].value().unwrap_or_default() == 0
+                    if bundle.bundle[i + j].address == *this_address
+                        && bundle.bundle[i + j].value == 0
                     {
                         let next_fragment = key[6561 * j..(j + 1) * 6561].to_vec();
                         let next_bundle_fragment = normalized_bundle_fragments[j];
@@ -645,8 +650,8 @@ impl API {
                             &next_bundle_fragment,
                             &next_fragment,
                         )?;
-                        *bundle.bundle_mut()[i + j].signature_fragments_mut() =
-                            Some(next_signed_fragment.trytes()?);
+                        bundle.bundle[i + j].signature_fragments =
+                            next_signed_fragment.trytes()?;
                     }
                 }
             }
@@ -656,8 +661,9 @@ impl API {
             hmac.add_hmac(bundle)?;
         }
         let mut bundle_trytes: Vec<String> = Vec::new();
-        for tx in bundle.bundle().iter().rev() {
-            bundle_trytes.push(tx.to_trytes()?);
+        for tx in bundle.bundle.iter().rev() {
+            let tx_trytes: String = tx.try_into()?;
+            bundle_trytes.push(tx_trytes);
         }
         Ok(bundle_trytes)
     }

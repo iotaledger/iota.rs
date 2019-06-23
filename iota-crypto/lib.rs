@@ -58,7 +58,6 @@ where
 
 /// Allows you to hash `trits` into `out` using the `mode` of your choosing
 ///```rust
-/// extern crate iota_crypto;
 /// use iota_crypto::{self, HashMode};
 ///
 /// let input = [0; 243];
@@ -66,6 +65,11 @@ where
 /// iota_crypto::hash_with_mode(HashMode::Kerl, &input, &mut out);
 ///```
 pub fn hash_with_mode(mode: HashMode, trits: &[i8], out: &mut [i8]) -> Result<()> {
+    ensure!(
+        out.len() % 243 == 0,
+        "Output slice length isn't a multiple of 243: {}",
+        out.len()
+    );
     match mode {
         HashMode::CURLP27 | HashMode::CURLP81 => {
             let mut curl = Curl::new(mode).unwrap();

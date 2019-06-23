@@ -6,20 +6,20 @@ lazy_static! {
     pub static ref BYTE_TO_TRITS_MAPPINGS: [[i8; TRITS_PER_BYTE]; 243] = {
         let mut trits: [i8; TRITS_PER_BYTE] = [0; TRITS_PER_BYTE];
         let mut tmp = [[0; TRITS_PER_BYTE]; 243];
-        for tmp_entry in tmp.iter_mut().take(243) {
+        tmp.iter_mut().for_each(|tmp_entry| {
             tmp_entry.copy_from_slice(&trits[0..TRITS_PER_BYTE]);
             increment(&mut trits, TRITS_PER_BYTE);
-        }
+        });
         tmp
     };
     /// Provides a trytes to trits mapping
     pub static ref TRYTE_TO_TRITS_MAPPINGS: [[i8; TRITS_PER_TRYTE]; 27] = {
         let mut trits: [i8; TRITS_PER_BYTE] = [0; TRITS_PER_BYTE];
         let mut tmp = [[0; TRITS_PER_TRYTE]; 27];
-        for tmp_entry in tmp.iter_mut().take(27) {
+        tmp.iter_mut().for_each(|tmp_entry| {
             tmp_entry.copy_from_slice(&trits[0..TRITS_PER_TRYTE]);
             increment(&mut trits, TRITS_PER_TRYTE);
-        }
+        });
         tmp
     };
 }
@@ -47,9 +47,7 @@ impl Trinary for i64 {
             trits.push(remainder);
         }
         if *self < 0 {
-            for trit in &mut trits {
-                *trit = -*trit;
-            }
+            trits.iter_mut().for_each(|trit| *trit = -*trit);
         }
         trits
     }
@@ -174,7 +172,7 @@ fn trytes(trits: &[Trit]) -> Result<Trytes> {
 pub fn trits_with_length(trits: &[Trit], length: usize) -> Vec<Trit> {
     if trits.len() < length {
         let mut result = vec![0; length];
-        result[..trits.len()].copy_from_slice(&trits[..]);
+        result[..trits.len()].copy_from_slice(&trits);
         result
     } else {
         trits[0..length].to_vec()

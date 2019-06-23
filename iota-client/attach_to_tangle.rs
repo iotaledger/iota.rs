@@ -12,6 +12,8 @@ use crate::Result;
 
 use super::responses::AttachToTangleResponse;
 
+use std::convert::TryInto;
+
 lazy_static! {
     /// This is a computed constant that represent the maximum allowed timestamp value
     pub static ref MAX_TIMESTAMP_VALUE: i64 = (3_i64.pow(27) - 1) / 2;
@@ -100,23 +102,24 @@ pub fn attach_to_tangle_local(options: AttachOptions) -> Result<AttachToTangleRe
         } else {
             options.trunk_transaction.clone()
         };
-        tx.set_trunk_transaction(new_trunk_tx);
+        tx.trunk_transaction = new_trunk_tx;
 
         let new_branch_tx = if previous_transaction.is_some() {
             options.trunk_transaction.clone()
         } else {
             options.branch_transaction.clone()
         };
-        tx.set_branch_transaction(new_branch_tx);
+        tx.branch_transaction = new_branch_tx;
 
-        let tag = tx.tag().unwrap_or_default();
-        if tag.is_empty() || tag == "9".repeat(27) {
-            *tx.tag_mut() = tx.obsolete_tag();
+        let tag = &tx.tag;
+        if tag.is_empty() || *tag == "9".repeat(27) {
+            tx.tag = tx.obsolete_tag.clone();
         }
-        tx.set_attachment_timestamp(Utc::now().timestamp_millis());
-        tx.set_attachment_timestamp_lower_bound(0);
-        tx.set_attachment_timestamp_upper_bound(*MAX_TIMESTAMP_VALUE);
-        let tx_trits = tx.to_trytes()?.trits();
+        tx.attachment_timestamp = Utc::now().timestamp_millis();
+        tx.attachment_timestamp_lower_bound = 0;
+        tx.attachment_timestamp_upper_bound = *MAX_TIMESTAMP_VALUE;
+        let tx_trytes: String = (&tx).try_into()?;
+        let tx_trits = tx_trytes.trits();
         let result_trits = PearlDiver::default().search(
             tx_trits,
             PowOptions {
@@ -125,7 +128,7 @@ pub fn attach_to_tangle_local(options: AttachOptions) -> Result<AttachToTangleRe
             },
         )?;
         result_trytes.push(result_trits.trytes()?);
-        previous_transaction = result_trytes[i].parse::<Transaction>()?.hash();
+        previous_transaction = Some(result_trytes[i].parse::<Transaction>()?.hash);
     }
     result_trytes.reverse();
     Ok(AttachToTangleResponse::new(
