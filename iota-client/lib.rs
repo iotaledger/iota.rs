@@ -32,7 +32,7 @@ mod get_transactions_to_approve;
 mod get_trytes;
 mod interrupt_attaching_to_tangle;
 mod remove_neighbors;
-/// IRI responses are parsed into typed structs contained in this module
+/// IRI responses are parsed into structs contained in this module
 pub mod responses;
 mod store_transactions;
 mod were_addresses_spent_from;
@@ -57,6 +57,11 @@ lazy_static! {
 /// Add a list of neighbors to your node. It should be noted that
 /// this is only temporary, and the added neighbors will be removed
 /// from your set of neighbors after you relaunch IRI.
+/// ```
+/// use iota_client;
+/// let resp = iota_client::add_neighbors("https://node01.iotatoken.nl", &vec!["".into()]).unwrap();
+/// println!("{:?}", resp);
+/// ```
 pub fn add_neighbors(uri: &str, uris: &[String]) -> Result<AddNeighborsResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
