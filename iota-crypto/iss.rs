@@ -372,36 +372,36 @@ fn get_merkle_root_helper(
 
 #[cfg(test)]
 mod tests {
-    use iota_conversion;
 
     use super::*;
 
+    use iota_conversion::Trinary;
     const SEED: &str =
         "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN";
     const MESSAGE: &str = "JCRNMXX9DIEVJJG9VW9QDUMVDGDVHANQDTCPPOPHLTBUBXULSIALRBVUINDPNGUFZLKDPOK9WBJMYCXF9MFQN9ZKMROOXHULIDDXRNWMDENBWJWVVA9XPNHQUVDFSMQ9ETWKWGLOLYPWW9GQPVNDYJIRDBWVCBUHUEGELSTLEXGAMMQAHSUEABKUSFOVGYRQBXJMORXIDTIPENPAFIUV9DOGZCAEPRJQOISRZDZBWWQQJVQDS9YGCMNADNVSUTXXAONPHBFCMWSVFYYXXWDZXFP9SZGLRCHHGKLNAQPMAXHFUUSQEKDAPH9GFVHMYDITCTFSIJEZFADOJVDOEXOTDDPZYLKKDHCGPXYMGRKAGOEQYHTCTGKMZOKMZJLCQOYE9KFVRQLXDPBALUSEQSQDFPPUYALCDYWSHANNQYKIMAZMKQQ9XVCSJHAWXLY9IIREZTSOFRMRGKDQPIEMDXTBDTY9DKOAIUEGNLUSRFZYPRNUOHFGDYIWFVKIUNYBGBHICRQTLDQQUTJX9DDSQANVKMCDZ9VEQBCHHSATVFIDYR9XUSDJHQDRBVK9JUUZVWGCCWVXAC9ZIOKBWOKCTCJVXIJFBSTLNZCPJMAKDPYLTHMOKLFDNONJLLDBDXNFKPKUBKDU9QFSXGVXS9PEDBDDBGFESSKCWUWMTOGHDLOPRILYYPSAQVTSQYLIPK9ATVMMYSTASHEZEFWBUNR9XKGCHR9MB";
 
     #[test]
     fn address_generation_curl() {
-        let seed_trits = iota_conversion::trits_from_string(SEED);
+        let seed_trits = SEED.trits();
         let mut subseed = subseed(HashMode::CURLP81, &seed_trits, 0).unwrap();
         let key = key(HashMode::CURLP81, &mut subseed, 2).unwrap();
         let mut digest = digests(HashMode::CURLP81, &key).unwrap();
         let address = address(HashMode::CURLP81, &mut digest).unwrap();
         assert_eq!(
-            &iota_conversion::trits_to_string(&address).unwrap(),
+            &address.trytes().unwrap(),
             "D9XCNSCCAJGLWSQOQAQNFWANPYKYMCQ9VCOMROLDVLONPPLDFVPIZNAPVZLQMPFYJPAHUKIAEKNCQIYJZ"
         );
     }
 
     #[test]
     fn address_generation_kerl() {
-        let seed_trits = iota_conversion::trits_from_string(SEED);
+        let seed_trits = SEED.trits();
         let mut subseed = subseed(HashMode::Kerl, &seed_trits, 0).unwrap();
         let key = key(HashMode::Kerl, &mut subseed, 2).unwrap();
         let mut digest = digests(HashMode::Kerl, &key).unwrap();
         let address = address(HashMode::Kerl, &mut digest).unwrap();
         assert_eq!(
-            &iota_conversion::trits_to_string(&address).unwrap(),
+            &address.trytes().unwrap(),
             "MDWYEJJHJDIUVPKDY9EACGDJUOP9TLYDWETUBOYCBLYXYYYJYUXYUTCTPTDGJYFKMQMCNZDQPTBE9AFIW"
         );
     }
@@ -410,12 +410,12 @@ mod tests {
     fn resolve_signature_curl() {
         let modes = [HashMode::CURLP81, HashMode::Kerl];
         for &mode in modes.iter() {
-            let seed_trits = iota_conversion::trits_from_string(SEED);
+            let seed_trits = SEED.trits();
             let mut subseed = subseed(mode, &seed_trits, 10).unwrap();
             let key = key(mode, &mut subseed, 1).unwrap();
 
             let mut kerl = Kerl::default();
-            let message_trits = iota_conversion::trits_from_string(MESSAGE);
+            let message_trits = MESSAGE.trits();
             kerl.absorb(&message_trits).unwrap();
             let mut message_hash = [0; HASH_LENGTH];
             kerl.squeeze(&mut message_hash).unwrap();

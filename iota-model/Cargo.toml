@@ -14,5 +14,7 @@ path = "lib.rs"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 failure = "0.1"
-iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
 iota-crypto = { version = "0.1.0", path = "../iota-crypto" }
+iota-constants = { version = "0.1.0", path = "../iota-constants" }
+iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
+lazy_static = "1.3"

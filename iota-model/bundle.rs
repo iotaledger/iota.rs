@@ -3,10 +3,10 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-use iota_conversion;
 use iota_crypto::{Kerl, Sponge, HASH_LENGTH};
 
 use crate::Result;
+use iota_conversion::Trinary;
 
 use super::transaction::Transaction;
 
@@ -112,42 +112,34 @@ impl Bundle {
         while !valid_bundle {
             kerl.reset();
             for bundle in &mut self.bundle {
-                let value_trits = iota_conversion::trits_with_length(bundle.value().unwrap(), 81);
-                let timestamp_trits =
-                    iota_conversion::trits_with_length(bundle.timestamp().unwrap(), 27);
-                let current_index_trits = iota_conversion::trits_with_length(
-                    bundle.current_index().unwrap_or_default() as i64,
-                    27,
-                );
-                let last_index_trits = iota_conversion::trits_with_length(
-                    bundle.last_index().unwrap_or_default() as i64,
-                    27,
-                );
-                let bundle_essence = iota_conversion::trits_from_string(
-                    &(bundle.address().unwrap_or_default().to_string()
-                        + &iota_conversion::trytes(&value_trits)
-                        + &bundle.obsolete_tag().unwrap_or_default()
-                        + &iota_conversion::trytes(&timestamp_trits)
-                        + &iota_conversion::trytes(&current_index_trits)
-                        + &iota_conversion::trytes(&last_index_trits)),
-                );
+                let value_trits = bundle.value().unwrap().trits_with_length(81);
+                let timestamp_trits = bundle.timestamp().unwrap().trits_with_length(27);
+                let current_index_trits =
+                    (bundle.current_index().unwrap_or_default() as i64).trits_with_length(27);
+                let last_index_trits =
+                    (bundle.last_index().unwrap_or_default() as i64).trits_with_length(27);
+                let bundle_essence = (bundle.address().unwrap_or_default().to_string()
+                    + &value_trits.trytes()?
+                    + &bundle.obsolete_tag().unwrap_or_default()
+                    + &timestamp_trits.trytes()?
+                    + &current_index_trits.trytes()?
+                    + &last_index_trits.trytes()?)
+                    .trits();
                 kerl.absorb(&bundle_essence)?;
             }
             let mut hash = [0; HASH_LENGTH];
             kerl.squeeze(&mut hash)?;
-            let hash_trytes = iota_conversion::trytes(&hash);
+            let hash_trytes = hash.trytes()?;
             for bundle in &mut self.bundle {
                 bundle.set_bundle(hash_trytes.clone());
             }
             let normalized_hash = Bundle::normalized_bundle(&hash_trytes.clone());
             if normalized_hash.contains(&13) {
                 let increased_tag = crate::trit_adder::add(
-                    &iota_conversion::trits_from_string(
-                        &self.bundle[0].obsolete_tag().unwrap_or_default(),
-                    ),
+                    &self.bundle[0].obsolete_tag().unwrap_or_default().trits(),
                     &[1],
                 );
-                self.bundle[0].set_obsolete_tag(iota_conversion::trytes(&increased_tag));
+                self.bundle[0].set_obsolete_tag(increased_tag.trytes()?);
             } else {
                 valid_bundle = true;
             }
@@ -163,8 +155,7 @@ impl Bundle {
             for j in 0..27 {
                 let mut t = String::new();
                 t.push(bundle_hash.chars().nth(i * 27 + j).unwrap());
-                normalized_bundle[i * 27 + j] =
-                    iota_conversion::value(&iota_conversion::trits_from_string(&t));
+                normalized_bundle[i * 27 + j] = iota_conversion::value(&t.trits());
                 sum += i64::from(normalized_bundle[i * 27 + j]);
             }
             if sum >= 0 {

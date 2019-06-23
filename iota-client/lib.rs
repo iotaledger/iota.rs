@@ -18,9 +18,6 @@ use tokio::runtime::Runtime;
 
 use iota_validation::input_validator;
 
-pub use crate::attach_to_tangle::attach_to_tangle_local;
-use crate::responses::*;
-
 mod add_neighbors;
 mod attach_to_tangle;
 mod broadcast_transactions;
@@ -39,6 +36,14 @@ mod remove_neighbors;
 pub mod responses;
 mod store_transactions;
 mod were_addresses_spent_from;
+
+use crate::responses::*;
+
+pub use attach_to_tangle::{attach_to_tangle_local, AttachOptions};
+pub use find_transactions::FindTransactionsOptions;
+pub use get_balances::GetBalancesOptions;
+pub use get_inclusion_states::GetInclusionStatesOptions;
+pub use get_transactions_to_approve::GetTransactionsToApproveOptions;
 
 type Result<T> = ::std::result::Result<T, failure::Error>;
 
@@ -68,39 +73,26 @@ pub fn add_neighbors(uri: String, uris: Vec<String>) -> Result<AddNeighborsRespo
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
-pub fn attach_to_tangle(
-    uri: String,
-    trunk_transaction: String,
-    branch_transaction: String,
-    min_weight_magnitude: usize,
-    trytes: Vec<String>,
-) -> Result<AttachToTangleResponse> {
+pub fn attach_to_tangle(uri: String, options: AttachOptions) -> Result<AttachToTangleResponse> {
     ensure!(
-        input_validator::is_hash(&trunk_transaction),
+        input_validator::is_hash(&options.trunk_transaction),
         "Provided trunk transaction is not valid: {:?}",
-        trunk_transaction
+        options.trunk_transaction
     );
     ensure!(
-        input_validator::is_hash(&branch_transaction),
+        input_validator::is_hash(&options.branch_transaction),
         "Provided branch transaction is not valid: {:?}",
-        branch_transaction
+        options.branch_transaction
     );
     ensure!(
-        input_validator::is_array_of_trytes(&trytes),
+        input_validator::is_array_of_trytes(&options.trytes),
         "Provided trytes are not valid: {:?}",
-        trytes
+        options.trytes
     );
 
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
-        .block_on(attach_to_tangle::attach_to_tangle(
-            &*CLIENT,
-            uri,
-            trunk_transaction,
-            branch_transaction,
-            min_weight_magnitude,
-            trytes,
-        ))
+        .block_on(attach_to_tangle::attach_to_tangle(&*CLIENT, uri, options))
         .unwrap();
     let attach_resp: AttachToTangleResponse = runtime.block_on(resp.json()).unwrap();
 
@@ -164,16 +156,11 @@ pub fn check_consistency(uri: String, hashes: Vec<String>) -> Result<Value> {
 /// Finds transactions the match any of the provided parameters
 pub fn find_transactions(
     uri: String,
-    bundles: Option<Vec<String>>,
-    addresses: Option<Vec<String>>,
-    tags: Option<Vec<String>>,
-    approvees: Option<Vec<String>>,
+    options: FindTransactionsOptions,
 ) -> Result<FindTransactionsResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
-        .block_on(find_transactions::find_transactions(
-            &*CLIENT, uri, bundles, addresses, tags, approvees,
-        ))
+        .block_on(find_transactions::find_transactions(&*CLIENT, uri, options))
         .unwrap();
     let parsed_resp: FindTransactionsResponse = runtime.block_on(resp.json()).unwrap();
     if let Some(error) = parsed_resp.error() {
@@ -188,17 +175,10 @@ pub fn find_transactions(
 /// as well as the index with which the confirmed balance was
 /// determined. The balances is returned as a list in the same
 /// order as the addresses were provided as input.
-pub fn get_balances(
-    uri: String,
-    addresses: Vec<String>,
-    threshold: i32,
-    tips: Option<Vec<String>>,
-) -> Result<GetBalancesResponse> {
+pub fn get_balances(uri: String, options: GetBalancesOptions) -> Result<GetBalancesResponse> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
-        .block_on(get_balances::get_balances(
-            &*CLIENT, uri, addresses, threshold, tips,
-        ))
+        .block_on(get_balances::get_balances(&*CLIENT, uri, options))
         .unwrap();
     let parsed_resp: GetBalancesResponse = runtime.block_on(resp.json()).unwrap();
     Ok(parsed_resp)
@@ -214,27 +194,23 @@ pub fn get_balances(
 /// a true/false whether a transaction is confirmed or not.
 pub fn get_inclusion_states(
     uri: String,
-    transactions: Vec<String>,
-    tips: Vec<String>,
+    options: GetInclusionStatesOptions,
 ) -> Result<GetInclusionStatesResponse> {
     ensure!(
-        input_validator::is_array_of_hashes(&transactions),
+        input_validator::is_array_of_hashes(&options.transactions),
         "Provided transactions are not valid: {:?}",
-        transactions
+        options.transactions
     );
     ensure!(
-        input_validator::is_array_of_hashes(&tips),
+        input_validator::is_array_of_hashes(&options.tips),
         "Provided tips are not valid: {:?}",
-        tips
+        options.tips
     );
 
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(get_inclusion_states::get_inclusion_states(
-            &*CLIENT,
-            uri,
-            transactions,
-            tips,
+            &*CLIENT, uri, options,
         ))
         .unwrap();
     let parsed_resp: GetInclusionStatesResponse = runtime.block_on(resp.json()).unwrap();
@@ -295,13 +271,12 @@ pub fn get_tips(uri: String) -> Result<GetTipsResponse> {
 /// depth then an error will be returned.
 pub fn get_transactions_to_approve(
     uri: String,
-    depth: usize,
-    reference: Option<String>,
+    options: GetTransactionsToApproveOptions,
 ) -> Result<GetTransactionsToApprove> {
     let mut runtime = RT.lock().unwrap();
     let mut resp = runtime
         .block_on(get_transactions_to_approve::get_transactions_to_approve(
-            &*CLIENT, uri, depth, reference,
+            &*CLIENT, uri, options,
         ))
         .unwrap();
     let parsed_resp: GetTransactionsToApprove = runtime.block_on(resp.json()).unwrap();

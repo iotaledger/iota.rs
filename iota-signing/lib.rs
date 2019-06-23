@@ -1,6 +1,6 @@
 pub use hmac::HMAC;
 use iota_constants;
-use iota_conversion;
+use iota_conversion::Trinary;
 use iota_crypto::{Kerl, Sponge, HASH_LENGTH};
 use iota_model::Bundle;
 use iota_validation::input_validator;
@@ -162,12 +162,12 @@ pub fn validate_signatures(
     for i in 0..signature_fragments.len() {
         let digest_buffer = digest(
             &normalized_bundle_fragments[i % 3],
-            &iota_conversion::trits_from_string(&signature_fragments[i]),
+            &signature_fragments[i].trits(),
         )?;
         let offset = i * HASH_LENGTH;
         digests[offset..offset + HASH_LENGTH].copy_from_slice(&digest_buffer[0..HASH_LENGTH]);
     }
-    let address = iota_conversion::trytes(&address(&digests)?);
+    let address = address(&digests)?.trytes()?;
     Ok(expected_address == address)
 }
 
@@ -190,21 +190,11 @@ mod tests {
             "EV9QRJFJZVFNLYUFXWKXMCRRPNAZYQVEYB9VEPUHQNXJCWKZFVUCTQJFCUAMXAHMMIUQUJDG9UGGQBPIY";
 
         for i in 1..5 {
-            let key1 = key(&iota_conversion::trits_from_string(seed), 0, i).unwrap();
+            let key1 = key(&seed.trits(), 0, i).unwrap();
             assert_eq!(KEY_LENGTH * i, key1.len());
-            let key2 = key(
-                &iota_conversion::trits_from_string(&(seed.to_string() + seed)),
-                0,
-                i,
-            )
-            .unwrap();
+            let key2 = key(&(seed.to_string() + seed).trits(), 0, i).unwrap();
             assert_eq!(KEY_LENGTH * i, key2.len());
-            let key3 = key(
-                &iota_conversion::trits_from_string(&(seed.to_string() + seed + seed)),
-                0,
-                i,
-            )
-            .unwrap();
+            let key3 = key(&(seed.to_string() + seed + seed).trits(), 0, i).unwrap();
             assert_eq!(KEY_LENGTH * i, key3.len());
         }
     }
@@ -212,22 +202,22 @@ mod tests {
     #[test]
     fn test_signing() {
         let hash_to_sign = remove_checksum("LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
-        let key = key(&iota_conversion::trits_from_string(TEST_SEED), 5, 2).unwrap();
+        let key = key(&TEST_SEED.trits(), 5, 2).unwrap();
         let normalized_hash = Bundle::normalized_bundle(&hash_to_sign);
         let signature = signature_fragment(&normalized_hash[0..27], &key[0..6561]).unwrap();
-        assert_eq!(iota_conversion::trytes(&signature), SIG1);
+        assert_eq!(signature.trytes().unwrap(), SIG1);
         let signature2 =
             signature_fragment(&normalized_hash[27..27 * 2], &key[6561..6561 * 2]).unwrap();
-        assert_eq!(iota_conversion::trytes(&signature2), SIG2);
+        assert_eq!(signature2.trytes().unwrap(), SIG2);
     }
 
     #[test]
     fn test_key_length() {
-        let mut test_key = key(&iota_conversion::trits_from_string(TEST_SEED), 5, 1).unwrap();
+        let mut test_key = key(&TEST_SEED.trits(), 5, 1).unwrap();
         assert_eq!(KEY_LENGTH, test_key.len());
-        test_key = key(&iota_conversion::trits_from_string(TEST_SEED), 5, 2).unwrap();
+        test_key = key(&TEST_SEED.trits(), 5, 2).unwrap();
         assert_eq!(KEY_LENGTH * 2, test_key.len());
-        test_key = key(&iota_conversion::trits_from_string(TEST_SEED), 5, 3).unwrap();
+        test_key = key(&TEST_SEED.trits(), 5, 3).unwrap();
         assert_eq!(KEY_LENGTH * 3, test_key.len());
     }
 

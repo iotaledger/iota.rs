@@ -2,7 +2,7 @@ use failure::ensure;
 
 use std::sync::{Arc, Mutex, RwLock};
 
-use iota_model::{Trinary, Trit, Trytes};
+pub use iota_conversion::{Trinary, Trit, Trytes};
 
 type Result<T> = ::std::result::Result<T, failure::Error>;
 
@@ -31,8 +31,7 @@ const LOW_BITS: u64 =
 /// The PearlDiver struct allows you to start, stop, and check in on
 /// PoW while its working
 ///```rust
-/// use iota_model::TrinaryData;
-/// use iota_pow::PearlDiver;
+/// use iota_pow::{PearlDiver, PowOptions};
 /// use iota_crypto::{Curl, Sponge};
 /// use rand::{thread_rng, Rng};
 ///
@@ -44,7 +43,7 @@ const LOW_BITS: u64 =
 /// let trits: Vec<i8> = (0..8019).map(|_| rng.gen_range(-1, 2)).collect();
 /// let mut pearl_diver = PearlDiver::default();
 /// let result_trits = pearl_diver
-///     .search(TrinaryData::Trits(trits), MIN_WEIGHT_MAGNITUDE, None)
+///     .search(trits, PowOptions{min_weight_magnitude: 9, ..PowOptions::default()})
 ///     .unwrap();
 /// let mut hash_trits = [0; HASH_SIZE];
 /// curl.reset();
@@ -63,6 +62,20 @@ impl Default for PearlDiver {
     fn default() -> Self {
         PearlDiver {
             running: Arc::new(RwLock::new(PearlDiverState::NotStarted)),
+        }
+    }
+}
+
+pub struct PowOptions {
+    pub min_weight_magnitude: usize,
+    pub threads: usize,
+}
+
+impl Default for PowOptions {
+    fn default() -> Self {
+        PowOptions {
+            min_weight_magnitude: 14,
+            threads: num_cpus::get(),
         }
     }
 }
@@ -97,14 +110,9 @@ impl PearlDiver {
     /// * `input` - Either trits or trytes to be processed
     /// * `min_weight_magnitude` - Difficulty factor to use when performing PoW
     /// * `threads` - Optionally specify how many threads to use for PoW. Defaults to number of CPU threads.
-    pub fn search(
-        &mut self,
-        input: impl Trinary,
-        min_weight_magnitude: usize,
-        threads: Option<usize>,
-    ) -> Result<Vec<Trit>> {
+    pub fn search(&mut self, input: impl Trinary, options: PowOptions) -> Result<Vec<Trit>> {
         let transaction_trits = input.trits();
-
+        let min_weight_magnitude = options.min_weight_magnitude;
         ensure!(
             transaction_trits.len() == TRANSACTION_LENGTH,
             "Transaction length [{}], expected [{}]",
@@ -123,21 +131,18 @@ impl PearlDiver {
         let mut mid_state_high = [0; CURL_STATE_LENGTH];
         initialize_mid_curl_states(&transaction_trits, &mut mid_state_low, &mut mid_state_high);
         let transaction_trits_arc = Arc::new(Mutex::new(transaction_trits));
+
         let actual_thread_count = num_cpus::get();
-        let threads_to_use = match threads {
-            Some(t) => {
-                if t == 0 {
-                    1
-                } else if t > actual_thread_count {
-                    actual_thread_count
-                } else {
-                    t
-                }
-            }
-            None => actual_thread_count,
+        let threads = if options.threads == 0 {
+            1
+        } else if options.threads > actual_thread_count {
+            actual_thread_count
+        } else {
+            options.threads
         };
+
         crossbeam::scope(|scope| {
-            for _ in 0..threads_to_use {
+            for _ in 0..threads {
                 increment(
                     &mut mid_state_low,
                     &mut mid_state_high,

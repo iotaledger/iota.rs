@@ -2,13 +2,13 @@ use std::cmp;
 use std::time::Duration;
 
 use chrono::prelude::*;
+use iota_conversion::Trinary;
 use reqwest::Client;
 
-use iota_crypto;
-use iota_model::*;
-
-use options::*;
 use crate::Result;
+use iota_client::*;
+use iota_model::*;
+use options::*;
 
 /// Generates a new address
 ///
@@ -17,10 +17,10 @@ use crate::Result;
 /// * `index` - How many iterations of generating to skip
 /// * `checksum` - Whether or not to checksum address
 pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> Result<String> {
-    let key = iota_signing::key(&iota_conversion::trits_from_string(seed), index, security)?;
+    let key = iota_signing::key(&seed.trits(), index, security)?;
     let digests = iota_signing::digests(&key)?;
     let address_trits = iota_signing::address(&digests)?;
-    let mut address = iota_conversion::trytes(&address_trits);
+    let mut address = address_trits.trytes()?;
     if checksum {
         address = iota_signing::checksum::add_checksum(&address)?;
     }
@@ -66,7 +66,7 @@ impl API {
     /// * `options` - See `GetNewAddressOptions`
     pub fn get_new_address(
         &self,
-        seed: String,
+        seed: &str,
         checksum: bool,
         return_all: bool,
         options: GetNewAddressOptions,
@@ -82,13 +82,13 @@ impl API {
             Some(total) => {
                 ensure!(total > 0, "Invalid total.");
                 for i in index..total {
-                    let address = (new_address(&seed, security, i, checksum))?;
+                    let address = new_address(&seed, security, i, checksum)?;
                     all_addresses.push(address);
                 }
                 Ok(all_addresses)
             }
             None => loop {
-                let new_address = (new_address(&seed, security, index, checksum))?;
+                let new_address = new_address(&seed, security, index, checksum)?;
                 if return_all {
                     all_addresses.push(new_address.clone());
                 }
@@ -101,10 +101,10 @@ impl API {
                 if !were_addr_spent.state(0) {
                     let resp = iota_client::find_transactions(
                         self.uri.clone(),
-                        None,
-                        Some(new_address_vec.clone()),
-                        None,
-                        None,
+                        FindTransactionsOptions {
+                            addresses: new_address_vec.clone(),
+                            ..FindTransactionsOptions::default()
+                        },
                     )?;
                     if resp.take_hashes().unwrap_or_default().is_empty() {
                         if return_all {
@@ -134,30 +134,27 @@ impl API {
     pub fn send_trytes(
         &self,
         trytes: Vec<String>,
-        depth: usize,
-        min_weight_magnitude: usize,
-        local_pow: bool,
         options: SendTrytesOptions,
     ) -> Result<Vec<Transaction>> {
-        let to_approve =
-            (iota_client::get_transactions_to_approve(self.uri.clone(), depth, options.reference))?;
-        let trytes_list = if local_pow {
-            let res = (iota_client::attach_to_tangle_local(
-                options.threads,
-                to_approve.trunk_transaction().unwrap(),
-                to_approve.branch_transaction().unwrap(),
-                min_weight_magnitude,
-                trytes.to_vec(),
-            ))?;
+        let to_approve = iota_client::get_transactions_to_approve(
+            self.uri.clone(),
+            GetTransactionsToApproveOptions {
+                depth: options.depth,
+                reference: options.reference,
+            },
+        )?;
+        let attach_options = AttachOptions {
+            threads: options.threads,
+            trunk_transaction: to_approve.trunk_transaction().unwrap(),
+            branch_transaction: to_approve.branch_transaction().unwrap(),
+            trytes: trytes,
+            ..AttachOptions::default()
+        };
+        let trytes_list = if options.local_pow {
+            let res = iota_client::attach_to_tangle_local(attach_options)?;
             res.trytes().unwrap()
         } else {
-            let attached = (iota_client::attach_to_tangle(
-                self.uri.clone(),
-                to_approve.trunk_transaction().unwrap(),
-                to_approve.branch_transaction().unwrap(),
-                min_weight_magnitude,
-                trytes.to_vec(),
-            ))?;
+            let attached = iota_client::attach_to_tangle(self.uri.clone(), attach_options)?;
             attached.trytes().unwrap()
         };
         (self.store_and_broadcast(trytes_list.clone()))?;
@@ -182,7 +179,7 @@ impl API {
     ///
     /// * `seed` - The wallet seed to use
     /// * `options` - See `GetInputsOptions`
-    pub fn get_inputs(&self, seed: String, options: GetInputsOptions) -> Result<Inputs> {
+    pub fn get_inputs(&self, seed: &str, options: GetInputsOptions) -> Result<Inputs> {
         ensure!(iota_validation::is_trytes(&seed), "Invalid seed.");
         let start = options.start.unwrap_or(0);
         let security = options.security.unwrap_or(2);
@@ -198,7 +195,7 @@ impl API {
             }
             self.get_balance_and_format(&all_addresses, start, options.threshold, security)
         } else {
-            let new_address = (self.get_new_address(
+            let new_address = self.get_new_address(
                 seed,
                 false,
                 true,
@@ -207,7 +204,7 @@ impl API {
                     index: Some(start),
                     total: None,
                 },
-            ))?;
+            )?;
             self.get_balance_and_format(&new_address, start, options.threshold, security)
         }
     }
@@ -219,7 +216,13 @@ impl API {
         threshold: Option<i64>,
         security: usize,
     ) -> Result<Inputs> {
-        let resp = iota_client::get_balances(self.uri.clone(), addresses.to_owned(), 100, None)?;
+        let resp = iota_client::get_balances(
+            self.uri.clone(),
+            GetBalancesOptions {
+                addresses: addresses.to_owned(),
+                ..GetBalancesOptions::default()
+            },
+        )?;
         let mut inputs = Inputs::default();
 
         let mut threshold_reached = threshold.is_none();
@@ -253,7 +256,7 @@ impl API {
     /// * `options` - See `PrepareTransfersOptions`
     pub fn prepare_transfers(
         &self,
-        seed: String,
+        seed: &str,
         mut transfers: Vec<Transfer>,
         options: PrepareTransfersOptions,
     ) -> Result<Vec<String>> {
@@ -282,7 +285,7 @@ impl API {
             iota_validation::is_transfers_collection_valid(&transfers),
             "Invalid transfers."
         );
-        let security = options.security.unwrap_or_else(|| 2);
+        let security = options.security;
         let mut bundle = Bundle::default();
         let mut total_value = 0;
         let mut signature_fragments: Vec<String> = Vec::new();
@@ -340,8 +343,13 @@ impl API {
                         .iter()
                         .map(|input| input.address().to_string())
                         .collect();
-                    let resp =
-                        (iota_client::get_balances(self.uri.clone(), input_addresses, 100, None))?;
+                    let resp = iota_client::get_balances(
+                        self.uri.clone(),
+                        GetBalancesOptions {
+                            addresses: input_addresses,
+                            ..GetBalancesOptions::default()
+                        },
+                    )?;
                     let mut confirmed_inputs = Inputs::default();
                     let balances = resp.take_balances().unwrap_or_default();
                     for (i, balance) in balances.iter().enumerate() {
@@ -375,20 +383,20 @@ impl API {
                     )
                 }
                 None => {
-                    let inputs = (self.get_inputs(
-                        seed.clone(),
+                    let inputs = self.get_inputs(
+                        &seed,
                         GetInputsOptions {
                             start: None,
                             end: None,
                             threshold: Some(total_value),
                             security: Some(security),
                         },
-                    ))?;
+                    )?;
                     self.add_remainder(
                         &inputs,
                         &mut bundle,
                         AddRemainderOptions {
-                            seed: seed.clone(),
+                            seed: seed.into(),
                             tag,
                             remainder_address: options.remainder_address,
                             signature_fragments,
@@ -404,7 +412,7 @@ impl API {
             bundle.add_trytes(&signature_fragments);
             let mut bundle_trytes: Vec<String> = Vec::new();
             for b in bundle.bundle().iter().rev() {
-                bundle_trytes.push(b.to_trytes());
+                bundle_trytes.push(b.to_trytes()?);
             }
             Ok(bundle_trytes)
         }
@@ -422,13 +430,10 @@ impl API {
     pub fn send_transfers(
         &self,
         transfers: Vec<Transfer>,
-        seed: String,
-        depth: usize,
-        min_weight_magnitude: usize,
-        local_pow: bool,
+        seed: &str,
         options: SendTransferOptions,
     ) -> Result<Vec<Transaction>> {
-        let trytes = (self.prepare_transfers(
+        let trytes = self.prepare_transfers(
             seed,
             transfers,
             PrepareTransfersOptions {
@@ -437,17 +442,17 @@ impl API {
                 security: options.security,
                 hmac_key: options.hmac_key,
             },
-        ))?;
-        let t = (self.send_trytes(
+        )?;
+        let t = self.send_trytes(
             trytes,
-            depth,
-            min_weight_magnitude,
-            local_pow,
             SendTrytesOptions {
+                depth: options.depth,
+                min_weight_magnitude: options.min_weight_magnitude,
+                local_pow: options.local_pow,
                 threads: options.threads,
                 reference: options.reference,
             },
-        ))?;
+        )?;
         Ok(t)
     }
 
@@ -497,7 +502,7 @@ impl API {
     /// Validates the signatures, total sum, and bundle order
     ///
     /// * `transaction` - The transaction hash to search for
-    pub fn get_bundle(&self, transaction: String) -> Result<Vec<Transaction>> {
+    pub fn get_bundle(&self, transaction: &str) -> Result<Vec<Transaction>> {
         ensure!(
             iota_validation::is_hash(&transaction),
             "Invalid transaction."
@@ -552,7 +557,7 @@ impl API {
                     }
                     start_index += 1;
                     let new_address = self.get_new_address(
-                        options.seed.clone(),
+                        &options.seed,
                         false,
                         false,
                         GetNewAddressOptions {
@@ -618,11 +623,7 @@ impl API {
                     }
                 }
                 let bundle_hash = bundle.bundle()[i].bundle().unwrap_or_default();
-                let key = iota_signing::key(
-                    &iota_conversion::trits_from_string(seed),
-                    key_index,
-                    key_security,
-                )?;
+                let key = iota_signing::key(&seed.trits(), key_index, key_security)?;
                 let normalized_bundle_hash = Bundle::normalized_bundle(&bundle_hash).to_vec();
                 let mut normalized_bundle_fragments = [[0; 27]; 3];
                 for (j, c) in normalized_bundle_hash.chunks(27).enumerate() {
@@ -633,7 +634,7 @@ impl API {
                 let first_signed_fragment =
                     iota_signing::signature_fragment(&first_bundle_fragment, &first_fragment)?;
                 *bundle.bundle_mut()[i].signature_fragments_mut() =
-                    Some(iota_conversion::trytes(&first_signed_fragment));
+                    Some(first_signed_fragment.trytes()?);
                 for j in 1..key_security {
                     if bundle.bundle()[i + j].address().unwrap_or_default() == this_address
                         && bundle.bundle()[i + j].value().unwrap_or_default() == 0
@@ -645,7 +646,7 @@ impl API {
                             &next_fragment,
                         )?;
                         *bundle.bundle_mut()[i + j].signature_fragments_mut() =
-                            Some(iota_conversion::trytes(&next_signed_fragment));
+                            Some(next_signed_fragment.trytes()?);
                     }
                 }
             }
@@ -656,7 +657,7 @@ impl API {
         }
         let mut bundle_trytes: Vec<String> = Vec::new();
         for tx in bundle.bundle().iter().rev() {
-            bundle_trytes.push(tx.to_trytes());
+            bundle_trytes.push(tx.to_trytes()?);
         }
         Ok(bundle_trytes)
     }
@@ -673,14 +674,33 @@ pub mod options {
     /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
     /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
-    #[derive(Clone, Debug, Default, PartialEq)]
+    #[derive(Clone, Debug, PartialEq)]
     pub struct SendTransferOptions {
-        pub threads: Option<usize>,
+        pub depth: usize,
+        pub min_weight_magnitude: usize,
+        pub local_pow: bool,
+        pub threads: usize,
         pub inputs: Option<Inputs>,
         pub reference: Option<String>,
         pub remainder_address: Option<String>,
-        pub security: Option<usize>,
+        pub security: usize,
         pub hmac_key: Option<String>,
+    }
+
+    impl Default for SendTransferOptions {
+        fn default() -> Self {
+            SendTransferOptions {
+                depth: 3,
+                min_weight_magnitude: 14,
+                local_pow: true,
+                threads: num_cpus::get(),
+                inputs: None,
+                reference: None,
+                remainder_address: None,
+                security: 3,
+                hmac_key: None,
+            }
+        }
     }
 
     /// GetNewAddressOptions
@@ -699,10 +719,25 @@ pub mod options {
     ///
     /// * `thread` - Optionally specify how many threads to use, defaults to max available
     /// * `reference` - Optionally used as the reference to start searching for transactions to approve
-    #[derive(Clone, Debug, Default, PartialEq)]
+    #[derive(Clone, Debug, PartialEq)]
     pub struct SendTrytesOptions {
-        pub threads: Option<usize>,
+        pub depth: usize,
+        pub min_weight_magnitude: usize,
+        pub local_pow: bool,
+        pub threads: usize,
         pub reference: Option<String>,
+    }
+
+    impl Default for SendTrytesOptions {
+        fn default() -> Self {
+            SendTrytesOptions {
+                depth: 3,
+                min_weight_magnitude: 14,
+                local_pow: true,
+                threads: num_cpus::get(),
+                reference: None,
+            }
+        }
     }
 
     /// GetInputsOptions
@@ -725,12 +760,23 @@ pub mod options {
     /// * `remainder_address` - Optional remainder address to use, if not provided, one will be generated
     /// * `security` - Security to use when generating addresses (1-3)
     /// * `hmac_key` - Optional key to use if you want to hmac the transfers
-    #[derive(Clone, Debug, Default, PartialEq)]
+    #[derive(Clone, Debug, PartialEq)]
     pub struct PrepareTransfersOptions {
         pub inputs: Option<Inputs>,
         pub remainder_address: Option<String>,
-        pub security: Option<usize>,
+        pub security: usize,
         pub hmac_key: Option<String>,
+    }
+
+    impl Default for PrepareTransfersOptions {
+        fn default() -> Self {
+            PrepareTransfersOptions {
+                inputs: None,
+                remainder_address: None,
+                security: 3,
+                hmac_key: None,
+            }
+        }
     }
 
 }

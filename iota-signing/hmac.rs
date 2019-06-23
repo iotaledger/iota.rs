@@ -1,4 +1,4 @@
-use iota_conversion;
+use iota_conversion::Trinary;
 use iota_crypto::{Curl, HashMode, Sponge};
 use iota_model::Bundle;
 
@@ -24,9 +24,7 @@ pub struct HMAC {
 impl HMAC {
     /// Creates a new HMAC instance using the provided key
     pub fn new(key: &str) -> HMAC {
-        HMAC {
-            key: iota_conversion::trits_from_string(key),
-        }
+        HMAC { key: key.trits() }
     }
 
     /// Using the key provided earlier, add an HMAC to provided
@@ -36,14 +34,13 @@ impl HMAC {
         let key = self.key.clone();
         for b in bundle.bundle_mut().iter_mut() {
             if b.value().unwrap_or_default() > 0 {
-                let bundle_hash_trits =
-                    iota_conversion::trits_from_string(&b.bundle().unwrap_or_default());
+                let bundle_hash_trits = b.bundle().unwrap_or_default().trits();
                 let mut hmac = [0; 243];
                 curl.reset();
                 curl.absorb(&key)?;
                 curl.absorb(&bundle_hash_trits)?;
                 curl.squeeze(&mut hmac)?;
-                let hmac_trytes = iota_conversion::trytes(&hmac);
+                let hmac_trytes = hmac.trytes()?;
                 *b.signature_fragments_mut() = Some(
                     hmac_trytes
                         + &b.signature_fragments()

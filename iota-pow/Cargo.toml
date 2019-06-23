@@ -15,7 +15,6 @@ num_cpus = "1.10"
 crossbeam = "0.7"
 failure = "0.1"
 iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
-iota-model = { version = "0.1.0", path = "../iota-model" }
 iota-crypto = { version = "0.1.0", path = "../iota-crypto" }
 lazy_static = "1.3"
 

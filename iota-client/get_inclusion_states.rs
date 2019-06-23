@@ -2,6 +2,12 @@ use reqwest::r#async::{Client, Response};
 use reqwest::Error;
 use tokio::prelude::Future;
 
+#[derive(Clone, Debug, Default)]
+pub struct GetInclusionStatesOptions {
+    pub transactions: Vec<String>,
+    pub tips: Vec<String>,
+}
+
 /// Get the inclusion states of a set of transactions. This is
 /// for determining if a transaction was accepted and confirmed
 /// by the network or not. You can search for multiple tips (and
@@ -13,13 +19,12 @@ use tokio::prelude::Future;
 pub fn get_inclusion_states(
     client: &Client,
     uri: String,
-    transactions: Vec<String>,
-    tips: Vec<String>,
+    options: GetInclusionStatesOptions,
 ) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "getInclusionStates",
-        "transactions": transactions,
-        "tips": tips,
+        "transactions": options.transactions,
+        "tips": options.tips,
     });
 
     client

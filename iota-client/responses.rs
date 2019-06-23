@@ -1,7 +1,7 @@
 use iota_model::Neighbor;
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct RemoveNeighborsResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -32,7 +32,7 @@ impl RemoveNeighborsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct StoreTransactionsResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -52,7 +52,7 @@ impl StoreTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
 pub struct WereAddressesSpentFromResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -76,7 +76,7 @@ impl WereAddressesSpentFromResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
 pub struct GetTrytesResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -100,7 +100,7 @@ impl GetTrytesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
 pub struct GetTransactionsToApprove {
     /// Any errors that occurred
     error: Option<String>,
@@ -134,7 +134,7 @@ impl GetTransactionsToApprove {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
 pub struct GetTipsResponse {
     /// Hashes of tips
     hashes: Vec<String>,
@@ -152,7 +152,7 @@ impl GetTipsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Default, Deserialize, Debug)]
 pub struct GetNodeInfoResponse {
     /// Name of IRI node
     #[serde(rename = "appName")]
@@ -276,7 +276,7 @@ impl GetNodeInfoResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct GetNeighborsResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -320,7 +320,7 @@ impl GetInclusionStatesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct GetBalancesResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -361,7 +361,7 @@ impl GetBalancesResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct FindTransactionsResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -385,7 +385,7 @@ impl FindTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct BroadcastTransactionsResponse {
     /// Any errors that occurred
     error: Option<String>,
@@ -405,7 +405,7 @@ impl BroadcastTransactionsResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct AttachToTangleResponse {
     /// This is only used when using PoW Box service
     #[serde(rename = "jobId")]
@@ -457,10 +457,14 @@ impl AttachToTangleResponse {
 }
 
 /// This is a typed representation of the JSON response
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Default, Debug, Serialize, Deserialize)]
 pub struct AddNeighborsResponse {
     #[serde(rename = "addedNeighbors")]
     added_neighbors: usize,
 }
 
-impl AddNeighborsResponse {}
+impl AddNeighborsResponse {
+    pub fn added_neighbors(self) -> usize {
+        self.added_neighbors
+    }
+}

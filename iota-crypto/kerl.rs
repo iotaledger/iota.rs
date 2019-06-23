@@ -360,20 +360,20 @@ fn full_add(ia: u32, ib: u32, carry: bool) -> (u32, bool) {
 
 #[cfg(test)]
 mod tests {
-    use iota_conversion::*;
+    use iota_conversion::Trinary;
 
     use super::*;
 
     #[test]
     fn kerl_one_absorb() {
-        let mut trits: Vec<i8> = trits_from_string(
-            "GYOMKVTSNHVJNCNFBBAH9AAMXLPLLLROQY99QN9DLSJUHDPBLCFFAIQXZA9BKMBJCYSFHFPXAHDWZFEIZ",
-        );
+        let mut trits: Vec<i8> =
+            "GYOMKVTSNHVJNCNFBBAH9AAMXLPLLLROQY99QN9DLSJUHDPBLCFFAIQXZA9BKMBJCYSFHFPXAHDWZFEIZ"
+                .trits();
         let mut kerl = Kerl::default();
         kerl.absorb(&mut trits).unwrap();
         kerl.squeeze(&mut trits).unwrap();
         assert_eq!(
-            trits_to_string(&trits).unwrap(),
+            trits.trytes().unwrap(),
             "OXJCNFHUNAHWDLKKPELTBFUCVW9KLXKOGWERKTJXQMXTKFKNWNNXYD9DMJJABSEIONOSJTTEVKVDQEWTW"
         );
     }
@@ -382,11 +382,7 @@ mod tests {
     fn kerl_multi_squeeze_multi_absorb() {
         let mut trits: Vec<i8> = "G9JYBOMPUXHYHKSNRNMMSSZCSHOFYOYNZRSZMAAYWDYEIMVVOGKPJBVBM9TD\
 PULSFUNMTVXRKFIDOHUXXVYDLFSZYZTWQYTE9SPYYWYTXJYQ9IFGYOLZXWZBKWZN9QOOTBQMWMUBLEWUEEASRHRTNIQW\
-JQNDWRYLCA"
-            .chars()
-            .flat_map(char_to_trits)
-            .cloned()
-.collect();
+JQNDWRYLCA".trits();
 
         let mut kerl = Kerl::default();
         kerl.absorb(&mut trits).unwrap();
@@ -395,7 +391,7 @@ JQNDWRYLCA"
 
         kerl.squeeze(&mut out).unwrap();
         assert_eq!(
-            trits_to_string(&out).unwrap(),
+            out.trytes().unwrap(),
             "LUCKQVACOGBFYSPPVSSOXJEKNSQQRQKPZC9NXFSMQNRQCGGUL9OHVVKBDSKEQEBKXRNUJSRXYVHJTXBPD\
              WQGNSCDCBAIRHAQCOWZEBSNHIJIGPZQITIBJQ9LNTDIBTCQ9EUWKHFLGFUVGGUWJONK9GBCDUIMAYMMQX"
         );
@@ -405,17 +401,14 @@ JQNDWRYLCA"
     fn kerl_multi_squeeze() {
         let mut trits: Vec<i8> =
             "9MIDYNHBWMBCXVDEFOFWINXTERALUKYYPPHKP9JJFGJEIUY9MUDVNFZHMMWZUYUSWAIOWEVTHNWMHANBH"
-                .chars()
-                .flat_map(char_to_trits)
-                .cloned()
-                .collect();
+                .trits();
         let mut kerl = Kerl::default();
         kerl.absorb(&mut trits).unwrap();
 
         let mut out = vec![0; 486];
         kerl.squeeze(&mut out).unwrap();
         assert_eq!(
-            trits_to_string(&out).unwrap(),
+            out.trytes().unwrap(),
             "G9JYBOMPUXHYHKSNRNMMSSZCSHOFYOYNZRSZMAAYWDYEIMVVOGKPJBVBM9TDPULSFUNMTVXRKFIDOHUXX\
              VYDLFSZYZTWQYTE9SPYYWYTXJYQ9IFGYOLZXWZBKWZN9QOOTBQMWMUBLEWUEEASRHRTNIQWJQNDWRYLCA"
         );

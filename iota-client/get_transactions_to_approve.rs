@@ -2,6 +2,21 @@ use reqwest::r#async::{Client, Response};
 use reqwest::Error;
 use tokio::prelude::Future;
 
+#[derive(Clone, Debug)]
+pub struct GetTransactionsToApproveOptions {
+    pub depth: usize,
+    pub reference: Option<String>,
+}
+
+impl Default for GetTransactionsToApproveOptions {
+    fn default() -> Self {
+        GetTransactionsToApproveOptions {
+            depth: 3,
+            reference: None,
+        }
+    }
+}
+
 /// Tip selection which returns `trunkTransaction` and
 /// `branchTransaction`. The input value depth determines
 /// how many milestones to go back to for finding the
@@ -15,15 +30,14 @@ use tokio::prelude::Future;
 pub fn get_transactions_to_approve(
     client: &Client,
     uri: String,
-    depth: usize,
-    reference: Option<String>,
+    options: GetTransactionsToApproveOptions,
 ) -> impl Future<Item = Response, Error = Error> {
     let mut body = json!({
         "command": "getTransactionsToApprove",
-        "depth": depth,
+        "depth": options.depth,
     });
 
-    if let Some(reference) = reference {
+    if let Some(reference) = options.reference {
         body["reference"] = json!(reference);
     }
 

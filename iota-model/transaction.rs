@@ -1,14 +1,13 @@
+use std::convert::TryInto;
 use std::fmt;
 use std::str::FromStr;
 
-use failure::Error;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-use iota_conversion;
-use iota_crypto::{Curl, Sponge};
-
 use crate::Result;
+use iota_conversion::Trinary;
+use iota_crypto::{Curl, Sponge};
 
 /// Right pads a string to a certain length in place
 ///
@@ -342,48 +341,49 @@ impl Transaction {
 
     /// Converts the transaction into a tryte-encoded string
     /// This DOES NOT consume the transaction
-    pub fn to_trytes(&self) -> String {
-        let mut value_trits = iota_conversion::trits(self.value.unwrap_or_default());
+    pub fn to_trytes(&self) -> Result<String> {
+        let mut value_trits = self.value.unwrap_or_default().trits();
         right_pad_vec(&mut value_trits, 81, 0);
 
-        let mut timestamp_trits = iota_conversion::trits(self.timestamp.unwrap_or_default());
+        let mut timestamp_trits = self.timestamp.unwrap_or_default().trits();
         right_pad_vec(&mut timestamp_trits, 27, 0);
 
-        let mut current_index_trits =
-            iota_conversion::trits(self.current_index.unwrap_or_default() as i64);
+        let mut current_index_trits = (self.current_index.unwrap_or_default() as i64).trits();
         right_pad_vec(&mut current_index_trits, 27, 0);
 
-        let mut last_index_trits =
-            iota_conversion::trits(self.last_index.unwrap_or_default() as i64);
+        let mut last_index_trits = (self.last_index.unwrap_or_default() as i64).trits();
         right_pad_vec(&mut last_index_trits, 27, 0);
 
-        let mut attachment_timestamp_trits =
-            iota_conversion::trits(self.attachment_timestamp.unwrap_or_default());
+        let mut attachment_timestamp_trits = self.attachment_timestamp.unwrap_or_default().trits();
         right_pad_vec(&mut attachment_timestamp_trits, 27, 0);
 
-        let mut attachment_timestamp_lower_bound_trits =
-            iota_conversion::trits(self.attachment_timestamp_lower_bound.unwrap_or_default());
+        let mut attachment_timestamp_lower_bound_trits = self
+            .attachment_timestamp_lower_bound
+            .unwrap_or_default()
+            .trits();
         right_pad_vec(&mut attachment_timestamp_lower_bound_trits, 27, 0);
 
-        let mut attachment_timestamp_upper_bound_trits =
-            iota_conversion::trits(self.attachment_timestamp_upper_bound.unwrap_or_default());
+        let mut attachment_timestamp_upper_bound_trits = self
+            .attachment_timestamp_upper_bound
+            .unwrap_or_default()
+            .trits();
         right_pad_vec(&mut attachment_timestamp_upper_bound_trits, 27, 0);
 
-        self.signature_fragments().unwrap_or_default()
+        Ok(self.signature_fragments().unwrap_or_default()
             + &self.address().unwrap_or_default()
-            + &iota_conversion::trytes(&value_trits)
+            + &value_trits.trytes()?
             + &self.obsolete_tag().unwrap_or_default()
-            + &iota_conversion::trytes(&timestamp_trits)
-            + &iota_conversion::trytes(&current_index_trits)
-            + &iota_conversion::trytes(&last_index_trits)
+            + &timestamp_trits.trytes()?
+            + &current_index_trits.trytes()?
+            + &last_index_trits.trytes()?
             + &self.bundle().unwrap_or_default()
             + &self.trunk_transaction().unwrap_or_default()
             + &self.branch_transaction().unwrap_or_default()
             + &self.tag().unwrap_or_default()
-            + &iota_conversion::trytes(&attachment_timestamp_trits)
-            + &iota_conversion::trytes(&attachment_timestamp_lower_bound_trits)
-            + &iota_conversion::trytes(&attachment_timestamp_upper_bound_trits)
-            + &self.nonce().unwrap_or_default()
+            + &attachment_timestamp_trits.trytes()?
+            + &attachment_timestamp_lower_bound_trits.trytes()?
+            + &attachment_timestamp_upper_bound_trits.trytes()?
+            + &self.nonce().unwrap_or_default())
     }
 }
 
@@ -400,14 +400,14 @@ pub enum TransactionParseError {
 }
 
 impl FromStr for Transaction {
-    type Err = Error;
+    type Err = failure::Error;
 
     fn from_str(trytes: &str) -> Result<Self> {
         ensure!(!trytes.is_empty(), TransactionParseError::TryteStringEmpty);
         for c in trytes.chars().skip(2279).take(16) {
             ensure!(c == '9', TransactionParseError::NineSectionMissing);
         }
-        let transaction_trits = iota_conversion::trits_from_string(trytes);
+        let transaction_trits = trytes.trits();
 
         let mut hash = [0; 243];
         let mut curl = Curl::default();
@@ -416,7 +416,7 @@ impl FromStr for Transaction {
         curl.squeeze(&mut hash)?;
 
         let mut transaction = Transaction::default();
-        transaction.set_hash(iota_conversion::trits_to_string(&hash)?);
+        transaction.set_hash(hash.trytes()?);
         transaction.set_signature_fragments(&trytes[0..2187]);
         transaction.set_address(&trytes[2187..2268]);
         transaction.set_value(iota_conversion::long_value(&transaction_trits[6804..6837]));
@@ -444,8 +444,10 @@ impl FromStr for Transaction {
     }
 }
 
-impl Into<String> for Transaction {
-    fn into(self) -> String {
+impl TryInto<String> for Transaction {
+    type Error = failure::Error;
+
+    fn try_into(self) -> Result<String> {
         self.to_trytes()
     }
 }

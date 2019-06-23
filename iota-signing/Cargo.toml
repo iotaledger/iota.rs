@@ -12,9 +12,8 @@ path = "lib.rs"
 
 [dependencies]
 iota-constants = { version = "0.1.0", path = "../iota-constants" }
-iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
 iota-model = { version = "0.1.0", path = "../iota-model" }
 iota-crypto = { version = "0.1.0", path = "../iota-crypto" }
-iota-utils = { version = "0.1.0", path = "../iota-utils" }
 iota-validation = { version = "0.1.0", path = "../iota-validation" }
+iota-conversion = { version = "0.1.0", path = "../iota-conversion" }
 failure = "0.1"

@@ -5,80 +5,37 @@ extern crate failure;
 #[macro_use]
 extern crate lazy_static;
 
-use iota_constants;
+use iota_constants::{self, TRITS_PER_BYTE, TRITS_PER_TRYTE};
 
 pub mod iota_units;
-pub mod trytes_converter;
+mod trinary;
 pub mod unit_converter;
+
+pub use trinary::*;
 
 type Result<T> = ::std::result::Result<T, failure::Error>;
 
-const HIGH_INTEGER_BITS: u32 = 0xFFFF_FFFF;
-const HIGH_LONG_BITS: u64 = 0xFFFF_FFFF_FFFF_FFFF;
-const RADIX: i8 = 3;
-const NUMBER_OF_TRITS_IN_A_BYTE: usize = 5;
-const NUMBER_OF_TRITS_IN_A_TRYTE: usize = 3;
-
 lazy_static! {
     /// Provides a byte to trits mapping
-    pub static ref BYTE_TO_TRITS_MAPPINGS: [[i8; NUMBER_OF_TRITS_IN_A_BYTE]; 243] = {
-        let mut trits: [i8; NUMBER_OF_TRITS_IN_A_BYTE] = [0; NUMBER_OF_TRITS_IN_A_BYTE];
-        let mut tmp = [[0; NUMBER_OF_TRITS_IN_A_BYTE]; 243];
+    pub static ref BYTE_TO_TRITS_MAPPINGS: [[i8; TRITS_PER_BYTE]; 243] = {
+        let mut trits: [i8; TRITS_PER_BYTE] = [0; TRITS_PER_BYTE];
+        let mut tmp = [[0; TRITS_PER_BYTE]; 243];
         for tmp_entry in tmp.iter_mut().take(243) {
-            tmp_entry.copy_from_slice(&trits[0..NUMBER_OF_TRITS_IN_A_BYTE]);
-            increment(&mut trits, NUMBER_OF_TRITS_IN_A_BYTE);
+            tmp_entry.copy_from_slice(&trits[0..TRITS_PER_BYTE]);
+            increment(&mut trits, TRITS_PER_BYTE);
         }
         tmp
     };
     /// Provides a trytes to trits mapping
-    pub static ref TRYTE_TO_TRITS_MAPPINGS: [[i8; NUMBER_OF_TRITS_IN_A_TRYTE]; 27] = {
-        let mut trits: [i8; NUMBER_OF_TRITS_IN_A_BYTE] = [0; NUMBER_OF_TRITS_IN_A_BYTE];
-        let mut tmp = [[0; NUMBER_OF_TRITS_IN_A_TRYTE]; 27];
+    pub static ref TRYTE_TO_TRITS_MAPPINGS: [[i8; TRITS_PER_TRYTE]; 27] = {
+        let mut trits: [i8; TRITS_PER_BYTE] = [0; TRITS_PER_BYTE];
+        let mut tmp = [[0; TRITS_PER_TRYTE]; 27];
         for tmp_entry in tmp.iter_mut().take(27) {
-            tmp_entry.copy_from_slice(&trits[0..NUMBER_OF_TRITS_IN_A_TRYTE]);
-            increment(&mut trits, NUMBER_OF_TRITS_IN_A_TRYTE);
+            tmp_entry.copy_from_slice(&trits[0..TRITS_PER_TRYTE]);
+            increment(&mut trits, TRITS_PER_TRYTE);
         }
         tmp
     };
-}
-
-/// Converts a provided slice of bytes into trits and stores them
-/// in place into `trits`
-pub fn get_trits(bytes: &[u8], trits: &mut [i8]) {
-    let mut offset = 0;
-    let mut i = 0;
-    while i < bytes.len() && offset < trits.len() {
-        let length = if trits.len() - offset < NUMBER_OF_TRITS_IN_A_BYTE {
-            trits.len() - offset
-        } else {
-            NUMBER_OF_TRITS_IN_A_BYTE
-        };
-        trits[offset..offset + length]
-            .copy_from_slice(&BYTE_TO_TRITS_MAPPINGS[bytes[i] as usize][0..length]);
-        offset += NUMBER_OF_TRITS_IN_A_BYTE;
-        i += 1;
-    }
-    while offset < trits.len() {
-        trits[offset] = 0;
-        offset += 1;
-    }
-}
-
-/// Converts a string into trits
-pub fn trits_from_string(trytes: &str) -> Vec<i8> {
-    trytes.chars().flat_map(char_to_trits).cloned().collect()
-}
-
-/// Converts a string into trits and ensures the output length
-pub fn trits_from_string_with_length(trytes: &str, length: usize) -> Vec<i8> {
-    let tmp: Vec<i8> = trits_from_string(trytes);
-    if tmp.len() < length {
-        let mut result = vec![0; length];
-        result[..tmp.len()].copy_from_slice(&tmp[..]);
-        result
-    } else {
-        tmp[0..length].to_vec()
-    }
 }
 
 /// Converts a char into and array of trits
@@ -105,81 +62,6 @@ pub fn trits_to_char(trits: &[i8]) -> char {
     }
 }
 
-/// Converts a slice of trits into a string
-pub fn trits_to_string(t: &[i8]) -> Result<String> {
-    ensure!(t.len() % 3 == 0, "Invalid trit length.");
-
-    Ok(t.chunks(iota_constants::TRITS_PER_TRYTE)
-        .map(trits_to_char)
-        .collect())
-}
-
-/// Converts a numeric representation of trytes into a vec of trits
-pub fn trits(trytes: i64) -> Vec<i8> {
-    let mut trits = Vec::new();
-    let mut abs = trytes.abs();
-    while abs > 0 {
-        let mut remainder = (abs % i64::from(RADIX)) as i8;
-        abs /= i64::from(RADIX);
-        if remainder > iota_constants::MAX_TRIT_VALUE {
-            remainder = iota_constants::MIN_TRIT_VALUE;
-            abs += 1;
-        }
-        trits.push(remainder);
-    }
-    if trytes < 0 {
-        for trit in &mut trits {
-            *trit = -*trit;
-        }
-    }
-    trits
-}
-
-/// Converts a numeric representation of trytes into a vec of trits with a guaranteed length
-pub fn trits_with_length(trytes: i64, length: usize) -> Vec<i8> {
-    let tmp: Vec<i8> = trits(trytes);
-    if tmp.len() < length {
-        let mut result = vec![0; length];
-        result[..tmp.len()].copy_from_slice(&tmp[..]);
-        result
-    } else {
-        tmp[0..length].to_vec()
-    }
-}
-
-/// Copy
-fn copy_trits(value: i64, destination: &mut [i8], offset: usize, size: usize) {
-    let mut abs = value.abs();
-    for i in 0..size {
-        let mut remainder = (abs % i64::from(RADIX)) as i8;
-        abs /= i64::from(RADIX);
-        if remainder > iota_constants::MAX_TRIT_VALUE {
-            remainder = iota_constants::MIN_TRIT_VALUE;
-            abs += 1;
-        }
-        destination[offset + i] = remainder;
-    }
-
-    if value < 0 {
-        for i in 0..size {
-            destination[offset + i] = -destination[offset + i];
-        }
-    }
-}
-
-/// Converts a slice of trits into a tryte string
-pub fn trytes(trits: &[i8]) -> String {
-    let mut trytes = String::new();
-    for i in 0..(trits.len() + NUMBER_OF_TRITS_IN_A_TRYTE - 1) / NUMBER_OF_TRITS_IN_A_TRYTE {
-        let mut j = trits[i * 3] + trits[i * 3 + 1] * 3 + trits[i * 3 + 2] * 9;
-        if j < 0 {
-            j += iota_constants::TRYTE_ALPHABET.len() as i8;
-        }
-        trytes.push(iota_constants::TRYTE_ALPHABET[j as usize]);
-    }
-    trytes
-}
-
 /// Converts a slice of trits into a numeric value
 pub fn value(trits: &[i8]) -> i8 {
     let mut value = 0;
@@ -199,7 +81,7 @@ pub fn long_value(trits: &[i8]) -> i64 {
 }
 
 /// Increments a trit slice in place, only considering trits until index `size`
-pub fn increment(trit_array: &mut [i8], size: usize) {
+fn increment(trit_array: &mut [i8], size: usize) {
     for trit in trit_array.iter_mut().take(size) {
         *trit += 1;
         if *trit > iota_constants::MAX_TRIT_VALUE {

@@ -4,12 +4,20 @@ extern crate criterion;
 use criterion::Criterion;
 use rand::{thread_rng, Rng};
 
-use iota_pow::PearlDiver;
+use iota_pow::{PearlDiver, PowOptions};
 const MIN_WEIGHT_MAGNITUDE: usize = 9;
 
 fn basic_pow(trits: Vec<i8>) {
     let mut pearl = PearlDiver::default();
-    pearl.search(trits, MIN_WEIGHT_MAGNITUDE, None).unwrap();
+    pearl
+        .search(
+            trits,
+            PowOptions {
+                min_weight_magnitude: MIN_WEIGHT_MAGNITUDE,
+                ..PowOptions::default()
+            },
+        )
+        .unwrap();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

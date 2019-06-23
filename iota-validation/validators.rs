@@ -1,6 +1,7 @@
+use iota_conversion::Trinary;
 use iota_conversion;
 use iota_crypto::{self, Kerl, Sponge};
-use iota_model::*;
+use iota_model::{Signature, Transaction};
 
 use crate::Result;
 
@@ -24,8 +25,8 @@ pub fn is_bundle(bundle: &[Transaction]) -> Result<bool> {
         if index != tx.current_index().unwrap_or_default() {
             return Ok(false);
         }
-        let tx_trytes: String = tx.to_trytes();
-        let tx_trits = iota_conversion::trits_from_string(&tx_trytes[2187..2187 + 162]);
+        let tx_trytes: String = tx.to_trytes()?;
+        let tx_trits = (&tx_trytes[2187..2187 + 162]).trits();
         kerl.absorb(&tx_trits)?;
         if tx_value < 0 {
             let this_address = tx.address().unwrap_or_default();
@@ -45,7 +46,7 @@ pub fn is_bundle(bundle: &[Transaction]) -> Result<bool> {
         return Ok(false);
     }
     kerl.squeeze(&mut hash_from_txs)?;
-    let bundle_from_txs = iota_conversion::trytes(&hash_from_txs);
+    let bundle_from_txs = hash_from_txs.trytes()?;
     if bundle_from_txs != bundle_hash {
         return Ok(false);
     }
