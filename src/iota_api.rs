@@ -36,13 +36,13 @@ pub struct API {
     client: reqwest::Client,
 }
 
-struct AddRemainderOptions {
-    pub seed: String,
-    pub tag: String,
-    pub remainder_address: Option<String>,
+struct AddRemainderOptions<'a, 'b, 'c, 'd> {
+    pub seed: &'a str,
+    pub tag: &'b str,
+    pub remainder_address: Option<&'c str>,
     pub signature_fragments: Vec<String>,
     pub added_hmac: bool,
-    pub hmac_key: Option<String>,
+    pub hmac_key: Option<&'d str>,
     pub security: usize,
 }
 
@@ -145,11 +145,11 @@ impl API {
         )?;
         let attach_options = AttachOptions {
             threads: options.threads,
-            trunk_transaction: to_approve
+            trunk_transaction: &to_approve
                 .trunk_transaction()
                 .clone()
                 .ok_or_else(|| format_err!("Trunk transaction is empty"))?,
-            branch_transaction: to_approve
+            branch_transaction: &to_approve
                 .branch_transaction()
                 .clone()
                 .ok_or_else(|| format_err!("Branch transaction is empty"))?,
@@ -337,7 +337,7 @@ impl API {
             tag = transfer.tag;
             iota_model::right_pad_string(&mut tag, iota_constants::TAG_LENGTH, '9');
             bundle.add_entry(BundleEntry {
-                signature_message_length: signature_message_length,
+                signature_message_length,
                 address: &transfer.address,
                 value: transfer.value,
                 tag: &tag,
@@ -383,8 +383,8 @@ impl API {
                         &confirmed_inputs,
                         &mut bundle,
                         AddRemainderOptions {
-                            seed: seed.to_string(),
-                            tag,
+                            seed,
+                            tag: &tag,
                             remainder_address: options.remainder_address,
                             signature_fragments,
                             added_hmac,
@@ -407,8 +407,8 @@ impl API {
                         &inputs,
                         &mut bundle,
                         AddRemainderOptions {
-                            seed: seed.into(),
-                            tag,
+                            seed,
+                            tag: &tag,
                             remainder_address: options.remainder_address,
                             signature_fragments,
                             added_hmac,
@@ -484,7 +484,7 @@ impl API {
         T: Into<Vec<Transaction>>,
     {
         let mut bundle = bundle.into();
-        let tryte_list = iota_client::get_trytes(&self.uri, &vec![trunk_tx.into()])?
+        let tryte_list = iota_client::get_trytes(&self.uri, &[trunk_tx.into()])?
             .take_trytes()
             .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");
@@ -541,7 +541,7 @@ impl API {
                 address: &address,
                 value: to_subtract,
                 tag: &options.tag,
-                timestamp: timestamp,
+                timestamp,
             });
 
             if this_balance >= total_transfer_value {
@@ -553,7 +553,7 @@ impl API {
                             address: &remainder_address,
                             value: remainder,
                             tag: &options.tag,
-                            timestamp: timestamp,
+                            timestamp,
                         });
                         return self.sign_inputs_and_return(
                             &options.seed,
@@ -612,14 +612,14 @@ impl API {
         Err(format_err!("Something wen't wrong..."))
     }
 
-    fn sign_inputs_and_return(
+    fn sign_inputs_and_return<'a>(
         &self,
         seed: &str,
         inputs: &Inputs,
         bundle: &mut Bundle,
         signature_fragments: &[String],
         added_hmac: bool,
-        hmac_key: Option<String>,
+        hmac_key: Option<&'a str>,
     ) -> Result<Vec<String>> {
         bundle.finalize()?;
         bundle.add_trytes(&signature_fragments);
@@ -685,19 +685,19 @@ pub mod options {
     /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
     /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
     #[derive(Clone, Debug, PartialEq)]
-    pub struct SendTransferOptions {
+    pub struct SendTransferOptions<'a, 'b, 'c> {
         pub depth: usize,
         pub min_weight_magnitude: usize,
         pub local_pow: bool,
         pub threads: usize,
         pub inputs: Option<Inputs>,
-        pub reference: Option<String>,
-        pub remainder_address: Option<String>,
+        pub reference: Option<&'a str>,
+        pub remainder_address: Option<&'b str>,
         pub security: usize,
-        pub hmac_key: Option<String>,
+        pub hmac_key: Option<&'c str>,
     }
 
-    impl Default for SendTransferOptions {
+    impl<'a, 'b, 'c> Default for SendTransferOptions<'a, 'b, 'c> {
         fn default() -> Self {
             SendTransferOptions {
                 depth: 3,
@@ -730,15 +730,15 @@ pub mod options {
     /// * `thread` - Optionally specify how many threads to use, defaults to max available
     /// * `reference` - Optionally used as the reference to start searching for transactions to approve
     #[derive(Clone, Debug, PartialEq)]
-    pub struct SendTrytesOptions {
+    pub struct SendTrytesOptions<'a> {
         pub depth: usize,
         pub min_weight_magnitude: usize,
         pub local_pow: bool,
         pub threads: usize,
-        pub reference: Option<String>,
+        pub reference: Option<&'a str>,
     }
 
-    impl Default for SendTrytesOptions {
+    impl<'a> Default for SendTrytesOptions<'a> {
         fn default() -> Self {
             SendTrytesOptions {
                 depth: 3,
@@ -771,14 +771,14 @@ pub mod options {
     /// * `security` - Security to use when generating addresses (1-3)
     /// * `hmac_key` - Optional key to use if you want to hmac the transfers
     #[derive(Clone, Debug, PartialEq)]
-    pub struct PrepareTransfersOptions {
+    pub struct PrepareTransfersOptions<'a, 'b> {
         pub inputs: Option<Inputs>,
-        pub remainder_address: Option<String>,
+        pub remainder_address: Option<&'a str>,
         pub security: usize,
-        pub hmac_key: Option<String>,
+        pub hmac_key: Option<&'b str>,
     }
 
-    impl Default for PrepareTransfersOptions {
+    impl<'a, 'b> Default for PrepareTransfersOptions<'a, 'b> {
         fn default() -> Self {
             PrepareTransfersOptions {
                 inputs: None,

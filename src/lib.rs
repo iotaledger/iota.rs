@@ -9,7 +9,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_json;
 
-mod account;
+// mod account;
 
 /// Helpers for using the Iota Client API
 pub mod iota_api;

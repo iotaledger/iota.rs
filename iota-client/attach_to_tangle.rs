@@ -21,13 +21,13 @@ lazy_static! {
 
 /// Struct used to provide named arguments for the attach functions
 #[derive(Clone, Debug)]
-pub struct AttachOptions {
+pub struct AttachOptions<'a, 'b> {
     /// Number of threads to use for proof of work
     pub threads: usize,
     /// Trunk transaction encoded as a tryte string
-    pub trunk_transaction: String,
+    pub trunk_transaction: &'a str,
     /// Branch transaction encoded as a tryte string
-    pub branch_transaction: String,
+    pub branch_transaction: &'b str,
     /// Difficulty factor to use for proof of work
     pub min_weight_magnitude: usize,
     /// Trytes to attach to tangle
@@ -40,12 +40,12 @@ pub struct AttachOptions {
 /// * `branch_transaction` - Empty string
 /// * `min_weight_magnitude` - 14
 /// * `trytes` - Empty vector
-impl Default for AttachOptions {
+impl<'a, 'b> Default for AttachOptions<'a, 'b> {
     fn default() -> Self {
         AttachOptions {
             threads: num_cpus::get(),
-            trunk_transaction: String::new(),
-            branch_transaction: String::new(),
+            trunk_transaction: "",
+            branch_transaction: "",
             min_weight_magnitude: 14,
             trytes: vec![],
         }
@@ -106,26 +106,24 @@ pub fn attach_to_tangle_local(options: AttachOptions) -> Result<AttachToTangleRe
     );
 
     let mut result_trytes: Vec<String> = Vec::with_capacity(options.trytes.len());
-    let mut previous_transaction: Option<String> = None;
+    let mut previous_transaction = String::new();
     for i in 0..options.trytes.len() {
         let mut tx: Transaction = options.trytes[i].parse()?;
 
-        let new_trunk_tx = if let Some(previous_transaction) = &previous_transaction {
-            &previous_transaction
+        tx.trunk_transaction = if previous_transaction.is_empty() {
+            options.trunk_transaction.into()
         } else {
-            &options.trunk_transaction
+            previous_transaction.clone()
         };
-        tx.trunk_transaction = new_trunk_tx.clone();
 
-        let new_branch_tx = if previous_transaction.is_some() {
-            &options.trunk_transaction
+        tx.branch_transaction = if previous_transaction.is_empty() {
+            options.branch_transaction
         } else {
-            &options.branch_transaction
-        };
-        tx.branch_transaction = new_branch_tx.clone();
+            options.trunk_transaction
+        }
+        .into();
 
-        let tag = &tx.tag;
-        if tag.is_empty() || *tag == "9".repeat(27) {
+        if tx.tag.is_empty() || tx.tag == "9".repeat(27) {
             tx.tag = tx.obsolete_tag.clone();
         }
         tx.attachment_timestamp = Utc::now().timestamp_millis();
@@ -141,7 +139,7 @@ pub fn attach_to_tangle_local(options: AttachOptions) -> Result<AttachToTangleRe
             },
         )?;
         result_trytes.push(result_trits.trytes()?);
-        previous_transaction = Some(result_trytes[i].parse::<Transaction>()?.hash);
+        previous_transaction = result_trytes[i].parse::<Transaction>()?.hash.into();
     }
     result_trytes.reverse();
     Ok(AttachToTangleResponse::new(

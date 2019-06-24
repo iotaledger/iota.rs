@@ -4,17 +4,17 @@ use tokio::prelude::Future;
 
 /// Struct used to provide named arguments for `get_transactions_to_approve`
 #[derive(Clone, Debug)]
-pub struct GetTransactionsToApproveOptions {
+pub struct GetTransactionsToApproveOptions<'a> {
     /// How deep to search
     pub depth: usize,
     /// Where to start search
-    pub reference: Option<String>,
+    pub reference: Option<&'a str>,
 }
 
 /// Provide sane defaults for the fields
 /// * `depth` - 3
 /// * `reference` - None
-impl Default for GetTransactionsToApproveOptions {
+impl<'a> Default for GetTransactionsToApproveOptions<'a> {
     fn default() -> Self {
         GetTransactionsToApproveOptions {
             depth: 3,
