@@ -152,34 +152,6 @@ fn xorin(dst: &mut [u8], src: &[u8]) {
 const PLEN: usize = 25;
 
 /// This structure should be used to create keccak/sha3 hash.
-///
-/// ```rust
-/// extern crate iota_crypto;
-/// use iota_crypto::Keccak;
-///
-/// fn main() {
-///     let mut sha3 = Keccak::new_sha3_256();
-///     let data: Vec<u8> = From::from("hello");
-///     let data2: Vec<u8> = From::from("world");
-///
-///     sha3.update(&data);
-///     sha3.update(&[b' ']);
-///     sha3.update(&data2);
-///
-///     let mut res: [u8; 32] = [0; 32];
-///     sha3.finalize(&mut res);
-///
-///     let expected = vec![
-///         0x64, 0x4b, 0xcc, 0x7e, 0x56, 0x43, 0x73, 0x04,
-///         0x09, 0x99, 0xaa, 0xc8, 0x9e, 0x76, 0x22, 0xf3,
-///         0xca, 0x71, 0xfb, 0xa1, 0xd9, 0x72, 0xfd, 0x94,
-///         0xa3, 0x1c, 0x3b, 0xfb, 0xf2, 0x4e, 0x39, 0x38
-///     ];
-///
-///     let ref_ex: &[u8] = &expected;
-///     assert_eq!(&res, ref_ex);
-/// }
-/// ```
 #[derive(Clone, Copy)]
 pub struct Keccak {
     a: [u64; PLEN],
@@ -187,15 +159,6 @@ pub struct Keccak {
     rate: usize,
     delim: u8,
 }
-
-// impl Clone for Keccak {
-//     fn clone(&self) -> Self {
-//         let mut res = Keccak::new(self.rate, self.delim);
-//         res.a.copy_from_slice(&self.a);
-//         res.offset = self.offset;
-//         res
-//     }
-// }
 
 macro_rules! impl_constructor {
     ($name:ident, $alias:ident, $bits:expr, $delim:expr) => {

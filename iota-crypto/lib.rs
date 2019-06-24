@@ -8,7 +8,6 @@ extern crate failure;
 use std::fmt;
 
 pub use self::curl::*;
-pub use self::keccak::*;
 pub use self::kerl::*;
 
 mod curl;
@@ -19,7 +18,7 @@ mod kerl;
 type Result<T> = ::std::result::Result<T, failure::Error>;
 
 /// The length of a hash in IOTA
-pub const HASH_LENGTH: usize = 243;
+// pub const HASH_LENGTH: usize = 243;
 
 /// Mode allows for mode selection to rely on rusts type system
 #[derive(Clone, Copy, Debug, PartialEq)]

@@ -2,9 +2,12 @@ use reqwest::r#async::{Client, Response};
 use reqwest::Error;
 use tokio::prelude::Future;
 
+/// Struct used to provide named arguments for `get_inclusion_states`
 #[derive(Clone, Debug, Default)]
 pub struct GetInclusionStatesOptions {
+    /// Transactions to search for
     pub transactions: Vec<String>,
+    /// Tips to search
     pub tips: Vec<String>,
 }
 

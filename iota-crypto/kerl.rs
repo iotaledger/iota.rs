@@ -8,7 +8,8 @@ use std::fmt;
 use crate::keccak::Keccak;
 use crate::Result;
 
-use super::{Sponge, HASH_LENGTH};
+use super::Sponge;
+use iota_constants::HASH_TRINARY_SIZE as HASH_LENGTH;
 
 const BIT_HASH_LENGTH: usize = 384;
 const BYTE_HASH_LENGTH: usize = BIT_HASH_LENGTH / 8;
@@ -129,7 +130,7 @@ impl Kerl {
 }
 
 /// Converts trits to bytes
-pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<()> {
+fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<()> {
     ensure!(
         trits.len() == HASH_LENGTH,
         "Trit slice should have length {}, but had length: {}",
@@ -214,7 +215,7 @@ pub fn trits_to_bytes(trits: &[i8], bytes: &mut [u8]) -> Result<()> {
 }
 
 /// Converts bytes to trits
-pub fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) -> Result<()> {
+fn bytes_to_trits(bytes: &mut [u8], trits: &mut [i8]) -> Result<()> {
     ensure!(
         trits.len() == HASH_LENGTH,
         "Trit slice should have length {}, but had length: {}",

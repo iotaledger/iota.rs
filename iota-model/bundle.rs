@@ -1,12 +1,13 @@
 use std::fmt;
+use std::ops::{Deref, DerefMut};
 
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-use iota_crypto::{Kerl, Sponge, HASH_LENGTH};
-
 use crate::Result;
+use iota_constants::HASH_TRINARY_SIZE as HASH_LENGTH;
 use iota_conversion::Trinary;
+use iota_crypto::{Kerl, Sponge};
 
 use super::transaction::Transaction;
 
@@ -15,8 +16,29 @@ const EMPTY_HASH: &str =
 
 /// Represents a bundle of transactions
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct Bundle {
-    pub bundle: Vec<Transaction>,
+pub struct Bundle(Vec<Transaction>);
+
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct BundleEntry<'a, 'b> {
+    pub signature_message_length: usize,
+    pub address: &'a str,
+    pub value: i64,
+    pub tag: &'b str,
+    pub timestamp: i64,
+}
+
+impl Deref for Bundle {
+    type Target = Vec<Transaction>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Bundle {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
 }
 
 impl fmt::Display for Bundle {
@@ -32,31 +54,22 @@ impl fmt::Display for Bundle {
 impl Bundle {
     /// Greates a new bundle using the provided transactions
     pub fn new(transactions: impl Into<Vec<Transaction>>) -> Bundle {
-        Bundle {
-            bundle: transactions.into(),
-        }
+        Bundle(transactions.into())
     }
 
     /// Adds an entry into the bundle
-    pub fn add_entry(
-        &mut self,
-        signature_message_length: usize,
-        address: &str,
-        value: i64,
-        tag: &str,
-        timestamp: i64,
-    ) {
-        for i in 0..signature_message_length {
+    pub fn add_entry(&mut self, entry: BundleEntry) {
+        for i in 0..entry.signature_message_length {
             let mut trx = Transaction::default();
-            trx.address = address.into();
-            trx.tag = tag.into();
-            trx.obsolete_tag = tag.into();
-            trx.timestamp = timestamp;
+            trx.address = entry.address.into();
+            trx.tag = entry.tag.into();
+            trx.obsolete_tag = entry.tag.into();
+            trx.timestamp = entry.timestamp;
             match i {
-                0 => trx.value = value,
+                0 => trx.value = entry.value,
                 _ => trx.value = 0,
             }
-            self.bundle.push(trx);
+            self.0.push(trx);
         }
     }
 
@@ -66,7 +79,7 @@ impl Bundle {
         let empty_hash = EMPTY_HASH;
         let empty_timestamp = 999_999_999;
 
-        for (i, bundle) in self.bundle.iter_mut().enumerate() {
+        for (i, bundle) in self.0.iter_mut().enumerate() {
             let new_sig = if signature_fragments.is_empty() || signature_fragments[i].is_empty() {
                 &empty_signature_fragment
             } else {
@@ -88,7 +101,7 @@ impl Bundle {
         let mut kerl = Kerl::default();
         while !valid_bundle {
             kerl.reset();
-            for bundle in &mut self.bundle {
+            for bundle in &mut self.0 {
                 let value_trits = bundle.value.trits_with_length(81);
                 let timestamp_trits = bundle.timestamp.trits_with_length(27);
                 let current_index_trits = (bundle.current_index as i64).trits_with_length(27);
@@ -104,14 +117,13 @@ impl Bundle {
             let mut hash = [0; HASH_LENGTH];
             kerl.squeeze(&mut hash)?;
             let hash_trytes = hash.trytes()?;
-            for bundle in &mut self.bundle {
+            for bundle in &mut self.0 {
                 bundle.bundle = hash_trytes.clone();
             }
             let normalized_hash = Bundle::normalized_bundle(&hash_trytes);
             if normalized_hash.contains(&13) {
-                let increased_tag =
-                    crate::trit_adder::add(&self.bundle[0].obsolete_tag.trits(), &[1]);
-                self.bundle[0].obsolete_tag = increased_tag.trytes()?;
+                let increased_tag = crate::trit_adder::add(&self.0[0].obsolete_tag.trits(), &[1]);
+                self.0[0].obsolete_tag = increased_tag.trytes()?;
             } else {
                 valid_bundle = true;
             }

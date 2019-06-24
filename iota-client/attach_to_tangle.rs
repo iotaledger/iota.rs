@@ -19,14 +19,27 @@ lazy_static! {
     pub static ref MAX_TIMESTAMP_VALUE: i64 = (3_i64.pow(27) - 1) / 2;
 }
 
+/// Struct used to provide named arguments for the attach functions
+#[derive(Clone, Debug)]
 pub struct AttachOptions {
+    /// Number of threads to use for proof of work
     pub threads: usize,
+    /// Trunk transaction encoded as a tryte string
     pub trunk_transaction: String,
+    /// Branch transaction encoded as a tryte string
     pub branch_transaction: String,
+    /// Difficulty factor to use for proof of work
     pub min_weight_magnitude: usize,
+    /// Trytes to attach to tangle
     pub trytes: Vec<String>,
 }
 
+/// Provides sane defaults for the fields
+/// * `threads` - Number of CPUs
+/// * `trunk_transaction` - Empty string
+/// * `branch_transaction` - Empty string
+/// * `min_weight_magnitude` - 14
+/// * `trytes` - Empty vector
 impl Default for AttachOptions {
     fn default() -> Self {
         AttachOptions {

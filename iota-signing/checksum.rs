@@ -1,6 +1,7 @@
 use iota_constants;
+use iota_constants::HASH_TRINARY_SIZE;
 use iota_conversion::Trinary;
-use iota_crypto::{Kerl, Sponge, HASH_LENGTH};
+use iota_crypto::{Kerl, Sponge};
 
 use crate::Result;
 
@@ -51,7 +52,7 @@ pub fn is_address_without_checksum(address: &str) -> bool {
 fn calculate_checksum(address: &str) -> Result<String> {
     let mut curl = Kerl::default();
     curl.absorb(&address.trits())?;
-    let mut checksum_trits = [0; HASH_LENGTH];
+    let mut checksum_trits = [0; HASH_TRINARY_SIZE];
     curl.squeeze(&mut checksum_trits)?;
     let checksum = checksum_trits.trytes()?;
     Ok(checksum[72..81].to_string())

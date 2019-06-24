@@ -31,7 +31,7 @@ impl HMAC {
     /// Bundle
     pub fn add_hmac(&self, bundle: &mut Bundle) -> Result<()> {
         let mut curl = Curl::new(HashMode::CURLP27)?;
-        for b in bundle.bundle.iter_mut() {
+        for b in bundle.iter_mut() {
             if b.value > 0 {
                 let bundle_hash_trits = b.bundle.trits();
                 let mut hmac = [0; 243];

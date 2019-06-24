@@ -336,13 +336,13 @@ impl API {
             }
             tag = transfer.tag;
             iota_model::right_pad_string(&mut tag, iota_constants::TAG_LENGTH, '9');
-            bundle.add_entry(
-                signature_message_length,
-                &transfer.address,
-                transfer.value,
-                &tag,
-                Utc::now().timestamp(),
-            );
+            bundle.add_entry(BundleEntry {
+                signature_message_length: signature_message_length,
+                address: &transfer.address,
+                value: transfer.value,
+                tag: &tag,
+                timestamp: Utc::now().timestamp(),
+            });
             total_value += transfer.value;
         }
 
@@ -422,7 +422,7 @@ impl API {
             bundle.finalize()?;
             bundle.add_trytes(&signature_fragments);
             let mut bundle_trytes: Vec<String> = Vec::new();
-            for b in bundle.bundle.iter().rev() {
+            for b in bundle.iter().rev() {
                 bundle_trytes.push(b.try_into()?);
             }
             Ok(bundle_trytes)
@@ -536,19 +536,25 @@ impl API {
             let timestamp = Utc::now().timestamp();
             let address = iota_signing::checksum::remove_checksum(&input.address);
 
-            bundle.add_entry(
-                input.security,
-                &address,
-                to_subtract,
-                &options.tag,
-                timestamp,
-            );
+            bundle.add_entry(BundleEntry {
+                signature_message_length: input.security,
+                address: &address,
+                value: to_subtract,
+                tag: &options.tag,
+                timestamp: timestamp,
+            });
 
             if this_balance >= total_transfer_value {
                 let remainder = this_balance - total_transfer_value;
                 if let Some(remainder_address) = &options.remainder_address {
                     if remainder > 0 {
-                        bundle.add_entry(1, remainder_address, remainder, &options.tag, timestamp);
+                        bundle.add_entry(BundleEntry {
+                            signature_message_length: 1,
+                            address: &remainder_address,
+                            value: remainder,
+                            tag: &options.tag,
+                            timestamp: timestamp,
+                        });
                         return self.sign_inputs_and_return(
                             &options.seed,
                             inputs,
@@ -574,13 +580,13 @@ impl API {
                             total: None,
                         },
                     )?[0];
-                    bundle.add_entry(
-                        1,
-                        &new_address,
-                        remainder,
-                        &options.tag,
-                        Utc::now().timestamp(),
-                    );
+                    bundle.add_entry(BundleEntry {
+                        signature_message_length: 1,
+                        address: &new_address,
+                        value: remainder,
+                        tag: &options.tag,
+                        timestamp: Utc::now().timestamp(),
+                    });
                     return self.sign_inputs_and_return(
                         &options.seed,
                         inputs,
@@ -617,9 +623,9 @@ impl API {
     ) -> Result<Vec<String>> {
         bundle.finalize()?;
         bundle.add_trytes(&signature_fragments);
-        for i in 0..bundle.bundle.len() {
-            if bundle.bundle[i].value < 0 {
-                let this_address = bundle.bundle[i].address.clone();
+        for i in 0..bundle.len() {
+            if bundle[i].value < 0 {
+                let this_address = bundle[i].address.clone();
                 let mut key_index = 0;
                 let mut key_security = 0;
                 for input in inputs.inputs_list() {
@@ -629,7 +635,7 @@ impl API {
                         break;
                     }
                 }
-                let bundle_hash = &bundle.bundle[i].bundle;
+                let bundle_hash = &bundle[i].bundle;
                 let key = iota_signing::key(&seed.trits(), key_index, key_security)?;
                 let normalized_bundle_hash = Bundle::normalized_bundle(&bundle_hash).to_vec();
                 let mut normalized_bundle_fragments = [[0; 27]; 3];
@@ -640,18 +646,16 @@ impl API {
                 let first_bundle_fragment = normalized_bundle_fragments[0];
                 let first_signed_fragment =
                     iota_signing::signature_fragment(&first_bundle_fragment, &first_fragment)?;
-                bundle.bundle[i].signature_fragments = first_signed_fragment.trytes()?;
+                bundle[i].signature_fragments = first_signed_fragment.trytes()?;
                 for j in 1..key_security {
-                    if bundle.bundle[i + j].address == *this_address
-                        && bundle.bundle[i + j].value == 0
-                    {
+                    if bundle[i + j].address == *this_address && bundle[i + j].value == 0 {
                         let next_fragment = key[6561 * j..(j + 1) * 6561].to_vec();
                         let next_bundle_fragment = normalized_bundle_fragments[j];
                         let next_signed_fragment = iota_signing::signature_fragment(
                             &next_bundle_fragment,
                             &next_fragment,
                         )?;
-                        bundle.bundle[i + j].signature_fragments = next_signed_fragment.trytes()?;
+                        bundle[i + j].signature_fragments = next_signed_fragment.trytes()?;
                     }
                 }
             }
@@ -661,7 +665,7 @@ impl API {
             hmac.add_hmac(bundle)?;
         }
         let mut bundle_trytes: Vec<String> = Vec::new();
-        for tx in bundle.bundle.iter().rev() {
+        for tx in bundle.iter().rev() {
             let tx_trytes: String = tx.try_into()?;
             bundle_trytes.push(tx_trytes);
         }

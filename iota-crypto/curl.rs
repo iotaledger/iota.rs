@@ -1,10 +1,11 @@
 use std::fmt;
 
 use super::Result;
-use super::{HashMode, Sponge, HASH_LENGTH};
+use super::{HashMode, Sponge};
+use iota_constants::HASH_TRINARY_SIZE as HASH_LENGTH;
 
 /// The length of the internal state
-pub const STATE_LENGTH: usize = 3 * HASH_LENGTH;
+const STATE_LENGTH: usize = 3 * HASH_LENGTH;
 
 const TRUTH_TABLE: [i8; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 

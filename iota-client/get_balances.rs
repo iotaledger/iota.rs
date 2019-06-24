@@ -2,19 +2,27 @@ use reqwest::r#async::{Client, Response};
 use reqwest::Error;
 use tokio::prelude::Future;
 
+/// Struct used to provide named arguments for `get_balances`
 #[derive(Clone, Debug)]
 pub struct GetBalancesOptions {
+    /// Address to check
     pub addresses: Vec<String>,
+    /// Stop searching after we've found this much Iota
     pub threshold: i32,
-    pub tips: Option<Vec<String>>,
+    /// Tips to search
+    pub tips: Vec<String>,
 }
 
+/// Provides sane defaults for the fields
+/// * `addresses` - Empty vector
+/// * `threshold` - 100
+/// * `tips` - Empty vector
 impl Default for GetBalancesOptions {
     fn default() -> Self {
         GetBalancesOptions {
             addresses: vec![],
             threshold: 100,
-            tips: None,
+            tips: vec![],
         }
     }
 }
@@ -35,8 +43,8 @@ pub fn get_balances(
         "threshold": options.threshold,
     });
 
-    if let Some(tips) = options.tips {
-        body["tips"] = json!(tips);
+    if !options.tips.is_empty() {
+        body["tips"] = json!(options.tips);
     }
 
     client

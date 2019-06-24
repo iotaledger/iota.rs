@@ -2,12 +2,18 @@ use reqwest::r#async::{Client, Response};
 use reqwest::Error;
 use tokio::prelude::Future;
 
+/// Struct used to provide named arguments for `get_transactions_to_approve`
 #[derive(Clone, Debug)]
 pub struct GetTransactionsToApproveOptions {
+    /// How deep to search
     pub depth: usize,
+    /// Where to start search
     pub reference: Option<String>,
 }
 
+/// Provide sane defaults for the fields
+/// * `depth` - 3
+/// * `reference` - None
 impl Default for GetTransactionsToApproveOptions {
     fn default() -> Self {
         GetTransactionsToApproveOptions {

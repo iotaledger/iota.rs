@@ -1,7 +1,8 @@
 pub use hmac::HMAC;
 use iota_constants;
+use iota_constants::HASH_TRINARY_SIZE;
 use iota_conversion::Trinary;
-use iota_crypto::{Kerl, Sponge, HASH_LENGTH};
+use iota_crypto::{Kerl, Sponge};
 use iota_model::Bundle;
 use iota_validation::input_validator;
 
@@ -35,7 +36,7 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Result<Vec<i8>> {
     curl.reset();
     curl.absorb(&seed)?;
 
-    let mut key = vec![0; security * HASH_LENGTH * 27];
+    let mut key = vec![0; security * HASH_TRINARY_SIZE * 27];
     let mut buffer = vec![0; seed.len()];
     let mut offset = 0;
 
@@ -43,8 +44,8 @@ pub fn key(in_seed: &[i8], index: usize, security: usize) -> Result<Vec<i8>> {
     while tmp_sec > 0 {
         for _i in 0..27 {
             curl.squeeze(&mut buffer)?;
-            key[offset..offset + HASH_LENGTH].copy_from_slice(&buffer[0..HASH_LENGTH]);
-            offset += HASH_LENGTH;
+            key[offset..offset + HASH_TRINARY_SIZE].copy_from_slice(&buffer[0..HASH_TRINARY_SIZE]);
+            offset += HASH_TRINARY_SIZE;
         }
         tmp_sec -= 1;
     }
@@ -62,9 +63,9 @@ pub fn signature_fragment(
         let mut j = 0;
         while j < 13 - fragment {
             curl.reset();
-            let offset = i * HASH_LENGTH;
-            curl.absorb(&signature_fragment[offset..offset + HASH_LENGTH])?;
-            curl.squeeze(&mut signature_fragment[offset..offset + HASH_LENGTH])?;
+            let offset = i * HASH_TRINARY_SIZE;
+            curl.absorb(&signature_fragment[offset..offset + HASH_TRINARY_SIZE])?;
+            curl.squeeze(&mut signature_fragment[offset..offset + HASH_TRINARY_SIZE])?;
             j += 1;
         }
     }
@@ -72,8 +73,8 @@ pub fn signature_fragment(
 }
 
 /// Signs an address
-pub fn address(digests: &[i8]) -> Result<[i8; HASH_LENGTH]> {
-    let mut address = [0; HASH_LENGTH];
+pub fn address(digests: &[i8]) -> Result<[i8; HASH_TRINARY_SIZE]> {
+    let mut address = [0; HASH_TRINARY_SIZE];
     let mut curl = Kerl::default();
     curl.reset();
     curl.absorb(digests)?;
@@ -84,7 +85,7 @@ pub fn address(digests: &[i8]) -> Result<[i8; HASH_LENGTH]> {
 /// Signs digests
 pub fn digests(key: &[i8]) -> Result<Vec<i8>> {
     let security = (key.len() as f64 / KEY_LENGTH as f64).floor() as usize;
-    let mut digests = vec![0; security * HASH_LENGTH];
+    let mut digests = vec![0; security * HASH_TRINARY_SIZE];
     let mut key_fragment = [0; KEY_LENGTH];
     let mut curl = Kerl::default();
     for i in 0..security {
@@ -93,15 +94,15 @@ pub fn digests(key: &[i8]) -> Result<Vec<i8>> {
         for j in 0..27 {
             for _k in 0..26 {
                 curl.reset();
-                let offset = j * HASH_LENGTH;
-                curl.absorb(&key_fragment[offset..offset + HASH_LENGTH])?;
-                curl.squeeze(&mut key_fragment[offset..offset + HASH_LENGTH])?;
+                let offset = j * HASH_TRINARY_SIZE;
+                curl.absorb(&key_fragment[offset..offset + HASH_TRINARY_SIZE])?;
+                curl.squeeze(&mut key_fragment[offset..offset + HASH_TRINARY_SIZE])?;
             }
         }
         curl.reset();
         curl.absorb(&key_fragment)?;
-        let offset = i * HASH_LENGTH;
-        curl.squeeze(&mut digests[offset..offset + HASH_LENGTH])?;
+        let offset = i * HASH_TRINARY_SIZE;
+        curl.squeeze(&mut digests[offset..offset + HASH_TRINARY_SIZE])?;
     }
     Ok(digests)
 }
@@ -111,9 +112,9 @@ pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> R
     let mut curl = Kerl::default();
     curl.reset();
     let mut j_curl = Kerl::default();
-    let mut buffer = vec![0; HASH_LENGTH];
+    let mut buffer = vec![0; HASH_TRINARY_SIZE];
     for i in 0..27 {
-        buffer = signature_fragment[i * HASH_LENGTH..(i + 1) * HASH_LENGTH].to_vec();
+        buffer = signature_fragment[i * HASH_TRINARY_SIZE..(i + 1) * HASH_TRINARY_SIZE].to_vec();
         let mut j = normalized_bundle_fragment[i] + 13;
         while j > 0 {
             j_curl.reset();
@@ -131,7 +132,7 @@ pub fn digest(normalized_bundle_fragment: &[i8], signature_fragment: &[i8]) -> R
 pub fn validate_bundle_signatures(signed_bundle: &Bundle, address: &str) -> Result<bool> {
     let mut bundle_hash = "";
     let mut signature_fragments: Vec<String> = Vec::new();
-    for transaction in &signed_bundle.bundle {
+    for transaction in signed_bundle.iter() {
         if transaction.address == address {
             bundle_hash = &transaction.bundle;
             let signature_fragment = &transaction.signature_fragments;
@@ -157,15 +158,16 @@ pub fn validate_signatures(
         normalized_bundle_fragments[i]
             .copy_from_slice(&normalized_bundle_hash[i * 27..(i + 1) * 27]);
     }
-    let mut digests = vec![0; signature_fragments.len() * HASH_LENGTH];
+    let mut digests = vec![0; signature_fragments.len() * HASH_TRINARY_SIZE];
 
     for i in 0..signature_fragments.len() {
         let digest_buffer = digest(
             &normalized_bundle_fragments[i % 3],
             &signature_fragments[i].trits(),
         )?;
-        let offset = i * HASH_LENGTH;
-        digests[offset..offset + HASH_LENGTH].copy_from_slice(&digest_buffer[0..HASH_LENGTH]);
+        let offset = i * HASH_TRINARY_SIZE;
+        digests[offset..offset + HASH_TRINARY_SIZE]
+            .copy_from_slice(&digest_buffer[0..HASH_TRINARY_SIZE]);
     }
     let address = address(&digests)?.trytes()?;
     Ok(expected_address == address)

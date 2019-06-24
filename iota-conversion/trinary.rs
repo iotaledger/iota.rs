@@ -24,13 +24,19 @@ lazy_static! {
     };
 }
 
+/// Trait used to enable conversion to trinary types
 pub trait Trinary {
+    /// Provides the trit vector representation of the value
     fn trits(&self) -> Vec<Trit>;
+    /// Provides the trit vector representation of the value with given length, padding with `0` if required
     fn trits_with_length(&self, length: usize) -> Vec<Trit>;
+    /// Provides the tryte string representation of the value
     fn trytes(&self) -> Result<Trytes>;
 }
 
+/// Type alias for `i8`
 pub type Trit = i8;
+/// Type alias for `String`
 pub type Trytes = String;
 
 impl Trinary for i64 {
@@ -169,7 +175,7 @@ fn trytes(trits: &[Trit]) -> Result<Trytes> {
         .collect())
 }
 
-pub fn trits_with_length(trits: &[Trit], length: usize) -> Vec<Trit> {
+fn trits_with_length(trits: &[Trit], length: usize) -> Vec<Trit> {
     if trits.len() < length {
         let mut result = vec![0; length];
         result[..trits.len()].copy_from_slice(&trits);

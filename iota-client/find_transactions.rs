@@ -2,11 +2,16 @@ use reqwest::r#async::{Client, Response};
 use reqwest::Error;
 use tokio::prelude::Future;
 
+/// Struct used to provide named arguments for `find_transactions`
 #[derive(Clone, Default, Debug)]
 pub struct FindTransactionsOptions {
+    /// Bundles to search for
     pub bundles: Vec<String>,
+    /// Addresses to search for
     pub addresses: Vec<String>,
+    /// Tags to search for
     pub tags: Vec<String>,
+    /// Approvees to search for
     pub approvees: Vec<String>,
 }
 

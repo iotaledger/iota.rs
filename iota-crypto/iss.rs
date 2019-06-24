@@ -4,7 +4,8 @@ use crate::Result;
 
 use super::curl::Curl;
 use super::kerl::Kerl;
-use super::{hash_with_mode, HashMode, Sponge, HASH_LENGTH};
+use super::{hash_with_mode, HashMode, Sponge};
+use iota_constants::HASH_TRINARY_SIZE as HASH_LENGTH;
 
 /// Number of fragment chunks
 pub const NUMBER_OF_FRAGMENT_CHUNKS: usize = 27;
