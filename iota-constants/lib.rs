@@ -7,6 +7,7 @@ pub const TRYTE_ALPHABET: [char; 27] = [
     'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 ];
 
+/// Default Minimum Weight Magnitude on IOTA mainnet
 pub const DEFAULT_MWM: usize = 14;
 
 /// The minimum value a trit can have
@@ -18,10 +19,14 @@ pub const MIN_TRYTE_VALUE: i8 = -13;
 /// The maximum value a tryte can have
 pub const MAX_TRYTE_VALUE: i8 = 13;
 
+/// Radix of ternary numeral system
 pub const TRINARY_RADIX: usize = 3;
 
+/// Size of hash in trits
 pub const HASH_TRINARY_SIZE: usize = 243;
+/// Size of hash in trytes
 pub const HASH_TRYTES_SIZE: usize = HASH_TRINARY_SIZE / 3;
+/// Size of hash in bytes
 pub const HASH_BYTES_SIZE: usize = 48;
 pub const KEY_SEGMENTS_PER_FRAGMENT: usize = 27;
 pub const KEY_SEGMENT_HASH_ROUNDS: usize = 26;
@@ -32,7 +37,9 @@ pub const ADDRESS_WITH_CHECKSUM_TRYTES_SIZE: usize =
     HASH_TRYTES_SIZE + ADDRESS_CHECKSUM_TRYTES_SIZE;
 pub const MIN_CHECKSUM_TRYTES_SIZE: usize = 3;
 
+/// Maximum value of attachment timstamp
 pub const UPPER_BOUND_ATTACHMENT_TIMESTAMP: usize = (3 ^ 27 - 1) / 2;
+/// Minimum value of attachment timstamp
 pub const LOWER_BOUND_ATTACHMENT_TIMESTAMP: usize = 0;
 
 /// The number of trits in a byte
@@ -50,22 +57,38 @@ pub const MESSAGE_LENGTH: usize = 2187;
 /// The mandatory length of a tag segment
 pub const TAG_LENGTH: usize = 27;
 
+/// Size of signature message fragment in trtis
 pub const SIGNATURE_MESSAGE_FRAGMENT_TRINARY_SIZE: usize = 6561;
+/// Size of address in trtis
 pub const ADDRESS_TRINARY_SIZE: usize = 243;
+/// Size of value in trtis
 pub const VALUE_SIZE_TRINARY: usize = 81;
+/// Size of obselte tag in trtis
 pub const OBSOLETE_TAG_TRINARY_SIZE: usize = 81;
+/// Size of timestamp in trtis
 pub const TIMESTAMP_TRINARY_SIZE: usize = 27;
+/// Size of current index in trtis
 pub const CURRENT_INDEX_TRINARY_SIZE: usize = 27;
+/// Size of last index trinary in trtis
 pub const LAST_INDEX_TRINARY_SIZE: usize = 27;
+/// Size of bundle hash in trtis
 pub const BUNDLE_TRINARY_SIZE: usize = 243;
+/// Size of trunk transaction hash in trtis
 pub const TRUNK_TRANSACTION_TRINARY_SIZE: usize = 243;
+/// Size of brnach transaction hash in trtis
 pub const BRANCH_TRANSACTION_TRINARY_SIZE: usize = 243;
+/// Size of tag in trtis
 pub const TAG_TRINARY_SIZE: usize = 81;
+/// Size of attachment timestamp in trtis
 pub const ATTACHMENT_TIMESTAMP_TRINARY_SIZE: usize = 27;
+/// Size of upper bound attachment timestamp in trtis
 pub const ATTACHMENT_TIMESTAMP_LOWER_BOUND_TRINARY_SIZE: usize = 27;
+/// Size of lower bound attachment timestamp in trtis
 pub const ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_SIZE: usize = 27;
+/// Size of nonce in trtis
 pub const NONCE_TRINARY_SIZE: usize = 81;
 
+/// Size of a whole transaction object in trits
 pub const TRANSACTION_TRINARY_SIZE: usize = SIGNATURE_MESSAGE_FRAGMENT_TRINARY_SIZE
     + ADDRESS_TRINARY_SIZE
     + VALUE_SIZE_TRINARY
@@ -132,6 +155,9 @@ pub const PRIVATE_KEY_REUSE_ERROR: &str = "Private key reuse detect!";
 /// SEND_TO_INPUTS_ERROR
 pub const SEND_TO_INPUTS_ERROR: &str = "Send to inputs!";
 
+/// Security levels of a private key and address pair. The greater the security
+/// level, the larger and more secure the signature of a spent address is
+/// against brute force attacks.
 pub enum SecurityLevel {
     Low = 1,
     Medium = 2,
