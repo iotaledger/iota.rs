@@ -51,9 +51,9 @@ pub fn is_value(value: &str) -> bool {
 }
 
 /// Validates that a slice of strings are all valid trytes
-pub fn is_array_of_trytes(trytes: &[String]) -> bool {
+pub fn is_array_of_trytes<T: AsRef<str>>(trytes: &[T]) -> bool {
     for tryte in trytes {
-        if !is_trytes(&tryte) {
+        if !is_trytes(&tryte.as_ref()) {
             return false;
         }
     }
@@ -61,8 +61,9 @@ pub fn is_array_of_trytes(trytes: &[String]) -> bool {
 }
 
 /// Validates that a slice of strings are all valid hashes
-pub fn is_array_of_hashes(hashes: &[String]) -> bool {
+pub fn is_array_of_hashes<T: AsRef<str>>(hashes: &[T]) -> bool {
     for hash in hashes {
+        let hash = hash.as_ref();
         if hash.len() == 90 {
             if !is_trytes(&hash[0..90]) {
                 return false;

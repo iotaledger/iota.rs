@@ -1,20 +1,11 @@
-# An unofficial implementation of the IOTA api in rust.
+# This library is a Work in Progress. Don't use in production.
+
+# This is an Iota library written in rust.
 [![Build Status](https://travis-ci.org/njaremko/iota-lib-rs.svg?branch=master)](https://travis-ci.org/njaremko/iota-lib-rs) 
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/m1g0ddlgxk8wq9es/branch/master?svg=true)](https://ci.appveyor.com/project/njaremko/iota-lib-rs/branch/master)
 [![Version](https://img.shields.io/crates/v/iota-lib-rs.svg)](https://crates.io/crates/iota-lib-rs)
 [![Documentation](https://docs.rs/iota-lib-rs/badge.svg)](https://docs.rs/iota-lib-rs/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/njaremko/iota-lib-rs/master/LICENSE)
-
-This library requires nightly rust until async becomes stable
-
-This is a port of the IOTA Java/JS API into Rust. It works, but I wouldn't trust it with real money yet. Having said that, please let me know if you have any suggestions or run into any issues.
-
-Here are some reasons you might want to use this library:
-1. It has a very fast implementation of local PoW (1-2s with MwM = 14, 4-6ms with MwM = 9 on my laptop)
-2. You'll benefit from Rust's very nice type system
-3. This library is more actively maintained than Jota
-4. Now that the library is working, I'm going to be obsessively going over it to improve safety, performance, and usability
-5. It would make me personally happy :)
 
 # Documentation
 
@@ -23,7 +14,11 @@ https://docs.rs/iota-lib-rs
 This library currently requires nightly rust to build.
 
 Things that are done:
-
+- [ ] Stateful Accounts
+    - [ ] Plugins
+    - [ ] Storage
+    - [ ] Events
+    - [ ] Conditional Deposit Addresses
 - [x] Crypto
     - [x] Curl
     - [x] Kerl
@@ -99,10 +94,10 @@ fn main() {
         // Populate the rest of the fields with default values
         ..Transfer::default()
     };
-    let api = iota_api::API::new("https://node01.iotatoken.nl");
+    let mut api = iota_api::API::new("https://node01.iotatoken.nl");
     let tx = api
         .send_transfers(
-            transfer.into(),
+            transfer,
             &trytes,
             SendTransferOptions {
                 local_pow: true,

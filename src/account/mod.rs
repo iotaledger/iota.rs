@@ -1,15 +1,18 @@
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Mutex;
 use std::time::Instant;
 
 use failure;
 
-use iota_client;
 use iota_model;
 
 mod deposit;
-mod storage;
+mod file_account_store;
+mod structs;
+mod traits;
+mod iota_account;
+mod account_plugin;
 
+mod storage;
 pub struct Settings {
     mwm: u64,
     depth: u64,
@@ -30,10 +33,10 @@ impl Account {
     }
 
     fn start(&mut self) -> Result<(), failure::Error> {
-        let state = storage::load_account(self.id())?;
-        self.last_key_index = state.key_index();
-        self.start_plugins()?;
-        self.running.store(true, Ordering::Relaxed);
+        // let state = storage::load_account(self.id())?;
+        // self.last_key_index = state.key_index();
+        // self.start_plugins()?;
+        // self.running.store(true, Ordering::Relaxed);
         Ok(())
     }
 

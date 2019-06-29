@@ -2,14 +2,14 @@
 
 #[macro_use]
 extern crate failure;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde;
-#[macro_use]
-extern crate serde_json;
+// #[macro_use]
+// extern crate lazy_static;
+// #[macro_use]
+// extern crate serde;
+// #[macro_use]
+// extern crate serde_json;
 
-// mod account;
+//mod account;
 
 /// Helpers for using the Iota Client API
 pub mod iota_api;
@@ -36,11 +36,3 @@ pub use iota_validation;
 
 /// Error type used throughout the crates
 type Result<T> = ::std::result::Result<T, failure::Error>;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}

@@ -21,7 +21,7 @@ lazy_static! {
 
 /// Struct used to provide named arguments for the attach functions
 #[derive(Clone, Debug)]
-pub struct AttachOptions<'a, 'b> {
+pub struct AttachOptions<'a, 'b, 'c> {
     /// Number of threads to use for proof of work
     pub threads: usize,
     /// Trunk transaction encoded as a tryte string
@@ -31,7 +31,7 @@ pub struct AttachOptions<'a, 'b> {
     /// Difficulty factor to use for proof of work
     pub min_weight_magnitude: usize,
     /// Trytes to attach to tangle
-    pub trytes: Vec<String>,
+    pub trytes: &'c [String],
 }
 
 /// Provides sane defaults for the fields
@@ -40,14 +40,14 @@ pub struct AttachOptions<'a, 'b> {
 /// * `branch_transaction` - Empty string
 /// * `min_weight_magnitude` - 14
 /// * `trytes` - Empty vector
-impl<'a, 'b> Default for AttachOptions<'a, 'b> {
+impl<'a, 'b, 'c> Default for AttachOptions<'a, 'b, 'c> {
     fn default() -> Self {
         AttachOptions {
             threads: num_cpus::get(),
             trunk_transaction: "",
             branch_transaction: "",
             min_weight_magnitude: 14,
-            trytes: vec![],
+            trytes: &[],
         }
     }
 }
