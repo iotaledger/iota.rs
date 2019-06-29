@@ -133,7 +133,7 @@ impl Trinary for &str {
 }
 
 /// Increments a trit slice in place, only considering trits until index `size`
-fn increment(trit_array: &mut [i8], size: usize) {
+fn increment(trit_array: &mut [Trit], size: usize) {
     for trit in trit_array.iter_mut().take(size) {
         *trit += 1;
         if *trit > iota_constants::MAX_TRIT_VALUE {
@@ -144,21 +144,14 @@ fn increment(trit_array: &mut [i8], size: usize) {
     }
 }
 
-fn char_to_trits(tryte: char) -> &'static [i8] {
-    for (i, mapping) in TRYTE_TO_TRITS_MAPPINGS
-        .iter()
-        .enumerate()
-        .take(iota_constants::TRYTE_ALPHABET.len())
-    {
-        if iota_constants::TRYTE_ALPHABET[i] == tryte {
-            return mapping;
-        }
+fn char_to_trits(tryte: char) -> &'static [Trit] {
+    match iota_constants::TRYTE_ALPHABET.iter().position(|&x| x == tryte) {
+        Some(p) => &TRYTE_TO_TRITS_MAPPINGS[p],
+        None => &TRYTE_TO_TRITS_MAPPINGS[0],
     }
-
-    &TRYTE_TO_TRITS_MAPPINGS[0]
 }
 
-fn trits_to_char(trits: &[i8]) -> char {
+fn trits_to_char(trits: &[Trit]) -> char {
     assert!(trits.len() <= iota_constants::TRITS_PER_TRYTE);
     match TRYTE_TO_TRITS_MAPPINGS.iter().position(|&x| x == trits) {
         Some(p) => iota_constants::TRYTE_ALPHABET[p],
@@ -181,6 +174,6 @@ fn trits_with_length(trits: &[Trit], length: usize) -> Vec<Trit> {
         result[..trits.len()].copy_from_slice(&trits);
         result
     } else {
-        trits[0..length].to_vec()
+        trits[..length].to_vec()
     }
 }
