@@ -101,10 +101,9 @@ impl Trinary for [Trit; 243] {
     fn trytes(&self) -> Result<Trytes> {
         ensure!(self.len() % 3 == 0, "Invalid trit length.");
 
-        Ok(self
-            .chunks(iota_constants::TRITS_PER_TRYTE)
+        self.chunks(iota_constants::TRITS_PER_TRYTE)
             .map(trits_to_char)
-            .collect())
+            .collect()
     }
 }
 
@@ -145,27 +144,36 @@ fn increment(trit_array: &mut [Trit], size: usize) {
 }
 
 fn char_to_trits(tryte: char) -> &'static [Trit] {
-    match iota_constants::TRYTE_ALPHABET.iter().position(|&x| x == tryte) {
+    match iota_constants::TRYTE_ALPHABET
+        .iter()
+        .position(|&x| x == tryte)
+    {
         Some(p) => &TRYTE_TO_TRITS_MAPPINGS[p],
         None => &TRYTE_TO_TRITS_MAPPINGS[0],
     }
 }
 
-fn trits_to_char(trits: &[Trit]) -> char {
-    assert!(trits.len() <= iota_constants::TRITS_PER_TRYTE);
-    match TRYTE_TO_TRITS_MAPPINGS.iter().position(|&x| x == trits) {
-        Some(p) => iota_constants::TRYTE_ALPHABET[p],
-        None => '-',
-    }
+fn trits_to_char(trits: &[Trit]) -> Result<char> {
+    ensure!(
+        trits.len() <= iota_constants::TRITS_PER_TRYTE,
+        "Provided trit slice is too long: {:?}",
+        trits
+    );
+    Ok(
+        match TRYTE_TO_TRITS_MAPPINGS.iter().position(|&x| x == trits) {
+            Some(p) => iota_constants::TRYTE_ALPHABET[p],
+            None => '-',
+        },
+    )
 }
 
 fn trytes(trits: &[Trit]) -> Result<Trytes> {
     ensure!(trits.len() % 3 == 0, "Invalid trit length.");
 
-    Ok(trits
+    trits
         .chunks(iota_constants::TRITS_PER_TRYTE)
         .map(trits_to_char)
-        .collect())
+        .collect()
 }
 
 fn trits_with_length(trits: &[Trit], length: usize) -> Vec<Trit> {
