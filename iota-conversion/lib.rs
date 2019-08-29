@@ -1,4 +1,12 @@
 #![deny(unused_extern_crates)]
+#![warn(
+    missing_debug_implementations,
+    missing_docs,
+    rust_2018_idioms,
+    unreachable_pub
+)]
+
+//! Trinary and unit conversion traits and methods
 
 #[macro_use]
 extern crate failure;
@@ -22,7 +30,7 @@ pub fn value(trits: &[i8]) -> i8 {
     trits.iter().rev().fold(0, |acc, trit| acc * 3 + *trit)
 }
 
-/// Converts a slice of trits into a numeric value
+/// Converts a slice of trits into a numeric value in i64
 pub fn long_value(trits: &[i8]) -> i64 {
     trits
         .iter()
