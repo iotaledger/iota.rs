@@ -4,8 +4,6 @@ use iota_model::Bundle;
 
 use crate::Result;
 
-const HMAC_ROUNDS: usize = 27;
-
 /// HMAC uses curl to provide an extra layer of verification
 /// to bundles
 ///```rust
