@@ -8,14 +8,18 @@ use serde_json;
 /// transaction
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Input {
+    /// Transaction address
     pub address: String,
+    /// Address balance
     pub balance: i64,
+    /// Key index of a seed
     pub key_index: usize,
+    /// Security level
     pub security: usize,
 }
 
 impl fmt::Display for Input {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}",

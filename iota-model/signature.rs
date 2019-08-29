@@ -6,12 +6,14 @@ use serde_json;
 /// Represents an address and a grouping of signature fragments
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Signature {
+    /// Transaction address
     pub address: String,
+    /// A signature or a message, both of which may be fragmented over multiple transactions in the bundle.
     pub signature_fragments: Vec<String>,
 }
 
 impl fmt::Display for Signature {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}",
