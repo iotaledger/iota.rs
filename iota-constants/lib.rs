@@ -1,4 +1,12 @@
 #![deny(unused_extern_crates)]
+#![warn(
+    missing_debug_implementations,
+    missing_docs,
+    rust_2018_idioms,
+    unreachable_pub
+)]
+
+//! Constants used throughout iota related crates
 
 /// A char array holding all acceptable characters in the tryte
 /// alphabet. Used because strings can't be cheaply indexed in rust.
@@ -28,13 +36,19 @@ pub const HASH_TRINARY_SIZE: usize = 243;
 pub const HASH_TRYTES_SIZE: usize = HASH_TRINARY_SIZE / 3;
 /// Size of hash in bytes
 pub const HASH_BYTES_SIZE: usize = 48;
+/// Size of key segment per fragment
 pub const KEY_SEGMENTS_PER_FRAGMENT: usize = 27;
+/// Round of key segment hash
 pub const KEY_SEGMENT_HASH_ROUNDS: usize = 26;
-pub const KEY_FRAGMENT_LENGTH: usize = HASH_TRINARY_SIZE * KEY_SEGMENTS_PER_FRAGMENT; // 6561
+/// Lenght of key fragment which is 6561
+pub const KEY_FRAGMENT_LENGTH: usize = HASH_TRINARY_SIZE * KEY_SEGMENTS_PER_FRAGMENT;
 
+/// Size of address checksum in trytes
 pub const ADDRESS_CHECKSUM_TRYTES_SIZE: usize = 9;
+/// Size of address with checksum in trytes
 pub const ADDRESS_WITH_CHECKSUM_TRYTES_SIZE: usize =
     HASH_TRYTES_SIZE + ADDRESS_CHECKSUM_TRYTES_SIZE;
+/// Size of minimum checksum
 pub const MIN_CHECKSUM_TRYTES_SIZE: usize = 3;
 
 /// Maximum value of attachment timstamp
@@ -158,12 +172,19 @@ pub const SEND_TO_INPUTS_ERROR: &str = "Send to inputs!";
 /// Security levels of a private key and address pair. The greater the security
 /// level, the larger and more secure the signature of a spent address is
 /// against brute force attacks.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SecurityLevel {
+    /// lowest security
     Low = 1,
+    /// used by Trinity
     Medium = 2,
+    /// most secure
     High = 3,
 }
 
+/// Number of Iota Signature Scheme fragments
 pub const ISS_FRAGMENTS: usize = 27;
+/// Length of Iota Signature Scheme key
 pub const ISS_KEY_LENGTH: usize = HASH_TRINARY_SIZE * ISS_FRAGMENTS;
+/// Lenght of Iota Signature Scheme chunk
 pub const ISS_CHUNK_LENGTH: usize = HASH_TRINARY_SIZE / TRINARY_RADIX;
