@@ -34,7 +34,7 @@ impl<'a> API<'a> {
     /// Create a new instance of the API
     ///
     /// * `uri` - The uri to use for all querys, currently only https IRI node are supported
-    pub fn new(uri: &str) -> API {
+    pub fn new(uri: &str) -> API<'_> {
         let client = iota_client::Client {
             uri,
             ..iota_client::Client::default()
@@ -112,7 +112,7 @@ impl<'a> API<'a> {
     pub fn send_trytes(
         &mut self,
         trytes: &[String],
-        options: SendTrytesOptions,
+        options: SendTrytesOptions<'_>,
     ) -> Result<Vec<Transaction>> {
         let to_approve =
             self.client
@@ -243,7 +243,7 @@ impl<'a> API<'a> {
         &mut self,
         seed: &str,
         transfers: impl Into<Vec<Transfer>>,
-        options: PrepareTransfersOptions,
+        options: PrepareTransfersOptions<'_, '_>,
     ) -> Result<Vec<String>> {
         let mut transfers = transfers.into();
         let mut add_hmac = false;
@@ -414,7 +414,7 @@ impl<'a> API<'a> {
         &mut self,
         transfers: impl Into<Vec<Transfer>>,
         seed: &str,
-        options: SendTransferOptions,
+        options: SendTransferOptions<'_, '_, '_>,
     ) -> Result<Vec<Transaction>> {
         let transfers = transfers.into();
         let trytes = self.prepare_transfers(
@@ -502,7 +502,7 @@ impl<'a> API<'a> {
         &mut self,
         inputs: &Inputs,
         bundle: &mut Bundle,
-        options: AddRemainderOptions,
+        options: AddRemainderOptions<'_, '_, '_, '_>,
     ) -> Result<Vec<String>> {
         let mut total_transfer_value = inputs.total_balance();
         for input in inputs.inputs_list() {
@@ -648,27 +648,30 @@ impl<'a> API<'a> {
     }
 }
 
+/// Module for various API Options
 pub mod options {
     use iota_model::*;
 
     /// SendTransferOptions
-    ///
-    /// * `threads` - Optionally specify the number of threads to use for PoW. This is ignored if `local_pow` is false.
-    /// * `inputs` - Optionally specify which inputs to use when trying to find funds for transfers
-    /// * `reference` - Optionally specify where to start searching for transactions to approve
-    /// * `remainder_address` - Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
-    /// * `security` - Optioanlly specify the security to use for address generation (1-3). Default is 2
-    /// * `hmac_key` - Optionally specify an HMAC key to use for this transaction
     #[derive(Clone, Debug, PartialEq)]
     pub struct SendTransferOptions<'a, 'b, 'c> {
+        /// The depth for getting transactions to approve
         pub depth: usize,
+        /// The minimum weight magnitude for doing proof of work
         pub min_weight_magnitude: usize,
+        /// Perform PoW locally
         pub local_pow: bool,
+        /// Optionally specify the number of threads to use for PoW. This is ignored if `local_pow` is false.
         pub threads: usize,
+        /// Optionally specify which inputs to use when trying to find funds for transfers
         pub inputs: Option<Inputs>,
+        /// Optionally specify where to start searching for transactions to approve
         pub reference: Option<&'a str>,
+        /// Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
         pub remainder_address: Option<&'b str>,
+        /// Optioanlly specify the security to use for address generation (1-3). Default is 2
         pub security: usize,
+        /// Optionally specify an HMAC key to use for this transaction
         pub hmac_key: Option<&'c str>,
     }
 
@@ -689,27 +692,28 @@ pub mod options {
     }
 
     /// GetNewAddressOptions
-    ///
-    /// * `security` - Security factor 1-3 with 3 being most secure
-    /// * `index` - How many iterations of generating to skip
-    /// * `total` - Number of addresses to generate. If total isn't provided, we generate until we find an unused address
     #[derive(Clone, Debug, Default, PartialEq)]
     pub struct GetNewAddressOptions {
+        /// Security factor 1-3 with 3 being most secure
         pub security: Option<usize>,
+        /// How many iterations of generating to skip
         pub index: Option<usize>,
+        /// Number of addresses to generate. If total isn't provided, we generate until we find an unused address
         pub total: Option<usize>,
     }
 
     /// SendTrytesOptions
-    ///
-    /// * `thread` - Optionally specify how many threads to use, defaults to max available
-    /// * `reference` - Optionally used as the reference to start searching for transactions to approve
     #[derive(Clone, Debug, PartialEq)]
     pub struct SendTrytesOptions<'a> {
+        /// The depth for getting transactions to approve
         pub depth: usize,
+        /// The minimum weight magnitude for doing proof of work
         pub min_weight_magnitude: usize,
+        /// Perform PoW locally
         pub local_pow: bool,
+        /// Optionally specify how many threads to use, defaults to max available
         pub threads: usize,
+        /// Optionally used as the reference to start searching for transactions to approve
         pub reference: Option<&'a str>,
     }
 
@@ -726,30 +730,28 @@ pub mod options {
     }
 
     /// GetInputsOptions
-    ///
-    /// * `start` - The start index for addresses to search
-    /// * `end` - The end index for addresses to search
-    /// * `threshold` - The amount of Iota you're trying to find in the wallet
-    /// * `security` - The security to use for address generation
     #[derive(Clone, Debug, Default, PartialEq)]
     pub struct GetInputsOptions {
+        /// The start index for addresses to search
         pub start: Option<usize>,
+        /// The end index for addresses to search
         pub end: Option<usize>,
+        /// The amount of Iota you're trying to find in the wallet
         pub threshold: Option<i64>,
+        /// The security to use for address generation
         pub security: Option<usize>,
     }
 
     /// PrepareTransfersOptions
-    ///
-    /// * `inputs` - Optional inputs to use if you're sending iota
-    /// * `remainder_address` - Optional remainder address to use, if not provided, one will be generated
-    /// * `security` - Security to use when generating addresses (1-3)
-    /// * `hmac_key` - Optional key to use if you want to hmac the transfers
     #[derive(Clone, Debug, PartialEq)]
     pub struct PrepareTransfersOptions<'a, 'b> {
+        /// Optional inputs to use if you're sending iota
         pub inputs: Option<Inputs>,
+        /// Optional remainder address to use, if not provided, one will be generated
         pub remainder_address: Option<&'a str>,
+        /// Security to use when generating addresses (1-3)
         pub security: usize,
+        /// Optional key to use if you want to hmac the transfers
         pub hmac_key: Option<&'b str>,
     }
 
@@ -764,13 +766,22 @@ pub mod options {
         }
     }
 
+    /// AddRemainderOptions
+    #[derive(Clone, Debug, PartialEq)]
     pub struct AddRemainderOptions<'a, 'b, 'c, 'd> {
+        /// The tryte-encoded seed. It should be noted that this seed is not transferred.
         pub seed: &'a str,
+        /// The tag to add to each bundle entry
         pub tag: &'b str,
+        /// The address used for sending the remainder value (of the last input)
         pub remainder_address: Option<&'c str>,
+        /// The signature fragments (message), used for signing. Should be 2187 characters long, can be padded with 9s.
         pub signature_fragments: Vec<String>,
+        /// Check if hmac is added
         pub added_hmac: bool,
+        /// Optional key to use if you want to hmac the transfers
         pub hmac_key: Option<&'d str>,
+        /// Security to use when generating addresses (1-3)
         pub security: usize,
     }
 }
