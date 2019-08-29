@@ -3,7 +3,7 @@ use reqwest::Error;
 use tokio::prelude::Future;
 
 /// Checks for consistency of given hashes, not part of the public api
-pub fn check_consistency(
+pub(crate) fn check_consistency(
     client: &Client,
     uri: &str,
     hashes: &[String],

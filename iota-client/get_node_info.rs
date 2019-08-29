@@ -3,7 +3,7 @@ use reqwest::Error;
 use tokio::prelude::Future;
 
 /// Gets information about the specified node
-pub fn get_node_info(client: &Client, uri: &str) -> impl Future<Item = Response, Error = Error> {
+pub(crate) fn get_node_info(client: &Client, uri: &str) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "getNodeInfo",
     });

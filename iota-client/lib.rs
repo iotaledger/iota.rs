@@ -1,5 +1,13 @@
 #![deny(unused_extern_crates)]
 #![allow(dead_code)]
+#![warn(
+    missing_debug_implementations,
+    missing_docs,
+    rust_2018_idioms,
+    unreachable_pub
+)]
+
+//! Provides access to the Iota Client API
 
 #[macro_use]
 extern crate failure;
@@ -40,6 +48,7 @@ use crate::responses::*;
 
 pub use attach_to_tangle::attach_to_tangle_local;
 
+/// Options of IOTA API
 pub mod options {
     pub use crate::attach_to_tangle::AttachOptions;
     pub use crate::find_transactions::FindTransactionsOptions;
@@ -54,10 +63,14 @@ type Result<T> = ::std::result::Result<T, failure::Error>;
 
 // TODO once async/await is stable, this file needs to be updated
 
+/// An instance of the client using IRI URI
 #[derive(Debug)]
-pub struct Client<'a> {
+pub struct Client<'a> { 
+    /// URI of IRI connection
     pub uri: &'a str,
+    /// Handle to the Tokio runtime
     pub runtime: Runtime,
+    /// A reqwest Client to make Requests with
     pub client: reqwest::r#async::Client,
 }
 
@@ -72,7 +85,8 @@ impl<'a> Default for Client<'a> {
 }
 
 impl<'a> Client<'a> {
-    pub fn new(uri: &str) -> Client {
+    /// Create a new instance of Client
+    pub fn new(uri: &str) -> Client<'_> {
         Client {
             uri: uri,
             runtime: Runtime::new().unwrap(),
@@ -107,7 +121,7 @@ impl<'a> Client<'a> {
     /// * `branch_transaction` - branch transaction to confirm
     /// * `min_weight_magnitude` - Difficulty of PoW
     /// * `trytes` - tryes to use for PoW
-    pub fn attach_to_tangle(&mut self, options: AttachOptions) -> Result<AttachToTangleResponse> {
+    pub fn attach_to_tangle(&mut self, options: AttachOptions<'_, '_, '_>) -> Result<AttachToTangleResponse> {
         ensure!(
             input_validator::is_hash(&options.trunk_transaction),
             "Provided trunk transaction is not valid: {:?}",
@@ -318,7 +332,7 @@ impl<'a> Client<'a> {
     /// depth then an error will be returned.
     pub fn get_transactions_to_approve(
         &mut self,
-        options: GetTransactionsToApproveOptions,
+        options: GetTransactionsToApproveOptions<'_>,
     ) -> Result<GetTransactionsToApprove> {
         let parsed_resp: GetTransactionsToApprove = self
             .runtime

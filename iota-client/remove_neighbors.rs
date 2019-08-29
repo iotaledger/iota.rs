@@ -6,7 +6,7 @@ use tokio::prelude::Future;
 /// This is only temporary, and if you have your neighbors
 /// added via the command line, they will be retained after
 /// you restart your node.
-pub fn remove_neighbors(
+pub(crate) fn remove_neighbors(
     client: &Client,
     uri: &str,
     uris: &[String],
