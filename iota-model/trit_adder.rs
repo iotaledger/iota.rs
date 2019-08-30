@@ -39,7 +39,7 @@ fn full_add(a: i8, b: i8, c: i8) -> (i8, i8) {
 }
 
 /// Adds two slices of trits and returns the result
-pub fn add(a: &[i8], b: &[i8]) -> Vec<i8> {
+pub(crate) fn add(a: &[i8], b: &[i8]) -> Vec<i8> {
     let mut out = vec![0; cmp::max(a.len(), b.len())];
     let mut carry = 0;
     let mut a_i: i8;

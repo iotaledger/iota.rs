@@ -1,3 +1,12 @@
+#![warn(
+    missing_debug_implementations,
+    missing_docs,
+    rust_2018_idioms,
+    unreachable_pub
+)]
+
+//! Methods facilitating signing for Iota
+
 pub use hmac::HMAC;
 use iota_constants;
 use iota_constants::HASH_TRINARY_SIZE;
@@ -6,6 +15,7 @@ use iota_crypto::{Kerl, Sponge};
 use iota_model::Bundle;
 use iota_validation::input_validator;
 
+/// Checksum functions and utilities
 pub mod checksum;
 mod hmac;
 

@@ -1,4 +1,12 @@
 #![deny(unused_extern_crates)]
+#![warn(
+    missing_debug_implementations,
+    missing_docs,
+    rust_2018_idioms,
+    unreachable_pub
+)]
+
+//! Crypto used by Iota
 
 #[macro_use]
 extern crate crunchy;
@@ -9,6 +17,7 @@ use std::fmt;
 
 pub use self::curl::*;
 pub use self::kerl::*;
+pub use self::iss::*;
 
 mod curl;
 mod iss;
@@ -16,9 +25,6 @@ mod keccak;
 mod kerl;
 
 type Result<T> = ::std::result::Result<T, failure::Error>;
-
-/// The length of a hash in IOTA
-// pub const HASH_LENGTH: usize = 243;
 
 /// Mode allows for mode selection to rely on rusts type system
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -32,7 +38,7 @@ pub enum HashMode {
 }
 
 impl fmt::Display for HashMode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }

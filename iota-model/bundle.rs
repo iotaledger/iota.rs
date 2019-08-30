@@ -18,12 +18,18 @@ const EMPTY_HASH: &str =
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Bundle(Vec<Transaction>);
 
+/// Represent a entry to add to bundle
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct BundleEntry<'a, 'b> {
+    /// Number of siganure or message transaction needed for its length
     pub signature_message_length: usize,
+    /// Transaction address
     pub address: &'a str,
+    /// Transaction value
     pub value: i64,
+    /// Transaction Tag
     pub tag: &'b str,
+    /// Unix epoch: Seconds since Jan 1, 1970
     pub timestamp: i64,
 }
 
@@ -42,7 +48,7 @@ impl DerefMut for Bundle {
 }
 
 impl fmt::Display for Bundle {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}",
@@ -58,7 +64,7 @@ impl Bundle {
     }
 
     /// Adds an entry into the bundle
-    pub fn add_entry(&mut self, entry: BundleEntry) {
+    pub fn add_entry(&mut self, entry: BundleEntry<'_, '_>) {
         for i in 0..entry.signature_message_length {
             let mut trx = Transaction::default();
             trx.address = entry.address.into();

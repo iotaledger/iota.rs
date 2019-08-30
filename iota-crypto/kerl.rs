@@ -64,7 +64,7 @@ impl Default for Kerl {
 }
 
 impl fmt::Debug for Kerl {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "Curl: [byte_state: {:?}, trit_state: {:?}",
@@ -121,10 +121,13 @@ impl Sponge for Kerl {
 }
 
 impl Kerl {
-    fn trit_state(&self) -> &[i8] {
+    /// Provides a view into the internal state
+    pub fn trit_state(&self) -> &[i8] {
         &self.trit_state
     }
-    fn trit_state_mut(&mut self) -> &mut [i8] {
+
+    /// Provides a mutable view into the internal state
+    pub fn trit_state_mut(&mut self) -> &mut [i8] {
         &mut self.trit_state
     }
 }

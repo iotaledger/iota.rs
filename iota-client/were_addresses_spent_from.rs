@@ -3,7 +3,7 @@ use reqwest::Error;
 use tokio::prelude::Future;
 
 /// Check if a list of addresses was ever spent from.
-pub fn were_addresses_spent_from(
+pub(crate) fn were_addresses_spent_from(
     client: &Client,
     uri: &str,
     addresses: &[String],

@@ -6,7 +6,7 @@ use tokio::prelude::Future;
 /// transaction. These trytes can then be easily converted
 /// into the actual transaction object. See utility functions
 /// for more details.
-pub fn get_trytes(
+pub(crate) fn get_trytes(
     client: &Client,
     uri: &str,
     hashes: &[String],

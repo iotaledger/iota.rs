@@ -16,7 +16,7 @@ pub struct FindTransactionsOptions {
 }
 
 /// Finds transactions the match any of the provided parameters
-pub fn find_transactions(
+pub(crate) fn find_transactions(
     client: &Client,
     uri: &str,
     options: FindTransactionsOptions,

@@ -39,7 +39,7 @@ impl Default for Curl {
 }
 
 impl fmt::Debug for Curl {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "Curl: [rounds: [{}], scratchpad: {:?}, state: {:?}",
@@ -91,6 +91,7 @@ impl Curl {
         &mut self.state
     }
 
+    /// Number of rounds 
     pub fn number_of_rounds(&self) -> usize {
         self.number_of_rounds
     }

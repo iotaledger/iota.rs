@@ -19,7 +19,7 @@ pub struct GetInclusionStatesOptions {
 /// This API call simply returns a list of boolean values in the
 /// same order as the transaction list you submitted, thus you get
 /// a true/false whether a transaction is confirmed or not.
-pub fn get_inclusion_states(
+pub(crate) fn get_inclusion_states(
     client: &Client,
     uri: &str,
     options: GetInclusionStatesOptions,

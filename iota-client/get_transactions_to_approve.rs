@@ -33,10 +33,10 @@ impl<'a> Default for GetTransactionsToApproveOptions<'a> {
 /// returned. The reference is an optional hash of a transaction
 /// you want to approve. If it can't be found at the specified
 /// depth then an error will be returned.
-pub fn get_transactions_to_approve(
+pub(crate) fn get_transactions_to_approve(
     client: &Client,
     uri: &str,
-    options: GetTransactionsToApproveOptions,
+    options: GetTransactionsToApproveOptions<'_>,
 ) -> impl Future<Item = Response, Error = Error> {
     let mut body = json!({
         "command": "getTransactionsToApprove",

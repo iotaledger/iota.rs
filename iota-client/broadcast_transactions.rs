@@ -4,7 +4,7 @@ use tokio::prelude::*;
 
 /// Broadcast a list of transactions to all neighbors.
 /// The input trytes for this call are provided by attachToTangle.
-pub fn broadcast_transactions(
+pub(crate) fn broadcast_transactions(
     client: &Client,
     uri: &str,
     trytes: &[String],

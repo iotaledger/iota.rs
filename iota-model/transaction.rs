@@ -1,9 +1,7 @@
 use std::convert::TryInto;
-use std::fmt;
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 use crate::Result;
 use iota_conversion::Trinary;
@@ -37,22 +35,39 @@ where
 /// Represents an IOTA transaction
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Transaction {
+    /// Transaction Hash
     pub hash: String,
+    /// A signature or a message, both of which may be fragmented over multiple transactions in the bundle.
     pub signature_fragments: String,
+    /// Contains either the sender or recipient's address.
     pub address: String,
+    /// Amount of IOTA tokens to deposit to or withdraw from the address
     pub value: i64,
+    /// User-defined tag (soon to be removed)
     pub obsolete_tag: String,
+    /// Unix epoch: Seconds since Jan 1, 1970
     pub timestamp: i64,
+    /// Index of a transaction in the bundle
     pub current_index: usize,
+    /// Index of the last transaction in the bundle
     pub last_index: usize,
+    /// Hash of the bundle
     pub bundle: String,
+    /// Trunk transaction hash
     pub trunk_transaction: String,
+    /// Branch transaction hash
     pub branch_transaction: String,
+    /// Trytes that represent the amount of times a transaction must be hashed to check the proof of work.
     pub nonce: String,
+    /// Persistence of transaction
     pub persistence: bool,
+    /// User-defined tag
     pub tag: String,
+    /// Unix epoch: Milliseconds since Jan 1, 1970 (after POW)
     pub attachment_timestamp: i64,
+    /// Lower limit of the attachmentTimestamp field (not currently used)
     pub attachment_timestamp_lower_bound: i64,
+    /// Upper limit of the attachmentTimestamp field (not currently used)
     pub attachment_timestamp_upper_bound: i64,
 }
 

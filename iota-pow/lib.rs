@@ -1,3 +1,12 @@
+#![warn(
+    missing_debug_implementations,
+    missing_docs,
+    rust_2018_idioms,
+    unreachable_pub
+)]
+
+//! Proof of Work in Iota
+
 use crossbeam::Sender;
 use failure::ensure;
 
@@ -69,6 +78,8 @@ impl Default for PearlDiver {
     }
 }
 
+/// Options of PoW configuration
+#[derive(Debug)]
 pub struct PowOptions {
     /// * `min_weight_magnitude` - Difficulty factor to use for Proof of Work
     pub min_weight_magnitude: usize,

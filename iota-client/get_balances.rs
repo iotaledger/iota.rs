@@ -32,7 +32,7 @@ impl Default for GetBalancesOptions {
 /// as well as the index with which the confirmed balance was
 /// determined. The balances is returned as a list in the same
 /// order as the addresses were provided as input.
-pub fn get_balances(
+pub(crate) fn get_balances(
     client: &Client,
     uri: &str,
     options: GetBalancesOptions,

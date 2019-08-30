@@ -3,7 +3,7 @@ use reqwest::Error;
 use tokio::prelude::Future;
 
 /// Returns the list of tips
-pub fn get_tips(client: &Client, uri: &str) -> impl Future<Item = Response, Error = Error> {
+pub(crate) fn get_tips(client: &Client, uri: &str) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "getTips",
     });
