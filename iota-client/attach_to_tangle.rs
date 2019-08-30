@@ -88,7 +88,9 @@ pub(crate) fn attach_to_tangle(
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
-pub fn attach_to_tangle_local(options: AttachOptions<'_, '_, '_>) -> Result<AttachToTangleResponse> {
+pub fn attach_to_tangle_local(
+    options: AttachOptions<'_, '_, '_>,
+) -> Result<AttachToTangleResponse> {
     ensure!(
         input_validator::is_hash(&options.trunk_transaction),
         "Provided trunk transaction is not valid: {:?}",

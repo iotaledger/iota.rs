@@ -14,7 +14,7 @@ extern crate lazy_static;
 pub use input_validator::*;
 pub use validators::*;
 
-/// Module to validate input's type 
+/// Module to validate input's type
 pub mod input_validator;
 mod validators;
 

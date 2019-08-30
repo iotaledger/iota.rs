@@ -5,7 +5,10 @@ use tokio::prelude::Future;
 /// Returns the set of neighbors you are connected with, as
 /// well as their activity count. The activity counter is reset
 /// after restarting IRI.
-pub(crate) fn get_neighbors(client: &Client, uri: &str) -> impl Future<Item = Response, Error = Error> {
+pub(crate) fn get_neighbors(
+    client: &Client,
+    uri: &str,
+) -> impl Future<Item = Response, Error = Error> {
     let body = json!({
         "command": "getNeighbors",
     });
