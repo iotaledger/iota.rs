@@ -91,7 +91,7 @@ impl Curl {
         &mut self.state
     }
 
-    /// Number of rounds 
+    /// Number of rounds
     pub fn number_of_rounds(&self) -> usize {
         self.number_of_rounds
     }

@@ -65,7 +65,7 @@ type Result<T> = ::std::result::Result<T, failure::Error>;
 
 /// An instance of the client using IRI URI
 #[derive(Debug)]
-pub struct Client<'a> { 
+pub struct Client<'a> {
     /// URI of IRI connection
     pub uri: &'a str,
     /// Handle to the Tokio runtime
@@ -121,7 +121,10 @@ impl<'a> Client<'a> {
     /// * `branch_transaction` - branch transaction to confirm
     /// * `min_weight_magnitude` - Difficulty of PoW
     /// * `trytes` - tryes to use for PoW
-    pub fn attach_to_tangle(&mut self, options: AttachOptions<'_, '_, '_>) -> Result<AttachToTangleResponse> {
+    pub fn attach_to_tangle(
+        &mut self,
+        options: AttachOptions<'_, '_, '_>,
+    ) -> Result<AttachToTangleResponse> {
         ensure!(
             input_validator::is_hash(&options.trunk_transaction),
             "Provided trunk transaction is not valid: {:?}",

@@ -16,8 +16,8 @@ extern crate failure;
 use std::fmt;
 
 pub use self::curl::*;
-pub use self::kerl::*;
 pub use self::iss::*;
+pub use self::kerl::*;
 
 mod curl;
 mod iss;
