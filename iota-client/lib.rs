@@ -25,30 +25,11 @@ use tokio::runtime::Runtime;
 
 use iota_validation::input_validator;
 
-mod add_neighbors;
-mod attach_to_tangle;
-mod broadcast_transactions;
-mod check_consistency;
-mod find_transactions;
-mod get_balances;
-mod get_inclusion_states;
-mod get_neighbors;
-mod get_node_info;
-mod get_tips;
-mod get_transactions_to_approve;
-mod get_trytes;
-mod interrupt_attaching_to_tangle;
-mod remove_neighbors;
+mod core;
+
 /// IRI responses are parsed into structs contained in this module
 pub mod responses;
-mod store_transactions;
-mod were_addresses_spent_from;
-
-use crate::responses::*;
-
-pub use attach_to_tangle::attach_to_tangle_local;
-
-/// Options of IOTA API
+/// Options of Argument for IOTA IRI APIs
 pub mod options {
     pub use crate::attach_to_tangle::AttachOptions;
     pub use crate::find_transactions::FindTransactionsOptions;
@@ -57,6 +38,10 @@ pub mod options {
     pub use crate::get_transactions_to_approve::GetTransactionsToApproveOptions;
 }
 
+pub use attach_to_tangle::attach_to_tangle_local;
+
+use crate::core::*;
+use crate::responses::*;
 use options::*;
 
 type Result<T> = ::std::result::Result<T, failure::Error>;

@@ -10,7 +10,7 @@ use iota_validation::input_validator;
 
 use crate::Result;
 
-use super::responses::AttachToTangleResponse;
+use crate::responses::AttachToTangleResponse;
 
 use std::convert::TryInto;
 
@@ -19,7 +19,7 @@ lazy_static! {
     pub static ref MAX_TIMESTAMP_VALUE: i64 = (3_i64.pow(27) - 1) / 2;
 }
 
-/// Struct used to provide named arguments for the attach functions
+/// Struct used to provide named arguments for `attach_to_tangle`
 #[derive(Clone, Debug)]
 pub struct AttachOptions<'a, 'b, 'c> {
     /// Number of threads to use for proof of work
