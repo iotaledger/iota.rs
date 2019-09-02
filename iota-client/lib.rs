@@ -19,7 +19,9 @@ extern crate serde;
 extern crate serde_json;
 
 mod core;
+mod extended;
 use crate::core::*;
+use crate::extended::*;
 
 /// The Client strcut to connect through IRI with API usage
 pub mod client;
@@ -31,8 +33,14 @@ pub mod options {
     pub use crate::find_transactions::FindTransactionsOptions;
     pub use crate::get_balances::GetBalancesOptions;
     pub use crate::get_inclusion_states::GetInclusionStatesOptions;
+    pub use crate::get_inputs::GetInputsOptions;
+    pub use crate::get_new_address::GetNewAddressOptions;
     pub use crate::get_transactions_to_approve::GetTransactionsToApproveOptions;
+    pub use crate::prepare_transfers::PrepareTransfersOptions;
+    pub use crate::send_transfers::SendTransferOptions;
+    pub use crate::send_trytes::SendTrytesOptions;
 }
 
-pub use client::Client;
 pub use attach_to_tangle::attach_to_tangle_local;
+pub use client::Client;
+pub use get_new_address::new_address;

@@ -8,8 +8,8 @@
 
 //! Validation used throughout iota related crates
 
-#[macro_use]
-extern crate failure;
+// #[macro_use]
+// extern crate failure;
 // #[macro_use]
 // extern crate lazy_static;
 // #[macro_use]
@@ -19,8 +19,6 @@ extern crate failure;
 
 //mod account;
 
-/// Helpers for using the Iota Client API
-pub mod iota_api;
 /// Provides useful imports
 pub mod prelude;
 /// Provides access to the Iota Client API
@@ -41,6 +39,3 @@ pub use iota_signing;
 pub use iota_utils;
 /// Validation used throughout the crates
 pub use iota_validation;
-
-/// Error type used throughout the crates
-type Result<T> = ::std::result::Result<T, failure::Error>;
