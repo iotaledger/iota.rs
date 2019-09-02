@@ -1,4 +1,4 @@
-//! TODO
+//! The Core API is a basic API set that communicate with the IRI node.
 
 pub(crate) mod add_neighbors;
 pub(crate) mod attach_to_tangle;
