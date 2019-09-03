@@ -14,5 +14,6 @@ matrix:
   fast_finish: true
 
 script:
+  - cargo fmt --all -- --check
   - cargo build --all --release
   - cargo test --verbose --all --release
