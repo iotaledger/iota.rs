@@ -1,4 +1,6 @@
-use crate::client::Result;
+use crate::client::Client;
+use crate::options::FindTransactionsOptions;
+use crate::Result;
 use iota_conversion::Trinary;
 
 /// GetNewAddressOptions
@@ -10,6 +12,62 @@ pub struct GetNewAddressOptions {
     pub index: Option<usize>,
     /// Number of addresses to generate. If total isn't provided, we generate until we find an unused address
     pub total: Option<usize>,
+}
+
+impl<'a> Client<'a> {
+    /// Generates a new address
+    ///
+    /// * `seed` - Seed used to generate new address
+    /// * `checksum` - Whether or not to checksum address
+    /// * `return_all` - Whether to return all generated addresses, or just the last one
+    /// * `options` - See `GetNewAddressOptions`
+    pub fn get_new_address(
+        &mut self,
+        seed: &str,
+        checksum: bool,
+        return_all: bool,
+        options: GetNewAddressOptions,
+    ) -> Result<Vec<String>> {
+        let mut index = options.index.unwrap_or_default();
+        let security = options.security.unwrap_or(2);
+        ensure!(iota_validation::is_trytes(&seed), "Invalid seed.");
+        ensure!(security > 0 && security < 4, "Invalid security.");
+
+        let mut all_addresses: Vec<String> = Vec::new();
+
+        match options.total {
+            Some(total) => {
+                ensure!(total > 0, "Invalid total.");
+                for i in index..total {
+                    let address = new_address(&seed, security, i, checksum)?;
+                    all_addresses.push(address);
+                }
+                Ok(all_addresses)
+            }
+            None => loop {
+                let new_address = new_address(&seed, security, index, checksum)?;
+                if return_all {
+                    all_addresses.push(new_address.clone());
+                }
+                index += 1;
+                let new_address_vec = vec![new_address];
+                let were_addr_spent = self.were_addresses_spent_from(&new_address_vec)?;
+                if !were_addr_spent.state(0) {
+                    let resp = self.find_transactions(FindTransactionsOptions {
+                        addresses: new_address_vec.clone(),
+                        ..FindTransactionsOptions::default()
+                    })?;
+                    if resp.take_hashes().unwrap_or_default().is_empty() {
+                        if return_all {
+                            return Ok(all_addresses);
+                        } else {
+                            return Ok(new_address_vec);
+                        }
+                    }
+                }
+            },
+        }
+    }
 }
 
 /// Generate new address from given seed

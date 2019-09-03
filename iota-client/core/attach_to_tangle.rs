@@ -8,7 +8,7 @@ use iota_model::*;
 use iota_pow::{PearlDiver, PowOptions};
 use iota_validation::input_validator;
 
-use crate::client::Result;
+use crate::Result;
 
 use crate::responses::AttachToTangleResponse;
 

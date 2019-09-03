@@ -44,3 +44,5 @@ pub mod options {
 pub use attach_to_tangle::attach_to_tangle_local;
 pub use client::Client;
 pub use get_new_address::new_address;
+
+type Result<T> = ::std::result::Result<T, failure::Error>;
