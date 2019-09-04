@@ -101,6 +101,18 @@ impl Bundle {
         }
     }
 
+    /// Reset bundle indexes
+    pub fn reset_indexes(&mut self) {
+        let mut current_index = 0;
+        let last_index = self.0.len() - 1;
+
+        for tx in &mut self.0 {
+            tx.current_index = current_index;
+            tx.last_index = last_index;
+            current_index += 1;
+        }
+    }
+
     /// Finalizes the bundle
     pub fn finalize(&mut self) -> Result<()> {
         let mut valid_bundle = false;

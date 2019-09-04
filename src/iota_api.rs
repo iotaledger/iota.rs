@@ -391,6 +391,7 @@ impl<'a> API<'a> {
                 }
             }
         } else {
+            bundle.reset_indexes();
             bundle.finalize()?;
             bundle.add_trytes(&signature_fragments);
             let mut bundle_trytes: Vec<String> = Vec::new();
@@ -596,6 +597,7 @@ impl<'a> API<'a> {
         added_hmac: bool,
         hmac_key: Option<&'b str>,
     ) -> Result<Vec<String>> {
+        bundle.reset_indexes();
         bundle.finalize()?;
         bundle.add_trytes(&signature_fragments);
         for i in 0..bundle.len() {
