@@ -54,3 +54,37 @@ pub(crate) fn get_transactions_to_approve(
         .body(body.to_string())
         .send()
 }
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
+pub struct GetTransactionsToApprove {
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Any exceptions that occurred
+    exception: Option<String>,
+    /// Trunk transaction to approve
+    #[serde(rename = "trunkTransaction")]
+    trunk_transaction: Option<String>,
+    /// Branch transaction to approve
+    #[serde(rename = "branchTransaction")]
+    branch_transaction: Option<String>,
+}
+
+impl GetTransactionsToApprove {
+    /// Returns the error attribute
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns the exception attribute
+    pub fn exception(&self) -> &Option<String> {
+        &self.exception
+    }
+    /// Returns the trunk_transaction attribute
+    pub fn trunk_transaction(&self) -> &Option<String> {
+        &self.trunk_transaction
+    }
+    /// Returns the branch_transaction attribute
+    pub fn branch_transaction(&self) -> &Option<String> {
+        &self.branch_transaction
+    }
+}

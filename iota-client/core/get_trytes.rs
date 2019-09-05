@@ -23,3 +23,27 @@ pub(crate) fn get_trytes(
         .body(body.to_string())
         .send()
 }
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
+pub struct GetTrytesResponse {
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Trytes if found
+    trytes: Option<Vec<String>>,
+}
+
+impl GetTrytesResponse {
+    /// Returns the error attribute
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns the trytes attribute
+    pub fn trytes(&self) -> &Option<Vec<String>> {
+        &self.trytes
+    }
+    /// Takes ownership the trytes attribute
+    pub fn take_trytes(self) -> Option<Vec<String>> {
+        self.trytes
+    }
+}

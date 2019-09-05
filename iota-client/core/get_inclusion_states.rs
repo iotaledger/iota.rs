@@ -37,3 +37,23 @@ pub(crate) fn get_inclusion_states(
         .body(body.to_string())
         .send()
 }
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct GetInclusionStatesResponse {
+    /// Any errors that occurred
+    error: Option<String>,
+    /// States if found
+    states: Option<Vec<bool>>,
+}
+
+impl GetInclusionStatesResponse {
+    /// Returns any potential errors
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns the states attribute
+    pub fn states(&self) -> &Option<Vec<bool>> {
+        &self.states
+    }
+}
