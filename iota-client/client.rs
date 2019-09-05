@@ -7,7 +7,6 @@ use iota_validation::input_validator;
 
 use crate::core::*;
 use crate::options::*;
-use crate::responses::*;
 use crate::Result;
 
 // TODO once async/await is stable, this file needs to be updated

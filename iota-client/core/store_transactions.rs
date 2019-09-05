@@ -22,3 +22,23 @@ pub(crate) fn store_transactions(
         .body(body.to_string())
         .send()
 }
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct StoreTransactionsResponse {
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Any exceptions that occurred
+    exception: Option<String>,
+}
+
+impl StoreTransactionsResponse {
+    /// Returns the error attribute
+    fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns the exception attribute
+    fn exception(&self) -> &Option<String> {
+        &self.exception
+    }
+}

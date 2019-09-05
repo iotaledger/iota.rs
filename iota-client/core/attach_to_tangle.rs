@@ -10,8 +10,6 @@ use iota_validation::input_validator;
 
 use crate::Result;
 
-use crate::responses::AttachToTangleResponse;
-
 use std::convert::TryInto;
 
 lazy_static! {
@@ -150,4 +148,56 @@ pub fn attach_to_tangle_local(
         None,
         Some(result_trytes),
     ))
+}
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
+pub struct AttachToTangleResponse {
+    /// This is only used when using PoW Box service
+    #[serde(rename = "jobId")]
+    job_id: Option<String>,
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Any exceptions that occurred
+    exception: Option<String>,
+    /// Trytes returned by PoW
+    trytes: Option<Vec<String>>,
+}
+
+impl AttachToTangleResponse {
+    /// Creates a new repsonse
+    ///
+    /// * `job_id` - This is only used when using PoW Box service
+    /// * `error` - Any errors that occurred
+    /// * `exception` - Any exceptions that occurred
+    /// * `trytes` -  trytes returned by PoW
+    pub fn new(
+        job_id: Option<String>,
+        error: Option<String>,
+        exception: Option<String>,
+        trytes: Option<Vec<String>>,
+    ) -> AttachToTangleResponse {
+        AttachToTangleResponse {
+            job_id,
+            error,
+            exception,
+            trytes,
+        }
+    }
+    /// Returns the id attribute
+    pub fn job_id(&self) -> &Option<String> {
+        &self.job_id
+    }
+    /// Returns the error attribute
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns the exception attribute
+    pub fn exception(&self) -> &Option<String> {
+        &self.exception
+    }
+    /// Returns the trytes attribute
+    pub fn trytes(self) -> Option<Vec<String>> {
+        self.trytes
+    }
 }

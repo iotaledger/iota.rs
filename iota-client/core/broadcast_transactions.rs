@@ -21,3 +21,23 @@ pub(crate) fn broadcast_transactions(
         .body(body.to_string())
         .send()
 }
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
+pub struct BroadcastTransactionsResponse {
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Any exception that occurred
+    exception: Option<String>,
+}
+
+impl BroadcastTransactionsResponse {
+    /// Returns any potential errors
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns any potential exceptions
+    pub fn exception(&self) -> &Option<String> {
+        &self.exception
+    }
+}

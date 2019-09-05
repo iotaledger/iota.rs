@@ -45,3 +45,27 @@ pub(crate) fn find_transactions(
         .body(body.to_string())
         .send()
 }
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
+pub struct FindTransactionsResponse {
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Hashes of matching transactions
+    hashes: Option<Vec<String>>,
+}
+
+impl FindTransactionsResponse {
+    /// Returns any potential errors
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns the hashes attribute
+    pub fn hashes(&self) -> &Option<Vec<String>> {
+        &self.hashes
+    }
+    /// Takes ownership of the hashes attribute
+    pub fn take_hashes(self) -> Option<Vec<String>> {
+        self.hashes
+    }
+}

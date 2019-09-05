@@ -15,3 +15,21 @@ pub(crate) fn get_tips(client: &Client, uri: &str) -> impl Future<Item = Respons
         .body(body.to_string())
         .send()
 }
+
+/// This is a typed representation of the JSON response
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
+pub struct GetTipsResponse {
+    /// Hashes of tips
+    hashes: Vec<String>,
+}
+
+impl GetTipsResponse {
+    /// Returns the hashes attribute
+    pub fn hashes(&self) -> &[String] {
+        &self.hashes
+    }
+    /// Takes ownership the hashes attribute
+    pub fn take_hashes(self) -> Vec<String> {
+        self.hashes
+    }
+}

@@ -54,3 +54,43 @@ pub(crate) fn get_balances(
         .body(body.to_string())
         .send()
 }
+/// This is a typed representation of the JSON response
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
+pub struct GetBalancesResponse {
+    /// Any errors that occurred
+    error: Option<String>,
+    /// Balances if found
+    balances: Option<Vec<String>>,
+    /// Milestone index if found
+    #[serde(rename = "milestoneIndex")]
+    milestone_index: Option<i64>,
+    /// References if found
+    references: Option<Vec<String>>,
+}
+
+impl GetBalancesResponse {
+    /// Returns any potential errors
+    pub fn error(&self) -> &Option<String> {
+        &self.error
+    }
+    /// Returns the balances attribute
+    pub fn balances(&self) -> &Option<Vec<String>> {
+        &self.balances
+    }
+    /// Takes ownership of the balances attribute
+    pub fn take_balances(self) -> Option<Vec<String>> {
+        self.balances
+    }
+    /// Returns the milestone_index attribute
+    pub fn milestone_index(&self) -> Option<i64> {
+        self.milestone_index
+    }
+    /// Returns the references attribute
+    pub fn references(&self) -> &Option<Vec<String>> {
+        &self.references
+    }
+    /// Takes ownership of the references attribute
+    pub fn take_references(self) -> Option<Vec<String>> {
+        self.references
+    }
+}
