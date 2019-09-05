@@ -25,8 +25,6 @@ use crate::extended::*;
 
 /// The Client strcut to connect through IRI with API usage
 pub mod client;
-/// IRI responses are parsed into structs contained in this module
-pub mod responses;
 /// Arguments for IOTA IRI APIs
 pub mod options {
     pub use crate::attach_to_tangle::AttachOptions;
