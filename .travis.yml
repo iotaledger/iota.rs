@@ -4,13 +4,11 @@ language: rust
 
 rust:
   - nightly
-  - beta
   - stable
 
 matrix:
   allow_failures:
-    - rust: beta
-    - rust: stable
+    - rust: nightly
   fast_finish: true
 
 before_script:
