@@ -52,6 +52,9 @@ pub fn is_value(value: &str) -> bool {
 
 /// Validates that a slice of strings are all valid trytes
 pub fn is_array_of_trytes<T: AsRef<str>>(trytes: &[T]) -> bool {
+    if trytes.is_empty() {
+        return false;
+    }
     for tryte in trytes {
         if !is_trytes(&tryte.as_ref()) {
             return false;
@@ -62,14 +65,23 @@ pub fn is_array_of_trytes<T: AsRef<str>>(trytes: &[T]) -> bool {
 
 /// Validates that a slice of strings are all valid hashes
 pub fn is_array_of_hashes<T: AsRef<str>>(hashes: &[T]) -> bool {
+    if hashes.is_empty() {
+        return false;
+    }
     for hash in hashes {
         let hash = hash.as_ref();
-        if hash.len() == 90 {
-            if !is_trytes(&hash[0..90]) {
-                return false;
+        match hash.len() {
+            90 => {
+                if !is_trytes(&hash[0..90]) {
+                    return false;
+                }
             }
-        } else if !is_trytes(&hash[0..81]) {
-            return false;
+            81 => {
+                if !is_trytes(&hash[0..81]) {
+                    return false;
+                }
+            }
+            _ => return false,
         }
     }
     true
@@ -151,7 +163,10 @@ pub fn is_valid_seed(seed: &str) -> bool {
 
 /// Validates that a string is a hash
 pub fn is_hash(hash: &str) -> bool {
-    is_trytes(&hash[0..81])
+    if hash.len() == 81 {
+        return is_trytes(&hash[0..81]);
+    }
+    false
 }
 
 /// Validates that a slice of strings are all hash
@@ -166,7 +181,13 @@ pub fn is_hashes(hashes: &[String]) -> bool {
 
 /// Validates that a slice of strings contains only attached trytes
 pub fn is_array_of_attached_trytes(trytes: &[String]) -> bool {
+    if trytes.is_empty() {
+        return false;
+    }
     for tryte_value in trytes {
+        if tryte_value.len() != 2673 {
+            return false;
+        }
         if !is_trytes(&tryte_value[0..2673]) {
             return false;
         }

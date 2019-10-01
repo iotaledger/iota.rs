@@ -32,7 +32,7 @@ pub struct WereAddressesSpentFromResponse {
 
 impl WereAddressesSpentFromResponse {
     /// Returns the error attribute
-    fn error(&self) -> &Option<String> {
+    pub fn error(&self) -> &Option<String> {
         &self.error
     }
     /// Returns the states attribute

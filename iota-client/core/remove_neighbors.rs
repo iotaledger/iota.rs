@@ -38,19 +38,19 @@ pub struct RemoveNeighborsResponse {
 
 impl RemoveNeighborsResponse {
     /// Returns the error attribute
-    fn error(&self) -> &Option<String> {
+    pub fn error(&self) -> &Option<String> {
         &self.error
     }
     /// Returns the exception attribute
-    fn exception(&self) -> &Option<String> {
+    pub fn exception(&self) -> &Option<String> {
         &self.exception
     }
     /// Returns a reference to the amount of removed neighbors
-    fn removed_neighbors(&self) -> &Option<usize> {
+    pub fn removed_neighbors(&self) -> &Option<usize> {
         &self.removed_neighbors
     }
     /// Consumes the response and returns the amount of removed neighbors if any
-    fn take_removed_neighbors(self) -> Option<usize> {
+    pub fn take_removed_neighbors(self) -> Option<usize> {
         self.removed_neighbors
     }
 }
