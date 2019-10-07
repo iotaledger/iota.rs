@@ -18,7 +18,10 @@ fn test_attach_to_tangle_empty() {
     let mut client = client_init();
 
     let opt = AttachOptions::default();
-    let _res = client.attach_to_tangle(opt).unwrap_err();
+    let res = client.attach_to_tangle(opt).unwrap_err();
+    assert!(res
+        .to_string()
+        .contains("Provided trunk transaction is not valid"));
 }
 
 #[test]
@@ -30,7 +33,10 @@ fn test_attach_to_tangle_empty_trunk() {
         trytes: &[TEST_TX_HASH.into()],
         ..AttachOptions::default()
     };
-    let _res = client.attach_to_tangle(opt).unwrap_err();
+    let res = client.attach_to_tangle(opt).unwrap_err();
+    assert!(res
+        .to_string()
+        .contains("Provided trunk transaction is not valid"));
 }
 
 #[test]
@@ -42,19 +48,24 @@ fn test_attach_to_tangle_empty_branch() {
         trytes: &[TEST_TX_HASH.into()],
         ..AttachOptions::default()
     };
-    let _res = client.attach_to_tangle(opt).unwrap_err();
+    let res = client.attach_to_tangle(opt).unwrap_err();
+    assert!(res
+        .to_string()
+        .contains("Provided branch transaction is not valid"));
 }
 
 #[test]
 fn test_broadcast_transactions_empty() {
     let mut client = client_init();
-    let _res = client.broadcast_transactions(&["".into()]).unwrap_err();
+    let res = client.broadcast_transactions(&["".into()]).unwrap_err();
+    assert!(res.to_string().contains("Provided trytes are not valid"));
 }
 
 #[test]
 fn test_check_consistency_empty() {
     let mut client = client_init();
-    let _res = client.check_consistency(&["".into()]).unwrap_err();
+    let res = client.check_consistency(&["".into()]).unwrap_err();
+    assert!(res.to_string().contains("Provided hash is not valid"));
 }
 
 #[test]
@@ -188,7 +199,8 @@ fn test_get_balances_empty() {
     let opt = GetBalancesOptions {
         ..GetBalancesOptions::default()
     };
-    let _res = client.get_balances(opt).unwrap_err();
+    let res = client.get_balances(opt).unwrap_err();
+    assert!(res.to_string().contains("Provided addresses are not valid"));
 }
 
 #[test]
@@ -230,7 +242,10 @@ fn test_get_inclusion_states() {
 fn test_get_inclusion_states_empty() {
     let mut client = client_init();
     let opt = GetInclusionStatesOptions::default();
-    let _res = client.get_inclusion_states(opt).unwrap_err();
+    let res = client.get_inclusion_states(opt).unwrap_err();
+    assert!(res
+        .to_string()
+        .contains("Provided transactions are not valid"));
 }
 
 #[test]
@@ -303,7 +318,8 @@ fn test_get_transactions_to_approve_invalid_depth() {
         depth: usize::max_value(),
         ..GetTransactionsToApproveOptions::default()
     };
-    let _res = client.get_transactions_to_approve(opt).unwrap_err();
+    let res = client.get_transactions_to_approve(opt).unwrap_err();
+    assert!(res.to_string().contains("Invalid depth input"));
 }
 
 #[test]
@@ -316,7 +332,8 @@ fn test_get_trytes() {
 #[test]
 fn test_get_trytes_empty() {
     let mut client = client_init();
-    let _res = client.get_trytes(&["".into()]).unwrap_err();
+    let res = client.get_trytes(&["".into()]).unwrap_err();
+    assert!(res.to_string().contains("Provided hashes are not valid"));
 }
 
 #[test]
@@ -332,7 +349,8 @@ fn test_remove_neighbors_empty() {
 #[test]
 fn test_store_transactions_empty() {
     let mut client = client_init();
-    let _res = client.store_transactions(&["".into()]).unwrap_err();
+    let res = client.store_transactions(&["".into()]).unwrap_err();
+    assert!(res.to_string().contains("Provided trytes are not valid"));
 }
 
 #[test]
