@@ -284,7 +284,7 @@ fn test_get_neighbors() {
 fn test_get_node_info() {
     let mut client = client_init();
     let res = client.get_node_info().unwrap();
-
+    println!("{:#?}", res);
     assert_ne!(res.app_name().len(), 0);
     assert_ne!(res.app_version().len(), 0);
     assert_ne!(res.latest_milestone(), NULL_HASH);
