@@ -30,7 +30,7 @@ pub struct GetNodeInfoResponse {
     app_version: String,
     /// Number of threads IRI is using
     #[serde(rename = "jreAvailableProcessors")]
-    jre_available_processors: u64,
+    jre_available_processors: u16,
     /// Amount of free memory on IRI node
     #[serde(rename = "jreFreeMemory")]
     jre_free_memory: u64,
@@ -82,7 +82,7 @@ impl GetNodeInfoResponse {
         &self.app_version
     }
     /// Returns the jre_available_processors attribute
-    pub fn jre_available_processors(&self) -> u64 {
+    pub fn jre_available_processors(&self) -> u16 {
         self.jre_available_processors
     }
     /// Returns the jre_free_memory attribute
