@@ -182,6 +182,11 @@ impl<'a> Client<'a> {
     /// determined. The balances is returned as a list in the same
     /// order as the addresses were provided as input.
     pub fn get_balances(&mut self, options: GetBalancesOptions) -> Result<GetBalancesResponse> {
+        ensure!(
+            input_validator::is_array_of_hashes(&options.addresses),
+            "Provided addresses are not valid: {:?}",
+            options.addresses
+        );
         let parsed_resp: GetBalancesResponse = self
             .runtime
             .block_on(
@@ -209,11 +214,13 @@ impl<'a> Client<'a> {
             "Provided transactions are not valid: {:?}",
             options.transactions
         );
-        ensure!(
-            input_validator::is_array_of_hashes(&options.tips),
-            "Provided tips are not valid: {:?}",
-            options.tips
-        );
+        if !options.tips.is_empty() {
+            ensure!(
+                input_validator::is_array_of_hashes(&options.tips),
+                "Provided tips are not valid: {:?}",
+                options.tips
+            );
+        }
 
         let parsed_resp: GetInclusionStatesResponse = self
             .runtime
@@ -361,6 +368,12 @@ impl<'a> Client<'a> {
     /// The trytes to be used for this call are
     /// returned by attachToTangle.
     pub fn store_transactions(&mut self, trytes: &[String]) -> Result<StoreTransactionsResponse> {
+        ensure!(
+            input_validator::is_array_of_attached_trytes(&trytes),
+            "Provided trytes are not valid: {:?}",
+            trytes
+        );
+
         let parsed_resp: StoreTransactionsResponse = self
             .runtime
             .block_on(
