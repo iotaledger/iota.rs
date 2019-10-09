@@ -37,7 +37,7 @@ Using the library is fairly easy, just add it as dependancy in `Cargo.toml`:
 
 ```
 [dependencies]
-iota-lib-rs = "0.3"
+iota-lib-rs = "0.4"
 ```
 
 ## Getting started
@@ -51,7 +51,7 @@ use iota_lib_rs::prelude::*;
 
 let mut iota = iota_client::Client::new("https://localhost");
 
-println!({:?}, iota.get_node_info().unwrap);
+println!("{:#?}", iota.get_node_info().unwrap);
 ```
 
 
