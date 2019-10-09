@@ -6,8 +6,8 @@ authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.c
 license = "MIT"
 readme = "README.md"
 keywords = ["iota", "api"]
-repository = "https://github.com/njaremko/iota-lib-rs"
-homepage = "https://github.com/njaremko/iota-lib-rs"
+repository = "https://github.com/iotaledger/iota.rs"
+homepage = "https://github.com/iotaledger/iota.rs"
 documentation = "https://docs.rs/iota-lib-rs"
 description = "A rust implementation of the IOTA API"
 
