@@ -1,9 +1,12 @@
 [package]
 name = "iota-constants"
-version = "0.2.0"
-authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
+version = "0.4.0"
+authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Constants used by Iota"
+repository = "https://github.com/iotaledger/iota.rs"
+homepage = "https://github.com/iotaledger/iota.rs"
+documentation = "https://docs.rs/iota-constants"
 license = "MIT"
 
 [lib]

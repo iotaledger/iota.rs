@@ -1,9 +1,12 @@
 [package]
 name = "iota-model"
-version = "0.2.0"
-authors = ["Nathan Jaremko <nathan@jaremko.ca>"]
+version = "0.4.0"
+authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Data model used by Iota"
+repository = "https://github.com/iotaledger/iota.rs"
+homepage = "https://github.com/iotaledger/iota.rs"
+documentation = "https://docs.rs/iota-model"
 license = "MIT"
 
 [lib]
@@ -14,6 +17,6 @@ path = "lib.rs"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 failure = "0.1"
-iota-crypto = { version = "0.2.0", path = "../iota-crypto" }
-iota-constants = { version = "0.2.0", path = "../iota-constants" }
-iota-conversion = { version = "0.2.0", path = "../iota-conversion" }
+iota-crypto = { version = "0.4.0", path = "../iota-crypto" }
+iota-constants = { version = "0.4.0", path = "../iota-constants" }
+iota-conversion = { version = "0.4.0", path = "../iota-conversion" }
