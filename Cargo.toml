@@ -9,7 +9,7 @@ keywords = ["iota", "api"]
 repository = "https://github.com/iotaledger/iota.rs"
 homepage = "https://github.com/iotaledger/iota.rs"
 documentation = "https://docs.rs/iota-lib-rs"
-description = "A rust implementation of the IOTA API"
+description = "A rust implementation of the IOTA Client API"
 
 [lib]
 name = "iota_lib_rs"

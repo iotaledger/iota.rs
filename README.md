@@ -11,8 +11,8 @@ This is the **WIP** Rust client library, which allows you to do the following:
 * Generate addresses
 * Interact with an IRI node
 
-This is beta software, so there may be performance and stability issues. As IOTA Foundation currently working on `bee`, we also decided to re-implement common libraries for security. This library is going to be feature freeze untill fundamental crates are done.
-Please report any issues in our [issue tracker](https://github.com/iotaledger/iota-lib-rs/issues).
+This is client library is still in the beta stage, so there may be performance and stability issues. As IOTA Foundation currently working on `bee`, we also decided to re-implement common libraries for security. This library is going to be feature freeze untill fundamental crates are done.
+Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
 |Table of contents|
 |:----|
@@ -46,7 +46,7 @@ After you've [installed the library](#installing-the-library),  you can connect 
 
 To connect to a local IRI node, we provide a module `Client` :
 
-```js
+```rust
 use iota_lib_rs::prelude::*;
 
 let mut iota = iota_client::Client::new("https://localhost");
