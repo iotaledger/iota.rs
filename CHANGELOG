@@ -1,3 +1,8 @@
+0.4.0
+- Fill documentation for all crates
+- Move API logic to client crate
+- Fix bundle creation bugs
+
 0.3.0
 - Cleanup API
 - Significantly less cloning of data throughout
