@@ -5,13 +5,13 @@
 [![Documentation](https://docs.rs/iota-lib-rs/badge.svg)](https://docs.rs/iota-lib-rs/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/iotaledger/iota-lib-rs/blob/master/LICENSE)
 
-This is the **official** Rust client library, which allows you to do the following:
+This is the **WIP** Rust client library, which allows you to do the following:
 * Create transactions
 * Sign transactions
 * Generate addresses
 * Interact with an IRI node
 
-This is beta software, so there may be performance and stability issues.
+This is beta software, so there may be performance and stability issues. As IOTA Foundation currently working on `bee`, we also decided to re-implement common libraries for security. This library is going to be feature freeze untill fundamental crates are done.
 Please report any issues in our [issue tracker](https://github.com/iotaledger/iota-lib-rs/issues).
 
 |Table of contents|
