@@ -1,6 +1,6 @@
 [package]
 name = "iota-conversion"
-version = "0.4.0"
+version = "0.3.0"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Converters used by Iota"
@@ -16,7 +16,7 @@ path = "lib.rs"
 [dependencies]
 failure = "0.1"
 lazy_static = "1.3"
-iota-constants = { version = "0.4.0", path = "../iota-constants" }
+iota-constants = { version = "0.2.1", path = "../iota-constants" }
 
 [dev-dependencies]
 rand = "0.6"

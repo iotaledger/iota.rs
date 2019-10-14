@@ -1,6 +1,6 @@
 [package]
 name = "iota-signing"
-version = "0.4.0"
+version = "0.2.1"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Signing helpers used by Iota"
@@ -14,9 +14,9 @@ name = "iota_signing"
 path = "lib.rs"
 
 [dependencies]
-iota-constants = { version = "0.4.0", path = "../iota-constants" }
-iota-model = { version = "0.4.0", path = "../iota-model" }
-iota-crypto = { version = "0.4.0", path = "../iota-crypto" }
-iota-validation = { version = "0.4.0", path = "../iota-validation" }
-iota-conversion = { version = "0.4.0", path = "../iota-conversion" }
+iota-constants = { version = "0.2.1", path = "../iota-constants" }
+iota-model = { version = "0.3.0", path = "../iota-model" }
+iota-crypto = { version = "0.3.0", path = "../iota-crypto" }
+iota-validation = { version = "0.2.1", path = "../iota-validation" }
+iota-conversion = { version = "0.3.0", path = "../iota-conversion" }
 failure = "0.1"

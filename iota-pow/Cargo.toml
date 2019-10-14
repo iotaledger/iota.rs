@@ -1,6 +1,6 @@
 [package]
 name = "iota-pow"
-version = "0.4.0"
+version = "0.2.1"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Proof of work used by Iota"
@@ -17,8 +17,8 @@ path = "lib.rs"
 num_cpus = "1.10"
 crossbeam = "0.7"
 failure = "0.1"
-iota-conversion = { version = "0.4.0", path = "../iota-conversion" }
-iota-crypto = { version = "0.4.0", path = "../iota-crypto" }
+iota-conversion = { version = "0.3.0", path = "../iota-conversion" }
+iota-crypto = { version = "0.3.0", path = "../iota-crypto" }
 lazy_static = "1.3"
 
 [dev-dependencies]
