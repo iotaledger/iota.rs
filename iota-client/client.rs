@@ -47,7 +47,7 @@ impl<'a> Client<'a> {
     /// from your set of neighbors after you relaunch IRI.
     /// ```
     /// use iota_client;
-    /// let mut client = iota_client::Client::new("https://node01.iotatoken.nl");
+    /// let mut client = iota_client::Client::new("https://nodes.devnet.iota.org");
     /// let resp = client.add_neighbors(&vec!["".into()]).unwrap();
     /// println!("{:?}", resp);
     /// ```
