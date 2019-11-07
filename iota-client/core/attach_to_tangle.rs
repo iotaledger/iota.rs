@@ -136,7 +136,7 @@ pub fn attach_to_tangle_local(
             },
         )?;
         result_trytes.push(result_trits.trytes()?);
-        previous_transaction = result_trytes[i].parse::<Transaction>()?.hash.into();
+        previous_transaction = result_trytes[i].parse::<Transaction>()?.hash;
     }
     result_trytes.reverse();
     Ok(AttachToTangleResponse::new(

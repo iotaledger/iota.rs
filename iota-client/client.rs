@@ -33,7 +33,7 @@ impl<'a> Client<'a> {
     /// Create a new instance of Client
     pub fn new(uri: &str) -> Client<'_> {
         Client {
-            uri: uri,
+            uri,
             runtime: Runtime::new().unwrap(),
             client: reqwest::Client::new(),
         }
