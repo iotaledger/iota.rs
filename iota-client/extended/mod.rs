@@ -1,8 +1,16 @@
-pub(crate) mod get_bundle;
-pub(crate) mod get_inputs;
-pub(crate) mod get_new_address;
-pub(crate) mod prepare_transfers;
-pub(crate) mod send_transfers;
-pub(crate) mod send_trytes;
-pub(crate) mod store_and_broadcast;
-pub(crate) mod traverse_bundle;
+/// Get Bundle Extended API
+pub mod get_bundle;
+/// Get Inputs Extended API
+pub mod get_inputs;
+/// Get New Address Extended API
+pub mod get_new_address;
+/// Prepare Transfer Extended API
+pub mod prepare_transfers;
+/// Send Transfer Extended API
+pub mod send_transfers;
+/// Send Trytes Extended API
+pub mod send_trytes;
+/// Store & Broadcast Extended API
+pub mod store_and_broadcast;
+/// Travers Bundle Extended API
+pub mod traverse_bundle;

@@ -21,7 +21,7 @@ extern crate serde_json;
 mod core;
 mod extended;
 use crate::core::*;
-use crate::extended::*;
+pub use crate::extended::*;
 
 /// The Client strcut to connect through IRI with API usage
 pub mod client;
