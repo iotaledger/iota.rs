@@ -87,6 +87,16 @@ impl<'a> Client<'a> {
                 );
             }
             transfer.address = iota_signing::checksum::remove_checksum(&transfer.address);
+            if transfer.value > 0 {
+                ensure!(
+                    if transfer.address.trits()[242] == 0 {
+                        true
+                    } else {
+                        false
+                    },
+                    "Invalid Kerl address."
+                );
+            }
         }
         ensure!(
             iota_validation::is_transfers_collection_valid(&transfers),
