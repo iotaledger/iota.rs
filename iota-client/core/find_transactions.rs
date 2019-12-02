@@ -1,6 +1,4 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Struct used to provide named arguments for `find_transactions`
 #[derive(Clone, Default, Debug)]
@@ -16,11 +14,11 @@ pub struct FindTransactionsOptions {
 }
 
 /// Finds transactions the match any of the provided parameters
-pub(crate) fn find_transactions(
+pub(crate) async fn find_transactions(
     client: &Client,
     uri: &str,
     options: FindTransactionsOptions,
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let mut body = json!({
         "command": "findTransactions",
     });
@@ -44,6 +42,7 @@ pub(crate) fn find_transactions(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

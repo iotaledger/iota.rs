@@ -1,16 +1,14 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Removes a list of neighbors to your node.
 /// This is only temporary, and if you have your neighbors
 /// added via the command line, they will be retained after
 /// you restart your node.
-pub(crate) fn remove_neighbors(
+pub(crate) async fn remove_neighbors(
     client: &Client,
     uri: &str,
     uris: &[String],
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let body = json!({
         "command": "removeNeighbors",
         "uris": uris,
@@ -22,6 +20,7 @@ pub(crate) fn remove_neighbors(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

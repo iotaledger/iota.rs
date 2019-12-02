@@ -1,15 +1,10 @@
 use iota_model::Neighbor;
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Returns the set of neighbors you are connected with, as
 /// well as their activity count. The activity counter is reset
 /// after restarting IRI.
-pub(crate) fn get_neighbors(
-    client: &Client,
-    uri: &str,
-) -> impl Future<Item = Response, Error = Error> {
+pub(crate) async fn get_neighbors(client: &Client, uri: &str) -> Result<Response, Error> {
     let body = json!({
         "command": "getNeighbors",
     });
@@ -20,6 +15,7 @@ pub(crate) fn get_neighbors(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

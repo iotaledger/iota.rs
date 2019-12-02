@@ -1,11 +1,9 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Interupts an existing PoW request if you made one
-pub(crate) fn interrupt_attaching_to_tangle(
+pub(crate) async fn interrupt_attaching_to_tangle(
     client: &Client,
     uri: &str,
-) -> impl Future<Item = Response, Error = Error> {
-    client.post(uri).send()
+) -> Result<Response, Error> {
+    client.post(uri).send().await
 }
