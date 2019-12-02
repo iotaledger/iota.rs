@@ -1,16 +1,14 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Returns the raw transaction data (trytes) of a specific
 /// transaction. These trytes can then be easily converted
 /// into the actual transaction object. See utility functions
 /// for more details.
-pub(crate) fn get_trytes(
+pub(crate) async fn get_trytes(
     client: &Client,
     uri: &str,
     hashes: &[String],
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let body = json!({
         "command": "getTrytes",
         "hashes": hashes,
@@ -22,6 +20,7 @@ pub(crate) fn get_trytes(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

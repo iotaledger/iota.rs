@@ -1,6 +1,4 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Struct used to provide named arguments for `get_transactions_to_approve`
 #[derive(Clone, Debug)]
@@ -33,11 +31,11 @@ impl<'a> Default for GetTransactionsToApproveOptions<'a> {
 /// returned. The reference is an optional hash of a transaction
 /// you want to approve. If it can't be found at the specified
 /// depth then an error will be returned.
-pub(crate) fn get_transactions_to_approve(
+pub(crate) async fn get_transactions_to_approve(
     client: &Client,
     uri: &str,
     options: GetTransactionsToApproveOptions<'_>,
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let mut body = json!({
         "command": "getTransactionsToApprove",
         "depth": options.depth,
@@ -53,6 +51,7 @@ pub(crate) fn get_transactions_to_approve(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

@@ -1,6 +1,4 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Struct used to provide named arguments for `get_inclusion_states`
 #[derive(Clone, Debug, Default)]
@@ -19,11 +17,11 @@ pub struct GetInclusionStatesOptions {
 /// This API call simply returns a list of boolean values in the
 /// same order as the transaction list you submitted, thus you get
 /// a true/false whether a transaction is confirmed or not.
-pub(crate) fn get_inclusion_states(
+pub(crate) async fn get_inclusion_states(
     client: &Client,
     uri: &str,
     options: GetInclusionStatesOptions,
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let body = json!({
         "command": "getInclusionStates",
         "transactions": options.transactions,
@@ -36,6 +34,7 @@ pub(crate) fn get_inclusion_states(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

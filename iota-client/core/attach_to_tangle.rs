@@ -1,14 +1,10 @@
-use chrono::prelude::*;
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::*;
+use chrono::Utc;
+use reqwest::{Client, Error, Response};
 
 use iota_conversion::Trinary;
 use iota_model::*;
 use iota_pow::{PearlDiver, PowOptions};
 use iota_validation::input_validator;
-
-use crate::Result;
 
 use std::convert::TryInto;
 
@@ -57,11 +53,11 @@ impl<'a, 'b, 'c> Default for AttachOptions<'a, 'b, 'c> {
 /// * `branch_transaction` - branch transaction to confirm
 /// * `min_weight_magnitude` - Difficulty of PoW
 /// * `trytes` - tryes to use for PoW
-pub(crate) fn attach_to_tangle(
+pub(crate) async fn attach_to_tangle(
     client: &Client,
     uri: &str,
     options: AttachOptions<'_, '_, '_>,
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let body = json!({
         "command": "attachToTangle",
         "trunkTransaction": options.trunk_transaction,
@@ -76,6 +72,7 @@ pub(crate) fn attach_to_tangle(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// Performs proof of work locally
@@ -88,7 +85,7 @@ pub(crate) fn attach_to_tangle(
 /// * `trytes` - tryes to use for PoW
 pub fn attach_to_tangle_local(
     options: AttachOptions<'_, '_, '_>,
-) -> Result<AttachToTangleResponse> {
+) -> Result<AttachToTangleResponse, failure::Error> {
     ensure!(
         input_validator::is_hash(&options.trunk_transaction),
         "Provided trunk transaction is not valid: {:?}",
@@ -139,7 +136,7 @@ pub fn attach_to_tangle_local(
             },
         )?;
         result_trytes.push(result_trits.trytes()?);
-        previous_transaction = result_trytes[i].parse::<Transaction>()?.hash.into();
+        previous_transaction = result_trytes[i].parse::<Transaction>()?.hash;
     }
     result_trytes.reverse();
     Ok(AttachToTangleResponse::new(

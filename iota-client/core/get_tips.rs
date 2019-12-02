@@ -1,9 +1,7 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Returns the list of tips
-pub(crate) fn get_tips(client: &Client, uri: &str) -> impl Future<Item = Response, Error = Error> {
+pub(crate) async fn get_tips(client: &Client, uri: &str) -> Result<Response, Error> {
     let body = json!({
         "command": "getTips",
     });
@@ -14,6 +12,7 @@ pub(crate) fn get_tips(client: &Client, uri: &str) -> impl Future<Item = Respons
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response
