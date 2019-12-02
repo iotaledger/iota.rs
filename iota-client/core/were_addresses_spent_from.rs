@@ -1,13 +1,11 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Check if a list of addresses was ever spent from.
-pub(crate) fn were_addresses_spent_from(
+pub(crate) async fn were_addresses_spent_from(
     client: &Client,
     uri: &str,
     addresses: &[String],
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let body = json!({
         "command": "wereAddressesSpentFrom",
         "addresses": addresses,
@@ -19,6 +17,7 @@ pub(crate) fn were_addresses_spent_from(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

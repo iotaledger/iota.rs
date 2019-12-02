@@ -1,12 +1,7 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Gets information about the specified node
-pub(crate) fn get_node_info(
-    client: &Client,
-    uri: &str,
-) -> impl Future<Item = Response, Error = Error> {
+pub(crate) async fn get_node_info(client: &Client, uri: &str) -> Result<Response, Error> {
     let body = json!({
         "command": "getNodeInfo",
     });
@@ -17,6 +12,7 @@ pub(crate) fn get_node_info(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 
 /// This is a typed representation of the JSON response

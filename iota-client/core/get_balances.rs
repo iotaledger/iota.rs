@@ -1,6 +1,4 @@
-use reqwest::r#async::{Client, Response};
-use reqwest::Error;
-use tokio::prelude::Future;
+use reqwest::{Client, Error, Response};
 
 /// Struct used to provide named arguments for `get_balances`
 #[derive(Clone, Debug)]
@@ -32,11 +30,11 @@ impl Default for GetBalancesOptions {
 /// as well as the index with which the confirmed balance was
 /// determined. The balances is returned as a list in the same
 /// order as the addresses were provided as input.
-pub(crate) fn get_balances(
+pub(crate) async fn get_balances(
     client: &Client,
     uri: &str,
     options: GetBalancesOptions,
-) -> impl Future<Item = Response, Error = Error> {
+) -> Result<Response, Error> {
     let mut body = json!({
         "command": "getBalances",
         "addresses": options.addresses,
@@ -53,6 +51,7 @@ pub(crate) fn get_balances(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await
 }
 /// This is a typed representation of the JSON response
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
