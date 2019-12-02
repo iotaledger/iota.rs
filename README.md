@@ -49,9 +49,10 @@ To connect to a local IRI node, we provide a module `Client` :
 ```rust
 use iota_lib_rs::prelude::*;
 
-let mut iota = iota_client::Client::new("https://localhost");
-
-println!("{:#?}", iota.get_node_info().unwrap);
+fn main() {
+  let mut iota = iota_client::Client::new("https://localhost");
+  println!("{:#?}", iota.get_node_info().unwrap());
+}
 ```
 
 
