@@ -87,6 +87,9 @@ impl<'a> Client<'a> {
                 );
             }
             transfer.address = iota_signing::checksum::remove_checksum(&transfer.address);
+            if transfer.value > 0 {
+                ensure!(transfer.address.trits()[242] == 0, "Invalid Kerl address.");
+            }
         }
         ensure!(
             iota_validation::is_transfers_collection_valid(&transfers),
@@ -235,7 +238,7 @@ impl<'a> Client<'a> {
             let to_subtract = 0 - this_balance;
             let timestamp = Utc::now().timestamp();
             let address = iota_signing::checksum::remove_checksum(&input.address);
-
+            ensure!(address.trits()[242] == 0, "Invalid Kerl input address.");
             bundle.add_entry(BundleEntry {
                 signature_message_length: input.security,
                 address: &address,
@@ -247,6 +250,10 @@ impl<'a> Client<'a> {
             if this_balance >= total_transfer_value {
                 let remainder = this_balance - total_transfer_value;
                 if let Some(remainder_address) = &options.remainder_address {
+                    ensure!(
+                        remainder_address.trits()[242] == 0,
+                        "Invalid Kerl remainder address."
+                    );
                     if remainder > 0 {
                         bundle.add_entry(BundleEntry {
                             signature_message_length: 1,
