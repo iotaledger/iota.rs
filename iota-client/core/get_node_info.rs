@@ -1,7 +1,10 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Gets information about the specified node
-pub(crate) async fn get_node_info(client: &Client, uri: &str) -> Result<Response, Error> {
+pub(crate) async fn get_node_info(
+    client: &Client,
+    uri: &str,
+) -> Result<GetNodeInfoResponse, Error> {
     let body = json!({
         "command": "getNodeInfo",
     });
@@ -12,6 +15,8 @@ pub(crate) async fn get_node_info(client: &Client, uri: &str) -> Result<Response
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

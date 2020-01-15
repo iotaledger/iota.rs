@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Returns the raw transaction data (trytes) of a specific
 /// transaction. These trytes can then be easily converted
@@ -8,7 +8,7 @@ pub(crate) async fn get_trytes(
     client: &Client,
     uri: &str,
     hashes: &[String],
-) -> Result<Response, Error> {
+) -> Result<GetTrytesResponse, Error> {
     let body = json!({
         "command": "getTrytes",
         "hashes": hashes,
@@ -20,6 +20,8 @@ pub(crate) async fn get_trytes(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

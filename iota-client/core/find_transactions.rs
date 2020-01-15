@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Struct used to provide named arguments for `find_transactions`
 #[derive(Clone, Default, Debug)]
@@ -18,7 +18,7 @@ pub(crate) async fn find_transactions(
     client: &Client,
     uri: &str,
     options: FindTransactionsOptions,
-) -> Result<Response, Error> {
+) -> Result<FindTransactionsResponse, Error> {
     let mut body = json!({
         "command": "findTransactions",
     });
@@ -42,6 +42,8 @@ pub(crate) async fn find_transactions(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 
