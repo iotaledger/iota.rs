@@ -49,12 +49,9 @@ impl<'a> Client<'a> {
     /// println!("{:?}", resp);
     /// ```
     pub fn add_neighbors(&mut self, uris: &[String]) -> Result<AddNeighborsResponse> {
-        let parsed_resp: AddNeighborsResponse = self.runtime.block_on(async {
-            add_neighbors::add_neighbors(&self.client, self.uri, uris)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp =
+            self.runtime
+                .block_on(add_neighbors::add_neighbors(&self.client, self.uri, uris))?;
 
         Ok(parsed_resp)
     }
@@ -86,12 +83,11 @@ impl<'a> Client<'a> {
             options.trytes
         );
 
-        let attach_resp: AttachToTangleResponse = self.runtime.block_on(async {
-            attach_to_tangle::attach_to_tangle(&self.client, self.uri, options)
-                .await?
-                .json()
-                .await
-        })?;
+        let attach_resp = self.runtime.block_on(attach_to_tangle::attach_to_tangle(
+            &self.client,
+            self.uri,
+            options,
+        ))?;
 
         if let Some(error) = attach_resp.error() {
             return Err(format_err!("{}", error));
@@ -115,12 +111,13 @@ impl<'a> Client<'a> {
             trytes
         );
 
-        let parsed_response: BroadcastTransactionsResponse = self.runtime.block_on(async {
-            broadcast_transactions::broadcast_transactions(&self.client, self.uri, trytes)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_response =
+            self.runtime
+                .block_on(broadcast_transactions::broadcast_transactions(
+                    &self.client,
+                    self.uri,
+                    trytes,
+                ))?;
 
         if let Some(error) = parsed_response.error() {
             return Err(format_err!("{}", error));
@@ -141,12 +138,11 @@ impl<'a> Client<'a> {
                 hash
             );
         }
-        let parsed: Value = self.runtime.block_on(async {
-            check_consistency::check_consistency(&self.client, self.uri, hashes)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed = self.runtime.block_on(check_consistency::check_consistency(
+            &self.client,
+            self.uri,
+            hashes,
+        ))?;
 
         Ok(parsed)
     }
@@ -156,12 +152,11 @@ impl<'a> Client<'a> {
         &mut self,
         options: FindTransactionsOptions,
     ) -> Result<FindTransactionsResponse> {
-        let parsed_resp: FindTransactionsResponse = self.runtime.block_on(async {
-            find_transactions::find_transactions(&self.client, self.uri, options)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp = self.runtime.block_on(find_transactions::find_transactions(
+            &self.client,
+            self.uri,
+            options,
+        ))?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -181,12 +176,9 @@ impl<'a> Client<'a> {
             "Provided addresses are not valid: {:?}",
             options.addresses
         );
-        let parsed_resp: GetBalancesResponse = self.runtime.block_on(async {
-            get_balances::get_balances(&self.client, self.uri, options)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp =
+            self.runtime
+                .block_on(get_balances::get_balances(&self.client, self.uri, options))?;
 
         Ok(parsed_resp)
     }
@@ -216,12 +208,13 @@ impl<'a> Client<'a> {
             );
         }
 
-        let parsed_resp: GetInclusionStatesResponse = self.runtime.block_on(async {
-            get_inclusion_states::get_inclusion_states(&self.client, self.uri, options)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp = self
+            .runtime
+            .block_on(get_inclusion_states::get_inclusion_states(
+                &self.client,
+                self.uri,
+                options,
+            ))?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -234,12 +227,9 @@ impl<'a> Client<'a> {
     /// well as their activity count. The activity counter is reset
     /// after restarting IRI.
     pub fn get_neighbors(&mut self) -> Result<GetNeighborsResponse> {
-        let parsed_resp: GetNeighborsResponse = self.runtime.block_on(async {
-            get_neighbors::get_neighbors(&self.client, self.uri)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp = self
+            .runtime
+            .block_on(get_neighbors::get_neighbors(&self.client, self.uri))?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -250,24 +240,18 @@ impl<'a> Client<'a> {
 
     /// Gets information about the specified node
     pub fn get_node_info(&mut self) -> Result<GetNodeInfoResponse> {
-        let parsed_resp: GetNodeInfoResponse = self.runtime.block_on(async {
-            get_node_info::get_node_info(&self.client, self.uri)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp = self
+            .runtime
+            .block_on(get_node_info::get_node_info(&self.client, self.uri))?;
 
         Ok(parsed_resp)
     }
 
     /// Returns the list of tips
     pub fn get_tips(&mut self) -> Result<GetTipsResponse> {
-        let parsed_resp: GetTipsResponse = self.runtime.block_on(async {
-            get_tips::get_tips(&self.client, self.uri)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp = self
+            .runtime
+            .block_on(get_tips::get_tips(&self.client, self.uri))?;
 
         Ok(parsed_resp)
     }
@@ -286,16 +270,13 @@ impl<'a> Client<'a> {
         &mut self,
         options: GetTransactionsToApproveOptions<'_>,
     ) -> Result<GetTransactionsToApprove> {
-        let parsed_resp: GetTransactionsToApprove = self.runtime.block_on(async {
-            get_transactions_to_approve::get_transactions_to_approve(
-                &self.client,
-                self.uri,
-                options,
-            )
-            .await?
-            .json()
-            .await
-        })?;
+        let parsed_resp =
+            self.runtime
+                .block_on(get_transactions_to_approve::get_transactions_to_approve(
+                    &self.client,
+                    self.uri,
+                    options,
+                ))?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -318,12 +299,9 @@ impl<'a> Client<'a> {
             hashes
         );
 
-        let parsed_resp: GetTrytesResponse = self.runtime.block_on(async {
-            get_trytes::get_trytes(&self.client, self.uri, hashes)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp =
+            self.runtime
+                .block_on(get_trytes::get_trytes(&self.client, self.uri, hashes))?;
 
         Ok(parsed_resp)
     }
@@ -342,12 +320,11 @@ impl<'a> Client<'a> {
     /// added via the command line, they will be retained after
     /// you restart your node.
     pub fn remove_neighbors(&mut self, uris: &[String]) -> Result<RemoveNeighborsResponse> {
-        let parsed_resp: RemoveNeighborsResponse = self.runtime.block_on(async {
-            remove_neighbors::remove_neighbors(&self.client, self.uri, uris)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp = self.runtime.block_on(remove_neighbors::remove_neighbors(
+            &self.client,
+            self.uri,
+            uris,
+        ))?;
 
         Ok(parsed_resp)
     }
@@ -362,12 +339,13 @@ impl<'a> Client<'a> {
             trytes
         );
 
-        let parsed_resp: StoreTransactionsResponse = self.runtime.block_on(async {
-            store_transactions::store_transactions(&self.client, self.uri, trytes)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp = self
+            .runtime
+            .block_on(store_transactions::store_transactions(
+                &self.client,
+                self.uri,
+                trytes,
+            ))?;
 
         Ok(parsed_resp)
     }
@@ -384,12 +362,13 @@ impl<'a> Client<'a> {
             .collect();
         ensure!(!addresses.is_empty(), "No valid addresses provided.");
 
-        let parsed_resp: WereAddressesSpentFromResponse = self.runtime.block_on(async {
-            were_addresses_spent_from::were_addresses_spent_from(&self.client, self.uri, &addresses)
-                .await?
-                .json()
-                .await
-        })?;
+        let parsed_resp =
+            self.runtime
+                .block_on(were_addresses_spent_from::were_addresses_spent_from(
+                    &self.client,
+                    self.uri,
+                    &addresses,
+                ))?;
 
         Ok(parsed_resp)
     }

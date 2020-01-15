@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Removes a list of neighbors to your node.
 /// This is only temporary, and if you have your neighbors
@@ -8,7 +8,7 @@ pub(crate) async fn remove_neighbors(
     client: &Client,
     uri: &str,
     uris: &[String],
-) -> Result<Response, Error> {
+) -> Result<RemoveNeighborsResponse, Error> {
     let body = json!({
         "command": "removeNeighbors",
         "uris": uris,
@@ -20,6 +20,8 @@ pub(crate) async fn remove_neighbors(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

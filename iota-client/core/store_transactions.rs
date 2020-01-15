@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Store transactions into the local storage.
 /// The trytes to be used for this call are
@@ -7,7 +7,7 @@ pub(crate) async fn store_transactions(
     client: &Client,
     uri: &str,
     trytes: &[String],
-) -> Result<Response, Error> {
+) -> Result<StoreTransactionsResponse, Error> {
     let body = json!({
         "command": "storeTransactions",
         "trytes": trytes,
@@ -19,6 +19,8 @@ pub(crate) async fn store_transactions(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

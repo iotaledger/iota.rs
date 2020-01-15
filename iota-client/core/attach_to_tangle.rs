@@ -1,5 +1,5 @@
 use chrono::Utc;
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 use iota_conversion::Trinary;
 use iota_model::*;
@@ -57,7 +57,7 @@ pub(crate) async fn attach_to_tangle(
     client: &Client,
     uri: &str,
     options: AttachOptions<'_, '_, '_>,
-) -> Result<Response, Error> {
+) -> Result<AttachToTangleResponse, Error> {
     let body = json!({
         "command": "attachToTangle",
         "trunkTransaction": options.trunk_transaction,
@@ -72,6 +72,8 @@ pub(crate) async fn attach_to_tangle(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

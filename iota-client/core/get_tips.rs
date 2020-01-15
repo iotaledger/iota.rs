@@ -1,7 +1,7 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Returns the list of tips
-pub(crate) async fn get_tips(client: &Client, uri: &str) -> Result<Response, Error> {
+pub(crate) async fn get_tips(client: &Client, uri: &str) -> Result<GetTipsResponse, Error> {
     let body = json!({
         "command": "getTips",
     });
@@ -12,6 +12,8 @@ pub(crate) async fn get_tips(client: &Client, uri: &str) -> Result<Response, Err
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Struct used to provide named arguments for `get_balances`
 #[derive(Clone, Debug)]
@@ -34,7 +34,7 @@ pub(crate) async fn get_balances(
     client: &Client,
     uri: &str,
     options: GetBalancesOptions,
-) -> Result<Response, Error> {
+) -> Result<GetBalancesResponse, Error> {
     let mut body = json!({
         "command": "getBalances",
         "addresses": options.addresses,
@@ -51,6 +51,8 @@ pub(crate) async fn get_balances(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 /// This is a typed representation of the JSON response

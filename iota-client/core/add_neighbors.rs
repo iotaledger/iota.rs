@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Add a list of neighbors to your node. It should be noted that
 /// this is only temporary, and the added neighbors will be removed
@@ -7,7 +7,7 @@ pub(crate) async fn add_neighbors(
     client: &Client,
     uri: &str,
     uris: &[String],
-) -> Result<Response, Error> {
+) -> Result<AddNeighborsResponse, Error> {
     let body = json!({
         "command": "addNeighbors",
         "uris": uris,
@@ -19,6 +19,8 @@ pub(crate) async fn add_neighbors(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json::<AddNeighborsResponse>()
         .await
 }
 

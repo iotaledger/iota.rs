@@ -1,11 +1,11 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Check if a list of addresses was ever spent from.
 pub(crate) async fn were_addresses_spent_from(
     client: &Client,
     uri: &str,
     addresses: &[String],
-) -> Result<Response, Error> {
+) -> Result<WereAddressesSpentFromResponse, Error> {
     let body = json!({
         "command": "wereAddressesSpentFrom",
         "addresses": addresses,
@@ -17,6 +17,8 @@ pub(crate) async fn were_addresses_spent_from(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

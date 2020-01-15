@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Struct used to provide named arguments for `get_inclusion_states`
 #[derive(Clone, Debug, Default)]
@@ -21,7 +21,7 @@ pub(crate) async fn get_inclusion_states(
     client: &Client,
     uri: &str,
     options: GetInclusionStatesOptions,
-) -> Result<Response, Error> {
+) -> Result<GetInclusionStatesResponse, Error> {
     let body = json!({
         "command": "getInclusionStates",
         "transactions": options.transactions,
@@ -34,6 +34,8 @@ pub(crate) async fn get_inclusion_states(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

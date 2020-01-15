@@ -1,10 +1,13 @@
 use iota_model::Neighbor;
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Returns the set of neighbors you are connected with, as
 /// well as their activity count. The activity counter is reset
 /// after restarting IRI.
-pub(crate) async fn get_neighbors(client: &Client, uri: &str) -> Result<Response, Error> {
+pub(crate) async fn get_neighbors(
+    client: &Client,
+    uri: &str,
+) -> Result<GetNeighborsResponse, Error> {
     let body = json!({
         "command": "getNeighbors",
     });
@@ -15,6 +18,8 @@ pub(crate) async fn get_neighbors(client: &Client, uri: &str) -> Result<Response
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 

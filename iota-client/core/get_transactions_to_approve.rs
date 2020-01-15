@@ -1,4 +1,4 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error};
 
 /// Struct used to provide named arguments for `get_transactions_to_approve`
 #[derive(Clone, Debug)]
@@ -35,7 +35,7 @@ pub(crate) async fn get_transactions_to_approve(
     client: &Client,
     uri: &str,
     options: GetTransactionsToApproveOptions<'_>,
-) -> Result<Response, Error> {
+) -> Result<GetTransactionsToApprove, Error> {
     let mut body = json!({
         "command": "getTransactionsToApprove",
         "depth": options.depth,
@@ -51,6 +51,8 @@ pub(crate) async fn get_transactions_to_approve(
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
+        .await?
+        .json()
         .await
 }
 
