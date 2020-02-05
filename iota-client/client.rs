@@ -1,6 +1,5 @@
 use reqwest::Response;
 use serde_json::Value;
-use tokio::runtime::Runtime;
 
 use iota_validation::input_validator;
 
@@ -13,8 +12,6 @@ use crate::Result;
 pub struct Client<'a> {
     /// URI of IRI connection
     pub uri: &'a str,
-    /// Handle to the Tokio runtime
-    pub runtime: Runtime,
     /// A reqwest Client to make Requests with
     pub client: reqwest::Client,
 }
@@ -23,7 +20,6 @@ impl<'a> Default for Client<'a> {
     fn default() -> Client<'a> {
         Client {
             uri: "",
-            runtime: Runtime::new().unwrap(),
             client: reqwest::Client::new(),
         }
     }
@@ -34,7 +30,6 @@ impl<'a> Client<'a> {
     pub fn new(uri: &str) -> Client<'_> {
         Client {
             uri,
-            runtime: Runtime::new().unwrap(),
             client: reqwest::Client::new(),
         }
     }
