@@ -23,7 +23,7 @@ impl<'a> Client<'a> {
     ///
     /// * `seed` - The wallet seed to use
     /// * `options` - See `GetInputsOptions`
-    pub fn get_inputs(&mut self, seed: &str, options: GetInputsOptions) -> Result<Inputs> {
+    pub async fn get_inputs(&mut self, seed: &str, options: GetInputsOptions) -> Result<Inputs> {
         ensure!(iota_validation::is_trytes(&seed), "Invalid seed.");
         let start = options.start.unwrap_or(0);
         let security = options.security.unwrap_or(2);
@@ -38,32 +38,38 @@ impl<'a> Client<'a> {
                 all_addresses.push((new_address(&seed, security, i, false))?);
             }
             self.get_balance_and_format(&all_addresses, start, options.threshold, security)
+                .await
         } else {
-            let new_address = self.get_new_address(
-                seed,
-                false,
-                true,
-                GetNewAddressOptions {
-                    security: Some(security),
-                    index: Some(start),
-                    total: None,
-                },
-            )?;
+            let new_address = self
+                .get_new_address(
+                    seed,
+                    false,
+                    true,
+                    GetNewAddressOptions {
+                        security: Some(security),
+                        index: Some(start),
+                        total: None,
+                    },
+                )
+                .await?;
             self.get_balance_and_format(&new_address, start, options.threshold, security)
+                .await
         }
     }
 
-    fn get_balance_and_format(
+    async fn get_balance_and_format(
         &mut self,
         addresses: &[String],
         start: usize,
         threshold: Option<i64>,
         security: usize,
     ) -> Result<Inputs> {
-        let resp = self.get_balances(GetBalancesOptions {
-            addresses: addresses.to_owned(),
-            ..GetBalancesOptions::default()
-        })?;
+        let resp = self
+            .get_balances(GetBalancesOptions {
+                addresses: addresses.to_owned(),
+                ..GetBalancesOptions::default()
+            })
+            .await?;
         let mut inputs = Inputs::default();
 
         let mut threshold_reached = threshold.is_none();

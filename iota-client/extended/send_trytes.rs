@@ -46,15 +46,17 @@ impl<'a> Client<'a> {
     /// * `min_weight_magnitude` - The PoW difficulty factor (14 on mainnet, 9 on testnet)
     /// * `local_pow` - Whether or not to do local PoW
     /// * `options` - See `SendTrytesOptions`
-    pub fn send_trytes(
+    pub async fn send_trytes(
         &mut self,
         trytes: &[String],
         options: SendTrytesOptions<'_>,
     ) -> Result<Vec<Transaction>> {
-        let to_approve = self.get_transactions_to_approve(GetTransactionsToApproveOptions {
-            depth: options.depth,
-            reference: options.reference,
-        })?;
+        let to_approve = self
+            .get_transactions_to_approve(GetTransactionsToApproveOptions {
+                depth: options.depth,
+                reference: options.reference,
+            })
+            .await?;
         let attach_options = AttachOptions {
             threads: options.threads,
             trunk_transaction: &to_approve
@@ -72,10 +74,10 @@ impl<'a> Client<'a> {
             let res = attach_to_tangle_local(attach_options)?;
             res.trytes().unwrap()
         } else {
-            let attached = self.attach_to_tangle(attach_options)?;
+            let attached = self.attach_to_tangle(attach_options).await?;
             attached.trytes().unwrap()
         };
-        self.store_and_broadcast(&trytes_list)?;
+        self.store_and_broadcast(&trytes_list).await?;
         Ok(trytes_list
             .iter()
             .map(|trytes| trytes.parse().unwrap())

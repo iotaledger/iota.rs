@@ -48,10 +48,8 @@ impl<'a> Client<'a> {
     /// let resp = client.add_neighbors(&vec!["".into()]).unwrap();
     /// println!("{:?}", resp);
     /// ```
-    pub fn add_neighbors(&mut self, uris: &[String]) -> Result<AddNeighborsResponse> {
-        let parsed_resp =
-            self.runtime
-                .block_on(add_neighbors::add_neighbors(&self.client, self.uri, uris))?;
+    pub async fn add_neighbors(&mut self, uris: &[String]) -> Result<AddNeighborsResponse> {
+        let parsed_resp = add_neighbors::add_neighbors(&self.client, self.uri, uris).await?;
 
         Ok(parsed_resp)
     }
@@ -63,7 +61,7 @@ impl<'a> Client<'a> {
     /// * `branch_transaction` - branch transaction to confirm
     /// * `min_weight_magnitude` - Difficulty of PoW
     /// * `trytes` - tryes to use for PoW
-    pub fn attach_to_tangle(
+    pub async fn attach_to_tangle(
         &mut self,
         options: AttachOptions<'_, '_, '_>,
     ) -> Result<AttachToTangleResponse> {
@@ -83,11 +81,8 @@ impl<'a> Client<'a> {
             options.trytes
         );
 
-        let attach_resp = self.runtime.block_on(attach_to_tangle::attach_to_tangle(
-            &self.client,
-            self.uri,
-            options,
-        ))?;
+        let attach_resp =
+            attach_to_tangle::attach_to_tangle(&self.client, self.uri, options).await?;
 
         if let Some(error) = attach_resp.error() {
             return Err(format_err!("{}", error));
@@ -101,7 +96,7 @@ impl<'a> Client<'a> {
 
     /// Broadcast a list of transactions to all neighbors.
     /// The input trytes for this call are provided by attachToTangle.
-    pub fn broadcast_transactions(
+    pub async fn broadcast_transactions(
         &mut self,
         trytes: &[String],
     ) -> Result<BroadcastTransactionsResponse> {
@@ -112,12 +107,7 @@ impl<'a> Client<'a> {
         );
 
         let parsed_response =
-            self.runtime
-                .block_on(broadcast_transactions::broadcast_transactions(
-                    &self.client,
-                    self.uri,
-                    trytes,
-                ))?;
+            broadcast_transactions::broadcast_transactions(&self.client, self.uri, trytes).await?;
 
         if let Some(error) = parsed_response.error() {
             return Err(format_err!("{}", error));
@@ -130,7 +120,7 @@ impl<'a> Client<'a> {
     }
 
     /// Checks for consistency of given hashes, not part of the public api
-    pub fn check_consistency(&mut self, hashes: &[String]) -> Result<Value> {
+    pub async fn check_consistency(&mut self, hashes: &[String]) -> Result<Value> {
         for hash in hashes {
             ensure!(
                 input_validator::is_hash(hash),
@@ -138,25 +128,18 @@ impl<'a> Client<'a> {
                 hash
             );
         }
-        let parsed = self.runtime.block_on(check_consistency::check_consistency(
-            &self.client,
-            self.uri,
-            hashes,
-        ))?;
+        let parsed = check_consistency::check_consistency(&self.client, self.uri, hashes).await?;
 
         Ok(parsed)
     }
 
     /// Finds transactions the match any of the provided parameters
-    pub fn find_transactions(
+    pub async fn find_transactions(
         &mut self,
         options: FindTransactionsOptions,
     ) -> Result<FindTransactionsResponse> {
-        let parsed_resp = self.runtime.block_on(find_transactions::find_transactions(
-            &self.client,
-            self.uri,
-            options,
-        ))?;
+        let parsed_resp =
+            find_transactions::find_transactions(&self.client, self.uri, options).await?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -170,15 +153,16 @@ impl<'a> Client<'a> {
     /// as well as the index with which the confirmed balance was
     /// determined. The balances is returned as a list in the same
     /// order as the addresses were provided as input.
-    pub fn get_balances(&mut self, options: GetBalancesOptions) -> Result<GetBalancesResponse> {
+    pub async fn get_balances(
+        &mut self,
+        options: GetBalancesOptions,
+    ) -> Result<GetBalancesResponse> {
         ensure!(
             input_validator::is_array_of_hashes(&options.addresses),
             "Provided addresses are not valid: {:?}",
             options.addresses
         );
-        let parsed_resp =
-            self.runtime
-                .block_on(get_balances::get_balances(&self.client, self.uri, options))?;
+        let parsed_resp = get_balances::get_balances(&self.client, self.uri, options).await?;
 
         Ok(parsed_resp)
     }
@@ -191,7 +175,7 @@ impl<'a> Client<'a> {
     /// This API call simply returns a list of boolean values in the
     /// same order as the transaction list you submitted, thus you get
     /// a true/false whether a transaction is confirmed or not.
-    pub fn get_inclusion_states(
+    pub async fn get_inclusion_states(
         &mut self,
         options: GetInclusionStatesOptions,
     ) -> Result<GetInclusionStatesResponse> {
@@ -208,13 +192,8 @@ impl<'a> Client<'a> {
             );
         }
 
-        let parsed_resp = self
-            .runtime
-            .block_on(get_inclusion_states::get_inclusion_states(
-                &self.client,
-                self.uri,
-                options,
-            ))?;
+        let parsed_resp =
+            get_inclusion_states::get_inclusion_states(&self.client, self.uri, options).await?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -226,10 +205,8 @@ impl<'a> Client<'a> {
     /// Returns the set of neighbors you are connected with, as
     /// well as their activity count. The activity counter is reset
     /// after restarting IRI.
-    pub fn get_neighbors(&mut self) -> Result<GetNeighborsResponse> {
-        let parsed_resp = self
-            .runtime
-            .block_on(get_neighbors::get_neighbors(&self.client, self.uri))?;
+    pub async fn get_neighbors(&mut self) -> Result<GetNeighborsResponse> {
+        let parsed_resp = get_neighbors::get_neighbors(&self.client, self.uri).await?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -239,19 +216,15 @@ impl<'a> Client<'a> {
     }
 
     /// Gets information about the specified node
-    pub fn get_node_info(&mut self) -> Result<GetNodeInfoResponse> {
-        let parsed_resp = self
-            .runtime
-            .block_on(get_node_info::get_node_info(&self.client, self.uri))?;
+    pub async fn get_node_info(&mut self) -> Result<GetNodeInfoResponse> {
+        let parsed_resp = get_node_info::get_node_info(&self.client, self.uri).await?;
 
         Ok(parsed_resp)
     }
 
     /// Returns the list of tips
-    pub fn get_tips(&mut self) -> Result<GetTipsResponse> {
-        let parsed_resp = self
-            .runtime
-            .block_on(get_tips::get_tips(&self.client, self.uri))?;
+    pub async fn get_tips(&mut self) -> Result<GetTipsResponse> {
+        let parsed_resp = get_tips::get_tips(&self.client, self.uri).await?;
 
         Ok(parsed_resp)
     }
@@ -266,17 +239,16 @@ impl<'a> Client<'a> {
     /// returned. The reference is an optional hash of a transaction
     /// you want to approve. If it can't be found at the specified
     /// depth then an error will be returned.
-    pub fn get_transactions_to_approve(
+    pub async fn get_transactions_to_approve(
         &mut self,
         options: GetTransactionsToApproveOptions<'_>,
     ) -> Result<GetTransactionsToApprove> {
-        let parsed_resp =
-            self.runtime
-                .block_on(get_transactions_to_approve::get_transactions_to_approve(
-                    &self.client,
-                    self.uri,
-                    options,
-                ))?;
+        let parsed_resp = get_transactions_to_approve::get_transactions_to_approve(
+            &self.client,
+            self.uri,
+            options,
+        )
+        .await?;
 
         if let Some(error) = parsed_resp.error() {
             return Err(format_err!("{}", error));
@@ -292,25 +264,23 @@ impl<'a> Client<'a> {
     /// transaction. These trytes can then be easily converted
     /// into the actual transaction object. See utility functions
     /// for more details.
-    pub fn get_trytes(&mut self, hashes: &[String]) -> Result<GetTrytesResponse> {
+    pub async fn get_trytes(&mut self, hashes: &[String]) -> Result<GetTrytesResponse> {
         ensure!(
             input_validator::is_array_of_hashes(&hashes),
             "Provided hashes are not valid: {:?}",
             hashes
         );
 
-        let parsed_resp =
-            self.runtime
-                .block_on(get_trytes::get_trytes(&self.client, self.uri, hashes))?;
+        let parsed_resp = get_trytes::get_trytes(&self.client, self.uri, hashes).await?;
 
         Ok(parsed_resp)
     }
 
     /// Interupts an existing PoW request if you made one
-    pub fn interrupt_attaching_to_tangle(&mut self) -> Result<Response> {
-        let resp = self.runtime.block_on(
-            interrupt_attaching_to_tangle::interrupt_attaching_to_tangle(&self.client, self.uri),
-        )?;
+    pub async fn interrupt_attaching_to_tangle(&mut self) -> Result<Response> {
+        let resp =
+            interrupt_attaching_to_tangle::interrupt_attaching_to_tangle(&self.client, self.uri)
+                .await?;
 
         Ok(resp)
     }
@@ -319,12 +289,8 @@ impl<'a> Client<'a> {
     /// This is only temporary, and if you have your neighbors
     /// added via the command line, they will be retained after
     /// you restart your node.
-    pub fn remove_neighbors(&mut self, uris: &[String]) -> Result<RemoveNeighborsResponse> {
-        let parsed_resp = self.runtime.block_on(remove_neighbors::remove_neighbors(
-            &self.client,
-            self.uri,
-            uris,
-        ))?;
+    pub async fn remove_neighbors(&mut self, uris: &[String]) -> Result<RemoveNeighborsResponse> {
+        let parsed_resp = remove_neighbors::remove_neighbors(&self.client, self.uri, uris).await?;
 
         Ok(parsed_resp)
     }
@@ -332,26 +298,24 @@ impl<'a> Client<'a> {
     /// Store transactions into the local storage.
     /// The trytes to be used for this call are
     /// returned by attachToTangle.
-    pub fn store_transactions(&mut self, trytes: &[String]) -> Result<StoreTransactionsResponse> {
+    pub async fn store_transactions(
+        &mut self,
+        trytes: &[String],
+    ) -> Result<StoreTransactionsResponse> {
         ensure!(
             input_validator::is_array_of_attached_trytes(&trytes),
             "Provided trytes are not valid: {:?}",
             trytes
         );
 
-        let parsed_resp = self
-            .runtime
-            .block_on(store_transactions::store_transactions(
-                &self.client,
-                self.uri,
-                trytes,
-            ))?;
+        let parsed_resp =
+            store_transactions::store_transactions(&self.client, self.uri, trytes).await?;
 
         Ok(parsed_resp)
     }
 
     /// Check if a list of addresses was ever spent from.
-    pub fn were_addresses_spent_from(
+    pub async fn were_addresses_spent_from(
         &mut self,
         addresses: &[String],
     ) -> Result<WereAddressesSpentFromResponse> {
@@ -362,13 +326,12 @@ impl<'a> Client<'a> {
             .collect();
         ensure!(!addresses.is_empty(), "No valid addresses provided.");
 
-        let parsed_resp =
-            self.runtime
-                .block_on(were_addresses_spent_from::were_addresses_spent_from(
-                    &self.client,
-                    self.uri,
-                    &addresses,
-                ))?;
+        let parsed_resp = were_addresses_spent_from::were_addresses_spent_from(
+            &self.client,
+            self.uri,
+            &addresses,
+        )
+        .await?;
 
         Ok(parsed_resp)
     }

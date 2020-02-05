@@ -2,6 +2,7 @@ use iota_model::Transaction;
 
 use crate::client::Client;
 use crate::Result;
+use futures::executor::block_on;
 
 impl<'a> Client<'a> {
     /// Traverses a bundle by going through trunk transactions until
@@ -21,8 +22,7 @@ impl<'a> Client<'a> {
         T: Into<Vec<Transaction>>,
     {
         let mut bundle = bundle.into();
-        let tryte_list = self
-            .get_trytes(&[trunk_tx.into()])?
+        let tryte_list = block_on(self.get_trytes(&[trunk_tx.into()]))?
             .take_trytes()
             .unwrap_or_default();
         ensure!(!tryte_list.is_empty(), "Bundle transactions not visible");

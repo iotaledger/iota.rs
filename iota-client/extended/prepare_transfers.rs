@@ -60,7 +60,7 @@ impl<'a> Client<'a> {
     /// * `seed` - The wallet seed to use
     /// * `transfers` - A slice of transfers to prepare
     /// * `options` - See `PrepareTransfersOptions`
-    pub fn prepare_transfers(
+    pub async fn prepare_transfers(
         &mut self,
         seed: &str,
         transfers: impl Into<Vec<Transfer>>,
@@ -153,10 +153,12 @@ impl<'a> Client<'a> {
                         .iter()
                         .map(|input| input.address.to_string())
                         .collect();
-                    let resp = self.get_balances(GetBalancesOptions {
-                        addresses: input_addresses,
-                        ..GetBalancesOptions::default()
-                    })?;
+                    let resp = self
+                        .get_balances(GetBalancesOptions {
+                            addresses: input_addresses,
+                            ..GetBalancesOptions::default()
+                        })
+                        .await?;
                     let mut confirmed_inputs = Inputs::default();
                     let balances = resp.take_balances().unwrap_or_default();
                     for (i, balance) in balances.iter().enumerate() {
@@ -188,17 +190,20 @@ impl<'a> Client<'a> {
                             security,
                         },
                     )
+                    .await
                 }
                 None => {
-                    let inputs = self.get_inputs(
-                        &seed,
-                        GetInputsOptions {
-                            start: None,
-                            end: None,
-                            threshold: Some(total_value),
-                            security: Some(security),
-                        },
-                    )?;
+                    let inputs = self
+                        .get_inputs(
+                            &seed,
+                            GetInputsOptions {
+                                start: None,
+                                end: None,
+                                threshold: Some(total_value),
+                                security: Some(security),
+                            },
+                        )
+                        .await?;
                     self.add_remainder(
                         &inputs,
                         &mut bundle,
@@ -212,6 +217,7 @@ impl<'a> Client<'a> {
                             security,
                         },
                     )
+                    .await
                 }
             }
         } else {
@@ -226,7 +232,7 @@ impl<'a> Client<'a> {
         }
     }
 
-    fn add_remainder(
+    async fn add_remainder(
         &mut self,
         inputs: &Inputs,
         bundle: &mut Bundle,
@@ -277,16 +283,18 @@ impl<'a> Client<'a> {
                         start_index = cmp::max(input.key_index, start_index);
                     }
                     start_index += 1;
-                    let new_address = &self.get_new_address(
-                        &options.seed,
-                        false,
-                        false,
-                        GetNewAddressOptions {
-                            security: Some(options.security),
-                            index: Some(start_index),
-                            total: None,
-                        },
-                    )?[0];
+                    let new_address = &self
+                        .get_new_address(
+                            &options.seed,
+                            false,
+                            false,
+                            GetNewAddressOptions {
+                                security: Some(options.security),
+                                index: Some(start_index),
+                                total: None,
+                            },
+                        )
+                        .await?[0];
                     bundle.add_entry(BundleEntry {
                         signature_message_length: 1,
                         address: &new_address,

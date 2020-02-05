@@ -21,7 +21,7 @@ impl<'a> Client<'a> {
     /// * `checksum` - Whether or not to checksum address
     /// * `return_all` - Whether to return all generated addresses, or just the last one
     /// * `options` - See `GetNewAddressOptions`
-    pub fn get_new_address(
+    pub async fn get_new_address(
         &mut self,
         seed: &str,
         checksum: bool,
@@ -51,12 +51,14 @@ impl<'a> Client<'a> {
                 }
                 index += 1;
                 let new_address_vec = vec![new_address];
-                let were_addr_spent = self.were_addresses_spent_from(&new_address_vec)?;
+                let were_addr_spent = self.were_addresses_spent_from(&new_address_vec).await?;
                 if !were_addr_spent.state(0) {
-                    let resp = self.find_transactions(FindTransactionsOptions {
-                        addresses: new_address_vec.clone(),
-                        ..FindTransactionsOptions::default()
-                    })?;
+                    let resp = self
+                        .find_transactions(FindTransactionsOptions {
+                            addresses: new_address_vec.clone(),
+                            ..FindTransactionsOptions::default()
+                        })
+                        .await?;
                     if resp.take_hashes().unwrap_or_default().is_empty() {
                         if return_all {
                             return Ok(all_addresses);

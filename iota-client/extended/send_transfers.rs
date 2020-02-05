@@ -53,33 +53,37 @@ impl<'a> Client<'a> {
     /// * `min_weight_magnitude` - The PoW difficulty factor (14 on mainnet, 9 on testnet)
     /// * `local_pow` - Whether or not to do local PoW
     /// * `options` - See `SendTransferOptions`
-    pub fn send_transfers(
+    pub async fn send_transfers(
         &mut self,
         transfers: impl Into<Vec<Transfer>>,
         seed: &str,
         options: SendTransferOptions<'_, '_, '_>,
     ) -> Result<Vec<Transaction>> {
         let transfers = transfers.into();
-        let trytes = self.prepare_transfers(
-            seed,
-            transfers,
-            PrepareTransfersOptions {
-                inputs: options.inputs,
-                remainder_address: options.remainder_address,
-                security: options.security,
-                hmac_key: options.hmac_key,
-            },
-        )?;
-        let t = self.send_trytes(
-            &trytes,
-            SendTrytesOptions {
-                depth: options.depth,
-                min_weight_magnitude: options.min_weight_magnitude,
-                local_pow: options.local_pow,
-                threads: options.threads,
-                reference: options.reference,
-            },
-        )?;
+        let trytes = self
+            .prepare_transfers(
+                seed,
+                transfers,
+                PrepareTransfersOptions {
+                    inputs: options.inputs,
+                    remainder_address: options.remainder_address,
+                    security: options.security,
+                    hmac_key: options.hmac_key,
+                },
+            )
+            .await?;
+        let t = self
+            .send_trytes(
+                &trytes,
+                SendTrytesOptions {
+                    depth: options.depth,
+                    min_weight_magnitude: options.min_weight_magnitude,
+                    local_pow: options.local_pow,
+                    threads: options.threads,
+                    reference: options.reference,
+                },
+            )
+            .await?;
         Ok(t)
     }
 }
