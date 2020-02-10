@@ -11,7 +11,7 @@ pub(crate) async fn get_node_info(
 
     client
         .post(uri)
-        .header("ContentType", "application/json")
+        .header("Content-Type", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
