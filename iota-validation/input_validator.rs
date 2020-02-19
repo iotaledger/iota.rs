@@ -10,8 +10,9 @@ lazy_static! {
 
 /// Validates that the provided string is an address
 pub fn is_address(address: &str) -> bool {
-    address.len() == iota_constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM
-        || address.len() == iota_constants::ADDRESS_LENGTH_WITH_CHECKSUM && is_trytes(address)
+    (address.len() == iota_constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM
+        || address.len() == iota_constants::ADDRESS_LENGTH_WITH_CHECKSUM)
+        && is_trytes(address)
 }
 
 /// Validates that a slice of strings are all addresses
@@ -213,6 +214,13 @@ mod tests {
     #[test]
     fn test_is_address() {
         assert!(is_address(TEST_ADDRESS_WITHOUT_CHECKSUM))
+    }
+
+    #[test]
+    fn test_is_invalid_address() {
+        assert!(!is_address(
+            &"0".repeat(iota_constants::ADDRESS_LENGTH_WITHOUT_CHECKSUM)
+        ))
     }
 
     #[test]
