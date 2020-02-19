@@ -38,7 +38,7 @@ pub(crate) async fn find_transactions(
 
     client
         .post(uri)
-        .header("ContentType", "application/json")
+        .header("Content-Type", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()

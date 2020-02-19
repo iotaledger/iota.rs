@@ -8,7 +8,7 @@ pub(crate) async fn get_tips(client: &Client, uri: &str) -> Result<GetTipsRespon
 
     client
         .post(uri)
-        .header("ContentType", "application/json")
+        .header("Content-Type", "application/json")
         .header("X-IOTA-API-Version", "1")
         .body(body.to_string())
         .send()
