@@ -1,10 +1,10 @@
   
-name: Test on general 
+name: iota.rs ci
 on: [push, pull_request]
 
 jobs:
-  check:
-    name: Check
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -17,10 +17,10 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Run cargo check
+      - name: Run cargo build
         uses: actions-rs/cargo@v1
         with:
-          command: check
+          command: build
 
   test:
     name: Test
