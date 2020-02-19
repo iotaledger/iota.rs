@@ -1,11 +1,14 @@
   
 name: iota.rs ci
-on: [push, pull_request]
+on: [push, pull_request] 
 
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -21,42 +24,13 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
+      
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
           command: test
           args: --all
-
-  lints:	
-    name: Lints	
-    runs-on: ubuntu-latest	
-    steps:	
-      - name: Checkout sources	
-        uses: actions/checkout@v2	
-
-      - name: Install stable toolchain	
-        uses: actions-rs/toolchain@v1	
-        with:	
-          profile: minimal	
-          toolchain: stable	
-          override: true	
-          components: rustfmt, clippy	
-
+          
       - name: Run cargo fmt	
         uses: actions-rs/cargo@v1	
         with:	
