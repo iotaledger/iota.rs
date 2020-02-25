@@ -383,7 +383,8 @@ mod tests {
     fn kerl_multi_squeeze_multi_absorb() {
         let mut trits: Vec<i8> = "G9JYBOMPUXHYHKSNRNMMSSZCSHOFYOYNZRSZMAAYWDYEIMVVOGKPJBVBM9TD\
 PULSFUNMTVXRKFIDOHUXXVYDLFSZYZTWQYTE9SPYYWYTXJYQ9IFGYOLZXWZBKWZN9QOOTBQMWMUBLEWUEEASRHRTNIQW\
-JQNDWRYLCA".trits();
+JQNDWRYLCA"
+            .trits();
 
         let mut kerl = Kerl::default();
         kerl.absorb(&mut trits).unwrap();
