@@ -26,63 +26,68 @@ pub struct ConsistencyResponse {
 /// attachToTangle Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct AttachToTangleResponse {
-    /// Trytes returned by Proof of Work
-    trytes: Option<Vec<String>>,
+    /// Transaction trytes that include a valid `nonce` field
+    pub trytes: Option<Vec<String>>,
     /// Any errors that occurred
-    error: Option<String>,
+    pub error: Option<String>,
     /// Any exceptions that occurred
-    exception: Option<String>,
+    pub exception: Option<String>,
 }
 
 /// storeTransactions/broadcastTransaction Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct ErrorResponse {
     /// Any error that occurred
-    error: Option<String>,
+    pub error: Option<String>,
     /// Any exceptions that occurred
-    exception: Option<String>,
+    pub exception: Option<String>,
 }
 
 /// findTransactions Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct FindTransactionsResponse {
-    /// Hashes of matching transactions
-    hashes: Option<Vec<String>>,
+    /// The transaction hashes which are returned depend on your input.
+    /// * bundles: returns an array of transaction hashes that contain the given bundle hash.
+    /// * addresses: returns an array of transaction hashes that contain the given address in the address field.
+    /// * tags: returns an array of transaction hashes that contain the given value in the tag field.
+    /// * approvees: returns an array of transaction hashes that contain the given transactions in their branchTransaction or trunkTransaction fields.
+    pub hashes: Option<Vec<String>>,
     /// Any errors that occurred
-    error: Option<String>,
+    pub error: Option<String>,
 }
 
 /// getBalances Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct GetBalancesResponse {
-    /// Array of balances in the same order as the addresses parameters were passed to the endpoint
-    balances: Option<Vec<String>>,
+    /// Array of balances in the same order as the `addresses` parameters were passed to the endpoint
+    pub balances: Option<Vec<String>>,
     /// The index of the milestone that confirmed the most recent balance
     #[serde(rename = "milestoneIndex")]
-    milestone_index: Option<i64>,
+    pub milestone_index: Option<i64>,
     /// The referencing tips. If no `tips` parameter was passed to the endpoint,
     /// this field contains the hash of the latest milestone that confirmed the balance
-    references: Option<Vec<String>>,
+    pub references: Option<Vec<String>>,
     /// Any error that occurred
-    error: Option<String>,
+    pub error: Option<String>,
 }
 
 /// getInclusionStatesResponse Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct GetInclusionStatesResponse {
-    /// States if found
-    states: Option<Vec<bool>>,
+    /// List of boolean values in the same order as the `transactions` parameters.
+    /// A `true` value means the transaction was confirmed
+    pub states: Option<Vec<bool>>,
     /// Any errors that occurred
-    error: Option<String>,
+    pub error: Option<String>,
     /// Any exceptions that occurred
-    exception: Option<String>,
+    pub exception: Option<String>,
 }
 
 /// getNeighbors Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct GetNeighborsResponse {
-    /// Neighbors if found
-    neighbors: Vec<NeighborResponse>,
+    /// Vector of `NeighborResponse`
+    pub neighbors: Vec<NeighborResponse>,
 }
 
 /// getNodeInfo Response Type
@@ -141,21 +146,21 @@ pub struct GetNodeInfoResponse {
 /// getTips Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct GetTipsResponse {
-    /// Hashes of tips
-    hashes: Vec<String>,
+    /// Vector of tip transaction hashes
+    pub hashes: Vec<String>,
 }
 
 /// getTransactionsToApprove Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct GTTAResponse {
-    /// Trunk transaction to approve
+    /// Valid trunk transaction hash
     #[serde(rename = "trunkTransaction")]
-    trunk_transaction: Option<String>,
-    /// Branch transaction to approve
+    pub trunk_transaction: Option<String>,
+    /// Valid branch transaction hash
     #[serde(rename = "branchTransaction")]
-    branch_transaction: Option<String>,
+    pub branch_transaction: Option<String>,
     /// Any errors that occurred
-    error: Option<String>,
+    pub error: Option<String>,
 }
 
 /// Representation of neighbor node
@@ -196,7 +201,7 @@ pub struct NeighborResponse {
 /// getTrytes Response Type
 #[derive(Clone, Deserialize, Debug)]
 pub struct GetTrytesResponse {
-    /// Trytes if found
+    /// Vector of transaction trytes for the given transaction hashes (in the same order as the parameters)
     pub trytes: Option<Vec<String>>,
     /// Any exception that occurred
     pub exception: Option<String>,
@@ -207,7 +212,7 @@ pub struct GetTrytesResponse {
 /// removeNeighbors Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct RemoveNeighborsResponse {
-    /// Amount of neighbors removed
+    /// Total number of removed neighbors
     #[serde(rename = "removedNeighbors")]
     pub removed_neighbors: Option<usize>,
 }
@@ -215,7 +220,8 @@ pub struct RemoveNeighborsResponse {
 /// wereAddressesSpentFrom Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct WereAddressesSpentFromResponse {
-    /// States of addresses if found
+    /// States of the specified addresses in the same order as the values in the `addresses` parameter.
+    /// A `true` value means that the address has been spent from.
     pub states: Option<Vec<bool>>,
     /// Any exception that occurred
     pub exception: Option<String>,

@@ -16,14 +16,14 @@ name = "iota_lib_rs"
 
 [workspace]
 members = [
-    "iota-pow",
-    "iota-crypto",
-    "iota-conversion",
-    "iota-model",
-    "iota-utils",
-    "iota-constants",
-    "iota-validation",
-    "iota-signing",
+    #"iota-pow",
+    #"iota-crypto",
+    #"iota-conversion",
+    #"iota-model",
+    #"iota-utils",
+    #"iota-constants",
+    #"iota-validation",
+    #"iota-signing",
     "iota-client"
 ]
 
