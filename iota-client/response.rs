@@ -1,4 +1,5 @@
 //! Response types
+use anyhow::Result;
 
 /// addNeighbors Response Type
 #[derive(Clone, Debug, Deserialize)]
@@ -9,78 +10,195 @@ pub struct AddNeighborsResponse {
 }
 
 /// checkConsistency Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct ConsistencyResponse {
     /// State of the given transactions in the `tails` parameter. A `true` value means
     /// that all given transactions are consistent. A `false` value means that one
     /// or more of the given transactions are inconsistent.
-    pub state: Option<bool>,
+    pub state: bool,
     /// If the `state` field is false, this field contains information about why the transaction is inconsistent.
     pub info: Option<String>,
-    /// Any exception that occurred
-    pub exception: Option<String>,
-    /// Any errors that occurred
-    pub error: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct ConsistencyResponseBuilder {
+    state: Option<bool>,
+    info: Option<String>,
+    exception: Option<String>,
+    error: Option<String>,
+}
+
+impl ConsistencyResponseBuilder {
+    pub(crate) async fn build(self) -> Result<ConsistencyResponse> {
+        let mut state = false;
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.state {
+            state = s;
+        }
+
+        Ok(ConsistencyResponse {
+            state: state,
+            info: self.info,
+        })
+    }
 }
 
 /// attachToTangle Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct AttachToTangleResponse {
     /// Transaction trytes that include a valid `nonce` field
-    pub trytes: Option<Vec<String>>,
-    /// Any errors that occurred
-    pub error: Option<String>,
-    /// Any exceptions that occurred
-    pub exception: Option<String>,
+    pub trytes: Vec<String>,
 }
 
-/// storeTransactions/broadcastTransaction Response Type
 #[derive(Clone, Debug, Deserialize)]
-pub struct ErrorResponse {
-    /// Any error that occurred
-    pub error: Option<String>,
-    /// Any exceptions that occurred
-    pub exception: Option<String>,
+pub(crate) struct AttachToTangleResponseBuilder {
+    trytes: Option<Vec<String>>,
+    error: Option<String>,
+    exception: Option<String>,
+}
+
+impl AttachToTangleResponseBuilder {
+    pub(crate) async fn build(self) -> Result<AttachToTangleResponse> {
+        let mut trytes: Vec<String> = Vec::new();
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.trytes {
+            trytes = s;
+        }
+
+        Ok(AttachToTangleResponse { trytes })
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct ErrorResponseBuilder {
+    error: Option<String>,
+    exception: Option<String>,
+}
+
+impl ErrorResponseBuilder {
+    pub(crate) async fn build(self) -> Result<()> {
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        }
+
+        Ok(())
+    }
 }
 
 /// findTransactions Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct FindTransactionsResponse {
     /// The transaction hashes which are returned depend on your input.
     /// * bundles: returns an array of transaction hashes that contain the given bundle hash.
     /// * addresses: returns an array of transaction hashes that contain the given address in the address field.
     /// * tags: returns an array of transaction hashes that contain the given value in the tag field.
     /// * approvees: returns an array of transaction hashes that contain the given transactions in their branchTransaction or trunkTransaction fields.
-    pub hashes: Option<Vec<String>>,
-    /// Any errors that occurred
-    pub error: Option<String>,
+    pub hashes: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct FindTransactionsResponseBuilder {
+    hashes: Option<Vec<String>>,
+    error: Option<String>,
+    exception: Option<String>,
+}
+
+impl FindTransactionsResponseBuilder {
+    pub(crate) async fn build(self) -> Result<FindTransactionsResponse> {
+        let mut hashes: Vec<String> = Vec::new();
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.hashes {
+            hashes = s;
+        }
+
+        Ok(FindTransactionsResponse { hashes })
+    }
 }
 
 /// getBalances Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct GetBalancesResponse {
     /// Array of balances in the same order as the `addresses` parameters were passed to the endpoint
-    pub balances: Option<Vec<String>>,
+    pub balances: Vec<u32>,
     /// The index of the milestone that confirmed the most recent balance
-    #[serde(rename = "milestoneIndex")]
-    pub milestone_index: Option<i64>,
+    pub milestone_index: i64,
     /// The referencing tips. If no `tips` parameter was passed to the endpoint,
     /// this field contains the hash of the latest milestone that confirmed the balance
-    pub references: Option<Vec<String>>,
-    /// Any error that occurred
-    pub error: Option<String>,
+    pub references: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct GetBalancesResponseBuilder {
+    balances: Option<Vec<u32>>,
+    #[serde(rename = "milestoneIndex")]
+    milestone_index: Option<i64>,
+    references: Option<Vec<String>>,
+    error: Option<String>,
+    exception: Option<String>,
+}
+
+impl GetBalancesResponseBuilder {
+    pub(crate) async fn build(self) -> Result<GetBalancesResponse> {
+        let mut res = GetBalancesResponse {
+            balances: Vec::new(),
+            milestone_index: 0,
+            references: Vec::new(),
+        };
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.balances {
+            res.balances = s;
+        } else if let Some(s) = self.milestone_index {
+            res.milestone_index = s;
+        } else if let Some(s) = self.references {
+            res.references = s;
+        }
+
+        Ok(res)
+    }
 }
 
 /// getInclusionStatesResponse Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct GetInclusionStatesResponse {
     /// List of boolean values in the same order as the `transactions` parameters.
     /// A `true` value means the transaction was confirmed
-    pub states: Option<Vec<bool>>,
-    /// Any errors that occurred
-    pub error: Option<String>,
-    /// Any exceptions that occurred
-    pub exception: Option<String>,
+    pub states: Vec<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct GetInclusionStatesResponseBuilder {
+    states: Option<Vec<bool>>,
+    error: Option<String>,
+    exception: Option<String>,
+}
+
+impl GetInclusionStatesResponseBuilder {
+    pub(crate) async fn build(self) -> Result<GetInclusionStatesResponse> {
+        let mut states = Vec::new();
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.states {
+            states = s;
+        }
+
+        Ok(GetInclusionStatesResponse { states })
+    }
 }
 
 /// getNeighbors Response Type
@@ -151,16 +269,42 @@ pub struct GetTipsResponse {
 }
 
 /// getTransactionsToApprove Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct GTTAResponse {
     /// Valid trunk transaction hash
-    #[serde(rename = "trunkTransaction")]
-    pub trunk_transaction: Option<String>,
+    pub trunk_transaction: String,
     /// Valid branch transaction hash
+    pub branch_transaction: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct GTTAResponseBuilder {
+    #[serde(rename = "trunkTransaction")]
+    trunk_transaction: Option<String>,
     #[serde(rename = "branchTransaction")]
-    pub branch_transaction: Option<String>,
-    /// Any errors that occurred
-    pub error: Option<String>,
+    branch_transaction: Option<String>,
+    error: Option<String>,
+    exception: Option<String>,
+}
+
+impl GTTAResponseBuilder {
+    pub(crate) async fn build(self) -> Result<GTTAResponse> {
+        let mut res = GTTAResponse {
+            trunk_transaction: String::new(),
+            branch_transaction: String::new(),
+        };
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.trunk_transaction {
+            res.trunk_transaction = s;
+        } else if let Some(s) = self.branch_transaction {
+            res.branch_transaction = s;
+        }
+
+        Ok(res)
+    }
 }
 
 /// Representation of neighbor node
@@ -199,14 +343,32 @@ pub struct NeighborResponse {
 }
 
 /// getTrytes Response Type
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Debug)]
 pub struct GetTrytesResponse {
     /// Vector of transaction trytes for the given transaction hashes (in the same order as the parameters)
-    pub trytes: Option<Vec<String>>,
-    /// Any exception that occurred
-    pub exception: Option<String>,
-    /// Any errors that occurred
-    pub error: Option<String>,
+    pub trytes: Vec<String>,
+}
+
+#[derive(Clone, Deserialize, Debug)]
+pub(crate) struct GetTrytesResponseBuilder {
+    trytes: Option<Vec<String>>,
+    exception: Option<String>,
+    error: Option<String>,
+}
+
+impl GetTrytesResponseBuilder {
+    pub(crate) async fn build(self) -> Result<GetTrytesResponse> {
+        let mut trytes = Vec::new();
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.trytes {
+            trytes = s;
+        }
+
+        Ok(GetTrytesResponse { trytes })
+    }
 }
 
 /// removeNeighbors Response Type
@@ -218,11 +380,31 @@ pub struct RemoveNeighborsResponse {
 }
 
 /// wereAddressesSpentFrom Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct WereAddressesSpentFromResponse {
     /// States of the specified addresses in the same order as the values in the `addresses` parameter.
     /// A `true` value means that the address has been spent from.
-    pub states: Option<Vec<bool>>,
-    /// Any exception that occurred
-    pub exception: Option<String>,
+    pub states: Vec<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct WereAddressesSpentFromResponseBuilder {
+    states: Option<Vec<bool>>,
+    exception: Option<String>,
+    error: Option<String>,
+}
+
+impl WereAddressesSpentFromResponseBuilder {
+    pub(crate) async fn build(self) -> Result<WereAddressesSpentFromResponse> {
+        let mut states = Vec::new();
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.states {
+            states = s;
+        }
+
+        Ok(WereAddressesSpentFromResponse { states })
+    }
 }

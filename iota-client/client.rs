@@ -82,9 +82,9 @@ impl Client<'_> {
             min_weight_magnitude,
             trytes,
         })?;
-        let res = response!(self, body);
+        let res: AttachToTangleResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Sends transaction trytes to a node.
@@ -92,15 +92,15 @@ impl Client<'_> {
     /// Response only contains errors and exceptions, it would be `None` if the call success.
     /// # Parameters
     /// * `tryres` - Valid transaction trytes
-    pub async fn broadcast_transactions(&self, trytes: &[&str]) -> Result<ErrorResponse> {
+    pub async fn broadcast_transactions(&self, trytes: &[&str]) -> Result<()> {
         // TODO validate trytes
         let body = serde_json::to_string(&TrytesRequest {
             command: "broadcastTransactions",
             trytes,
         })?;
-        let res = response!(self, body);
+        let res: ErrorResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Checks the consistency of transactions. A consistent transaction is one where the following statements are true:
@@ -115,9 +115,9 @@ impl Client<'_> {
             command: "checkConsistency",
             tails,
         })?;
-        let res = response!(self, body);
+        let res: ConsistencyResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Finds transactions that contain the given values in their transaction fields.
@@ -143,9 +143,9 @@ impl Client<'_> {
             tags,
             approvees,
         })?;
-        let res = response!(self, body);
+        let res: FindTransactionsResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     // TODO getNodeAPIConfiguration
@@ -175,9 +175,9 @@ impl Client<'_> {
             threshold,
             tips,
         })?;
-        let res = response!(self, body);
+        let res: GetBalancesResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Gets the inclusion states of a set of transactions.
@@ -197,9 +197,9 @@ impl Client<'_> {
             transactions,
             tips,
         })?;
-        let res = response!(self, body);
+        let res: GetInclusionStatesResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     // TODO getMissingTransactions
@@ -250,9 +250,9 @@ impl Client<'_> {
             depth,
             reference,
         })?;
-        let res = response!(self, body);
+        let res: GTTAResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Gets a transaction's contents in trytes.
@@ -263,9 +263,9 @@ impl Client<'_> {
             command: "getTrytes",
             hashes,
         })?;
-        let res = response!(self, body);
+        let res: GetTrytesResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Aborts the process that's started by the `attach_to_tangle` method.
@@ -312,15 +312,15 @@ impl Client<'_> {
     /// Response only contains errors and exceptions, it would be `None` if the call success.
     /// # Parameters
     /// * `trytes` - Transaction trytes
-    pub async fn store_transactions(&self, trytes: &[&str]) -> Result<ErrorResponse> {
+    pub async fn store_transactions(&self, trytes: &[&str]) -> Result<()> {
         // TODO validate trytes
         let body = serde_json::to_string(&TrytesRequest {
             command: "storeTransactions",
             trytes,
         })?;
-        let res = response!(self, body);
+        let res: ErrorResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Checks if an address was ever withdrawn from, either in the current epoch or in any previous epochs.
@@ -336,9 +336,9 @@ impl Client<'_> {
             command: "wereAddressesSpentFrom",
             addresses,
         })?;
-        let res = response!(self, body);
+        let res: WereAddressesSpentFromResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 }
 
