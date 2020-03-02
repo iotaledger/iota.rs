@@ -136,6 +136,22 @@ impl Client<'_> {
         approvees: Option<&[&str]>,
     ) -> Result<FindTransactionsResponse> {
         // TODO validate inputs
+        let bundles = match bundles {
+            Some(b) => b.to_vec(),
+            None => Vec::new(),
+        };
+        let addresses = match addresses {
+            Some(a) => a.to_vec(),
+            None => Vec::new(),
+        };
+        let tags = match tags {
+            Some(t) => t.to_vec(),
+            None => Vec::new(),
+        };
+        let approvees = match approvees {
+            Some(a) => a.to_vec(),
+            None => Vec::new(),
+        };
         let body = serde_json::to_string(&FindTransactionsRequest {
             command: "findTransactions",
             bundles,
@@ -169,6 +185,10 @@ impl Client<'_> {
             Some(i) => i,
             None => 100,
         };
+        let tips = match tips {
+            Some(t) => t.to_vec(),
+            None => Vec::new(),
+        };
         let body = serde_json::to_string(&GetBalancesRequest {
             command: "getBalances",
             addresses,
@@ -192,6 +212,10 @@ impl Client<'_> {
         transactions: &[&str],
         tips: Option<&[&str]>,
     ) -> Result<GetInclusionStatesResponse> {
+        let tips = match tips {
+            Some(t) => t.to_vec(),
+            None => Vec::new(),
+        };
         let body = serde_json::to_string(&GetInclusionStatesRequest {
             command: "getInclusionStates",
             transactions,
@@ -210,9 +234,9 @@ impl Client<'_> {
         let body = serde_json::to_string(&SingleRequest {
             command: "getNeighbors",
         })?;
-        let res = response!(self, body);
+        let res: GetNeighborsResponseBuilder = response!(self, body);
 
-        Ok(res)
+        res.build().await
     }
 
     /// Gets information about a node.
@@ -245,6 +269,10 @@ impl Client<'_> {
         reference: Option<&str>,
     ) -> Result<GTTAResponse> {
         // TODO validate reference
+        let reference = match reference {
+            Some(t) => t,
+            None => "",
+        };
         let body = serde_json::to_string(&GTTARequest {
             command: "getTransactionsToApprove",
             depth,
@@ -341,7 +369,7 @@ impl Client<'_> {
         res.build().await
     }
 }
-
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -356,3 +384,4 @@ mod tests {
         dbg!(res);
     }
 }
+*/

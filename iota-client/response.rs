@@ -130,7 +130,7 @@ impl FindTransactionsResponseBuilder {
 #[derive(Clone, Debug)]
 pub struct GetBalancesResponse {
     /// Array of balances in the same order as the `addresses` parameters were passed to the endpoint
-    pub balances: Vec<u32>,
+    pub balances: Vec<String>,
     /// The index of the milestone that confirmed the most recent balance
     pub milestone_index: i64,
     /// The referencing tips. If no `tips` parameter was passed to the endpoint,
@@ -140,7 +140,7 @@ pub struct GetBalancesResponse {
 
 #[derive(Clone, Debug, Deserialize)]
 pub(crate) struct GetBalancesResponseBuilder {
-    balances: Option<Vec<u32>>,
+    balances: Option<Vec<String>>,
     #[serde(rename = "milestoneIndex")]
     milestone_index: Option<i64>,
     references: Option<Vec<String>>,
@@ -155,6 +155,7 @@ impl GetBalancesResponseBuilder {
             milestone_index: 0,
             references: Vec::new(),
         };
+        dbg!(&self);
         if let Some(exception) = self.exception {
             return Err(anyhow!("{}", exception));
         } else if let Some(error) = self.error {
@@ -202,10 +203,33 @@ impl GetInclusionStatesResponseBuilder {
 }
 
 /// getNeighbors Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct GetNeighborsResponse {
     /// Vector of `NeighborResponse`
     pub neighbors: Vec<NeighborResponse>,
+}
+
+/// getNeighbors Response Type
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct GetNeighborsResponseBuilder {
+    neighbors: Option<Vec<NeighborResponse>>,
+    error: Option<String>,
+    exception: Option<String>,
+}
+
+impl GetNeighborsResponseBuilder {
+    pub(crate) async fn build(self) -> Result<GetNeighborsResponse> {
+        let mut neighbors = Vec::new();
+        if let Some(exception) = self.exception {
+            return Err(anyhow!("{}", exception));
+        } else if let Some(error) = self.error {
+            return Err(anyhow!("{}", error));
+        } else if let Some(s) = self.neighbors {
+            neighbors = s;
+        }
+
+        Ok(GetNeighborsResponse { neighbors })
+    }
 }
 
 /// getNodeInfo Response Type

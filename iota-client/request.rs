@@ -23,10 +23,14 @@ pub(crate) struct AttachToTangleRequest<'a> {
 #[derive(Debug, Serialize)]
 pub(crate) struct FindTransactionsRequest<'a> {
     pub(crate) command: &'a str,
-    pub(crate) bundles: Option<&'a [&'a str]>,
-    pub(crate) addresses: Option<&'a [&'a str]>,
-    pub(crate) tags: Option<&'a [&'a str]>,
-    pub(crate) approvees: Option<&'a [&'a str]>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) bundles: Vec<&'a str>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) addresses: Vec<&'a str>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) tags: Vec<&'a str>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) approvees: Vec<&'a str>,
 }
 
 #[derive(Debug, Serialize)]
@@ -34,21 +38,24 @@ pub(crate) struct GetBalancesRequest<'a> {
     pub(crate) command: &'a str,
     pub(crate) addresses: &'a [&'a str],
     pub(crate) threshold: u8,
-    pub(crate) tips: Option<&'a [&'a str]>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) tips: Vec<&'a str>,
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct GetInclusionStatesRequest<'a> {
     pub(crate) command: &'a str,
     pub(crate) transactions: &'a [&'a str],
-    pub(crate) tips: Option<&'a [&'a str]>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) tips: Vec<&'a str>,
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct GTTARequest<'a> {
     pub(crate) command: &'a str,
     pub(crate) depth: usize,
-    pub(crate) reference: Option<&'a str>,
+    #[serde(skip_serializing_if = "str::is_empty")]
+    pub(crate) reference: &'a str,
 }
 
 #[derive(Debug, Serialize)]
