@@ -14,8 +14,11 @@ pub(crate) struct AddressesRequest<'a> {
 #[derive(Debug, Serialize)]
 pub(crate) struct AttachToTangleRequest<'a> {
     pub(crate) command: &'a str,
+    #[serde(rename = "trunkTransaction")]
     pub(crate) trunk_transaction: &'a str,
+    #[serde(rename = "branchTransaction")]
     pub(crate) branch_transaction: &'a str,
+    #[serde(rename = "minWeightMagnitude")]
     pub(crate) min_weight_magnitude: usize,
     pub(crate) trytes: &'a [&'a str],
 }

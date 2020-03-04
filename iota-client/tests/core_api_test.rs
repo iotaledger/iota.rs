@@ -4,21 +4,22 @@ use crate::common::*;
 #[tokio::test]
 async fn test_add_neighbors() {
     let client = client_init();
-    let res = client
+    let _ = client
         .add_neighbors(&["tcp://0.0.0.0:15600"])
         .await
         .unwrap();
-
-    //dbg!(res);
 }
-/*
+
 #[tokio::test]
 async fn test_attach_to_tangle() {
     let client = client_init();
-    let res = client.attach_to_tangle(TEST_TRUNK_HASH, TEST_BRANCH_HASH, 9, &[TEST_TX_TRYTES]).await.unwrap();
-    dbg!(res);
+    let res = client
+        .attach_to_tangle(TEST_TRUNK_HASH, TEST_BRANCH_HASH, 9, &[TEST_TX_TRYTES])
+        .await
+        .unwrap();
+    assert!(!res.trytes.is_empty());
 }
-*/
+
 #[tokio::test]
 async fn test_broadcast_transactions() {
     let client = client_init();
@@ -46,95 +47,52 @@ async fn test_find_tx_by_bundle() {
         .find_transactions(Some(&[TEST_BUNDLE_HASH_0]), None, None, None)
         .await
         .unwrap();
+
     assert!(!res.hashes.is_empty());
-}
-/*
-#[tokio::test]
-async fn test_find_tx_by_empty_bundle() {
-    let mut client = client_init();
-    let opt = FindTransactionsOptions {
-        bundles: vec![NULL_HASH.into()],
-        ..FindTransactionsOptions::default()
-    };
-    let res = client.find_transactions(opt).await.unwrap();
-    assert!(res.hashes().is_none());
 }
 
 #[tokio::test]
 async fn test_find_tx_by_address() {
-    let mut client = client_init();
-    let opt = FindTransactionsOptions {
-        addresses: vec![TEST_ADDRESS_0.into()],
-        ..FindTransactionsOptions::default()
-    };
-    let res = client.find_transactions(opt).await.unwrap();
-    assert!(res.hashes().is_some());
-}
+    let client = client_init();
+    let res = client
+        .find_transactions(None, Some(&[TEST_ADDRESS_0]), None, None)
+        .await
+        .unwrap();
 
-#[tokio::test]
-async fn test_find_tx_by_empty_address() {
-    let mut client = client_init();
-    let opt = FindTransactionsOptions {
-        addresses: vec![NULL_HASH.into()],
-        ..FindTransactionsOptions::default()
-    };
-    let res = client.find_transactions(opt).await.unwrap();
-    assert!(res.hashes().is_none());
+    assert!(!res.hashes.is_empty());
 }
 
 #[tokio::test]
 async fn test_find_tx_by_tag() {
-    let mut client = client_init();
-    let opt = FindTransactionsOptions {
-        tags: vec![TEST_TAG_0.into()],
-        ..FindTransactionsOptions::default()
-    };
-    let res = client.find_transactions(opt).await.unwrap();
-    assert!(res.hashes().is_some());
-}
+    let client = client_init();
+    let res = client
+        .find_transactions(None, None, Some(&[TEST_TAG_0]), None)
+        .await
+        .unwrap();
 
-#[tokio::test]
-async fn test_find_tx_by_empty_tag() {
-    let mut client = client_init();
-    let opt = FindTransactionsOptions {
-        tags: vec![NULL_HASH.into()],
-        ..FindTransactionsOptions::default()
-    };
-    let res = client.find_transactions(opt).await.unwrap();
-    assert!(res.hashes().is_none());
+    assert!(!res.hashes.is_empty());
 }
 
 #[tokio::test]
 async fn test_find_tx_by_approvee() {
-    let mut client = client_init();
-    let opt = FindTransactionsOptions {
-        approvees: vec![TEST_BUNDLE_TX_1.into()],
-        ..FindTransactionsOptions::default()
-    };
-    let res = client.find_transactions(opt).await.unwrap();
-    assert!(res.hashes().is_some());
+    let client = client_init();
+    let res = client
+        .find_transactions(None, None, None, Some(&[TEST_BUNDLE_TX_1]))
+        .await
+        .unwrap();
+
+    assert!(!res.hashes.is_empty());
 }
 
 #[tokio::test]
-async fn test_find_tx_by_empty_approvee() {
-    let mut client = client_init();
-    let opt = FindTransactionsOptions {
-        approvees: vec![NULL_HASH.into()],
-        ..FindTransactionsOptions::default()
-    };
-    let res = client.find_transactions(opt).await.unwrap();
-    assert!(res.hashes().is_none());
-}*/
-/*
-#[tokio::test]
 async fn test_get_balances() {
     let client = client_init();
-    let res = client.get_balances(&[TEST_ADDRESS_0], None, None).await.unwrap();
-    dbg!(res);
-    //assert_eq!(res.balances.len(), 1);
-    //assert!(res.references.len() > 1);
+    let res = client
+        .get_balances(&[TEST_ADDRESS_0], None, None)
+        .await
+        .unwrap();
 }
-*/
+
 #[tokio::test]
 async fn test_get_inclusion_states() {
     let client = client_init();
@@ -170,9 +128,9 @@ async fn test_get_node_info() {
 async fn test_get_tips() {
     let res = client_init().get_tips().await.unwrap();
 
-    assert!(res.hashes.len() > 0);
+    assert!(!res.hashes.is_empty());
 }
-/*
+
 #[tokio::test]
 async fn test_get_transactions_to_approve() {
     let res = client_init()
@@ -180,7 +138,7 @@ async fn test_get_transactions_to_approve() {
         .await
         .unwrap();
 }
-*/
+
 #[tokio::test]
 async fn test_get_trytes() {
     let res = client_init()
@@ -188,13 +146,13 @@ async fn test_get_trytes() {
         .await
         .unwrap();
 
-    assert_eq!(res.trytes.len(), 2);
+    assert!(!res.trytes.is_empty());
 }
 
 #[tokio::test]
 async fn test_remove_neighbors() {
     let res = client_init()
-        .remove_neighbors(&["tcp://0.0.0.0:15600".into()])
+        .remove_neighbors(&["tcp://0.0.0.0:15600"])
         .await
         .unwrap();
 

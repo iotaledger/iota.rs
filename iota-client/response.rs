@@ -160,11 +160,17 @@ impl GetBalancesResponseBuilder {
             return Err(anyhow!("{}", exception));
         } else if let Some(error) = self.error {
             return Err(anyhow!("{}", error));
-        } else if let Some(s) = self.balances {
+        }
+
+        if let Some(s) = self.balances {
             res.balances = s;
-        } else if let Some(s) = self.milestone_index {
+        }
+
+        if let Some(s) = self.milestone_index {
             res.milestone_index = s;
-        } else if let Some(s) = self.references {
+        }
+
+        if let Some(s) = self.references {
             res.references = s;
         }
 
@@ -317,14 +323,19 @@ impl GTTAResponseBuilder {
             trunk_transaction: String::new(),
             branch_transaction: String::new(),
         };
+
         if let Some(exception) = self.exception {
             return Err(anyhow!("{}", exception));
         } else if let Some(error) = self.error {
             return Err(anyhow!("{}", error));
-        } else if let Some(s) = self.trunk_transaction {
+        }
+
+        if let Some(s) = self.trunk_transaction {
             res.trunk_transaction = s;
-        } else if let Some(s) = self.branch_transaction {
-            res.branch_transaction = s;
+        }
+
+        if let Some(b) = self.branch_transaction {
+            res.branch_transaction = b;
         }
 
         Ok(res)
