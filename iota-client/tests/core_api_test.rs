@@ -87,7 +87,7 @@ async fn test_find_tx_by_approvee() {
 #[tokio::test]
 async fn test_get_balances() {
     let client = client_init();
-    let res = client
+    let _ = client
         .get_balances(&[TEST_ADDRESS_0], None, None)
         .await
         .unwrap();
@@ -133,7 +133,7 @@ async fn test_get_tips() {
 
 #[tokio::test]
 async fn test_get_transactions_to_approve() {
-    let res = client_init()
+    let _ = client_init()
         .get_transactions_to_approve(3, None)
         .await
         .unwrap();

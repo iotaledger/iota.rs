@@ -1,5 +1,6 @@
 //! Response types
 use anyhow::Result;
+use bee_bundle::Hash;
 
 /// addNeighbors Response Type
 #[derive(Clone, Debug, Deserialize)]
@@ -101,7 +102,7 @@ pub struct FindTransactionsResponse {
     /// * addresses: returns an array of transaction hashes that contain the given address in the address field.
     /// * tags: returns an array of transaction hashes that contain the given value in the tag field.
     /// * approvees: returns an array of transaction hashes that contain the given transactions in their branchTransaction or trunkTransaction fields.
-    pub hashes: Vec<String>,
+    pub hashes: Vec<Hash>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -113,13 +114,13 @@ pub(crate) struct FindTransactionsResponseBuilder {
 
 impl FindTransactionsResponseBuilder {
     pub(crate) async fn build(self) -> Result<FindTransactionsResponse> {
-        let mut hashes: Vec<String> = Vec::new();
+        let mut hashes: Vec<Hash> = Vec::new();
         if let Some(exception) = self.exception {
             return Err(anyhow!("{}", exception));
         } else if let Some(error) = self.error {
             return Err(anyhow!("{}", error));
         } else if let Some(s) = self.hashes {
-            hashes = s;
+            hashes = s.iter().map(|s| Hash::from_str(&s)).collect::<Vec<Hash>>();
         }
 
         Ok(FindTransactionsResponse { hashes })
@@ -135,7 +136,7 @@ pub struct GetBalancesResponse {
     pub milestone_index: i64,
     /// The referencing tips. If no `tips` parameter was passed to the endpoint,
     /// this field contains the hash of the latest milestone that confirmed the balance
-    pub references: Vec<String>,
+    pub references: Vec<Hash>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -171,7 +172,7 @@ impl GetBalancesResponseBuilder {
         }
 
         if let Some(s) = self.references {
-            res.references = s;
+            res.references = s.iter().map(|s| Hash::from_str(&s)).collect::<Vec<Hash>>();
         }
 
         Ok(res)
@@ -302,9 +303,9 @@ pub struct GetTipsResponse {
 #[derive(Clone, Debug)]
 pub struct GTTAResponse {
     /// Valid trunk transaction hash
-    pub trunk_transaction: String,
+    pub trunk_transaction: Hash,
     /// Valid branch transaction hash
-    pub branch_transaction: String,
+    pub branch_transaction: Hash,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -320,8 +321,8 @@ pub(crate) struct GTTAResponseBuilder {
 impl GTTAResponseBuilder {
     pub(crate) async fn build(self) -> Result<GTTAResponse> {
         let mut res = GTTAResponse {
-            trunk_transaction: String::new(),
-            branch_transaction: String::new(),
+            trunk_transaction: Hash::zeros(),
+            branch_transaction: Hash::zeros(),
         };
 
         if let Some(exception) = self.exception {
@@ -331,11 +332,11 @@ impl GTTAResponseBuilder {
         }
 
         if let Some(s) = self.trunk_transaction {
-            res.trunk_transaction = s;
+            res.trunk_transaction = Hash::from_str(&s);
         }
 
         if let Some(b) = self.branch_transaction {
-            res.branch_transaction = b;
+            res.branch_transaction = Hash::from_str(&b);
         }
 
         Ok(res)
