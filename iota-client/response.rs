@@ -239,6 +239,29 @@ impl GetNeighborsResponseBuilder {
     }
 }
 
+/// getNodeAPIConfiguration Response Type
+#[derive(Clone, Debug, Deserialize)]
+pub struct GetNodeAPIConfigurationResponse {
+    /// Maximum number of transactions that may be returned by the findTransactions endpoint
+    #[serde(rename = "maxFindTransactions")]
+    pub max_find_transactions: Option<usize>,
+    /// Maximum number of parameters in an API call
+    #[serde(rename = "maxRequestsList")]
+    pub max_requests_list: Option<usize>,
+    /// Maximum number of trytes that may be returned by the getTrytes endpoint
+    #[serde(rename = "maxGetTrytes")]
+    pub max_get_trytes: Option<usize>,
+    /// Maximum number of characters that the body of an API call may contain
+    #[serde(rename = "maxBodyLength")]
+    pub max_body_length: Option<usize>,
+    /// See if the node runs on a network other than the Mainnet
+    #[serde(rename = "testNet")]
+    pub testnet: Option<bool>,
+    /// Milestone start index on IRI node
+    #[serde(rename = "milestoneStartIndex")]
+    pub milestone_start_index: i64,
+}
+
 /// getNodeInfo Response Type
 #[derive(Clone, Debug, Deserialize)]
 pub struct GetNodeInfoResponse {

@@ -16,5 +16,6 @@ extern crate serde;
 pub mod client;
 pub mod request;
 pub mod response;
+mod util;
 
 pub use client::Client;

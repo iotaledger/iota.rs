@@ -1,7 +1,10 @@
 //! The Client module to connect through IRI with API usages
 use crate::request::*;
 use crate::response::*;
+use crate::util::tx_trytes;
 use anyhow::Result;
+use bee_bundle::{Address, Hash, Tag, Transaction};
+use iota_conversion::Trinary;
 use reqwest::Url;
 
 macro_rules! response {
@@ -69,18 +72,20 @@ impl Client<'_> {
     /// make sure that the trytes of the last transaction in the bundle are in index 0 of the array.
     pub async fn attach_to_tangle(
         &self,
-        trunk_transaction: &str,
-        branch_transaction: &str,
+        trunk_transaction: &Hash,
+        branch_transaction: &Hash,
         min_weight_magnitude: usize,
-        trytes: &[&str],
+        trytes: &[Transaction],
     ) -> Result<AttachToTangleResponse> {
-        // TODO validate inputs
         let body = serde_json::to_string(&AttachToTangleRequest {
             command: "attachToTangle",
-            trunk_transaction,
-            branch_transaction,
+            trunk_transaction: &trunk_transaction.as_bytes().trytes().unwrap(),
+            branch_transaction: &branch_transaction.as_bytes().trytes().unwrap(),
             min_weight_magnitude,
-            trytes,
+            trytes: trytes
+                .iter()
+                .map(|tx| tx_trytes(tx))
+                .collect::<Vec<String>>(),
         })?;
         let res: AttachToTangleResponseBuilder = response!(self, body);
 
@@ -92,11 +97,13 @@ impl Client<'_> {
     /// Response only contains errors and exceptions, it would be `None` if the call success.
     /// # Parameters
     /// * `tryres` - Valid transaction trytes
-    pub async fn broadcast_transactions(&self, trytes: &[&str]) -> Result<()> {
-        // TODO validate trytes
+    pub async fn broadcast_transactions(&self, trytes: &[Transaction]) -> Result<()> {
         let body = serde_json::to_string(&TrytesRequest {
             command: "broadcastTransactions",
-            trytes,
+            trytes: trytes
+                .iter()
+                .map(|tx| tx_trytes(tx))
+                .collect::<Vec<String>>(),
         })?;
         let res: ErrorResponseBuilder = response!(self, body);
 
@@ -109,11 +116,13 @@ impl Client<'_> {
     /// * The transaction's branch and trunk transactions are valid
     /// # Parameters
     /// * `tails` - Transaction hashes to check
-    pub async fn check_consistency(&self, tails: &[&str]) -> Result<ConsistencyResponse> {
-        // TODO validate hashes
+    pub async fn check_consistency(&self, tails: &[Hash]) -> Result<ConsistencyResponse> {
         let body = serde_json::to_string(&TailsRequest {
             command: "checkConsistency",
-            tails,
+            tails: &tails
+                .iter()
+                .map(|x| x.as_bytes().trytes().unwrap())
+                .collect::<Vec<String>>(),
         })?;
         let res: ConsistencyResponseBuilder = response!(self, body);
 
@@ -130,26 +139,25 @@ impl Client<'_> {
     /// * `approvves` - (Optional) Child transactions to search for
     pub async fn find_transactions(
         &self,
-        bundles: Option<&[&str]>,
-        addresses: Option<&[&str]>,
-        tags: Option<&[&str]>,
-        approvees: Option<&[&str]>,
+        bundles: Option<&[Hash]>,
+        addresses: Option<&[Address]>,
+        tags: Option<&[Tag]>,
+        approvees: Option<&[Hash]>,
     ) -> Result<FindTransactionsResponse> {
-        // TODO validate inputs
         let bundles = match bundles {
-            Some(b) => b.to_vec(),
+            Some(b) => b.iter().map(|h| h.as_bytes().trytes().unwrap()).collect(),
             None => Vec::new(),
         };
         let addresses = match addresses {
-            Some(a) => a.to_vec(),
+            Some(a) => a.iter().map(|h| h.as_bytes().trytes().unwrap()).collect(),
             None => Vec::new(),
         };
         let tags = match tags {
-            Some(t) => t.to_vec(),
+            Some(t) => t.iter().map(|h| h.as_bytes().trytes().unwrap()).collect(),
             None => Vec::new(),
         };
         let approvees = match approvees {
-            Some(a) => a.to_vec(),
+            Some(a) => a.iter().map(|h| h.as_bytes().trytes().unwrap()).collect(),
             None => Vec::new(),
         };
         let body = serde_json::to_string(&FindTransactionsRequest {
@@ -164,9 +172,6 @@ impl Client<'_> {
         res.build().await
     }
 
-    // TODO getNodeAPIConfiguration
-    // Gets a node's API configuration settings.
-
     /// Gets the confirmed balance of an address.
     /// If the tips parameter is missing, the returned balance is correct as of the latest confirmed milestone.
     /// This endpoint returns data only if the node is synchronized.
@@ -176,22 +181,24 @@ impl Client<'_> {
     /// * `tips` - (Optional) Tips whose history of transactions to traverse to find the balance
     pub async fn get_balances(
         &self,
-        addresses: &[&str],
+        addresses: &[Address],
         threshold: Option<u8>,
-        tips: Option<&[&str]>,
+        tips: Option<&[Hash]>,
     ) -> Result<GetBalancesResponse> {
-        // TODO validate address and tips
         let threshold = match threshold {
             Some(i) => i,
             None => 100,
         };
         let tips = match tips {
-            Some(t) => t.to_vec(),
+            Some(t) => t.iter().map(|h| h.as_bytes().trytes().unwrap()).collect(),
             None => Vec::new(),
         };
         let body = serde_json::to_string(&GetBalancesRequest {
             command: "getBalances",
-            addresses,
+            addresses: addresses
+                .iter()
+                .map(|h| h.as_bytes().trytes().unwrap())
+                .collect(),
             threshold,
             tips,
         })?;
@@ -209,16 +216,19 @@ impl Client<'_> {
     /// * `tips` - (Optional) List of tip transaction hashes (including milestones) you want to search for
     pub async fn get_inclusion_states(
         &self,
-        transactions: &[&str],
-        tips: Option<&[&str]>,
+        transactions: &[Transaction],
+        tips: Option<&[Hash]>,
     ) -> Result<GetInclusionStatesResponse> {
         let tips = match tips {
-            Some(t) => t.to_vec(),
+            Some(t) => t.iter().map(|h| h.as_bytes().trytes().unwrap()).collect(),
             None => Vec::new(),
         };
         let body = serde_json::to_string(&GetInclusionStatesRequest {
             command: "getInclusionStates",
-            transactions,
+            transactions: transactions
+                .iter()
+                .map(|tx| tx_trytes(tx))
+                .collect::<Vec<String>>(),
             tips,
         })?;
         let res: GetInclusionStatesResponseBuilder = response!(self, body);
@@ -226,8 +236,15 @@ impl Client<'_> {
         res.build().await
     }
 
-    // TODO getMissingTransactions
-    // Gets all transaction hashes that a node is currently requesting from its neighbors.
+    /// Gets all transaction hashes that a node is currently requesting from its neighbors.
+    pub async fn get_missing_transactions(&self) -> Result<GetTipsResponse> {
+        let body = serde_json::to_string(&SingleRequest {
+            command: "getMissingTransactions",
+        })?;
+        let res = response!(self, body);
+
+        Ok(res)
+    }
 
     /// Gets a node's neighbors and their activity.
     pub async fn get_neighbors(&self) -> Result<GetNeighborsResponse> {
@@ -237,6 +254,16 @@ impl Client<'_> {
         let res: GetNeighborsResponseBuilder = response!(self, body);
 
         res.build().await
+    }
+
+    /// Gets a node's API configuration settings.
+    pub async fn get_node_api_configuration(&self) -> Result<GetNodeAPIConfigurationResponse> {
+        let body = serde_json::to_string(&SingleRequest {
+            command: "getNodeAPIConfiguration",
+        })?;
+        let res = response!(self, body);
+
+        Ok(res)
     }
 
     /// Gets information about a node.
@@ -266,17 +293,16 @@ impl Client<'_> {
     pub async fn get_transactions_to_approve(
         &self,
         depth: usize,
-        reference: Option<&str>,
+        reference: Option<&Hash>,
     ) -> Result<GTTAResponse> {
-        // TODO validate reference
         let reference = match reference {
-            Some(t) => t,
-            None => "",
+            Some(t) => t.as_bytes().trytes().unwrap(),
+            None => "".to_owned(),
         };
         let body = serde_json::to_string(&GTTARequest {
             command: "getTransactionsToApprove",
             depth,
-            reference,
+            reference: &reference,
         })?;
         let res: GTTAResponseBuilder = response!(self, body);
 
@@ -286,10 +312,13 @@ impl Client<'_> {
     /// Gets a transaction's contents in trytes.
     /// # Parameters
     /// * `hashes` - Transaction hashes
-    pub async fn get_trytes(&self, hashes: &[&str]) -> Result<GetTrytesResponse> {
+    pub async fn get_trytes(&self, hashes: &[Hash]) -> Result<GetTrytesResponse> {
         let body = serde_json::to_string(&HashesRequest {
             command: "getTrytes",
-            hashes,
+            hashes: hashes
+                .iter()
+                .map(|h| h.as_bytes().trytes().unwrap())
+                .collect(),
         })?;
         let res: GetTrytesResponseBuilder = response!(self, body);
 
@@ -340,11 +369,13 @@ impl Client<'_> {
     /// Response only contains errors and exceptions, it would be `None` if the call success.
     /// # Parameters
     /// * `trytes` - Transaction trytes
-    pub async fn store_transactions(&self, trytes: &[&str]) -> Result<()> {
-        // TODO validate trytes
+    pub async fn store_transactions(&self, trytes: &[Transaction]) -> Result<()> {
         let body = serde_json::to_string(&TrytesRequest {
             command: "storeTransactions",
-            trytes,
+            trytes: trytes
+                .iter()
+                .map(|tx| tx_trytes(tx))
+                .collect::<Vec<String>>(),
         })?;
         let res: ErrorResponseBuilder = response!(self, body);
 
@@ -357,31 +388,17 @@ impl Client<'_> {
     /// * `address` - addresses to check (do not include the checksum)
     pub async fn were_addresses_spent_from(
         &self,
-        addresses: &[&str],
+        addresses: &[Address],
     ) -> Result<WereAddressesSpentFromResponse> {
-        // TODO validate addresses
         let body = serde_json::to_string(&AddressesRequest {
             command: "wereAddressesSpentFrom",
-            addresses,
+            addresses: addresses
+                .iter()
+                .map(|h| h.as_bytes().trytes().unwrap())
+                .collect(),
         })?;
         let res: WereAddressesSpentFromResponseBuilder = response!(self, body);
 
         res.build().await
     }
 }
-/*
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_123() {
-        let client = Client::new("https://nodes.thetangle.org:443");
-        let res = client
-            .get_transactions_to_approve(3, None)
-            .await
-            .expect("?????");
-        dbg!(res);
-    }
-}
-*/

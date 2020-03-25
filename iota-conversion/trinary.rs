@@ -167,7 +167,8 @@ fn trits_to_char(trits: &[Trit]) -> Result<char> {
     )
 }
 
-fn trytes(trits: &[Trit]) -> Result<Trytes> {
+/// Temporary usage to convert trits to tryte strings
+pub fn trytes(trits: &[Trit]) -> Result<Trytes> {
     ensure!(trits.len() % 3 == 0, "Invalid trit length.");
 
     trits
