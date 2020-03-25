@@ -156,7 +156,7 @@ impl GetBalancesResponseBuilder {
             milestone_index: 0,
             references: Vec::new(),
         };
-        dbg!(&self);
+
         if let Some(exception) = self.exception {
             return Err(anyhow!("{}", exception));
         } else if let Some(error) = self.error {

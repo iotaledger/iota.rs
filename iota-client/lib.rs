@@ -12,9 +12,12 @@
 extern crate anyhow;
 #[macro_use]
 extern crate serde;
+#[macro_use]
+extern crate serde_json;
 
+#[macro_use]
 pub mod client;
-pub mod request;
+pub mod core;
 pub mod response;
 mod util;
 

@@ -6,7 +6,10 @@ use bee_bundle::*;
 async fn test_add_neighbors() {
     let client = client_init();
     let _ = client
-        .add_neighbors(&["tcp://0.0.0.0:15600"])
+        .add_neighbors()
+        .uris(&["tcp://0.0.0.0:15600"])
+        .unwrap()
+        .send()
         .await
         .unwrap();
 }
@@ -15,29 +18,36 @@ async fn test_add_neighbors() {
 async fn test_attach_to_tangle() {
     let client = client_init();
     let res = client
-        .attach_to_tangle(
-            &Hash::from_str(TEST_TRUNK_HASH),
-            &Hash::from_str(TEST_BRANCH_HASH),
-            9,
-            &[tx()],
-        )
+        .attach_to_tangle()
+        .trunk_transaction(&Hash::from_str(TEST_TRUNK_HASH))
+        .branch_transaction(&Hash::from_str(TEST_BRANCH_HASH))
+        .min_weight_magnitude(9)
+        .trytes(&[tx()])
+        .send()
         .await
         .unwrap();
-    dbg!(&res);
+
     assert!(!res.trytes.is_empty());
 }
 
 #[tokio::test]
 async fn test_broadcast_transactions() {
     let client = client_init();
-    let _ = client.broadcast_transactions(&[tx()]).await.unwrap();
+    let _ = client
+        .broadcast_transactions()
+        .trytes(&[tx()])
+        .send()
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
 async fn test_check_consistency() {
     let client = client_init();
     let res = client
-        .check_consistency(&[Hash::from_str(TEST_BUNDLE_TX_0)])
+        .check_consistency()
+        .tails(&[Hash::from_str(TEST_BUNDLE_TX_0)])
+        .send()
         .await
         .unwrap();
 
@@ -51,12 +61,9 @@ async fn test_check_consistency() {
 async fn test_find_tx_by_bundle() {
     let client = client_init();
     let res = client
-        .find_transactions(
-            Some(&[Hash::from_str(TEST_BUNDLE_HASH_0)]),
-            None,
-            None,
-            None,
-        )
+        .find_transactions()
+        .bundles(&[Hash::from_str(TEST_BUNDLE_HASH_0)])
+        .send()
         .await
         .unwrap();
 
@@ -67,7 +74,9 @@ async fn test_find_tx_by_bundle() {
 async fn test_find_tx_by_address() {
     let client = client_init();
     let res = client
-        .find_transactions(None, Some(&[Address::from_str(TEST_ADDRESS_0)]), None, None)
+        .find_transactions()
+        .addresses(&[Address::from_str(TEST_ADDRESS_0)])
+        .send()
         .await
         .unwrap();
 
@@ -78,7 +87,9 @@ async fn test_find_tx_by_address() {
 async fn test_find_tx_by_tag() {
     let client = client_init();
     let res = client
-        .find_transactions(None, None, Some(&[Tag::from_str(TEST_TAG_0)]), None)
+        .find_transactions()
+        .tags(&[Tag::from_str(TEST_TAG_0)])
+        .send()
         .await
         .unwrap();
 
@@ -89,7 +100,9 @@ async fn test_find_tx_by_tag() {
 async fn test_find_tx_by_approvee() {
     let client = client_init();
     let res = client
-        .find_transactions(None, None, None, Some(&[Hash::from_str(TEST_BUNDLE_TX_1)]))
+        .find_transactions()
+        .approvees(&[Hash::from_str(TEST_BUNDLE_TX_1)])
+        .send()
         .await
         .unwrap();
 
@@ -100,7 +113,9 @@ async fn test_find_tx_by_approvee() {
 async fn test_get_balances() {
     let client = client_init();
     let _ = client
-        .get_balances(&[Address::from_str(TEST_ADDRESS_0)], None, None)
+        .get_balances()
+        .addresses(&[Address::from_str(TEST_ADDRESS_0)])
+        .send()
         .await
         .unwrap();
 }
@@ -108,10 +123,17 @@ async fn test_get_balances() {
 #[tokio::test]
 async fn test_get_inclusion_states() {
     let client = client_init();
-    let _ = client
-        .get_inclusion_states(&[tx()], None)
+    let res = client
+        .get_inclusion_states()
+        .transactions(&[
+            Hash::from_str(TEST_BUNDLE_TX_0),
+            Hash::from_str(TEST_BUNDLE_TX_1),
+        ])
+        .send()
         .await
-        .unwrap_err();
+        .unwrap();
+
+    assert!(!res.states.is_empty());
 }
 
 #[tokio::test]
@@ -155,7 +177,9 @@ async fn test_get_tips() {
 #[tokio::test]
 async fn test_get_transactions_to_approve() {
     let _ = client_init()
-        .get_transactions_to_approve(3, None)
+        .get_transactions_to_approve()
+        .depth(3)
+        .send()
         .await
         .unwrap();
 }
@@ -163,10 +187,12 @@ async fn test_get_transactions_to_approve() {
 #[tokio::test]
 async fn test_get_trytes() {
     let res = client_init()
-        .get_trytes(&[
+        .get_trytes()
+        .hashes(&[
             Hash::from_str(TEST_BUNDLE_TX_1),
             Hash::from_str(TEST_BUNDLE_TX_0),
         ])
+        .send()
         .await
         .unwrap();
 
@@ -176,7 +202,10 @@ async fn test_get_trytes() {
 #[tokio::test]
 async fn test_remove_neighbors() {
     let res = client_init()
-        .remove_neighbors(&["tcp://0.0.0.0:15600"])
+        .remove_neighbors()
+        .uris(&["tcp://0.0.0.0:15600"])
+        .unwrap()
+        .send()
         .await
         .unwrap();
 
@@ -187,13 +216,20 @@ async fn test_remove_neighbors() {
 
 #[tokio::test]
 async fn test_store_transactions() {
-    client_init().store_transactions(&[tx()]).await.unwrap();
+    client_init()
+        .store_transactions()
+        .trytes(&[tx()])
+        .send()
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
 async fn test_were_addresses_spent_from() {
     let res = client_init()
-        .were_addresses_spent_from(&[Address::from_str(TEST_ADDRESS_0)])
+        .were_addresses_spent_from()
+        .address(&[Address::from_str(TEST_ADDRESS_0)])
+        .send()
         .await
         .unwrap();
 
