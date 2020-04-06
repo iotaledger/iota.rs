@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bee_bundle::{Address, Hash};
+use bee_bundle::{Address, Hash, TransactionField};
 use iota_conversion::Trinary;
 
 use crate::response::{GetBalancesResponse, GetBalancesResponseBuilder};
@@ -28,7 +28,7 @@ impl<'a> GetBalancesBuilder<'a> {
     pub fn addresses(mut self, addresses: &[Address]) -> Self {
         self.addresses = addresses
             .iter()
-            .map(|h| h.as_bytes().trytes().unwrap())
+            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
             .collect();
         self
     }

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bee_bundle::{Address, Hash, Tag};
+use bee_bundle::{Address, Hash, Tag, TransactionField};
 use iota_conversion::Trinary;
 
 use crate::response::{FindTransactionsResponse, FindTransactionsResponseBuilder};
@@ -41,7 +41,7 @@ impl<'a> FindTransactionsBuilder<'a> {
     pub fn tags(mut self, tags: &[Tag]) -> Self {
         self.tags = Some(
             tags.iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
+                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
                 .collect(),
         );
         self
@@ -52,7 +52,7 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.approvees = Some(
             approvees
                 .iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
+                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
                 .collect(),
         );
         self
@@ -63,7 +63,7 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.addresses = Some(
             addresses
                 .iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
+                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
                 .collect(),
         );
         self

@@ -1,6 +1,7 @@
 //! Response types
 use anyhow::Result;
-use bee_bundle::Hash;
+use bee_bundle::{Hash, TransactionField};
+use bee_ternary::TryteBuf;
 
 /// addNeighbors Response Type
 #[derive(Clone, Debug, Deserialize)]
@@ -120,7 +121,14 @@ impl FindTransactionsResponseBuilder {
         } else if let Some(error) = self.error {
             return Err(anyhow!("{}", error));
         } else if let Some(s) = self.hashes {
-            hashes = s.iter().map(|s| Hash::from_str(&s)).collect::<Vec<Hash>>();
+            hashes = s
+                .iter()
+                .map(|s| {
+                    Hash::from_inner_unchecked(
+                        TryteBuf::try_from_str(&s).unwrap().as_trits().encode(),
+                    )
+                })
+                .collect::<Vec<Hash>>();
         }
 
         Ok(FindTransactionsResponse { hashes })
@@ -172,7 +180,14 @@ impl GetBalancesResponseBuilder {
         }
 
         if let Some(s) = self.references {
-            res.references = s.iter().map(|s| Hash::from_str(&s)).collect::<Vec<Hash>>();
+            res.references = s
+                .iter()
+                .map(|s| {
+                    Hash::from_inner_unchecked(
+                        TryteBuf::try_from_str(&s).unwrap().as_trits().encode(),
+                    )
+                })
+                .collect::<Vec<Hash>>();
         }
 
         Ok(res)
@@ -355,11 +370,13 @@ impl GTTAResponseBuilder {
         }
 
         if let Some(s) = self.trunk_transaction {
-            res.trunk_transaction = Hash::from_str(&s);
+            res.trunk_transaction =
+                Hash::from_inner_unchecked(TryteBuf::try_from_str(&s).unwrap().as_trits().encode());
         }
 
         if let Some(b) = self.branch_transaction {
-            res.branch_transaction = Hash::from_str(&b);
+            res.branch_transaction =
+                Hash::from_inner_unchecked(TryteBuf::try_from_str(&b).unwrap().as_trits().encode());
         }
 
         Ok(res)

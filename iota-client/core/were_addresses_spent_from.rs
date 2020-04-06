@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bee_bundle::Address;
+use bee_bundle::{Address, TransactionField};
 use iota_conversion::Trinary;
 
 use crate::response::{WereAddressesSpentFromResponse, WereAddressesSpentFromResponseBuilder};
@@ -24,7 +24,7 @@ impl<'a> WereAddressesSpentFromBuilder<'a> {
     pub fn address(mut self, addresses: &[Address]) -> Self {
         self.addresses = addresses
             .iter()
-            .map(|h| h.as_bytes().trytes().unwrap())
+            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
             .collect();
         self
     }
