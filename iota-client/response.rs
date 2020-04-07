@@ -1,6 +1,6 @@
 //! Response types
 use anyhow::Result;
-use bee_bundle::{Hash, TransactionField};
+use bee_bundle::{Hash, Transaction, TransactionField};
 use bee_ternary::TryteBuf;
 
 /// addNeighbors Response Type
@@ -49,10 +49,9 @@ impl ConsistencyResponseBuilder {
 }
 
 /// attachToTangle Response Type
-#[derive(Clone, Debug)]
 pub struct AttachToTangleResponse {
     /// Transaction trytes that include a valid `nonce` field
-    pub trytes: Vec<String>,
+    pub trytes: Vec<Transaction>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -64,13 +63,18 @@ pub(crate) struct AttachToTangleResponseBuilder {
 
 impl AttachToTangleResponseBuilder {
     pub(crate) async fn build(self) -> Result<AttachToTangleResponse> {
-        let mut trytes: Vec<String> = Vec::new();
+        let mut trytes = Vec::new();
         if let Some(exception) = self.exception {
             return Err(anyhow!("{}", exception));
         } else if let Some(error) = self.error {
             return Err(anyhow!("{}", error));
         } else if let Some(s) = self.trytes {
-            trytes = s;
+            s.iter().for_each(|x| {
+                trytes.push(
+                    Transaction::from_trits(TryteBuf::try_from_str(&x).unwrap().as_trits())
+                        .unwrap(),
+                )
+            });
         }
 
         Ok(AttachToTangleResponse { trytes })
@@ -419,10 +423,9 @@ pub struct NeighborResponse {
 }
 
 /// getTrytes Response Type
-#[derive(Clone, Debug)]
 pub struct GetTrytesResponse {
     /// Vector of transaction trytes for the given transaction hashes (in the same order as the parameters)
-    pub trytes: Vec<String>,
+    pub trytes: Vec<Transaction>,
 }
 
 #[derive(Clone, Deserialize, Debug)]
@@ -440,7 +443,12 @@ impl GetTrytesResponseBuilder {
         } else if let Some(error) = self.error {
             return Err(anyhow!("{}", error));
         } else if let Some(s) = self.trytes {
-            trytes = s;
+            s.iter().for_each(|x| {
+                trytes.push(
+                    Transaction::from_trits(TryteBuf::try_from_str(&x).unwrap().as_trits())
+                        .unwrap(),
+                )
+            });
         }
 
         Ok(GetTrytesResponse { trytes })
