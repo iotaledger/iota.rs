@@ -1,7 +1,9 @@
 //! The Client module to connect through IRI with API usages
 use crate::core::*;
 use crate::response::*;
+use crate::util::Bundle;
 use anyhow::Result;
+use bee_bundle::{Hash, TransactionField};
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
@@ -65,6 +67,19 @@ impl Client<'_> {
         AttachToTangleBuilder::new(&self)
     }
 
+    /// Re-broadcasts all transactions in a bundle given the tail transaction hash. It might be useful
+    /// when transactions did not properly propagate, particularly in the case of large bundles.
+    ///
+    /// # Parameters
+    /// * [`hash`] - Tail transaction hash (current_index == 0)
+    pub async fn broadcast_bundle(&self, hash: Hash) -> Result<Bundle> {
+        let mut bundle = self.get_bundle(hash).await?;
+        bundle.reverse();
+
+        self.broadcast_transactions().trytes(&bundle).send().await?;
+        Ok(bundle)
+    }
+
     /// Sends transaction trytes to a node.
     /// The input trytes for this call are provided by `attach_to_tangle`.
     /// Response only contains errors and exceptions, it would be `None` if the call success.
@@ -118,6 +133,18 @@ impl Client<'_> {
     /// [`tips`]: ../core/struct.GetBalancesBuilder.html#method.tips
     pub fn get_balances(&self) -> GetBalancesBuilder<'_> {
         GetBalancesBuilder::new(&self)
+    }
+
+    /// Fetches and validates the bundle given a tail transaction hash, by calling [`traverse_bundle`]
+    /// and traversing through trunk transaction.
+    /// # Parameters
+    /// * [`hash`] - Tail transaction hash (current_index == 0)
+    ///
+    /// [`traverse_bundle`]: #method.traverse_bundle
+    pub async fn get_bundle(&self, hash: Hash) -> Result<Bundle> {
+        // TODO validate bundle once it's in bee_bundle's bundle types
+        let bundle = self.traverse_bundle(hash).await?;
+        Ok(bundle)
     }
 
     /// Gets the inclusion states of a set of transactions.
@@ -250,6 +277,44 @@ impl Client<'_> {
     /// [`trytes`]: ../core/struct.StoreTransactionsBuilder.html#method.trytes
     pub fn store_transactions(&self) -> StoreTransactionsBuilder<'_> {
         StoreTransactionsBuilder::new(&self)
+    }
+
+    /// Fetches the bundle of a given the tail transaction hash, by traversing through trunk transaction.
+    /// It does not validate the bundle. Use [`get_bundle`] instead to get validated bundle.
+    ///
+    /// # Parameters
+    /// * [`hash`] - Tail transaction hash (current_index == 0)
+    ///
+    /// [`get_bundle`]: #method.get_bundle
+    pub async fn traverse_bundle(&self, hash: Hash) -> Result<Bundle> {
+        let mut bundle = Bundle::new();
+        let mut hash = hash;
+        let mut tail = true;
+        loop {
+            let res = self
+                .get_trytes()
+                .hashes(&[hash])
+                .send()
+                .await?
+                .trytes
+                .pop()
+                .unwrap();
+
+            if tail {
+                if *res.index().to_inner() != 0 {
+                    break Err(anyhow!("Provided hash is not tail."));
+                }
+                tail = false;
+            }
+
+            hash = res.trunk().clone();
+            if res.index() == res.last_index() {
+                bundle.push(res);
+                break Ok(bundle);
+            } else {
+                bundle.push(res);
+            }
+        }
     }
 
     /// Checks if an address was ever withdrawn from, either in the current epoch or in any previous epochs.

@@ -1,6 +1,8 @@
 use bee_bundle::{Transaction, TransactionField};
 use iota_conversion::{trytes, Trinary};
 
+pub(crate) type Bundle = Vec<Transaction>;
+
 pub(crate) fn tx_trytes(tx: &Transaction) -> String {
     trytes(tx.payload().to_inner().as_i8_slice()).unwrap()
         + &trytes(tx.address().to_inner().as_i8_slice()).unwrap()
