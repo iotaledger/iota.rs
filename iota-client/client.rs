@@ -162,6 +162,11 @@ impl Client<'_> {
         GetInclusionStatesBuilder::new(&self)
     }
 
+    /// Gets latest solid subtangle milestone.
+    pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<String> {
+        Ok(self.get_node_info().await?.latest_solid_subtangle_milestone)
+    }
+
     /// Gets all transaction hashes that a node is currently requesting from its neighbors.
     pub async fn get_missing_transactions(&self) -> Result<GetTipsResponse> {
         let body = json!( {
