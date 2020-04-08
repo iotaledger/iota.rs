@@ -1,9 +1,10 @@
 //! The Client module to connect through IRI with API usages
 use crate::core::*;
+use crate::extended::*;
 use crate::response::*;
 use crate::util::Bundle;
 use anyhow::Result;
-use bee_bundle::{Hash, TransactionField};
+use bee_bundle::{Hash, Transaction, TransactionField};
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
@@ -42,7 +43,7 @@ impl Client<'_> {
     /// this is only temporary, and the added neighbors will be removed
     /// from your set of neighbors after you relaunch IRI.
     /// # Parameters
-    /// * `uris` - Slices of neighbor URIs(`&str`) to add
+    /// * [`uris`] - Slices of neighbor URIs(`&str`) to add
     ///
     /// [`uris`]: ../core/struct.AddNeighborsBuilder.html#method.uris
     pub fn add_neighbors(&self) -> AddNeighborsBuilder<'_> {
@@ -53,10 +54,10 @@ impl Client<'_> {
     /// The `branch_transaction` and `trunk_transaction` parameters are returned
     /// from the `get_transactions_to_approve` method.
     /// # Parameters
-    /// * `trunk_transaction` - trunk transaction hash
-    /// * `branch_transaction` - branch transaction hash
-    /// * `min_weight_magnitude` - Difficulty of PoW
-    /// * `trytes` - Slice of transaction trytes. When sending transactions in a bundle,
+    /// * [`trunk_transaction`] - trunk transaction hash
+    /// * [`branch_transaction`] - branch transaction hash
+    /// * [`min_weight_magnitude`] - Difficulty of PoW
+    /// * [`trytes`] - Slice of transaction trytes. When sending transactions in a bundle,
     /// make sure that the trytes of the last transaction in the bundle are in index 0 of the array.
     ///
     /// [`trunk_transaction`]: ../core/struct.AttachToTangleBuilder.html#method.trunk_transaction
@@ -71,7 +72,7 @@ impl Client<'_> {
     /// when transactions did not properly propagate, particularly in the case of large bundles.
     ///
     /// # Parameters
-    /// * [`hash`] - Tail transaction hash (current_index == 0)
+    /// * `hash` - Tail transaction hash (current_index == 0)
     pub async fn broadcast_bundle(&self, hash: Hash) -> Result<Bundle> {
         let mut bundle = self.get_bundle(hash).await?;
         bundle.reverse();
@@ -96,7 +97,7 @@ impl Client<'_> {
     /// * The transaction's bundle is valid
     /// * The transaction's branch and trunk transactions are valid
     /// # Parameters
-    /// * `tails` - Transaction hashes to check
+    /// * [`tails`] - Transaction hashes to check
     ///
     /// [`tails`]: ../core/struct.ConsistencyBuilder.html#method.tails
     pub fn check_consistency(&self) -> CheckConsistencyBuilder<'_> {
@@ -107,10 +108,10 @@ impl Client<'_> {
     /// The parameters define the transaction fields to search for, including bundles, addresses, tags, and approvees.
     /// Using multiple transaction fields, returns transactions hashes at the intersection of those values.
     /// # Parameters
-    /// * `bundles` - (Optional) Bundle hashes to search for
-    /// * `addresses` - (Optional) Addresses to search for (do not include the checksum)
-    /// * `tags` - (Optional) Tags to search for
-    /// * `approvees` - (Optional) Child transactions to search for
+    /// * [`bundles`] - (Optional) Bundle hashes to search for
+    /// * [`addresses`] - (Optional) Addresses to search for (do not include the checksum)
+    /// * [`tags`] - (Optional) Tags to search for
+    /// * [`approvees`] - (Optional) Child transactions to search for
     ///
     /// [`bundles`]: ../core/struct.FindTransactionsBuilder.html#method.bundles
     /// [`addresses`]: ../core/struct.FindTransactionsBuilder.html#method.addresses
@@ -266,6 +267,38 @@ impl Client<'_> {
     /// [`uris`]: ../core/struct.RemoveNeighborsBuilder.html#method.uris
     pub fn remove_neighbors(&self) -> RemoveNeighborsBuilder<'_> {
         RemoveNeighborsBuilder::new(&self)
+    }
+
+    /// Perform Attaches to tanlge, stores and broadcasts a vector of transaction trytes.
+    /// # Parameters
+    /// * [`trytes`] - Vector of trytes to attach, store & broadcast
+    /// * [`depth`] - Number of milestones to go back to start the tip selection algorithm. Default is 3.
+    /// * [`min_weight_magnitude`] - Difficulty of PoW
+    /// * [`reference`] - (Optional) Transaction hash from which to start the weighted random walk.
+    ///
+    /// [`trytes`]: ../extended/struct.SendTrytesBuilder.html#method.trytes
+    /// [`depth`]: ../extended/struct.SendTrytesBuilder.html#method.depth
+    /// [`min_weight_magnitude`]: ../extended/struct.SendTrytesBuilder.html#method.min_weight_magnitude
+    /// [`reference`]: ../extended/struct.SendTrytesBuilder.html#method.reference
+    pub fn send_trytes(&self) -> SendTrytesBuilder<'_> {
+        SendTrytesBuilder::new(&self)
+    }
+
+    /// Store and broadcast transactions to the node.
+    /// The trytes to be used for this call are returned by `attach_to_tangle`.
+    /// Response only contains errors and exceptions, it would be `None` if the call success.
+    /// # Parameters
+    /// * [`trytes`] - Transaction trytes
+    pub async fn store_and_broadcast(&self, trytes: &[Transaction]) -> Result<()> {
+        StoreTransactionsBuilder::new(&self)
+            .trytes(trytes)
+            .send()
+            .await?;
+        BroadcastTransactionsBuilder::new(&self)
+            .trytes(trytes)
+            .send()
+            .await?;
+        Ok(())
     }
 
     /// Store transactions into the local storage.

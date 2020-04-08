@@ -18,6 +18,7 @@ extern crate serde_json;
 #[macro_use]
 pub mod client;
 pub mod core;
+pub mod extended;
 pub mod response;
 mod util;
 

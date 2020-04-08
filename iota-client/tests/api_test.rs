@@ -302,6 +302,22 @@ async fn test_remove_neighbors() {
 }
 
 #[tokio::test]
+async fn test_send_trytes() {
+    let client = client_init();
+    let _ = client
+        .send_trytes()
+        .min_weight_magnitude(9)
+        .trytes(vec![tx()])
+        .send()
+        .await;
+}
+
+#[tokio::test]
+async fn test_store_and_broadcast() {
+    client_init().store_and_broadcast(&[tx()]).await.unwrap();
+}
+
+#[tokio::test]
 async fn test_store_transactions() {
     client_init()
         .store_transactions()
