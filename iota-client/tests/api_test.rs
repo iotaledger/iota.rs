@@ -44,7 +44,7 @@ async fn test_attach_to_tangle() {
 #[tokio::test]
 async fn test_broadcast_bundle() {
     let _ = client_init()
-        .broadcast_bundle(Hash::from_inner_unchecked(
+        .broadcast_bundle(&Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -177,7 +177,7 @@ async fn test_get_balances() {
 #[tokio::test]
 async fn test_get_bundle() {
     let _ = client_init()
-        .get_bundle(Hash::from_inner_unchecked(
+        .get_bundle(&Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -302,6 +302,24 @@ async fn test_remove_neighbors() {
 }
 
 #[tokio::test]
+async fn test_replay_bundle() {
+    let client = client_init();
+    let _ = client
+        .replay_bundle(&Hash::from_inner_unchecked(
+            TryteBuf::try_from_str("TEST_BUNDLE_TX_0")
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap()
+        .depth(3)
+        .min_weight_magnitude(9)
+        .send()
+        .await;
+}
+
+#[tokio::test]
 async fn test_send_trytes() {
     let client = client_init();
     let _ = client
@@ -330,7 +348,7 @@ async fn test_store_transactions() {
 #[tokio::test]
 async fn test_traverse_bundle() {
     let _ = client_init()
-        .traverse_bundle(Hash::from_inner_unchecked(
+        .traverse_bundle(&Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()

@@ -73,7 +73,7 @@ impl Client<'_> {
     ///
     /// # Parameters
     /// * `hash` - Tail transaction hash (current_index == 0)
-    pub async fn broadcast_bundle(&self, hash: Hash) -> Result<Bundle> {
+    pub async fn broadcast_bundle(&self, hash: &Hash) -> Result<Bundle> {
         let mut bundle = self.get_bundle(hash).await?;
         bundle.reverse();
 
@@ -142,7 +142,7 @@ impl Client<'_> {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`traverse_bundle`]: #method.traverse_bundle
-    pub async fn get_bundle(&self, hash: Hash) -> Result<Bundle> {
+    pub async fn get_bundle(&self, hash: &Hash) -> Result<Bundle> {
         // TODO validate bundle once it's in bee_bundle's bundle types
         let bundle = self.traverse_bundle(hash).await?;
         Ok(bundle)
@@ -269,6 +269,21 @@ impl Client<'_> {
         RemoveNeighborsBuilder::new(&self)
     }
 
+    /// Reattaches a transfer to tangle by selecting tips & performing the Proof-of-Work again.
+    /// Reattachments are usefull in case original transactions are pending, and can be done securely as many times as needed.
+    /// # Parameters
+    /// * `hash` - Tail transaction hash. Tail transaction is the transaction in the bundle with current_index == 0
+    /// * [`depth`] - Number of milestones to go back to start the tip selection algorithm. Default is 3.
+    /// * [`min_weight_magnitude`] - Difficulty of PoW
+    ///
+    /// [`depth`]: ../extended/struct.SendTrytesBuilder.html#method.depth
+    /// [`min_weight_magnitude`]: ../extended/struct.SendTrytesBuilder.html#method.min_weight_magnitude
+    pub async fn replay_bundle(&self, hash: &Hash) -> Result<SendTrytesBuilder<'_>> {
+        let mut bundle = self.get_bundle(hash).await?;
+        bundle.reverse();
+        Ok(SendTrytesBuilder::new(&self).trytes(bundle))
+    }
+
     /// Perform Attaches to tanlge, stores and broadcasts a vector of transaction trytes.
     /// # Parameters
     /// * [`trytes`] - Vector of trytes to attach, store & broadcast
@@ -319,9 +334,9 @@ impl Client<'_> {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`get_bundle`]: #method.get_bundle
-    pub async fn traverse_bundle(&self, hash: Hash) -> Result<Bundle> {
+    pub async fn traverse_bundle(&self, hash: &Hash) -> Result<Bundle> {
         let mut bundle = Bundle::new();
-        let mut hash = hash;
+        let mut hash = *hash;
         let mut tail = true;
         loop {
             let res = self
