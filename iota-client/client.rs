@@ -4,7 +4,7 @@ use crate::extended::*;
 use crate::response::*;
 use crate::util::Bundle;
 use anyhow::Result;
-use bee_bundle::{Hash, Transaction, TransactionField};
+use bee_bundle::{Address, Hash, Transaction, TransactionField};
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
@@ -189,6 +189,21 @@ impl Client<'_> {
         res.build().await
     }
 
+    /// Generates and returns a new address by calling `find_transactions` until the first unused address is detected.
+    /// This stops working after a snapshot.
+    /// # Parameters
+    /// * [`seed`] - An iota seed.
+    /// * [`index`] - (Optional) Key index to start search at. Default is 0.
+    /// * [`security`] - (Optional) Security level. Default is 2.
+    /// Use this parameter to make sure the returned tip transaction hashes approve a given reference transaction
+    ///
+    /// [`seed`]: ../extended/struct.GetNewAddressBuilder.html#method.seed
+    /// [`index`]: ../extended/struct.GetNewAddressBuilder.html#method.index
+    /// [`security`]: ../extended/struct.GetNewAddressBuilder.html#method.security
+    pub fn get_new_address(&self) -> GetNewAddressBuilder<'_> {
+        GetNewAddressBuilder::new(&self)
+    }
+
     /// Gets a node's API configuration settings.
     pub async fn get_node_api_configuration(&self) -> Result<GetNodeAPIConfigurationResponse> {
         let body = json!( {
@@ -260,6 +275,32 @@ impl Client<'_> {
             .await?;
 
         Ok(())
+    }
+
+    /// Checks whether an address is used via FindTransactions and WereAddressesSpentFrom.
+    /// # Parameters
+    /// * `address` - IOTA address
+    pub async fn is_address_used(&self, address: &Address) -> Result<bool> {
+        let addresses = &[address.clone()];
+        let spent = self
+            .were_addresses_spent_from()
+            .address(addresses)
+            .send()
+            .await?
+            .states[0];
+        let len = self
+            .find_transactions()
+            .addresses(addresses)
+            .send()
+            .await?
+            .hashes
+            .len();
+
+        if spent || len > 0 {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     }
 
     /// Removes a list of neighbors to your node.

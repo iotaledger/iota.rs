@@ -1,6 +1,8 @@
 mod common;
 use crate::common::*;
 use bee_bundle::*;
+use bee_crypto::*;
+use bee_signing::*;
 use bee_ternary::*;
 
 #[tokio::test]
@@ -234,6 +236,26 @@ async fn testget_missing_transactions() {
 }
 
 #[tokio::test]
+async fn test_get_new_address() {
+    let res = client_init()
+        .get_new_address()
+        .seed(
+            &IotaSeed::<Kerl>::from_buf(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
+        )
+        .send()
+        .await
+        .unwrap();
+
+    dbg!(res);
+}
+
+#[tokio::test]
 async fn test_get_node_api_configuration() {
     client_init().get_node_api_configuration().await.unwrap();
 }
@@ -284,6 +306,21 @@ async fn test_get_trytes() {
         .unwrap();
 
     assert!(!res.trytes.is_empty());
+}
+
+#[tokio::test]
+async fn test_is_address_used() {
+    let res = client_init()
+        .is_address_used(&Address::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_ADDRESS_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap();
+
+    assert_eq!(res, true);
 }
 
 #[tokio::test]

@@ -21,4 +21,6 @@ anyhow = "1.0.26"
 tokio = { version = "0.2.9", features = ["macros"] }
 bee-bundle = { git = "https://github.com/Alex6323/bee-p" }
 bee-ternary = { git = "https://github.com/Alex6323/bee-p" }
+bee-signing = { git = "https://github.com/Alex6323/bee-p" }
+bee-crypto = { git = "https://github.com/Alex6323/bee-p" }
 iota-conversion = { version = "0.3.0", path = "../iota-conversion" }
