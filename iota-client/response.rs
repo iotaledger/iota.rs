@@ -1,6 +1,6 @@
 //! Response types
 use anyhow::Result;
-use bee_bundle::{Hash, Transaction, TransactionField};
+use bee_bundle::{Address, Hash, Transaction, TransactionField};
 use bee_ternary::TryteBuf;
 
 /// addNeighbors Response Type
@@ -143,7 +143,7 @@ impl FindTransactionsResponseBuilder {
 #[derive(Clone, Debug)]
 pub struct GetBalancesResponse {
     /// Array of balances in the same order as the `addresses` parameters were passed to the endpoint
-    pub balances: Vec<String>,
+    pub balances: Vec<u64>,
     /// The index of the milestone that confirmed the most recent balance
     pub milestone_index: i64,
     /// The referencing tips. If no `tips` parameter was passed to the endpoint,
@@ -176,7 +176,7 @@ impl GetBalancesResponseBuilder {
         }
 
         if let Some(s) = self.balances {
-            res.balances = s;
+            res.balances = s.into_iter().map(|s| s.parse().unwrap()).collect();
         }
 
         if let Some(s) = self.milestone_index {
@@ -491,4 +491,13 @@ impl WereAddressesSpentFromResponseBuilder {
 
         Ok(WereAddressesSpentFromResponse { states })
     }
+}
+
+#[derive(Clone, Debug)]
+/// Address can be used as input to spend balance
+pub struct Input {
+    pub(crate) address: Address,
+    pub(crate) balance: u64,
+    pub(crate) index: u64,
+    pub(crate) security: u8,
 }

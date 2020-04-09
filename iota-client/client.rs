@@ -163,6 +163,21 @@ impl Client<'_> {
         GetInclusionStatesBuilder::new(&self)
     }
 
+    /// Creates and returns an Inputs object by generating addresses and fetching their latest balance.
+    /// # Parameters
+    /// * [`seed`] - An iota seed.
+    /// * [`threshold`] - Minimum amount of balance required
+    /// * [`index`] - (Optional) Key index to start search at. Default is 0.
+    /// * [`security`] - (Optional) Security level. Default is 2.
+    ///
+    /// [`seed`]: ../extended/struct.GetInputsBuilder.html#method.seed
+    /// [`threshold`]: ../extended/struct.GetInputsBuilder.html#method.threshold
+    /// [`index`]: ../extended/struct.GetInputsBuilder.html#method.index
+    /// [`security`]: ../extended/struct.GetInputsBuilder.html#method.security
+    pub fn get_inputs(&self) -> GetInputsBuilder<'_> {
+        GetInputsBuilder::new(&self)
+    }
+
     /// Fetches inclusion states of the given transactions by calling GetInclusionStates
     /// using the latest solid subtangle milestone from GetNodeInfo.
     ///
@@ -219,7 +234,6 @@ impl Client<'_> {
     /// * [`seed`] - An iota seed.
     /// * [`index`] - (Optional) Key index to start search at. Default is 0.
     /// * [`security`] - (Optional) Security level. Default is 2.
-    /// Use this parameter to make sure the returned tip transaction hashes approve a given reference transaction
     ///
     /// [`seed`]: ../extended/struct.GetNewAddressBuilder.html#method.seed
     /// [`index`]: ../extended/struct.GetNewAddressBuilder.html#method.index

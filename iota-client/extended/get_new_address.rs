@@ -46,7 +46,7 @@ impl<'a> GetNewAddressBuilder<'a> {
     }
 
     /// Send GetNewAddress request
-    pub async fn send(self) -> Result<Address> {
+    pub async fn send(self) -> Result<(u64, Address)> {
         let security = match self.security {
             1 => WotsSecurityLevel::Low,
             2 => WotsSecurityLevel::Medium,
@@ -76,11 +76,11 @@ impl<'a> GetNewAddressBuilder<'a> {
                     .to_owned(),
             );
 
-            index += 1;
-
             if let Ok(false) = self.client.is_address_used(&address).await {
-                break Ok(address);
+                break Ok((index, address));
             }
+
+            index += 1;
         }
     }
 }

@@ -216,6 +216,24 @@ async fn test_get_inclusion_states() {
 }
 
 #[tokio::test]
+async fn test_get_inputs() {
+    let _ = client_init()
+        .get_inputs()
+        .seed(
+            &IotaSeed::<Kerl>::from_buf(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
+        )
+        .send()
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn test_get_latest_inclusion() {
     let client = client_init();
     let res = client
@@ -261,7 +279,7 @@ async fn testget_missing_transactions() {
 
 #[tokio::test]
 async fn test_get_new_address() {
-    let res = client_init()
+    let _ = client_init()
         .get_new_address()
         .seed(
             &IotaSeed::<Kerl>::from_buf(
@@ -275,8 +293,6 @@ async fn test_get_new_address() {
         .send()
         .await
         .unwrap();
-
-    dbg!(res);
 }
 
 #[tokio::test]
