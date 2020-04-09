@@ -341,6 +341,28 @@ impl Client<'_> {
         }
     }
 
+    /// checks if a transaction is promotable by calling the checkConsistency IRI API command and
+    /// verifying that attachmentTimestamp is above a lower bound. Lower bound is calculated based on the number of milestones issued
+    /// since transaction attachment.
+    /// # Parameters
+    /// * `tail` - Tail Transaction Hash
+    pub async fn is_promotable(&self, tail: &Hash) -> Result<bool> {
+        let is_consistent = self.check_consistency().tails(&[*tail]).send().await?.state;
+
+        let timestamp = *self.get_trytes().hashes(&[*tail]).send().await?.trytes[0]
+            .attachment_ts()
+            .to_inner() as i64;
+
+        let now = chrono::Utc::now().timestamp();
+        let milestone_interval: i64 = 2 * 60 * 1000;
+        let one_way_delay: i64 = 1 * 60 * 1000;
+        let max_depth: i64 = 6;
+
+        let is_above_max_depth =
+            timestamp < now && (now - timestamp) < milestone_interval * one_way_delay * max_depth;
+        Ok(is_consistent && is_above_max_depth)
+    }
+
     /// Removes a list of neighbors to your node.
     /// This is only temporary, and if you have your neighbors
     /// added via the command line, they will be retained after

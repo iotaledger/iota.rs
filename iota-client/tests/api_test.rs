@@ -364,6 +364,19 @@ async fn test_is_address_used() {
 }
 
 #[tokio::test]
+async fn test_is_promotable() {
+    let _ = client_init()
+        .is_promotable(&Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn test_remove_neighbors() {
     let res = client_init()
         .remove_neighbors()
