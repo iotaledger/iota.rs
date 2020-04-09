@@ -216,6 +216,30 @@ async fn test_get_inclusion_states() {
 }
 
 #[tokio::test]
+async fn test_get_latest_inclusion() {
+    let client = client_init();
+    let res = client
+        .get_latest_inclusion(&[
+            Hash::from_inner_unchecked(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode(),
+            ),
+            Hash::from_inner_unchecked(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
+                    .unwrap()
+                    .as_trits()
+                    .encode(),
+            ),
+        ])
+        .await
+        .unwrap();
+
+    assert!(!res.is_empty());
+}
+
+#[tokio::test]
 async fn test_get_neighbors() {
     let client = client_init();
 
@@ -343,7 +367,7 @@ async fn test_replay_bundle() {
     let client = client_init();
     let _ = client
         .replay_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str("TEST_BUNDLE_TX_0")
+            TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
                 .unwrap()
                 .as_trits()
                 .encode(),

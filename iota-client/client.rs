@@ -5,6 +5,7 @@ use crate::response::*;
 use crate::util::Bundle;
 use anyhow::Result;
 use bee_bundle::{Address, Hash, Transaction, TransactionField};
+use bee_ternary::TryteBuf;
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
@@ -162,9 +163,32 @@ impl Client<'_> {
         GetInclusionStatesBuilder::new(&self)
     }
 
+    /// Fetches inclusion states of the given transactions by calling GetInclusionStates
+    /// using the latest solid subtangle milestone from GetNodeInfo.
+    ///
+    /// # Parameters
+    /// * [`transactions`] - List of transaction hashes for which you want to get the inclusion state
+    pub async fn get_latest_inclusion(&self, transactions: &[Hash]) -> Result<Vec<bool>> {
+        let milestone = self.get_latest_solid_subtangle_milestone().await?;
+        let states = self
+            .get_inclusion_states()
+            .transactions(transactions)
+            .tips(&[milestone])
+            .send()
+            .await?
+            .states;
+        Ok(states)
+    }
+
     /// Gets latest solid subtangle milestone.
-    pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<String> {
-        Ok(self.get_node_info().await?.latest_solid_subtangle_milestone)
+    pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<Hash> {
+        Ok(Hash::from_inner_unchecked(
+            // TODO missing impl error on Hash
+            TryteBuf::try_from_str(&self.get_node_info().await?.latest_solid_subtangle_milestone)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
     }
 
     /// Gets all transaction hashes that a node is currently requesting from its neighbors.
