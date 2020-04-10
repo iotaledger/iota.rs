@@ -114,8 +114,8 @@ impl<'a> PrepareTransfersBuilder<'a> {
                     .with_bundle(Hash::zeros())
                     .with_trunk(Hash::zeros())
                     .with_branch(Hash::zeros())
-                    .with_attachment_lbts(Timestamp::from_inner_unchecked(u64::MIN))
-                    .with_attachment_ubts(Timestamp::from_inner_unchecked(u64::MAX))
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
                     .with_nonce(Nonce::zeros()),
             );
         }
@@ -138,8 +138,8 @@ impl<'a> PrepareTransfersBuilder<'a> {
                     .with_bundle(Hash::zeros())
                     .with_trunk(Hash::zeros())
                     .with_branch(Hash::zeros())
-                    .with_attachment_lbts(Timestamp::from_inner_unchecked(u64::MIN))
-                    .with_attachment_ubts(Timestamp::from_inner_unchecked(u64::MAX))
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
                     .with_nonce(Nonce::zeros()),
             );
         }
@@ -176,8 +176,8 @@ impl<'a> PrepareTransfersBuilder<'a> {
                     .with_bundle(Hash::zeros())
                     .with_trunk(Hash::zeros())
                     .with_branch(Hash::zeros())
-                    .with_attachment_lbts(Timestamp::from_inner_unchecked(u64::MIN))
-                    .with_attachment_ubts(Timestamp::from_inner_unchecked(u64::MAX))
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
                     .with_nonce(Nonce::zeros()),
             );
         }
