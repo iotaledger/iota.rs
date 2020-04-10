@@ -407,6 +407,29 @@ impl Client<'_> {
         Ok(SendTrytesBuilder::new(&self).trytes(bundle))
     }
 
+    /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
+    /// * [`seed`] - An iota seed.
+    /// * [`transfers`] - Transfer addresses to send data/value to.
+    /// * [`inputs`] - (Optional, but recommended) Input addresses used for signing. Use `get_inputs` to get the valid inputs yourself.
+    /// * [`remainder`] - (Optional) Custom remainder address.
+    /// * [`security`] - (Optional) Security level. Default is 2.
+    /// * [`depth`] - Number of milestones to go back to start the tip selection algorithm. Default is 3.
+    /// * [`min_weight_magnitude`] - Difficulty of PoW
+    /// * [`reference`] - (Optional) Transaction hash from which to start the weighted random walk.
+    ///
+    /// [`seed`]: ../extended/struct.SendTransfersBuilder.html#method.seed
+    /// [`transfers`]: ../extended/struct.SendTransfersBuilder.html#method.transfers
+    /// [`inputs`]: ../extended/struct.SendTransfersBuilder.html#method.inputs
+    /// [`remainder`]: ../extended/struct.SendTransfersBuilder.html#method.remainder
+    /// [`security`]: ../extended/struct.SendTransfersBuilder.html#method.security
+    /// [`trytes`]: ../extended/struct.SendTransfersBuilder.html#method.trytes
+    /// [`depth`]: ../extended/struct.SendTransfersBuilder.html#method.depth
+    /// [`min_weight_magnitude`]: ../extended/struct.SendTransfersBuilder.html#method.min_weight_magnitude
+    /// [`reference`]: ../extended/struct.SendTransfersBuilder.html#method.reference
+    pub fn send_transfers(&self) -> SendTransfersBuilder<'_> {
+        SendTransfersBuilder::new(&self)
+    }
+
     /// Perform Attaches to tanlge, stores and broadcasts a vector of transaction trytes.
     /// # Parameters
     /// * [`trytes`] - Vector of trytes to attach, store & broadcast

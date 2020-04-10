@@ -66,7 +66,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
     }
 
     /// Send PrepareTransfers request
-    pub async fn send(self) -> Result<Bundle> {
+    pub async fn build(self) -> Result<Bundle> {
         let seed = match self.seed {
             Some(s) => s,
             None => return Err(anyhow!("Seed is not provided")),
