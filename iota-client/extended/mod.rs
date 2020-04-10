@@ -2,8 +2,10 @@
 
 mod get_inputs;
 mod get_new_address;
+mod prepare_transfers;
 mod send_trytes;
 
 pub use get_inputs::GetInputsBuilder;
 pub use get_new_address::GetNewAddressBuilder;
+pub use prepare_transfers::PrepareTransfersBuilder;
 pub use send_trytes::SendTrytesBuilder;

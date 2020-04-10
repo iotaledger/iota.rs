@@ -2,7 +2,6 @@
 use crate::core::*;
 use crate::extended::*;
 use crate::response::*;
-use crate::util::Bundle;
 use anyhow::Result;
 use bee_bundle::{Address, Hash, Transaction, TransactionField};
 use bee_ternary::TryteBuf;
@@ -74,7 +73,7 @@ impl Client<'_> {
     ///
     /// # Parameters
     /// * `hash` - Tail transaction hash (current_index == 0)
-    pub async fn broadcast_bundle(&self, hash: &Hash) -> Result<Bundle> {
+    pub async fn broadcast_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
         let mut bundle = self.get_bundle(hash).await?;
         bundle.reverse();
 
@@ -143,7 +142,7 @@ impl Client<'_> {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`traverse_bundle`]: #method.traverse_bundle
-    pub async fn get_bundle(&self, hash: &Hash) -> Result<Bundle> {
+    pub async fn get_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
         // TODO validate bundle once it's in bee_bundle's bundle types
         let bundle = self.traverse_bundle(hash).await?;
         Ok(bundle)
@@ -363,6 +362,24 @@ impl Client<'_> {
         Ok(is_consistent && is_above_max_depth)
     }
 
+    /// Prepares the transaction trytes by generating a bundle, filling in transfers and inputs,
+    /// adding remainder and signing all input transactions.
+    /// # Parameters
+    /// * [`seed`] - An iota seed.
+    /// * [`transfers`] - Transfer addresses to send data/value to.
+    /// * [`inputs`] - (Optional, but recommended) Input addresses used for signing. Use `get_inputs` to get the valid inputs yourself.
+    /// * [`remainder`] - (Optional) Custom remainder address.
+    /// * [`security`] - (Optional) Security level. Default is 2.
+    ///
+    /// [`seed`]: ../extended/struct.PrepareTransfersBuilder.html#method.seed
+    /// [`transfers`]: ../extended/struct.PrepareTransfersBuilder.html#method.transfers
+    /// [`inputs`]: ../extended/struct.PrepareTransfersBuilder.html#method.inputs
+    /// [`remainder`]: ../extended/struct.PrepareTransfersBuilder.html#method.remainder
+    /// [`security`]: ../extended/struct.PrepareTransfersBuilder.html#method.security
+    pub fn prepare_transfers(&self) -> PrepareTransfersBuilder<'_> {
+        PrepareTransfersBuilder::new(&self)
+    }
+
     /// Removes a list of neighbors to your node.
     /// This is only temporary, and if you have your neighbors
     /// added via the command line, they will be retained after
@@ -440,8 +457,8 @@ impl Client<'_> {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`get_bundle`]: #method.get_bundle
-    pub async fn traverse_bundle(&self, hash: &Hash) -> Result<Bundle> {
-        let mut bundle = Bundle::new();
+    pub async fn traverse_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
+        let mut bundle = Vec::new();
         let mut hash = *hash;
         let mut tail = true;
         loop {

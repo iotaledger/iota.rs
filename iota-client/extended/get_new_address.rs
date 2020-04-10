@@ -14,7 +14,7 @@ pub struct GetNewAddressBuilder<'a> {
     client: &'a Client<'a>,
     seed: Option<&'a IotaSeed<Kerl>>,
     index: u64,
-    security: u8,
+    security: WotsSecurityLevel,
 }
 
 impl<'a> GetNewAddressBuilder<'a> {
@@ -23,7 +23,7 @@ impl<'a> GetNewAddressBuilder<'a> {
             client,
             seed: None,
             index: 0,
-            security: 2,
+            security: WotsSecurityLevel::Medium,
         }
     }
 
@@ -41,19 +41,17 @@ impl<'a> GetNewAddressBuilder<'a> {
 
     /// Set security level
     pub fn security(mut self, security: u8) -> Self {
-        self.security = security;
+        self.security = match security {
+            1 => WotsSecurityLevel::Low,
+            2 => WotsSecurityLevel::Medium,
+            3 => WotsSecurityLevel::High,
+            _ => panic!("Invalid security level"),
+        };
         self
     }
 
     /// Send GetNewAddress request
-    pub async fn send(self) -> Result<(u64, Address)> {
-        let security = match self.security {
-            1 => WotsSecurityLevel::Low,
-            2 => WotsSecurityLevel::Medium,
-            3 => WotsSecurityLevel::High,
-            _ => return Err(anyhow!("Security level only supports 1~3")),
-        };
-
+    pub async fn generate(self) -> Result<(u64, Address)> {
         let seed = match self.seed {
             Some(s) => s,
             None => return Err(anyhow!("Seed is not provided")),
@@ -65,7 +63,7 @@ impl<'a> GetNewAddressBuilder<'a> {
             // TODO impl Error trait in bee_signing
             let address = Address::from_inner_unchecked(
                 WotsPrivateKeyGeneratorBuilder::<Kerl>::default()
-                    .security_level(WotsSecurityLevel::from(security))
+                    .security_level(self.security)
                     .build()
                     .unwrap()
                     .generate(seed, index)

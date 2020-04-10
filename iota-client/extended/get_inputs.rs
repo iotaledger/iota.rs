@@ -51,7 +51,7 @@ impl<'a> GetInputsBuilder<'a> {
     }
 
     /// Send GetInputs request
-    pub async fn send(self) -> Result<(u64, Vec<Input>)> {
+    pub async fn generate(self) -> Result<(u64, Vec<Input>)> {
         let seed = match self.seed {
             Some(s) => s,
             None => return Err(anyhow!("Seed is not provided")),
@@ -69,7 +69,7 @@ impl<'a> GetInputsBuilder<'a> {
                 .seed(seed)
                 .index(index)
                 .security(self.security)
-                .send()
+                .generate()
                 .await?;
 
             let balance = self

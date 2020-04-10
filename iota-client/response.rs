@@ -501,3 +501,14 @@ pub struct Input {
     pub(crate) index: u64,
     pub(crate) security: u8,
 }
+
+/// Address as recipient to recieve iota
+#[derive(Clone, Debug)]
+pub struct Transfer {
+    /// Transfer address
+    pub address: Address,
+    /// Transfer value
+    pub value: u64,
+    /// Optional message
+    pub message: String,
+}

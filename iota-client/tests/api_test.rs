@@ -228,7 +228,7 @@ async fn test_get_inputs() {
             )
             .unwrap(),
         )
-        .send()
+        .generate()
         .await
         .unwrap();
 }
@@ -290,7 +290,7 @@ async fn test_get_new_address() {
             )
             .unwrap(),
         )
-        .send()
+        .generate()
         .await
         .unwrap();
 }
