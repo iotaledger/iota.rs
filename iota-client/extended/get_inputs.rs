@@ -90,7 +90,6 @@ impl<'a> GetInputsBuilder<'a> {
             inputs.push(Input {
                 address,
                 balance,
-                security: self.security,
                 index,
             });
             total += balance;

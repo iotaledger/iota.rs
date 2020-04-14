@@ -499,7 +499,6 @@ pub struct Input {
     pub(crate) address: Address,
     pub(crate) balance: u64,
     pub(crate) index: u64,
-    pub(crate) security: u8,
 }
 
 /// Address as recipient to recieve iota

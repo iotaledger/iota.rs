@@ -98,6 +98,30 @@ impl<'a> PrepareTransfersBuilder<'a> {
         let timestamp = chrono::Utc::now().timestamp();
 
         let mut bundle = OutgoingBundleBuilder::new();
+        // add transfers
+        for transfer in self.transfers {
+            bundle.push(
+                TransactionBuilder::new()
+                    // TODO add message
+                    .with_payload(Payload::zeros())
+                    .with_address(transfer.address.clone())
+                    .with_value(Value::from_inner_unchecked(transfer.value as i64))
+                    .with_obsolete_tag(Tag::zeros())
+                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_index(Index::from_inner_unchecked(0))
+                    .with_last_index(Index::from_inner_unchecked(0))
+                    // TODO add tag (but probably better to left as is)
+                    .with_tag(Tag::zeros())
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                    .with_bundle(Hash::zeros())
+                    .with_trunk(Hash::zeros())
+                    .with_branch(Hash::zeros())
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                    .with_nonce(Nonce::zeros()),
+            );
+        }
+
         // add inputs
         for input in &inputs {
             bundle.push(
@@ -110,7 +134,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
                     .with_index(Index::from_inner_unchecked(0))
                     .with_last_index(Index::from_inner_unchecked(0))
                     .with_tag(Tag::zeros())
-                    .with_attachment_ts(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
                     .with_bundle(Hash::zeros())
                     .with_trunk(Hash::zeros())
                     .with_branch(Hash::zeros())
@@ -118,30 +142,29 @@ impl<'a> PrepareTransfersBuilder<'a> {
                     .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
                     .with_nonce(Nonce::zeros()),
             );
-        }
 
-        // add transfers
-        for transfer in self.transfers {
-            bundle.push(
-                TransactionBuilder::new()
-                    // TODO add message
-                    .with_payload(Payload::zeros())
-                    .with_address(transfer.address)
-                    .with_value(Value::from_inner_unchecked(transfer.value as i64))
-                    .with_obsolete_tag(Tag::zeros())
-                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
-                    .with_index(Index::from_inner_unchecked(0))
-                    .with_last_index(Index::from_inner_unchecked(0))
-                    // TODO add tag (but probably better to left as is)
-                    .with_tag(Tag::zeros())
-                    .with_attachment_ts(Timestamp::from_inner_unchecked(timestamp as u64))
-                    .with_bundle(Hash::zeros())
-                    .with_trunk(Hash::zeros())
-                    .with_branch(Hash::zeros())
-                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
-                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
-                    .with_nonce(Nonce::zeros()),
-            );
+            for _ in 1..self.security {
+                bundle.push(
+                    TransactionBuilder::new()
+                        // TODO add message
+                        .with_payload(Payload::zeros())
+                        .with_address(input.address.clone())
+                        .with_value(Value::from_inner_unchecked(0))
+                        .with_obsolete_tag(Tag::zeros())
+                        .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                        .with_index(Index::from_inner_unchecked(0))
+                        .with_last_index(Index::from_inner_unchecked(0))
+                        // TODO add tag (but probably better to left as is)
+                        .with_tag(Tag::zeros())
+                        .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                        .with_bundle(Hash::zeros())
+                        .with_trunk(Hash::zeros())
+                        .with_branch(Hash::zeros())
+                        .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                        .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                        .with_nonce(Nonce::zeros()),
+                );
+            }
         }
 
         // add remainder
@@ -172,7 +195,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
                     .with_index(Index::from_inner_unchecked(0))
                     .with_last_index(Index::from_inner_unchecked(0))
                     .with_tag(Tag::zeros())
-                    .with_attachment_ts(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
                     .with_bundle(Hash::zeros())
                     .with_trunk(Hash::zeros())
                     .with_branch(Hash::zeros())
