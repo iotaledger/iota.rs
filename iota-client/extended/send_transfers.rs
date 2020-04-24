@@ -29,8 +29,8 @@ impl<'a> SendTransfersBuilder<'a> {
             security: 2,
             inputs: None,
             remainder: None,
-            depth: Default::default(),
-            min_weight_magnitude: Default::default(),
+            depth: 3,
+            min_weight_magnitude: 14,
             reference: Default::default(),
         }
     }
@@ -106,7 +106,8 @@ impl<'a> SendTransfersBuilder<'a> {
             transfer = transfer.remainder(remainder);
         }
 
-        let trytes = transfer.build().await?.into_iter().map(|x| x).collect();
+        let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().map(|x| x).collect();
+        trytes.reverse();
         let mut send_trytes = self
             .client
             .send_trytes()

@@ -20,8 +20,8 @@ serde_json = "1.0"
 anyhow = "1.0.26"
 chrono = "0.4.11"
 tokio = { version = "0.2.9", features = ["macros"] }
-bee-bundle = { git = "https://github.com/Alex6323/bee-p" }
-bee-ternary = { git = "https://github.com/Alex6323/bee-p" }
-bee-signing = { git = "https://github.com/Alex6323/bee-p" }
-bee-crypto = { git = "https://github.com/Alex6323/bee-p" }
+bee-bundle = { git = "https://github.com/wusyong/bee-p", branch = "tx_fix"}
+bee-ternary = { git = "https://github.com/wusyong/bee-p", branch = "tx_fix" }
+bee-signing = { git = "https://github.com/wusyong/bee-p", branch = "tx_fix" }
+bee-crypto = { git = "https://github.com/wusyong/bee-p", branch = "tx_fix" }
 iota-conversion = { version = "0.3.0", path = "../iota-conversion" }

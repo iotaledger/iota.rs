@@ -57,6 +57,10 @@ impl<'a> GetInputsBuilder<'a> {
             None => return Err(anyhow!("Seed is not provided")),
         };
 
+        if self.threshold == 0 {
+            return Ok((0, Vec::default()));
+        }
+
         let mut index = self.index;
         let mut total = 0;
         let mut inputs = Vec::new();

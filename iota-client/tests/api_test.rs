@@ -4,6 +4,7 @@ use bee_bundle::*;
 use bee_crypto::*;
 use bee_signing::*;
 use bee_ternary::*;
+use iota_client::response::*;
 
 #[tokio::test]
 async fn test_add_neighbors() {
@@ -377,6 +378,34 @@ async fn test_is_promotable() {
 }
 
 #[tokio::test]
+async fn test_prepare_transfers_no_value() {
+    let mut transfers = Vec::new();
+    for _ in 0..3 {
+        transfers.push(Transfer {
+            address: Address::zeros(),
+            value: 0,
+            message: "".to_string(),
+        });
+    }
+
+    let _ = client_init()
+        .prepare_transfers()
+        .seed(
+            &IotaSeed::<Kerl>::from_buf(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
+        )
+        .transfers(transfers)
+        .build()
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn test_remove_neighbors() {
     let res = client_init()
         .remove_neighbors()
@@ -407,6 +436,40 @@ async fn test_replay_bundle() {
         .min_weight_magnitude(9)
         .send()
         .await;
+}
+
+#[tokio::test]
+async fn test_send_transfers_no_value() {
+    let mut transfers = Vec::new();
+    for _ in 0..3 {
+        transfers.push(Transfer {
+            address: Address::from_inner_unchecked(
+                TryteBuf::try_from_str(TEST_ADDRESS_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode(),
+            ),
+            value: 0,
+            message: "".to_string(),
+        });
+    }
+
+    let _ = client_init()
+        .send_transfers()
+        .seed(
+            &IotaSeed::<Kerl>::from_buf(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
+        )
+        .transfers(transfers)
+        .min_weight_magnitude(10)
+        .send()
+        .await
+        .unwrap();
 }
 
 #[tokio::test]

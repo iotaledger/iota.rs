@@ -6,7 +6,7 @@ use bee_bundle::{
     TransactionBuilder, TransactionField, Value,
 };
 use bee_crypto::Kerl;
-use bee_signing::IotaSeed;
+use bee_signing::{IotaSeed, WotsSecurityLevel};
 
 use crate::response::{Input, Transfer};
 use crate::Client;
@@ -205,11 +205,22 @@ impl<'a> PrepareTransfersBuilder<'a> {
             );
         }
 
-        // TODO attach to tangle & validate before build
+        // TODO bundle crate uses tuple for convinience atm. We should sync the type.
+        let security = match self.security {
+            1 => WotsSecurityLevel::Low,
+            2 => WotsSecurityLevel::Medium,
+            3 => WotsSecurityLevel::High,
+            _ => panic!("Invalid scurity level"),
+        };
+        let inputs: Vec<(u64, Address, WotsSecurityLevel)> = inputs
+            .into_iter()
+            .map(|i| (i.index, i.address, security))
+            .collect();
+
         Ok(bundle
             .seal()
             .expect("Fail to seal bundle")
-            .sign()
+            .sign(seed, &inputs)
             .expect("Fail to sign bundle")
             .attach_local(Hash::zeros(), Hash::zeros())
             .expect("Fail to attach bundle")

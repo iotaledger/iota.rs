@@ -1,5 +1,7 @@
 use anyhow::Result;
 use bee_bundle::{Hash, Transaction};
+use bee_crypto::{Kerl, Sponge};
+use bee_ternary::{T1B1Buf, TritBuf};
 
 use crate::Client;
 
@@ -55,11 +57,23 @@ impl<'a> SendTrytesBuilder<'a> {
             gtta = gtta.reference(&hash);
         }
         let res = gtta.send().await?;
+        let mut trunk = res.trunk_transaction.as_trits().to_owned();
+        let mut trytes = Vec::new();
+        for tx in self.trytes {
+            let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
+            tx.into_trits_allocated(&mut trits);
+            trits.copy_raw_bytes(&trunk, 7290, 243);
+            trits.copy_raw_bytes(res.branch_transaction.as_trits(), 7533, 243);
+            trunk = Kerl::default().digest(&trits).unwrap();
+            trytes.push(
+                Transaction::from_trits(&trits).expect("Fail to convert trits to transaction"),
+            );
+        }
 
         let res = self
             .client
             .attach_to_tangle()
-            .trytes(&self.trytes)
+            .trytes(&trytes)
             .branch_transaction(&res.branch_transaction)
             .trunk_transaction(&res.trunk_transaction)
             .min_weight_magnitude(self.min_weight_magnitude)
