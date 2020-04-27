@@ -433,7 +433,7 @@ async fn test_replay_bundle() {
 }
 
 // We don't do value transfer test since it's not ideal to be a general test case. But confirmed sample can be found here:
-// POUWPKFLSZXKDZABLOXA9OIHZYZ99AROENGIJLZHNQOEYSUNCYRVCA9DFARCSLDZQTFDRLNOTXILRTPR9
+// SRXEGEGCOZLDENAXVCGYODPUGTTRZJ9WCTYQYZIHWBCGNJRBBUOWGSDXQCQEHRIUEGA9G9IOEDCICZHOX
 #[tokio::test]
 async fn test_send_transfers_no_value() {
     let mut transfers = Vec::new();
