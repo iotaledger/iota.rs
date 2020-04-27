@@ -34,9 +34,3 @@ jobs:
         with:
           command: test
           args: --all
-          
-      - name: Run cargo fmt	
-        uses: actions-rs/cargo@v1	
-        with:	
-          command: fmt	
-          args: --all -- --check
