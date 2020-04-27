@@ -325,15 +325,9 @@ impl Client<'_> {
             .send()
             .await?
             .states[0];
-        let len = self
-            .find_transactions()
-            .addresses(addresses)
-            .send()
-            .await?
-            .hashes
-            .len();
 
-        if spent || len > 0 {
+        // TODO more address evaluations
+        if spent {
             Ok(true)
         } else {
             Ok(false)

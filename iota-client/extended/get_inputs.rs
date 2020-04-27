@@ -91,13 +91,14 @@ impl<'a> GetInputsBuilder<'a> {
                 zero_balance_warning = 5;
             }
 
+            total += balance;
+            index = next_index;
             inputs.push(Input {
                 address,
                 balance,
                 index,
             });
-            total += balance;
-            index = next_index + 1;
+            index += 1;
 
             if total >= self.threshold {
                 return Ok((total, inputs));

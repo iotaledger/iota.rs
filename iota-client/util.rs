@@ -3,7 +3,6 @@ use iota_conversion::{trytes, Trinary};
 
 pub(crate) fn tx_trytes(tx: &Transaction) -> String {
     let bundle = trytes(tx.bundle().as_bytes()).unwrap();
-    dbg!(&bundle);
     trytes(tx.payload().to_inner().as_i8_slice()).unwrap()
         + &trytes(tx.address().to_inner().as_i8_slice()).unwrap()
         + &tx
