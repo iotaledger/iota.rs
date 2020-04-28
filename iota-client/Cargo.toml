@@ -19,9 +19,12 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0.26"
 chrono = "0.4.11"
-tokio = { version = "0.2.9", features = ["macros"] }
 bee-bundle = { git = "https://github.com/Alex6323/bee-p" }
 bee-ternary = { git = "https://github.com/Alex6323/bee-p" }
 bee-signing = { git = "https://github.com/Alex6323/bee-p" }
 bee-crypto = { git = "https://github.com/Alex6323/bee-p" }
 iota-conversion = { version = "0.3.0", path = "../iota-conversion" }
+
+[dev-dependencies]
+smol-potat = "0.1"
+smol = { version = "0.1.2", features = ["tokio02"] }

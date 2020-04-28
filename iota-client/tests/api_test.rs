@@ -6,7 +6,7 @@ use bee_signing::*;
 use bee_ternary::*;
 use iota_client::response::*;
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_add_neighbors() {
     let client = client_init();
     let _ = client
@@ -18,7 +18,7 @@ async fn test_add_neighbors() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_attach_to_tangle() {
     let client = client_init();
     let res = client
@@ -44,7 +44,7 @@ async fn test_attach_to_tangle() {
     assert!(!res.trytes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_broadcast_bundle() {
     let _ = client_init()
         .broadcast_bundle(&Hash::from_inner_unchecked(
@@ -57,7 +57,7 @@ async fn test_broadcast_bundle() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_broadcast_transactions() {
     let client = client_init();
     let _ = client
@@ -68,7 +68,7 @@ async fn test_broadcast_transactions() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_check_consistency() {
     let client = client_init();
     let res = client
@@ -89,7 +89,7 @@ async fn test_check_consistency() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_bundle() {
     let client = client_init();
     let _ = client
@@ -105,7 +105,7 @@ async fn test_find_tx_by_bundle() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_address() {
     let client = client_init();
     let _ = client
@@ -121,7 +121,7 @@ async fn test_find_tx_by_address() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_tag() {
     let client = client_init();
     let _ = client
@@ -137,7 +137,7 @@ async fn test_find_tx_by_tag() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_approvee() {
     let client = client_init();
     let _ = client
@@ -153,7 +153,7 @@ async fn test_find_tx_by_approvee() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_balances() {
     let client = client_init();
     let _ = client
@@ -169,7 +169,7 @@ async fn test_get_balances() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_bundle() {
     let _ = client_init()
         .get_bundle(&Hash::from_inner_unchecked(
@@ -182,7 +182,7 @@ async fn test_get_bundle() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_inclusion_states() {
     let client = client_init();
     let res = client
@@ -208,7 +208,7 @@ async fn test_get_inclusion_states() {
     assert!(!res.states.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_inputs() {
     let _ = client_init()
         .get_inputs()
@@ -226,7 +226,7 @@ async fn test_get_inputs() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_latest_inclusion() {
     let client = client_init();
     let res = client
@@ -250,7 +250,7 @@ async fn test_get_latest_inclusion() {
     assert!(!res.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_neighbors() {
     let client = client_init();
 
@@ -265,13 +265,13 @@ async fn test_get_neighbors() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_missing_transactions() {
     let _ = client_init().get_missing_transactions().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_new_address() {
     let _ = client_init()
         .get_new_address()
@@ -289,18 +289,18 @@ async fn test_get_new_address() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_node_api_configuration() {
     client_init().get_node_api_configuration().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_node_info() {
     client_init().get_node_info().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_tips() {
     let res = client_init().get_tips().await.unwrap();
@@ -308,7 +308,7 @@ async fn test_get_tips() {
     assert!(!res.hashes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_transactions_to_approve() {
     let _ = client_init()
         .get_transactions_to_approve()
@@ -318,7 +318,7 @@ async fn test_get_transactions_to_approve() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_trytes() {
     let res = client_init()
         .get_trytes()
@@ -343,7 +343,7 @@ async fn test_get_trytes() {
     assert!(!res.trytes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_is_address_used() {
     let res = client_init()
         .is_address_used(&Address::from_inner_unchecked(
@@ -358,7 +358,7 @@ async fn test_is_address_used() {
     assert_eq!(res, false);
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_is_promotable() {
     let _ = client_init()
         .is_promotable(&Hash::from_inner_unchecked(
@@ -371,7 +371,7 @@ async fn test_is_promotable() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_prepare_transfers_no_value() {
     let mut transfers = Vec::new();
     for _ in 0..3 {
@@ -399,7 +399,7 @@ async fn test_prepare_transfers_no_value() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_remove_neighbors() {
     let res = client_init()
         .remove_neighbors()
@@ -414,7 +414,7 @@ async fn test_remove_neighbors() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_replay_bundle() {
     let client = client_init();
     let _ = client
@@ -434,7 +434,7 @@ async fn test_replay_bundle() {
 
 // We don't do value transfer test since it's not ideal to be a general test case. But confirmed sample can be found here:
 // SRXEGEGCOZLDENAXVCGYODPUGTTRZJ9WCTYQYZIHWBCGNJRBBUOWGSDXQCQEHRIUEGA9G9IOEDCICZHOX
-#[tokio::test]
+#[smol_potat::test]
 async fn test_send_transfers_no_value() {
     let mut transfers = Vec::new();
     for _ in 0..3 {
@@ -468,7 +468,7 @@ async fn test_send_transfers_no_value() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_send_trytes() {
     let client = client_init();
     let _ = client
@@ -479,12 +479,12 @@ async fn test_send_trytes() {
         .await;
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_store_and_broadcast() {
     client_init().store_and_broadcast(&[tx()]).await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_store_transactions() {
     client_init()
         .store_transactions()
@@ -494,7 +494,7 @@ async fn test_store_transactions() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_traverse_bundle() {
     let _ = client_init()
         .traverse_bundle(&Hash::from_inner_unchecked(
@@ -507,7 +507,7 @@ async fn test_traverse_bundle() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_were_addresses_spent_from() {
     let res = client_init()
         .were_addresses_spent_from()
