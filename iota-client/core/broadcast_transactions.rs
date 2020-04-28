@@ -1,44 +1,40 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use bee_bundle::Transaction;
 
-/// Broadcast a list of transactions to all neighbors.
-/// The input trytes for this call are provided by attachToTangle.
-pub(crate) async fn broadcast_transactions(
-    client: &Client,
-    uri: &str,
-    trytes: &[String],
-) -> Result<BroadcastTransactionsResponse, Error> {
-    let body = json!({
-        "command": "broadcastTransactions",
-        "trytes": trytes,
-    });
+use crate::response::ErrorResponseBuilder;
+use crate::util::tx_trytes;
+use crate::Client;
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
+/// Builder to construct storeTransactions API
+#[derive(Debug)]
+pub struct BroadcastTransactionsBuilder<'a> {
+    client: &'a Client<'a>,
+    trytes: Vec<String>,
 }
 
-/// This is a typed representation of the JSON response
-#[derive(Clone, Default, Serialize, Deserialize, Debug)]
-pub struct BroadcastTransactionsResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// Any exception that occurred
-    exception: Option<String>,
-}
-
-impl BroadcastTransactionsResponse {
-    /// Returns any potential errors
-    pub fn error(&self) -> &Option<String> {
-        &self.error
+impl<'a> BroadcastTransactionsBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            trytes: Default::default(),
+        }
     }
-    /// Returns any potential exceptions
-    pub fn exception(&self) -> &Option<String> {
-        &self.exception
+
+    /// Add transaction trytes
+    pub fn trytes(mut self, trytes: &[Transaction]) -> Self {
+        self.trytes = trytes.iter().map(|tx| tx_trytes(tx)).collect();
+        self
+    }
+
+    /// Send storeTransactions request
+    pub async fn send(self) -> Result<()> {
+        let client = self.client;
+        let body = json!({
+            "command": "broadcastTransactions",
+            "trytes": self.trytes,
+        });
+
+        let res: ErrorResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

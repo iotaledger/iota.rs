@@ -1,33 +1,27 @@
-//! The Core API is a basic API set that communicate with the IRI node.
+//! Core APIs types and builders
 
-pub(crate) mod add_neighbors;
-pub(crate) mod attach_to_tangle;
-pub(crate) mod broadcast_transactions;
-pub(crate) mod check_consistency;
-pub(crate) mod find_transactions;
-pub(crate) mod get_balances;
-pub(crate) mod get_inclusion_states;
-pub(crate) mod get_neighbors;
-pub(crate) mod get_node_info;
-pub(crate) mod get_tips;
-pub(crate) mod get_transactions_to_approve;
-pub(crate) mod get_trytes;
-pub(crate) mod interrupt_attaching_to_tangle;
-pub(crate) mod remove_neighbors;
-pub(crate) mod store_transactions;
-pub(crate) mod were_addresses_spent_from;
+mod add_neighbors;
+mod attach_to_tangle;
+mod broadcast_transactions;
+mod check_consistency;
+mod find_transactions;
+mod get_balances;
+mod get_inclusion_states;
+mod get_transactions_to_approve;
+mod get_trytes;
+mod remove_neighbors;
+mod store_transactions;
+mod were_addresses_spent_from;
 
-pub(crate) use add_neighbors::AddNeighborsResponse;
-pub(crate) use attach_to_tangle::AttachToTangleResponse;
-pub(crate) use broadcast_transactions::BroadcastTransactionsResponse;
-pub(crate) use find_transactions::FindTransactionsResponse;
-pub(crate) use get_balances::GetBalancesResponse;
-pub(crate) use get_inclusion_states::GetInclusionStatesResponse;
-pub(crate) use get_neighbors::GetNeighborsResponse;
-pub(crate) use get_node_info::GetNodeInfoResponse;
-pub(crate) use get_tips::GetTipsResponse;
-pub(crate) use get_transactions_to_approve::GetTransactionsToApprove;
-pub(crate) use get_trytes::GetTrytesResponse;
-pub(crate) use remove_neighbors::RemoveNeighborsResponse;
-pub(crate) use store_transactions::StoreTransactionsResponse;
-pub(crate) use were_addresses_spent_from::WereAddressesSpentFromResponse;
+pub use add_neighbors::AddNeighborsBuilder;
+pub use attach_to_tangle::AttachToTangleBuilder;
+pub use broadcast_transactions::BroadcastTransactionsBuilder;
+pub use check_consistency::CheckConsistencyBuilder;
+pub use find_transactions::FindTransactionsBuilder;
+pub use get_balances::GetBalancesBuilder;
+pub use get_inclusion_states::GetInclusionStatesBuilder;
+pub use get_transactions_to_approve::GetTransactionsToApproveBuilder;
+pub use get_trytes::GetTrytesBuilder;
+pub use remove_neighbors::RemoveNeighborsBuilder;
+pub use store_transactions::StoreTransactionsBuilder;
+pub use were_addresses_spent_from::WereAddressesSpentFromBuilder;

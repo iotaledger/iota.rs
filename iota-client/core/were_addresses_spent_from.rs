@@ -1,47 +1,43 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use bee_bundle::{Address, TransactionField};
+use iota_conversion::Trinary;
 
-/// Check if a list of addresses was ever spent from.
-pub(crate) async fn were_addresses_spent_from(
-    client: &Client,
-    uri: &str,
-    addresses: &[String],
-) -> Result<WereAddressesSpentFromResponse, Error> {
-    let body = json!({
-        "command": "wereAddressesSpentFrom",
-        "addresses": addresses,
-    });
+use crate::response::{WereAddressesSpentFromResponse, WereAddressesSpentFromResponseBuilder};
+use crate::Client;
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
+/// Builder to construct WereAddressesSpentFrom API
+#[derive(Debug)]
+pub struct WereAddressesSpentFromBuilder<'a> {
+    client: &'a Client<'a>,
+    addresses: Vec<String>,
 }
 
-/// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Default, Deserialize, Debug)]
-pub struct WereAddressesSpentFromResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// States of addresses if found
-    states: Option<Vec<bool>>,
-}
+impl<'a> WereAddressesSpentFromBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            addresses: Default::default(),
+        }
+    }
 
-impl WereAddressesSpentFromResponse {
-    /// Returns the error attribute
-    pub fn error(&self) -> &Option<String> {
-        &self.error
+    /// Add addresses (without checksum) to check
+    pub fn address(mut self, addresses: &[Address]) -> Self {
+        self.addresses = addresses
+            .iter()
+            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+            .collect();
+        self
     }
-    /// Returns the states attribute
-    pub fn states(self) -> Option<Vec<bool>> {
-        self.states
-    }
-    /// Returns a specfic index into the states attribute
-    pub fn state(self, index: usize) -> bool {
-        self.states.unwrap_or_default()[index]
+
+    /// Send WereAddressesSpentFrom request
+    pub async fn send(self) -> Result<WereAddressesSpentFromResponse> {
+        let client = self.client;
+        let body = json!({
+            "command": "wereAddressesSpentFrom",
+            "addresses": self.addresses,
+        });
+
+        let res: WereAddressesSpentFromResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

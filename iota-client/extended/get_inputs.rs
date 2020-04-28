@@ -1,96 +1,110 @@
-use crate::client::Client;
-use crate::extended::get_new_address::new_address;
-use crate::options::{GetBalancesOptions, GetNewAddressOptions};
-use crate::Result;
-use iota_model::{Input, Inputs};
+use anyhow::Result;
+use bee_crypto::Kerl;
+use bee_signing::IotaSeed;
 
-/// GetInputsOptions
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct GetInputsOptions {
-    /// The start index for addresses to search
-    pub start: Option<usize>,
-    /// The end index for addresses to search
-    pub end: Option<usize>,
-    /// The amount of Iota you're trying to find in the wallet
-    pub threshold: Option<i64>,
-    /// The security to use for address generation
-    pub security: Option<usize>,
+use crate::response::Input;
+use crate::Client;
+
+/// Builder to construct GetInputs API
+//#[derive(Debug)]
+pub struct GetInputsBuilder<'a> {
+    client: &'a Client<'a>,
+    seed: Option<&'a IotaSeed<Kerl>>,
+    index: u64,
+    security: u8,
+    threshold: u64,
 }
 
-impl<'a> Client<'a> {
-    /// Given a seed, iterates through addresses looking for
-    /// enough funds to meet specified threshold
-    ///
-    /// * `seed` - The wallet seed to use
-    /// * `options` - See `GetInputsOptions`
-    pub fn get_inputs(&mut self, seed: &str, options: GetInputsOptions) -> Result<Inputs> {
-        ensure!(iota_validation::is_trytes(&seed), "Invalid seed.");
-        let start = options.start.unwrap_or(0);
-        let security = options.security.unwrap_or(2);
-
-        if let Some(end) = options.end {
-            ensure!(
-                start <= end && end <= start + 500,
-                "Invalid inputs provided."
-            );
-            let mut all_addresses: Vec<String> = vec![];
-            for i in start..end {
-                all_addresses.push((new_address(&seed, security, i, false))?);
-            }
-            self.get_balance_and_format(&all_addresses, start, options.threshold, security)
-        } else {
-            let new_address = self.get_new_address(
-                seed,
-                false,
-                true,
-                GetNewAddressOptions {
-                    security: Some(security),
-                    index: Some(start),
-                    total: None,
-                },
-            )?;
-            self.get_balance_and_format(&new_address, start, options.threshold, security)
+impl<'a> GetInputsBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            seed: None,
+            index: 0,
+            security: 2,
+            threshold: 0,
         }
     }
 
-    fn get_balance_and_format(
-        &mut self,
-        addresses: &[String],
-        start: usize,
-        threshold: Option<i64>,
-        security: usize,
-    ) -> Result<Inputs> {
-        let resp = self.get_balances(GetBalancesOptions {
-            addresses: addresses.to_owned(),
-            ..GetBalancesOptions::default()
-        })?;
-        let mut inputs = Inputs::default();
+    /// Add iota seed
+    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
+        self.seed = Some(seed);
+        self
+    }
 
-        let mut threshold_reached = threshold.is_none();
+    /// Set key index to start search at
+    pub fn index(mut self, index: u64) -> Self {
+        self.index = index;
+        self
+    }
 
-        let balances = resp.take_balances().unwrap_or_default();
-        for (i, address) in addresses.iter().enumerate() {
-            let balance: i64 = balances[i].clone().parse()?;
-            if balance > 0 {
-                let new_entry = Input {
-                    address: address.clone(),
-                    balance,
-                    key_index: start + i,
-                    security,
-                };
-                inputs.add(new_entry);
-                *inputs.total_balance_mut() += balance;
-                if let Some(threshold) = threshold {
-                    if inputs.total_balance() >= threshold {
-                        threshold_reached = true;
-                    }
-                }
+    /// Set security level
+    pub fn security(mut self, security: u8) -> Self {
+        self.security = security;
+        self
+    }
+
+    /// Set minimum amount of balance required
+    pub fn threshold(mut self, threshold: u64) -> Self {
+        self.threshold = threshold;
+        self
+    }
+
+    /// Send GetInputs request
+    pub async fn generate(self) -> Result<(u64, Vec<Input>)> {
+        let seed = match self.seed {
+            Some(s) => s,
+            None => return Err(anyhow!("Seed is not provided")),
+        };
+
+        if self.threshold == 0 {
+            return Ok((0, Vec::default()));
+        }
+
+        let mut index = self.index;
+        let mut total = 0;
+        let mut inputs = Vec::new();
+        let mut zero_balance_warning = 5;
+
+        while zero_balance_warning != 0 {
+            let (next_index, address) = self
+                .client
+                .get_new_address()
+                .seed(seed)
+                .index(index)
+                .security(self.security)
+                .generate()
+                .await?;
+
+            let balance = self
+                .client
+                .get_balances()
+                .addresses(&[address.clone()])
+                .send()
+                .await?
+                .balances[0];
+
+            // If the next couple of addresses don't have any balance, we determine it fails to prevent from infinite searching.
+            if balance == 0 {
+                zero_balance_warning -= 1;
+            } else {
+                zero_balance_warning = 5;
+            }
+
+            total += balance;
+            index = next_index;
+            inputs.push(Input {
+                address,
+                balance,
+                index,
+            });
+            index += 1;
+
+            if total >= self.threshold {
+                return Ok((total, inputs));
             }
         }
-        if threshold_reached {
-            Ok(inputs)
-        } else {
-            Err(format_err!("Not enough balance."))
-        }
+
+        Err(anyhow!("Cannot find enough inputs to satisify threshold"))
     }
 }

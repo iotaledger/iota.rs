@@ -1,50 +1,43 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use bee_bundle::Hash;
+use iota_conversion::Trinary;
 
-/// Returns the raw transaction data (trytes) of a specific
-/// transaction. These trytes can then be easily converted
-/// into the actual transaction object. See utility functions
-/// for more details.
-pub(crate) async fn get_trytes(
-    client: &Client,
-    uri: &str,
-    hashes: &[String],
-) -> Result<GetTrytesResponse, Error> {
-    let body = json!({
-        "command": "getTrytes",
-        "hashes": hashes,
-    });
+use crate::response::{GetTrytesResponse, GetTrytesResponseBuilder};
+use crate::Client;
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
+/// Builder to construct getTrytes API
+#[derive(Debug)]
+pub struct GetTrytesBuilder<'a> {
+    client: &'a Client<'a>,
+    hashes: Vec<String>,
 }
 
-/// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Default, Deserialize, Debug)]
-pub struct GetTrytesResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// Trytes if found
-    trytes: Option<Vec<String>>,
-}
+impl<'a> GetTrytesBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            hashes: Default::default(),
+        }
+    }
 
-impl GetTrytesResponse {
-    /// Returns the error attribute
-    pub fn error(&self) -> &Option<String> {
-        &self.error
+    /// Add transaction hashes
+    pub fn hashes(mut self, hashes: &[Hash]) -> Self {
+        self.hashes = hashes
+            .iter()
+            .map(|h| h.as_bytes().trytes().unwrap())
+            .collect();
+        self
     }
-    /// Returns the trytes attribute
-    pub fn trytes(&self) -> &Option<Vec<String>> {
-        &self.trytes
-    }
-    /// Takes ownership the trytes attribute
-    pub fn take_trytes(self) -> Option<Vec<String>> {
-        self.trytes
+
+    /// Send getTrytes request
+    pub async fn send(self) -> Result<GetTrytesResponse> {
+        let client = self.client;
+        let body = json!({
+            "command": "getTrytes",
+            "hashes": self.hashes,
+        });
+
+        let res: GetTrytesResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

@@ -1,85 +1,124 @@
-use iota_model::{Inputs, Transaction, Transfer};
+use anyhow::Result;
+use bee_bundle::{Address, Hash, Transaction};
+use bee_crypto::Kerl;
+use bee_signing::IotaSeed;
 
-use crate::client::Client;
-use crate::options::{PrepareTransfersOptions, SendTrytesOptions};
-use crate::Result;
+use crate::response::{Input, Transfer};
+use crate::Client;
 
-/// SendTransferOptions
-#[derive(Clone, Debug, PartialEq)]
-pub struct SendTransferOptions<'a, 'b, 'c> {
-    /// The depth for getting transactions to approve
-    pub depth: usize,
-    /// The minimum weight magnitude for doing proof of work
-    pub min_weight_magnitude: usize,
-    /// Perform PoW locally
-    pub local_pow: bool,
-    /// Optionally specify the number of threads to use for PoW. This is ignored if `local_pow` is false.
-    pub threads: usize,
-    /// Optionally specify which inputs to use when trying to find funds for transfers
-    pub inputs: Option<Inputs>,
-    /// Optionally specify where to start searching for transactions to approve
-    pub reference: Option<&'a str>,
-    /// Optionally specify where to send remaining funds after spending from addresses, automatically generated if not specified
-    pub remainder_address: Option<&'b str>,
-    /// Optioanlly specify the security to use for address generation (1-3). Default is 2
-    pub security: usize,
-    /// Optionally specify an HMAC key to use for this transaction
-    pub hmac_key: Option<&'c str>,
+/// Builder to construct SendTransfers API
+//#[derive(Debug)]
+pub struct SendTransfersBuilder<'a> {
+    client: &'a Client<'a>,
+    seed: Option<&'a IotaSeed<Kerl>>,
+    transfers: Vec<Transfer>,
+    security: u8,
+    inputs: Option<Vec<Input>>,
+    remainder: Option<Address>,
+    depth: u8,
+    min_weight_magnitude: u8,
+    reference: Option<Hash>,
 }
 
-impl<'a, 'b, 'c> Default for SendTransferOptions<'a, 'b, 'c> {
-    fn default() -> Self {
-        SendTransferOptions {
+impl<'a> SendTransfersBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            seed: None,
+            transfers: Default::default(),
+            security: 2,
+            inputs: None,
+            remainder: None,
             depth: 3,
             min_weight_magnitude: 14,
-            local_pow: true,
-            threads: num_cpus::get(),
-            inputs: None,
-            reference: None,
-            remainder_address: None,
-            security: 3,
-            hmac_key: None,
+            reference: Default::default(),
         }
     }
-}
 
-impl<'a> Client<'a> {
-    /// Prepares and sends a slice of transfers
-    /// This helper does everything for you, PoW and such
-    ///
-    /// * `transfers` - A slice of transfers to send
-    /// * `seed` - The wallet seed to use
-    /// * `depth` - The depth to search when looking for transactions to approve
-    /// * `min_weight_magnitude` - The PoW difficulty factor (14 on mainnet, 9 on testnet)
-    /// * `local_pow` - Whether or not to do local PoW
-    /// * `options` - See `SendTransferOptions`
-    pub fn send_transfers(
-        &mut self,
-        transfers: impl Into<Vec<Transfer>>,
-        seed: &str,
-        options: SendTransferOptions<'_, '_, '_>,
-    ) -> Result<Vec<Transaction>> {
-        let transfers = transfers.into();
-        let trytes = self.prepare_transfers(
-            seed,
-            transfers,
-            PrepareTransfersOptions {
-                inputs: options.inputs,
-                remainder_address: options.remainder_address,
-                security: options.security,
-                hmac_key: options.hmac_key,
-            },
-        )?;
-        let t = self.send_trytes(
-            &trytes,
-            SendTrytesOptions {
-                depth: options.depth,
-                min_weight_magnitude: options.min_weight_magnitude,
-                local_pow: options.local_pow,
-                threads: options.threads,
-                reference: options.reference,
-            },
-        )?;
-        Ok(t)
+    /// Add iota seed
+    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
+        self.seed = Some(seed);
+        self
+    }
+
+    /// Add transfers
+    pub fn transfers(mut self, transfers: Vec<Transfer>) -> Self {
+        self.transfers = transfers;
+        self
+    }
+
+    /// Set security level
+    pub fn security(mut self, security: u8) -> Self {
+        self.security = security;
+        self
+    }
+
+    /// Add custom inputs. It is always better to provide inputs yourself
+    /// since it will have to seaching valid inputs from the beginning.
+    pub fn inputs(mut self, inputs: Vec<Input>) -> Self {
+        self.inputs = Some(inputs);
+        self
+    }
+
+    /// Add custom remainder
+    pub fn remainder(mut self, remainder: Address) -> Self {
+        self.remainder = Some(remainder);
+        self
+    }
+
+    /// The depth of the random walk for GTTA
+    pub fn depth(mut self, depth: u8) -> Self {
+        self.depth = depth;
+        self
+    }
+
+    /// Set difficulty of PoW
+    pub fn min_weight_magnitude(mut self, min_weight_magnitude: u8) -> Self {
+        self.min_weight_magnitude = min_weight_magnitude;
+        self
+    }
+
+    /// Add reference hash
+    pub fn reference(mut self, reference: Hash) -> Self {
+        self.reference = Some(reference);
+        self
+    }
+
+    /// Send SendTransfers request
+    pub async fn send(self) -> Result<Vec<Transaction>> {
+        let seed = match self.seed {
+            Some(s) => s,
+            None => return Err(anyhow!("Seed is not provided")),
+        };
+
+        let mut transfer = self
+            .client
+            .prepare_transfers()
+            .seed(seed)
+            .transfers(self.transfers)
+            .security(self.security);
+
+        if let Some(inputs) = self.inputs {
+            transfer = transfer.inputs(inputs);
+        }
+
+        if let Some(remainder) = self.remainder {
+            transfer = transfer.remainder(remainder);
+        }
+
+        let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().map(|x| x).collect();
+        trytes.reverse();
+        let mut send_trytes = self
+            .client
+            .send_trytes()
+            .trytes(trytes)
+            .depth(self.depth)
+            .min_weight_magnitude(self.min_weight_magnitude);
+
+        if let Some(reference) = self.reference {
+            send_trytes = send_trytes.reference(reference);
+        }
+
+        Ok(send_trytes.send().await?)
     }
 }

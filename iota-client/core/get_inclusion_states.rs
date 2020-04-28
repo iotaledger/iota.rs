@@ -1,60 +1,59 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use bee_bundle::Hash;
+use iota_conversion::Trinary;
 
-/// Struct used to provide named arguments for `get_inclusion_states`
-#[derive(Clone, Debug, Default)]
-pub struct GetInclusionStatesOptions {
-    /// Transactions to search for
-    pub transactions: Vec<String>,
-    /// Tips to search
-    pub tips: Vec<String>,
+use crate::response::{GetInclusionStatesResponse, GetInclusionStatesResponseBuilder};
+use crate::Client;
+
+/// Builder to construct getInclusionStates API
+#[derive(Debug)]
+pub struct GetInclusionStatesBuilder<'a> {
+    client: &'a Client<'a>,
+    transactions: Vec<String>,
+    tips: Option<Vec<String>>,
 }
 
-/// Get the inclusion states of a set of transactions. This is
-/// for determining if a transaction was accepted and confirmed
-/// by the network or not. You can search for multiple tips (and
-/// thus, milestones) to get past inclusion states of transactions.
-///
-/// This API call simply returns a list of boolean values in the
-/// same order as the transaction list you submitted, thus you get
-/// a true/false whether a transaction is confirmed or not.
-pub(crate) async fn get_inclusion_states(
-    client: &Client,
-    uri: &str,
-    options: GetInclusionStatesOptions,
-) -> Result<GetInclusionStatesResponse, Error> {
-    let body = json!({
-        "command": "getInclusionStates",
-        "transactions": options.transactions,
-        "tips": options.tips,
-    });
-
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct GetInclusionStatesResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// States if found
-    states: Option<Vec<bool>>,
-}
-
-impl GetInclusionStatesResponse {
-    /// Returns any potential errors
-    pub fn error(&self) -> &Option<String> {
-        &self.error
+impl<'a> GetInclusionStatesBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            transactions: Default::default(),
+            tips: Default::default(),
+        }
     }
-    /// Returns the states attribute
-    pub fn states(&self) -> &Option<Vec<bool>> {
-        &self.states
+
+    /// Add list of transaction hashes for which you want to get the inclusion state
+    pub fn transactions(mut self, transactions: &[Hash]) -> Self {
+        self.transactions = transactions
+            .iter()
+            .map(|h| h.as_bytes().trytes().unwrap())
+            .collect();
+        self
+    }
+
+    /// Add list of tip transaction hashes (including milestones) you want to search for
+    pub fn tips(mut self, tips: &[Hash]) -> Self {
+        self.tips = Some(
+            tips.iter()
+                .map(|h| h.as_bytes().trytes().unwrap())
+                .collect(),
+        );
+        self
+    }
+
+    /// Send getInclusionStates request
+    pub async fn send(self) -> Result<GetInclusionStatesResponse> {
+        let client = self.client;
+        let mut body = json!({
+            "command": "getInclusionStates",
+            "transactions": self.transactions,
+        });
+
+        if let Some(reference) = self.tips {
+            body["tips"] = json!(reference);
+        }
+
+        let res: GetInclusionStatesResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

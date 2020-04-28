@@ -1,57 +1,46 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use reqwest::Url;
 
-/// Removes a list of neighbors to your node.
-/// This is only temporary, and if you have your neighbors
-/// added via the command line, they will be retained after
-/// you restart your node.
-pub(crate) async fn remove_neighbors(
-    client: &Client,
-    uri: &str,
-    uris: &[String],
-) -> Result<RemoveNeighborsResponse, Error> {
-    let body = json!({
-        "command": "removeNeighbors",
-        "uris": uris,
-    });
+use crate::response::RemoveNeighborsResponse;
+use crate::Client;
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
+/// Builder to construct removeNeighbors API
+#[derive(Debug)]
+pub struct RemoveNeighborsBuilder<'a> {
+    client: &'a Client<'a>,
+    uris: &'a [&'a str],
 }
 
-/// This is a typed representation of the JSON response
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct RemoveNeighborsResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// Any exceptions that occurred
-    exception: Option<String>,
-    /// Amount of neighbors removed
-    #[serde(rename = "removedNeighbors")]
-    removed_neighbors: Option<usize>,
-}
+impl<'a> RemoveNeighborsBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            uris: Default::default(),
+        }
+    }
 
-impl RemoveNeighborsResponse {
-    /// Returns the error attribute
-    pub fn error(&self) -> &Option<String> {
-        &self.error
+    /// Slice of neighbor URIs(`&str`) to remove
+    pub fn uris(mut self, uris: &'a [&str]) -> Result<Self> {
+        for uri in uris {
+            match Url::parse(uri)?.scheme() {
+                "tcp" | "udp" => (),
+                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+            }
+        }
+
+        self.uris = uris;
+
+        Ok(self)
     }
-    /// Returns the exception attribute
-    pub fn exception(&self) -> &Option<String> {
-        &self.exception
-    }
-    /// Returns a reference to the amount of removed neighbors
-    pub fn removed_neighbors(&self) -> &Option<usize> {
-        &self.removed_neighbors
-    }
-    /// Consumes the response and returns the amount of removed neighbors if any
-    pub fn take_removed_neighbors(self) -> Option<usize> {
-        self.removed_neighbors
+
+    /// Send removeNeighbors request
+    pub async fn send(self) -> Result<RemoveNeighborsResponse> {
+        let client = self.client;
+        let body = json!({
+            "command": "removeNeighbors",
+            "uris": self.uris,
+        });
+
+        Ok(response!(client, body))
     }
 }

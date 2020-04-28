@@ -1,49 +1,46 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use reqwest::Url;
 
-/// Add a list of neighbors to your node. It should be noted that
-/// this is only temporary, and the added neighbors will be removed
-/// from your set of neighbors after you relaunch IRI.
-pub(crate) async fn add_neighbors(
-    client: &Client,
-    uri: &str,
-    uris: &[String],
-) -> Result<AddNeighborsResponse, Error> {
-    let body = json!({
-        "command": "addNeighbors",
-        "uris": uris,
-    });
+use crate::response::AddNeighborsResponse;
+use crate::Client;
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json::<AddNeighborsResponse>()
-        .await
+/// Builder to construct removeNeighbors API
+#[derive(Debug)]
+pub struct AddNeighborsBuilder<'a> {
+    client: &'a Client<'a>,
+    uris: &'a [&'a str],
 }
 
-/// This is a typed representation of the JSON response
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct AddNeighborsResponse {
-    #[serde(rename = "addedNeighbors")]
-    added_neighbors: Option<usize>,
-    error: Option<String>,
-    exception: Option<String>,
-}
+impl<'a> AddNeighborsBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            uris: Default::default(),
+        }
+    }
 
-impl AddNeighborsResponse {
-    /// Returns the added neighbors
-    pub fn added_neighbors(&self) -> &Option<usize> {
-        &self.added_neighbors
+    /// Slice of neighbor URIs(`&str`) to add
+    pub fn uris(mut self, uris: &'a [&str]) -> Result<Self> {
+        for uri in uris {
+            match Url::parse(uri)?.scheme() {
+                "tcp" | "udp" => (),
+                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+            }
+        }
+
+        self.uris = uris;
+
+        Ok(self)
     }
-    /// Returns the error attribute
-    pub fn error(&self) -> &Option<String> {
-        &self.error
-    }
-    /// Returns the exception attribute
-    pub fn exception(&self) -> &Option<String> {
-        &self.exception
+
+    /// Send removeNeighbors request
+    pub async fn send(self) -> Result<AddNeighborsResponse> {
+        let client = self.client;
+        let body = json!({
+            "command": "addNeighbors",
+            "uris": self.uris,
+        });
+
+        Ok(response!(client, body))
     }
 }

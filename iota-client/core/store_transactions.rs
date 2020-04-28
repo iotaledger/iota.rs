@@ -1,45 +1,40 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use bee_bundle::Transaction;
 
-/// Store transactions into the local storage.
-/// The trytes to be used for this call are
-/// returned by attachToTangle.
-pub(crate) async fn store_transactions(
-    client: &Client,
-    uri: &str,
-    trytes: &[String],
-) -> Result<StoreTransactionsResponse, Error> {
-    let body = json!({
-        "command": "storeTransactions",
-        "trytes": trytes,
-    });
+use crate::response::ErrorResponseBuilder;
+use crate::util::tx_trytes;
+use crate::Client;
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
+/// Builder to construct storeTransactions API
+#[derive(Debug)]
+pub struct StoreTransactionsBuilder<'a> {
+    client: &'a Client<'a>,
+    trytes: Vec<String>,
 }
 
-/// This is a typed representation of the JSON response
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct StoreTransactionsResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// Any exceptions that occurred
-    exception: Option<String>,
-}
-
-impl StoreTransactionsResponse {
-    /// Returns the error attribute
-    fn error(&self) -> &Option<String> {
-        &self.error
+impl<'a> StoreTransactionsBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            trytes: Default::default(),
+        }
     }
-    /// Returns the exception attribute
-    fn exception(&self) -> &Option<String> {
-        &self.exception
+
+    /// Add transaction trytes
+    pub fn trytes(mut self, trytes: &[Transaction]) -> Self {
+        self.trytes = trytes.iter().map(|tx| tx_trytes(tx)).collect();
+        self
+    }
+
+    /// Send storeTransactions request
+    pub async fn send(self) -> Result<()> {
+        let client = self.client;
+        let body = json!({
+            "command": "storeTransactions",
+            "trytes": self.trytes,
+        });
+
+        let res: ErrorResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

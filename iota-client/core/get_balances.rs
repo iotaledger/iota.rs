@@ -1,97 +1,68 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use bee_bundle::{Address, Hash, TransactionField};
+use iota_conversion::Trinary;
 
-/// Struct used to provide named arguments for `get_balances`
-#[derive(Clone, Debug)]
-pub struct GetBalancesOptions {
-    /// Address to check
-    pub addresses: Vec<String>,
-    /// Stop searching after we've found this much Iota
-    pub threshold: i32,
-    /// Tips to search
-    pub tips: Vec<String>,
+use crate::response::{GetBalancesResponse, GetBalancesResponseBuilder};
+use crate::Client;
+
+/// Builder to construct getBalances API
+#[derive(Debug)]
+pub struct GetBalancesBuilder<'a> {
+    client: &'a Client<'a>,
+    addresses: Vec<String>,
+    threshold: u8,
+    tips: Option<Vec<String>>,
 }
 
-/// Provides sane defaults for the fields
-/// * `addresses` - Empty vector
-/// * `threshold` - 100
-/// * `tips` - Empty vector
-impl Default for GetBalancesOptions {
-    fn default() -> Self {
-        GetBalancesOptions {
-            addresses: vec![],
+impl<'a> GetBalancesBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            addresses: Default::default(),
             threshold: 100,
-            tips: vec![],
+            tips: Default::default(),
         }
     }
-}
 
-/// Returns the balance based on the latest confirmed milestone.
-/// In addition to the balances, it also returns the referencing tips (or milestone),
-/// as well as the index with which the confirmed balance was
-/// determined. The balances is returned as a list in the same
-/// order as the addresses were provided as input.
-pub(crate) async fn get_balances(
-    client: &Client,
-    uri: &str,
-    options: GetBalancesOptions,
-) -> Result<GetBalancesResponse, Error> {
-    let mut body = json!({
-        "command": "getBalances",
-        "addresses": options.addresses,
-        "threshold": options.threshold,
-    });
-
-    if !options.tips.is_empty() {
-        body["tips"] = json!(options.tips);
+    /// Add address for which to get the balance (do not include the checksum)
+    pub fn addresses(mut self, addresses: &[Address]) -> Self {
+        self.addresses = addresses
+            .iter()
+            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+            .collect();
+        self
     }
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
-}
-/// This is a typed representation of the JSON response
-#[derive(Clone, Default, Serialize, Deserialize, Debug)]
-pub struct GetBalancesResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// Balances if found
-    balances: Option<Vec<String>>,
-    /// Milestone index if found
-    #[serde(rename = "milestoneIndex")]
-    milestone_index: Option<i64>,
-    /// References if found
-    references: Option<Vec<String>>,
-}
+    /// Set confirmation threshold between 0 and 100
+    pub fn threshold(mut self, threshold: u8) -> Self {
+        self.threshold = threshold;
+        self
+    }
 
-impl GetBalancesResponse {
-    /// Returns any potential errors
-    pub fn error(&self) -> &Option<String> {
-        &self.error
+    /// Add tips whose history of transactions to traverse to find the balance
+    pub fn tips(mut self, tips: &[Hash]) -> Self {
+        self.tips = Some(
+            tips.iter()
+                .map(|h| h.as_bytes().trytes().unwrap())
+                .collect(),
+        );
+        self
     }
-    /// Returns the balances attribute
-    pub fn balances(&self) -> &Option<Vec<String>> {
-        &self.balances
-    }
-    /// Takes ownership of the balances attribute
-    pub fn take_balances(self) -> Option<Vec<String>> {
-        self.balances
-    }
-    /// Returns the milestone_index attribute
-    pub fn milestone_index(&self) -> Option<i64> {
-        self.milestone_index
-    }
-    /// Returns the references attribute
-    pub fn references(&self) -> &Option<Vec<String>> {
-        &self.references
-    }
-    /// Takes ownership of the references attribute
-    pub fn take_references(self) -> Option<Vec<String>> {
-        self.references
+
+    /// Send getBalances request
+    pub async fn send(self) -> Result<GetBalancesResponse> {
+        let client = self.client;
+        let mut body = json!({
+            "command": "getBalances",
+            "addresses": self.addresses,
+            "threshold": self.threshold,
+        });
+
+        if let Some(reference) = self.tips {
+            body["tips"] = json!(reference);
+        }
+
+        let res: GetBalancesResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

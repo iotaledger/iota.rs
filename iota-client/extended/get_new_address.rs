@@ -1,131 +1,84 @@
-use crate::client::Client;
-use crate::options::FindTransactionsOptions;
-use crate::Result;
-use iota_conversion::Trinary;
+use anyhow::Result;
+use bee_bundle::{Address, TransactionField};
+use bee_crypto::Kerl;
+use bee_signing::{
+    IotaSeed, PrivateKey, PrivateKeyGenerator, PublicKey, WotsPrivateKeyGeneratorBuilder,
+    WotsSecurityLevel,
+};
 
-/// GetNewAddressOptions
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct GetNewAddressOptions {
-    /// Security factor 1-3 with 3 being most secure
-    pub security: Option<usize>,
-    /// How many iterations of generating to skip
-    pub index: Option<usize>,
-    /// Number of addresses to generate. If total isn't provided, we generate until we find an unused address
-    pub total: Option<usize>,
+use crate::Client;
+
+/// Builder to construct GetNewAddress API
+//#[derive(Debug)]
+pub struct GetNewAddressBuilder<'a> {
+    client: &'a Client<'a>,
+    seed: Option<&'a IotaSeed<Kerl>>,
+    index: u64,
+    security: WotsSecurityLevel,
 }
 
-impl<'a> Client<'a> {
-    /// Generates a new address
-    ///
-    /// * `seed` - Seed used to generate new address
-    /// * `checksum` - Whether or not to checksum address
-    /// * `return_all` - Whether to return all generated addresses, or just the last one
-    /// * `options` - See `GetNewAddressOptions`
-    pub fn get_new_address(
-        &mut self,
-        seed: &str,
-        checksum: bool,
-        return_all: bool,
-        options: GetNewAddressOptions,
-    ) -> Result<Vec<String>> {
-        let mut index = options.index.unwrap_or_default();
-        let security = options.security.unwrap_or(2);
-        ensure!(iota_validation::is_trytes(&seed), "Invalid seed.");
-        ensure!(security > 0 && security < 4, "Invalid security.");
-
-        let mut all_addresses: Vec<String> = Vec::new();
-
-        match options.total {
-            Some(total) => {
-                ensure!(total > 0, "Invalid total.");
-                for i in index..total {
-                    let address = new_address(&seed, security, i, checksum)?;
-                    all_addresses.push(address);
-                }
-                Ok(all_addresses)
-            }
-            None => loop {
-                let new_address = new_address(&seed, security, index, checksum)?;
-                if return_all {
-                    all_addresses.push(new_address.clone());
-                }
-                index += 1;
-                let new_address_vec = vec![new_address];
-                let were_addr_spent = self.were_addresses_spent_from(&new_address_vec)?;
-                if !were_addr_spent.state(0) {
-                    let resp = self.find_transactions(FindTransactionsOptions {
-                        addresses: new_address_vec.clone(),
-                        ..FindTransactionsOptions::default()
-                    })?;
-                    if resp.take_hashes().unwrap_or_default().is_empty() {
-                        if return_all {
-                            return Ok(all_addresses);
-                        } else {
-                            return Ok(new_address_vec);
-                        }
-                    }
-                }
-            },
+impl<'a> GetNewAddressBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            seed: None,
+            index: 0,
+            security: WotsSecurityLevel::Medium,
         }
     }
-}
 
-/// Generate new address from given seed
-///
-/// * `seed` - Seed used to generate new address
-/// * `security` - Security factor 1-3 with 3 being most secure
-/// * `index` - How many iterations of generating to skip
-/// * `checksum` - Whether or not to checksum address
-pub fn new_address(seed: &str, security: usize, index: usize, checksum: bool) -> Result<String> {
-    let key = iota_signing::key(&seed.trits(), index, security)?;
-    let digests = iota_signing::digests(&key)?;
-    let address_trits = iota_signing::address(&digests)?;
-    let mut address = address_trits.trytes()?;
-    if checksum {
-        address = iota_signing::checksum::add_checksum(&address)?;
+    /// Add iota seed
+    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
+        self.seed = Some(seed);
+        self
     }
-    Ok(address)
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    /// Set key index to start search at
+    pub fn index(mut self, index: u64) -> Self {
+        self.index = index;
+        self
+    }
 
-    const TEST_SEED: &str =
-        "IHDEENZYITYVYSPKAURUZAQKGVJEREFDJMYTANNXXGPZ9GJWTEOJJ9IPMXOGZNQLSNMFDSQOTZAEETUEA";
-    const ADDR_SEED: &str =
-        "LIESNFZLPFNWAPWXBLKEABZEEWUDCXKTRKZIRTPCKLKWOMJSEREWKMMMODUOFWM9ELEVXADTSQWMSNFVD";
+    /// Set security level
+    pub fn security(mut self, security: u8) -> Self {
+        self.security = match security {
+            1 => WotsSecurityLevel::Low,
+            2 => WotsSecurityLevel::Medium,
+            3 => WotsSecurityLevel::High,
+            _ => panic!("Invalid security level"),
+        };
+        self
+    }
 
-    #[test]
-    fn test_address_generation() {
-        assert_eq!(new_address(&TEST_SEED, 2, 0, true).unwrap(), "LXQHWNY9CQOHPNMKFJFIJHGEPAENAOVFRDIBF99PPHDTWJDCGHLYETXT9NPUVSNKT9XDTDYNJKJCPQMZCCOZVXMTXC");
-        assert_eq!(new_address(&TEST_SEED, 2, 5, true).unwrap(), "HLHRSJNPUUGRYOVYPSTEQJKETXNXDIWQURLTYDBJADGIYZCFXZTTFSOCECPPPPY9BYWPODZOCWJKXEWXDPUYEOTFQA");
+    /// Send GetNewAddress request
+    pub async fn generate(self) -> Result<(u64, Address)> {
+        let seed = match self.seed {
+            Some(s) => s,
+            None => return Err(anyhow!("Seed is not provided")),
+        };
 
-        assert_eq!(
-            new_address(&ADDR_SEED, 1, 0, false).unwrap(),
-            "HIPPOUPZFMHJUQBLBVWORCNJWAOSFLHDWF9IOFEYVHPTTAAF9NIBMRKBICAPHYCDKMEEOXOYHJBMONJ9D"
-        );
-        assert_eq!(
-            new_address(&ADDR_SEED, 2, 0, false).unwrap(),
-            "BPYZABTUMEIOARZTMCDNUDAPUOFCGKNGJWUGUXUKNNBVKQARCZIXFVBZAAMDAFRS9YOIXWOTEUNSXVOG9"
-        );
-        assert_eq!(
-            new_address(&ADDR_SEED, 3, 0, false).unwrap(),
-            "BYWHJJYSHSEGVZKKYTJTYILLEYBSIDLSPXDLDZSWQ9XTTRLOSCBCQ9TKXJYQAVASYCMUCWXZHJYRGDOBW"
-        );
+        let mut index = self.index;
 
-        let concat = ADDR_SEED.to_string() + &ADDR_SEED;
-        assert_eq!(
-            new_address(&concat, 1, 0, false).unwrap(),
-            "VKPCVHWKSCYQNHULMPYDZTNKOQHZNPEGJVPEHPTDIUYUBFKFICDRLLSIULHCVHOHZRHJOHNASOFRWFWZC"
-        );
-        assert_eq!(
-            new_address(&concat, 2, 0, false).unwrap(),
-            "PTHVACKMXOKIERJOFSRPBWCNKVEXQ9CWUTIJGEUORSKWEDDJCBFQCCBQZLTYXQCXEDWLTMRQM9OQPUGNC"
-        );
-        assert_eq!(
-            new_address(&concat, 3, 0, false).unwrap(),
-            "AGSAAETPMSBCDOSNXFXIOBAE9MVEJCSWVP9PAULQ9VABOTWLDMXID9MXCCWQIWRTJBASWPIJDFUC9ISWD"
-        );
+        loop {
+            // TODO impl Error trait in bee_signing
+            let address = Address::from_inner_unchecked(
+                WotsPrivateKeyGeneratorBuilder::<Kerl>::default()
+                    .security_level(self.security)
+                    .build()
+                    .unwrap()
+                    .generate(seed, index)
+                    .unwrap()
+                    .generate_public_key()
+                    .unwrap()
+                    .trits()
+                    .to_owned(),
+            );
+
+            if let Ok(false) = self.client.is_address_used(&address).await {
+                break Ok((index, address));
+            }
+
+            index += 1;
+        }
     }
 }

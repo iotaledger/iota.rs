@@ -1,72 +1,98 @@
-use reqwest::{Client, Error};
+use anyhow::Result;
+use bee_bundle::{Address, Hash, Tag, TransactionField};
+use iota_conversion::Trinary;
 
-/// Struct used to provide named arguments for `find_transactions`
-#[derive(Clone, Default, Debug)]
-pub struct FindTransactionsOptions {
-    /// Bundles to search for
-    pub bundles: Vec<String>,
-    /// Addresses to search for
-    pub addresses: Vec<String>,
-    /// Tags to search for
-    pub tags: Vec<String>,
-    /// Approvees to search for
-    pub approvees: Vec<String>,
+use crate::response::{FindTransactionsResponse, FindTransactionsResponseBuilder};
+use crate::Client;
+
+/// Builder to construct findTransactions API
+#[derive(Debug)]
+pub struct FindTransactionsBuilder<'a> {
+    client: &'a Client<'a>,
+    bundles: Option<Vec<String>>,
+    addresses: Option<Vec<String>>,
+    tags: Option<Vec<String>>,
+    approvees: Option<Vec<String>>,
 }
 
-/// Finds transactions the match any of the provided parameters
-pub(crate) async fn find_transactions(
-    client: &Client,
-    uri: &str,
-    options: FindTransactionsOptions,
-) -> Result<FindTransactionsResponse, Error> {
-    let mut body = json!({
-        "command": "findTransactions",
-    });
-
-    if !options.bundles.is_empty() {
-        body["bundles"] = json!(options.bundles);
-    }
-    if !options.addresses.is_empty() {
-        body["addresses"] = json!(options.addresses);
-    }
-    if !options.tags.is_empty() {
-        body["tags"] = json!(options.tags);
-    }
-    if !options.approvees.is_empty() {
-        body["approvees"] = json!(options.approvees);
+impl<'a> FindTransactionsBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            bundles: Default::default(),
+            addresses: Default::default(),
+            tags: Default::default(),
+            approvees: Default::default(),
+        }
     }
 
-    client
-        .post(uri)
-        .header("Content-Type", "application/json")
-        .header("X-IOTA-API-Version", "1")
-        .body(body.to_string())
-        .send()
-        .await?
-        .json()
-        .await
-}
-
-/// This is a typed representation of the JSON response
-#[derive(Clone, Default, Serialize, Deserialize, Debug)]
-pub struct FindTransactionsResponse {
-    /// Any errors that occurred
-    error: Option<String>,
-    /// Hashes of matching transactions
-    hashes: Option<Vec<String>>,
-}
-
-impl FindTransactionsResponse {
-    /// Returns any potential errors
-    pub fn error(&self) -> &Option<String> {
-        &self.error
+    /// Add bundle hashes to search for
+    pub fn bundles(mut self, bundles: &[Hash]) -> Self {
+        self.bundles = Some(
+            bundles
+                .iter()
+                .map(|h| h.as_bytes().trytes().unwrap())
+                .collect(),
+        );
+        self
     }
-    /// Returns the hashes attribute
-    pub fn hashes(&self) -> &Option<Vec<String>> {
-        &self.hashes
+
+    /// Add tags to search for
+    pub fn tags(mut self, tags: &[Tag]) -> Self {
+        self.tags = Some(
+            tags.iter()
+                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+                .collect(),
+        );
+        self
     }
-    /// Takes ownership of the hashes attribute
-    pub fn take_hashes(self) -> Option<Vec<String>> {
-        self.hashes
+
+    /// Add child transactions to search for
+    pub fn approvees(mut self, approvees: &[Hash]) -> Self {
+        self.approvees = Some(
+            approvees
+                .iter()
+                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+                .collect(),
+        );
+        self
+    }
+
+    /// Add addresses to search for (do not include the checksum)
+    pub fn addresses(mut self, addresses: &[Address]) -> Self {
+        self.addresses = Some(
+            addresses
+                .iter()
+                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+                .collect(),
+        );
+        self
+    }
+
+    /// Send findTransactions request
+    pub async fn send(self) -> Result<FindTransactionsResponse> {
+        let client = self.client;
+        let mut body = json!({
+            "command": "findTransactions",
+        });
+
+        if let Some(bundles) = self.bundles {
+            body["bundles"] = json!(bundles);
+        }
+
+        if let Some(addresses) = self.addresses {
+            body["addresses"] = json!(addresses);
+        }
+
+        if let Some(tags) = self.tags {
+            body["tags"] = json!(tags);
+        }
+
+        if let Some(approvees) = self.approvees {
+            body["approvees"] = json!(approvees);
+        }
+
+        let res: FindTransactionsResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

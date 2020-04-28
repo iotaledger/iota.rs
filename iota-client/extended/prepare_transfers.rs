@@ -1,382 +1,230 @@
-use chrono::prelude::*;
+use std::cmp::Ordering;
 
-use iota_conversion::Trinary;
-use iota_model::{Bundle, BundleEntry, Inputs, Transfer};
+use anyhow::Result;
+use bee_bundle::{
+    Address, Bundle, Hash, Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp,
+    TransactionBuilder, TransactionField, Value,
+};
+use bee_crypto::Kerl;
+use bee_signing::{IotaSeed, WotsSecurityLevel};
 
-use std::cmp;
-use std::convert::TryInto;
+use crate::response::{Input, Transfer};
+use crate::Client;
 
-use crate::client::Client;
-use crate::options::{GetBalancesOptions, GetInputsOptions, GetNewAddressOptions};
-use crate::Result;
-
-/// PrepareTransfersOptions
-#[derive(Clone, Debug, PartialEq)]
-pub struct PrepareTransfersOptions<'a, 'b> {
-    /// Optional inputs to use if you're sending iota
-    pub inputs: Option<Inputs>,
-    /// Optional remainder address to use, if not provided, one will be generated
-    pub remainder_address: Option<&'a str>,
-    /// Security to use when generating addresses (1-3)
-    pub security: usize,
-    /// Optional key to use if you want to hmac the transfers
-    pub hmac_key: Option<&'b str>,
+/// Builder to construct PrepareTransfers API
+//#[derive(Debug)]
+pub struct PrepareTransfersBuilder<'a> {
+    client: &'a Client<'a>,
+    seed: Option<&'a IotaSeed<Kerl>>,
+    transfers: Vec<Transfer>,
+    security: u8,
+    inputs: Option<Vec<Input>>,
+    remainder: Option<Address>,
 }
 
-impl<'a, 'b> Default for PrepareTransfersOptions<'a, 'b> {
-    fn default() -> Self {
-        PrepareTransfersOptions {
+impl<'a> PrepareTransfersBuilder<'a> {
+    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+        Self {
+            client,
+            seed: None,
+            transfers: Default::default(),
+            security: 2,
             inputs: None,
-            remainder_address: None,
-            security: 3,
-            hmac_key: None,
+            remainder: None,
         }
     }
-}
 
-/// AddRemainderOptions
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) struct AddRemainderOptions<'a, 'b, 'c, 'd> {
-    /// The tryte-encoded seed. It should be noted that this seed is not transferred.
-    pub(crate) seed: &'a str,
-    /// The tag to add to each bundle entry
-    pub(crate) tag: &'b str,
-    /// The address used for sending the remainder value (of the last input)
-    pub(crate) remainder_address: Option<&'c str>,
-    /// The signature fragments (message), used for signing. Should be 2187 characters long, can be padded with 9s.
-    pub(crate) signature_fragments: Vec<String>,
-    /// Check if hmac is added
-    pub(crate) added_hmac: bool,
-    /// Optional key to use if you want to hmac the transfers
-    pub(crate) hmac_key: Option<&'d str>,
-    /// Security to use when generating addresses (1-3)
-    pub(crate) security: usize,
-}
+    /// Add iota seed
+    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
+        self.seed = Some(seed);
+        self
+    }
 
-impl<'a> Client<'a> {
-    /// Prepares a slice of transfers and converts them into a
-    /// slice of tryte-encoded strings
-    ///
-    /// * `seed` - The wallet seed to use
-    /// * `transfers` - A slice of transfers to prepare
-    /// * `options` - See `PrepareTransfersOptions`
-    pub fn prepare_transfers(
-        &mut self,
-        seed: &str,
-        transfers: impl Into<Vec<Transfer>>,
-        options: PrepareTransfersOptions<'_, '_>,
-    ) -> Result<Vec<String>> {
-        let mut transfers = transfers.into();
-        let mut add_hmac = false;
-        let mut added_hmac = false;
+    /// Add transfers
+    pub fn transfers(mut self, transfers: Vec<Transfer>) -> Self {
+        self.transfers = transfers;
+        self
+    }
 
-        ensure!(iota_validation::is_trytes(&seed), "Invalid seed.");
-        if let Some(hmac_key) = &options.hmac_key {
-            ensure!(iota_validation::is_trytes(&hmac_key), "Invalid trytes.");
-            add_hmac = true;
-        }
-        for transfer in &mut transfers {
-            if add_hmac && transfer.value > 0 {
-                transfer.message = "9".repeat(243) + &transfer.message;
-                added_hmac = true;
+    /// Set security level
+    pub fn security(mut self, security: u8) -> Self {
+        self.security = security;
+        self
+    }
+
+    /// Add custom inputs. It is always better to provide inputs yourself
+    /// since it will have to seaching valid inputs from the beginning.
+    pub fn inputs(mut self, inputs: Vec<Input>) -> Self {
+        self.inputs = Some(inputs);
+        self
+    }
+
+    /// Add custom remainder
+    pub fn remainder(mut self, remainder: Address) -> Self {
+        self.remainder = Some(remainder);
+        self
+    }
+
+    /// Send PrepareTransfers request
+    pub async fn build(self) -> Result<Bundle> {
+        let seed = match self.seed {
+            Some(s) => s,
+            None => return Err(anyhow!("Seed is not provided")),
+        };
+
+        let total_output = self.transfers.iter().fold(0, |acc, tx| acc + tx.value);
+        let inputs = match self.inputs {
+            Some(i) => i,
+            None => {
+                self.client
+                    .get_inputs()
+                    .seed(seed)
+                    .index(0)
+                    .security(self.security)
+                    .threshold(total_output)
+                    .generate()
+                    .await?
+                    .1
             }
-            if transfer.address.len() == 90 {
-                ensure!(
-                    iota_signing::checksum::is_valid_checksum(&transfer.address)?,
-                    "Invalid address."
+        };
+        let total_input = inputs.iter().fold(0, |acc, tx| acc + tx.balance);
+
+        let need_remainder = match total_input.cmp(&total_output) {
+            Ordering::Less => return Err(anyhow!("Inputs balance is insufficient.")),
+            Ordering::Greater => true,
+            Ordering::Equal => false,
+        };
+
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let mut bundle = OutgoingBundleBuilder::new();
+        // add transfers
+        for transfer in self.transfers {
+            bundle.push(
+                TransactionBuilder::new()
+                    // TODO add message
+                    .with_payload(Payload::zeros())
+                    .with_address(transfer.address.clone())
+                    .with_value(Value::from_inner_unchecked(transfer.value as i64))
+                    .with_obsolete_tag(Tag::zeros())
+                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_index(Index::from_inner_unchecked(0))
+                    .with_last_index(Index::from_inner_unchecked(0))
+                    // TODO add tag (but probably better to left as is)
+                    .with_tag(Tag::zeros())
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                    .with_bundle(Hash::zeros())
+                    .with_trunk(Hash::zeros())
+                    .with_branch(Hash::zeros())
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                    .with_nonce(Nonce::zeros()),
+            );
+        }
+
+        // add inputs
+        for input in &inputs {
+            bundle.push(
+                TransactionBuilder::new()
+                    .with_payload(Payload::zeros())
+                    .with_address(input.address.clone())
+                    .with_value(Value::from_inner_unchecked(-(input.balance as i64)))
+                    .with_obsolete_tag(Tag::zeros())
+                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_index(Index::from_inner_unchecked(0))
+                    .with_last_index(Index::from_inner_unchecked(0))
+                    .with_tag(Tag::zeros())
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                    .with_bundle(Hash::zeros())
+                    .with_trunk(Hash::zeros())
+                    .with_branch(Hash::zeros())
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                    .with_nonce(Nonce::zeros()),
+            );
+
+            for _ in 1..self.security {
+                bundle.push(
+                    TransactionBuilder::new()
+                        // TODO add message
+                        .with_payload(Payload::zeros())
+                        .with_address(input.address.clone())
+                        .with_value(Value::from_inner_unchecked(0))
+                        .with_obsolete_tag(Tag::zeros())
+                        .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                        .with_index(Index::from_inner_unchecked(0))
+                        .with_last_index(Index::from_inner_unchecked(0))
+                        // TODO add tag (but probably better to left as is)
+                        .with_tag(Tag::zeros())
+                        .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                        .with_bundle(Hash::zeros())
+                        .with_trunk(Hash::zeros())
+                        .with_branch(Hash::zeros())
+                        .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                        .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                        .with_nonce(Nonce::zeros()),
                 );
             }
-            transfer.address = iota_signing::checksum::remove_checksum(&transfer.address);
-            if transfer.value > 0 {
-                ensure!(transfer.address.trits()[242] == 0, "Invalid Kerl address.");
-            }
-        }
-        ensure!(
-            iota_validation::is_transfers_collection_valid(&transfers),
-            "Invalid transfers."
-        );
-        let security = options.security;
-        let mut bundle = Bundle::default();
-        let mut total_value = 0;
-        let mut signature_fragments: Vec<String> = Vec::new();
-        let mut tag = String::new();
-
-        for transfer in transfers {
-            let mut signature_message_length = 1;
-            if transfer.message.len() > iota_constants::MESSAGE_LENGTH {
-                signature_message_length += (transfer.message.len() as f64
-                    / iota_constants::MESSAGE_LENGTH as f64)
-                    .floor() as usize;
-                let mut msg_copy = transfer.message.to_string();
-                while !msg_copy.is_empty() {
-                    let mut fragment = msg_copy
-                        .chars()
-                        .take(iota_constants::MESSAGE_LENGTH)
-                        .collect();
-                    msg_copy = msg_copy
-                        .chars()
-                        .skip(iota_constants::MESSAGE_LENGTH)
-                        .collect();
-                    iota_model::right_pad_string(
-                        &mut fragment,
-                        iota_constants::MESSAGE_LENGTH,
-                        '9',
-                    );
-                    signature_fragments.push(fragment);
-                }
-            } else {
-                let mut fragment = if !transfer.message.is_empty() {
-                    transfer.message.chars().take(2187).collect()
-                } else {
-                    String::new()
-                };
-                iota_model::right_pad_string(&mut fragment, iota_constants::MESSAGE_LENGTH, '9');
-                signature_fragments.push(fragment);
-            }
-            tag = transfer.tag;
-            iota_model::right_pad_string(&mut tag, iota_constants::TAG_LENGTH, '9');
-            bundle.add_entry(BundleEntry {
-                signature_message_length,
-                address: &transfer.address,
-                value: transfer.value,
-                tag: &tag,
-                timestamp: Utc::now().timestamp(),
-            });
-            total_value += transfer.value;
         }
 
-        if total_value > 0 {
-            match options.inputs {
-                Some(inputs) => {
-                    let input_addresses: Vec<String> = inputs
-                        .inputs_list()
-                        .iter()
-                        .map(|input| input.address.to_string())
-                        .collect();
-                    let resp = self.get_balances(GetBalancesOptions {
-                        addresses: input_addresses,
-                        ..GetBalancesOptions::default()
-                    })?;
-                    let mut confirmed_inputs = Inputs::default();
-                    let balances = resp.take_balances().unwrap_or_default();
-                    for (i, balance) in balances.iter().enumerate() {
-                        let b: i64 = balance.parse()?;
-                        if b > 0 {
-                            *confirmed_inputs.total_balance_mut() += b;
-                            let mut confirmed_input = inputs.inputs_list()[i].clone();
-                            confirmed_input.balance = b;
-                            confirmed_inputs.add(confirmed_input);
-                            if confirmed_inputs.total_balance() >= total_value {
-                                break;
-                            }
-                        }
-                    }
-                    ensure!(
-                        total_value <= confirmed_inputs.total_balance(),
-                        "Not enough balance."
-                    );
-                    self.add_remainder(
-                        &confirmed_inputs,
-                        &mut bundle,
-                        AddRemainderOptions {
-                            seed,
-                            tag: &tag,
-                            remainder_address: options.remainder_address,
-                            signature_fragments,
-                            added_hmac,
-                            hmac_key: options.hmac_key,
-                            security,
-                        },
-                    )
-                }
+        // add remainder
+        if need_remainder {
+            let remainder = match self.remainder {
+                Some(r) => r,
                 None => {
-                    let inputs = self.get_inputs(
-                        &seed,
-                        GetInputsOptions {
-                            start: None,
-                            end: None,
-                            threshold: Some(total_value),
-                            security: Some(security),
-                        },
-                    )?;
-                    self.add_remainder(
-                        &inputs,
-                        &mut bundle,
-                        AddRemainderOptions {
-                            seed,
-                            tag: &tag,
-                            remainder_address: options.remainder_address,
-                            signature_fragments,
-                            added_hmac,
-                            hmac_key: options.hmac_key,
-                            security,
-                        },
-                    )
+                    self.client
+                        .get_new_address()
+                        .seed(seed)
+                        .security(self.security)
+                        .index(inputs.last().unwrap().index + 1)
+                        .generate()
+                        .await?
+                        .1
                 }
-            }
-        } else {
-            bundle.reset_indexes();
-            bundle.finalize()?;
-            bundle.add_trytes(&signature_fragments);
-            let mut bundle_trytes: Vec<String> = Vec::new();
-            for b in bundle.iter().rev() {
-                bundle_trytes.push(b.try_into()?);
-            }
-            Ok(bundle_trytes)
-        }
-    }
+            };
 
-    fn add_remainder(
-        &mut self,
-        inputs: &Inputs,
-        bundle: &mut Bundle,
-        options: AddRemainderOptions<'_, '_, '_, '_>,
-    ) -> Result<Vec<String>> {
-        let mut total_transfer_value = inputs.total_balance();
-        for input in inputs.inputs_list() {
-            let this_balance = input.balance;
-            let to_subtract = 0 - this_balance;
-            let timestamp = Utc::now().timestamp();
-            let address = iota_signing::checksum::remove_checksum(&input.address);
-            ensure!(address.trits()[242] == 0, "Invalid Kerl input address.");
-            bundle.add_entry(BundleEntry {
-                signature_message_length: input.security,
-                address: &address,
-                value: to_subtract,
-                tag: &options.tag,
-                timestamp,
-            });
+            bundle.push(
+                TransactionBuilder::new()
+                    .with_payload(Payload::zeros())
+                    .with_address(remainder)
+                    .with_value(Value::from_inner_unchecked(
+                        (total_input - total_output) as i64,
+                    ))
+                    .with_obsolete_tag(Tag::zeros())
+                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_index(Index::from_inner_unchecked(0))
+                    .with_last_index(Index::from_inner_unchecked(0))
+                    .with_tag(Tag::zeros())
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                    .with_bundle(Hash::zeros())
+                    .with_trunk(Hash::zeros())
+                    .with_branch(Hash::zeros())
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                    .with_nonce(Nonce::zeros()),
+            );
+        }
 
-            if this_balance >= total_transfer_value {
-                let remainder = this_balance - total_transfer_value;
-                if let Some(remainder_address) = &options.remainder_address {
-                    ensure!(
-                        remainder_address.trits()[242] == 0,
-                        "Invalid Kerl remainder address."
-                    );
-                    if remainder > 0 {
-                        bundle.add_entry(BundleEntry {
-                            signature_message_length: 1,
-                            address: &remainder_address,
-                            value: remainder,
-                            tag: &options.tag,
-                            timestamp,
-                        });
-                        return self.sign_inputs_and_return(
-                            &options.seed,
-                            inputs,
-                            bundle,
-                            &options.signature_fragments,
-                            options.added_hmac,
-                            options.hmac_key,
-                        );
-                    }
-                } else if remainder > 0 {
-                    let mut start_index = 0;
-                    for input in inputs.inputs_list() {
-                        start_index = cmp::max(input.key_index, start_index);
-                    }
-                    start_index += 1;
-                    let new_address = &self.get_new_address(
-                        &options.seed,
-                        false,
-                        false,
-                        GetNewAddressOptions {
-                            security: Some(options.security),
-                            index: Some(start_index),
-                            total: None,
-                        },
-                    )?[0];
-                    bundle.add_entry(BundleEntry {
-                        signature_message_length: 1,
-                        address: &new_address,
-                        value: remainder,
-                        tag: &options.tag,
-                        timestamp: Utc::now().timestamp(),
-                    });
-                    return self.sign_inputs_and_return(
-                        &options.seed,
-                        inputs,
-                        bundle,
-                        &options.signature_fragments,
-                        options.added_hmac,
-                        options.hmac_key,
-                    );
-                } else {
-                    return self.sign_inputs_and_return(
-                        &options.seed,
-                        inputs,
-                        bundle,
-                        &options.signature_fragments,
-                        options.added_hmac,
-                        options.hmac_key,
-                    );
-                }
-            } else {
-                total_transfer_value -= this_balance;
-            }
-        }
-        Err(format_err!("Something wen't wrong..."))
-    }
+        // TODO bundle crate uses tuple for convinience atm. We should sync the type.
+        let security = match self.security {
+            1 => WotsSecurityLevel::Low,
+            2 => WotsSecurityLevel::Medium,
+            3 => WotsSecurityLevel::High,
+            _ => panic!("Invalid scurity level"),
+        };
+        let inputs: Vec<(u64, Address, WotsSecurityLevel)> = inputs
+            .into_iter()
+            .map(|i| (i.index, i.address, security))
+            .collect();
 
-    fn sign_inputs_and_return<'b>(
-        &mut self,
-        seed: &str,
-        inputs: &Inputs,
-        bundle: &mut Bundle,
-        signature_fragments: &[String],
-        added_hmac: bool,
-        hmac_key: Option<&'b str>,
-    ) -> Result<Vec<String>> {
-        bundle.reset_indexes();
-        bundle.finalize()?;
-        bundle.add_trytes(&signature_fragments);
-        for i in 0..bundle.len() {
-            if bundle[i].value < 0 {
-                let this_address = bundle[i].address.clone();
-                let mut key_index = 0;
-                let mut key_security = 0;
-                for input in inputs.inputs_list() {
-                    if input.address == *this_address {
-                        key_index = input.key_index;
-                        key_security = input.security;
-                        break;
-                    }
-                }
-                let bundle_hash = &bundle[i].bundle;
-                let key = iota_signing::key(&seed.trits(), key_index, key_security)?;
-                let normalized_bundle_hash = Bundle::normalized_bundle(&bundle_hash).to_vec();
-                let mut normalized_bundle_fragments = [[0; 27]; 3];
-                for (j, c) in normalized_bundle_hash.chunks(27).enumerate() {
-                    normalized_bundle_fragments[j].copy_from_slice(c);
-                }
-                let first_fragment = key[0..6561].to_vec();
-                let first_bundle_fragment = normalized_bundle_fragments[0];
-                let first_signed_fragment =
-                    iota_signing::signature_fragment(&first_bundle_fragment, &first_fragment)?;
-                bundle[i].signature_fragments = first_signed_fragment.trytes()?;
-                for j in 1..key_security {
-                    if bundle[i + j].address == *this_address && bundle[i + j].value == 0 {
-                        let next_fragment = key[6561 * j..(j + 1) * 6561].to_vec();
-                        let next_bundle_fragment = normalized_bundle_fragments[j];
-                        let next_signed_fragment = iota_signing::signature_fragment(
-                            &next_bundle_fragment,
-                            &next_fragment,
-                        )?;
-                        bundle[i + j].signature_fragments = next_signed_fragment.trytes()?;
-                    }
-                }
-            }
-        }
-        if added_hmac {
-            let hmac = iota_signing::HMAC::new(&hmac_key.unwrap_or_default());
-            hmac.add_hmac(bundle)?;
-        }
-        let mut bundle_trytes: Vec<String> = Vec::new();
-        for tx in bundle.iter().rev() {
-            let tx_trytes: String = tx.try_into()?;
-            bundle_trytes.push(tx_trytes);
-        }
-        Ok(bundle_trytes)
+        Ok(bundle
+            .seal()
+            .expect("Fail to seal bundle")
+            .sign(seed, &inputs)
+            .expect("Fail to sign bundle")
+            .attach_local(Hash::zeros(), Hash::zeros())
+            .expect("Fail to attach bundle")
+            .build()
+            .expect("Fail to build bundle"))
     }
 }
