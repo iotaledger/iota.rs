@@ -1,0 +1,16 @@
+[package]
+name = "examples"
+version = "0.0.0"
+authors = ["Yu-Wei Wu <wusyong9104@gmail.com>"]
+edition = "2018"
+publish = false
+
+[dev-dependencies]
+anyhow = "1.0.28"
+iota-client = { path = "../iota-client" }
+smol-potat = "0.1"
+smol = { version = "0.1.2", features = ["tokio02"] }
+
+[[example]]
+name = "get-node-info"
+path = "get-node-info.rs"
