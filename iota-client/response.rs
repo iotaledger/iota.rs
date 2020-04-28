@@ -324,7 +324,7 @@ pub struct GetNodeInfoResponse {
     pub neighbors: u16,
     /// Packet queue size on IRI node
     #[serde(rename = "packetsQueueSize")]
-    pub packets_queue_size: u16,
+    pub packets_queue_size: Option<u16>,
     /// Current time on IRI node (UNIX Seconds),
     pub time: u64,
     /// Amount of tips on IRI node

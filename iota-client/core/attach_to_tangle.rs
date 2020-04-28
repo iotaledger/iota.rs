@@ -64,7 +64,6 @@ impl<'a> AttachToTangleBuilder<'a> {
         });
 
         let res: AttachToTangleResponseBuilder = response!(client, body);
-        dbg!(&res);
         res.build().await
     }
 }
