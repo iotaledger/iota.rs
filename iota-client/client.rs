@@ -387,7 +387,7 @@ impl Client<'_> {
     }
 
     /// Reattaches a transfer to tangle by selecting tips & performing the Proof-of-Work again.
-    /// Reattachments are usefull in case original transactions are pending, and can be done securely as many times as needed.
+    /// Reattachments are useful in case original transactions are pending and can be done securely as many times as needed.
     /// # Parameters
     /// * `hash` - Tail transaction hash. Tail transaction is the transaction in the bundle with current_index == 0
     /// * [`depth`] - Number of milestones to go back to start the tip selection algorithm. Default is 3.

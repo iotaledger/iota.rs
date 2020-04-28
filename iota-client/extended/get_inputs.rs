@@ -84,7 +84,7 @@ impl<'a> GetInputsBuilder<'a> {
                 .await?
                 .balances[0];
 
-            // If next couple of addresses dont have any balance, we determine it fails to prevent from infinite searching.
+            // If the next couple of addresses don't have any balance, we determine it fails to prevent from infinite searching.
             if balance == 0 {
                 zero_balance_warning -= 1;
             } else {

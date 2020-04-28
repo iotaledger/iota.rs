@@ -22,7 +22,7 @@ impl<'a> GetTransactionsToApproveBuilder<'a> {
         }
     }
 
-    /// Set MWM depth
+    /// The depth for the random walk in the tip selection
     pub fn depth(mut self, depth: u8) -> Self {
         self.depth = depth;
         self

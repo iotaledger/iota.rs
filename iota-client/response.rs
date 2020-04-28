@@ -501,7 +501,8 @@ pub struct Input {
     pub(crate) index: u64,
 }
 
-/// Address as recipient to recieve iota
+/// A transfer could be an input or an output for building a bundle.
+/// input/output transfer depends on value, a negative value for an output transfer, a positive value for an input transfer
 #[derive(Clone, Debug)]
 pub struct Transfer {
     /// Transfer address

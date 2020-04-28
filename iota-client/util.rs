@@ -1,6 +1,8 @@
 use bee_bundle::{Transaction, TransactionField};
 use iota_conversion::{trytes, Trinary};
 
+// TODO use bee-ternary once it porvides a method.
+/// Temporary util function to make a transaction trytes
 pub(crate) fn tx_trytes(tx: &Transaction) -> String {
     let bundle = trytes(tx.bundle().as_bytes()).unwrap();
     trytes(tx.payload().to_inner().as_i8_slice()).unwrap()

@@ -66,7 +66,7 @@ impl<'a> SendTransfersBuilder<'a> {
         self
     }
 
-    /// Set MWM depth
+    /// The depth of the random walk for GTTA
     pub fn depth(mut self, depth: u8) -> Self {
         self.depth = depth;
         self
