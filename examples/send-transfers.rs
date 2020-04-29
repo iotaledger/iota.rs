@@ -39,7 +39,8 @@ async fn main() -> Result<()> {
     let res = iota::Client::new("https://nodes.comnet.thetangle.org")
         // Call send_transfers api
         .send_transfers()
-        // Input your seed
+        // Below is just a dummy seed which just serves as an example.
+        // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
         .seed(
             &IotaSeed::<Kerl>::from_buf(
                 TryteBuf::try_from_str("RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA")
