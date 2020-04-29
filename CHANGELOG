@@ -1,30 +1,5 @@
-0.4.0
-- Fill documentation for all crates
-- Move API logic to client crate
-- Fix bundle creation bugs
-
-0.3.0
-- Cleanup API
-- Significantly less cloning of data throughout
-- Cleaner PoW implementation
-- Documentation Improvements
-- Implement trinary conversion for various types using the Trinary trait
-
-0.2.0
-- Restructured crate into many sub-crates
-    - Other Iota projects and pick and choose individual sub-crates if they want
-- Cleaned up the API a bit
-    - Provide a prelude that includes useful imports
-    - Make doing PoW easier, you can pass trits or trytes now
-
-0.1.2
-- Create options structs to make API use more ergonomic
-
-0.1.1
-- Update rand dependency
-
 0.1.0
-- Changes to all http api requests to be async
-- PoW is now async
-- Update all documentation and tests to demonstrate async usage
-- Some changes to APIs due to async only supporting one borrow per function
+- Rewrite whole client crate
+- Import bee crates as fundamental library
+- Deprecate legacy crates.
+- Re-export all crates as `iota-sdk` with library name as `iota`.

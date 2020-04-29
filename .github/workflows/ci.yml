@@ -1,5 +1,5 @@
   
-name: iota.rs ci
+name: build_and_test
 on:
   push:
     branches:
