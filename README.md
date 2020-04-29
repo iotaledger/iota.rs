@@ -64,7 +64,13 @@ fn main() {
 
 ## API reference
 
-For details on all available API methods, see the [documentation](https://docs.rs/iota-lib-rs).
+You can read the [API reference] here, or generate them on your own.
+
+If you'd like to explore the implementation in more depth, the following command generates docs for the whole crate, including private modules:
+
+```
+cargo doc --document-private-items --no-deps --open
+```
 
 ## Examples
 
