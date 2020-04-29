@@ -7,7 +7,7 @@ publish = false
 
 [dev-dependencies]
 anyhow = "1.0.28"
-iota-sdk = { path = "../iota-sdk" }
+iota-core = { path = "../iota-core" }
 smol-potat = "0.1"
 smol = { version = "0.1.2", features = ["tokio02"] }
 

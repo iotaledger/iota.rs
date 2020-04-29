@@ -12,7 +12,7 @@ This is the **alpha** version of official Rust library, which allows you to do t
 * Interact with an IRI node
 
 TODO
-This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-sdk` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `send_transfers` and `traverse_bundle` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
+This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-core` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `send_transfers` and `traverse_bundle` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
 |Table of contents|
 |:----|
@@ -37,7 +37,7 @@ Using the library is fairly easy, just add it as dependancy in `Cargo.toml`:
 
 ```
 [dependencies]
-iota-sdk = "0.1.0-alpha"
+iota-core = "0.1.0-alpha"
 ```
 
 And the import the lbrary in your code:

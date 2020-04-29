@@ -1,5 +1,5 @@
 [package]
-name = "iota-sdk"
+name = "iota-core"
 version = "0.1.0-alpha.1"
 authors = ["YuWeiWu <wusyong9104@gmail.com>"]
 edition = "2018"

@@ -2,4 +2,4 @@
 - Rewrite whole client crate
 - Import bee crates as fundamental library
 - Deprecate legacy crates.
-- Re-export all crates as `iota-sdk` with library name as `iota`.
+- Re-export all crates as `iota-core` with library name as `iota`.

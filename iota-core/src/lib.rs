@@ -1,4 +1,4 @@
-//! IOTA SDK
+//! IOTA core
 
 #![deny(unused_extern_crates)]
 #![warn(
