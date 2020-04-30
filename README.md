@@ -64,7 +64,7 @@ fn main() {
 
 ## API reference
 
-You can read the [API reference] here, or generate them on your own.
+You can read the [API reference]((https://docs.rs/iota-core)) here, or generate them on your own.
 
 If you'd like to explore the implementation in more depth, the following command generates docs for the whole crate, including private modules:
 
