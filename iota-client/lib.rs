@@ -23,3 +23,4 @@ pub mod response;
 mod util;
 
 pub use client::Client;
+pub use response::*;

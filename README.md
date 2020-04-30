@@ -5,14 +5,14 @@
 [![Documentation](https://docs.rs/iota-lib-rs/badge.svg)](https://docs.rs/iota-lib-rs/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/iotaledger/iota-lib-rs/blob/master/LICENSE)
 
-This is the **WIP** Rust client library, which allows you to do the following:
+This is the **alpha** version of official Rust library, which allows you to do the following:
 * Create transactions
 * Sign transactions
 * Generate addresses
 * Interact with an IRI node
 
-This client library is still in the beta stage, so there may be performance and stability issues. As IOTA Foundation currently working on `bee`, we also decided to re-implement common libraries for security. This library is going to be feature freeze untill fundamental crates are done.
-Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
+TODO
+This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-core` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `send_transfers` and `traverse_bundle` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
 |Table of contents|
 |:----|
@@ -37,20 +37,26 @@ Using the library is fairly easy, just add it as dependancy in `Cargo.toml`:
 
 ```
 [dependencies]
-iota-lib-rs = "0.4"
+iota-core = "0.1.0-alpha"
+```
+
+And the import the lbrary in your code:
+
+```rust
+use iota;
 ```
 
 ## Getting started
 
 After you've [installed the library](#installing-the-library),  you can connect to an IRI node to send transactions to it and interact with the ledger.
 
-To connect to a local IRI node, we provide a module `Client` :
+To connect to a local IOTA node, we provide a module `Client` :
 
 ```rust
-use iota_lib_rs::prelude::*;
+use iota::Client;
 
 fn main() {
-  let mut iota = iota_client::Client::new("https://localhost");
+  let mut iota = iota::Client::new("https://nodes.comnet.thetangle.org");
   println!("{:#?}", iota.get_node_info().unwrap());
 }
 ```
@@ -58,43 +64,20 @@ fn main() {
 
 ## API reference
 
-For details on all available API methods, see the [documentation](https://docs.rs/iota-lib-rs).
+You can read the [API reference](https://docs.rs/iota-core) here, or generate them on your own.
+
+If you'd like to explore the implementation in more depth, the following command generates docs for the whole crate, including private modules:
+
+```
+cargo doc --document-private-items --no-deps --open
+```
 
 ## Examples
 
-```rust
-use iota_client::options::SendTransferOptions;
-use iota_lib_rs::prelude::*;
-use iota_model::Transfer;
-use iota_conversion::trytes_converter;
+You can see the examples in [examples](examples/) directory and try them with:
 
-fn main() {
-    let trytes =
-        "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD";
-    let message = trytes_converter::to_trytes("Hello World").unwrap();
-    let transfer = Transfer {
-        address: trytes.to_string(),
-        // Don't need to specify the field 
-        // because the field and variable
-        // have the same name
-        message,
-        // Populate the rest of the fields with default values
-        ..Transfer::default()
-    };
-    let mut api = iota_client::Client::new("https://node01.iotatoken.nl");
-    let tx = api
-        .send_transfers(
-            transfer,
-            &trytes,
-            SendTransferOptions {
-                local_pow: true,
-                threads: 2,
-                ..SendTransferOptions::default()
-            },
-        )
-        .unwrap();
-    println!("{:?}", tx);
-}
+```
+cargo run --example send-transfers
 ```
 
 ## Supporting the project
