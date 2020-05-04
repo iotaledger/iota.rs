@@ -510,5 +510,5 @@ pub struct Transfer {
     /// Transfer value
     pub value: u64,
     /// Optional message
-    pub message: String,
+    pub message: Option<String>,
 }

@@ -378,7 +378,7 @@ async fn test_prepare_transfers_no_value() {
         transfers.push(Transfer {
             address: Address::zeros(),
             value: 0,
-            message: "".to_string(),
+            message: None,
         });
     }
 
@@ -446,7 +446,7 @@ async fn test_send_transfers_no_value() {
                     .encode(),
             ),
             value: 0,
-            message: "".to_string(),
+            message: None,
         });
     }
 
