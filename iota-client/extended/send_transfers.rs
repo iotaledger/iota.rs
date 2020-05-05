@@ -1,7 +1,7 @@
 use anyhow::Result;
-use bee_bundle::{Address, Hash, Transaction};
-use bee_crypto::Kerl;
-use bee_signing::IotaSeed;
+use iota_bundle_preview::{Address, Hash, Transaction};
+use iota_crypto_preview::Kerl;
+use iota_signing_preview::IotaSeed;
 
 use crate::response::{Input, Transfer};
 use crate::Client;

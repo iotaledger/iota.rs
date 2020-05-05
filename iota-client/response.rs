@@ -1,7 +1,7 @@
 //! Response types
 use anyhow::Result;
-use bee_bundle::{Address, Hash, Tag, Transaction, TransactionField};
-use bee_ternary::TryteBuf;
+use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
+use iota_ternary_preview::TryteBuf;
 
 /// addNeighbors Response Type
 #[derive(Clone, Debug, Deserialize)]

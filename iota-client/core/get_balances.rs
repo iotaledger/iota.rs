@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bee_bundle::{Address, Hash, TransactionField};
+use iota_bundle_preview::{Address, Hash, TransactionField};
 use iota_conversion::Trinary;
 
 use crate::response::{GetBalancesResponse, GetBalancesResponseBuilder};

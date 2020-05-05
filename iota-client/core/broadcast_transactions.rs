@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bee_bundle::Transaction;
+use iota_bundle_preview::Transaction;
 
 use crate::response::ErrorResponseBuilder;
 use crate::util::tx_trytes;

@@ -1,16 +1,18 @@
 [package]
 name = "iota-core"
-version = "0.1.0-alpha.1"
+version = "0.2.0-alpha.1"
 authors = ["YuWeiWu <wusyong9104@gmail.com>"]
 edition = "2018"
+description = "Core library of IOTA"
+license = "MIT"
 
 [lib]
 name = "iota"
 
 [dependencies]
-bee-bundle = { git = "https://github.com/Alex6323/bee-p" }
-bee-ternary = { git = "https://github.com/Alex6323/bee-p" }
-bee-signing = { git = "https://github.com/Alex6323/bee-p" }
-bee-crypto = { git = "https://github.com/Alex6323/bee-p" }
-iota-client = { version = "0.4.0-alpha", path = "../iota-client" }
-iota-conversion = { version = "0.3.0", path = "../iota-conversion" }
+iota-bundle-preview = "0.1"
+iota-ternary-preview = "0.1"
+iota-signing-preview = "0.1"
+iota-crypto-preview = "0.1"
+iota-client = { version = "0.5.0-alpha", path = "../iota-client" }
+iota-conversion = { version = "0.5.0", path = "../iota-conversion" }

@@ -1,10 +1,10 @@
 mod common;
 use crate::common::*;
-use bee_bundle::*;
-use bee_crypto::*;
-use bee_signing::*;
-use bee_ternary::*;
+use iota_bundle_preview::*;
 use iota_client::response::*;
+use iota_crypto_preview::*;
+use iota_signing_preview::*;
+use iota_ternary_preview::*;
 
 #[smol_potat::test]
 async fn test_add_neighbors() {

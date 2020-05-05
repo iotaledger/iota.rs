@@ -1,7 +1,7 @@
 use anyhow::Result;
-use bee_bundle::{Hash, Transaction};
-use bee_crypto::{Kerl, Sponge};
-use bee_ternary::{T1B1Buf, TritBuf};
+use iota_bundle_preview::{Hash, Transaction};
+use iota_crypto_preview::{Kerl, Sponge};
+use iota_ternary_preview::{T1B1Buf, TritBuf};
 
 use crate::Client;
 

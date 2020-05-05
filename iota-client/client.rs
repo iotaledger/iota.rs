@@ -3,8 +3,8 @@ use crate::core::*;
 use crate::extended::*;
 use crate::response::*;
 use anyhow::Result;
-use bee_bundle::{Address, Hash, Transaction, TransactionField};
-use bee_ternary::TryteBuf;
+use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
+use iota_ternary_preview::TryteBuf;
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
@@ -143,7 +143,7 @@ impl Client<'_> {
     ///
     /// [`traverse_bundle`]: #method.traverse_bundle
     pub async fn get_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
-        // TODO validate bundle once it's in bee_bundle's bundle types
+        // TODO validate bundle once it's in iota_bundle_preview's bundle types
         let bundle = self.traverse_bundle(hash).await?;
         Ok(bundle)
     }
