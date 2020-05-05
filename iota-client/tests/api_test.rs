@@ -379,6 +379,7 @@ async fn test_prepare_transfers_no_value() {
             address: Address::zeros(),
             value: 0,
             message: None,
+            tag: None,
         });
     }
 
@@ -447,6 +448,7 @@ async fn test_send_transfers_no_value() {
             ),
             value: 0,
             message: None,
+            tag: None,
         });
     }
 

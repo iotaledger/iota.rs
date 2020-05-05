@@ -34,6 +34,7 @@ async fn main() -> Result<()> {
         // We are using a zero balance seed so we make a zero value transfer here
         value: 0,
         message: None,
+        tag: None,
     });
 
     // Create a client instance

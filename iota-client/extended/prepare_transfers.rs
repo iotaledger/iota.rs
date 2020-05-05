@@ -108,6 +108,10 @@ impl<'a> PrepareTransfersBuilder<'a> {
                     Err(_) => return Err(anyhow!("Fail to convert message to trytes.")),
                 };
                 let mut value = transfer.value as i64;
+                let tag = match transfer.tag {
+                    Some(t) => t,
+                    None => Tag::zeros(),
+                };
 
                 for i in message.chunks(PAYLOAD_TRIT_LEN) {
                     let mut trits = TritBuf::<T1B1Buf>::zeros(PAYLOAD_TRIT_LEN);
@@ -124,7 +128,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
                             .with_index(Index::from_inner_unchecked(0))
                             .with_last_index(Index::from_inner_unchecked(0))
                             // TODO add tag (but probably better to left as is)
-                            .with_tag(Tag::zeros())
+                            .with_tag(tag.clone())
                             .with_attachment_ts(Timestamp::from_inner_unchecked(0))
                             .with_bundle(Hash::zeros())
                             .with_trunk(Hash::zeros())

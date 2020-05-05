@@ -7,7 +7,7 @@
 //! ```
 use anyhow::Result;
 use iota::{
-    bundle::{Address, TransactionField},
+    bundle::{Address, Tag, TransactionField},
     client::Transfer,
     crypto::Kerl,
     signing::{IotaSeed, Seed},
@@ -44,6 +44,10 @@ async fn main() -> Result<()> {
         Curabitur sit amet sem laoreet, egestas magna in, eleifend orci. Maecenas tincidunt nunc a eros sollicitudin, quis gravida tellus interdum. Curabitur id ipsum diam. Proin at massa urna. Sed neque mauris, efficitur vitae congue nec, posuere a magna. Vestibulum nunc tortor, euismod non faucibus a, aliquet eget sapien. Vivamus eros dui, viverra at mauris a, cursus pulvinar turpis. Vivamus non tempor leo. Donec condimentum nisl a turpis aliquam aliquet. Phasellus sollicitudin ultricies orci, ac ultrices leo. Praesent ultricies, quam accumsan ornare sodales, massa lacus tempus nunc, sed convallis metus dui et nibh.
         
         Aenean ultrices porttitor enim. Vestibulum vel ante at neque laoreet sollicitudin ut nec purus. Donec tortor lectus, egestas non gravida nec, consequat eu orci. Sed id vehicula eros. Aliquam leo odio, finibus nec placerat sit amet, dignissim in est. Suspendisse in neque auctor, bibendum nunc non, luctus dolor. Nulla convallis felis ac libero egestas, at egestas nunc consequat. Suspendisse tellus massa, consequat non felis facilisis, maximus convallis tortor. Fusce porta nunc est, et facilisis dolor imperdiet vitae. Vivamus ullamcorper erat et dignissim mattis. Nulla maximus, nisi vel lobortis gravida, arcu neque blandit ante, at sodales risus enim a metus. Nulla quis finibus mauris. ")),
+        tag: Some(Tag::try_from_inner(TryteBuf::try_from_str("LOREMIPSUM99999999999999999")
+        .unwrap()
+        .as_trits()
+        .encode()).unwrap()),
     });
 
     // Create a client instance
