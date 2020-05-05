@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bee_bundle::Hash;
+use iota_bundle_preview::Hash;
 use iota_conversion::Trinary;
 
 use crate::response::{GTTAResponse, GTTAResponseBuilder};

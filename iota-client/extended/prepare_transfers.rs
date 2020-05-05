@@ -1,14 +1,14 @@
 use std::cmp::Ordering;
 
 use anyhow::Result;
-use bee_bundle::{
+use iota_bundle_preview::{
     Address, Bundle, Hash, Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp,
     TransactionBuilder, TransactionField, Value, PAYLOAD_TRIT_LEN,
 };
-use bee_crypto::Kerl;
-use bee_signing::{IotaSeed, WotsSecurityLevel};
-use bee_ternary::{T1B1Buf, TritBuf, TryteBuf};
 use iota_conversion::trytes_converter::to_trytes;
+use iota_crypto_preview::Kerl;
+use iota_signing_preview::{IotaSeed, WotsSecurityLevel};
+use iota_ternary_preview::{T1B1Buf, TritBuf, TryteBuf};
 
 use crate::response::{Input, Transfer};
 use crate::Client;

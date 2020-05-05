@@ -1,7 +1,7 @@
 use anyhow::Result;
-use bee_bundle::{Address, TransactionField};
-use bee_crypto::Kerl;
-use bee_signing::{
+use iota_bundle_preview::{Address, TransactionField};
+use iota_crypto_preview::Kerl;
+use iota_signing_preview::{
     IotaSeed, PrivateKey, PrivateKeyGenerator, PublicKey, WotsPrivateKeyGeneratorBuilder,
     WotsSecurityLevel,
 };
@@ -60,7 +60,7 @@ impl<'a> GetNewAddressBuilder<'a> {
         let mut index = self.index;
 
         loop {
-            // TODO impl Error trait in bee_signing
+            // TODO impl Error trait in iota_signing_preview
             let address = Address::from_inner_unchecked(
                 WotsPrivateKeyGeneratorBuilder::<Kerl>::default()
                     .security_level(self.security)

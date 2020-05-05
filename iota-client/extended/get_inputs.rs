@@ -1,6 +1,6 @@
 use anyhow::Result;
-use bee_crypto::Kerl;
-use bee_signing::IotaSeed;
+use iota_crypto_preview::Kerl;
+use iota_signing_preview::IotaSeed;
 
 use crate::response::Input;
 use crate::Client;

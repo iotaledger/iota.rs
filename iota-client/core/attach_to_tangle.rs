@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bee_bundle::{Hash, Transaction};
+use iota_bundle_preview::{Hash, Transaction};
 use iota_conversion::Trinary;
 
 use crate::response::{AttachToTangleResponse, AttachToTangleResponseBuilder};
