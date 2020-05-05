@@ -3,10 +3,12 @@ use std::cmp::Ordering;
 use anyhow::Result;
 use bee_bundle::{
     Address, Bundle, Hash, Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp,
-    TransactionBuilder, TransactionField, Value,
+    TransactionBuilder, TransactionField, Value, PAYLOAD_TRIT_LEN,
 };
 use bee_crypto::Kerl;
 use bee_signing::{IotaSeed, WotsSecurityLevel};
+use bee_ternary::{T1B1Buf, TritBuf, TryteBuf};
+use iota_conversion::trytes_converter::to_trytes;
 
 use crate::response::{Input, Transfer};
 use crate::Client;
@@ -100,26 +102,64 @@ impl<'a> PrepareTransfersBuilder<'a> {
         let mut bundle = OutgoingBundleBuilder::new();
         // add transfers
         for transfer in self.transfers {
-            bundle.push(
-                TransactionBuilder::new()
-                    // TODO add message
-                    .with_payload(Payload::zeros())
-                    .with_address(transfer.address.clone())
-                    .with_value(Value::from_inner_unchecked(transfer.value as i64))
-                    .with_obsolete_tag(Tag::zeros())
-                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
-                    .with_index(Index::from_inner_unchecked(0))
-                    .with_last_index(Index::from_inner_unchecked(0))
-                    // TODO add tag (but probably better to left as is)
-                    .with_tag(Tag::zeros())
-                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
-                    .with_bundle(Hash::zeros())
-                    .with_trunk(Hash::zeros())
-                    .with_branch(Hash::zeros())
-                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
-                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
-                    .with_nonce(Nonce::zeros()),
-            );
+            if let Some(message) = transfer.message {
+                let message: TritBuf<T1B1Buf> = match to_trytes(&message) {
+                    Ok(s) => TryteBuf::try_from_str(&s).unwrap().as_trits().encode(),
+                    Err(_) => return Err(anyhow!("Fail to convert message to trytes.")),
+                };
+                let mut value = transfer.value as i64;
+                let tag = match transfer.tag {
+                    Some(t) => t,
+                    None => Tag::zeros(),
+                };
+
+                for i in message.chunks(PAYLOAD_TRIT_LEN) {
+                    let mut trits = TritBuf::<T1B1Buf>::zeros(PAYLOAD_TRIT_LEN);
+                    trits.copy_raw_bytes(i, 0, i.len());
+                    let payload = Payload::from_inner_unchecked(trits);
+
+                    bundle.push(
+                        TransactionBuilder::new()
+                            .with_payload(payload)
+                            .with_address(transfer.address.clone())
+                            .with_value(Value::from_inner_unchecked(value))
+                            .with_obsolete_tag(Tag::zeros())
+                            .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                            .with_index(Index::from_inner_unchecked(0))
+                            .with_last_index(Index::from_inner_unchecked(0))
+                            // TODO add tag (but probably better to left as is)
+                            .with_tag(tag.clone())
+                            .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                            .with_bundle(Hash::zeros())
+                            .with_trunk(Hash::zeros())
+                            .with_branch(Hash::zeros())
+                            .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                            .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                            .with_nonce(Nonce::zeros()),
+                    );
+                    value = 0;
+                }
+            } else {
+                bundle.push(
+                    TransactionBuilder::new()
+                        .with_payload(Payload::zeros())
+                        .with_address(transfer.address.clone())
+                        .with_value(Value::from_inner_unchecked(transfer.value as i64))
+                        .with_obsolete_tag(Tag::zeros())
+                        .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                        .with_index(Index::from_inner_unchecked(0))
+                        .with_last_index(Index::from_inner_unchecked(0))
+                        // TODO add tag (but probably better to left as is)
+                        .with_tag(Tag::zeros())
+                        .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                        .with_bundle(Hash::zeros())
+                        .with_trunk(Hash::zeros())
+                        .with_branch(Hash::zeros())
+                        .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                        .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                        .with_nonce(Nonce::zeros()),
+                );
+            }
         }
 
         // add inputs

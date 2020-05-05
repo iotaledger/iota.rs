@@ -8,12 +8,17 @@ publish = false
 [dev-dependencies]
 anyhow = "1.0.28"
 iota-core = { path = "../iota-core" }
+iota-conversion = { version = "0.3.0", path = "../iota-conversion" }
 smol-potat = "0.1"
 smol = { version = "0.1.2", features = ["tokio02"] }
 
 [[example]]
 name = "get-node-info"
 path = "get-node-info.rs"
+
+[[example]]
+name = "message-transfers"
+path = "message-transfers.rs"
 
 [[example]]
 name = "send-transfers"

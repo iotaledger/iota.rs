@@ -13,6 +13,7 @@ use iota::{
     signing::{IotaSeed, Seed},
     ternary::{T1B1Buf, TryteBuf},
 };
+use iota_conversion::Trinary;
 
 #[smol_potat::main]
 async fn main() -> Result<()> {
@@ -32,7 +33,8 @@ async fn main() -> Result<()> {
         ),
         // We are using a zero balance seed so we make a zero value transfer here
         value: 0,
-        message: "".to_string(),
+        message: None,
+        tag: None,
     });
 
     // Create a client instance
@@ -58,7 +60,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // The response of send_transfers is vector of Transaction type. We choose the first one and see what is its bundle hash
-    println!("{:?}", res[0].bundle());
+    println!("{:?}", res[0].bundle().to_inner().as_i8_slice().trytes());
 
     Ok(())
 }

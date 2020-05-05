@@ -1,6 +1,6 @@
 //! Response types
 use anyhow::Result;
-use bee_bundle::{Address, Hash, Transaction, TransactionField};
+use bee_bundle::{Address, Hash, Tag, Transaction, TransactionField};
 use bee_ternary::TryteBuf;
 
 /// addNeighbors Response Type
@@ -510,5 +510,7 @@ pub struct Transfer {
     /// Transfer value
     pub value: u64,
     /// Optional message
-    pub message: String,
+    pub message: Option<String>,
+    /// Optional message
+    pub tag: Option<Tag>,
 }
