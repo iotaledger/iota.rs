@@ -17,5 +17,9 @@ name = "get-node-info"
 path = "get-node-info.rs"
 
 [[example]]
+name = "message-transfers"
+path = "message-transfers.rs"
+
+[[example]]
 name = "send-transfers"
 path = "send-transfers.rs"
