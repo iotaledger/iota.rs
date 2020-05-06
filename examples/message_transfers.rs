@@ -3,7 +3,7 @@
 //! Run with:
 //!
 //! ```
-//! cargo run --example message-transfers
+//! cargo run --example message_transfers
 //! ```
 use anyhow::Result;
 use iota::{

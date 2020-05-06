@@ -1,9 +1,9 @@
-//! Get a valid new address as transfer address.
+//! Get an unused address from a connected node.
 //!
 //! Run with:
 //!
 //! ```
-//! cargo run --example get-new-address
+//! cargo run --example get_new_address
 //! ```
 use anyhow::Result;
 use iota::bundle::TransactionField;

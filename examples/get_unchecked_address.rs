@@ -1,12 +1,11 @@
-//! Get an unchecked from seed. This is just for developing purpose in case you want to see certain address.
-//! For general caes, users should use `get_new_address`.
+//! Get an address from seed and index that the address could be an used address on the Tangle.
+//! This is just for developing purpose in case you want to see a certain address.
 //!
 //! Run with:
 //!
 //! ```
-//! cargo run --example get-unchecked-address
+//! cargo run --example get_unchecked_address
 //! ```
-use anyhow::Result;
 use iota::bundle::{Address, TransactionField};
 use iota::crypto::Kerl;
 use iota::signing::{
@@ -16,8 +15,7 @@ use iota::signing::{
 use iota::ternary::{T1B1Buf, TryteBuf};
 use iota_conversion::Trinary;
 
-#[smol_potat::main]
-async fn main() -> Result<()> {
+fn main() {
     let seed = IotaSeed::<Kerl>::from_buf(
         TryteBuf::try_from_str(
             "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
@@ -43,6 +41,4 @@ async fn main() -> Result<()> {
     .unwrap();
 
     println!("Address:{:?}", address.to_inner().as_i8_slice().trytes());
-
-    Ok(())
 }
