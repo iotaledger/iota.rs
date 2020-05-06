@@ -13,13 +13,21 @@ smol-potat = "0.1"
 smol = { version = "0.1.2", features = ["tokio02"] }
 
 [[example]]
-name = "get-node-info"
-path = "get-node-info.rs"
+name = "get_new_address"
+path = "get_new_address.rs"
 
 [[example]]
-name = "message-transfers"
-path = "message-transfers.rs"
+name = "get_node_info"
+path = "get_node_info.rs"
 
 [[example]]
-name = "send-transfers"
-path = "send-transfers.rs"
+name = "get_unchecked_address"
+path = "get_unchecked_address.rs"
+
+[[example]]
+name = "message_transfers"
+path = "message_transfers.rs"
+
+[[example]]
+name = "send_transfers"
+path = "send_transfers.rs"

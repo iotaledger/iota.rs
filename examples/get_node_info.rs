@@ -3,7 +3,7 @@
 //! Run with:
 //!
 //! ```
-//! cargo run --example get-node-info
+//! cargo run --example get_node_info
 //! ```
 use anyhow::Result;
 
