@@ -1,9 +1,9 @@
 # iota.rs
 
-[![Build status](https://badge.buildkite.com/a4200bfaad6aa8ce4da6550c82dce3010e998437ecd9de93d8.svg)](https://buildkite.com/iota-foundation/iota-lib-rs)
-[![Version](https://img.shields.io/crates/v/iota-lib-rs.svg)](https://crates.io/crates/iota-lib-rs)
-[![Documentation](https://docs.rs/iota-lib-rs/badge.svg)](https://docs.rs/iota-lib-rs/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/iotaledger/iota-lib-rs/blob/master/LICENSE)
+[![Build status](https://img.shields.io/github/workflow/status/iotaledger/iota.rs/build_and_test)](https://github.com/iotaledger/iota.rs/actions)
+[![Version](https://img.shields.io/crates/v/iota-core.svg)](https://crates.io/crates/iota-core)
+[![Documentation](https://docs.rs/iota-core/badge.svg?version=0.2.0-alpha)](https://docs.rs/iota-core/0.2.0-alpha.1/iota/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/iotaledger/iota.rs/blob/master/LICENSE)
 
 This is the **alpha** version of official Rust library, which allows you to do the following:
 * Create transactions
@@ -11,7 +11,6 @@ This is the **alpha** version of official Rust library, which allows you to do t
 * Generate addresses
 * Interact with an IRI node
 
-TODO
 This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-core` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `send_transfers` and `traverse_bundle` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
 |Table of contents|
