@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
     });
 
     // Create a client instance
-    let res = iota::Client::new("https://nodes.comnet.thetangle.org")
+    let res = iota::Client::new("https://nodes.comnet.thetangle.org")?
         // Call send_transfers api
         .send_transfers()
         // Below is just a dummy seed which just serves as an example.

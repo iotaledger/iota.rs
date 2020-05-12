@@ -8,12 +8,12 @@ use crate::Client;
 /// Builder to construct getTrytes API
 #[derive(Debug)]
 pub struct GetTrytesBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     hashes: Vec<String>,
 }
 
 impl<'a> GetTrytesBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             hashes: Default::default(),

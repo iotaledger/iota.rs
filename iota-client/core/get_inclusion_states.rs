@@ -8,13 +8,13 @@ use crate::Client;
 /// Builder to construct getInclusionStates API
 #[derive(Debug)]
 pub struct GetInclusionStatesBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     transactions: Vec<String>,
     tips: Option<Vec<String>>,
 }
 
 impl<'a> GetInclusionStatesBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             transactions: Default::default(),

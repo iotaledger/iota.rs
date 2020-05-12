@@ -7,12 +7,12 @@ use crate::Client;
 /// Builder to construct removeNeighbors API
 #[derive(Debug)]
 pub struct AddNeighborsBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     uris: &'a [&'a str],
 }
 
 impl<'a> AddNeighborsBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             uris: Default::default(),

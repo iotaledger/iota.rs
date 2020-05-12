@@ -8,13 +8,13 @@ use crate::Client;
 /// Builder to construct getTransactionsToApprove API
 #[derive(Debug)]
 pub struct GetTransactionsToApproveBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     depth: u8,
     reference: Option<String>,
 }
 
 impl<'a> GetTransactionsToApproveBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             depth: Default::default(),

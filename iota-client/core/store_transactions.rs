@@ -8,12 +8,12 @@ use crate::Client;
 /// Builder to construct storeTransactions API
 #[derive(Debug)]
 pub struct StoreTransactionsBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     trytes: Vec<String>,
 }
 
 impl<'a> StoreTransactionsBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             trytes: Default::default(),
