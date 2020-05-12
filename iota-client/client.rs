@@ -5,12 +5,13 @@ use crate::response::*;
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
+use reqwest::Url;
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
         $self
             .client
-            .post($self.uri)
+            .post($self.uri.clone())
             .header("Content-Type", "application/json")
             .header("X-IOTA-API-Version", "1")
             .body($body.to_string())
@@ -23,20 +24,20 @@ macro_rules! response {
 
 /// An instance of the client using IRI URI
 #[derive(Debug)]
-pub struct Client<'a> {
+pub struct Client {
     /// URI of IRI connection
-    pub(crate) uri: &'a str,
+    pub(crate) uri: Url,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
 }
 
-impl Client<'_> {
+impl Client {
     /// Create a new instance of IOTA Client
-    pub fn new(uri: &str) -> Client<'_> {
-        Client {
-            uri,
+    pub fn new(uri: &str) -> Result<Client> {
+        Ok(Client {
+            uri: Url::parse(uri)?,
             client: reqwest::Client::new(),
-        }
+        })
     }
 
     /// Add a list of neighbors to your node. It should be noted that
@@ -304,7 +305,7 @@ impl Client<'_> {
 
         let _ = self
             .client
-            .post(self.uri)
+            .post(self.uri.clone())
             .header("Content-Type", "application/json")
             .header("X-IOTA-API-Version", "1")
             .body(body.to_string())

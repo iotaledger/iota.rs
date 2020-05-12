@@ -8,14 +8,14 @@ use crate::Client;
 /// Builder to construct getBalances API
 #[derive(Debug)]
 pub struct GetBalancesBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     addresses: Vec<String>,
     threshold: u8,
     tips: Option<Vec<String>>,
 }
 
 impl<'a> GetBalancesBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             addresses: Default::default(),

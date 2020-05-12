@@ -11,14 +11,14 @@ use crate::Client;
 /// Builder to construct GetNewAddress API
 //#[derive(Debug)]
 pub struct GetNewAddressBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     seed: Option<&'a IotaSeed<Kerl>>,
     index: u64,
     security: WotsSecurityLevel,
 }
 
 impl<'a> GetNewAddressBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             seed: None,

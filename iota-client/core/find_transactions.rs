@@ -8,7 +8,7 @@ use crate::Client;
 /// Builder to construct findTransactions API
 #[derive(Debug)]
 pub struct FindTransactionsBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     bundles: Option<Vec<String>>,
     addresses: Option<Vec<String>>,
     tags: Option<Vec<String>>,
@@ -16,7 +16,7 @@ pub struct FindTransactionsBuilder<'a> {
 }
 
 impl<'a> FindTransactionsBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             bundles: Default::default(),

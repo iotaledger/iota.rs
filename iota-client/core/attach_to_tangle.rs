@@ -9,7 +9,7 @@ use crate::Client;
 /// Builder to construct attachToTangle API
 #[derive(Debug)]
 pub struct AttachToTangleBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     trunk_transaction: String,
     branch_transaction: String,
     min_weight_magnitude: u8,
@@ -17,7 +17,7 @@ pub struct AttachToTangleBuilder<'a> {
 }
 
 impl<'a> AttachToTangleBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             trunk_transaction: Default::default(),

@@ -16,7 +16,7 @@ use crate::Client;
 /// Builder to construct PrepareTransfers API
 //#[derive(Debug)]
 pub struct PrepareTransfersBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     seed: Option<&'a IotaSeed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
@@ -25,7 +25,7 @@ pub struct PrepareTransfersBuilder<'a> {
 }
 
 impl<'a> PrepareTransfersBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             seed: None,

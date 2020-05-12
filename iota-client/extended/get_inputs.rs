@@ -8,7 +8,7 @@ use crate::Client;
 /// Builder to construct GetInputs API
 //#[derive(Debug)]
 pub struct GetInputsBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     seed: Option<&'a IotaSeed<Kerl>>,
     index: u64,
     security: u8,
@@ -16,7 +16,7 @@ pub struct GetInputsBuilder<'a> {
 }
 
 impl<'a> GetInputsBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             seed: None,

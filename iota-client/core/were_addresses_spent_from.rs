@@ -8,12 +8,12 @@ use crate::Client;
 /// Builder to construct WereAddressesSpentFrom API
 #[derive(Debug)]
 pub struct WereAddressesSpentFromBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     addresses: Vec<String>,
 }
 
 impl<'a> WereAddressesSpentFromBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             addresses: Default::default(),

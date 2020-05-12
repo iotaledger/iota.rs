@@ -8,12 +8,12 @@ use crate::Client;
 /// Builder to construct checkConsistency API
 #[derive(Debug)]
 pub struct CheckConsistencyBuilder<'a> {
-    client: &'a Client<'a>,
+    client: &'a Client,
     tails: Vec<String>,
 }
 
 impl<'a> CheckConsistencyBuilder<'a> {
-    pub(crate) fn new(client: &'a Client<'a>) -> Self {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
             client,
             tails: Default::default(),
