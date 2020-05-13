@@ -282,7 +282,7 @@ pub struct GetNodeAPIConfigurationResponse {
 }
 
 /// getNodeInfo Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetNodeInfoResponse {
     /// Name of IRI node
     #[serde(rename = "appName")]
