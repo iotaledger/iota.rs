@@ -189,6 +189,21 @@ impl Client {
         Ok(JsValue::from(""))
     }
 
+    #[wasm_bindgen(js_name = "broadcastBundle")]
+    pub async fn broadcast_bundle(self, hash_bytes: JsValue) -> Result<JsValue, JsValue> {
+        let hash_vec: Vec<i8> = hash_bytes.into_serde().map_err(js_error)?;
+        let hash = create_hash(&hash_vec);
+
+        let broadcast_response = self.client.broadcast_bundle(&hash)
+            .await
+            .map_err(js_error)?;
+        
+        // TODO this needs impl Serialize on bee > bundle > Transaction
+        // let response = response_to_js_value(&broadcast_response)?;
+
+        Ok(JsValue::from(""))
+    }
+
     #[wasm_bindgen(js_name =  "sendTransfers")]
     pub async fn send_transfers(self, seed: String, transfers: JsValue, min_weight_magnitude: Option<u8>) -> Result<JsValue, JsValue> {
         let encoded_seed = IotaSeed::<Kerl>::from_buf(
