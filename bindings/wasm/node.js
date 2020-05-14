@@ -46,6 +46,22 @@ class Client {
             return this.__getClient().then(client => client.getNewAddress(seed, index, security))
         }, seed)
     }
+
+    addNeighbors(uris) {
+        if (typeof uris === 'string') {
+            uris = [uris]
+        } else if (!Array.isArray(uris)) {
+            throw new Error('uris must be an array')
+        } else if (uris.some(uri => typeof uri !== 'string')) {
+            throw new Error('Every uri must be a string')
+        }
+
+        return this.__getClient().then(client => client.addNeighbors(uris))
+    }
+
+    sendTransfers(seed, transfers, minWeightMagnitude = null) {
+        return this.__getClient().then(client => client.sendTransfers(seed, transfers, minWeightMagnitude))
+    }
 }
 
 module.exports = { Client }

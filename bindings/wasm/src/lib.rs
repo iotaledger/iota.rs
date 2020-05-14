@@ -2,11 +2,13 @@ use wasm_bindgen::prelude::*;
 use iota::crypto::Kerl;
 use iota::signing::{IotaSeed, Seed};
 use iota::ternary::{T1B1Buf, TryteBuf};
-use iota::bundle::TransactionField;
+use iota::bundle::{Address, TransactionField};
+use iota::client::response::Transfer;
 use iota_conversion::Trinary;
-use serde::Serialize;
+use iota_bundle_preview::{Hash, Transaction};
+use serde::{Serialize, Deserialize};
 
-/* #[wasm_bindgen]
+#[wasm_bindgen]
 extern {
   #[wasm_bindgen(js_namespace = console)]
   pub fn log(s: &str);
@@ -20,7 +22,7 @@ macro_rules! console_log {
 
 macro_rules! console_error {
   ($($t:tt)*) => (error(&format_args!($($t)*).to_string()))
-} */
+}
 
 #[wasm_bindgen]
 #[derive(Serialize)]
@@ -35,6 +37,19 @@ impl NewAddress {
     pub fn address(&self) -> String {
         self.address.clone()
     }
+}
+
+#[wasm_bindgen]
+#[derive(Deserialize)]
+pub struct NewTransfer {
+    value: u64
+}
+
+#[wasm_bindgen]
+#[derive(Serialize)]
+pub struct SentTransaction {
+    #[serde(rename = "isTail")]
+    is_tail: bool
 }
 
 #[wasm_bindgen]
@@ -110,11 +125,11 @@ impl Client {
         Ok(res)
     }
 
-    /* #[wasm_bindgen(js_name = "addNeighbors")]
+    #[wasm_bindgen(js_name = "addNeighbors")]
     pub async fn add_neighbors(self, uris: JsValue) -> Result<JsValue, JsValue> {
         let uris: Vec<String> = uris.into_serde().map_err(js_error)?;
-        let mut builder = self.client.add_neighbors()
-            .uris(&uris)
+        let builder = self.client.add_neighbors()
+            .uris(uris)
             .map_err(js_error)?;
 
         let added_neighbords = builder
@@ -124,5 +139,51 @@ impl Client {
         let res = response_to_js_value(added_neighbords)?;
 
         Ok(res)
-    } */
+    }
+
+    #[wasm_bindgen(js_name =  "sendTransfers")]
+    pub async fn send_transfers(self, seed: String, transfers: JsValue, min_weight_magnitude: Option<u8>) -> Result<JsValue, JsValue> {
+        let encoded_seed = IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(&seed)
+            .map_err(js_error)?
+            .as_trits()
+            .encode::<T1B1Buf>(),
+        )
+            .map_err(js_error)?;
+
+        let address = Address::from_inner_unchecked(
+            TryteBuf::try_from_str(&seed)
+            .map_err(js_error)?
+            .as_trits()
+            .encode(),
+        );
+
+        let js_transfers: Vec<NewTransfer> = transfers.into_serde().map_err(js_error)?;
+        let transfers = js_transfers.iter().map(|transfer| Transfer {
+            address: address.clone(),
+            value: transfer.value,
+            message: None,
+            tag: None,
+        }).collect();
+
+        let mut builder = self.client.send_transfers()
+            .seed(&encoded_seed)
+            .transfers(transfers);
+
+        if let Some(min_weight_magnitude) = min_weight_magnitude {
+            builder = builder.min_weight_magnitude(min_weight_magnitude);
+        }
+
+        let transactions = builder
+            .send()
+            .await
+            .map_err(js_error)?;
+
+        let response: Vec<SentTransaction> = transactions.iter().map(|transaction| SentTransaction {
+            is_tail: transaction.is_tail()
+        }).collect();
+        
+        let res = response_to_js_value(response)?;
+        Ok(res)
+    }
 }

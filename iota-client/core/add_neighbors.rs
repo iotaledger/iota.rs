@@ -8,7 +8,7 @@ use crate::Client;
 #[derive(Debug)]
 pub struct AddNeighborsBuilder<'a> {
     client: &'a Client,
-    uris: &'a [&'a str],
+    uris: Vec<String>,
 }
 
 impl<'a> AddNeighborsBuilder<'a> {
@@ -20,9 +20,9 @@ impl<'a> AddNeighborsBuilder<'a> {
     }
 
     /// Slice of neighbor URIs(`&str`) to add
-    pub fn uris(mut self, uris: &'a [&str]) -> Result<Self> {
-        for uri in uris {
-            match Url::parse(uri)?.scheme() {
+    pub fn uris(mut self, uris: Vec<String>) -> Result<Self> {
+        for uri in &uris {
+            match Url::parse(&uri)?.scheme() {
                 "tcp" | "udp" => (),
                 _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
             }

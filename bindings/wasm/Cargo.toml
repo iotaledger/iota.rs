@@ -12,7 +12,8 @@ crate-type = ["cdylib"]
 [dependencies]
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
-iota-core = { path = "../../iota-core" }
+iota-core = { path = "../../iota-core", features = ["wasm"] }
 iota-conversion = { version = "0.5.0", path = "../../iota-conversion" }
+iota-bundle-preview = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 console_error_panic_hook = "0.1.6"
