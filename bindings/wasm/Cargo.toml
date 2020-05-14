@@ -1,0 +1,18 @@
+[package]
+name = "iota-wasm"
+version = "0.1.0"
+authors = ["Lucas Nogueira <lucas.nogueira@iota.org>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+wasm-bindgen-futures = "0.4"
+iota-core = { path = "../../iota-core" }
+iota-conversion = { version = "0.5.0", path = "../../iota-conversion" }
+serde = { version = "1.0", features = ["derive"] }
+console_error_panic_hook = "0.1.6"

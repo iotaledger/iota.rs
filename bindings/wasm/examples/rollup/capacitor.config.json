@@ -1,0 +1,11 @@
+{
+  "appId": "com.example.app",
+  "appName": "svelte-app",
+  "bundledWebRuntime": false,
+  "npmClient": "yarn",
+  "webDir": "public",
+  "cordova": {},
+  "server": {
+  },
+  "linuxAndroidStudioPath": "/opt/android-studio/bin/studio.sh"
+}

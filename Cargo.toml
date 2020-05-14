@@ -6,3 +6,6 @@ members = [
     "iota-client",
     "examples",
 ]
+exclude = [
+    "bindings/wasm"
+]

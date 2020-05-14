@@ -1,0 +1,25 @@
+{
+  "name": "iota-rs-wasm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "build:nodejs": "wasm-pack build --target nodejs --out-dir wasm-node",
+    "build:web": "wasm-pack build --target web --out-dir wasm-web && node ./build/web",
+    "build": "yarn build:web && yarn build:nodejs",
+    "pretest": "yarn build:nodejs",
+    "prepublish": "yarn build",
+    "test": "mocha"
+  },
+  "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^7.1.2"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  }
+}
