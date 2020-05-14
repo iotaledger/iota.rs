@@ -1,0 +1,15 @@
+[package]
+name = "iota-shared"
+version = "0.1.0-alpha.1"
+authors = ["YuWeiWu <wusyong9104@gmail.com>"]
+edition = "2018"
+description = "Static library of IOTA that compatible to C"
+license = "MIT"
+
+[lib]
+name = "iota"
+crate-type = ["cdylib"]
+
+[dependencies]
+iota-core = { version = "0.2.0-alpha.1", path = "../iota-core" }
+smol = "0.1.4"
