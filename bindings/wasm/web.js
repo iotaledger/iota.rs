@@ -51,12 +51,27 @@ class Client {
         if (typeof uris === 'string') {
             uris = [uris]
         } else if (!Array.isArray(uris)) {
-            throw new Error('uris must be an array')
+            return Promise.reject(new Error('uris must be an array'))
         } else if (uris.some(uri => typeof uri !== 'string')) {
-            throw new Error('Every uri must be a string')
+            return Promise.reject(new Error('Every uri must be a string'))
         }
 
         return this.__getClient().then(client => client.addNeighbors(uris))
+    }
+
+    attachToTangle(trunkTransactionHash, branchTransactionHash, minWeightMagnitude = null, transactions = null) {
+        return this.__getClient()
+            .then(
+                client => client.attachToTangle(trunkTransactionHash, branchTransactionHash, minWeightMagnitude, transactions)
+            )
+    }
+
+    broadcastBundle(tailTransactionHash) {
+        return this.__getClient().then(client => client.broadcastBundle(tailTransactionHash))
+    }
+
+    checkConsistency(tailTransactionHashes) {
+        return this.__getClient().then(client => client.checkConsistency(tailTransactionHashes))
     }
 
     sendTransfers(seed, transfers, minWeightMagnitude = null) {

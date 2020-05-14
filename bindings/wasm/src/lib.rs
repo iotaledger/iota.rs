@@ -190,11 +190,11 @@ impl Client {
     }
 
     #[wasm_bindgen(js_name = "broadcastBundle")]
-    pub async fn broadcast_bundle(self, hash_bytes: JsValue) -> Result<JsValue, JsValue> {
-        let hash_vec: Vec<i8> = hash_bytes.into_serde().map_err(js_error)?;
-        let hash = create_hash(&hash_vec);
+    pub async fn broadcast_bundle(self, tail_transaction_hash_bytes: JsValue) -> Result<JsValue, JsValue> {
+        let tail_transaction_hash_vec: Vec<i8> = tail_transaction_hash_bytes.into_serde().map_err(js_error)?;
+        let tail_transaction_hash = create_hash(&tail_transaction_hash_vec);
 
-        let broadcast_response = self.client.broadcast_bundle(&hash)
+        let broadcast_response = self.client.broadcast_bundle(&tail_transaction_hash)
             .await
             .map_err(js_error)?;
         
