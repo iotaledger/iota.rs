@@ -66,6 +66,13 @@ fn js_error<T: std::fmt::Debug>(e: T) -> JsValue {
     JsValue::from(format!("{:?}", e))
 }
 
+fn create_hash(bytes: &[i8]) -> Hash {
+    let mut array = [0; 243];
+    let bytes = &bytes[..array.len()];
+    array.copy_from_slice(bytes); 
+    Hash(array)
+}
+
 #[wasm_bindgen]
 impl Client {
     #[wasm_bindgen(constructor)]
@@ -139,6 +146,47 @@ impl Client {
         let res = response_to_js_value(added_neighbords)?;
 
         Ok(res)
+    }
+
+    #[wasm_bindgen(js_name = "attachToTangle")]
+    pub async fn attach_to_tangle(
+        self,
+        trunk_transaction_hash_bytes: JsValue,
+        branch_transaction_hash_bytes: JsValue,
+        min_weight_magnitude: Option<u8>,
+        transactions: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        let mut builder = self.client.attach_to_tangle();
+
+        if trunk_transaction_hash_bytes.is_truthy() {
+            let hash_vec: Vec<i8> = trunk_transaction_hash_bytes.into_serde().map_err(js_error)?;
+            let hash = create_hash(&hash_vec[..]);
+            builder = builder.trunk_transaction(&hash);
+        }
+
+        if branch_transaction_hash_bytes.is_truthy() {
+            let hash_vec: Vec<i8> = branch_transaction_hash_bytes.into_serde().map_err(js_error)?;
+            let hash = create_hash(&hash_vec[..]);
+            builder = builder.branch_transaction(&hash);
+        }
+
+        if transactions.is_truthy() {
+            // let transactions: Vec<Transaction> = transactions.into_serde().map_err(js_error)?;
+        }
+
+        if let Some(min_weight_magnitude) = min_weight_magnitude {
+            builder = builder.min_weight_magnitude(min_weight_magnitude);
+        }
+
+        let attach_response = builder
+            .send()
+            .await
+            .map_err(js_error)?;
+
+        // TODO this needs impl Serialize on bee > bundle > Transaction
+        // let response = response_to_js_value(&attach_response)?;
+
+        Ok(JsValue::from(""))
     }
 
     #[wasm_bindgen(js_name =  "sendTransfers")]
