@@ -12,7 +12,7 @@ pub struct AddNeighborsResponse {
 }
 
 /// checkConsistency Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ConsistencyResponse {
     /// State of the given transactions in the `tails` parameter. A `true` value means
     /// that all given transactions are consistent. A `false` value means that one

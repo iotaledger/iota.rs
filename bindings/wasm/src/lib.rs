@@ -204,6 +204,27 @@ impl Client {
         Ok(JsValue::from(""))
     }
 
+    #[wasm_bindgen(js_name = "checkConsistency")]
+    pub async fn check_consistency(self, tails: JsValue) -> Result<JsValue, JsValue> {
+        let tails_vec: Vec<Vec<i8>> = tails.into_serde().map_err(js_error)?;
+        let mut tails = Vec::new();
+        for tail_vec in tails_vec {
+            tails.push(create_hash(&tail_vec));
+        }
+
+        let builder = self.client.check_consistency()
+            .tails(&tails);
+
+        let consistency_response = builder
+            .send()
+            .await
+            .map_err(js_error)?;
+
+        let response = response_to_js_value(consistency_response)?;
+
+        Ok(response)
+    }
+
     #[wasm_bindgen(js_name =  "sendTransfers")]
     pub async fn send_transfers(self, seed: String, transfers: JsValue, min_weight_magnitude: Option<u8>) -> Result<JsValue, JsValue> {
         let encoded_seed = IotaSeed::<Kerl>::from_buf(
