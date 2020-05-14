@@ -4,7 +4,7 @@ use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
 
 /// addNeighbors Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AddNeighborsResponse {
     #[serde(rename = "addedNeighbors")]
     /// Total number of added neighbors
