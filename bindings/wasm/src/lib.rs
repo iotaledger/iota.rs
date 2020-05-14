@@ -154,7 +154,7 @@ impl Client {
         trunk_transaction_hash_bytes: JsValue,
         branch_transaction_hash_bytes: JsValue,
         min_weight_magnitude: Option<u8>,
-        transactions: JsValue,
+        transactions_trytes: JsValue,
     ) -> Result<JsValue, JsValue> {
         let mut builder = self.client.attach_to_tangle();
 
@@ -170,8 +170,8 @@ impl Client {
             builder = builder.branch_transaction(&hash);
         }
 
-        if transactions.is_truthy() {
-            // let transactions: Vec<Transaction> = transactions.into_serde().map_err(js_error)?;
+        if transactions_trytes.is_truthy() {
+            // let transactions_trytes: Vec<Transaction> = transactions_trytes.into_serde().map_err(js_error)?;
         }
 
         if let Some(min_weight_magnitude) = min_weight_magnitude {
