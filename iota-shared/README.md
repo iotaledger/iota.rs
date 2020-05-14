@@ -10,4 +10,4 @@ Since the build targets are all produced in the `target` directory. We put the `
 make
 ```
 
-What it does is building the shared library and C main file as example and run it. The C source file has been documented, each extern functions from the shared library all have their own documentations.
+What it does is building the shared library and C main file as example and run it. The C source file has been documented, each extern functions from the shared library all have their own documentations. If you are curious about performance, here's [benchmark](documentation/benchmark.md) result we tested on both C and Rust.
