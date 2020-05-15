@@ -2,6 +2,7 @@ mod common;
 use crate::common::*;
 use iota_bundle_preview::*;
 use iota_client::response::*;
+use iota_client::Client;
 use iota_crypto_preview::*;
 use iota_signing_preview::*;
 use iota_ternary_preview::*;
@@ -401,11 +402,8 @@ async fn test_prepare_transfers_no_value() {
 
 #[tokio::test]
 async fn test_remove_neighbors() {
-    let res = client_init()
-        .remove_neighbors()
-        .uris(&["tcp://0.0.0.0:15600"])
-        .unwrap()
-        .send()
+    client_init();
+    let res = Client::remove_neighbors(&["tcp://0.0.0.0:15600"])
         .await
         .unwrap();
 

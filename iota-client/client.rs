@@ -37,24 +37,28 @@ pub struct Client {
 impl Client {
     /// Get the instance of IOTA Client. It will init the instance if it's not created yet.
     pub fn get() -> &'static Client {
-        static CLIENT: Lazy<Client> = Lazy::new(|| {
-            Client {
-                uri: AtomicPtr::default(),
-                client: reqwest::Client::new(),
-            }
+        static CLIENT: Lazy<Client> = Lazy::new(|| Client {
+            uri: AtomicPtr::default(),
+            client: reqwest::Client::new(),
         });
-        
+
         &CLIENT
     }
 
     /// Add a node to the node pool. (TODO: it's not though)
     pub fn add_node(uri: &str) -> Result<()> {
-        Client::get().uri.store(Box::into_raw(Box::new(Url::parse(uri)?)), Ordering::Relaxed);
+        Client::get()
+            .uri
+            .store(Box::into_raw(Box::new(Url::parse(uri)?)), Ordering::Relaxed);
         Ok(())
     }
 
     pub(crate) fn get_node() -> Result<Url> {
-        Ok(unsafe{Client::get().uri.load(Ordering::Relaxed).as_ref()}.ok_or(anyhow!("Fail to get node url"))?.clone())
+        Ok(
+            unsafe { Client::get().uri.load(Ordering::Relaxed).as_ref() }
+                .ok_or(anyhow!("Fail to get node url"))?
+                .clone(),
+        )
     }
 
     /// Add a list of neighbors to your node. It should be noted that
@@ -64,8 +68,21 @@ impl Client {
     /// * [`uris`] - Slices of neighbor URIs(`&str`) to add
     ///
     /// [`uris`]: ../core/struct.AddNeighborsBuilder.html#method.uris
-    pub fn add_neighbors(&self) -> AddNeighborsBuilder<'_> {
-        AddNeighborsBuilder::new(&self)
+    pub async fn add_neighbors(uris: &[&str]) -> Result<AddNeighborsResponse> {
+        for uri in uris {
+            match Url::parse(uri)?.scheme() {
+                "tcp" | "udp" => (),
+                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+            }
+        }
+
+        let client = Client::get();
+        let body = json!({
+            "command": "addNeighbors",
+            "uris": uris,
+        });
+
+        Ok(response!(client, body))
     }
 
     /// Does proof of work for the given transaction trytes.
@@ -400,8 +417,21 @@ impl Client {
     /// * [`uris`] - Slice of neighbor URIs(`&str`) to remove
     ///
     /// [`uris`]: ../core/struct.RemoveNeighborsBuilder.html#method.uris
-    pub fn remove_neighbors(&self) -> RemoveNeighborsBuilder<'_> {
-        RemoveNeighborsBuilder::new(&self)
+    pub async fn remove_neighbors(uris: &[&str]) -> Result<RemoveNeighborsResponse> {
+        for uri in uris {
+            match Url::parse(uri)?.scheme() {
+                "tcp" | "udp" => (),
+                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+            }
+        }
+
+        let client = Client::get();
+        let body = json!({
+            "command": "removeNeighbors",
+            "uris": uris,
+        });
+
+        Ok(response!(client, body))
     }
 
     /// Reattaches a transfer to tangle by selecting tips & performing the Proof-of-Work again.
