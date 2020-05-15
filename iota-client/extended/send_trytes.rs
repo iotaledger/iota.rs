@@ -70,9 +70,7 @@ impl<'a> SendTrytesBuilder<'a> {
             );
         }
 
-        let res = self
-            .client
-            .attach_to_tangle()
+        let res = Client::attach_to_tangle()
             .trytes(&trytes)
             .branch_transaction(&res.branch_transaction)
             .trunk_transaction(&res.trunk_transaction)

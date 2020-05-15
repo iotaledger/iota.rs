@@ -20,9 +20,8 @@ async fn test_add_neighbors() {
 
 #[tokio::test]
 async fn test_attach_to_tangle() {
-    let client = client_init();
-    let res = client
-        .attach_to_tangle()
+    client_init();
+    let res = Client::attach_to_tangle()
         .trunk_transaction(&Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_TRUNK_HASH)
                 .unwrap()
@@ -525,7 +524,7 @@ async fn test_were_addresses_spent_from() {
 
     assert_eq!(res.states[0], false);
 }
-
+*/
 fn tx() -> Transaction {
     TransactionBuilder::new()
         .with_payload(Payload::zeros())

@@ -48,8 +48,9 @@ impl Client {
     }
 
     /// Add a node to the node pool. (TODO: it's not though)
-    pub fn add_node(uri: Url) {
-        Client::get().uri.store(Box::into_raw(Box::new(uri)), Ordering::Relaxed);
+    pub fn add_node(uri: &str) -> Result<()> {
+        Client::get().uri.store(Box::into_raw(Box::new(Url::parse(uri)?)), Ordering::Relaxed);
+        Ok(())
     }
 
     pub(crate) fn get_node() -> Result<Url> {
@@ -81,8 +82,8 @@ impl Client {
     /// [`branch_transaction`]: ../core/struct.AttachToTangleBuilder.html#method.branch_transaction
     /// [`min_weight_magnitude`]: ../core/struct.AttachToTangleBuilder.html#method.min_weight_magnitude
     /// [`trytes`]: ../core/struct.AttachToTangleBuilder.html#method.trytes
-    pub fn attach_to_tangle(&self) -> AttachToTangleBuilder<'_> {
-        AttachToTangleBuilder::new(&self)
+    pub fn attach_to_tangle() -> AttachToTangleBuilder {
+        AttachToTangleBuilder::new()
     }
 
     /// Re-broadcasts all transactions in a bundle given the tail transaction hash. It might be useful
