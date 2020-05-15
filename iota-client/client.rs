@@ -11,7 +11,7 @@ macro_rules! response {
     ($self:ident, $body:ident) => {
         $self
             .client
-            .post($self.uri.clone())
+            .post(Client::get_node()?)
             .header("Content-Type", "application/json")
             .header("X-IOTA-API-Version", "1")
             .body($body.to_string())
@@ -22,22 +22,38 @@ macro_rules! response {
     };
 }
 
+use once_cell::sync::Lazy;
+use std::sync::atomic::{AtomicPtr, Ordering};
+
 /// An instance of the client using IRI URI
 #[derive(Debug)]
 pub struct Client {
     /// URI of IRI connection
-    pub(crate) uri: Url,
+    pub(crate) uri: AtomicPtr<Url>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
 }
 
 impl Client {
-    /// Create a new instance of IOTA Client
-    pub fn new(uri: &str) -> Result<Client> {
-        Ok(Client {
-            uri: Url::parse(uri)?,
-            client: reqwest::Client::new(),
-        })
+    /// Get the instance of IOTA Client. It will init the instance if it's not created yet.
+    pub fn get() -> &'static Client {
+        static CLIENT: Lazy<Client> = Lazy::new(|| {
+            Client {
+                uri: AtomicPtr::default(),
+                client: reqwest::Client::new(),
+            }
+        });
+        
+        &CLIENT
+    }
+
+    /// Add a node to the node pool. (TODO: it's not though)
+    pub fn add_node(uri: Url) {
+        Client::get().uri.store(Box::into_raw(Box::new(uri)), Ordering::Relaxed);
+    }
+
+    pub(crate) fn get_node() -> Result<Url> {
+        Ok(unsafe{Client::get().uri.load(Ordering::Relaxed).as_ref()}.ok_or(anyhow!("Fail to get node url"))?.clone())
     }
 
     /// Add a list of neighbors to your node. It should be noted that
@@ -305,7 +321,7 @@ impl Client {
 
         let _ = self
             .client
-            .post(self.uri.clone())
+            .post(Client::get_node()?)
             .header("Content-Type", "application/json")
             .header("X-IOTA-API-Version", "1")
             .body(body.to_string())
