@@ -43,7 +43,6 @@ async fn test_attach_to_tangle() {
 
     assert!(!res.trytes.is_empty());
 }
-
 #[tokio::test]
 async fn test_broadcast_bundle() {
     let _ = client_init()
@@ -399,7 +398,6 @@ async fn test_prepare_transfers_no_value() {
         .await
         .unwrap();
 }
-
 #[tokio::test]
 async fn test_remove_neighbors() {
     client_init();
@@ -411,7 +409,6 @@ async fn test_remove_neighbors() {
         assert_eq!(neighbor, 0);
     }
 }
-
 #[tokio::test]
 async fn test_replay_bundle() {
     let client = client_init();
