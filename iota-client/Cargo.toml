@@ -26,5 +26,4 @@ iota-crypto-preview = "0.1"
 iota-conversion = { version = "0.5.0", path = "../iota-conversion" }
 
 [dev-dependencies]
-smol-potat = "0.1"
-smol = { version = "0.1.2", features = ["tokio02"] }
+tokio = { version = "0.2.21", features = ["macros"] }
