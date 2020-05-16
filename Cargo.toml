@@ -4,5 +4,6 @@ members = [
     "iota-conversion",
     "iota-constants",
     "iota-client",
+    "bindings/c",
     "examples",
 ]
