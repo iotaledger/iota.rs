@@ -1,8 +1,10 @@
 
 ifeq ($(shell uname),Darwin)
-    LDFLAGS := -Wl,-dead_strip
+    LDFLAGS := -Wl
+	LD_LIBRARY_PATH := target/debug/libiota.dylib
 else
     LDFLAGS := -Wl,--gc-sections -lpthread -ldl
+	LD_LIBRARY_PATH := target/debug/libiota.so
 endif
 
 all: target/iota
@@ -11,13 +13,13 @@ all: target/iota
 target:
 	mkdir -p $@
 
-target/iota: target/main.o target/debug/libiota.so
+target/iota: target/main.o $(LD_LIBRARY_PATH)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-target/debug/libiota.so: iota-shared/src/lib.rs Cargo.toml
+$(LD_LIBRARY_PATH): bindings/c/src/lib.rs Cargo.toml
 	cargo build
 
-target/main.o: iota-shared/src/main.c | target
+target/main.o: bindings/c/src/main.c | target
 	$(CC) -o $@ -c $<
 
 clean:
