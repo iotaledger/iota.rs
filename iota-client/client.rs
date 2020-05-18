@@ -214,8 +214,8 @@ impl Client {
     ///
     /// [`transactions`]: ../core/struct.GetInclusionStatesBuilder.html#method.transactions
     /// [`tips`]: ../core/struct.GetInclusionStatesBuilder.html#method.tips
-    pub fn get_inclusion_states(&self) -> GetInclusionStatesBuilder<'_> {
-        GetInclusionStatesBuilder::new(&self)
+    pub fn get_inclusion_states() -> GetInclusionStatesBuilder {
+        GetInclusionStatesBuilder::new()
     }
 
     /// Creates and returns an Inputs object by generating addresses and fetching their latest balance.
@@ -240,8 +240,7 @@ impl Client {
     /// * [`transactions`] - List of transaction hashes for which you want to get the inclusion state
     pub async fn get_latest_inclusion(&self, transactions: &[Hash]) -> Result<Vec<bool>> {
         let milestone = self.get_latest_solid_subtangle_milestone().await?;
-        let states = self
-            .get_inclusion_states()
+        let states = Client::get_inclusion_states()
             .transactions(transactions)
             .tips(&[milestone])
             .send()

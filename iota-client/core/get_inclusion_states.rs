@@ -7,16 +7,14 @@ use crate::Client;
 
 /// Builder to construct getInclusionStates API
 #[derive(Debug)]
-pub struct GetInclusionStatesBuilder<'a> {
-    client: &'a Client,
+pub struct GetInclusionStatesBuilder {
     transactions: Vec<String>,
     tips: Option<Vec<String>>,
 }
 
-impl<'a> GetInclusionStatesBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+impl GetInclusionStatesBuilder {
+    pub(crate) fn new() -> Self {
         Self {
-            client,
             transactions: Default::default(),
             tips: Default::default(),
         }
@@ -43,7 +41,7 @@ impl<'a> GetInclusionStatesBuilder<'a> {
 
     /// Send getInclusionStates request
     pub async fn send(self) -> Result<GetInclusionStatesResponse> {
-        let client = self.client;
+        let client = Client::get();
         let mut body = json!({
             "command": "getInclusionStates",
             "transactions": self.transactions,

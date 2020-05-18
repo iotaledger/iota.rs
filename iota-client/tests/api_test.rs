@@ -165,12 +165,12 @@ async fn test_get_bundle() {
         .await
         .unwrap();
 }
+*/
 
 #[tokio::test]
 async fn test_get_inclusion_states() {
-    let client = client_init();
-    let res = client
-        .get_inclusion_states()
+    client_init();
+    let res = Client::get_inclusion_states()
         .transactions(&[
             Hash::from_inner_unchecked(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
@@ -191,7 +191,7 @@ async fn test_get_inclusion_states() {
 
     assert!(!res.states.is_empty());
 }
-
+/*
 #[tokio::test]
 async fn test_get_inputs() {
     let _ = client_init()
