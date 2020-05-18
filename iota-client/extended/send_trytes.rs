@@ -7,18 +7,16 @@ use crate::Client;
 
 /// Builder to construct sendTrytes API
 //#[derive(Debug)]
-pub struct SendTrytesBuilder<'a> {
-    client: &'a Client,
+pub struct SendTrytesBuilder {
     trytes: Vec<Transaction>,
     depth: u8,
     min_weight_magnitude: u8,
     reference: Option<Hash>,
 }
 
-impl<'a> SendTrytesBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+impl SendTrytesBuilder {
+    pub(crate) fn new() -> Self {
         Self {
-            client,
             trytes: Default::default(),
             depth: Default::default(),
             min_weight_magnitude: Default::default(),

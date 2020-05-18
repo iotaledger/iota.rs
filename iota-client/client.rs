@@ -112,8 +112,8 @@ impl Client {
     ///
     /// # Parameters
     /// * `hash` - Tail transaction hash (current_index == 0)
-    pub async fn broadcast_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
-        let mut bundle = self.get_bundle(hash).await?;
+    pub async fn broadcast_bundle(hash: &Hash) -> Result<Vec<Transaction>> {
+        let mut bundle = Client::get_bundle(hash).await?;
         bundle.reverse();
 
         Client::broadcast_transactions(&bundle).await?;
@@ -200,9 +200,9 @@ impl Client {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`traverse_bundle`]: #method.traverse_bundle
-    pub async fn get_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
+    pub async fn get_bundle(hash: &Hash) -> Result<Vec<Transaction>> {
         // TODO validate bundle once it's in iota_bundle_preview's bundle types
-        let bundle = self.traverse_bundle(hash).await?;
+        let bundle = Client::traverse_bundle(hash).await?;
         Ok(bundle)
     }
 
@@ -471,10 +471,10 @@ impl Client {
     ///
     /// [`depth`]: ../extended/struct.SendTrytesBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTrytesBuilder.html#method.min_weight_magnitude
-    pub async fn replay_bundle(&self, hash: &Hash) -> Result<SendTrytesBuilder<'_>> {
-        let mut bundle = self.get_bundle(hash).await?;
+    pub async fn replay_bundle(hash: &Hash) -> Result<SendTrytesBuilder> {
+        let mut bundle = Client::get_bundle(hash).await?;
         bundle.reverse();
-        Ok(SendTrytesBuilder::new(&self).trytes(bundle))
+        Ok(SendTrytesBuilder::new().trytes(bundle))
     }
 
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
@@ -511,8 +511,8 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTrytesBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTrytesBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTrytesBuilder.html#method.reference
-    pub fn send_trytes(&self) -> SendTrytesBuilder<'_> {
-        SendTrytesBuilder::new(&self)
+    pub fn send_trytes() -> SendTrytesBuilder {
+        SendTrytesBuilder::new()
     }
 
     /// Store and broadcast transactions to the node.
@@ -552,7 +552,7 @@ impl Client {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`get_bundle`]: #method.get_bundle
-    pub async fn traverse_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
+    pub async fn traverse_bundle(hash: &Hash) -> Result<Vec<Transaction>> {
         let mut bundle = Vec::new();
         let mut hash = *hash;
         let mut tail = true;

@@ -92,8 +92,7 @@ impl<'a> SendTransfersBuilder<'a> {
 
         let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().map(|x| x).collect();
         trytes.reverse();
-        let mut send_trytes = Client::get()
-            .send_trytes()
+        let mut send_trytes = Client::send_trytes()
             .trytes(trytes)
             .depth(self.depth)
             .min_weight_magnitude(self.min_weight_magnitude);

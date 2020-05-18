@@ -39,20 +39,19 @@ async fn test_attach_to_tangle() {
 
     assert!(!res.trytes.is_empty());
 }
-/*
+
 #[tokio::test]
 async fn test_broadcast_bundle() {
-    let _ = client_init()
-        .broadcast_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+    client_init();
+    let _ = Client::broadcast_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 }
-*/
 
 #[tokio::test]
 async fn test_broadcast_transactions() {
@@ -152,20 +151,19 @@ async fn test_get_balances() {
         .await
         .unwrap();
 }
-/*
+
 #[tokio::test]
 async fn test_get_bundle() {
-    let _ = client_init()
-        .get_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+    client_init();
+    let _ = Client::get_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 }
-*/
 
 #[tokio::test]
 async fn test_get_inclusion_states() {
@@ -259,17 +257,17 @@ async fn test_get_missing_transactions() {
 async fn test_get_new_address() {
     client_init();
     let _ = Client::get_new_address(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .generate()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .generate()
+    .await
+    .unwrap();
 }
 /*
 #[tokio::test]
@@ -393,25 +391,23 @@ async fn test_remove_neighbors() {
         assert_eq!(neighbor, 0);
     }
 }
-/*
+
 #[tokio::test]
 async fn test_replay_bundle() {
-    let client = client_init();
-    let _ = client
-        .replay_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap()
-        .depth(3)
-        .min_weight_magnitude(9)
-        .send()
-        .await;
+    client_init();
+    let _ = Client::replay_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap()
+    .depth(3)
+    .min_weight_magnitude(9)
+    .send()
+    .await;
 }
-*/
 
 // We don't do value transfer test since it's not ideal to be a general test case. But confirmed sample can be found here:
 #[tokio::test]
@@ -447,18 +443,17 @@ async fn test_send_transfers_no_value() {
     .await
     .unwrap();
 }
-/*
+
 #[tokio::test]
 async fn test_send_trytes() {
-    let client = client_init();
-    let _ = client
-        .send_trytes()
+    client_init();
+    let _ = Client::send_trytes()
         .min_weight_magnitude(9)
         .trytes(vec![tx()])
         .send()
         .await;
 }
-*/
+
 #[tokio::test]
 async fn test_store_and_broadcast() {
     client_init();
@@ -470,20 +465,19 @@ async fn test_store_transactions() {
     client_init();
     Client::store_transactions(&[tx()]).await.unwrap();
 }
-/*
+
 #[tokio::test]
 async fn test_traverse_bundle() {
-    let _ = client_init()
-        .traverse_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+    client_init();
+    let _ = Client::traverse_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 }
-*/
 
 #[tokio::test]
 async fn test_were_addresses_spent_from() {
