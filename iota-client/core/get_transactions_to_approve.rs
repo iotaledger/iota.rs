@@ -7,16 +7,14 @@ use crate::Client;
 
 /// Builder to construct getTransactionsToApprove API
 #[derive(Debug)]
-pub struct GetTransactionsToApproveBuilder<'a> {
-    client: &'a Client,
+pub struct GetTransactionsToApproveBuilder {
     depth: u8,
     reference: Option<String>,
 }
 
-impl<'a> GetTransactionsToApproveBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+impl GetTransactionsToApproveBuilder {
+    pub(crate) fn new() -> Self {
         Self {
-            client,
             depth: Default::default(),
             reference: Default::default(),
         }
@@ -36,7 +34,7 @@ impl<'a> GetTransactionsToApproveBuilder<'a> {
 
     /// Send getTransactionsToApprove request
     pub async fn send(self) -> Result<GTTAResponse> {
-        let client = self.client;
+        let client = Client::get();
         let mut body = json!({
             "command": "getTransactionsToApprove",
             "depth": self.depth,

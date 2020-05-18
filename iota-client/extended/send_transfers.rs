@@ -9,8 +9,7 @@ use crate::Client;
 /// Builder to construct SendTransfers API
 //#[derive(Debug)]
 pub struct SendTransfersBuilder<'a> {
-    client: &'a Client,
-    seed: Option<&'a IotaSeed<Kerl>>,
+    seed: &'a IotaSeed<Kerl>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -21,10 +20,9 @@ pub struct SendTransfersBuilder<'a> {
 }
 
 impl<'a> SendTransfersBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
         Self {
-            client,
-            seed: None,
+            seed: seed,
             transfers: Default::default(),
             security: 2,
             inputs: None,
@@ -33,12 +31,6 @@ impl<'a> SendTransfersBuilder<'a> {
             min_weight_magnitude: 14,
             reference: Default::default(),
         }
-    }
-
-    /// Add iota seed
-    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
-        self.seed = Some(seed);
-        self
     }
 
     /// Add transfers
@@ -86,15 +78,7 @@ impl<'a> SendTransfersBuilder<'a> {
 
     /// Send SendTransfers request
     pub async fn send(self) -> Result<Vec<Transaction>> {
-        let seed = match self.seed {
-            Some(s) => s,
-            None => return Err(anyhow!("Seed is not provided")),
-        };
-
-        let mut transfer = self
-            .client
-            .prepare_transfers()
-            .seed(seed)
+        let mut transfer = Client::prepare_transfers(self.seed)
             .transfers(self.transfers)
             .security(self.security);
 
@@ -108,9 +92,7 @@ impl<'a> SendTransfersBuilder<'a> {
 
         let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().map(|x| x).collect();
         trytes.reverse();
-        let mut send_trytes = self
-            .client
-            .send_trytes()
+        let mut send_trytes = Client::send_trytes()
             .trytes(trytes)
             .depth(self.depth)
             .min_weight_magnitude(self.min_weight_magnitude);

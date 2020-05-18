@@ -16,8 +16,7 @@ use crate::Client;
 /// Builder to construct PrepareTransfers API
 //#[derive(Debug)]
 pub struct PrepareTransfersBuilder<'a> {
-    client: &'a Client,
-    seed: Option<&'a IotaSeed<Kerl>>,
+    seed: &'a IotaSeed<Kerl>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -25,21 +24,14 @@ pub struct PrepareTransfersBuilder<'a> {
 }
 
 impl<'a> PrepareTransfersBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
         Self {
-            client,
-            seed: None,
+            seed: seed,
             transfers: Default::default(),
             security: 2,
             inputs: None,
             remainder: None,
         }
-    }
-
-    /// Add iota seed
-    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
-        self.seed = Some(seed);
-        self
     }
 
     /// Add transfers
@@ -69,18 +61,11 @@ impl<'a> PrepareTransfersBuilder<'a> {
 
     /// Send PrepareTransfers request
     pub async fn build(self) -> Result<Bundle> {
-        let seed = match self.seed {
-            Some(s) => s,
-            None => return Err(anyhow!("Seed is not provided")),
-        };
-
         let total_output = self.transfers.iter().fold(0, |acc, tx| acc + tx.value);
         let inputs = match self.inputs {
             Some(i) => i,
             None => {
-                self.client
-                    .get_inputs()
-                    .seed(seed)
+                Client::get_inputs(self.seed)
                     .index(0)
                     .security(self.security)
                     .threshold(total_output)
@@ -212,9 +197,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
             let remainder = match self.remainder {
                 Some(r) => r,
                 None => {
-                    self.client
-                        .get_new_address()
-                        .seed(seed)
+                    Client::get_new_address(self.seed)
                         .security(self.security)
                         .index(inputs.last().unwrap().index + 1)
                         .generate()
@@ -260,7 +243,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
         Ok(bundle
             .seal()
             .expect("Fail to seal bundle")
-            .sign(seed, &inputs)
+            .sign(self.seed, &inputs)
             .expect("Fail to sign bundle")
             .attach_local(Hash::zeros(), Hash::zeros())
             .expect("Fail to attach bundle")

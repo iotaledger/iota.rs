@@ -11,26 +11,18 @@ use crate::Client;
 /// Builder to construct GetNewAddress API
 //#[derive(Debug)]
 pub struct GetNewAddressBuilder<'a> {
-    client: &'a Client,
-    seed: Option<&'a IotaSeed<Kerl>>,
+    seed: &'a IotaSeed<Kerl>,
     index: u64,
     security: WotsSecurityLevel,
 }
 
 impl<'a> GetNewAddressBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
         Self {
-            client,
-            seed: None,
+            seed: seed,
             index: 0,
             security: WotsSecurityLevel::Medium,
         }
-    }
-
-    /// Add iota seed
-    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
-        self.seed = Some(seed);
-        self
     }
 
     /// Set key index to start search at
@@ -52,11 +44,6 @@ impl<'a> GetNewAddressBuilder<'a> {
 
     /// Send GetNewAddress request
     pub async fn generate(self) -> Result<(u64, Address)> {
-        let seed = match self.seed {
-            Some(s) => s,
-            None => return Err(anyhow!("Seed is not provided")),
-        };
-
         let mut index = self.index;
 
         loop {
@@ -66,7 +53,7 @@ impl<'a> GetNewAddressBuilder<'a> {
                     .security_level(self.security)
                     .build()
                     .unwrap()
-                    .generate(seed, index)
+                    .generate(self.seed, index)
                     .unwrap()
                     .generate_public_key()
                     .unwrap()
@@ -74,7 +61,7 @@ impl<'a> GetNewAddressBuilder<'a> {
                     .to_owned(),
             );
 
-            if let Ok(false) = self.client.is_address_used(&address).await {
+            if let Ok(false) = Client::is_address_used(&address).await {
                 break Ok((index, address));
             }
 

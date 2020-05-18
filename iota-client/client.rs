@@ -2,8 +2,12 @@
 use crate::core::*;
 use crate::extended::*;
 use crate::response::*;
+use crate::util::tx_trytes;
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
+use iota_conversion::Trinary;
+use iota_crypto_preview::Kerl;
+use iota_signing_preview::IotaSeed;
 use iota_ternary_preview::TryteBuf;
 use reqwest::Url;
 
@@ -11,7 +15,7 @@ macro_rules! response {
     ($self:ident, $body:ident) => {
         $self
             .client
-            .post($self.uri.clone())
+            .post(Client::get_node()?)
             .header("Content-Type", "application/json")
             .header("X-IOTA-API-Version", "1")
             .body($body.to_string())
@@ -22,22 +26,43 @@ macro_rules! response {
     };
 }
 
+use once_cell::sync::Lazy;
+use std::sync::atomic::{AtomicPtr, Ordering};
+
 /// An instance of the client using IRI URI
 #[derive(Debug)]
 pub struct Client {
     /// URI of IRI connection
-    pub(crate) uri: Url,
+    pub(crate) uri: AtomicPtr<Url>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
 }
 
 impl Client {
-    /// Create a new instance of IOTA Client
-    pub fn new(uri: &str) -> Result<Client> {
-        Ok(Client {
-            uri: Url::parse(uri)?,
+    /// Get the instance of IOTA Client. It will init the instance if it's not created yet.
+    pub fn get() -> &'static Client {
+        static CLIENT: Lazy<Client> = Lazy::new(|| Client {
+            uri: AtomicPtr::default(),
             client: reqwest::Client::new(),
-        })
+        });
+
+        &CLIENT
+    }
+
+    /// Add a node to the node pool. (TODO: it's not though)
+    pub fn add_node(uri: &str) -> Result<()> {
+        Client::get()
+            .uri
+            .store(Box::into_raw(Box::new(Url::parse(uri)?)), Ordering::Relaxed);
+        Ok(())
+    }
+
+    pub(crate) fn get_node() -> Result<Url> {
+        Ok(
+            unsafe { Client::get().uri.load(Ordering::Relaxed).as_ref() }
+                .ok_or(anyhow!("Fail to get node url"))?
+                .clone(),
+        )
     }
 
     /// Add a list of neighbors to your node. It should be noted that
@@ -47,8 +72,21 @@ impl Client {
     /// * [`uris`] - Slices of neighbor URIs(`&str`) to add
     ///
     /// [`uris`]: ../core/struct.AddNeighborsBuilder.html#method.uris
-    pub fn add_neighbors(&self) -> AddNeighborsBuilder<'_> {
-        AddNeighborsBuilder::new(&self)
+    pub async fn add_neighbors(uris: &[&str]) -> Result<AddNeighborsResponse> {
+        for uri in uris {
+            match Url::parse(uri)?.scheme() {
+                "tcp" | "udp" => (),
+                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+            }
+        }
+
+        let client = Client::get();
+        let body = json!({
+            "command": "addNeighbors",
+            "uris": uris,
+        });
+
+        Ok(response!(client, body))
     }
 
     /// Does proof of work for the given transaction trytes.
@@ -65,8 +103,8 @@ impl Client {
     /// [`branch_transaction`]: ../core/struct.AttachToTangleBuilder.html#method.branch_transaction
     /// [`min_weight_magnitude`]: ../core/struct.AttachToTangleBuilder.html#method.min_weight_magnitude
     /// [`trytes`]: ../core/struct.AttachToTangleBuilder.html#method.trytes
-    pub fn attach_to_tangle(&self) -> AttachToTangleBuilder<'_> {
-        AttachToTangleBuilder::new(&self)
+    pub fn attach_to_tangle() -> AttachToTangleBuilder {
+        AttachToTangleBuilder::new()
     }
 
     /// Re-broadcasts all transactions in a bundle given the tail transaction hash. It might be useful
@@ -74,11 +112,11 @@ impl Client {
     ///
     /// # Parameters
     /// * `hash` - Tail transaction hash (current_index == 0)
-    pub async fn broadcast_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
-        let mut bundle = self.get_bundle(hash).await?;
+    pub async fn broadcast_bundle(hash: &Hash) -> Result<Vec<Transaction>> {
+        let mut bundle = Client::get_bundle(hash).await?;
         bundle.reverse();
 
-        self.broadcast_transactions().trytes(&bundle).send().await?;
+        Client::broadcast_transactions(&bundle).await?;
         Ok(bundle)
     }
 
@@ -89,8 +127,16 @@ impl Client {
     /// * [`trytes`] - Transaction trytes
     ///
     /// [`trytes`]: ../core/struct.BroadcastTransactionsBuilder.html#method.trytes
-    pub fn broadcast_transactions(&self) -> BroadcastTransactionsBuilder<'_> {
-        BroadcastTransactionsBuilder::new(&self)
+    pub async fn broadcast_transactions(trytes: &[Transaction]) -> Result<()> {
+        let client = Client::get();
+        let trytes: Vec<String> = trytes.iter().map(|tx| tx_trytes(tx)).collect();
+        let body = json!({
+            "command": "broadcastTransactions",
+            "trytes": trytes,
+        });
+
+        let res: ErrorResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Checks the consistency of transactions. A consistent transaction is one where the following statements are true:
@@ -101,8 +147,19 @@ impl Client {
     /// * [`tails`] - Transaction hashes to check
     ///
     /// [`tails`]: ../core/struct.ConsistencyBuilder.html#method.tails
-    pub fn check_consistency(&self) -> CheckConsistencyBuilder<'_> {
-        CheckConsistencyBuilder::new(&self)
+    pub async fn check_consistency(tails: &[Hash]) -> Result<ConsistencyResponse> {
+        let client = Client::get();
+        let tails: Vec<String> = tails
+            .iter()
+            .map(|h| h.as_bytes().trytes().unwrap())
+            .collect();
+        let body = json!({
+            "command": "checkConsistency",
+            "tails": tails,
+        });
+
+        let res: ConsistencyResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Finds transactions that contain the given values in their transaction fields.
@@ -118,8 +175,8 @@ impl Client {
     /// [`addresses`]: ../core/struct.FindTransactionsBuilder.html#method.addresses
     /// [`tags`]: ../core/struct.FindTransactionsBuilder.html#method.tags
     /// [`approvees`]: ../core/struct.FindTransactionsBuilder.html#method.approvees
-    pub fn find_transactions(&self) -> FindTransactionsBuilder<'_> {
-        FindTransactionsBuilder::new(&self)
+    pub fn find_transactions() -> FindTransactionsBuilder {
+        FindTransactionsBuilder::new()
     }
 
     /// Gets the confirmed balance of an address.
@@ -133,8 +190,8 @@ impl Client {
     /// [`addresses`]: ../core/struct.GetBalancesBuilder.html#method.addresses
     /// [`threshold`]: ../core/struct.GetBalancesBuilder.html#method.threshold
     /// [`tips`]: ../core/struct.GetBalancesBuilder.html#method.tips
-    pub fn get_balances(&self) -> GetBalancesBuilder<'_> {
-        GetBalancesBuilder::new(&self)
+    pub fn get_balances() -> GetBalancesBuilder {
+        GetBalancesBuilder::new()
     }
 
     /// Fetches and validates the bundle given a tail transaction hash, by calling [`traverse_bundle`]
@@ -143,9 +200,9 @@ impl Client {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`traverse_bundle`]: #method.traverse_bundle
-    pub async fn get_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
+    pub async fn get_bundle(hash: &Hash) -> Result<Vec<Transaction>> {
         // TODO validate bundle once it's in iota_bundle_preview's bundle types
-        let bundle = self.traverse_bundle(hash).await?;
+        let bundle = Client::traverse_bundle(hash).await?;
         Ok(bundle)
     }
 
@@ -159,8 +216,8 @@ impl Client {
     ///
     /// [`transactions`]: ../core/struct.GetInclusionStatesBuilder.html#method.transactions
     /// [`tips`]: ../core/struct.GetInclusionStatesBuilder.html#method.tips
-    pub fn get_inclusion_states(&self) -> GetInclusionStatesBuilder<'_> {
-        GetInclusionStatesBuilder::new(&self)
+    pub fn get_inclusion_states() -> GetInclusionStatesBuilder {
+        GetInclusionStatesBuilder::new()
     }
 
     /// Creates and returns an Inputs object by generating addresses and fetching their latest balance.
@@ -174,8 +231,8 @@ impl Client {
     /// [`threshold`]: ../extended/struct.GetInputsBuilder.html#method.threshold
     /// [`index`]: ../extended/struct.GetInputsBuilder.html#method.index
     /// [`security`]: ../extended/struct.GetInputsBuilder.html#method.security
-    pub fn get_inputs(&self) -> GetInputsBuilder<'_> {
-        GetInputsBuilder::new(&self)
+    pub fn get_inputs(seed: &IotaSeed<Kerl>) -> GetInputsBuilder<'_> {
+        GetInputsBuilder::new(seed)
     }
 
     /// Fetches inclusion states of the given transactions by calling GetInclusionStates
@@ -183,10 +240,9 @@ impl Client {
     ///
     /// # Parameters
     /// * [`transactions`] - List of transaction hashes for which you want to get the inclusion state
-    pub async fn get_latest_inclusion(&self, transactions: &[Hash]) -> Result<Vec<bool>> {
-        let milestone = self.get_latest_solid_subtangle_milestone().await?;
-        let states = self
-            .get_inclusion_states()
+    pub async fn get_latest_inclusion(transactions: &[Hash]) -> Result<Vec<bool>> {
+        let milestone = Client::get_latest_solid_subtangle_milestone().await?;
+        let states = Client::get_inclusion_states()
             .transactions(transactions)
             .tips(&[milestone])
             .send()
@@ -196,34 +252,40 @@ impl Client {
     }
 
     /// Gets latest solid subtangle milestone.
-    pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<Hash> {
+    pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
         Ok(Hash::from_inner_unchecked(
             // TODO missing impl error on Hash
-            TryteBuf::try_from_str(&self.get_node_info().await?.latest_solid_subtangle_milestone)
-                .unwrap()
-                .as_trits()
-                .encode(),
+            TryteBuf::try_from_str(
+                &Client::get_node_info()
+                    .await?
+                    .latest_solid_subtangle_milestone,
+            )
+            .unwrap()
+            .as_trits()
+            .encode(),
         ))
     }
 
     /// Gets all transaction hashes that a node is currently requesting from its neighbors.
-    pub async fn get_missing_transactions(&self) -> Result<GetTipsResponse> {
+    pub async fn get_missing_transactions() -> Result<GetTipsResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getMissingTransactions",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
 
     /// Gets a node's neighbors and their activity.
-    pub async fn get_neighbors(&self) -> Result<GetNeighborsResponse> {
+    pub async fn get_neighbors() -> Result<GetNeighborsResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getNeighbors",
         });
 
-        let res: GetNeighborsResponseBuilder = response!(self, body);
+        let res: GetNeighborsResponseBuilder = response!(client, body);
 
         res.build().await
     }
@@ -238,39 +300,42 @@ impl Client {
     /// [`seed`]: ../extended/struct.GetNewAddressBuilder.html#method.seed
     /// [`index`]: ../extended/struct.GetNewAddressBuilder.html#method.index
     /// [`security`]: ../extended/struct.GetNewAddressBuilder.html#method.security
-    pub fn get_new_address(&self) -> GetNewAddressBuilder<'_> {
-        GetNewAddressBuilder::new(&self)
+    pub fn get_new_address(seed: &IotaSeed<Kerl>) -> GetNewAddressBuilder<'_> {
+        GetNewAddressBuilder::new(seed)
     }
 
     /// Gets a node's API configuration settings.
-    pub async fn get_node_api_configuration(&self) -> Result<GetNodeAPIConfigurationResponse> {
+    pub async fn get_node_api_configuration() -> Result<GetNodeAPIConfigurationResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getNodeAPIConfiguration",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
 
     /// Gets information about a node.
-    pub async fn get_node_info(&self) -> Result<GetNodeInfoResponse> {
+    pub async fn get_node_info() -> Result<GetNodeInfoResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getNodeInfo",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
 
     /// Gets tip transaction hashes from a node.
-    pub async fn get_tips(&self) -> Result<GetTipsResponse> {
+    pub async fn get_tips() -> Result<GetTipsResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getTips",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
@@ -284,8 +349,8 @@ impl Client {
     ///
     /// [`depth`]: ../core/struct.GetTransactionsToApproveBuilder.html#method.depth
     /// [`reference`]: ../core/struct.GetTransactionsToApproveBuilder.html#method.reference
-    pub fn get_transactions_to_approve(&self) -> GetTransactionsToApproveBuilder<'_> {
-        GetTransactionsToApproveBuilder::new(&self)
+    pub fn get_transactions_to_approve() -> GetTransactionsToApproveBuilder {
+        GetTransactionsToApproveBuilder::new()
     }
 
     /// Gets a transaction's contents in trytes.
@@ -293,19 +358,30 @@ impl Client {
     /// * `hashes` - Transaction hashes
     ///
     /// [`hashes`]: ../core/struct.GetTrytesBuilder.html#method.hashes
-    pub fn get_trytes(&self) -> GetTrytesBuilder<'_> {
-        GetTrytesBuilder::new(&self)
+    pub async fn get_trytes(hashes: &[Hash]) -> Result<GetTrytesResponse> {
+        let hashes: Vec<String> = hashes
+            .iter()
+            .map(|h| h.as_bytes().trytes().unwrap())
+            .collect();
+        let client = Client::get();
+        let body = json!({
+            "command": "getTrytes",
+            "hashes": hashes,
+        });
+
+        let res: GetTrytesResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Aborts the process that's started by the `attach_to_tangle` method.
-    pub async fn interrupt_attaching_to_tangle(&self) -> Result<()> {
+    pub async fn interrupt_attaching_to_tangle() -> Result<()> {
         let body = json!( {
             "command": "interruptAttachingToTangle",
         });
 
-        let _ = self
+        let _ = Client::get()
             .client
-            .post(self.uri.clone())
+            .post(Client::get_node()?)
             .header("Content-Type", "application/json")
             .header("X-IOTA-API-Version", "1")
             .body(body.to_string())
@@ -318,14 +394,9 @@ impl Client {
     /// Checks whether an address is used via FindTransactions and WereAddressesSpentFrom.
     /// # Parameters
     /// * `address` - IOTA address
-    pub async fn is_address_used(&self, address: &Address) -> Result<bool> {
+    pub async fn is_address_used(address: &Address) -> Result<bool> {
         let addresses = &[address.clone()];
-        let spent = self
-            .were_addresses_spent_from()
-            .address(addresses)
-            .send()
-            .await?
-            .states[0];
+        let spent = Client::were_addresses_spent_from(addresses).await?.states[0];
 
         // TODO more address evaluations
         if spent {
@@ -340,10 +411,10 @@ impl Client {
     /// since transaction attachment.
     /// # Parameters
     /// * `tail` - Tail Transaction Hash
-    pub async fn is_promotable(&self, tail: &Hash) -> Result<bool> {
-        let is_consistent = self.check_consistency().tails(&[*tail]).send().await?.state;
+    pub async fn is_promotable(tail: &Hash) -> Result<bool> {
+        let is_consistent = Client::check_consistency(&[*tail]).await?.state;
 
-        let timestamp = *self.get_trytes().hashes(&[*tail]).send().await?.trytes[0]
+        let timestamp = *Client::get_trytes(&[*tail]).await?.trytes[0]
             .attachment_ts()
             .to_inner() as i64;
 
@@ -371,8 +442,8 @@ impl Client {
     /// [`inputs`]: ../extended/struct.PrepareTransfersBuilder.html#method.inputs
     /// [`remainder`]: ../extended/struct.PrepareTransfersBuilder.html#method.remainder
     /// [`security`]: ../extended/struct.PrepareTransfersBuilder.html#method.security
-    pub fn prepare_transfers(&self) -> PrepareTransfersBuilder<'_> {
-        PrepareTransfersBuilder::new(&self)
+    pub fn prepare_transfers(seed: &IotaSeed<Kerl>) -> PrepareTransfersBuilder<'_> {
+        PrepareTransfersBuilder::new(seed)
     }
 
     /// Removes a list of neighbors to your node.
@@ -383,8 +454,21 @@ impl Client {
     /// * [`uris`] - Slice of neighbor URIs(`&str`) to remove
     ///
     /// [`uris`]: ../core/struct.RemoveNeighborsBuilder.html#method.uris
-    pub fn remove_neighbors(&self) -> RemoveNeighborsBuilder<'_> {
-        RemoveNeighborsBuilder::new(&self)
+    pub async fn remove_neighbors(uris: &[&str]) -> Result<RemoveNeighborsResponse> {
+        for uri in uris {
+            match Url::parse(uri)?.scheme() {
+                "tcp" | "udp" => (),
+                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+            }
+        }
+
+        let client = Client::get();
+        let body = json!({
+            "command": "removeNeighbors",
+            "uris": uris,
+        });
+
+        Ok(response!(client, body))
     }
 
     /// Reattaches a transfer to tangle by selecting tips & performing the Proof-of-Work again.
@@ -396,10 +480,10 @@ impl Client {
     ///
     /// [`depth`]: ../extended/struct.SendTrytesBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTrytesBuilder.html#method.min_weight_magnitude
-    pub async fn replay_bundle(&self, hash: &Hash) -> Result<SendTrytesBuilder<'_>> {
-        let mut bundle = self.get_bundle(hash).await?;
+    pub async fn replay_bundle(hash: &Hash) -> Result<SendTrytesBuilder> {
+        let mut bundle = Client::get_bundle(hash).await?;
         bundle.reverse();
-        Ok(SendTrytesBuilder::new(&self).trytes(bundle))
+        Ok(SendTrytesBuilder::new().trytes(bundle))
     }
 
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
@@ -421,8 +505,8 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTransfersBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTransfersBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTransfersBuilder.html#method.reference
-    pub fn send_transfers(&self) -> SendTransfersBuilder<'_> {
-        SendTransfersBuilder::new(&self)
+    pub fn send_transfers(seed: &IotaSeed<Kerl>) -> SendTransfersBuilder<'_> {
+        SendTransfersBuilder::new(seed)
     }
 
     /// Perform Attaches to tanlge, stores and broadcasts a vector of transaction trytes.
@@ -436,8 +520,8 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTrytesBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTrytesBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTrytesBuilder.html#method.reference
-    pub fn send_trytes(&self) -> SendTrytesBuilder<'_> {
-        SendTrytesBuilder::new(&self)
+    pub fn send_trytes() -> SendTrytesBuilder {
+        SendTrytesBuilder::new()
     }
 
     /// Store and broadcast transactions to the node.
@@ -445,15 +529,9 @@ impl Client {
     /// Response only contains errors and exceptions, it would be `None` if the call success.
     /// # Parameters
     /// * [`trytes`] - Transaction trytes
-    pub async fn store_and_broadcast(&self, trytes: &[Transaction]) -> Result<()> {
-        StoreTransactionsBuilder::new(&self)
-            .trytes(trytes)
-            .send()
-            .await?;
-        BroadcastTransactionsBuilder::new(&self)
-            .trytes(trytes)
-            .send()
-            .await?;
+    pub async fn store_and_broadcast(trytes: &[Transaction]) -> Result<()> {
+        Client::store_transactions(trytes).await?;
+        Client::broadcast_transactions(trytes).await?;
         Ok(())
     }
 
@@ -464,8 +542,16 @@ impl Client {
     /// * [`trytes`] - Transaction trytes
     ///
     /// [`trytes`]: ../core/struct.StoreTransactionsBuilder.html#method.trytes
-    pub fn store_transactions(&self) -> StoreTransactionsBuilder<'_> {
-        StoreTransactionsBuilder::new(&self)
+    pub async fn store_transactions(trytes: &[Transaction]) -> Result<()> {
+        let client = Client::get();
+        let trytes: Vec<String> = trytes.iter().map(|tx| tx_trytes(tx)).collect();
+        let body = json!({
+            "command": "storeTransactions",
+            "trytes": trytes,
+        });
+
+        let res: ErrorResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Fetches the bundle of a given the tail transaction hash, by traversing through trunk transaction.
@@ -475,19 +561,12 @@ impl Client {
     /// * [`hash`] - Tail transaction hash (current_index == 0)
     ///
     /// [`get_bundle`]: #method.get_bundle
-    pub async fn traverse_bundle(&self, hash: &Hash) -> Result<Vec<Transaction>> {
+    pub async fn traverse_bundle(hash: &Hash) -> Result<Vec<Transaction>> {
         let mut bundle = Vec::new();
         let mut hash = *hash;
         let mut tail = true;
         loop {
-            let res = self
-                .get_trytes()
-                .hashes(&[hash])
-                .send()
-                .await?
-                .trytes
-                .pop()
-                .unwrap();
+            let res = Client::get_trytes(&[hash]).await?.trytes.pop().unwrap();
 
             if tail {
                 if *res.index().to_inner() != 0 {
@@ -512,7 +591,20 @@ impl Client {
     /// * [`address`] - addresses to check (do not include the checksum)
     ///
     /// [`address`]: ../core/struct.WereAddressesSpentFromBuilder.html#method.address
-    pub fn were_addresses_spent_from(&self) -> WereAddressesSpentFromBuilder<'_> {
-        WereAddressesSpentFromBuilder::new(&self)
+    pub async fn were_addresses_spent_from(
+        addresses: &[Address],
+    ) -> Result<WereAddressesSpentFromResponse> {
+        let addresses: Vec<String> = addresses
+            .iter()
+            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+            .collect();
+        let client = Client::get();
+        let body = json!({
+            "command": "wereAddressesSpentFrom",
+            "addresses": addresses,
+        });
+
+        let res: WereAddressesSpentFromResponseBuilder = response!(client, body);
+        res.build().await
     }
 }

@@ -2,27 +2,23 @@ mod common;
 use crate::common::*;
 use iota_bundle_preview::*;
 use iota_client::response::*;
+use iota_client::Client;
 use iota_crypto_preview::*;
 use iota_signing_preview::*;
 use iota_ternary_preview::*;
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_add_neighbors() {
-    let client = client_init();
-    let _ = client
-        .add_neighbors()
-        .uris(vec!["tcp://0.0.0.0:15600".to_string()])
-        .unwrap()
-        .send()
+    client_init();
+    let _ = Client::add_neighbors(&["tcp://0.0.0.0:15600"])
         .await
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_attach_to_tangle() {
-    let client = client_init();
-    let res = client
-        .attach_to_tangle()
+    client_init();
+    let res = Client::attach_to_tangle()
         .trunk_transaction(&Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_TRUNK_HASH)
                 .unwrap()
@@ -44,44 +40,36 @@ async fn test_attach_to_tangle() {
     assert!(!res.trytes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_broadcast_bundle() {
-    let _ = client_init()
-        .broadcast_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+    client_init();
+    let _ = Client::broadcast_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_broadcast_transactions() {
-    let client = client_init();
-    let _ = client
-        .broadcast_transactions()
-        .trytes(&[tx()])
-        .send()
-        .await
-        .unwrap();
+    client_init();
+    let _ = Client::broadcast_transactions(&[tx()]).await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_check_consistency() {
-    let client = client_init();
-    let res = client
-        .check_consistency()
-        .tails(&[Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        )])
-        .send()
-        .await
-        .unwrap();
+    client_init();
+    let res = Client::check_consistency(&[Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    )])
+    .await
+    .unwrap();
 
     match res.state {
         true => assert!(res.info.is_none()),
@@ -89,11 +77,10 @@ async fn test_check_consistency() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_bundle() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .bundles(&[Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
                 .unwrap()
@@ -105,11 +92,10 @@ async fn test_find_tx_by_bundle() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_address() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
@@ -121,11 +107,10 @@ async fn test_find_tx_by_address() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_tag() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .tags(&[Tag::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_TAG_0)
                 .unwrap()
@@ -137,11 +122,10 @@ async fn test_find_tx_by_tag() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_approvee() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .approvees(&[Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
                 .unwrap()
@@ -153,11 +137,10 @@ async fn test_find_tx_by_approvee() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_balances() {
-    let client = client_init();
-    let _ = client
-        .get_balances()
+    client_init();
+    let _ = Client::get_balances()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
@@ -169,24 +152,23 @@ async fn test_get_balances() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_bundle() {
-    let _ = client_init()
-        .get_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+    client_init();
+    let _ = Client::get_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_inclusion_states() {
-    let client = client_init();
-    let res = client
-        .get_inclusion_states()
+    client_init();
+    let res = Client::get_inclusion_states()
         .transactions(&[
             Hash::from_inner_unchecked(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
@@ -208,53 +190,51 @@ async fn test_get_inclusion_states() {
     assert!(!res.states.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_inputs() {
-    let _ = client_init()
-        .get_inputs()
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+    client_init();
+    let _ = Client::get_inputs(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .generate()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .generate()
+    .await
+    .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_latest_inclusion() {
-    let client = client_init();
-    let res = client
-        .get_latest_inclusion(&[
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-        ])
-        .await
-        .unwrap();
+    client_init();
+    let res = Client::get_latest_inclusion(&[
+        Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ),
+        Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ),
+    ])
+    .await
+    .unwrap();
 
     assert!(!res.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_neighbors() {
-    let client = client_init();
+    client_init();
 
-    match client.get_neighbors().await {
+    match Client::get_neighbors().await {
         Ok(res) => {
             assert!(res.neighbors.iter().all(|x| !x.address.is_empty()));
         }
@@ -265,113 +245,114 @@ async fn test_get_neighbors() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_missing_transactions() {
-    let _ = client_init().get_missing_transactions().await.unwrap();
+    client_init();
+    let _ = Client::get_missing_transactions().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_new_address() {
-    let _ = client_init()
-        .get_new_address()
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+    client_init();
+    let _ = Client::get_new_address(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .generate()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .generate()
+    .await
+    .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_node_api_configuration() {
-    client_init().get_node_api_configuration().await.unwrap();
+    client_init();
+    Client::get_node_api_configuration().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_node_info() {
-    client_init().get_node_info().await.unwrap();
+    client_init();
+    Client::get_node_info().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_tips() {
-    let res = client_init().get_tips().await.unwrap();
+    client_init();
+    let res = Client::get_tips().await.unwrap();
 
     assert!(!res.hashes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_transactions_to_approve() {
-    let _ = client_init()
-        .get_transactions_to_approve()
+    client_init();
+    Client::get_transactions_to_approve()
         .depth(3)
         .send()
         .await
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_trytes() {
-    let res = client_init()
-        .get_trytes()
-        .hashes(&[
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-        ])
-        .send()
-        .await
-        .unwrap();
-
-    assert!(!res.trytes.is_empty());
-}
-
-#[tokio::test]
-async fn test_is_address_used() {
-    let res = client_init()
-        .is_address_used(&Address::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_ADDRESS_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
-
-    assert_eq!(res, false);
-}
-
-#[tokio::test]
-async fn test_is_promotable() {
-    let _ = client_init()
-        .is_promotable(&Hash::from_inner_unchecked(
+    client_init();
+    let res = Client::get_trytes(&[
+        Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
                 .encode(),
-        ))
-        .await
-        .unwrap();
+        ),
+        Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ),
+    ])
+    .await
+    .unwrap();
+
+    assert!(!res.trytes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
+async fn test_is_address_used() {
+    client_init();
+    let res = Client::is_address_used(&Address::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_ADDRESS_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
+
+    assert_eq!(res, false);
+}
+
+#[smol_potat::test]
+async fn test_is_promotable() {
+    client_init();
+    let _ = Client::is_promotable(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
+}
+
+#[smol_potat::test]
 async fn test_prepare_transfers_no_value() {
     let mut transfers = Vec::new();
     for _ in 0..3 {
@@ -383,30 +364,26 @@ async fn test_prepare_transfers_no_value() {
         });
     }
 
-    let _ = client_init()
-        .prepare_transfers()
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+    client_init();
+    let _ = Client::prepare_transfers(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .transfers(transfers)
-        .build()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .transfers(transfers)
+    .build()
+    .await
+    .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_remove_neighbors() {
-    let res = client_init()
-        .remove_neighbors()
-        .uris(&["tcp://0.0.0.0:15600"])
-        .unwrap()
-        .send()
+    client_init();
+    let res = Client::remove_neighbors(&["tcp://0.0.0.0:15600"])
         .await
         .unwrap();
 
@@ -415,27 +392,25 @@ async fn test_remove_neighbors() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_replay_bundle() {
-    let client = client_init();
-    let _ = client
-        .replay_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap()
-        .depth(3)
-        .min_weight_magnitude(9)
-        .send()
-        .await;
+    client_init();
+    let _ = Client::replay_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap()
+    .depth(3)
+    .min_weight_magnitude(9)
+    .send()
+    .await;
 }
 
 // We don't do value transfer test since it's not ideal to be a general test case. But confirmed sample can be found here:
-// SRXEGEGCOZLDENAXVCGYODPUGTTRZJ9WCTYQYZIHWBCGNJRBBUOWGSDXQCQEHRIUEGA9G9IOEDCICZHOX
-#[tokio::test]
+#[smol_potat::test]
 async fn test_send_transfers_no_value() {
     let mut transfers = Vec::new();
     for _ in 0..3 {
@@ -452,76 +427,69 @@ async fn test_send_transfers_no_value() {
         });
     }
 
-    let _ = client_init()
-        .send_transfers()
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+    client_init();
+    let _ = Client::send_transfers(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .transfers(transfers)
-        .min_weight_magnitude(10)
-        .send()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .transfers(transfers)
+    .min_weight_magnitude(10)
+    .send()
+    .await
+    .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_send_trytes() {
-    let client = client_init();
-    let _ = client
-        .send_trytes()
+    client_init();
+    let _ = Client::send_trytes()
         .min_weight_magnitude(9)
         .trytes(vec![tx()])
         .send()
         .await;
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_store_and_broadcast() {
-    client_init().store_and_broadcast(&[tx()]).await.unwrap();
+    client_init();
+    Client::store_and_broadcast(&[tx()]).await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_store_transactions() {
-    client_init()
-        .store_transactions()
-        .trytes(&[tx()])
-        .send()
-        .await
-        .unwrap();
+    client_init();
+    Client::store_transactions(&[tx()]).await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_traverse_bundle() {
-    let _ = client_init()
-        .traverse_bundle(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+    client_init();
+    let _ = Client::traverse_bundle(&Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_were_addresses_spent_from() {
-    let res = client_init()
-        .were_addresses_spent_from()
-        .address(&[Address::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_ADDRESS_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        )])
-        .send()
-        .await
-        .unwrap();
+    client_init();
+    let res = Client::were_addresses_spent_from(&[Address::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_ADDRESS_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    )])
+    .await
+    .unwrap();
 
     assert_eq!(res.states[0], false);
 }

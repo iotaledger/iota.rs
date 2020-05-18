@@ -45,8 +45,8 @@ pub extern "C" fn get_node_info(url: *const c_char) -> *mut GetNodeInfoResponse 
     };
     let url = c_url.to_str().unwrap();
 
-    let iota = iota::Client::new(url).unwrap();
-    let res = smol::run(async { iota.get_node_info().await.unwrap() });
+    iota::Client::add_node(url).unwrap();
+    let res = smol::run(async move { iota::Client::get_node_info().await.unwrap() });
 
     Box::into_raw(Box::new(GetNodeInfoResponse {
         app_name: CString::new(res.app_name).unwrap().into_raw(),

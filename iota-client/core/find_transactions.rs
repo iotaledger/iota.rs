@@ -7,18 +7,16 @@ use crate::Client;
 
 /// Builder to construct findTransactions API
 #[derive(Debug)]
-pub struct FindTransactionsBuilder<'a> {
-    client: &'a Client,
+pub struct FindTransactionsBuilder {
     bundles: Option<Vec<String>>,
     addresses: Option<Vec<String>>,
     tags: Option<Vec<String>>,
     approvees: Option<Vec<String>>,
 }
 
-impl<'a> FindTransactionsBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+impl FindTransactionsBuilder {
+    pub(crate) fn new() -> Self {
         Self {
-            client,
             bundles: Default::default(),
             addresses: Default::default(),
             tags: Default::default(),
@@ -71,7 +69,7 @@ impl<'a> FindTransactionsBuilder<'a> {
 
     /// Send findTransactions request
     pub async fn send(self) -> Result<FindTransactionsResponse> {
-        let client = self.client;
+        let client = Client::get();
         let mut body = json!({
             "command": "findTransactions",
         });

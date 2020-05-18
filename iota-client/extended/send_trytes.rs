@@ -7,18 +7,16 @@ use crate::Client;
 
 /// Builder to construct sendTrytes API
 //#[derive(Debug)]
-pub struct SendTrytesBuilder<'a> {
-    client: &'a Client,
+pub struct SendTrytesBuilder {
     trytes: Vec<Transaction>,
     depth: u8,
     min_weight_magnitude: u8,
     reference: Option<Hash>,
 }
 
-impl<'a> SendTrytesBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+impl SendTrytesBuilder {
+    pub(crate) fn new() -> Self {
         Self {
-            client,
             trytes: Default::default(),
             depth: Default::default(),
             min_weight_magnitude: Default::default(),
@@ -52,7 +50,7 @@ impl<'a> SendTrytesBuilder<'a> {
 
     /// Send SendTrytes request
     pub async fn send(self) -> Result<Vec<Transaction>> {
-        let mut gtta = self.client.get_transactions_to_approve().depth(self.depth);
+        let mut gtta = Client::get_transactions_to_approve().depth(self.depth);
         if let Some(hash) = self.reference {
             gtta = gtta.reference(&hash);
         }
@@ -70,9 +68,7 @@ impl<'a> SendTrytesBuilder<'a> {
             );
         }
 
-        let res = self
-            .client
-            .attach_to_tangle()
+        let res = Client::attach_to_tangle()
             .trytes(&trytes)
             .branch_transaction(&res.branch_transaction)
             .trunk_transaction(&res.trunk_transaction)
@@ -81,7 +77,7 @@ impl<'a> SendTrytesBuilder<'a> {
             .await?
             .trytes;
 
-        self.client.store_and_broadcast(&res).await?;
+        Client::store_and_broadcast(&res).await?;
 
         Ok(res)
     }

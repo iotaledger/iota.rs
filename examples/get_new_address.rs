@@ -12,7 +12,7 @@ use iota::signing::{IotaSeed, Seed};
 use iota::ternary::{T1B1Buf, TryteBuf};
 use iota_conversion::Trinary;
 
-#[tokio::main]
+#[smol_potat::main]
 async fn main() -> Result<()> {
     // Create seed from your seed trytes
     let seed = IotaSeed::<Kerl>::from_buf(
@@ -26,9 +26,8 @@ async fn main() -> Result<()> {
     .unwrap();
 
     // The response of get_new_address is a tuple of an adress with its corresponding index from seed.
-    let (index, address) = iota::Client::new("https://nodes.comnet.thetangle.org")?
-        .get_new_address()
-        .seed(&seed)
+    iota::Client::add_node("https://nodes.comnet.thetangle.org")?;
+    let (index, address) = iota::Client::get_new_address(&seed)
         .generate()
         .await
         .unwrap();

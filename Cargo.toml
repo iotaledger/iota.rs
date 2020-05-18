@@ -8,5 +8,5 @@ members = [
     "examples",
 ]
 exclude = [
-    "bindings/wasm"
+    "bindings/wasm",
 ]
