@@ -1,3 +1,7 @@
+//! Note that because the following tests all create different executor from #[tokio::test].
+//! They have same problem in this issue: https://github.com/hyperium/hyper/issues/2112
+//! Please run `cargo test -- --test-threads=1` when testing.
+
 mod common;
 use crate::common::*;
 use iota_bundle_preview::*;
