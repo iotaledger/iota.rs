@@ -255,10 +255,14 @@ impl Client {
     pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
         Ok(Hash::from_inner_unchecked(
             // TODO missing impl error on Hash
-            TryteBuf::try_from_str(&Client::get_node_info().await?.latest_solid_subtangle_milestone)
-                .unwrap()
-                .as_trits()
-                .encode(),
+            TryteBuf::try_from_str(
+                &Client::get_node_info()
+                    .await?
+                    .latest_solid_subtangle_milestone,
+            )
+            .unwrap()
+            .as_trits()
+            .encode(),
         ))
     }
 

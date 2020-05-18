@@ -5,8 +5,8 @@ members = [
     "iota-constants",
     "iota-client",
     "bindings/c",
+    "examples",
 ]
 exclude = [
     "bindings/wasm",
-    "examples",
 ]

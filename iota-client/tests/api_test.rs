@@ -211,21 +211,21 @@ async fn test_get_inputs() {
 async fn test_get_latest_inclusion() {
     client_init();
     let res = Client::get_latest_inclusion(&[
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-        ])
-        .await
-        .unwrap();
+        Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ),
+        Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ),
+    ])
+    .await
+    .unwrap();
 
     assert!(!res.is_empty());
 }
@@ -328,13 +328,13 @@ async fn test_get_trytes() {
 async fn test_is_address_used() {
     client_init();
     let res = Client::is_address_used(&Address::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_ADDRESS_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+        TryteBuf::try_from_str(TEST_ADDRESS_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 
     assert_eq!(res, false);
 }
@@ -343,13 +343,13 @@ async fn test_is_address_used() {
 async fn test_is_promotable() {
     client_init();
     let _ = Client::is_promotable(&Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ))
-        .await
-        .unwrap();
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    ))
+    .await
+    .unwrap();
 }
 
 #[smol_potat::test]

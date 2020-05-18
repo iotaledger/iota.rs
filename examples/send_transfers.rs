@@ -38,26 +38,28 @@ async fn main() -> Result<()> {
     });
 
     // Create a client instance
-    let res = iota::Client::new("https://nodes.comnet.thetangle.org")?
-        // Call send_transfers api
-        .send_transfers()
-        // Below is just a dummy seed which just serves as an example.
-        // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str("RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA")
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            ).unwrap(),
+    iota::Client::add_node("https://nodes.comnet.thetangle.org")?;
+    // Call send_transfers api
+    // Below is just a dummy seed which just serves as an example.
+    // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
+    let res = iota::Client::send_transfers(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(
+                "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
+            )
+            .unwrap()
+            .as_trits()
+            .encode::<T1B1Buf>(),
         )
-        // Input the transfers
-        .transfers(transfers)
-        // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.
-        .min_weight_magnitude(10)
-        // Sending to the node and receive the response
-        .send()
-        .await?;
+        .unwrap(),
+    )
+    // Input the transfers
+    .transfers(transfers)
+    // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.
+    .min_weight_magnitude(10)
+    // Sending to the node and receive the response
+    .send()
+    .await?;
 
     // The response of send_transfers is vector of Transaction type. We choose the first one and see what is its bundle hash
     println!("{:?}", res[0].bundle().to_inner().as_i8_slice().trytes());
