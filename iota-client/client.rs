@@ -188,8 +188,8 @@ impl Client {
     /// [`addresses`]: ../core/struct.GetBalancesBuilder.html#method.addresses
     /// [`threshold`]: ../core/struct.GetBalancesBuilder.html#method.threshold
     /// [`tips`]: ../core/struct.GetBalancesBuilder.html#method.tips
-    pub fn get_balances(&self) -> GetBalancesBuilder<'_> {
-        GetBalancesBuilder::new(&self)
+    pub fn get_balances() -> GetBalancesBuilder {
+        GetBalancesBuilder::new()
     }
 
     /// Fetches and validates the bundle given a tail transaction hash, by calling [`traverse_bundle`]

@@ -137,12 +137,11 @@ async fn test_find_tx_by_approvee() {
         .await
         .unwrap();
 }
-/*
+
 #[tokio::test]
 async fn test_get_balances() {
-    let client = client_init();
-    let _ = client
-        .get_balances()
+    client_init();
+    let _ = Client::get_balances()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
@@ -153,7 +152,7 @@ async fn test_get_balances() {
         .await
         .unwrap();
 }
-
+/*
 #[tokio::test]
 async fn test_get_bundle() {
     let _ = client_init()

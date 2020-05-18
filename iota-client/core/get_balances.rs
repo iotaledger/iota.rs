@@ -7,17 +7,15 @@ use crate::Client;
 
 /// Builder to construct getBalances API
 #[derive(Debug)]
-pub struct GetBalancesBuilder<'a> {
-    client: &'a Client,
+pub struct GetBalancesBuilder {
     addresses: Vec<String>,
     threshold: u8,
     tips: Option<Vec<String>>,
 }
 
-impl<'a> GetBalancesBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+impl GetBalancesBuilder {
+    pub(crate) fn new() -> Self {
         Self {
-            client,
             addresses: Default::default(),
             threshold: 100,
             tips: Default::default(),
@@ -51,7 +49,7 @@ impl<'a> GetBalancesBuilder<'a> {
 
     /// Send getBalances request
     pub async fn send(self) -> Result<GetBalancesResponse> {
-        let client = self.client;
+        let client = Client::get();
         let mut body = json!({
             "command": "getBalances",
             "addresses": self.addresses,

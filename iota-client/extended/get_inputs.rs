@@ -76,9 +76,7 @@ impl<'a> GetInputsBuilder<'a> {
                 .generate()
                 .await?;
 
-            let balance = self
-                .client
-                .get_balances()
+            let balance = Client::get_balances()
                 .addresses(&[address.clone()])
                 .send()
                 .await?
