@@ -173,8 +173,8 @@ impl Client {
     /// [`addresses`]: ../core/struct.FindTransactionsBuilder.html#method.addresses
     /// [`tags`]: ../core/struct.FindTransactionsBuilder.html#method.tags
     /// [`approvees`]: ../core/struct.FindTransactionsBuilder.html#method.approvees
-    pub fn find_transactions(&self) -> FindTransactionsBuilder<'_> {
-        FindTransactionsBuilder::new(&self)
+    pub fn find_transactions() -> FindTransactionsBuilder {
+        FindTransactionsBuilder::new()
     }
 
     /// Gets the confirmed balance of an address.

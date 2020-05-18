@@ -77,12 +77,11 @@ async fn test_check_consistency() {
         false => assert!(res.info.is_some()),
     }
 }
-/*
+
 #[tokio::test]
 async fn test_find_tx_by_bundle() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .bundles(&[Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
                 .unwrap()
@@ -96,9 +95,8 @@ async fn test_find_tx_by_bundle() {
 
 #[tokio::test]
 async fn test_find_tx_by_address() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
@@ -112,9 +110,8 @@ async fn test_find_tx_by_address() {
 
 #[tokio::test]
 async fn test_find_tx_by_tag() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .tags(&[Tag::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_TAG_0)
                 .unwrap()
@@ -128,9 +125,8 @@ async fn test_find_tx_by_tag() {
 
 #[tokio::test]
 async fn test_find_tx_by_approvee() {
-    let client = client_init();
-    let _ = client
-        .find_transactions()
+    client_init();
+    let _ = Client::find_transactions()
         .approvees(&[Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
                 .unwrap()
@@ -141,7 +137,7 @@ async fn test_find_tx_by_approvee() {
         .await
         .unwrap();
 }
-
+/*
 #[tokio::test]
 async fn test_get_balances() {
     let client = client_init();
