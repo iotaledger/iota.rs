@@ -191,25 +191,24 @@ async fn test_get_inclusion_states() {
 
     assert!(!res.states.is_empty());
 }
-/*
+
 #[tokio::test]
 async fn test_get_inputs() {
-    let _ = client_init()
-        .get_inputs()
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+    client_init();
+    let _ = Client::get_inputs(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .generate()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .generate()
+    .await
+    .unwrap();
 }
-
+/*
 #[tokio::test]
 async fn test_get_latest_inclusion() {
     let client = client_init();
@@ -353,6 +352,7 @@ async fn test_is_promotable() {
         .await
         .unwrap();
 }
+*/
 
 #[tokio::test]
 async fn test_prepare_transfers_no_value() {
@@ -366,23 +366,21 @@ async fn test_prepare_transfers_no_value() {
         });
     }
 
-    let _ = client_init()
-        .prepare_transfers()
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+    client_init();
+    let _ = Client::prepare_transfers(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .transfers(transfers)
-        .build()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .transfers(transfers)
+    .build()
+    .await
+    .unwrap();
 }
-*/
 
 #[tokio::test]
 async fn test_remove_neighbors() {
@@ -413,9 +411,9 @@ async fn test_replay_bundle() {
         .send()
         .await;
 }
+*/
 
 // We don't do value transfer test since it's not ideal to be a general test case. But confirmed sample can be found here:
-// SRXEGEGCOZLDENAXVCGYODPUGTTRZJ9WCTYQYZIHWBCGNJRBBUOWGSDXQCQEHRIUEGA9G9IOEDCICZHOX
 #[tokio::test]
 async fn test_send_transfers_no_value() {
     let mut transfers = Vec::new();
@@ -433,24 +431,23 @@ async fn test_send_transfers_no_value() {
         });
     }
 
-    let _ = client_init()
-        .send_transfers()
-        .seed(
-            &IotaSeed::<Kerl>::from_buf(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode::<T1B1Buf>(),
-            )
-            .unwrap(),
+    client_init();
+    let _ = Client::send_transfers(
+        &IotaSeed::<Kerl>::from_buf(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode::<T1B1Buf>(),
         )
-        .transfers(transfers)
-        .min_weight_magnitude(10)
-        .send()
-        .await
-        .unwrap();
+        .unwrap(),
+    )
+    .transfers(transfers)
+    .min_weight_magnitude(10)
+    .send()
+    .await
+    .unwrap();
 }
-
+/*
 #[tokio::test]
 async fn test_send_trytes() {
     let client = client_init();
@@ -492,13 +489,13 @@ async fn test_traverse_bundle() {
 async fn test_were_addresses_spent_from() {
     client_init();
     let res = Client::were_addresses_spent_from(&[Address::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_ADDRESS_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        )])
-        .await
-        .unwrap();
+        TryteBuf::try_from_str(TEST_ADDRESS_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    )])
+    .await
+    .unwrap();
 
     assert_eq!(res.states[0], false);
 }

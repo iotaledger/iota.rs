@@ -8,28 +8,20 @@ use crate::Client;
 /// Builder to construct GetInputs API
 //#[derive(Debug)]
 pub struct GetInputsBuilder<'a> {
-    client: &'a Client,
-    seed: Option<&'a IotaSeed<Kerl>>,
+    seed: &'a IotaSeed<Kerl>,
     index: u64,
     security: u8,
     threshold: u64,
 }
 
 impl<'a> GetInputsBuilder<'a> {
-    pub(crate) fn new(client: &'a Client) -> Self {
+    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
         Self {
-            client,
-            seed: None,
+            seed: seed,
             index: 0,
             security: 2,
             threshold: 0,
         }
-    }
-
-    /// Add iota seed
-    pub fn seed(mut self, seed: &'a IotaSeed<Kerl>) -> Self {
-        self.seed = Some(seed);
-        self
     }
 
     /// Set key index to start search at
@@ -52,11 +44,6 @@ impl<'a> GetInputsBuilder<'a> {
 
     /// Send GetInputs request
     pub async fn generate(self) -> Result<(u64, Vec<Input>)> {
-        let seed = match self.seed {
-            Some(s) => s,
-            None => return Err(anyhow!("Seed is not provided")),
-        };
-
         if self.threshold == 0 {
             return Ok((0, Vec::default()));
         }
@@ -67,10 +54,9 @@ impl<'a> GetInputsBuilder<'a> {
         let mut zero_balance_warning = 5;
 
         while zero_balance_warning != 0 {
-            let (next_index, address) = self
-                .client
+            let (next_index, address) = Client::get()
                 .get_new_address()
-                .seed(seed)
+                .seed(self.seed)
                 .index(index)
                 .security(self.security)
                 .generate()

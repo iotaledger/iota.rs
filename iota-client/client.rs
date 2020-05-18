@@ -6,6 +6,8 @@ use crate::util::tx_trytes;
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
 use iota_conversion::Trinary;
+use iota_crypto_preview::Kerl;
+use iota_signing_preview::IotaSeed;
 use iota_ternary_preview::TryteBuf;
 use reqwest::Url;
 
@@ -229,8 +231,8 @@ impl Client {
     /// [`threshold`]: ../extended/struct.GetInputsBuilder.html#method.threshold
     /// [`index`]: ../extended/struct.GetInputsBuilder.html#method.index
     /// [`security`]: ../extended/struct.GetInputsBuilder.html#method.security
-    pub fn get_inputs(&self) -> GetInputsBuilder<'_> {
-        GetInputsBuilder::new(&self)
+    pub fn get_inputs(seed: &IotaSeed<Kerl>) -> GetInputsBuilder<'_> {
+        GetInputsBuilder::new(seed)
     }
 
     /// Fetches inclusion states of the given transactions by calling GetInclusionStates
@@ -385,9 +387,7 @@ impl Client {
     /// * `address` - IOTA address
     pub async fn is_address_used(&self, address: &Address) -> Result<bool> {
         let addresses = &[address.clone()];
-        let spent = Client::were_addresses_spent_from(addresses)
-            .await?
-            .states[0];
+        let spent = Client::were_addresses_spent_from(addresses).await?.states[0];
 
         // TODO more address evaluations
         if spent {
@@ -433,8 +433,8 @@ impl Client {
     /// [`inputs`]: ../extended/struct.PrepareTransfersBuilder.html#method.inputs
     /// [`remainder`]: ../extended/struct.PrepareTransfersBuilder.html#method.remainder
     /// [`security`]: ../extended/struct.PrepareTransfersBuilder.html#method.security
-    pub fn prepare_transfers(&self) -> PrepareTransfersBuilder<'_> {
-        PrepareTransfersBuilder::new(&self)
+    pub fn prepare_transfers(seed: &IotaSeed<Kerl>) -> PrepareTransfersBuilder<'_> {
+        PrepareTransfersBuilder::new(seed)
     }
 
     /// Removes a list of neighbors to your node.
@@ -496,8 +496,8 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTransfersBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTransfersBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTransfersBuilder.html#method.reference
-    pub fn send_transfers(&self) -> SendTransfersBuilder<'_> {
-        SendTransfersBuilder::new(&self)
+    pub fn send_transfers(seed: &IotaSeed<Kerl>) -> SendTransfersBuilder<'_> {
+        SendTransfersBuilder::new(seed)
     }
 
     /// Perform Attaches to tanlge, stores and broadcasts a vector of transaction trytes.
@@ -582,11 +582,13 @@ impl Client {
     /// * [`address`] - addresses to check (do not include the checksum)
     ///
     /// [`address`]: ../core/struct.WereAddressesSpentFromBuilder.html#method.address
-    pub async fn were_addresses_spent_from(addresses: &[Address]) -> Result<WereAddressesSpentFromResponse> {
+    pub async fn were_addresses_spent_from(
+        addresses: &[Address],
+    ) -> Result<WereAddressesSpentFromResponse> {
         let addresses: Vec<String> = addresses
-        .iter()
-        .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
-        .collect();
+            .iter()
+            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+            .collect();
         let client = Client::get();
         let body = json!({
             "command": "wereAddressesSpentFrom",
