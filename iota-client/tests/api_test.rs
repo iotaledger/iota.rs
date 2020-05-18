@@ -486,24 +486,23 @@ async fn test_traverse_bundle() {
         .await
         .unwrap();
 }
+*/
 
 #[tokio::test]
 async fn test_were_addresses_spent_from() {
-    let res = client_init()
-        .were_addresses_spent_from()
-        .address(&[Address::from_inner_unchecked(
+    client_init();
+    let res = Client::were_addresses_spent_from(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
                 .as_trits()
                 .encode(),
         )])
-        .send()
         .await
         .unwrap();
 
     assert_eq!(res.states[0], false);
 }
-*/
+
 fn tx() -> Transaction {
     TransactionBuilder::new()
         .with_payload(Payload::zeros())

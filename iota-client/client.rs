@@ -385,10 +385,7 @@ impl Client {
     /// * `address` - IOTA address
     pub async fn is_address_used(&self, address: &Address) -> Result<bool> {
         let addresses = &[address.clone()];
-        let spent = self
-            .were_addresses_spent_from()
-            .address(addresses)
-            .send()
+        let spent = Client::were_addresses_spent_from(addresses)
             .await?
             .states[0];
 
@@ -585,7 +582,18 @@ impl Client {
     /// * [`address`] - addresses to check (do not include the checksum)
     ///
     /// [`address`]: ../core/struct.WereAddressesSpentFromBuilder.html#method.address
-    pub fn were_addresses_spent_from(&self) -> WereAddressesSpentFromBuilder<'_> {
-        WereAddressesSpentFromBuilder::new(&self)
+    pub async fn were_addresses_spent_from(addresses: &[Address]) -> Result<WereAddressesSpentFromResponse> {
+        let addresses: Vec<String> = addresses
+        .iter()
+        .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+        .collect();
+        let client = Client::get();
+        let body = json!({
+            "command": "wereAddressesSpentFrom",
+            "addresses": addresses,
+        });
+
+        let res: WereAddressesSpentFromResponseBuilder = response!(client, body);
+        res.build().await
     }
 }
