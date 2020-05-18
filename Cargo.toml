@@ -7,3 +7,6 @@ members = [
     "bindings/c",
     "examples",
 ]
+exclude = [
+    "bindings/wasm"
+]

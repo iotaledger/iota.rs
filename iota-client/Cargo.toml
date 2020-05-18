@@ -27,3 +27,6 @@ iota-conversion = { version = "0.5.0", path = "../iota-conversion" }
 
 [dev-dependencies]
 tokio = { version = "0.2.21", features = ["macros"] }
+
+[features]
+wasm = ["chrono/wasmbind"]

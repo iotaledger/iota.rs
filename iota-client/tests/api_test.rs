@@ -11,7 +11,7 @@ async fn test_add_neighbors() {
     let client = client_init();
     let _ = client
         .add_neighbors()
-        .uris(&["tcp://0.0.0.0:15600"])
+        .uris(vec!["tcp://0.0.0.0:15600".to_string()])
         .unwrap()
         .send()
         .await

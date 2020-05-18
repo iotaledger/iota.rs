@@ -4,7 +4,7 @@ use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
 
 /// addNeighbors Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AddNeighborsResponse {
     #[serde(rename = "addedNeighbors")]
     /// Total number of added neighbors
@@ -12,7 +12,7 @@ pub struct AddNeighborsResponse {
 }
 
 /// checkConsistency Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ConsistencyResponse {
     /// State of the given transactions in the `tails` parameter. A `true` value means
     /// that all given transactions are consistent. A `false` value means that one
@@ -282,7 +282,7 @@ pub struct GetNodeAPIConfigurationResponse {
 }
 
 /// getNodeInfo Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetNodeInfoResponse {
     /// Name of IRI node
     #[serde(rename = "appName")]
