@@ -253,12 +253,12 @@ async fn test_get_neighbors() {
 async fn test_get_missing_transactions() {
     let _ = client_init().get_missing_transactions().await.unwrap();
 }
+*/
 
 #[tokio::test]
 async fn test_get_new_address() {
-    let _ = client_init()
-        .get_new_address()
-        .seed(
+    client_init();
+    let _ = Client::get_new_address(
             &IotaSeed::<Kerl>::from_buf(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                     .unwrap()
@@ -271,7 +271,7 @@ async fn test_get_new_address() {
         .await
         .unwrap();
 }
-
+/*
 #[tokio::test]
 #[ignore]
 async fn test_get_node_api_configuration() {

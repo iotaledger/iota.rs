@@ -294,8 +294,8 @@ impl Client {
     /// [`seed`]: ../extended/struct.GetNewAddressBuilder.html#method.seed
     /// [`index`]: ../extended/struct.GetNewAddressBuilder.html#method.index
     /// [`security`]: ../extended/struct.GetNewAddressBuilder.html#method.security
-    pub fn get_new_address(&self) -> GetNewAddressBuilder<'_> {
-        GetNewAddressBuilder::new(&self)
+    pub fn get_new_address(seed: &IotaSeed<Kerl>) -> GetNewAddressBuilder<'_> {
+        GetNewAddressBuilder::new(seed)
     }
 
     /// Gets a node's API configuration settings.

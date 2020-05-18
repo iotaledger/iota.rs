@@ -54,9 +54,7 @@ impl<'a> GetInputsBuilder<'a> {
         let mut zero_balance_warning = 5;
 
         while zero_balance_warning != 0 {
-            let (next_index, address) = Client::get()
-                .get_new_address()
-                .seed(self.seed)
+            let (next_index, address) = Client::get_new_address(self.seed)
                 .index(index)
                 .security(self.security)
                 .generate()

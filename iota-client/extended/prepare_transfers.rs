@@ -197,9 +197,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
             let remainder = match self.remainder {
                 Some(r) => r,
                 None => {
-                    Client::get()
-                        .get_new_address()
-                        .seed(self.seed)
+                    Client::get_new_address(self.seed)
                         .security(self.security)
                         .index(inputs.last().unwrap().index + 1)
                         .generate()
