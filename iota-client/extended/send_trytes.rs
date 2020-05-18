@@ -79,7 +79,7 @@ impl<'a> SendTrytesBuilder<'a> {
             .await?
             .trytes;
 
-        self.client.store_and_broadcast(&res).await?;
+        Client::store_and_broadcast(&res).await?;
 
         Ok(res)
     }

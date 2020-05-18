@@ -2,6 +2,7 @@
 use crate::core::*;
 use crate::extended::*;
 use crate::response::*;
+use crate::util::tx_trytes;
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
@@ -112,7 +113,7 @@ impl Client {
         let mut bundle = self.get_bundle(hash).await?;
         bundle.reverse();
 
-        self.broadcast_transactions().trytes(&bundle).send().await?;
+        Client::broadcast_transactions(&bundle).await?;
         Ok(bundle)
     }
 
@@ -123,8 +124,16 @@ impl Client {
     /// * [`trytes`] - Transaction trytes
     ///
     /// [`trytes`]: ../core/struct.BroadcastTransactionsBuilder.html#method.trytes
-    pub fn broadcast_transactions(&self) -> BroadcastTransactionsBuilder<'_> {
-        BroadcastTransactionsBuilder::new(&self)
+    pub async fn broadcast_transactions(trytes: &[Transaction]) -> Result<()> {
+        let client = Client::get();
+        let trytes: Vec<String> = trytes.iter().map(|tx| tx_trytes(tx)).collect();
+        let body = json!({
+            "command": "broadcastTransactions",
+            "trytes": trytes,
+        });
+
+        let res: ErrorResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Checks the consistency of transactions. A consistent transaction is one where the following statements are true:
@@ -492,14 +501,10 @@ impl Client {
     /// Response only contains errors and exceptions, it would be `None` if the call success.
     /// # Parameters
     /// * [`trytes`] - Transaction trytes
-    pub async fn store_and_broadcast(&self, trytes: &[Transaction]) -> Result<()> {
-        StoreTransactionsBuilder::new(&self)
-            .trytes(trytes)
-            .send()
+    pub async fn store_and_broadcast(trytes: &[Transaction]) -> Result<()> {
+        Client::store_transactions(trytes)
             .await?;
-        BroadcastTransactionsBuilder::new(&self)
-            .trytes(trytes)
-            .send()
+        Client::broadcast_transactions(trytes)
             .await?;
         Ok(())
     }
@@ -511,8 +516,16 @@ impl Client {
     /// * [`trytes`] - Transaction trytes
     ///
     /// [`trytes`]: ../core/struct.StoreTransactionsBuilder.html#method.trytes
-    pub fn store_transactions(&self) -> StoreTransactionsBuilder<'_> {
-        StoreTransactionsBuilder::new(&self)
+    pub async fn store_transactions(trytes: &[Transaction]) -> Result<()> {
+        let client = Client::get();
+        let trytes: Vec<String> = trytes.iter().map(|tx| tx_trytes(tx)).collect();
+        let body = json!({
+            "command": "storeTransactions",
+            "trytes": trytes,
+        });
+
+        let res: ErrorResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Fetches the bundle of a given the tail transaction hash, by traversing through trunk transaction.
