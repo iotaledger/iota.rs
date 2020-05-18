@@ -1,7 +1,3 @@
-//! Note that because the following tests all create different executor from #[tokio::test].
-//! They have same problem in this issue: https://github.com/hyperium/hyper/issues/2112
-//! Please run `cargo test -- --test-threads=1` when testing.
-
 mod common;
 use crate::common::*;
 use iota_bundle_preview::*;
@@ -11,7 +7,7 @@ use iota_crypto_preview::*;
 use iota_signing_preview::*;
 use iota_ternary_preview::*;
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_add_neighbors() {
     client_init();
     let _ = Client::add_neighbors(&["tcp://0.0.0.0:15600"])
@@ -19,7 +15,7 @@ async fn test_add_neighbors() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_attach_to_tangle() {
     client_init();
     let res = Client::attach_to_tangle()
@@ -44,7 +40,7 @@ async fn test_attach_to_tangle() {
     assert!(!res.trytes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_broadcast_bundle() {
     client_init();
     let _ = Client::broadcast_bundle(&Hash::from_inner_unchecked(
@@ -57,13 +53,13 @@ async fn test_broadcast_bundle() {
     .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_broadcast_transactions() {
     client_init();
     let _ = Client::broadcast_transactions(&[tx()]).await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_check_consistency() {
     client_init();
     let res = Client::check_consistency(&[Hash::from_inner_unchecked(
@@ -81,7 +77,7 @@ async fn test_check_consistency() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_bundle() {
     client_init();
     let _ = Client::find_transactions()
@@ -96,7 +92,7 @@ async fn test_find_tx_by_bundle() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_address() {
     client_init();
     let _ = Client::find_transactions()
@@ -111,7 +107,7 @@ async fn test_find_tx_by_address() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_tag() {
     client_init();
     let _ = Client::find_transactions()
@@ -126,7 +122,7 @@ async fn test_find_tx_by_tag() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_find_tx_by_approvee() {
     client_init();
     let _ = Client::find_transactions()
@@ -141,7 +137,7 @@ async fn test_find_tx_by_approvee() {
         .unwrap();
 }
 
-#[tokio::test(max_threads = 1)]
+#[smol_potat::test]
 async fn test_get_balances() {
     client_init();
     let _ = Client::get_balances()
@@ -156,7 +152,7 @@ async fn test_get_balances() {
         .unwrap();
 }
 
-#[tokio::test(max_threads = 1)]
+#[smol_potat::test]
 async fn test_get_bundle() {
     client_init();
     let _ = Client::get_bundle(&Hash::from_inner_unchecked(
@@ -169,7 +165,7 @@ async fn test_get_bundle() {
     .unwrap();
 }
 
-#[tokio::test(max_threads = 1)]
+#[smol_potat::test]
 async fn test_get_inclusion_states() {
     client_init();
     let res = Client::get_inclusion_states()
@@ -194,7 +190,7 @@ async fn test_get_inclusion_states() {
     assert!(!res.states.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_inputs() {
     client_init();
     let _ = Client::get_inputs(
@@ -211,7 +207,7 @@ async fn test_get_inputs() {
     .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_latest_inclusion() {
     client_init();
     let res = Client::get_latest_inclusion(&[
@@ -234,7 +230,7 @@ async fn test_get_latest_inclusion() {
     assert!(!res.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_neighbors() {
     client_init();
 
@@ -249,14 +245,14 @@ async fn test_get_neighbors() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_missing_transactions() {
     client_init();
     let _ = Client::get_missing_transactions().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_new_address() {
     client_init();
     let _ = Client::get_new_address(
@@ -273,20 +269,20 @@ async fn test_get_new_address() {
     .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_node_api_configuration() {
     client_init();
     Client::get_node_api_configuration().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_node_info() {
     client_init();
     Client::get_node_info().await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 #[ignore]
 async fn test_get_tips() {
     client_init();
@@ -295,7 +291,7 @@ async fn test_get_tips() {
     assert!(!res.hashes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_transactions_to_approve() {
     client_init();
     Client::get_transactions_to_approve()
@@ -305,7 +301,7 @@ async fn test_get_transactions_to_approve() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_get_trytes() {
     client_init();
     let res = Client::get_trytes(&[
@@ -328,7 +324,7 @@ async fn test_get_trytes() {
     assert!(!res.trytes.is_empty());
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_is_address_used() {
     client_init();
     let res = Client::is_address_used(&Address::from_inner_unchecked(
@@ -343,7 +339,7 @@ async fn test_is_address_used() {
     assert_eq!(res, false);
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_is_promotable() {
     client_init();
     let _ = Client::is_promotable(&Hash::from_inner_unchecked(
@@ -356,7 +352,7 @@ async fn test_is_promotable() {
         .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_prepare_transfers_no_value() {
     let mut transfers = Vec::new();
     for _ in 0..3 {
@@ -384,7 +380,7 @@ async fn test_prepare_transfers_no_value() {
     .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_remove_neighbors() {
     client_init();
     let res = Client::remove_neighbors(&["tcp://0.0.0.0:15600"])
@@ -396,7 +392,7 @@ async fn test_remove_neighbors() {
     }
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_replay_bundle() {
     client_init();
     let _ = Client::replay_bundle(&Hash::from_inner_unchecked(
@@ -414,7 +410,7 @@ async fn test_replay_bundle() {
 }
 
 // We don't do value transfer test since it's not ideal to be a general test case. But confirmed sample can be found here:
-#[tokio::test]
+#[smol_potat::test]
 async fn test_send_transfers_no_value() {
     let mut transfers = Vec::new();
     for _ in 0..3 {
@@ -448,7 +444,7 @@ async fn test_send_transfers_no_value() {
     .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_send_trytes() {
     client_init();
     let _ = Client::send_trytes()
@@ -458,19 +454,19 @@ async fn test_send_trytes() {
         .await;
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_store_and_broadcast() {
     client_init();
     Client::store_and_broadcast(&[tx()]).await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_store_transactions() {
     client_init();
     Client::store_transactions(&[tx()]).await.unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_traverse_bundle() {
     client_init();
     let _ = Client::traverse_bundle(&Hash::from_inner_unchecked(
@@ -483,7 +479,7 @@ async fn test_traverse_bundle() {
     .unwrap();
 }
 
-#[tokio::test]
+#[smol_potat::test]
 async fn test_were_addresses_spent_from() {
     client_init();
     let res = Client::were_addresses_spent_from(&[Address::from_inner_unchecked(
