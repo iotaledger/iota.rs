@@ -12,7 +12,7 @@ use iota::signing::{IotaSeed, Seed};
 use iota::ternary::{T1B1Buf, TryteBuf};
 use iota_conversion::Trinary;
 
-#[smol_potat::main]
+#[tokio::main]
 async fn main() -> Result<()> {
     // Create seed from your seed trytes
     let seed = IotaSeed::<Kerl>::from_buf(

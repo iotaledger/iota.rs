@@ -15,7 +15,7 @@ use iota::{
 };
 use iota_conversion::Trinary;
 
-#[smol_potat::main]
+#[tokio::main]
 async fn main() -> Result<()> {
     // Prepare a vector of transfers
     let mut transfers = Vec::new();
