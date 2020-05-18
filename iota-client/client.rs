@@ -347,8 +347,19 @@ impl Client {
     /// * `hashes` - Transaction hashes
     ///
     /// [`hashes`]: ../core/struct.GetTrytesBuilder.html#method.hashes
-    pub fn get_trytes(&self) -> GetTrytesBuilder<'_> {
-        GetTrytesBuilder::new(&self)
+    pub async fn get_trytes(hashes: &[Hash]) -> Result<GetTrytesResponse> {
+        let hashes: Vec<String> = hashes
+            .iter()
+            .map(|h| h.as_bytes().trytes().unwrap())
+            .collect();
+        let client = Client::get();
+        let body = json!({
+            "command": "getTrytes",
+            "hashes": hashes,
+        });
+
+        let res: GetTrytesResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Aborts the process that's started by the `attach_to_tangle` method.
@@ -397,7 +408,7 @@ impl Client {
     pub async fn is_promotable(&self, tail: &Hash) -> Result<bool> {
         let is_consistent = Client::check_consistency(&[*tail]).await?.state;
 
-        let timestamp = *self.get_trytes().hashes(&[*tail]).send().await?.trytes[0]
+        let timestamp = *Client::get_trytes(&[*tail]).await?.trytes[0]
             .attachment_ts()
             .to_inner() as i64;
 
@@ -549,14 +560,7 @@ impl Client {
         let mut hash = *hash;
         let mut tail = true;
         loop {
-            let res = self
-                .get_trytes()
-                .hashes(&[hash])
-                .send()
-                .await?
-                .trytes
-                .pop()
-                .unwrap();
+            let res = Client::get_trytes(&[hash]).await?.trytes.pop().unwrap();
 
             if tail {
                 if *res.index().to_inner() != 0 {

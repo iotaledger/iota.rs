@@ -302,32 +302,30 @@ async fn test_get_transactions_to_approve() {
         .await
         .unwrap();
 }
-/*
+
 #[tokio::test]
 async fn test_get_trytes() {
-    let res = client_init()
-        .get_trytes()
-        .hashes(&[
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-            Hash::from_inner_unchecked(
-                TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
-                    .unwrap()
-                    .as_trits()
-                    .encode(),
-            ),
-        ])
-        .send()
-        .await
-        .unwrap();
+    client_init();
+    let res = Client::get_trytes(&[
+        Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ),
+        Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ),
+    ])
+    .await
+    .unwrap();
 
     assert!(!res.trytes.is_empty());
 }
-
+/*
 #[tokio::test]
 async fn test_is_address_used() {
     let res = client_init()
