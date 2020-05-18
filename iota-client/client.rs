@@ -240,8 +240,8 @@ impl Client {
     ///
     /// # Parameters
     /// * [`transactions`] - List of transaction hashes for which you want to get the inclusion state
-    pub async fn get_latest_inclusion(&self, transactions: &[Hash]) -> Result<Vec<bool>> {
-        let milestone = self.get_latest_solid_subtangle_milestone().await?;
+    pub async fn get_latest_inclusion(transactions: &[Hash]) -> Result<Vec<bool>> {
+        let milestone = Client::get_latest_solid_subtangle_milestone().await?;
         let states = Client::get_inclusion_states()
             .transactions(transactions)
             .tips(&[milestone])
@@ -252,10 +252,10 @@ impl Client {
     }
 
     /// Gets latest solid subtangle milestone.
-    pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<Hash> {
+    pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
         Ok(Hash::from_inner_unchecked(
             // TODO missing impl error on Hash
-            TryteBuf::try_from_str(&self.get_node_info().await?.latest_solid_subtangle_milestone)
+            TryteBuf::try_from_str(&Client::get_node_info().await?.latest_solid_subtangle_milestone)
                 .unwrap()
                 .as_trits()
                 .encode(),
@@ -263,23 +263,25 @@ impl Client {
     }
 
     /// Gets all transaction hashes that a node is currently requesting from its neighbors.
-    pub async fn get_missing_transactions(&self) -> Result<GetTipsResponse> {
+    pub async fn get_missing_transactions() -> Result<GetTipsResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getMissingTransactions",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
 
     /// Gets a node's neighbors and their activity.
-    pub async fn get_neighbors(&self) -> Result<GetNeighborsResponse> {
+    pub async fn get_neighbors() -> Result<GetNeighborsResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getNeighbors",
         });
 
-        let res: GetNeighborsResponseBuilder = response!(self, body);
+        let res: GetNeighborsResponseBuilder = response!(client, body);
 
         res.build().await
     }
@@ -299,34 +301,37 @@ impl Client {
     }
 
     /// Gets a node's API configuration settings.
-    pub async fn get_node_api_configuration(&self) -> Result<GetNodeAPIConfigurationResponse> {
+    pub async fn get_node_api_configuration() -> Result<GetNodeAPIConfigurationResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getNodeAPIConfiguration",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
 
     /// Gets information about a node.
-    pub async fn get_node_info(&self) -> Result<GetNodeInfoResponse> {
+    pub async fn get_node_info() -> Result<GetNodeInfoResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getNodeInfo",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
 
     /// Gets tip transaction hashes from a node.
-    pub async fn get_tips(&self) -> Result<GetTipsResponse> {
+    pub async fn get_tips() -> Result<GetTipsResponse> {
+        let client = Client::get();
         let body = json!( {
             "command": "getTips",
         });
 
-        let res = response!(self, body);
+        let res = response!(client, body);
 
         Ok(res)
     }
@@ -365,12 +370,12 @@ impl Client {
     }
 
     /// Aborts the process that's started by the `attach_to_tangle` method.
-    pub async fn interrupt_attaching_to_tangle(&self) -> Result<()> {
+    pub async fn interrupt_attaching_to_tangle() -> Result<()> {
         let body = json!( {
             "command": "interruptAttachingToTangle",
         });
 
-        let _ = self
+        let _ = Client::get()
             .client
             .post(Client::get_node()?)
             .header("Content-Type", "application/json")
@@ -385,7 +390,7 @@ impl Client {
     /// Checks whether an address is used via FindTransactions and WereAddressesSpentFrom.
     /// # Parameters
     /// * `address` - IOTA address
-    pub async fn is_address_used(&self, address: &Address) -> Result<bool> {
+    pub async fn is_address_used(address: &Address) -> Result<bool> {
         let addresses = &[address.clone()];
         let spent = Client::were_addresses_spent_from(addresses).await?.states[0];
 
@@ -402,7 +407,7 @@ impl Client {
     /// since transaction attachment.
     /// # Parameters
     /// * `tail` - Tail Transaction Hash
-    pub async fn is_promotable(&self, tail: &Hash) -> Result<bool> {
+    pub async fn is_promotable(tail: &Hash) -> Result<bool> {
         let is_consistent = Client::check_consistency(&[*tail]).await?.state;
 
         let timestamp = *Client::get_trytes(&[*tail]).await?.trytes[0]

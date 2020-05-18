@@ -61,7 +61,7 @@ impl<'a> GetNewAddressBuilder<'a> {
                     .to_owned(),
             );
 
-            if let Ok(false) = Client::get().is_address_used(&address).await {
+            if let Ok(false) = Client::is_address_used(&address).await {
                 break Ok((index, address));
             }
 

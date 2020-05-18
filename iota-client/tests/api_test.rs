@@ -137,7 +137,7 @@ async fn test_find_tx_by_approvee() {
         .unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(max_threads = 1)]
 async fn test_get_balances() {
     client_init();
     let _ = Client::get_balances()
@@ -152,7 +152,7 @@ async fn test_get_balances() {
         .unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(max_threads = 1)]
 async fn test_get_bundle() {
     client_init();
     let _ = Client::get_bundle(&Hash::from_inner_unchecked(
@@ -165,7 +165,7 @@ async fn test_get_bundle() {
     .unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(max_threads = 1)]
 async fn test_get_inclusion_states() {
     client_init();
     let res = Client::get_inclusion_states()
@@ -206,12 +206,11 @@ async fn test_get_inputs() {
     .await
     .unwrap();
 }
-/*
+
 #[tokio::test]
 async fn test_get_latest_inclusion() {
-    let client = client_init();
-    let res = client
-        .get_latest_inclusion(&[
+    client_init();
+    let res = Client::get_latest_inclusion(&[
             Hash::from_inner_unchecked(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                     .unwrap()
@@ -233,9 +232,9 @@ async fn test_get_latest_inclusion() {
 
 #[tokio::test]
 async fn test_get_neighbors() {
-    let client = client_init();
+    client_init();
 
-    match client.get_neighbors().await {
+    match Client::get_neighbors().await {
         Ok(res) => {
             assert!(res.neighbors.iter().all(|x| !x.address.is_empty()));
         }
@@ -249,9 +248,9 @@ async fn test_get_neighbors() {
 #[tokio::test]
 #[ignore]
 async fn test_get_missing_transactions() {
-    let _ = client_init().get_missing_transactions().await.unwrap();
+    client_init();
+    let _ = Client::get_missing_transactions().await.unwrap();
 }
-*/
 
 #[tokio::test]
 async fn test_get_new_address() {
@@ -269,26 +268,28 @@ async fn test_get_new_address() {
     .await
     .unwrap();
 }
-/*
+
 #[tokio::test]
 #[ignore]
 async fn test_get_node_api_configuration() {
-    client_init().get_node_api_configuration().await.unwrap();
+    client_init();
+    Client::get_node_api_configuration().await.unwrap();
 }
 
 #[tokio::test]
 async fn test_get_node_info() {
-    client_init().get_node_info().await.unwrap();
+    client_init();
+    Client::get_node_info().await.unwrap();
 }
 
 #[tokio::test]
 #[ignore]
 async fn test_get_tips() {
-    let res = client_init().get_tips().await.unwrap();
+    client_init();
+    let res = Client::get_tips().await.unwrap();
 
     assert!(!res.hashes.is_empty());
 }
-*/
 
 #[tokio::test]
 async fn test_get_transactions_to_approve() {
@@ -322,11 +323,11 @@ async fn test_get_trytes() {
 
     assert!(!res.trytes.is_empty());
 }
-/*
+
 #[tokio::test]
 async fn test_is_address_used() {
-    let res = client_init()
-        .is_address_used(&Address::from_inner_unchecked(
+    client_init();
+    let res = Client::is_address_used(&Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
                 .as_trits()
@@ -340,8 +341,8 @@ async fn test_is_address_used() {
 
 #[tokio::test]
 async fn test_is_promotable() {
-    let _ = client_init()
-        .is_promotable(&Hash::from_inner_unchecked(
+    client_init();
+    let _ = Client::is_promotable(&Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -350,7 +351,6 @@ async fn test_is_promotable() {
         .await
         .unwrap();
 }
-*/
 
 #[tokio::test]
 async fn test_prepare_transfers_no_value() {
