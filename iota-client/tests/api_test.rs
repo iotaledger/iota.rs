@@ -57,32 +57,27 @@ async fn test_broadcast_bundle() {
 #[tokio::test]
 async fn test_broadcast_transactions() {
     client_init();
-    let _ = Client::broadcast_transactions(&[tx()])
-        .await
-        .unwrap();
+    let _ = Client::broadcast_transactions(&[tx()]).await.unwrap();
 }
-/*
+
 #[tokio::test]
 async fn test_check_consistency() {
-    let client = client_init();
-    let res = client
-        .check_consistency()
-        .tails(&[Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        )])
-        .send()
-        .await
-        .unwrap();
+    client_init();
+    let res = Client::check_consistency(&[Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+            .unwrap()
+            .as_trits()
+            .encode(),
+    )])
+    .await
+    .unwrap();
 
     match res.state {
         true => assert!(res.info.is_none()),
         false => assert!(res.info.is_some()),
     }
 }
-
+/*
 #[tokio::test]
 async fn test_find_tx_by_bundle() {
     let client = client_init();
@@ -482,9 +477,7 @@ async fn test_store_and_broadcast() {
 #[tokio::test]
 async fn test_store_transactions() {
     client_init();
-    Client::store_transactions(&[tx()])
-        .await
-        .unwrap();
+    Client::store_transactions(&[tx()]).await.unwrap();
 }
 /*
 #[tokio::test]

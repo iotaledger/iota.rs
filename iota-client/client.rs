@@ -5,6 +5,7 @@ use crate::response::*;
 use crate::util::tx_trytes;
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
+use iota_conversion::Trinary;
 use iota_ternary_preview::TryteBuf;
 use reqwest::Url;
 
@@ -144,8 +145,19 @@ impl Client {
     /// * [`tails`] - Transaction hashes to check
     ///
     /// [`tails`]: ../core/struct.ConsistencyBuilder.html#method.tails
-    pub fn check_consistency(&self) -> CheckConsistencyBuilder<'_> {
-        CheckConsistencyBuilder::new(&self)
+    pub async fn check_consistency(tails: &[Hash]) -> Result<ConsistencyResponse> {
+        let client = Client::get();
+        let tails: Vec<String> = tails
+            .iter()
+            .map(|h| h.as_bytes().trytes().unwrap())
+            .collect();
+        let body = json!({
+            "command": "checkConsistency",
+            "tails": tails,
+        });
+
+        let res: ConsistencyResponseBuilder = response!(client, body);
+        res.build().await
     }
 
     /// Finds transactions that contain the given values in their transaction fields.
@@ -384,7 +396,7 @@ impl Client {
     /// # Parameters
     /// * `tail` - Tail Transaction Hash
     pub async fn is_promotable(&self, tail: &Hash) -> Result<bool> {
-        let is_consistent = self.check_consistency().tails(&[*tail]).send().await?.state;
+        let is_consistent = Client::check_consistency(&[*tail]).await?.state;
 
         let timestamp = *self.get_trytes().hashes(&[*tail]).send().await?.trytes[0]
             .attachment_ts()
@@ -502,10 +514,8 @@ impl Client {
     /// # Parameters
     /// * [`trytes`] - Transaction trytes
     pub async fn store_and_broadcast(trytes: &[Transaction]) -> Result<()> {
-        Client::store_transactions(trytes)
-            .await?;
-        Client::broadcast_transactions(trytes)
-            .await?;
+        Client::store_transactions(trytes).await?;
+        Client::broadcast_transactions(trytes).await?;
         Ok(())
     }
 

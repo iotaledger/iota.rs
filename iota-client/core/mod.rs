@@ -1,7 +1,6 @@
 //! Core APIs types and builders
 
 mod attach_to_tangle;
-mod check_consistency;
 mod find_transactions;
 mod get_balances;
 mod get_inclusion_states;
@@ -10,7 +9,6 @@ mod get_trytes;
 mod were_addresses_spent_from;
 
 pub use attach_to_tangle::AttachToTangleBuilder;
-pub use check_consistency::CheckConsistencyBuilder;
 pub use find_transactions::FindTransactionsBuilder;
 pub use get_balances::GetBalancesBuilder;
 pub use get_inclusion_states::GetInclusionStatesBuilder;
