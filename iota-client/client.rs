@@ -338,8 +338,8 @@ impl Client {
     ///
     /// [`depth`]: ../core/struct.GetTransactionsToApproveBuilder.html#method.depth
     /// [`reference`]: ../core/struct.GetTransactionsToApproveBuilder.html#method.reference
-    pub fn get_transactions_to_approve(&self) -> GetTransactionsToApproveBuilder<'_> {
-        GetTransactionsToApproveBuilder::new(&self)
+    pub fn get_transactions_to_approve() -> GetTransactionsToApproveBuilder {
+        GetTransactionsToApproveBuilder::new()
     }
 
     /// Gets a transaction's contents in trytes.

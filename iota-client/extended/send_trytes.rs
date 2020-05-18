@@ -52,7 +52,7 @@ impl<'a> SendTrytesBuilder<'a> {
 
     /// Send SendTrytes request
     pub async fn send(self) -> Result<Vec<Transaction>> {
-        let mut gtta = self.client.get_transactions_to_approve().depth(self.depth);
+        let mut gtta = Client::get_transactions_to_approve().depth(self.depth);
         if let Some(hash) = self.reference {
             gtta = gtta.reference(&hash);
         }

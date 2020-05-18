@@ -291,17 +291,18 @@ async fn test_get_tips() {
 
     assert!(!res.hashes.is_empty());
 }
+*/
 
 #[tokio::test]
 async fn test_get_transactions_to_approve() {
-    let _ = client_init()
-        .get_transactions_to_approve()
+    client_init();
+    Client::get_transactions_to_approve()
         .depth(3)
         .send()
         .await
         .unwrap();
 }
-
+/*
 #[tokio::test]
 async fn test_get_trytes() {
     let res = client_init()
