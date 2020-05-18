@@ -72,9 +72,9 @@ impl Client {
     /// * [`uris`] - Slices of neighbor URIs(`&str`) to add
     ///
     /// [`uris`]: ../core/struct.AddNeighborsBuilder.html#method.uris
-    pub async fn add_neighbors(uris: &[&str]) -> Result<AddNeighborsResponse> {
-        for uri in uris {
-            match Url::parse(uri)?.scheme() {
+    pub async fn add_neighbors(uris: Vec<String>) -> Result<AddNeighborsResponse> {
+        for uri in &uris {
+            match Url::parse(&uri)?.scheme() {
                 "tcp" | "udp" => (),
                 _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
             }
