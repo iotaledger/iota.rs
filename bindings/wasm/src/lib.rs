@@ -87,7 +87,7 @@ impl Client {
 
     #[wasm_bindgen(js_name = "getNodeInfo")]
     pub async fn get_node_info(self) -> Result<JsValue, JsValue> {
-        let node_info = self.client.get_node_info()
+        let node_info = iota::client::client::Client::get_node_info()
             .await
             .map_err(|e| JsValue::from(e.to_string()))?;
         let res = response_to_js_value(node_info)?;
@@ -104,8 +104,7 @@ impl Client {
         )
             .map_err(js_error)?;
 
-        let mut builder = self.client.get_new_address();
-        builder = builder.seed(&encoded_seed);
+        let mut builder = iota::client::client::Client::get_new_address(&encoded_seed);
 
         if let Some(index) = index {
             builder = builder.index(index);
@@ -135,15 +134,10 @@ impl Client {
     #[wasm_bindgen(js_name = "addNeighbors")]
     pub async fn add_neighbors(self, uris: JsValue) -> Result<JsValue, JsValue> {
         let uris: Vec<String> = uris.into_serde().map_err(js_error)?;
-        let builder = self.client.add_neighbors()
-            .uris(uris)
-            .map_err(js_error)?;
-
-        let added_neighbords = builder
-            .send()
+        let added_neighbors = iota::client::client::Client::add_neighbors(uris)
             .await
             .map_err(js_error)?;
-        let res = response_to_js_value(added_neighbords)?;
+        let res = response_to_js_value(added_neighbors)?;
 
         Ok(res)
     }
@@ -156,7 +150,7 @@ impl Client {
         min_weight_magnitude: Option<u8>,
         transactions_trytes: JsValue,
     ) -> Result<JsValue, JsValue> {
-        let mut builder = self.client.attach_to_tangle();
+        let mut builder = iota::client::client::Client::attach_to_tangle();
 
         if trunk_transaction_hash_bytes.is_truthy() {
             let hash_vec: Vec<i8> = trunk_transaction_hash_bytes.into_serde().map_err(js_error)?;
@@ -194,10 +188,10 @@ impl Client {
         let tail_transaction_hash_vec: Vec<i8> = tail_transaction_hash_bytes.into_serde().map_err(js_error)?;
         let tail_transaction_hash = create_hash(&tail_transaction_hash_vec);
 
-        let broadcast_response = self.client.broadcast_bundle(&tail_transaction_hash)
+        let broadcast_response = iota::client::client::Client::broadcast_bundle(&tail_transaction_hash)
             .await
             .map_err(js_error)?;
-        
+
         // TODO this needs impl Serialize on bee > bundle > Transaction
         // let response = response_to_js_value(&broadcast_response)?;
 
@@ -212,11 +206,7 @@ impl Client {
             tails.push(create_hash(&tail_vec));
         }
 
-        let builder = self.client.check_consistency()
-            .tails(&tails);
-
-        let consistency_response = builder
-            .send()
+        let consistency_response = iota::client::client::Client::check_consistency(&tails)
             .await
             .map_err(js_error)?;
 
@@ -250,8 +240,7 @@ impl Client {
             tag: None,
         }).collect();
 
-        let mut builder = self.client.send_transfers()
-            .seed(&encoded_seed)
+        let mut builder = iota::client::client::Client::send_transfers(&encoded_seed)
             .transfers(transfers);
 
         if let Some(min_weight_magnitude) = min_weight_magnitude {
