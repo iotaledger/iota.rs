@@ -454,9 +454,9 @@ impl Client {
     /// * [`uris`] - Slice of neighbor URIs(`&str`) to remove
     ///
     /// [`uris`]: ../core/struct.RemoveNeighborsBuilder.html#method.uris
-    pub async fn remove_neighbors(uris: &[&str]) -> Result<RemoveNeighborsResponse> {
-        for uri in uris {
-            match Url::parse(uri)?.scheme() {
+    pub async fn remove_neighbors(uris: Vec<String>) -> Result<RemoveNeighborsResponse> {
+        for uri in &uris {
+            match Url::parse(&uri)?.scheme() {
                 "tcp" | "udp" => (),
                 _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
             }

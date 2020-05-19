@@ -199,7 +199,7 @@ impl GetBalancesResponseBuilder {
 }
 
 /// getInclusionStatesResponse Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct GetInclusionStatesResponse {
     /// List of boolean values in the same order as the `transactions` parameters.
     /// A `true` value means the transaction was confirmed
@@ -229,7 +229,7 @@ impl GetInclusionStatesResponseBuilder {
 }
 
 /// getNeighbors Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct GetNeighborsResponse {
     /// Vector of `NeighborResponse`
     pub neighbors: Vec<NeighborResponse>,
@@ -259,7 +259,7 @@ impl GetNeighborsResponseBuilder {
 }
 
 /// getNodeAPIConfiguration Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetNodeAPIConfigurationResponse {
     /// Maximum number of transactions that may be returned by the findTransactions endpoint
     #[serde(rename = "maxFindTransactions")]
@@ -335,7 +335,7 @@ pub struct GetNodeInfoResponse {
 }
 
 /// getTips Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetTipsResponse {
     /// Vector of tip transaction hashes
     pub hashes: Vec<String>,
@@ -388,7 +388,7 @@ impl GTTAResponseBuilder {
 }
 
 /// Representation of neighbor node
-#[derive(Clone, Debug, Default, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
 pub struct NeighborResponse {
     /// IP address of neighbors
     pub address: String,
@@ -456,7 +456,7 @@ impl GetTrytesResponseBuilder {
 }
 
 /// removeNeighbors Response Type
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RemoveNeighborsResponse {
     /// Total number of removed neighbors
     #[serde(rename = "removedNeighbors")]
@@ -493,7 +493,7 @@ impl WereAddressesSpentFromResponseBuilder {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 /// Address can be used as input to spend balance
 pub struct Input {
     pub(crate) address: Address,
