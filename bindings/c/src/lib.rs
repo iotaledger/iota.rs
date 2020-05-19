@@ -10,6 +10,31 @@ use iota::signing::{
 use iota::ternary::Trits;
 
 #[no_mangle]
+pub extern "C" fn iota_init(url: *const c_char) {
+    // Init async runtime first
+    struct Pending;
+
+    impl std::future::Future for Pending {
+        type Output = ();
+        fn poll(
+            self: std::pin::Pin<&mut Self>,
+            _cx: &mut std::task::Context<'_>,
+        ) -> std::task::Poll<Self::Output> {
+            std::task::Poll::Pending
+        }
+    }
+    std::thread::spawn(|| smol::run(Pending));
+
+    // Add the node to the client instance
+    let c_url = unsafe {
+        assert!(!url.is_null());
+        CStr::from_ptr(url)
+    };
+    let url = c_url.to_str().unwrap();
+    iota::Client::add_node(url).unwrap();
+}
+
+#[no_mangle]
 pub extern "C" fn iota_address_gen(seed: *const i8, index: u64) -> *const i8 {
     let seed = unsafe {
         assert!(!seed.is_null());
@@ -39,15 +64,8 @@ pub struct GetNodeInfoResponse {
 }
 
 #[no_mangle]
-pub extern "C" fn get_node_info(url: *const c_char) -> *mut GetNodeInfoResponse {
-    let c_url = unsafe {
-        assert!(!url.is_null());
-        CStr::from_ptr(url)
-    };
-    let url = c_url.to_str().unwrap();
-
-    iota::Client::add_node(url).unwrap();
-    let res = smol::run(async move { iota::Client::get_node_info().await.unwrap() });
+pub extern "C" fn iota_get_node_info() -> *mut GetNodeInfoResponse {
+    let res = smol::block_on(async move { iota::Client::get_node_info().await.unwrap() });
 
     Box::into_raw(Box::new(GetNodeInfoResponse {
         app_name: CString::new(res.app_name).unwrap().into_raw(),
