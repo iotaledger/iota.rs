@@ -125,6 +125,16 @@ function sendTransfers(seed, transfers, minWeightMagnitude = null) {
     return __getClient().then(client => client.sendTransfers(seed, transfers, minWeightMagnitude))
 }
 
+/**
+ * Fetches the bundle of a given the tail transaction hash, by traversing through trunk transaction.
+ * It does not validate the bundle. Use [`get_bundle`] instead to get validated bundle.
+ *
+ * @param {Hash} tailTransactionHash Tail transaction hash (current_index == 0)
+ */
+function traverseBundle(tailTransactionHash) {
+    return __getClient().then(client => client.traverseBundle(tailTransactionHash))
+}
+
 export {
     addNode,
     getNodeInfo,
@@ -133,5 +143,6 @@ export {
     attachToTangle,
     broadcastBundle,
     checkConsistency,
-    sendTransfers
+    sendTransfers,
+    traverseBundle
 }

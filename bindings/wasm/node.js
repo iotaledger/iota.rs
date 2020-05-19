@@ -124,6 +124,16 @@ function sendTransfers(seed, transfers, minWeightMagnitude = null) {
     return wasm.sendTransfers(seed, transfers, minWeightMagnitude)
 }
 
+/**
+ * Fetches the bundle of a given the tail transaction hash, by traversing through trunk transaction.
+ * It does not validate the bundle. Use [`get_bundle`] instead to get validated bundle.
+ *
+ * @param {Hash} tailTransactionHash Tail transaction hash (current_index == 0)
+ */
+function traverseBundle(tailTransactionHash) {
+    return wasm.traverseBundle(tailTransactionHash)
+}
+
 module.exports = {
     addNode,
     getNodeInfo,
@@ -132,5 +142,6 @@ module.exports = {
     attachToTangle,
     broadcastBundle,
     checkConsistency,
-    sendTransfers
+    sendTransfers,
+    traverseBundle
 }

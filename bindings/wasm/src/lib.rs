@@ -61,18 +61,26 @@ fn js_error<T: std::fmt::Debug>(e: T) -> JsValue {
     JsValue::from(format!("{:?}", e))
 }
 
-fn create_hash(bytes: &[i8]) -> Hash {
-    let mut array = [0; 243];
-    let bytes = &bytes[..array.len()];
-    array.copy_from_slice(bytes); 
-    Hash(array)
+fn create_hash_from_string(bytes: String) -> Result<Hash, JsValue> {
+    let hash = Hash::from_inner_unchecked(
+        TryteBuf::try_from_str(&bytes)
+            .map_err(js_error)?
+            .as_trits()
+            .encode(),
+    );
+    Ok(hash)
+}
+
+fn create_hash(bytes: JsValue) -> Result<Hash, JsValue> {
+    let bytes: String = bytes.into_serde().map_err(js_error)?;
+    create_hash_from_string(bytes)
 }
 
 fn create_hash_array(bytes_vec: JsValue) -> Result<Vec<Hash>, JsValue> {
-    let hashes_vecs: Vec<Vec<i8>> = bytes_vec.into_serde().map_err(js_error)?;
+    let hashes_vecs: Vec<String> = bytes_vec.into_serde().map_err(js_error)?;
     let mut hashes = Vec::new();
     for hash in hashes_vecs {
-        hashes.push(create_hash(&hash));
+        hashes.push(create_hash_from_string(hash)?);
     }
     Ok(hashes)
 }
@@ -127,14 +135,12 @@ pub async fn attach_to_tangle(
     let mut builder = iota::Client::attach_to_tangle();
 
     if trunk_transaction_hash_bytes.is_truthy() {
-        let hash_vec: Vec<i8> = trunk_transaction_hash_bytes.into_serde().map_err(js_error)?;
-        let hash = create_hash(&hash_vec[..]);
+        let hash = create_hash(trunk_transaction_hash_bytes)?;
         builder = builder.trunk_transaction(&hash);
     }
 
     if branch_transaction_hash_bytes.is_truthy() {
-        let hash_vec: Vec<i8> = branch_transaction_hash_bytes.into_serde().map_err(js_error)?;
-        let hash = create_hash(&hash_vec[..]);
+        let hash = create_hash(branch_transaction_hash_bytes)?;
         builder = builder.branch_transaction(&hash);
     }
 
@@ -158,8 +164,7 @@ pub async fn attach_to_tangle(
 
 #[wasm_bindgen(js_name = "broadcastBundle")]
 pub async fn broadcast_bundle(tail_transaction_hash_bytes: JsValue) -> Result<JsValue, JsValue> {
-    let tail_transaction_hash_vec: Vec<i8> = tail_transaction_hash_bytes.into_serde().map_err(js_error)?;
-    let tail_transaction_hash = create_hash(&tail_transaction_hash_vec);
+    let tail_transaction_hash = create_hash(tail_transaction_hash_bytes)?;
 
     let broadcast_response = iota::Client::broadcast_bundle(&tail_transaction_hash)
         .await
@@ -260,8 +265,7 @@ pub async fn get_balances(addresses: JsValue, threshold: Option<u8>, tips_hashes
 
 #[wasm_bindgen(js_name = "getBundle")]
 pub async fn get_bundle(hash_bytes: JsValue) -> Result<JsValue, JsValue> {
-    let hash_vec: Vec<i8> = hash_bytes.into_serde().map_err(js_error)?;
-    let hash = create_hash(&hash_vec);
+    let hash = create_hash(hash_bytes)?;
     let bundle = iota::Client::get_bundle(&hash)
         .await
         .map_err(js_error)?;
@@ -444,8 +448,7 @@ pub async fn get_transactions_to_approve(
     }
 
     if reference_hash_bytes.is_truthy() {
-        let reference_hash_vec: Vec<i8> = reference_hash_bytes.into_serde().map_err(js_error)?;
-        let reference_hash = create_hash(&reference_hash_vec);
+        let reference_hash = create_hash(reference_hash_bytes)?;
         builder = builder.reference(&reference_hash);
     }
 
@@ -489,8 +492,7 @@ pub async fn is_address_used(address: String) -> Result<bool, JsValue> {
 
 #[wasm_bindgen(js_name = "isPromotable")]
 pub async fn is_promotable(tail_hash: JsValue) -> Result<bool, JsValue> {
-    let tail_hash_vec: Vec<i8> = tail_hash.into_serde().map_err(js_error)?;
-    let tail_hash = create_hash(&tail_hash_vec);
+    let tail_hash = create_hash(tail_hash)?;
 
     let is_promotable = iota::Client::is_promotable(&tail_hash)
         .await
@@ -533,16 +535,14 @@ pub async fn replay_bundle(
     trytes: JsValue,
     reference_hash_bytes: JsValue,
 ) -> Result<JsValue, JsValue> {
-    let hash_bytes_vec: Vec<i8> = hash_bytes.into_serde().map_err(js_error)?;
-    let hash = create_hash(&hash_bytes_vec);
+    let hash = create_hash(hash_bytes)?;
 
     let mut builder = iota::Client::replay_bundle(&hash)
         .await
         .map_err(js_error)?;
 
     if reference_hash_bytes.is_truthy() {
-        let reference_hash_vec: Vec<i8> = reference_hash_bytes.into_serde().map_err(js_error)?;
-        let reference_hash = create_hash(&reference_hash_vec);
+        let reference_hash = create_hash(reference_hash_bytes)?;
         builder = builder.reference(reference_hash);
     }
 
@@ -607,4 +607,18 @@ pub async fn send_transfers(seed: String, transfers: JsValue, min_weight_magnitu
     
     let res = response_to_js_value(response)?;
     Ok(res)
+}
+
+#[wasm_bindgen(js_name = "traverseBundle")]
+pub async fn traverse_bundle(hash_bytes: JsValue) -> Result<JsValue, JsValue> {
+    let hash = create_hash(hash_bytes)?;
+
+    let transactions = iota::Client::traverse_bundle(&hash)
+        .await
+        .map_err(js_error)?;
+
+    let response: Vec<TransactionDef> = transactions.iter().map(|tx| TransactionDef::from(tx)).collect();
+    let response = response_to_js_value(&response)?;
+
+    Ok(response)
 }

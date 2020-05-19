@@ -37,4 +37,14 @@ describe('core', () => {
                 assert.equal(typeof transactions[0].isTail, 'boolean')
             })
     })
+
+    it('should traverse bundle', () => {
+        client.addNode(uri)
+        
+        client.traverseBundle('SVHIDTVSJRHLNFXIFUVYPIWBV9IZGCSMLUZCFOEQMCXMUTHRQCESOIHHKKEVXOUGGOYOSF9ATDMBFK999')
+            .then(transactions => {
+                assert.equal(Array.isArray(transactions), true)
+                assert.equal(transactions.length, 1)
+            })
+    })
 })
