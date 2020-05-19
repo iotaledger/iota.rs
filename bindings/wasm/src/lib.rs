@@ -3,9 +3,9 @@ use iota::crypto::Kerl;
 use iota::signing::{IotaSeed, Seed};
 use iota::ternary::{T1B1Buf, TryteBuf};
 use iota::bundle::{Address, TransactionField, Tag};
-use iota::client::response::Transfer;
+use iota::client::response::{Transfer, TransactionDef};
 use iota_conversion::Trinary;
-use iota_bundle_preview::{Hash, Transaction};
+use iota_bundle_preview::Hash;
 use serde::{Serialize, Deserialize};
 
 #[wasm_bindgen]
@@ -151,10 +151,9 @@ pub async fn attach_to_tangle(
         .await
         .map_err(js_error)?;
 
-    // TODO this needs impl Serialize on bee > bundle > Transaction
-    // let response = response_to_js_value(&attach_response)?;
+    let response = response_to_js_value(&attach_response)?;
 
-    Ok(JsValue::from(""))
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "broadcastBundle")]
@@ -165,11 +164,11 @@ pub async fn broadcast_bundle(tail_transaction_hash_bytes: JsValue) -> Result<Js
     let broadcast_response = iota::Client::broadcast_bundle(&tail_transaction_hash)
         .await
         .map_err(js_error)?;
-    
-    // TODO this needs impl Serialize on bee > bundle > Transaction
-    // let response = response_to_js_value(&broadcast_response)?;
 
-    Ok(JsValue::from(""))
+    let response: Vec<TransactionDef> = broadcast_response.iter().map(|tx| TransactionDef::from(tx)).collect();
+    let response = response_to_js_value(&response)?;
+
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "checkConsistency")]
@@ -227,10 +226,9 @@ pub async fn find_transactions(
         .await
         .map_err(js_error)?;
 
-    // TODO this needs impl Serialize on bee > bundle > Hash
-    // let response = response_to_js_value(find_response)?;
+    let response = response_to_js_value(find_response)?;
 
-    Ok(JsValue::from(""))
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "getBalances")]
@@ -256,9 +254,8 @@ pub async fn get_balances(addresses: JsValue, threshold: Option<u8>, tips_hashes
         .await
         .map_err(js_error)?;
 
-    // TODO needs Hash serialize
-    // let response = response_to_js_value(balance_response)?;
-    Ok(JsValue::from(""))
+    let response = response_to_js_value(balance_response)?;
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "getBundle")]
@@ -269,9 +266,9 @@ pub async fn get_bundle(hash_bytes: JsValue) -> Result<JsValue, JsValue> {
         .await
         .map_err(js_error)?;
 
-    // TODO needs Transaction serialize
-    // let response = response_to_js_value(bundle)?;
-    Ok(JsValue::from(""))
+    let response: Vec<TransactionDef> = bundle.iter().map(|tx| TransactionDef::from(tx)).collect();
+    let response = response_to_js_value(response)?;
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "getInclusionStates")]
@@ -457,8 +454,8 @@ pub async fn get_transactions_to_approve(
         .await
         .map_err(js_error)?;
 
-    // TODO
-    Ok(JsValue::from(""))
+    let response = response_to_js_value(transactions_to_approve)?;
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "getTrytes")]
@@ -468,9 +465,8 @@ pub async fn get_trytes(hash_bytes: JsValue) -> Result<JsValue, JsValue> {
         .await
         .map_err(js_error)?;
     
-    // TODO
-    // let response = response_to_js_value(trytes)?;
-    Ok(JsValue::from(""))
+    let response = response_to_js_value(trytes)?;
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "interruptAttachingToTangle")]
@@ -563,9 +559,9 @@ pub async fn replay_bundle(
         .await
         .map_err(js_error)?;
 
-    // TODO
-    // let response = response_to_js_value(replay_response)?;
-    Ok(JsValue::from(""))
+    let response: Vec<TransactionDef> = replay_response.iter().map(|tx| TransactionDef::from(tx)).collect();
+    let response = response_to_js_value(response)?;
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "sendTransfers")]

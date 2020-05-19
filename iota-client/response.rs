@@ -2,6 +2,59 @@
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
+use serde::ser::{Serialize, Serializer, SerializeSeq, SerializeStruct};
+
+#[derive(Serialize)]
+pub struct TransactionDef {
+    payload: String,
+    address: String,
+    value: String,
+    obsolete_tag: String,
+    timestamp: String,
+    index: String,
+    last_index: String,
+    bundle: Vec<i8>,
+    trunk: Vec<i8>,
+    branch: Vec<i8>,
+    tag: String,
+    attachment_ts: String,
+    attachment_lbts: String,
+    attachment_ubts: String,
+    nonce: String,
+}
+
+impl From<&Transaction> for TransactionDef {
+    fn from(transaction: &Transaction) -> Self {
+        TransactionDef {
+            payload: serde_json::to_string(transaction.payload()).unwrap(),
+            address: serde_json::to_string(transaction.address()).unwrap(),
+            value: serde_json::to_string(transaction.value()).unwrap(),
+            obsolete_tag: serde_json::to_string(transaction.obsolete_tag()).unwrap(),
+            timestamp: serde_json::to_string(transaction.timestamp()).unwrap(),
+            index: serde_json::to_string(transaction.index()).unwrap(),
+            last_index: serde_json::to_string(transaction.last_index()).unwrap(),
+            bundle: transaction.bundle().as_bytes().to_vec(),
+            trunk: transaction.trunk().as_bytes().to_vec(),
+            branch: transaction.branch().as_bytes().to_vec(),
+            tag: serde_json::to_string(transaction.tag()).unwrap(),
+            attachment_ts: serde_json::to_string(transaction.attachment_ts()).unwrap(),
+            attachment_lbts: serde_json::to_string(transaction.attachment_lbts()).unwrap(),
+            attachment_ubts: serde_json::to_string(transaction.attachment_ubts()).unwrap(),
+            nonce: serde_json::to_string(transaction.nonce()).unwrap(),
+        }
+    }
+}
+
+fn transaction_serializer<S>(x: &Vec<Transaction>, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut seq = s.serialize_seq(Some(x.len()))?;
+    for e in x {
+        seq.serialize_element(&TransactionDef::from(e))?;
+    }
+    seq.end()
+}
 
 /// addNeighbors Response Type
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -49,8 +102,10 @@ impl ConsistencyResponseBuilder {
 }
 
 /// attachToTangle Response Type
+#[derive(Serialize)]
 pub struct AttachToTangleResponse {
     /// Transaction trytes that include a valid `nonce` field
+    #[serde(serialize_with = "transaction_serializer")]
     pub trytes: Vec<Transaction>,
 }
 
@@ -110,6 +165,18 @@ pub struct FindTransactionsResponse {
     pub hashes: Vec<Hash>,
 }
 
+impl Serialize for FindTransactionsResponse {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("FindTransactionsResponse", 1)?;
+        let hashes: Vec<&[i8]> = self.hashes.iter().map(|hash| hash.as_bytes()).collect();
+        state.serialize_field("hashes", &hashes)?;
+        state.end()
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub(crate) struct FindTransactionsResponseBuilder {
     hashes: Option<Vec<String>>,
@@ -149,6 +216,23 @@ pub struct GetBalancesResponse {
     /// The referencing tips. If no `tips` parameter was passed to the endpoint,
     /// this field contains the hash of the latest milestone that confirmed the balance
     pub references: Vec<Hash>,
+}
+
+impl Serialize for GetBalancesResponse {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("GetBalancesResponse", 3)?;
+
+        state.serialize_field("balances", &self.balances)?;
+        state.serialize_field("milestone_index", &self.milestone_index)?;
+
+        let references: Vec<&[i8]> = self.references.iter().map(|hash| hash.as_bytes()).collect();
+        state.serialize_field("references", &references)?;
+
+        state.end()
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -350,6 +434,21 @@ pub struct GTTAResponse {
     pub branch_transaction: Hash,
 }
 
+impl Serialize for GTTAResponse {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("GTTAResponse", 2)?;
+
+        state.serialize_field("trunk_transaction", &self.trunk_transaction.as_bytes())?;
+
+        state.serialize_field("branch_transaction", &self.branch_transaction.as_bytes())?;
+
+        state.end()
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub(crate) struct GTTAResponseBuilder {
     #[serde(rename = "trunkTransaction")]
@@ -423,8 +522,10 @@ pub struct NeighborResponse {
 }
 
 /// getTrytes Response Type
+#[derive(Serialize)]
 pub struct GetTrytesResponse {
     /// Vector of transaction trytes for the given transaction hashes (in the same order as the parameters)
+    #[serde(serialize_with = "transaction_serializer")]
     pub trytes: Vec<Transaction>,
 }
 
