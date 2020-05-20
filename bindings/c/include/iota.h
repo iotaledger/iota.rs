@@ -44,4 +44,4 @@ extern int8_t *iota_address_gen(const int8_t *seed, uint64_t index);
  *
  * @return Response type of node information
  */
-extern get_node_info_t *iota_get_node_info();
+extern get_node_info_t *iota_get_node_info(uint8_t *err);
