@@ -16,10 +16,10 @@ target:
 target/iota: target/main.o $(LD_LIBRARY_PATH)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(LD_LIBRARY_PATH): bindings/c/src/lib.rs Cargo.toml
+$(LD_LIBRARY_PATH): src/lib.rs Cargo.toml
 	cargo build
 
-target/main.o: bindings/c/src/main.c | target
+target/main.o: main.c include/iota.h | target
 	$(CC) -o $@ -c $<
 
 clean:
