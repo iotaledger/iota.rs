@@ -31,4 +31,3 @@ pub extern "C" fn iota_init(url: *const c_char) {
     let url = c_url.to_str().unwrap();
     iota::Client::add_node(url).unwrap();
 }
-
