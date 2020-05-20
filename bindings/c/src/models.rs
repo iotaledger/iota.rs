@@ -68,3 +68,15 @@ pub extern "C" fn iota_transfers_free(ptr: *mut Transfers) {
         Box::from_raw(ptr);
     }
 }
+
+pub struct Bundle(pub(crate) Vec<bundle::Transaction>);
+
+#[no_mangle]
+pub extern "C" fn iota_bundle_free(ptr: *mut Bundle) {
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        Box::from_raw(ptr);
+    }
+}

@@ -1,17 +1,18 @@
 use anyhow::Result;
-use crate::{CSeed, Transfers};
+use crate::{CSeed, Transfers, Bundle};
 
 
 #[no_mangle]
-pub extern "C" fn iota_send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8, err: &mut u8) {
+pub extern "C" fn iota_send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8, err: &mut u8) -> *mut Bundle {
     *err = 0;
 
     send_transfers(seed, transfers, mwm).unwrap_or_else(|_| {
         *err = 1;
+        std::ptr::null_mut()
     })
 }
 
-fn send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8) -> Result<()> {
+fn send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8) -> Result<*mut Bundle> {
     let seed = unsafe {
         assert!(!seed.is_null());
         &(*seed).0
@@ -22,7 +23,7 @@ fn send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8) -> Res
        (*Box::from_raw(transfers)).0
     };
 
-    let _ = smol::block_on(async move {
+    let res = smol::block_on(async move {
         iota::Client::send_transfers(&seed)
             .transfers(transfers)
             .min_weight_magnitude(mwm)
@@ -30,7 +31,5 @@ fn send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8) -> Res
             .await
     })?;
 
-    // TODO retrun bundle
-
-    Ok(())
+    Ok(Box::into_raw(Box::new(Bundle(res))))
 }

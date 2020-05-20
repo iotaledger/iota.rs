@@ -20,6 +20,10 @@ extern void iota_transfers_add(transfers_t *ptr, address_t *address, uint64_t va
 
 extern transfers_t *iota_transfers_new();
 
+typedef struct Bundle bundle_t;
+
+extern void iota_bundle_free(bundle_t *ptr);
+
 /**
  * @brief Initialize the iota service instance.
  *
@@ -79,4 +83,4 @@ extern get_node_info_t *iota_get_node_info(uint8_t *err);
  */
 extern address_t *iota_get_new_address(const seed_t *seed, uint64_t index, uint8_t *err);
 
-void iota_send_transfers(const seed_t *seed, transfers_t *transfers, uint8_t mwm, uint8_t *err);
+bundle_t *iota_send_transfers(const seed_t *seed, transfers_t *transfers, uint8_t mwm, uint8_t *err);
