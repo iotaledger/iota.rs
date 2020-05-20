@@ -7,17 +7,12 @@ struct Address;
 
 struct CSeed;
 
-template<typename T>
-struct Vec;
+struct Transfers;
 
 struct GetNodeInfoResponse {
   const char *app_name;
   const char *app_version;
   uint32_t latest_milestone_index;
-};
-
-struct CTransfers {
-  Vec<Transfer> inner;
 };
 
 extern "C" {
@@ -36,6 +31,12 @@ void iota_seed_free(CSeed *ptr);
 
 CSeed *iota_seed_new();
 
-void iota_send_transfers(const CSeed *seed, CTransfers *transfers, uint8_t mwm, uint8_t *err);
+void iota_send_transfers(const CSeed *seed, Transfers *transfers, uint8_t mwm, uint8_t *err);
+
+void iota_transfers_add(Transfers *ptr, Address *address, uint64_t value);
+
+void iota_transfers_free(Transfers *ptr);
+
+Transfers *iota_transfers_new();
 
 } // extern "C"

@@ -1,15 +1,9 @@
 use anyhow::Result;
-use iota::client::Transfer;
-use crate::CSeed;
+use crate::{CSeed, Transfers};
 
-#[repr(C)]
-pub struct CTransfers {
-    // TODO method to add transfers
-    inner: Vec<Transfer>,
-}
 
 #[no_mangle]
-pub extern "C" fn iota_send_transfers(seed: *const CSeed, transfers: *mut CTransfers, mwm: u8, err: &mut u8) {
+pub extern "C" fn iota_send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8, err: &mut u8) {
     *err = 0;
 
     send_transfers(seed, transfers, mwm).unwrap_or_else(|_| {
@@ -17,13 +11,17 @@ pub extern "C" fn iota_send_transfers(seed: *const CSeed, transfers: *mut CTrans
     })
 }
 
-fn send_transfers(seed: *const CSeed, transfers: *mut CTransfers, mwm: u8) -> Result<()> {
+fn send_transfers(seed: *const CSeed, transfers: *mut Transfers, mwm: u8) -> Result<()> {
     let seed = unsafe {
         assert!(!seed.is_null());
         &(*seed).0
     };
 
-    let transfers = unsafe{ (*transfers).inner.clone() };
+    let transfers = unsafe {
+        assert!(!transfers.is_null());
+       (*Box::from_raw(transfers)).0
+    };
+
     let _ = smol::block_on(async move {
         iota::Client::send_transfers(&seed)
             .transfers(transfers)
@@ -32,5 +30,7 @@ fn send_transfers(seed: *const CSeed, transfers: *mut CTransfers, mwm: u8) -> Re
             .await
     })?;
 
-     Ok(())
+    // TODO retrun bundle
+
+    Ok(())
 }

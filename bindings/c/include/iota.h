@@ -12,6 +12,14 @@ extern void iota_address_free(address_t *ptr);
 
 extern address_t *iota_address_new();
 
+typedef struct Transfers transfers_t;
+
+extern void iota_transfers_free(transfers_t *ptr);
+
+extern void iota_transfers_add(transfers_t *ptr, address_t *address, uint64_t value);
+
+extern transfers_t *iota_transfers_new();
+
 /**
  * @brief Initialize the iota service instance.
  *
@@ -70,3 +78,5 @@ extern get_node_info_t *iota_get_node_info(uint8_t *err);
  * @return Response type of node information
  */
 extern address_t *iota_get_new_address(const seed_t *seed, uint64_t index, uint8_t *err);
+
+void iota_send_transfers(const seed_t *seed, transfers_t *transfers, uint8_t mwm, uint8_t *err);

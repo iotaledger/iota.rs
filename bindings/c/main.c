@@ -6,13 +6,14 @@ int main() {
     iota_init("https://nodes.comnet.thetangle.org");
 
     /*
-     * Generate new address
+     * Generate new address & send transfers
      */
     uint8_t err;
     seed_t *seed = iota_seed_new();
     address_t *address = iota_get_new_address(seed, 10, &err);
-    iota_seed_free(seed);
-    iota_address_free(address);
+    transfers_t *transfers = iota_transfers_new();
+    iota_transfers_add(transfers, address, 0);
+    iota_send_transfers(seed, transfers, 10, &err);
 
     /*
      * Get node info
