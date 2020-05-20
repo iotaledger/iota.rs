@@ -1,6 +1,6 @@
+use anyhow::Result;
 use std::ffi::CString;
 use std::os::raw::c_char;
-use anyhow::Result;
 
 #[repr(C)]
 pub struct GetNodeInfoResponse {

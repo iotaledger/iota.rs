@@ -41,7 +41,20 @@ extern int8_t *iota_address_gen(const int8_t *seed, uint64_t index);
 
 /**
  * @brief Returns information about connected node.
- *
+ * 
+ * @param[out] error code
  * @return Response type of node information
  */
 extern get_node_info_t *iota_get_node_info(uint8_t *err);
+
+/**
+ * @brief Generates and returns a new address by calling `find_transactions` until the first unused address is detected.
+ * 
+ * This stops working after a snapshot.
+ * 
+ * @param[in] seed A 243 trits long IOTA seed.
+ * @param[in] index Index of the address
+ * @param[out] error code
+ * @return Response type of node information
+ */
+extern int8_t *iota_get_new_address(const int8_t *seed, uint64_t index, uint8_t *err);
