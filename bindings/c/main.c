@@ -13,7 +13,8 @@ int main() {
     address_t *address = iota_get_new_address(seed, 10, &err);
     transfers_t *transfers = iota_transfers_new();
     iota_transfers_add(transfers, address, 0);
-    iota_send_transfers(seed, transfers, 10, &err);
+    bundle_t *bundle = iota_send_transfers(seed, transfers, 10, &err);
+    iota_bundle_free(bundle);
 
     /*
      * Get node info
