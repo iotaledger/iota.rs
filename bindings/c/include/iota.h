@@ -1,5 +1,17 @@
 #include <stdint.h>
 
+typedef struct CSeed seed_t;
+
+extern void iota_seed_free(seed_t *ptr);
+
+extern seed_t *iota_seed_new();
+
+typedef struct Address address_t;
+
+extern void iota_address_free(address_t *ptr);
+
+extern address_t *iota_address_new();
+
 /**
  * @brief Initialize the iota service instance.
  *
@@ -57,4 +69,4 @@ extern get_node_info_t *iota_get_node_info(uint8_t *err);
  * @param[out] error code
  * @return Response type of node information
  */
-extern int8_t *iota_get_new_address(const int8_t *seed, uint64_t index, uint8_t *err);
+extern address_t *iota_get_new_address(const seed_t *seed, uint64_t index, uint8_t *err);

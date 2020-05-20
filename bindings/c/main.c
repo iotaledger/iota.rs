@@ -4,26 +4,15 @@
 
 int main() {
     iota_init("https://nodes.comnet.thetangle.org");
-    /*
-     * Generate unchecked address
-     */
-    int8_t seed[243] = {0};
-    // Generate the address in index 0.
-    int8_t *address = iota_address_gen(seed, 0);
-    printf("Generate unchecked address:\n");
-    for(int i = 0; i < 243; i++) {
-        printf("%d ", address[i]);
-    }
 
     /*
      * Generate new address
      */
     uint8_t err;
-    int8_t *new_address = iota_get_new_address(seed, 10, &err);
-    printf("\nGenerate new address:\n");
-    for(int i = 0; i < 243; i++) {
-        printf("%d ", new_address[i]);
-    }
+    seed_t *seed = iota_seed_new();
+    address_t *address = iota_get_new_address(seed, 10, &err);
+    iota_seed_free(seed);
+    iota_address_free(address);
 
     /*
      * Get node info

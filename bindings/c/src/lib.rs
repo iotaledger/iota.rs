@@ -3,9 +3,11 @@ use std::os::raw::c_char;
 
 mod api;
 mod utils;
+mod models;
 
 pub use api::*;
 pub use utils::*;
+pub use models::*;
 
 #[no_mangle]
 pub extern "C" fn iota_init(url: *const c_char) {
