@@ -4,6 +4,8 @@ use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
 use serde::ser::{Serialize, Serializer, SerializeSeq, SerializeStruct};
 
+// TODO: remove this struct once iota_bundle_preview::Transaction implements Serialize
+/// a Transaction wrapper that can be serialized
 #[derive(Serialize)]
 pub struct TransactionDef {
     payload: String,
@@ -165,6 +167,7 @@ pub struct FindTransactionsResponse {
     pub hashes: Vec<Hash>,
 }
 
+// TODO: remove this when iota_bundle_preview::Hash implements Serialize
 impl Serialize for FindTransactionsResponse {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -218,6 +221,7 @@ pub struct GetBalancesResponse {
     pub references: Vec<Hash>,
 }
 
+// TODO: remove this when iota_bundle_preview::Hash implements Serialize
 impl Serialize for GetBalancesResponse {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -434,6 +438,7 @@ pub struct GTTAResponse {
     pub branch_transaction: Hash,
 }
 
+// TODO: remove this when iota_bundle_preview::Hash implements Serialize
 impl Serialize for GTTAResponse {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
