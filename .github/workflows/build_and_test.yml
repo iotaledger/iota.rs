@@ -90,11 +90,11 @@ jobs:
         run: cargo install wasm-pack
 
       - name: Install npm dependencies
-        run: /
+        run: |
           cd ./bindings/wasm
           yarn
 
       - name: Run yarn test
-        run: /
+        run: |
           cd ./bindings/wasm
           yarn test
