@@ -116,11 +116,11 @@ pub fn add_node(uri: &str) -> Result<(), JsValue> {
 #[wasm_bindgen(js_name = "addNeighbors")]
 pub async fn add_neighbors(uris: JsValue) -> Result<JsValue, JsValue> {
     let uris: Vec<String> = uris.into_serde().map_err(js_error)?;
-    let added_neighbords = iota::Client::add_neighbors(uris)
+    let added_neighbors = iota::Client::add_neighbors(uris)
         .await
         .map_err(js_error)?;
 
-    let res = response_to_js_value(added_neighbords)?;
+    let res = response_to_js_value(added_neighbors)?;
 
     Ok(res)
 }
