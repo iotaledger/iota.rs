@@ -1,16 +1,18 @@
 <script>
-	import { Client } from 'iota-rs-wasm/web'
+	import * as client from 'iota-rs-wasm/web'
 	let promise;
 	
-	let client = new Client('https://nodes.comnet.thetangle.org')
-	promise = client.getNodeInfo().then(res => {
-		setTimeout(() => {
-			promise = client
-				.getNewAddress('RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA')
-				.index(1)
-				.security(3)
-				.generate()
-		}, 3000)
+	promise = client.addNode('https://nodes.comnet.thetangle.org').then(res => {
+		promise = client.getNodeInfo().then(res => {
+			setTimeout(() => {
+				promise = client
+					.getNewAddress('RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA')
+					.index(1)
+					.security(3)
+					.generate()
+			}, 3000)
+			return res
+		})
 		return res
 	})
 
