@@ -9,22 +9,11 @@ use crate::Result;
 lazy_static! {
     static ref CHAR_TO_ASCII_MAP: HashMap<char, usize> = {
         let mut res: HashMap<char, usize> = HashMap::new();
-        let mut ascii = 65;
-        for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ".chars() {
+        let mut ascii = 32;
+        for c in " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".chars() {
             res.insert(c, ascii);
             ascii += 1;
         }
-        ascii = 97;
-        for c in "abcdefghijklmnopqrstuvwxyz".chars() {
-            res.insert(c, ascii);
-            ascii += 1;
-        }
-        ascii = 48;
-        for c in "0123456789".chars() {
-            res.insert(c, ascii);
-            ascii += 1;
-        }
-        res.insert(' ', 32);
         res
     };
     static ref ASCII_TO_CHAR_MAP: HashMap<usize, char> = {
@@ -49,6 +38,10 @@ pub fn to_trytes(input: &str) -> Result<String> {
     for c in input.chars() {
         if let Some(ascii) = CHAR_TO_ASCII_MAP.get(&c) {
             tmp_ascii.push(ascii);
+        } else {
+            return Err(Error::from(TryteConverterError::StringNotAscii {
+                string: input.to_string(),
+            }))
         }
     }
     for byte in tmp_ascii {
@@ -114,12 +107,14 @@ mod tests {
     fn should_convert_string_to_trytes() {
         assert_eq!(to_trytes("Z").unwrap(), "IC");
         assert_eq!(to_trytes("JOTA JOTA").unwrap(), "TBYBCCKBEATBYBCCKB");
+        assert_eq!(to_trytes(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~").unwrap(), "EAFAGAHAIAJAKALAMANAOAPAQARASATAUAVAWAXAYAZA9BABBBCBDBEBFBGBHBIBJBKBLBMBNBOBPBQBRBSBTBUBVBWBXBYBZB9CACBCCCDCECFCGCHCICJCKCLCMCNCOCPCQCRCSCTCUCVCWCXCYCZC9DADBDCDDDEDFDGDHDIDJDKDLDMDNDODPDQDRD");
     }
 
     #[test]
     fn should_convert_trytes_to_string() {
         assert_eq!(to_string("IC").unwrap(), "Z");
         assert_eq!(to_string("TBYBCCKBEATBYBCCKB").unwrap(), "JOTA JOTA");
+        assert_eq!(to_string("EAFAGAHAIAJAKALAMANAOAPAQARASATAUAVAWAXAYAZA9BABBBCBDBEBFBGBHBIBJBKBLBMBNBOBPBQBRBSBTBUBVBWBXBYBZB9CACBCCCDCECFCGCHCICJCKCLCMCNCOCPCQCRCSCTCUCVCWCXCYCZC9DADBDCDDDEDFDGDHDIDJDKDLDMDNDODPDQDRD").unwrap(), " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
     }
 
     #[test]
