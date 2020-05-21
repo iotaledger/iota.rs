@@ -11,7 +11,7 @@
     "build:web": "wasm-pack build --target web --out-dir wasm-web && node ./build/web",
     "build": "yarn build:web && yarn build:nodejs",
     "pretest": "yarn build:nodejs",
-    "prepublish": "yarn build",
+    "prepublishOnly": "yarn build",
     "test": "mocha"
   },
   "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
