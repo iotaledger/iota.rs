@@ -37,6 +37,23 @@ pub extern "C" fn iota_address_free(ptr: *mut Address) {
     }
 }
 
+pub use iota::bundle::Hash;
+
+#[no_mangle]
+pub extern "C" fn iota_hash_new() -> *mut Hash {
+    Box::into_raw(Box::new(Hash::zeros()))
+}
+
+#[no_mangle]
+pub extern "C" fn iota_hash_free(ptr: *mut Hash) {
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        Box::from_raw(ptr);
+    }
+}
+
 pub struct Transfers(pub(crate) Vec<Transfer>);
 
 #[no_mangle]

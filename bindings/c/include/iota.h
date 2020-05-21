@@ -8,6 +8,10 @@ typedef struct Address address_t;
 extern address_t *iota_address_new();
 extern void iota_address_free(address_t *ptr);
 
+typedef struct Hash hash_t;
+extern hash_t *iota_hash_new();
+extern void iota_hash_free(hash_t *ptr);
+
 typedef struct Transfers transfers_t;
 extern transfers_t *iota_transfers_new();
 extern void iota_transfers_add(transfers_t *ptr, address_t *address, uint64_t value);
@@ -80,12 +84,18 @@ extern uint8_t iota_get_new_address(const seed_t *seed, uint64_t index, address_
 /**
  * @brief Calls PrepareTransfers and then sends off the bundle via SendTrytes.
  * 
- * This stops working after a snapshot.
- * 
  * @param[in] seed A 243 trits long IOTA seed.
  * @param[in] transfers Transfer addresses to send data/value to.
  * @param[in] Difficulty of PoW
  * @param[out] bundle The bundle successfully send to tangle
  * @return Return status code
  */
-uint8_t iota_send_transfers(const seed_t *seed, transfers_t *transfers, uint8_t mwm, bundle_t *bundle);
+extern uint8_t iota_send_transfers(const seed_t *seed, transfers_t *transfers, uint8_t mwm, bundle_t *bundle);
+
+/* @brief Fetches and validates the bundle given a tail transaction hash, and traversing through trunk transaction.
+ * 
+ * @param[in] hash Tail transaction hash (current_index == 0)
+ * @param[out] bundle The bundle successfully send to tangle
+ * @return Return status code
+ */
+extern uint8_t iota_traverse_bundle(const hash_t *hash, bundle_t *bundle);
