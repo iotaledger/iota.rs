@@ -1,27 +1,20 @@
 #include <stdint.h>
 
 typedef struct CSeed seed_t;
-
+extern seed_t *iota_seed_new();
 extern void iota_seed_free(seed_t *ptr);
 
-extern seed_t *iota_seed_new();
-
 typedef struct Address address_t;
-
+extern address_t *iota_address_new();
 extern void iota_address_free(address_t *ptr);
 
-extern address_t *iota_address_new();
-
 typedef struct Transfers transfers_t;
-
+extern transfers_t *iota_transfers_new();
+extern void iota_transfers_add(transfers_t *ptr, address_t *address, uint64_t value);
 extern void iota_transfers_free(transfers_t *ptr);
 
-extern void iota_transfers_add(transfers_t *ptr, address_t *address, uint64_t value);
-
-extern transfers_t *iota_transfers_new();
-
 typedef struct Bundle bundle_t;
-
+extern bundle_t *iota_bundle_new();
 extern void iota_bundle_free(bundle_t *ptr);
 
 /**
@@ -78,9 +71,20 @@ extern get_node_info_t *iota_get_node_info(uint8_t *err);
  * 
  * @param[in] seed A 243 trits long IOTA seed.
  * @param[in] index Index of the address
- * @param[out] error code
- * @return Response type of node information
+ * @param[out] address Generated address
+ * @return Return status code
  */
-extern address_t *iota_get_new_address(const seed_t *seed, uint64_t index, uint8_t *err);
+extern uint8_t iota_get_new_address(const seed_t *seed, uint64_t index, address_t *address);
 
-bundle_t *iota_send_transfers(const seed_t *seed, transfers_t *transfers, uint8_t mwm, uint8_t *err);
+/**
+ * @brief Calls PrepareTransfers and then sends off the bundle via SendTrytes.
+ * 
+ * This stops working after a snapshot.
+ * 
+ * @param[in] seed A 243 trits long IOTA seed.
+ * @param[in] transfers Transfer addresses to send data/value to.
+ * @param[in] Difficulty of PoW
+ * @param[out] bundle The bundle successfully send to tangle
+ * @return Return status code
+ */
+uint8_t iota_send_transfers(const seed_t *seed, transfers_t *transfers, uint8_t mwm, bundle_t *bundle);

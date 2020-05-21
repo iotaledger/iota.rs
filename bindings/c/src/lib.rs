@@ -2,12 +2,12 @@ use std::ffi::CStr;
 use std::os::raw::c_char;
 
 mod api;
-mod utils;
 mod models;
+mod utils;
 
 pub use api::*;
-pub use utils::*;
 pub use models::*;
+pub use utils::*;
 
 #[no_mangle]
 pub extern "C" fn iota_init(url: *const c_char) {

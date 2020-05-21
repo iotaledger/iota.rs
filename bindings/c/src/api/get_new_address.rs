@@ -1,20 +1,24 @@
+use crate::{Address, CSeed};
 use anyhow::Result;
-use crate::{CSeed, Address};
 
 #[no_mangle]
-pub extern "C" fn iota_get_new_address(seed: *const CSeed, index: u64, err: &mut u8) -> *const Address {
-    *err = 0;
-
-    get_new_address(seed, index).unwrap_or_else(|_| {
-        *err = 1;
-        std::ptr::null_mut()
-    })
+pub extern "C" fn iota_get_new_address(
+    seed: *const CSeed,
+    index: u64,
+    address: *mut Address,
+) -> u8 {
+    get_new_address(seed, index, address).unwrap_or_else(|_| 1)
 }
 
-fn get_new_address(seed: *const CSeed, index: u64) -> Result<*const Address> {
+fn get_new_address(seed: *const CSeed, index: u64, res: *mut Address) -> Result<u8> {
     let seed = unsafe {
         assert!(!seed.is_null());
-       &(*seed).0
+        &(*seed).0
+    };
+
+    let res = unsafe {
+        assert!(!res.is_null());
+        &mut *res
     };
 
     let (_, address) = smol::block_on(async move {
@@ -23,8 +27,8 @@ fn get_new_address(seed: *const CSeed, index: u64) -> Result<*const Address> {
             .generate()
             .await
     })?;
-    // TODO Define a CAddress type
-    let ptr = Box::into_raw(Box::new(Address(address)));
 
-     Ok(ptr)
+    *res = Address(address);
+
+    Ok(0)
 }

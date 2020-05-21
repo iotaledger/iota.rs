@@ -1,5 +1,5 @@
-use iota::client::Transfer;
 use iota::bundle;
+use iota::client::Transfer;
 use iota::crypto::Kerl;
 use iota::signing::{IotaSeed, Seed};
 
@@ -21,6 +21,11 @@ pub extern "C" fn iota_seed_free(ptr: *mut CSeed) {
 }
 
 pub struct Address(pub(crate) bundle::Address);
+
+#[no_mangle]
+pub extern "C" fn iota_address_new() -> *mut Address {
+    Box::into_raw(Box::new(Address(bundle::Address::zeros())))
+}
 
 #[no_mangle]
 pub extern "C" fn iota_address_free(ptr: *mut Address) {
@@ -48,14 +53,14 @@ pub extern "C" fn iota_transfers_add(ptr: *mut Transfers, address: *mut Address,
 
     let address = unsafe {
         assert!(!ptr.is_null());
-       (*Box::from_raw(address)).0
+        (*Box::from_raw(address)).0
     };
 
-    transfers.0.push(Transfer{
+    transfers.0.push(Transfer {
         address,
         value,
-        message:None,
-        tag:None,
+        message: None,
+        tag: None,
     });
 }
 
@@ -70,6 +75,11 @@ pub extern "C" fn iota_transfers_free(ptr: *mut Transfers) {
 }
 
 pub struct Bundle(pub(crate) Vec<bundle::Transaction>);
+
+#[no_mangle]
+pub extern "C" fn iota_bundle_new() -> *mut Bundle {
+    Box::into_raw(Box::new(Bundle(Vec::new())))
+}
 
 #[no_mangle]
 pub extern "C" fn iota_bundle_free(ptr: *mut Bundle) {

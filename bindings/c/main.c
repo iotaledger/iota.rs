@@ -10,10 +10,12 @@ int main() {
      */
     uint8_t err;
     seed_t *seed = iota_seed_new();
-    address_t *address = iota_get_new_address(seed, 10, &err);
+    address_t *address = iota_address_new();
     transfers_t *transfers = iota_transfers_new();
+    bundle_t *bundle = iota_bundle_new();
+    iota_get_new_address(seed, 10, address);
     iota_transfers_add(transfers, address, 0);
-    bundle_t *bundle = iota_send_transfers(seed, transfers, 10, &err);
+    iota_send_transfers(seed, transfers, 10, bundle);
     iota_bundle_free(bundle);
 
     /*
