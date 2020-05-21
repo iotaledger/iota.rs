@@ -29,6 +29,8 @@ lazy_static! {
 enum TryteConverterError {
     #[fail(display = "String [{}] is not valid ascii", string)]
     StringNotAscii { string: String },
+    #[fail(display = "String [{}] is not valid trytes", string)]
+    StringNotTrytes { string: String },
 }
 
 /// Converts a UTF-8 string containing ascii into a tryte-encoded string
@@ -41,7 +43,7 @@ pub fn to_trytes(input: &str) -> Result<String> {
         } else {
             return Err(Error::from(TryteConverterError::StringNotAscii {
                 string: input.to_string(),
-            }))
+            }));
         }
     }
     for byte in tmp_ascii {
@@ -58,11 +60,10 @@ pub fn to_trytes(input: &str) -> Result<String> {
 }
 
 /// Converts a tryte-encoded string into a UTF-8 string containing ascii characters
-pub fn to_string(input_trytes: &str) -> Result<String> {
-    ensure!(
-        input_trytes.len() % 2 == 0,
-        iota_constants::INVALID_TRYTES_INPUT_ERROR
-    );
+pub fn to_string(mut input_trytes: &str) -> Result<String> {
+    if input_trytes.len() % 2 != 0 {
+        input_trytes = &input_trytes[..input_trytes.len() - 1];
+    }
     let mut tmp = String::new();
     let chars: Vec<char> = input_trytes.chars().collect();
     for letters in chars.chunks(2) {
@@ -72,7 +73,7 @@ pub fn to_string(input_trytes: &str) -> Result<String> {
         {
             Some(x) => x,
             None => {
-                return Err(Error::from(TryteConverterError::StringNotAscii {
+                return Err(Error::from(TryteConverterError::StringNotTrytes {
                     string: input_trytes.to_string(),
                 }))
             }
@@ -83,7 +84,7 @@ pub fn to_string(input_trytes: &str) -> Result<String> {
         {
             Some(x) => x,
             None => {
-                return Err(Error::from(TryteConverterError::StringNotAscii {
+                return Err(Error::from(TryteConverterError::StringNotTrytes {
                     string: input_trytes.to_string(),
                 }))
             }
@@ -114,6 +115,7 @@ mod tests {
     fn should_convert_trytes_to_string() {
         assert_eq!(to_string("IC").unwrap(), "Z");
         assert_eq!(to_string("TBYBCCKBEATBYBCCKB").unwrap(), "JOTA JOTA");
+        assert_eq!(to_string("TBYBCCKBEATBYBCCKB9").unwrap(), "JOTA JOTA");
         assert_eq!(to_string("EAFAGAHAIAJAKALAMANAOAPAQARASATAUAVAWAXAYAZA9BABBBCBDBEBFBGBHBIBJBKBLBMBNBOBPBQBRBSBTBUBVBWBXBYBZB9CACBCCCDCECFCGCHCICJCKCLCMCNCOCPCQCRCSCTCUCVCWCXCYCZC9DADBDCDDDEDFDGDHDIDJDKDLDMDNDODPDQDRD").unwrap(), " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
     }
 
