@@ -2,6 +2,7 @@ use iota::bundle;
 use iota::client::Transfer;
 use iota::crypto::Kerl;
 use iota::signing::{IotaSeed, Seed};
+use std::sync::atomic;
 
 pub struct CSeed(pub(crate) IotaSeed<Kerl>);
 
@@ -16,7 +17,9 @@ pub extern "C" fn iota_seed_free(ptr: *mut CSeed) {
         return;
     }
     unsafe {
-        Box::from_raw(ptr);
+        //Box::from_raw(ptr);
+        std::ptr::write_volatile(ptr, CSeed(IotaSeed::new()));
+        atomic::compiler_fence(atomic::Ordering::SeqCst);
     }
 }
 
