@@ -15,6 +15,7 @@ extern void iota_transfers_free(transfers_t *ptr);
 
 typedef struct Bundle bundle_t;
 extern bundle_t *iota_bundle_new();
+extern void iota_bundle_dbg(bundle_t *ptr);
 extern void iota_bundle_free(bundle_t *ptr);
 
 /**

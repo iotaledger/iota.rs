@@ -81,6 +81,19 @@ pub extern "C" fn iota_bundle_new() -> *mut Bundle {
     Box::into_raw(Box::new(Bundle(Vec::new())))
 }
 
+use iota::bundle::TransactionField;
+use iota_conversion::Trinary;
+
+#[no_mangle]
+pub extern "C" fn iota_bundle_dbg(ptr: *mut Bundle) {
+    let ptr = unsafe {
+        assert!(!ptr.is_null());
+        &mut *ptr
+    };
+    
+    dbg!(ptr.0[0].bundle().to_inner().as_i8_slice().trytes().unwrap());
+}
+
 #[no_mangle]
 pub extern "C" fn iota_bundle_free(ptr: *mut Bundle) {
     if ptr.is_null() {

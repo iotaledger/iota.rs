@@ -16,6 +16,7 @@ int main() {
     iota_get_new_address(seed, 10, address);
     iota_transfers_add(transfers, address, 0);
     iota_send_transfers(seed, transfers, 10, bundle);
+    iota_bundle_dbg(bundle);
     iota_bundle_free(bundle);
 
     /*
