@@ -2,7 +2,7 @@
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
-use serde::ser::{Serialize, Serializer, SerializeSeq, SerializeStruct};
+use serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 
 // TODO: remove this struct once iota_bundle_preview::Transaction implements Serialize
 /// a Transaction wrapper that can be serialized
