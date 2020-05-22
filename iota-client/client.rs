@@ -60,7 +60,7 @@ impl Client {
     pub(crate) fn get_node() -> Result<Url> {
         Ok(
             unsafe { Client::get().uri.load(Ordering::Relaxed).as_ref() }
-                .ok_or(anyhow!("Fail to get node url"))?
+                .ok_or_else(|| anyhow!("Fail to get node url"))?
                 .clone(),
         )
     }

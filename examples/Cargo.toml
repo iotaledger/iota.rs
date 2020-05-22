@@ -9,8 +9,8 @@ publish = false
 anyhow = "1.0.28"
 iota-core = { path = "../iota-core" }
 iota-conversion = { version = "0.5.0", path = "../iota-conversion" }
-smol = {version = "0.1.7", features = ["tokio02"] }
-smol-potat = "0.2.1"
+smol = {version = "=0.1.7", features = ["tokio02"] }
+smol-potat = "0.3.1"
 
 [[example]]
 name = "get_new_address"

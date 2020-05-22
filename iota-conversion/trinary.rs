@@ -127,7 +127,7 @@ impl Trinary for &str {
         trits_with_length(&self.trits(), length)
     }
     fn trytes(&self) -> Result<Trytes> {
-        Ok(self.to_string())
+        Ok((*self).to_string())
     }
 }
 
