@@ -9,22 +9,11 @@ use crate::Result;
 lazy_static! {
     static ref CHAR_TO_ASCII_MAP: HashMap<char, usize> = {
         let mut res: HashMap<char, usize> = HashMap::new();
-        let mut ascii = 65;
-        for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ".chars() {
+        let mut ascii = 32;
+        for c in " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".chars() {
             res.insert(c, ascii);
             ascii += 1;
         }
-        ascii = 97;
-        for c in "abcdefghijklmnopqrstuvwxyz".chars() {
-            res.insert(c, ascii);
-            ascii += 1;
-        }
-        ascii = 48;
-        for c in "0123456789".chars() {
-            res.insert(c, ascii);
-            ascii += 1;
-        }
-        res.insert(' ', 32);
         res
     };
     static ref ASCII_TO_CHAR_MAP: HashMap<usize, char> = {
@@ -40,6 +29,8 @@ lazy_static! {
 enum TryteConverterError {
     #[fail(display = "String [{}] is not valid ascii", string)]
     StringNotAscii { string: String },
+    #[fail(display = "String [{}] is not valid trytes", string)]
+    StringNotTrytes { string: String },
 }
 
 /// Converts a UTF-8 string containing ascii into a tryte-encoded string
@@ -49,6 +40,10 @@ pub fn to_trytes(input: &str) -> Result<String> {
     for c in input.chars() {
         if let Some(ascii) = CHAR_TO_ASCII_MAP.get(&c) {
             tmp_ascii.push(ascii);
+        } else {
+            return Err(Error::from(TryteConverterError::StringNotAscii {
+                string: input.to_string(),
+            }));
         }
     }
     for byte in tmp_ascii {
@@ -65,11 +60,10 @@ pub fn to_trytes(input: &str) -> Result<String> {
 }
 
 /// Converts a tryte-encoded string into a UTF-8 string containing ascii characters
-pub fn to_string(input_trytes: &str) -> Result<String> {
-    ensure!(
-        input_trytes.len() % 2 == 0,
-        iota_constants::INVALID_TRYTES_INPUT_ERROR
-    );
+pub fn to_string(mut input_trytes: &str) -> Result<String> {
+    if input_trytes.len() % 2 != 0 {
+        input_trytes = &input_trytes[..input_trytes.len() - 1];
+    }
     let mut tmp = String::new();
     let chars: Vec<char> = input_trytes.chars().collect();
     for letters in chars.chunks(2) {
@@ -79,7 +73,7 @@ pub fn to_string(input_trytes: &str) -> Result<String> {
         {
             Some(x) => x,
             None => {
-                return Err(Error::from(TryteConverterError::StringNotAscii {
+                return Err(Error::from(TryteConverterError::StringNotTrytes {
                     string: input_trytes.to_string(),
                 }))
             }
@@ -90,7 +84,7 @@ pub fn to_string(input_trytes: &str) -> Result<String> {
         {
             Some(x) => x,
             None => {
-                return Err(Error::from(TryteConverterError::StringNotAscii {
+                return Err(Error::from(TryteConverterError::StringNotTrytes {
                     string: input_trytes.to_string(),
                 }))
             }
@@ -114,12 +108,15 @@ mod tests {
     fn should_convert_string_to_trytes() {
         assert_eq!(to_trytes("Z").unwrap(), "IC");
         assert_eq!(to_trytes("JOTA JOTA").unwrap(), "TBYBCCKBEATBYBCCKB");
+        assert_eq!(to_trytes(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~").unwrap(), "EAFAGAHAIAJAKALAMANAOAPAQARASATAUAVAWAXAYAZA9BABBBCBDBEBFBGBHBIBJBKBLBMBNBOBPBQBRBSBTBUBVBWBXBYBZB9CACBCCCDCECFCGCHCICJCKCLCMCNCOCPCQCRCSCTCUCVCWCXCYCZC9DADBDCDDDEDFDGDHDIDJDKDLDMDNDODPDQDRD");
     }
 
     #[test]
     fn should_convert_trytes_to_string() {
         assert_eq!(to_string("IC").unwrap(), "Z");
         assert_eq!(to_string("TBYBCCKBEATBYBCCKB").unwrap(), "JOTA JOTA");
+        assert_eq!(to_string("TBYBCCKBEATBYBCCKB9").unwrap(), "JOTA JOTA");
+        assert_eq!(to_string("EAFAGAHAIAJAKALAMANAOAPAQARASATAUAVAWAXAYAZA9BABBBCBDBEBFBGBHBIBJBKBLBMBNBOBPBQBRBSBTBUBVBWBXBYBZB9CACBCCCDCECFCGCHCICJCKCLCMCNCOCPCQCRCSCTCUCVCWCXCYCZC9DADBDCDDDEDFDGDHDIDJDKDLDMDNDODPDQDRD").unwrap(), " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
     }
 
     #[test]
