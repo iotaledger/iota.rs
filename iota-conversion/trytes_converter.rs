@@ -9,6 +9,7 @@ use crate::Result;
 lazy_static! {
     static ref CHAR_TO_ASCII_MAP: HashMap<char, usize> = {
         let mut res: HashMap<char, usize> = HashMap::new();
+        res.insert('\n', 10);
         let mut ascii = 32;
         for c in " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".chars() {
             res.insert(c, ascii);
@@ -107,6 +108,7 @@ mod tests {
     #[test]
     fn should_convert_string_to_trytes() {
         assert_eq!(to_trytes("Z").unwrap(), "IC");
+        assert_eq!(to_trytes("\n").unwrap(), "J9");
         assert_eq!(to_trytes("JOTA JOTA").unwrap(), "TBYBCCKBEATBYBCCKB");
         assert_eq!(to_trytes(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~").unwrap(), "EAFAGAHAIAJAKALAMANAOAPAQARASATAUAVAWAXAYAZA9BABBBCBDBEBFBGBHBIBJBKBLBMBNBOBPBQBRBSBTBUBVBWBXBYBZB9CACBCCCDCECFCGCHCICJCKCLCMCNCOCPCQCRCSCTCUCVCWCXCYCZC9DADBDCDDDEDFDGDHDIDJDKDLDMDNDODPDQDRD");
     }
@@ -114,6 +116,7 @@ mod tests {
     #[test]
     fn should_convert_trytes_to_string() {
         assert_eq!(to_string("IC").unwrap(), "Z");
+        assert_eq!(to_string("J9").unwrap(), "\n");
         assert_eq!(to_string("TBYBCCKBEATBYBCCKB").unwrap(), "JOTA JOTA");
         assert_eq!(to_string("TBYBCCKBEATBYBCCKB9").unwrap(), "JOTA JOTA");
         assert_eq!(to_string("EAFAGAHAIAJAKALAMANAOAPAQARASATAUAVAWAXAYAZA9BABBBCBDBEBFBGBHBIBJBKBLBMBNBOBPBQBRBSBTBUBVBWBXBYBZB9CACBCCCDCECFCGCHCICJCKCLCMCNCOCPCQCRCSCTCUCVCWCXCYCZC9DADBDCDDDEDFDGDHDIDJDKDLDMDNDODPDQDRD").unwrap(), " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
