@@ -1,6 +1,6 @@
 [package]
 name = "iota-client"
-version = "0.5.0-alpha.1"
+version = "0.5.0-alpha.2"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Client to use Iota APIs"
@@ -23,7 +23,7 @@ iota-bundle-preview = "0.1"
 iota-ternary-preview = "0.1"
 iota-signing-preview = "0.1"
 iota-crypto-preview = "0.1"
-iota-conversion = { version = "0.5.0", path = "../iota-conversion" }
+iota-conversion = { version = "0.5.1", path = "../iota-conversion" }
 once_cell = "1.4.0"
 slab = "0.4.2"
 
