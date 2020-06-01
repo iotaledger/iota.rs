@@ -55,7 +55,7 @@ cargo doc --document-private-items --no-deps --open
 You can see the examples in [examples](examples/) directory and try them with:
 
 ```
-cargo run --example send-transfers
+cargo run --example send_transfers
 ```
 
 ## Supporting the project
