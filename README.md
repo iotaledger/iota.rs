@@ -9,7 +9,7 @@ This is the **alpha** version of official Rust library, which allows you to do t
 * Create transactions
 * Sign transactions
 * Generate addresses
-* Interact with an IRI node
+* Interact with an IOTA node
 
 This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-core` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `send_transfers` and `traverse_bundle` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
@@ -17,7 +17,6 @@ This client library is still in the alpha stage but it should cover most usages.
 |:----|
 | [Prerequisites](#prerequisites)|
 | [Using the library](#installing-the-library)|
-| [Getting started](#getting-started)|
 | [API reference](#api-reference)
 | [Examples](#examples)|
 | [Supporting the project](#supporting-the-project)|
@@ -36,30 +35,10 @@ Using the library is fairly easy, just add it as dependancy in `Cargo.toml`:
 
 ```
 [dependencies]
-iota-core = "0.1.0-alpha"
+iota-core = { git = "https://github.com/iotaledger/iota.rs" }
 ```
 
-And the import the lbrary in your code:
-
-```rust
-use iota;
-```
-
-## Getting started
-
-After you've [installed the library](#installing-the-library),  you can connect to an IRI node to send transactions to it and interact with the ledger.
-
-To connect to a local IOTA node, we provide a module `Client` :
-
-```rust
-use iota::Client;
-
-fn main() {
-  let mut iota = iota::Client::new("https://nodes.comnet.thetangle.org");
-  println!("{:#?}", iota.get_node_info().unwrap());
-}
-```
-
+And then you can use the library in your code with `iota`
 
 ## API reference
 
