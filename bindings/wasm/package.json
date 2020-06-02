@@ -20,7 +20,7 @@
   "contributors": [
     "Lucas Nogueira <lucas.nogueira@iota.org>"
   ],
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/iotaledger/iota.rs/issues"
   },
