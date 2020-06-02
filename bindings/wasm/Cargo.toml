@@ -3,6 +3,9 @@ name = "iota-wasm"
 version = "0.1.0"
 authors = ["Lucas Nogueira <lucas.nogueira@iota.org>"]
 edition = "2018"
+repository = "https://github.com/iotaledger/iota.rs"
+homepage = "https://github.com/iotaledger/iota.rs"
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib"]

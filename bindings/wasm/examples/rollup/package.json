@@ -20,7 +20,7 @@
     "@capacitor/android": "2.0.2",
     "@capacitor/cli": "^2.0.2",
     "@capacitor/core": "^2.0.2",
-    "iota-rs-wasm": "link:../..",
+    "@iota/iota-rs-wasm": "link:../..",
     "sirv-cli": "^0.4.4"
   }
 }

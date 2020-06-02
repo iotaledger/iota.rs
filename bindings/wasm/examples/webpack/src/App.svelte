@@ -1,5 +1,5 @@
 <script>
-	import * as client from 'iota-rs-wasm/web'
+	import * as client from '@iota/iota-rs-wasm/web'
 	let promise;
 	
 	promise = client.addNode('https://nodes.comnet.thetangle.org').then(res => {
