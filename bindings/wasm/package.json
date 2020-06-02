@@ -25,6 +25,9 @@
     "url": "https://github.com/iotaledger/iota.rs/issues"
   },
   "homepage": "https://github.com/iotaledger/iota.rs/blob/master/bindings/wasm/README.md",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "mocha": "^7.1.2"
   },
