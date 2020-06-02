@@ -52,7 +52,7 @@ module.exports = {
 			filename: '[name].css'
 		}),
 		new CopyWebpackPlugin([{
-			from: 'node_modules/iota-rs-wasm/wasm-web/iota_wasm_bg.wasm',
+			from: 'node_modules/@iota/iota-rs-wasm/wasm-web/iota_wasm_bg.wasm',
 			to: 'iota_client.wasm'
 		}])
 	],
