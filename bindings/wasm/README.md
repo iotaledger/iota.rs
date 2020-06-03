@@ -6,9 +6,9 @@ This is the **alpha** version of the official WASM binding to [IOTA's Rust API](
 
 Install the library:
 ```bash
-$ npm install iota-rs-wasm
+$ npm install @iota/iota-rs-wasm
 // or using yarn
-$ yarn add iota-rs-wasm
+$ yarn add @iota/iota-rs-wasm
 ```
 
 The library loads the WASM file with an HTTP GET request, so the .wasm file must be copied to the root of the dist folder.
@@ -25,7 +25,7 @@ $ yarn add rollup-plugin-copy
 ```js
 copy({
 	targets: [{
-		src: 'node_modules/iota-rs-wasm/wasm-web/iota_wasm_bg.wasm',
+		src: 'node_modules/@iota/iota-rs-wasm/wasm-web/iota_wasm_bg.wasm',
 		dest: 'public',
 		rename: 'iota_client.wasm'
 	}]
@@ -44,7 +44,7 @@ $ yarn add copy-webpack-plugin --dev
 ```js
 new CopyWebpackPlugin([
   {
-    from: 'node_modules/iota-rs-wasm/wasm-web/iota_wasm_bg.wasm',
+    from: 'node_modules/@iota/iota-rs-wasm/wasm-web/iota_wasm_bg.wasm',
     to: 'iota_client.wasm'
   }
 ])
@@ -54,7 +54,7 @@ new CopyWebpackPlugin([
 
 ### Web
 ```js
-import { Client } from 'iota-rs-wasm/web'
+import { Client } from '@iota/iota-rs-wasm/web'
 
 const uri = 'https://nodes.comnet.thetangle.org'
 const client = new Client(uri)
@@ -63,7 +63,7 @@ client.getNodeInfo().then(nodeInfo => { ... })
 
 ### Node.js
 ```js
-const { Client } = require('iota-rs-wasm/node')
+const { Client } = require('@iota/iota-rs-wasm/node')
 
 const uri = 'https://nodes.comnet.thetangle.org'
 const client = new Client(uri)
