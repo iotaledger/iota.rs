@@ -3,12 +3,17 @@ use crate::core::*;
 use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
+
+use std::collections::HashSet;
+use std::sync::{Arc, RwLock};
+
 use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
 use iota_conversion::Trinary;
 use iota_crypto_preview::Kerl;
 use iota_signing_preview::IotaSeed;
 use iota_ternary_preview::TryteBuf;
+use once_cell::sync::Lazy;
 use reqwest::Url;
 
 macro_rules! response {
@@ -26,14 +31,11 @@ macro_rules! response {
     };
 }
 
-use once_cell::sync::Lazy;
-use std::sync::atomic::{AtomicPtr, Ordering};
-
 /// An instance of the client using IRI URI
 #[derive(Debug)]
 pub struct Client {
-    /// URI of IRI connection
-    pub(crate) uri: AtomicPtr<Url>,
+    // Node pool of IOTA nodes
+    pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
 }
@@ -42,27 +44,39 @@ impl Client {
     /// Get the instance of IOTA Client. It will init the instance if it's not created yet.
     pub fn get() -> &'static Client {
         static CLIENT: Lazy<Client> = Lazy::new(|| Client {
-            uri: AtomicPtr::default(),
+            pool: Arc::new(RwLock::new(HashSet::new())),
             client: reqwest::Client::new(),
         });
 
         &CLIENT
     }
 
-    /// Add a node to the node pool. (TODO: it's not though)
-    pub fn add_node(uri: &str) -> Result<()> {
-        Client::get()
-            .uri
-            .store(Box::into_raw(Box::new(Url::parse(uri)?)), Ordering::Relaxed);
-        Ok(())
+    /// Add a node to the node pool.
+    pub fn add_node(uri: &str) -> Result<bool> {
+        let url = Url::parse(uri)?;
+        let pool = Client::get().pool.clone();
+        let mut set = pool.write().expect("Node pool write poisened");
+        Ok(set.insert(url))
+    }
+
+    /// Remove a node from the node pool.
+    pub fn remove_node(uri: &str) -> Result<bool> {
+        let url = Url::parse(uri)?;
+        let pool = Client::get().pool.clone();
+        let mut set = pool.write().expect("Node pool write poisened");
+        Ok(set.remove(&url))
     }
 
     pub(crate) fn get_node() -> Result<Url> {
-        Ok(
-            unsafe { Client::get().uri.load(Ordering::Relaxed).as_ref() }
-                .ok_or_else(|| anyhow!("Fail to get node url"))?
-                .clone(),
-        )
+        Ok(Client::get()
+            .pool
+            .clone()
+            .read()
+            .expect("Node pool read poinsened")
+            .iter()
+            .next()
+            .ok_or(anyhow!("No node available"))?
+            .clone())
     }
 
     /// Add a list of neighbors to your node. It should be noted that
