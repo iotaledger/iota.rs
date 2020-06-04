@@ -210,7 +210,7 @@ impl FindTransactionsResponseBuilder {
 }
 
 /// getBalances Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct GetBalancesResponse {
     /// Array of balances in the same order as the `addresses` parameters were passed to the endpoint
     pub balances: Vec<u64>,

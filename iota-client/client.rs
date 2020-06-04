@@ -614,9 +614,7 @@ impl Client {
     /// Checks if an address was ever withdrawn from, either in the current epoch or in any previous epochs.
     /// If an address has a pending transaction, it's also considered 'spent'.
     /// # Parameters
-    /// * [`address`] - addresses to check (do not include the checksum)
-    ///
-    /// [`address`]: ../core/struct.WereAddressesSpentFromBuilder.html#method.address
+    /// * `address` - addresses to check (do not include the checksum)
     pub async fn were_addresses_spent_from(
         addresses: &[Address],
     ) -> Result<WereAddressesSpentFromResponse> {
