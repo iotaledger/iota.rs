@@ -287,7 +287,7 @@ impl GetBalancesResponseBuilder {
 }
 
 /// getInclusionStatesResponse Response Type
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Hash, Eq, PartialEq)]
 pub struct GetInclusionStatesResponse {
     /// List of boolean values in the same order as the `transactions` parameters.
     /// A `true` value means the transaction was confirmed
