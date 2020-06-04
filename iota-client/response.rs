@@ -570,7 +570,7 @@ pub struct RemoveNeighborsResponse {
 }
 
 /// wereAddressesSpentFrom Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct WereAddressesSpentFromResponse {
     /// States of the specified addresses in the same order as the values in the `addresses` parameter.
     /// A `true` value means that the address has been spent from.
