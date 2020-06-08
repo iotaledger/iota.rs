@@ -29,6 +29,18 @@ macro_rules! response {
             .json()
             .await?
     };
+    ($self:ident, $body:ident, $node:ident) => {
+        $self
+            .client
+            .post($node)
+            .header("Content-Type", "application/json")
+            .header("X-IOTA-API-Version", "1")
+            .body($body.to_string())
+            .send()
+            .await?
+            .json()
+            .await?
+    };
 }
 
 /// An instance of the client using IRI URI
@@ -72,7 +84,7 @@ impl Client {
             .pool
             .clone()
             .read()
-            .expect("Node pool read poinsened")
+            .map_err(|_| anyhow!("Node pool read poinsened"))?
             .iter()
             .next()
             .ok_or(anyhow!("No node available"))?
@@ -602,9 +614,7 @@ impl Client {
     /// Checks if an address was ever withdrawn from, either in the current epoch or in any previous epochs.
     /// If an address has a pending transaction, it's also considered 'spent'.
     /// # Parameters
-    /// * [`address`] - addresses to check (do not include the checksum)
-    ///
-    /// [`address`]: ../core/struct.WereAddressesSpentFromBuilder.html#method.address
+    /// * `address` - addresses to check (do not include the checksum)
     pub async fn were_addresses_spent_from(
         addresses: &[Address],
     ) -> Result<WereAddressesSpentFromResponse> {

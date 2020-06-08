@@ -210,7 +210,7 @@ impl FindTransactionsResponseBuilder {
 }
 
 /// getBalances Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct GetBalancesResponse {
     /// Array of balances in the same order as the `addresses` parameters were passed to the endpoint
     pub balances: Vec<u64>,
@@ -287,7 +287,7 @@ impl GetBalancesResponseBuilder {
 }
 
 /// getInclusionStatesResponse Response Type
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Hash, Eq, PartialEq)]
 pub struct GetInclusionStatesResponse {
     /// List of boolean values in the same order as the `transactions` parameters.
     /// A `true` value means the transaction was confirmed
@@ -570,7 +570,7 @@ pub struct RemoveNeighborsResponse {
 }
 
 /// wereAddressesSpentFrom Response Type
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct WereAddressesSpentFromResponse {
     /// States of the specified addresses in the same order as the values in the `addresses` parameter.
     /// A `true` value means that the address has been spent from.
