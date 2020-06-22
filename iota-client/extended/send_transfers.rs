@@ -9,7 +9,7 @@ use crate::Client;
 /// Builder to construct SendTransfers API
 //#[derive(Debug)]
 pub struct SendTransfersBuilder<'a> {
-    seed: &'a IotaSeed<Kerl>,
+    seed: Option<&'a IotaSeed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -20,9 +20,9 @@ pub struct SendTransfersBuilder<'a> {
 }
 
 impl<'a> SendTransfersBuilder<'a> {
-    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
+    pub(crate) fn new(seed: Option<&'a IotaSeed<Kerl>>) -> Self {
         Self {
-            seed: seed,
+            seed,
             transfers: Default::default(),
             security: 2,
             inputs: None,

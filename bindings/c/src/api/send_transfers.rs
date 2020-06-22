@@ -33,7 +33,7 @@ fn send_transfers(
     };
 
     let tx = smol::block_on(async move {
-        iota::Client::send_transfers(&seed)
+        iota::Client::send_transfers(Some(&seed))
             .transfers(transfers)
             .min_weight_magnitude(mwm)
             .send()

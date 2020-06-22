@@ -16,7 +16,7 @@ use crate::Client;
 /// Builder to construct PrepareTransfers API
 //#[derive(Debug)]
 pub struct PrepareTransfersBuilder<'a> {
-    seed: &'a IotaSeed<Kerl>,
+    seed: Option<&'a IotaSeed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -24,9 +24,9 @@ pub struct PrepareTransfersBuilder<'a> {
 }
 
 impl<'a> PrepareTransfersBuilder<'a> {
-    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
+    pub(crate) fn new(seed: Option<&'a IotaSeed<Kerl>>) -> Self {
         Self {
-            seed: seed,
+            seed,
             transfers: Default::default(),
             security: 2,
             inputs: None,
@@ -62,17 +62,24 @@ impl<'a> PrepareTransfersBuilder<'a> {
     /// Send PrepareTransfers request
     pub async fn build(self) -> Result<Bundle> {
         let total_output = self.transfers.iter().fold(0, |acc, tx| acc + tx.value);
-        let inputs = match self.inputs {
-            Some(i) => i,
-            None => {
-                Client::get_inputs(self.seed)
+        let inputs = if total_output > 0 {
+            match self.inputs {
+                Some(i) => i,
+                None => {
+                    Client::get_inputs(
+                        self.seed
+                            .ok_or(anyhow!("Must provide seed to prepare transfer."))?,
+                    )
                     .index(0)
                     .security(self.security)
                     .threshold(total_output)
                     .generate()
                     .await?
                     .1
+                }
             }
+        } else {
+            Vec::new()
         };
         let total_input = inputs.iter().fold(0, |acc, tx| acc + tx.balance);
 
@@ -197,12 +204,15 @@ impl<'a> PrepareTransfersBuilder<'a> {
             let remainder = match self.remainder {
                 Some(r) => r,
                 None => {
-                    Client::get_new_address(self.seed)
-                        .security(self.security)
-                        .index(inputs.last().unwrap().index + 1)
-                        .generate()
-                        .await?
-                        .1
+                    Client::get_new_address(
+                        self.seed
+                            .ok_or(anyhow!("Must provide seed to prepare transfer."))?,
+                    )
+                    .security(self.security)
+                    .index(inputs.last().unwrap().index + 1)
+                    .generate()
+                    .await?
+                    .1
                 }
             };
 
@@ -243,7 +253,11 @@ impl<'a> PrepareTransfersBuilder<'a> {
         Ok(bundle
             .seal()
             .expect("Fail to seal bundle")
-            .sign(self.seed, &inputs)
+            .sign(
+                self.seed
+                    .ok_or(anyhow!("Must provide seed to prepare transfer."))?,
+                &inputs,
+            )
             .expect("Fail to sign bundle")
             .attach_local(Hash::zeros(), Hash::zeros())
             .expect("Fail to attach bundle")

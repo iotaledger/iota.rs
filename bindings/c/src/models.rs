@@ -110,7 +110,7 @@ pub extern "C" fn iota_bundle_dbg(ptr: *mut Bundle) {
         assert!(!ptr.is_null());
         &mut *ptr
     };
-    
+
     dbg!(ptr.0[0].bundle().to_inner().as_i8_slice().trytes().unwrap());
 }
 

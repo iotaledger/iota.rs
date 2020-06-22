@@ -2,17 +2,11 @@ use crate::{Bundle, Hash};
 use anyhow::Result;
 
 #[no_mangle]
-pub extern "C" fn iota_traverse_bundle(
-    hash: *const Hash,
-    bundle: *mut Bundle,
-) -> u8 {
+pub extern "C" fn iota_traverse_bundle(hash: *const Hash, bundle: *mut Bundle) -> u8 {
     traverse_bundle(hash, bundle).unwrap_or(1)
 }
 
-fn traverse_bundle(
-    hash: *const Hash,
-    bundle: *mut Bundle,
-) -> Result<u8> {
+fn traverse_bundle(hash: *const Hash, bundle: *mut Bundle) -> Result<u8> {
     let hash = unsafe {
         assert!(!hash.is_null());
         &*hash
@@ -23,10 +17,7 @@ fn traverse_bundle(
         &mut *bundle
     };
 
-    let res = smol::block_on(async move {
-        iota::Client::traverse_bundle(hash)
-            .await
-    })?;
+    let res = smol::block_on(async move { iota::Client::traverse_bundle(hash).await })?;
 
     *bundle = Bundle(res);
 

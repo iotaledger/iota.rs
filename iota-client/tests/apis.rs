@@ -362,7 +362,7 @@ async fn test_prepare_transfers_no_value() {
     }
 
     client_init();
-    let _ = Client::prepare_transfers(
+    let _ = Client::prepare_transfers(Some(
         &IotaSeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
@@ -370,7 +370,7 @@ async fn test_prepare_transfers_no_value() {
                 .encode::<T1B1Buf>(),
         )
         .unwrap(),
-    )
+    ))
     .transfers(transfers)
     .build()
     .await
@@ -425,7 +425,7 @@ async fn test_send_transfers_no_value() {
     }
 
     client_init();
-    let _ = Client::send_transfers(
+    let _ = Client::send_transfers(Some(
         &IotaSeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
@@ -433,7 +433,7 @@ async fn test_send_transfers_no_value() {
                 .encode::<T1B1Buf>(),
         )
         .unwrap(),
-    )
+    ))
     .transfers(transfers)
     .min_weight_magnitude(10)
     .send()
