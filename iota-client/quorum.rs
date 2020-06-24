@@ -8,18 +8,73 @@ use iota_bundle_preview::{Address, Hash, TransactionField};
 use iota_conversion::Trinary;
 use iota_ternary_preview::TryteBuf;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, RwLock};
 
 use anyhow::Result;
+use reqwest::Url;
+use once_cell::sync::Lazy;
 
-macro_rules! get_node_pool {
+macro_rules! get_synced_nodes {
     () => {
-        Client::get()
+        Quorum::get()
             .pool
             .clone()
             .read()
             .map_err(|_| anyhow!("Node pool read poinsened"))?
     };
+}
+
+/// An instance of the client using IRI URI
+#[derive(Debug)]
+pub struct Quorum {
+    // Synced node pool of IOTA nodes for quorum
+    pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
+}
+
+impl Quorum {
+    /// Get the quorum instance. It will init the instance if it's not created yet.
+    pub fn get() -> &'static Quorum {
+        static QUORUM: Lazy<Quorum> = Lazy::new(|| Quorum {
+            pool: Arc::new(RwLock::new(HashSet::new())),
+        });
+
+        &QUORUM
+    }
+}
+
+/// Refresh synced nodes in quorum. This will replace whole set in the quorum pool.
+pub async fn refresh_synced_nodes() -> Result<()> {
+    let body = json!( {
+        "command": "getNodeInfo",
+    });
+
+    let mut result = HashMap::new();
+    for ref_node in get_synced_nodes!().iter() {
+        let node = ref_node.clone();
+        let hash: GetNodeInfoResponse = response!(body, node);
+        let hash = Hash::from_inner_unchecked(
+            // TODO missing impl error on Hash
+            TryteBuf::try_from_str(&hash.latest_solid_subtangle_milestone)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        );
+        let set = result.entry(hash).or_insert(HashSet::new());
+        set.insert(ref_node.clone());
+    }
+
+    let pool = Quorum::get().pool.clone();
+    let mut set = pool.write().expect("Node pool write poisened");
+    //Ok(set.insert(url))
+
+    *set = result
+        .into_iter()
+        .max_by_key(|v| v.1.len())
+        .ok_or(anyhow!("Fail to find quorum result"))?
+        .1;
+
+    Ok(())
 }
 
 /// Gets the confirmed balance of an address.
@@ -93,7 +148,7 @@ impl GetBalancesBuilder {
         }
 
         let mut result = HashMap::new();
-        for node in get_node_pool!().iter() {
+        for node in get_synced_nodes!().iter() {
             let node = node.clone();
             let res: GetBalancesResponseBuilder = response!(body, node);
             let res = res.build().await?;
@@ -169,7 +224,7 @@ impl GetInclusionStatesBuilder {
         }
 
         let mut result = HashMap::new();
-        for node in get_node_pool!().iter() {
+        for node in get_synced_nodes!().iter() {
             let node = node.clone();
             let res: GetInclusionStatesResponseBuilder = response!(body, node);
             let res = res.build().await?;
@@ -208,7 +263,7 @@ pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
     });
 
     let mut result = HashMap::new();
-    for node in get_node_pool!().iter() {
+    for node in get_synced_nodes!().iter() {
         let node = node.clone();
         let hash: GetNodeInfoResponse = response!(body, node);
         let hash = Hash::from_inner_unchecked(
@@ -246,7 +301,7 @@ pub async fn were_addresses_spent_from(
     });
 
     let mut result = HashMap::new();
-    for node in get_node_pool!().iter() {
+    for node in get_synced_nodes!().iter() {
         let node = node.clone();
         let res: WereAddressesSpentFromResponseBuilder = response!(body, node);
         let res = res.build().await?;
