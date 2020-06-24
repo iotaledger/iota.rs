@@ -81,7 +81,7 @@ impl GetBalancesBuilder {
 
     /// Send getBalances request
     pub async fn send(self) -> Result<GetBalancesResponse> {
-        let client = Client::get();
+        //let client = Client::get();
         let mut body = json!({
             "command": "getBalances",
             "addresses": self.addresses,
@@ -95,7 +95,7 @@ impl GetBalancesBuilder {
         let mut result = HashMap::new();
         for node in get_node_pool!().iter() {
             let node = node.clone();
-            let res: GetBalancesResponseBuilder = response!(client, body, node);
+            let res: GetBalancesResponseBuilder = response!(body, node);
             let res = res.build().await?;
             let counters = result.entry(res).or_insert(0);
             *counters += 1;
@@ -159,7 +159,6 @@ impl GetInclusionStatesBuilder {
 
     /// Send getInclusionStates request
     pub async fn send(self) -> Result<GetInclusionStatesResponse> {
-        let client = Client::get();
         let mut body = json!({
             "command": "getInclusionStates",
             "transactions": self.transactions,
@@ -172,7 +171,7 @@ impl GetInclusionStatesBuilder {
         let mut result = HashMap::new();
         for node in get_node_pool!().iter() {
             let node = node.clone();
-            let res: GetInclusionStatesResponseBuilder = response!(client, body, node);
+            let res: GetInclusionStatesResponseBuilder = response!(body, node);
             let res = res.build().await?;
             let counters = result.entry(res).or_insert(0);
             *counters += 1;
@@ -204,7 +203,6 @@ pub async fn get_latest_inclusion(transactions: &[Hash]) -> Result<Vec<bool>> {
 
 /// Gets latest solid subtangle milestone.
 pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
-    let client = Client::get();
     let body = json!( {
         "command": "getNodeInfo",
     });
@@ -212,7 +210,7 @@ pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
     let mut result = HashMap::new();
     for node in get_node_pool!().iter() {
         let node = node.clone();
-        let hash: GetNodeInfoResponse = response!(client, body, node);
+        let hash: GetNodeInfoResponse = response!(body, node);
         let hash = Hash::from_inner_unchecked(
             // TODO missing impl error on Hash
             TryteBuf::try_from_str(&hash.latest_solid_subtangle_milestone)
@@ -242,7 +240,6 @@ pub async fn were_addresses_spent_from(
         .iter()
         .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
         .collect();
-    let client = Client::get();
     let body = json!({
         "command": "wereAddressesSpentFrom",
         "addresses": addresses,
@@ -251,7 +248,7 @@ pub async fn were_addresses_spent_from(
     let mut result = HashMap::new();
     for node in get_node_pool!().iter() {
         let node = node.clone();
-        let res: WereAddressesSpentFromResponseBuilder = response!(client, body, node);
+        let res: WereAddressesSpentFromResponseBuilder = response!(body, node);
         let res = res.build().await?;
         let counters = result.entry(res).or_insert(0);
         *counters += 1;

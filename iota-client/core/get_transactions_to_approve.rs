@@ -34,7 +34,6 @@ impl GetTransactionsToApproveBuilder {
 
     /// Send getTransactionsToApprove request
     pub async fn send(self) -> Result<GTTAResponse> {
-        let client = Client::get();
         let mut body = json!({
             "command": "getTransactionsToApprove",
             "depth": self.depth,
@@ -44,7 +43,7 @@ impl GetTransactionsToApproveBuilder {
             body["reference"] = json!(reference);
         }
 
-        let res: GTTAResponseBuilder = response!(client, body);
+        let res: GTTAResponseBuilder = response!(body);
         res.build().await
     }
 }

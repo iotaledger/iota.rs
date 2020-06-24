@@ -41,7 +41,6 @@ impl GetInclusionStatesBuilder {
 
     /// Send getInclusionStates request
     pub async fn send(self) -> Result<GetInclusionStatesResponse> {
-        let client = Client::get();
         let mut body = json!({
             "command": "getInclusionStates",
             "transactions": self.transactions,
@@ -51,7 +50,7 @@ impl GetInclusionStatesBuilder {
             body["tips"] = json!(reference);
         }
 
-        let res: GetInclusionStatesResponseBuilder = response!(client, body);
+        let res: GetInclusionStatesResponseBuilder = response!(body);
         res.build().await
     }
 }

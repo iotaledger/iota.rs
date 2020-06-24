@@ -52,7 +52,6 @@ impl AttachToTangleBuilder {
 
     /// Send attachToTangle request
     pub async fn send(self) -> Result<AttachToTangleResponse> {
-        let client = Client::get();
         let body = json!({
             "command": "attachToTangle",
             "trunkTransaction": self.trunk_transaction,
@@ -61,7 +60,7 @@ impl AttachToTangleBuilder {
             "trytes": self.trytes,
         });
 
-        let res: AttachToTangleResponseBuilder = response!(client, body);
+        let res: AttachToTangleResponseBuilder = response!(body);
         res.build().await
     }
 }
