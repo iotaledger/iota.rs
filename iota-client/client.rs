@@ -468,7 +468,7 @@ impl Client {
     /// [`inputs`]: ../extended/struct.PrepareTransfersBuilder.html#method.inputs
     /// [`remainder`]: ../extended/struct.PrepareTransfersBuilder.html#method.remainder
     /// [`security`]: ../extended/struct.PrepareTransfersBuilder.html#method.security
-    pub fn prepare_transfers(seed: &IotaSeed<Kerl>) -> PrepareTransfersBuilder<'_> {
+    pub fn prepare_transfers(seed: Option<&IotaSeed<Kerl>>) -> PrepareTransfersBuilder<'_> {
         PrepareTransfersBuilder::new(seed)
     }
 
@@ -531,7 +531,7 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTransfersBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTransfersBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTransfersBuilder.html#method.reference
-    pub fn send_transfers(seed: &IotaSeed<Kerl>) -> SendTransfersBuilder<'_> {
+    pub fn send_transfers(seed: Option<&IotaSeed<Kerl>>) -> SendTransfersBuilder<'_> {
         SendTransfersBuilder::new(seed)
     }
 

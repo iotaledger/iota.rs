@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
     // Call send_transfers api
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
-    let res = iota::Client::send_transfers(
+    let res = iota::Client::send_transfers(Some(
         &IotaSeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(
                 "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
@@ -52,7 +52,7 @@ async fn main() -> Result<()> {
             .encode::<T1B1Buf>(),
         )
         .unwrap(),
-    )
+    ))
     // Input the transfers
     .transfers(transfers)
     // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.
