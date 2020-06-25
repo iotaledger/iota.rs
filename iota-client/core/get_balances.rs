@@ -49,7 +49,6 @@ impl GetBalancesBuilder {
 
     /// Send getBalances request
     pub async fn send(self) -> Result<GetBalancesResponse> {
-        let client = Client::get();
         let mut body = json!({
             "command": "getBalances",
             "addresses": self.addresses,
@@ -60,7 +59,7 @@ impl GetBalancesBuilder {
             body["tips"] = json!(reference);
         }
 
-        let res: GetBalancesResponseBuilder = response!(client, body);
+        let res: GetBalancesResponseBuilder = response!(body);
         res.build().await
     }
 }
