@@ -17,8 +17,8 @@ use once_cell::sync::Lazy;
 use reqwest::Url;
 
 macro_rules! response {
-    ($self:ident, $body:ident) => {
-        $self
+    ($body:ident) => {
+        Client::get()
             .client
             .post(Client::get_node()?)
             .header("Content-Type", "application/json")
@@ -29,8 +29,8 @@ macro_rules! response {
             .json()
             .await?
     };
-    ($self:ident, $body:ident, $node:ident) => {
-        $self
+    ($body:ident, $node:ident) => {
+        Client::get()
             .client
             .post($node)
             .header("Content-Type", "application/json")
@@ -106,13 +106,12 @@ impl Client {
             }
         }
 
-        let client = Client::get();
         let body = json!({
             "command": "addNeighbors",
             "uris": uris,
         });
 
-        Ok(response!(client, body))
+        Ok(response!(body))
     }
 
     /// Does proof of work for the given transaction trytes.
@@ -154,14 +153,13 @@ impl Client {
     ///
     /// [`trytes`]: ../core/struct.BroadcastTransactionsBuilder.html#method.trytes
     pub async fn broadcast_transactions(trytes: &[Transaction]) -> Result<()> {
-        let client = Client::get();
         let trytes: Vec<String> = trytes.iter().map(|tx| tx_trytes(tx)).collect();
         let body = json!({
             "command": "broadcastTransactions",
             "trytes": trytes,
         });
 
-        let res: ErrorResponseBuilder = response!(client, body);
+        let res: ErrorResponseBuilder = response!(body);
         res.build().await
     }
 
@@ -174,7 +172,6 @@ impl Client {
     ///
     /// [`tails`]: ../core/struct.ConsistencyBuilder.html#method.tails
     pub async fn check_consistency(tails: &[Hash]) -> Result<ConsistencyResponse> {
-        let client = Client::get();
         let tails: Vec<String> = tails
             .iter()
             .map(|h| h.as_bytes().trytes().unwrap())
@@ -184,7 +181,7 @@ impl Client {
             "tails": tails,
         });
 
-        let res: ConsistencyResponseBuilder = response!(client, body);
+        let res: ConsistencyResponseBuilder = response!(body);
         res.build().await
     }
 
@@ -294,24 +291,22 @@ impl Client {
 
     /// Gets all transaction hashes that a node is currently requesting from its neighbors.
     pub async fn get_missing_transactions() -> Result<GetTipsResponse> {
-        let client = Client::get();
         let body = json!( {
             "command": "getMissingTransactions",
         });
 
-        let res = response!(client, body);
+        let res = response!(body);
 
         Ok(res)
     }
 
     /// Gets a node's neighbors and their activity.
     pub async fn get_neighbors() -> Result<GetNeighborsResponse> {
-        let client = Client::get();
         let body = json!( {
             "command": "getNeighbors",
         });
 
-        let res: GetNeighborsResponseBuilder = response!(client, body);
+        let res: GetNeighborsResponseBuilder = response!(body);
 
         res.build().await
     }
@@ -332,36 +327,33 @@ impl Client {
 
     /// Gets a node's API configuration settings.
     pub async fn get_node_api_configuration() -> Result<GetNodeAPIConfigurationResponse> {
-        let client = Client::get();
         let body = json!( {
             "command": "getNodeAPIConfiguration",
         });
 
-        let res = response!(client, body);
+        let res = response!(body);
 
         Ok(res)
     }
 
     /// Gets information about a node.
     pub async fn get_node_info() -> Result<GetNodeInfoResponse> {
-        let client = Client::get();
         let body = json!( {
             "command": "getNodeInfo",
         });
 
-        let res = response!(client, body);
+        let res = response!(body);
 
         Ok(res)
     }
 
     /// Gets tip transaction hashes from a node.
     pub async fn get_tips() -> Result<GetTipsResponse> {
-        let client = Client::get();
         let body = json!( {
             "command": "getTips",
         });
 
-        let res = response!(client, body);
+        let res = response!(body);
 
         Ok(res)
     }
@@ -389,13 +381,12 @@ impl Client {
             .iter()
             .map(|h| h.as_bytes().trytes().unwrap())
             .collect();
-        let client = Client::get();
         let body = json!({
             "command": "getTrytes",
             "hashes": hashes,
         });
 
-        let res: GetTrytesResponseBuilder = response!(client, body);
+        let res: GetTrytesResponseBuilder = response!(body);
         res.build().await
     }
 
@@ -488,13 +479,12 @@ impl Client {
             }
         }
 
-        let client = Client::get();
         let body = json!({
             "command": "removeNeighbors",
             "uris": uris,
         });
 
-        Ok(response!(client, body))
+        Ok(response!(body))
     }
 
     /// Reattaches a transfer to tangle by selecting tips & performing the Proof-of-Work again.
@@ -569,14 +559,13 @@ impl Client {
     ///
     /// [`trytes`]: ../core/struct.StoreTransactionsBuilder.html#method.trytes
     pub async fn store_transactions(trytes: &[Transaction]) -> Result<()> {
-        let client = Client::get();
         let trytes: Vec<String> = trytes.iter().map(|tx| tx_trytes(tx)).collect();
         let body = json!({
             "command": "storeTransactions",
             "trytes": trytes,
         });
 
-        let res: ErrorResponseBuilder = response!(client, body);
+        let res: ErrorResponseBuilder = response!(body);
         res.build().await
     }
 
@@ -622,13 +611,12 @@ impl Client {
             .iter()
             .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
             .collect();
-        let client = Client::get();
         let body = json!({
             "command": "wereAddressesSpentFrom",
             "addresses": addresses,
         });
 
-        let res: WereAddressesSpentFromResponseBuilder = response!(client, body);
+        let res: WereAddressesSpentFromResponseBuilder = response!(body);
         res.build().await
     }
 }

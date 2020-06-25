@@ -8,18 +8,90 @@ use iota_bundle_preview::{Address, Hash, TransactionField};
 use iota_conversion::Trinary;
 use iota_ternary_preview::TryteBuf;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
+use std::sync::{Arc, RwLock};
 
 use anyhow::Result;
+use once_cell::sync::Lazy;
+use reqwest::Url;
 
-macro_rules! get_node_pool {
-    () => {
-        Client::get()
+macro_rules! get_synced_nodes {
+    () => {{
+        // TODO smarter sync
+        refresh_synced_nodes().await?;
+        Quorum::get()
             .pool
             .clone()
             .read()
             .map_err(|_| anyhow!("Node pool read poinsened"))?
-    };
+    }};
+}
+
+/// An instance of the client using IRI URI
+#[derive(Debug)]
+pub struct Quorum {
+    /// Synced node pool of IOTA nodes for quorum
+    pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
+    /// Quorum threshold
+    pub(crate) threshold: AtomicU8,
+    /// Minimum nodes quired to satisfy quorum threshold
+    pub(crate) min: AtomicUsize,
+}
+
+impl Quorum {
+    /// Get the quorum instance. It will init the instance if it's not created yet.
+    pub fn get() -> &'static Quorum {
+        static QUORUM: Lazy<Quorum> = Lazy::new(|| Quorum {
+            pool: Arc::new(RwLock::new(HashSet::new())),
+            threshold: AtomicU8::new(66),
+            min: AtomicUsize::new(0),
+        });
+
+        &QUORUM
+    }
+}
+
+/// Refresh synced nodes in quorum. This will replace whole set in the quorum pool.
+pub async fn refresh_synced_nodes() -> Result<()> {
+    let body = json!( {
+        "command": "getNodeInfo",
+    });
+
+    let mut result = HashMap::new();
+    let quorum = Quorum::get();
+    for ref_node in Client::get()
+        .pool
+        .clone()
+        .read()
+        .map_err(|_| anyhow!("Node pool read poinsened"))?
+        .iter()
+    {
+        let node = ref_node.clone();
+        let hash: GetNodeInfoResponse = response!(body, node);
+        let hash = Hash::from_inner_unchecked(
+            // TODO missing impl error on Hash
+            TryteBuf::try_from_str(&hash.latest_solid_subtangle_milestone)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        );
+        let set = result.entry(hash).or_insert(HashSet::new());
+        set.insert(ref_node.clone());
+    }
+
+    let pool = quorum.pool.clone();
+    let mut set = pool.write().expect("Node pool write poisened");
+    *set = result
+        .into_iter()
+        .max_by_key(|v| v.1.len())
+        .ok_or(anyhow!("Fail to find quorum result"))?
+        .1;
+
+    let val = set.len() * quorum.threshold.load(Ordering::Acquire) as usize / 100;
+    quorum.min.store(val, Ordering::Release);
+
+    Ok(())
 }
 
 /// Gets the confirmed balance of an address.
@@ -81,7 +153,7 @@ impl GetBalancesBuilder {
 
     /// Send getBalances request
     pub async fn send(self) -> Result<GetBalancesResponse> {
-        let client = Client::get();
+        let quorum = Quorum::get();
         let mut body = json!({
             "command": "getBalances",
             "addresses": self.addresses,
@@ -93,19 +165,24 @@ impl GetBalancesBuilder {
         }
 
         let mut result = HashMap::new();
-        for node in get_node_pool!().iter() {
+        for node in get_synced_nodes!().iter() {
             let node = node.clone();
-            let res: GetBalancesResponseBuilder = response!(client, body, node);
+            let res: GetBalancesResponseBuilder = response!(body, node);
             let res = res.build().await?;
             let counters = result.entry(res).or_insert(0);
             *counters += 1;
         }
 
-        Ok(result
+        let res = result
             .into_iter()
             .max_by_key(|v| v.1)
-            .ok_or(anyhow!("Fail to find quorum result"))?
-            .0)
+            .ok_or(anyhow!("Fail to find quorum result"))?;
+
+        if res.1 >= quorum.min.load(Ordering::Acquire) {
+            Ok(res.0)
+        } else {
+            Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+        }
     }
 }
 
@@ -159,7 +236,7 @@ impl GetInclusionStatesBuilder {
 
     /// Send getInclusionStates request
     pub async fn send(self) -> Result<GetInclusionStatesResponse> {
-        let client = Client::get();
+        let quorum = Quorum::get();
         let mut body = json!({
             "command": "getInclusionStates",
             "transactions": self.transactions,
@@ -170,19 +247,24 @@ impl GetInclusionStatesBuilder {
         }
 
         let mut result = HashMap::new();
-        for node in get_node_pool!().iter() {
+        for node in get_synced_nodes!().iter() {
             let node = node.clone();
-            let res: GetInclusionStatesResponseBuilder = response!(client, body, node);
+            let res: GetInclusionStatesResponseBuilder = response!(body, node);
             let res = res.build().await?;
             let counters = result.entry(res).or_insert(0);
             *counters += 1;
         }
 
-        Ok(result
+        let res = result
             .into_iter()
             .max_by_key(|v| v.1)
-            .ok_or(anyhow!("Fail to find quorum result"))?
-            .0)
+            .ok_or(anyhow!("Fail to find quorum result"))?;
+
+        if res.1 >= quorum.min.load(Ordering::Acquire) {
+            Ok(res.0)
+        } else {
+            Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+        }
     }
 }
 
@@ -204,15 +286,15 @@ pub async fn get_latest_inclusion(transactions: &[Hash]) -> Result<Vec<bool>> {
 
 /// Gets latest solid subtangle milestone.
 pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
-    let client = Client::get();
+    let quorum = Quorum::get();
     let body = json!( {
         "command": "getNodeInfo",
     });
 
     let mut result = HashMap::new();
-    for node in get_node_pool!().iter() {
+    for node in get_synced_nodes!().iter() {
         let node = node.clone();
-        let hash: GetNodeInfoResponse = response!(client, body, node);
+        let hash: GetNodeInfoResponse = response!(body, node);
         let hash = Hash::from_inner_unchecked(
             // TODO missing impl error on Hash
             TryteBuf::try_from_str(&hash.latest_solid_subtangle_milestone)
@@ -224,11 +306,16 @@ pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
         *counters += 1;
     }
 
-    Ok(result
+    let res = result
         .into_iter()
         .max_by_key(|v| v.1)
-        .ok_or(anyhow!("Fail to find quorum result"))?
-        .0)
+        .ok_or(anyhow!("Fail to find quorum result"))?;
+
+    if res.1 >= quorum.min.load(Ordering::Acquire) {
+        Ok(res.0)
+    } else {
+        Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+    }
 }
 
 /// Checks if an address was ever withdrawn from, either in the current epoch or in any previous epochs.
@@ -238,28 +325,33 @@ pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
 pub async fn were_addresses_spent_from(
     addresses: &[Address],
 ) -> Result<WereAddressesSpentFromResponse> {
+    let quorum = Quorum::get();
     let addresses: Vec<String> = addresses
         .iter()
         .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
         .collect();
-    let client = Client::get();
     let body = json!({
         "command": "wereAddressesSpentFrom",
         "addresses": addresses,
     });
 
     let mut result = HashMap::new();
-    for node in get_node_pool!().iter() {
+    for node in get_synced_nodes!().iter() {
         let node = node.clone();
-        let res: WereAddressesSpentFromResponseBuilder = response!(client, body, node);
+        let res: WereAddressesSpentFromResponseBuilder = response!(body, node);
         let res = res.build().await?;
         let counters = result.entry(res).or_insert(0);
         *counters += 1;
     }
 
-    Ok(result
+    let res = result
         .into_iter()
         .max_by_key(|v| v.1)
-        .ok_or(anyhow!("Fail to find quorum result"))?
-        .0)
+        .ok_or(anyhow!("Fail to find quorum result"))?;
+
+    if res.1 >= quorum.min.load(Ordering::Acquire) {
+        Ok(res.0)
+    } else {
+        Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+    }
 }

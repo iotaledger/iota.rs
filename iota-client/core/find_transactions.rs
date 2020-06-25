@@ -69,7 +69,6 @@ impl FindTransactionsBuilder {
 
     /// Send findTransactions request
     pub async fn send(self) -> Result<FindTransactionsResponse> {
-        let client = Client::get();
         let mut body = json!({
             "command": "findTransactions",
         });
@@ -90,7 +89,7 @@ impl FindTransactionsBuilder {
             body["approvees"] = json!(approvees);
         }
 
-        let res: FindTransactionsResponseBuilder = response!(client, body);
+        let res: FindTransactionsResponseBuilder = response!(body);
         res.build().await
     }
 }
