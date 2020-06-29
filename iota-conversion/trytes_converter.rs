@@ -1,101 +1,113 @@
-use std::collections::HashMap;
-
-use failure::Error;
+use std::convert::TryInto;
+use std::str;
+use std::error;
+use std::fmt;
 
 use iota_constants;
 
-use crate::Result;
+/// Converts a sequence of bytes to trytes
+pub fn bytes_to_trytes(input: &[u8]) -> String {
+    let mut trytes = String::with_capacity(input.len() * 2);
+    for byte in input {
+        let first = byte % 27;
+        let second = byte / 27;
 
-lazy_static! {
-    static ref CHAR_TO_ASCII_MAP: HashMap<char, usize> = {
-        let mut res: HashMap<char, usize> = HashMap::new();
-        res.insert('\n', 10);
-        let mut ascii = 32;
-        for c in " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".chars() {
-            res.insert(c, ascii);
-            ascii += 1;
-        }
-        res
-    };
-    static ref ASCII_TO_CHAR_MAP: HashMap<usize, char> = {
-        let mut res: HashMap<usize, char> = HashMap::new();
-        for (key, val) in CHAR_TO_ASCII_MAP.iter() {
-            res.insert(*val, *key);
-        }
-        res
-    };
+        trytes.push(iota_constants::TRYTE_ALPHABET[first as usize]);
+        trytes.push(iota_constants::TRYTE_ALPHABET[second as usize]);
+    }
+    trytes
 }
 
-#[derive(Debug, Fail)]
-enum TryteConverterError {
-    #[fail(display = "String [{}] is not valid ascii", string)]
-    StringNotAscii { string: String },
-    #[fail(display = "String [{}] is not valid trytes", string)]
-    StringNotTrytes { string: String },
+#[derive(Debug)]
+/// Dummy error for the string to trytes conversion
+pub struct ToTrytesError{}
+impl error::Error for ToTrytesError { }
+impl fmt::Display for ToTrytesError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Trytes could not be converted to string")
+    }
 }
 
 /// Converts a UTF-8 string containing ascii into a tryte-encoded string
-pub fn to_trytes(input: &str) -> Result<String> {
-    let mut trytes = String::new();
-    let mut tmp_ascii = Vec::new();
-    for c in input.chars() {
-        if let Some(ascii) = CHAR_TO_ASCII_MAP.get(&c) {
-            tmp_ascii.push(ascii);
-        } else {
-            return Err(Error::from(TryteConverterError::StringNotAscii {
-                string: input.to_string(),
-            }));
-        }
-    }
-    for byte in tmp_ascii {
-        let mut ascii = *byte;
-        if ascii > 255 {
-            ascii = 32;
-        }
-        let first = ascii % 27;
-        let second = (ascii - first) / 27;
-        trytes.push(iota_constants::TRYTE_ALPHABET[first]);
-        trytes.push(iota_constants::TRYTE_ALPHABET[second]);
-    }
-    Ok(trytes)
+pub fn to_trytes(input: &str) -> Result<String, ToTrytesError> {
+    Ok(bytes_to_trytes(input.as_bytes()))
 }
 
-/// Converts a tryte-encoded string into a UTF-8 string containing ascii characters
-pub fn to_string(mut input_trytes: &str) -> Result<String> {
-    if input_trytes.len() % 2 != 0 {
-        input_trytes = &input_trytes[..input_trytes.len() - 1];
-    }
-    let mut tmp = String::new();
-    let chars: Vec<char> = input_trytes.chars().collect();
-    for letters in chars.chunks(2) {
-        let first = match iota_constants::TRYTE_ALPHABET
-            .iter()
-            .position(|&x| x == letters[0])
-        {
-            Some(x) => x,
-            None => {
-                return Err(Error::from(TryteConverterError::StringNotTrytes {
-                    string: input_trytes.to_string(),
-                }))
-            }
-        };
-        let second = match iota_constants::TRYTE_ALPHABET
-            .iter()
-            .position(|&x| x == letters[1])
-        {
-            Some(x) => x,
-            None => {
-                return Err(Error::from(TryteConverterError::StringNotTrytes {
-                    string: input_trytes.to_string(),
-                }))
-            }
-        };
-        let decimal = first + second * 27;
-        if let Some(t) = ASCII_TO_CHAR_MAP.get(&decimal) {
-            tmp.push(*t);
+/// Errors that can be caused when converting trytes to bytes
+#[derive(Debug)]
+pub enum TrytesToBytesError {
+    /// Since two trytes can encode up to 27*27 values, not everey pair of trytes is valid for conversion
+    InvalidTrytePair,
+    /// A character was not a valid tryte
+    StringNotTrytes(char)
+}
+impl std::error::Error for TrytesToBytesError { }
+impl std::fmt::Display for TrytesToBytesError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use TrytesToBytesError::*;
+        match self {
+            InvalidTrytePair => write!(f, "Got an invalid tryte pair with value > 255"),
+            StringNotTrytes(c) => write!(f, "The input string did not consist of trytes (Invalid char: {})", c),
         }
     }
-    Ok(tmp)
+}
+
+/// Convert a single character tryte to its numerical equivalent
+fn tryte_to_val(tryte: char) -> std::result::Result<usize, TrytesToBytesError> {
+        iota_constants::TRYTE_ALPHABET.iter()
+            .position(|&x| x == tryte)
+            .map(|x| x as usize)
+            .ok_or_else(|| TrytesToBytesError::StringNotTrytes(tryte))
+}
+
+/// Converts a sequence of trytes into bytes
+pub fn trytes_to_bytes(input: &str, buf: &mut[u8]) -> std::result::Result<(), TrytesToBytesError> {
+    // We have to add one here because the input may contain an uneven amount of trytes
+    assert!(buf.len() * 2 + 1>= input.len(), "Buffer to short (buffer length: {}, number of trytes: {})", buf.len(), input.len());
+    for (idx, pair) in input.chars().collect::<Vec<char>>().chunks(2).filter(|pair| pair.len() == 2).enumerate() {
+        let first = tryte_to_val(pair[0])?;
+        let second = tryte_to_val(pair[1])?;
+
+        let decimal = first + second * 27;
+        buf[idx] = decimal.try_into().map_err(|_| TrytesToBytesError::InvalidTrytePair)?;
+    }
+    Ok(())
+}
+
+#[derive(Debug)]
+/// Indicates an error during conversion from trytes to utf-8 string
+pub enum TrytesToStringError {
+    /// The tryte string had an invalid format
+    TryteFormatError(TrytesToBytesError),
+    /// The encoded bytes are not valid utf-8
+    Utf8Error(str::Utf8Error),
+}
+impl error::Error for TrytesToStringError { }
+impl fmt::Display for TrytesToStringError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use TrytesToStringError::*;
+        match self {
+            TryteFormatError(e) => write!(f, "Trytes could not be converted to bytes. Cause:\n{}", e),
+            Utf8Error(e) => write!(f, "Bytes contained invalid UTF-8 data:\n{}", e),
+        }
+    }
+}
+impl From<str::Utf8Error> for TrytesToStringError {
+    fn from(err: str::Utf8Error) -> Self {
+        TrytesToStringError::Utf8Error(err)
+    }
+}
+impl From<TrytesToBytesError> for TrytesToStringError {
+    fn from(err: TrytesToBytesError) -> Self {
+        TrytesToStringError::TryteFormatError(err)
+    }
+}
+
+/// Converts a tryte-encoded string into a UTF-8 string
+pub fn to_string(input_trytes: &str) -> Result<String, TrytesToStringError> {
+    let mut buf = vec![0 as u8; input_trytes.len() / 2];
+    trytes_to_bytes(input_trytes, buf.as_mut_slice())?;
+    Ok(str::from_utf8(buf.as_slice())?.to_string())
 }
 
 #[cfg(test)]
@@ -129,6 +141,14 @@ mod tests {
             .take(1000)
             .collect();
         let trytes = to_trytes(&s).unwrap();
+        let back = to_string(&trytes).unwrap();
+        assert_eq!(s, back);
+    }
+
+    #[test]
+    fn should_convert_back_and_forth_utf8() {
+        let s = "(┛ಠ_ಠ)┛彡┻━┻";
+        let trytes = to_trytes(s).unwrap();
         let back = to_string(&trytes).unwrap();
         assert_eq!(s, back);
     }
