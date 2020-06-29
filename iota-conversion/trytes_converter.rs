@@ -1,7 +1,7 @@
 use std::convert::TryInto;
-use std::str;
 use std::error;
 use std::fmt;
+use std::str;
 
 use iota_constants;
 
@@ -20,8 +20,8 @@ pub fn bytes_to_trytes(input: &[u8]) -> String {
 
 #[derive(Debug)]
 /// Dummy error for the string to trytes conversion
-pub struct ToTrytesError{}
-impl error::Error for ToTrytesError { }
+pub struct ToTrytesError {}
+impl error::Error for ToTrytesError {}
 impl fmt::Display for ToTrytesError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Trytes could not be converted to string")
@@ -39,37 +39,55 @@ pub enum TrytesToBytesError {
     /// Since two trytes can encode up to 27*27 values, not everey pair of trytes is valid for conversion
     InvalidTrytePair,
     /// A character was not a valid tryte
-    StringNotTrytes(char)
+    StringNotTrytes(char),
 }
-impl std::error::Error for TrytesToBytesError { }
+impl std::error::Error for TrytesToBytesError {}
 impl std::fmt::Display for TrytesToBytesError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use TrytesToBytesError::*;
         match self {
             InvalidTrytePair => write!(f, "Got an invalid tryte pair with value > 255"),
-            StringNotTrytes(c) => write!(f, "The input string did not consist of trytes (Invalid char: {})", c),
+            StringNotTrytes(c) => write!(
+                f,
+                "The input string did not consist of trytes (Invalid char: {})",
+                c
+            ),
         }
     }
 }
 
 /// Convert a single character tryte to its numerical equivalent
 fn tryte_to_val(tryte: char) -> std::result::Result<usize, TrytesToBytesError> {
-        iota_constants::TRYTE_ALPHABET.iter()
-            .position(|&x| x == tryte)
-            .map(|x| x as usize)
-            .ok_or_else(|| TrytesToBytesError::StringNotTrytes(tryte))
+    iota_constants::TRYTE_ALPHABET
+        .iter()
+        .position(|&x| x == tryte)
+        .map(|x| x as usize)
+        .ok_or_else(|| TrytesToBytesError::StringNotTrytes(tryte))
 }
 
 /// Converts a sequence of trytes into bytes
-pub fn trytes_to_bytes(input: &str, buf: &mut[u8]) -> std::result::Result<(), TrytesToBytesError> {
+pub fn trytes_to_bytes(input: &str, buf: &mut [u8]) -> std::result::Result<(), TrytesToBytesError> {
     // We have to add one here because the input may contain an uneven amount of trytes
-    assert!(buf.len() * 2 + 1>= input.len(), "Buffer to short (buffer length: {}, number of trytes: {})", buf.len(), input.len());
-    for (idx, pair) in input.chars().collect::<Vec<char>>().chunks(2).filter(|pair| pair.len() == 2).enumerate() {
+    assert!(
+        buf.len() * 2 + 1 >= input.len(),
+        "Buffer to short (buffer length: {}, number of trytes: {})",
+        buf.len(),
+        input.len()
+    );
+    for (idx, pair) in input
+        .chars()
+        .collect::<Vec<char>>()
+        .chunks(2)
+        .filter(|pair| pair.len() == 2)
+        .enumerate()
+    {
         let first = tryte_to_val(pair[0])?;
         let second = tryte_to_val(pair[1])?;
 
         let decimal = first + second * 27;
-        buf[idx] = decimal.try_into().map_err(|_| TrytesToBytesError::InvalidTrytePair)?;
+        buf[idx] = decimal
+            .try_into()
+            .map_err(|_| TrytesToBytesError::InvalidTrytePair)?;
     }
     Ok(())
 }
@@ -82,12 +100,14 @@ pub enum TrytesToStringError {
     /// The encoded bytes are not valid utf-8
     Utf8Error(str::Utf8Error),
 }
-impl error::Error for TrytesToStringError { }
+impl error::Error for TrytesToStringError {}
 impl fmt::Display for TrytesToStringError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use TrytesToStringError::*;
         match self {
-            TryteFormatError(e) => write!(f, "Trytes could not be converted to bytes. Cause:\n{}", e),
+            TryteFormatError(e) => {
+                write!(f, "Trytes could not be converted to bytes. Cause:\n{}", e)
+            }
             Utf8Error(e) => write!(f, "Bytes contained invalid UTF-8 data:\n{}", e),
         }
     }

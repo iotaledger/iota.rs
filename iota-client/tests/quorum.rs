@@ -5,8 +5,9 @@ use iota_client::quorum;
 use iota_ternary_preview::*;
 
 #[smol_potat::test]
-async fn test_get_balances() {
+async fn quorum_get_balances() {
     client_init();
+    quorum::refresh_synced_nodes().await.unwrap();
     let _ = quorum::get_balances()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
@@ -20,8 +21,9 @@ async fn test_get_balances() {
 }
 
 #[smol_potat::test]
-async fn test_get_inclusion_states() {
+async fn quorum_get_inclusion_states() {
     client_init();
+    quorum::refresh_synced_nodes().await.unwrap();
     let res = quorum::get_inclusion_states()
         .transactions(&[
             Hash::from_inner_unchecked(
@@ -45,8 +47,9 @@ async fn test_get_inclusion_states() {
 }
 
 #[smol_potat::test]
-async fn test_get_latest_inclusion() {
+async fn quorum_get_latest_inclusion() {
     client_init();
+    quorum::refresh_synced_nodes().await.unwrap();
     let _ = quorum::get_latest_inclusion(&[
         Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
@@ -64,8 +67,9 @@ async fn test_get_latest_inclusion() {
     .await;
 }
 #[smol_potat::test]
-async fn test_were_addresses_spent_from() {
+async fn quorum_were_addresses_spent_from() {
     client_init();
+    quorum::refresh_synced_nodes().await.unwrap();
     let res = quorum::were_addresses_spent_from(&[Address::from_inner_unchecked(
         TryteBuf::try_from_str(TEST_ADDRESS_0)
             .unwrap()
