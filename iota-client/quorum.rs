@@ -19,9 +19,11 @@ use reqwest::Url;
 
 macro_rules! get_synced_nodes {
     () => {{
-        // TODO smarter sync
-        if Quorum::get().time.elapsed() >= Duration::from_secs(300) {
+        let time = Quorum::get().time.clone();
+        let mut time = time.write().map_err(|_| anyhow!("Timestamp read poinsened"))?;
+        if time.elapsed() >= Duration::from_secs(300) {
             refresh_synced_nodes().await?;
+            *time = Instant::now();
         }
         Quorum::get()
             .pool
@@ -41,7 +43,7 @@ pub struct Quorum {
     /// Minimum nodes quired to satisfy quorum threshold
     pub(crate) min: AtomicUsize,
     /// Timestamp of last syncing process
-    pub(crate) time: Instant,
+    pub(crate) time: Arc<RwLock<Instant>>,
 }
 
 impl Quorum {
@@ -51,7 +53,7 @@ impl Quorum {
             pool: Arc::new(RwLock::new(HashSet::new())),
             threshold: AtomicU8::new(66),
             min: AtomicUsize::new(0),
-            time: Instant::now(),
+            time: Arc::new(RwLock::new(Instant::now())),
         });
 
         &QUORUM
