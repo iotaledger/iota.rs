@@ -19,6 +19,7 @@ extern crate serde_json;
 pub mod client;
 pub mod core;
 pub mod extended;
+#[cfg(feature = "quorum")]
 pub mod quorum;
 pub mod response;
 mod util;

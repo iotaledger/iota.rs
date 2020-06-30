@@ -11,6 +11,7 @@ use iota_ternary_preview::TryteBuf;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
 use std::sync::{Arc, RwLock};
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use once_cell::sync::Lazy;
@@ -18,8 +19,12 @@ use reqwest::Url;
 
 macro_rules! get_synced_nodes {
     () => {{
-        // TODO smarter sync
-        refresh_synced_nodes().await?;
+        let time = Quorum::get().time.clone();
+        let mut time = time.write().map_err(|_| anyhow!("Timestamp read poinsened"))?;
+        if time.elapsed() >= Duration::from_secs(300) {
+            refresh_synced_nodes().await?;
+            *time = Instant::now();
+        }
         Quorum::get()
             .pool
             .clone()
@@ -37,6 +42,8 @@ pub struct Quorum {
     pub(crate) threshold: AtomicU8,
     /// Minimum nodes quired to satisfy quorum threshold
     pub(crate) min: AtomicUsize,
+    /// Timestamp of last syncing process
+    pub(crate) time: Arc<RwLock<Instant>>,
 }
 
 impl Quorum {
@@ -46,6 +53,7 @@ impl Quorum {
             pool: Arc::new(RwLock::new(HashSet::new())),
             threshold: AtomicU8::new(66),
             min: AtomicUsize::new(0),
+            time: Arc::new(RwLock::new(Instant::now())),
         });
 
         &QUORUM
@@ -54,12 +62,12 @@ impl Quorum {
 
 /// Refresh synced nodes in quorum. This will replace whole set in the quorum pool.
 pub async fn refresh_synced_nodes() -> Result<()> {
+    let quorum = Quorum::get();
     let body = json!( {
         "command": "getNodeInfo",
     });
-
     let mut result = HashMap::new();
-    let quorum = Quorum::get();
+
     for ref_node in Client::get()
         .pool
         .clone()
@@ -76,6 +84,7 @@ pub async fn refresh_synced_nodes() -> Result<()> {
                 .as_trits()
                 .encode(),
         );
+        // TODO Better scope
         let set = result.entry(hash).or_insert(HashSet::new());
         set.insert(ref_node.clone());
     }
