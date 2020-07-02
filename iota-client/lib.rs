@@ -9,8 +9,6 @@
 )]
 
 #[macro_use]
-extern crate anyhow;
-#[macro_use]
 extern crate serde;
 #[macro_use]
 extern crate serde_json;
@@ -18,6 +16,7 @@ extern crate serde_json;
 #[macro_use]
 pub mod client;
 pub mod core;
+pub mod error;
 pub mod extended;
 #[cfg(feature = "quorum")]
 pub mod quorum;
@@ -25,4 +24,5 @@ pub mod response;
 mod util;
 
 pub use client::Client;
+pub use error::*;
 pub use response::*;

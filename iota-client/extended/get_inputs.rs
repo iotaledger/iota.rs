@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error::*;
 use iota_crypto_preview::Kerl;
 use iota_signing_preview::IotaSeed;
 
@@ -87,6 +87,6 @@ impl<'a> GetInputsBuilder<'a> {
             }
         }
 
-        Err(anyhow!("Cannot find enough inputs to satisify threshold"))
+        Err(Error::ThresholdNotEnough)
     }
 }

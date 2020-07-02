@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error::Result;
 use iota_bundle_preview::{Hash, Transaction};
 use iota_crypto_preview::{Kerl, Sponge};
 use iota_ternary_preview::{T1B1Buf, TritBuf};

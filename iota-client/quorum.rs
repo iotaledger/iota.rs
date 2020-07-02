@@ -13,14 +13,16 @@ use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
+use crate::error::Result;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 
 macro_rules! get_synced_nodes {
     () => {{
         let time = Quorum::get().time.clone();
-        let mut time = time.write().map_err(|_| anyhow!("Timestamp read poinsened"))?;
+        let mut time = time
+            .write()
+            .map_err(|_| anyhow!("Timestamp read poinsened"))?;
         if time.elapsed() >= Duration::from_secs(300) {
             refresh_synced_nodes().await?;
             *time = Instant::now();

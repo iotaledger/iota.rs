@@ -1,5 +1,6 @@
 //! The Client module to connect through IRI with API usages
 use crate::core::*;
+use crate::error::*;
 use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
@@ -7,7 +8,6 @@ use crate::util::tx_trytes;
 use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
-use anyhow::Result;
 use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
 use iota_conversion::Trinary;
 use iota_crypto_preview::Kerl;
@@ -65,7 +65,7 @@ impl Client {
 
     /// Add a node to the node pool.
     pub fn add_node(uri: &str) -> Result<bool> {
-        let url = Url::parse(uri)?;
+        let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
         let pool = Client::get().pool.clone();
         let mut set = pool.write().expect("Node pool write poisened");
         Ok(set.insert(url))
@@ -73,7 +73,7 @@ impl Client {
 
     /// Remove a node from the node pool.
     pub fn remove_node(uri: &str) -> Result<bool> {
-        let url = Url::parse(uri)?;
+        let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
         let pool = Client::get().pool.clone();
         let mut set = pool.write().expect("Node pool write poisened");
         Ok(set.remove(&url))
@@ -84,10 +84,10 @@ impl Client {
             .pool
             .clone()
             .read()
-            .map_err(|_| anyhow!("Node pool read poinsened"))?
+            .expect("Node pool read poinsened")
             .iter()
             .next()
-            .ok_or(anyhow!("No node available"))?
+            .ok_or(Error::NodePoolEmpty)?
             .clone())
     }
 
@@ -98,11 +98,11 @@ impl Client {
     /// * [`uris`] - Slices of neighbor URIs(`&str`) to add
     ///
     /// [`uris`]: ../core/struct.AddNeighborsBuilder.html#method.uris
-    pub async fn add_neighbors(uris: Vec<String>) -> Result<AddNeighborsResponse> {
+    pub async fn add_neighbors(uris: Vec<&str>) -> Result<AddNeighborsResponse> {
         for uri in &uris {
-            match Url::parse(&uri)?.scheme() {
+            match Url::parse(&uri).map_err(|_| Error::UrlError)?.scheme() {
                 "tcp" | "udp" => (),
-                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+                _ => return Err(Error::UrlError),
             }
         }
 
@@ -471,11 +471,11 @@ impl Client {
     /// * [`uris`] - Slice of neighbor URIs(`&str`) to remove
     ///
     /// [`uris`]: ../core/struct.RemoveNeighborsBuilder.html#method.uris
-    pub async fn remove_neighbors(uris: Vec<String>) -> Result<RemoveNeighborsResponse> {
+    pub async fn remove_neighbors(uris: Vec<&str>) -> Result<RemoveNeighborsResponse> {
         for uri in &uris {
-            match Url::parse(&uri)?.scheme() {
+            match Url::parse(&uri).map_err(|_| Error::UrlError)?.scheme() {
                 "tcp" | "udp" => (),
-                _ => return Err(anyhow!("Uri scheme should be either tcp or udp")),
+                _ => return Err(Error::UrlError),
             }
         }
 
@@ -585,7 +585,7 @@ impl Client {
 
             if tail {
                 if *res.index().to_inner() != 0 {
-                    break Err(anyhow!("Provided hash is not tail."));
+                    break Err(Error::NotTailHash);
                 }
                 tail = false;
             }

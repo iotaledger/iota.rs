@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error::Result;
 use iota_bundle_preview::{Address, TransactionField};
 use iota_crypto_preview::Kerl;
 use iota_signing_preview::{
