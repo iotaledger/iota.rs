@@ -27,7 +27,7 @@ macro_rules! console_error {
 #[wasm_bindgen]
 #[derive(Serialize)]
 pub struct NewAddress {
-    pub index: u64,
+    pub index: f64,
     address: String,
 }
 
@@ -42,7 +42,7 @@ impl NewAddress {
 #[wasm_bindgen]
 #[derive(Deserialize)]
 pub struct NewTransfer {
-    value: u64,
+    value: f64,
 }
 
 #[wasm_bindgen]
@@ -293,9 +293,9 @@ pub async fn get_inclusion_states(
 #[wasm_bindgen(js_name = "getInputs")]
 pub async fn get_inputs(
     seed: String,
-    index: Option<u64>,
+    index: Option<f64>,
     security: Option<u8>,
-    threshold: Option<u64>,
+    threshold: Option<f64>,
 ) -> Result<JsValue, JsValue> {
     let encoded_seed = IotaSeed::<Kerl>::from_buf(
         TryteBuf::try_from_str(&seed)
@@ -307,7 +307,7 @@ pub async fn get_inputs(
     let mut builder = iota::Client::get_inputs(&encoded_seed);
 
     if let Some(index) = index {
-        builder = builder.index(index);
+        builder = builder.index(index as u64);
     }
 
     if let Some(security) = security {
@@ -315,7 +315,7 @@ pub async fn get_inputs(
     }
 
     if let Some(threshold) = threshold {
-        builder = builder.threshold(threshold);
+        builder = builder.threshold(threshold as u64);
     }
 
     let inputs = builder.generate().await.map_err(js_error)?;
@@ -365,7 +365,7 @@ pub async fn get_neighbors() -> Result<JsValue, JsValue> {
 #[wasm_bindgen(js_name = "getNewAddress")]
 pub async fn get_new_address(
     seed: String,
-    index: Option<u64>,
+    index: Option<f64>,
     security: Option<u8>,
 ) -> Result<JsValue, JsValue> {
     let encoded_seed = IotaSeed::<Kerl>::from_buf(
@@ -379,7 +379,7 @@ pub async fn get_new_address(
     let mut builder = iota::Client::get_new_address(&encoded_seed);
 
     if let Some(index) = index {
-        builder = builder.index(index);
+        builder = builder.index(index as u64);
     }
     if let Some(security) = security {
         builder = builder.security(security);
@@ -388,7 +388,7 @@ pub async fn get_new_address(
     let (index, address) = builder.generate().await.map_err(js_error)?;
 
     let new_address = NewAddress {
-        index,
+        index: index as f64,
         address: address
             .to_inner()
             .as_i8_slice()
@@ -572,7 +572,7 @@ pub async fn send_transfers(
         .iter()
         .map(|transfer| Transfer {
             address: address.clone(),
-            value: transfer.value,
+            value: transfer.value as u64,
             message: None,
             tag: None,
         })
