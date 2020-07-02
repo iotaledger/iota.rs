@@ -14,6 +14,10 @@ pub enum Error {
     NodePoolEmpty,
     /// Hash is not tail of the bundle
     NotTailHash,
+    /// Error when processing quorum data
+    QuorumError,
+    /// Quorum result didn't pass the minimum threshold
+    QuorumThreshold,
     /// Errors from reqwest api call
     ReqwestError(reqwest::Error),
     /// Response error from IRI query
@@ -32,6 +36,8 @@ impl fmt::Display for Error {
             Error::MissingSeed => "Must provide seed to prepare transfer".fmt(f),
             Error::NodePoolEmpty => "No node available".fmt(f),
             Error::NotTailHash => "Provided hash is not tail".fmt(f),
+            Error::QuorumError => "Fail to find quorum result".fmt(f),
+            Error::QuorumThreshold => "Quorum result didn't pass the minimum threshold".fmt(f),
             Error::ReqwestError(e) => e.fmt(f),
             Error::ResponseError(s) => s.fmt(f),
             Error::ThresholdNotEnough => "Cannot find enough inputs to satisify threshold".fmt(f),

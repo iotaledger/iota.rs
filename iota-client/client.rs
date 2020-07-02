@@ -46,7 +46,7 @@ macro_rules! response {
 /// An instance of the client using IRI URI
 #[derive(Debug)]
 pub struct Client {
-    // Node pool of IOTA nodes
+    /// Node pool of IOTA nodes
     pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
@@ -67,6 +67,7 @@ impl Client {
     pub fn add_node(uri: &str) -> Result<bool> {
         let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
         let pool = Client::get().pool.clone();
+        // Poisened lock may occur unwanted security issue, So all lock operations will panic if there's a poisened lock. 
         let mut set = pool.write().expect("Node pool write poisened");
         Ok(set.insert(url))
     }
@@ -84,7 +85,7 @@ impl Client {
             .pool
             .clone()
             .read()
-            .expect("Node pool read poinsened")
+            .expect("Node pool read poisened")
             .iter()
             .next()
             .ok_or(Error::NodePoolEmpty)?
