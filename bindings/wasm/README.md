@@ -54,18 +54,18 @@ new CopyWebpackPlugin([
 
 ### Web
 ```js
-import { Client } from '@iota/iota-rs-wasm/web'
+import * as client from '@iota/iota-rs-wasm/web'
 
 const uri = 'https://nodes.comnet.thetangle.org'
-const client = new Client(uri)
+await client.addNode(uri)
 client.getNodeInfo().then(nodeInfo => { ... })
 ```
 
 ### Node.js
 ```js
-const { Client } = require('@iota/iota-rs-wasm/node')
+const client = require('@iota/iota-rs-wasm/node')
 
 const uri = 'https://nodes.comnet.thetangle.org'
-const client = new Client(uri)
+await client.addNode(uri)
 client.getNodeInfo().then(nodeInfo => { ... })
 ```
