@@ -99,7 +99,7 @@ impl Client {
     /// * [`uris`] - Slices of neighbor URIs(`&str`) to add
     ///
     /// [`uris`]: ../core/struct.AddNeighborsBuilder.html#method.uris
-    pub async fn add_neighbors(uris: Vec<&str>) -> Result<AddNeighborsResponse> {
+    pub async fn add_neighbors(uris: Vec<String>) -> Result<AddNeighborsResponse> {
         for uri in &uris {
             match Url::parse(&uri).map_err(|_| Error::UrlError)?.scheme() {
                 "tcp" | "udp" => (),
@@ -472,7 +472,7 @@ impl Client {
     /// * [`uris`] - Slice of neighbor URIs(`&str`) to remove
     ///
     /// [`uris`]: ../core/struct.RemoveNeighborsBuilder.html#method.uris
-    pub async fn remove_neighbors(uris: Vec<&str>) -> Result<RemoveNeighborsResponse> {
+    pub async fn remove_neighbors(uris: Vec<String>) -> Result<RemoveNeighborsResponse> {
         for uri in &uris {
             match Url::parse(&uri).map_err(|_| Error::UrlError)?.scheme() {
                 "tcp" | "udp" => (),

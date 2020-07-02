@@ -10,7 +10,7 @@ use iota_ternary_preview::*;
 #[smol_potat::test]
 async fn test_add_neighbors() {
     client_init();
-    let _ = Client::add_neighbors(vec!["tcp://0.0.0.0:15600"])
+    let _ = Client::add_neighbors(vec!["tcp://0.0.0.0:15600".to_owned()])
         .await
         .unwrap();
 }
@@ -380,7 +380,7 @@ async fn test_prepare_transfers_no_value() {
 #[smol_potat::test]
 async fn test_remove_neighbors() {
     client_init();
-    let res = Client::remove_neighbors(vec!["tcp://0.0.0.0:15600"])
+    let res = Client::remove_neighbors(vec!["tcp://0.0.0.0:15600".to_owned()])
         .await
         .unwrap();
 
