@@ -1,5 +1,5 @@
 //! Response types
-use anyhow::Result;
+use crate::error::*;
 use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
 use iota_ternary_preview::TryteBuf;
 use serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
@@ -47,7 +47,7 @@ impl From<&Transaction> for TransactionDef {
     }
 }
 
-fn transaction_serializer<S>(x: &Vec<Transaction>, s: S) -> Result<S::Ok, S::Error>
+fn transaction_serializer<S>(x: &Vec<Transaction>, s: S) -> std::result::Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -89,9 +89,9 @@ impl ConsistencyResponseBuilder {
     pub(crate) async fn build(self) -> Result<ConsistencyResponse> {
         let mut state = false;
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         } else if let Some(s) = self.state {
             state = s;
         }
@@ -122,9 +122,9 @@ impl AttachToTangleResponseBuilder {
     pub(crate) async fn build(self) -> Result<AttachToTangleResponse> {
         let mut trytes = Vec::new();
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         } else if let Some(s) = self.trytes {
             s.iter().for_each(|x| {
                 trytes.push(
@@ -147,9 +147,9 @@ pub(crate) struct ErrorResponseBuilder {
 impl ErrorResponseBuilder {
     pub(crate) async fn build(self) -> Result<()> {
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         }
 
         Ok(())
@@ -169,7 +169,7 @@ pub struct FindTransactionsResponse {
 
 // TODO: remove this when iota_bundle_preview::Hash implements Serialize
 impl Serialize for FindTransactionsResponse {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -191,9 +191,9 @@ impl FindTransactionsResponseBuilder {
     pub(crate) async fn build(self) -> Result<FindTransactionsResponse> {
         let mut hashes: Vec<Hash> = Vec::new();
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         } else if let Some(s) = self.hashes {
             hashes = s
                 .iter()
@@ -223,7 +223,7 @@ pub struct GetBalancesResponse {
 
 // TODO: remove this when iota_bundle_preview::Hash implements Serialize
 impl Serialize for GetBalancesResponse {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -258,9 +258,9 @@ impl GetBalancesResponseBuilder {
         };
 
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         }
 
         if let Some(s) = self.balances {
@@ -305,9 +305,9 @@ impl GetInclusionStatesResponseBuilder {
     pub(crate) async fn build(self) -> Result<GetInclusionStatesResponse> {
         let mut states = Vec::new();
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         } else if let Some(s) = self.states {
             states = s;
         }
@@ -335,9 +335,9 @@ impl GetNeighborsResponseBuilder {
     pub(crate) async fn build(self) -> Result<GetNeighborsResponse> {
         let mut neighbors = Vec::new();
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         } else if let Some(s) = self.neighbors {
             neighbors = s;
         }
@@ -440,7 +440,7 @@ pub struct GTTAResponse {
 
 // TODO: remove this when iota_bundle_preview::Hash implements Serialize
 impl Serialize for GTTAResponse {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -472,9 +472,9 @@ impl GTTAResponseBuilder {
         };
 
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         }
 
         if let Some(s) = self.trunk_transaction {
@@ -545,9 +545,9 @@ impl GetTrytesResponseBuilder {
     pub(crate) async fn build(self) -> Result<GetTrytesResponse> {
         let mut trytes = Vec::new();
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         } else if let Some(s) = self.trytes {
             s.iter().for_each(|x| {
                 trytes.push(
@@ -588,9 +588,9 @@ impl WereAddressesSpentFromResponseBuilder {
     pub(crate) async fn build(self) -> Result<WereAddressesSpentFromResponse> {
         let mut states = Vec::new();
         if let Some(exception) = self.exception {
-            return Err(anyhow!("{}", exception));
+            return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
-            return Err(anyhow!("{}", error));
+            return Err(Error::ResponseError(error));
         } else if let Some(s) = self.states {
             states = s;
         }

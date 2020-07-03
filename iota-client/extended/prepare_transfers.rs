@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 
-use anyhow::Result;
 use iota_bundle_preview::{
     Address, Bundle, Hash, Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp,
     TransactionBuilder, TransactionField, Value, PAYLOAD_TRIT_LEN,
@@ -10,6 +9,7 @@ use iota_crypto_preview::Kerl;
 use iota_signing_preview::{IotaSeed, WotsSecurityLevel};
 use iota_ternary_preview::{T1B1Buf, TritBuf, TryteBuf};
 
+use crate::error::*;
 use crate::response::{Input, Transfer};
 use crate::Client;
 
@@ -66,16 +66,13 @@ impl<'a> PrepareTransfersBuilder<'a> {
             match self.inputs {
                 Some(i) => i,
                 None => {
-                    Client::get_inputs(
-                        self.seed
-                            .ok_or(anyhow!("Must provide seed to prepare transfer."))?,
-                    )
-                    .index(0)
-                    .security(self.security)
-                    .threshold(total_output)
-                    .generate()
-                    .await?
-                    .1
+                    Client::get_inputs(self.seed.ok_or(Error::MissingSeed)?)
+                        .index(0)
+                        .security(self.security)
+                        .threshold(total_output)
+                        .generate()
+                        .await?
+                        .1
                 }
             }
         } else {
@@ -84,7 +81,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
         let total_input = inputs.iter().fold(0, |acc, tx| acc + tx.balance);
 
         let need_remainder = match total_input.cmp(&total_output) {
-            Ordering::Less => return Err(anyhow!("Inputs balance is insufficient.")),
+            Ordering::Less => return Err(Error::ThresholdNotEnough),
             Ordering::Greater => true,
             Ordering::Equal => false,
         };
@@ -97,7 +94,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
             if let Some(message) = transfer.message {
                 let message: TritBuf<T1B1Buf> = match to_trytes(&message) {
                     Ok(s) => TryteBuf::try_from_str(&s).unwrap().as_trits().encode(),
-                    Err(_) => return Err(anyhow!("Fail to convert message to trytes.")),
+                    Err(_) => return Err(Error::TernaryError),
                 };
                 let mut value = transfer.value as i64;
                 let tag = match transfer.tag {
@@ -204,15 +201,12 @@ impl<'a> PrepareTransfersBuilder<'a> {
             let remainder = match self.remainder {
                 Some(r) => r,
                 None => {
-                    Client::get_new_address(
-                        self.seed
-                            .ok_or(anyhow!("Must provide seed to prepare transfer."))?,
-                    )
-                    .security(self.security)
-                    .index(inputs.last().unwrap().index + 1)
-                    .generate()
-                    .await?
-                    .1
+                    Client::get_new_address(self.seed.ok_or(Error::MissingSeed)?)
+                        .security(self.security)
+                        .index(inputs.last().unwrap().index + 1)
+                        .generate()
+                        .await?
+                        .1
                 }
             };
 
@@ -253,11 +247,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
         Ok(bundle
             .seal()
             .expect("Fail to seal bundle")
-            .sign(
-                self.seed
-                    .ok_or(anyhow!("Must provide seed to prepare transfer."))?,
-                &inputs,
-            )
+            .sign(self.seed.ok_or(Error::MissingSeed)?, &inputs)
             .expect("Fail to sign bundle")
             .attach_local(Hash::zeros(), Hash::zeros())
             .expect("Fail to attach bundle")

@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error::Result;
 use iota_bundle_preview::{Address, Hash, Tag, TransactionField};
 use iota_conversion::Trinary;
 

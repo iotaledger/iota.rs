@@ -2,6 +2,7 @@
 //! pool and guarantee to staisfy minimum quorum threshold.
 
 use crate::response::*;
+use crate::error::*;
 use crate::Client;
 
 use iota_bundle_preview::{Address, Hash, TransactionField};
@@ -13,14 +14,15 @@ use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 
 macro_rules! get_synced_nodes {
     () => {{
         let time = Quorum::get().time.clone();
-        let mut time = time.write().map_err(|_| anyhow!("Timestamp read poinsened"))?;
+        let mut time = time
+            .write()
+            .expect("Timestamp read poinsened");
         if time.elapsed() >= Duration::from_secs(300) {
             refresh_synced_nodes().await?;
             *time = Instant::now();
@@ -29,7 +31,7 @@ macro_rules! get_synced_nodes {
             .pool
             .clone()
             .read()
-            .map_err(|_| anyhow!("Node pool read poinsened"))?
+            .expect("Node pool read poinsened")
     }};
 }
 
@@ -72,7 +74,7 @@ pub async fn refresh_synced_nodes() -> Result<()> {
         .pool
         .clone()
         .read()
-        .map_err(|_| anyhow!("Node pool read poinsened"))?
+        .expect("Node pool read poinsened")
         .iter()
     {
         let node = ref_node.clone();
@@ -94,7 +96,7 @@ pub async fn refresh_synced_nodes() -> Result<()> {
     *set = result
         .into_iter()
         .max_by_key(|v| v.1.len())
-        .ok_or(anyhow!("Fail to find quorum result"))?
+        .ok_or(Error::QuorumError)?
         .1;
 
     let val = set.len() * quorum.threshold.load(Ordering::Acquire) as usize / 100;
@@ -185,12 +187,12 @@ impl GetBalancesBuilder {
         let res = result
             .into_iter()
             .max_by_key(|v| v.1)
-            .ok_or(anyhow!("Fail to find quorum result"))?;
+            .ok_or(Error::QuorumError)?;
 
         if res.1 >= quorum.min.load(Ordering::Acquire) {
             Ok(res.0)
         } else {
-            Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+            Err(Error::QuorumThreshold)
         }
     }
 }
@@ -267,12 +269,12 @@ impl GetInclusionStatesBuilder {
         let res = result
             .into_iter()
             .max_by_key(|v| v.1)
-            .ok_or(anyhow!("Fail to find quorum result"))?;
+            .ok_or(Error::QuorumError)?;
 
         if res.1 >= quorum.min.load(Ordering::Acquire) {
             Ok(res.0)
         } else {
-            Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+            Err(Error::QuorumThreshold)
         }
     }
 }
@@ -318,12 +320,12 @@ pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
     let res = result
         .into_iter()
         .max_by_key(|v| v.1)
-        .ok_or(anyhow!("Fail to find quorum result"))?;
+        .ok_or(Error::QuorumError)?;
 
     if res.1 >= quorum.min.load(Ordering::Acquire) {
         Ok(res.0)
     } else {
-        Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+        Err(Error::QuorumThreshold)
     }
 }
 
@@ -356,11 +358,11 @@ pub async fn were_addresses_spent_from(
     let res = result
         .into_iter()
         .max_by_key(|v| v.1)
-        .ok_or(anyhow!("Fail to find quorum result"))?;
+        .ok_or(Error::QuorumError)?;
 
     if res.1 >= quorum.min.load(Ordering::Acquire) {
         Ok(res.0)
     } else {
-        Err(anyhow!("Result didn't pass the minimum quorum threshold"))
+        Err(Error::QuorumThreshold)
     }
 }
