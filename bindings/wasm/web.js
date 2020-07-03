@@ -12,7 +12,7 @@ class AddressGenerator {
     }
 
     index(index) {
-        this.__index = BigInt(index)
+        this.__index = index
         return this
     }
 
