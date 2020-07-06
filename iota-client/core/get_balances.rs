@@ -9,7 +9,6 @@ use crate::Client;
 #[derive(Debug)]
 pub struct GetBalancesBuilder {
     addresses: Vec<String>,
-    threshold: u8,
     tips: Option<Vec<String>>,
 }
 
@@ -17,7 +16,6 @@ impl GetBalancesBuilder {
     pub(crate) fn new() -> Self {
         Self {
             addresses: Default::default(),
-            threshold: 100,
             tips: Default::default(),
         }
     }
@@ -28,12 +26,6 @@ impl GetBalancesBuilder {
             .iter()
             .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
             .collect();
-        self
-    }
-
-    /// Set confirmation threshold between 0 and 100
-    pub fn threshold(mut self, threshold: u8) -> Self {
-        self.threshold = threshold;
         self
     }
 
@@ -52,7 +44,6 @@ impl GetBalancesBuilder {
         let mut body = json!({
             "command": "getBalances",
             "addresses": self.addresses,
-            "threshold": self.threshold,
         });
 
         if let Some(reference) = self.tips {
