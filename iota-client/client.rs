@@ -67,7 +67,7 @@ impl Client {
     pub fn add_node(uri: &str) -> Result<bool> {
         let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
         let pool = Client::get().pool.clone();
-        // Poisened lock may occur unwanted security issue, So all lock operations will panic if there's a poisened lock. 
+        // Poisened lock may occur unwanted security issue, So all lock operations will panic if there's a poisened lock.
         let mut set = pool.write().expect("Node pool write poisened");
         Ok(set.insert(url))
     }
@@ -265,10 +265,8 @@ impl Client {
     /// # Parameters
     /// * [`transactions`] - List of transaction hashes for which you want to get the inclusion state
     pub async fn get_latest_inclusion(transactions: &[Hash]) -> Result<Vec<bool>> {
-        let milestone = Client::get_latest_solid_subtangle_milestone().await?;
         let states = Client::get_inclusion_states()
             .transactions(transactions)
-            .tips(&[milestone])
             .send()
             .await?
             .states;

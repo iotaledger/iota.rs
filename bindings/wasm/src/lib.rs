@@ -232,7 +232,6 @@ pub async fn find_transactions(
 #[wasm_bindgen(js_name = "getBalances")]
 pub async fn get_balances(
     addresses: JsValue,
-    threshold: Option<u8>,
     tips_hashes_bytes: JsValue,
 ) -> Result<JsValue, JsValue> {
     let mut builder = iota::Client::get_balances();
@@ -240,10 +239,6 @@ pub async fn get_balances(
     if addresses.is_truthy() {
         let addresses = create_addresses(addresses)?;
         builder = builder.addresses(&addresses);
-    }
-
-    if let Some(threshold) = threshold {
-        builder = builder.threshold(threshold);
     }
 
     if tips_hashes_bytes.is_truthy() {
@@ -270,18 +265,12 @@ pub async fn get_bundle(hash_bytes: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen(js_name = "getInclusionStates")]
 pub async fn get_inclusion_states(
     transaction_hashes_bytes: JsValue,
-    tips_hashes_bytes: JsValue,
 ) -> Result<JsValue, JsValue> {
     let mut builder = iota::Client::get_inclusion_states();
 
     if transaction_hashes_bytes.is_truthy() {
         let transaction_hashes = create_hash_array(transaction_hashes_bytes)?;
         builder = builder.transactions(&transaction_hashes);
-    }
-
-    if tips_hashes_bytes.is_truthy() {
-        let tips_hashes = create_hash_array(tips_hashes_bytes)?;
-        builder = builder.tips(&tips_hashes);
     }
 
     let inclusion_states = builder.send().await.map_err(js_error)?;

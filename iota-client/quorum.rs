@@ -1,8 +1,8 @@
 //! Quorum module is a extension to iota client instance which can make sure result from API calls are verified by node
 //! pool and guarantee to staisfy minimum quorum threshold.
 
-use crate::response::*;
 use crate::error::*;
+use crate::response::*;
 use crate::Client;
 
 use iota_bundle_preview::{Address, Hash, TransactionField};
@@ -20,9 +20,7 @@ use reqwest::Url;
 macro_rules! get_synced_nodes {
     () => {{
         let time = Quorum::get().time.clone();
-        let mut time = time
-            .write()
-            .expect("Timestamp read poinsened");
+        let mut time = time.write().expect("Timestamp read poinsened");
         if time.elapsed() >= Duration::from_secs(300) {
             refresh_synced_nodes().await?;
             *time = Instant::now();
@@ -124,7 +122,6 @@ pub fn get_balances() -> GetBalancesBuilder {
 #[derive(Debug)]
 pub struct GetBalancesBuilder {
     addresses: Vec<String>,
-    threshold: u8,
     tips: Option<Vec<String>>,
 }
 
@@ -132,7 +129,6 @@ impl GetBalancesBuilder {
     pub(crate) fn new() -> Self {
         Self {
             addresses: Default::default(),
-            threshold: 100,
             tips: Default::default(),
         }
     }
@@ -143,12 +139,6 @@ impl GetBalancesBuilder {
             .iter()
             .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
             .collect();
-        self
-    }
-
-    /// Set confirmation threshold between 0 and 100
-    pub fn threshold(mut self, threshold: u8) -> Self {
-        self.threshold = threshold;
         self
     }
 
@@ -168,7 +158,6 @@ impl GetBalancesBuilder {
         let mut body = json!({
             "command": "getBalances",
             "addresses": self.addresses,
-            "threshold": self.threshold,
         });
 
         if let Some(reference) = self.tips {
@@ -215,14 +204,12 @@ pub fn get_inclusion_states() -> GetInclusionStatesBuilder {
 #[derive(Debug)]
 pub struct GetInclusionStatesBuilder {
     transactions: Vec<String>,
-    tips: Option<Vec<String>>,
 }
 
 impl GetInclusionStatesBuilder {
     pub(crate) fn new() -> Self {
         Self {
             transactions: Default::default(),
-            tips: Default::default(),
         }
     }
 
@@ -235,27 +222,13 @@ impl GetInclusionStatesBuilder {
         self
     }
 
-    /// Add list of tip transaction hashes (including milestones) you want to search for
-    pub fn tips(mut self, tips: &[Hash]) -> Self {
-        self.tips = Some(
-            tips.iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
-                .collect(),
-        );
-        self
-    }
-
     /// Send getInclusionStates request
     pub async fn send(self) -> Result<GetInclusionStatesResponse> {
         let quorum = Quorum::get();
-        let mut body = json!({
+        let body = json!({
             "command": "getInclusionStates",
             "transactions": self.transactions,
         });
-
-        if let Some(reference) = self.tips {
-            body["tips"] = json!(reference);
-        }
 
         let mut result = HashMap::new();
         for node in get_synced_nodes!().iter() {
@@ -285,10 +258,8 @@ impl GetInclusionStatesBuilder {
 /// # Parameters
 /// * [`transactions`] - List of transaction hashes for which you want to get the inclusion state
 pub async fn get_latest_inclusion(transactions: &[Hash]) -> Result<Vec<bool>> {
-    let milestone = get_latest_solid_subtangle_milestone().await?;
     let states = get_inclusion_states()
         .transactions(transactions)
-        .tips(&[milestone])
         .send()
         .await?
         .states;

@@ -9,14 +9,12 @@ use crate::Client;
 #[derive(Debug)]
 pub struct GetInclusionStatesBuilder {
     transactions: Vec<String>,
-    tips: Option<Vec<String>>,
 }
 
 impl GetInclusionStatesBuilder {
     pub(crate) fn new() -> Self {
         Self {
             transactions: Default::default(),
-            tips: Default::default(),
         }
     }
 
@@ -29,26 +27,12 @@ impl GetInclusionStatesBuilder {
         self
     }
 
-    /// Add list of tip transaction hashes (including milestones) you want to search for
-    pub fn tips(mut self, tips: &[Hash]) -> Self {
-        self.tips = Some(
-            tips.iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
-                .collect(),
-        );
-        self
-    }
-
     /// Send getInclusionStates request
     pub async fn send(self) -> Result<GetInclusionStatesResponse> {
-        let mut body = json!({
+        let body = json!({
             "command": "getInclusionStates",
             "transactions": self.transactions,
         });
-
-        if let Some(reference) = self.tips {
-            body["tips"] = json!(reference);
-        }
 
         let res: GetInclusionStatesResponseBuilder = response!(body);
         res.build().await
