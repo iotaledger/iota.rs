@@ -1,6 +1,6 @@
 [package]
 name = "iota-client"
-version = "0.5.0-alpha.2"
+version = "0.5.0-alpha.3"
 authors = ["Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Client to use Iota APIs"
