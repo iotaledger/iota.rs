@@ -102,6 +102,25 @@ function broadcastBundle(tailTransactionHash) {
 }
 
 /**
+ * Sends transaction trytes to a node.
+ * The input trytes for this call are provided by `attach_to_tangle`.
+ * Response only contains errors and exceptions, it would be `None` if the call success.
+ * 
+ * @param {String|String[]} trytes Transaction trytes
+ */
+function broadcastTransactions(trytes) {
+    if (typeof trytes === 'string') {
+        trytes = [trytes]
+    } else if (!Array.isArray(trytes)) {
+        return Promise.reject(new Error('trytes must be an array'))
+    } else if (trytes.some(tryte => typeof tryte !== 'string')) {
+        return Promise.reject(new Error('Every tryte must be a string'))
+    }
+
+    return wasm.broadcastTransactions(trytes)
+}
+
+/**
  * Checks the consistency of transactions. A consistent transaction is one where the following statements are true:
  * The node isn't missing the transaction's branch or trunk transactions
  * The transaction's bundle is valid
@@ -125,6 +144,44 @@ function sendTransfers(seed, transfers, minWeightMagnitude = null) {
 }
 
 /**
+ * Store and broadcast transactions to the node.
+ * The input trytes for this call are provided by `attach_to_tangle`.
+ * Response only contains errors and exceptions, it would be `None` if the call success.
+ * 
+ * @param {String|String[]} trytes Transaction trytes
+ */
+function storeAndBroadcast(trytes) {
+    if (typeof trytes === 'string') {
+        trytes = [trytes]
+    } else if (!Array.isArray(trytes)) {
+        return Promise.reject(new Error('trytes must be an array'))
+    } else if (trytes.some(tryte => typeof tryte !== 'string')) {
+        return Promise.reject(new Error('Every tryte must be a string'))
+    }
+
+    return wasm.storeAndBroadcast(trytes)
+}
+
+/**
+ * Store transactions into the local storage.
+ * The input trytes for this call are provided by `attach_to_tangle`.
+ * Response only contains errors and exceptions, it would be `None` if the call success.
+ * 
+ * @param {String|String[]} trytes Transaction trytes
+ */
+function storeTransactions(trytes) {
+    if (typeof trytes === 'string') {
+        trytes = [trytes]
+    } else if (!Array.isArray(trytes)) {
+        return Promise.reject(new Error('trytes must be an array'))
+    } else if (trytes.some(tryte => typeof tryte !== 'string')) {
+        return Promise.reject(new Error('Every tryte must be a string'))
+    }
+
+    return wasm.storeTransactions(trytes)
+}
+
+/**
  * Fetches the bundle of a given the tail transaction hash, by traversing through trunk transaction.
  * It does not validate the bundle. Use [`get_bundle`] instead to get validated bundle.
  *
@@ -141,7 +198,10 @@ module.exports = {
     addNeighbors,
     attachToTangle,
     broadcastBundle,
+    broadcastTransactions,
     checkConsistency,
     sendTransfers,
+    storeAndBroadcast,
+    storeTransactions,
     traverseBundle
 }
