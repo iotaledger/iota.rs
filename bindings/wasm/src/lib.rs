@@ -3,7 +3,7 @@ use iota::client::response::{TransactionDef, Transfer};
 use iota::crypto::Kerl;
 use iota::signing::{IotaSeed, Seed};
 use iota::ternary::{T1B1Buf, TryteBuf};
-use iota_bundle_preview::Hash;
+use iota_bundle_preview::{Hash, Transaction};
 use iota_conversion::Trinary;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -104,6 +104,22 @@ fn create_addresses(addresses: JsValue) -> Result<Vec<Address>, JsValue> {
     Ok(addresses)
 }
 
+fn create_tx_from_string(bytes: String) -> Result<Transaction, JsValue> {
+    let hash = Transaction::from_trits(
+        TryteBuf::try_from_str(&bytes).unwrap().as_trits(),
+    ).unwrap();
+    Ok(hash)
+}
+
+fn create_tx_array(bytes_vec: JsValue) -> Result<Vec<Transaction>, JsValue> {
+    let hashes_vecs: Vec<String> = bytes_vec.into_serde().map_err(js_error)?;
+    let mut hashes = Vec::new();
+    for hash in hashes_vecs {
+        hashes.push(create_tx_from_string(hash)?);
+    }
+    Ok(hashes)
+}
+
 #[wasm_bindgen(js_name = "addNode")]
 pub fn add_node(uri: &str) -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
@@ -170,6 +186,17 @@ pub async fn broadcast_bundle(tail_transaction_hash_bytes: JsValue) -> Result<Js
     let response = response_to_js_value(&response)?;
 
     Ok(response)
+}
+
+#[wasm_bindgen(js_name = "broadcastTransactions")]
+pub async fn broadcast_transactions(trytes: JsValue) -> Result<(), JsValue> {
+    let tail_transaction_hash = create_tx_array(trytes)?;
+
+    let broadcast_response = iota::Client::broadcast_transactions(&tail_transaction_hash)
+        .await
+        .map_err(js_error)?;
+
+    Ok(broadcast_response)
 }
 
 #[wasm_bindgen(js_name = "checkConsistency")]
@@ -584,6 +611,28 @@ pub async fn send_transfers(
 
     let res = response_to_js_value(response)?;
     Ok(res)
+}
+
+#[wasm_bindgen(js_name = "storeAndBroadcast")]
+pub async fn store_and_broadcast(trytes: JsValue) -> Result<(), JsValue> {
+    let tail_transaction_hash = create_tx_array(trytes)?;
+
+    let response = iota::Client::store_and_broadcast(&tail_transaction_hash)
+        .await
+        .map_err(js_error)?;
+
+    Ok(response)
+}
+
+#[wasm_bindgen(js_name = "storeTransactions")]
+pub async fn store_transactions(trytes: JsValue) -> Result<(), JsValue> {
+    let tail_transaction_hash = create_tx_array(trytes)?;
+
+    let response = iota::Client::store_transactions(&tail_transaction_hash)
+        .await
+        .map_err(js_error)?;
+
+    Ok(response)
 }
 
 #[wasm_bindgen(js_name = "traverseBundle")]
