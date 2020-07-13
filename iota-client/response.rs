@@ -1,7 +1,11 @@
 //! Response types
 use crate::error::*;
-use iota_bundle_preview::{Address, Hash, Tag, Transaction, TransactionField};
-use iota_ternary_preview::TryteBuf;
+use bee_crypto::ternary::Hash;
+use bee_ternary::TryteBuf;
+use bee_transaction::bundled::{
+    Address, BundledTransaction as Transaction, BundledTransactionField, Tag,
+};
+use bee_transaction::TransactionVertex;
 use serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 
 // TODO: remove this struct once iota_bundle_preview::Transaction implements Serialize
@@ -10,39 +14,39 @@ use serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 pub struct TransactionDef {
     payload: String,
     address: String,
-    value: String,
+    value: i64,
     obsolete_tag: String,
-    timestamp: String,
-    index: String,
-    last_index: String,
+    timestamp: u64,
+    index: usize,
+    last_index: usize,
     bundle: Vec<i8>,
     trunk: Vec<i8>,
     branch: Vec<i8>,
     tag: String,
-    attachment_ts: String,
-    attachment_lbts: String,
-    attachment_ubts: String,
+    attachment_ts: u64,
+    attachment_lbts: u64,
+    attachment_ubts: u64,
     nonce: String,
 }
 
 impl From<&Transaction> for TransactionDef {
     fn from(transaction: &Transaction) -> Self {
         TransactionDef {
-            payload: serde_json::to_string(transaction.payload()).unwrap(),
-            address: serde_json::to_string(transaction.address()).unwrap(),
-            value: serde_json::to_string(transaction.value()).unwrap(),
-            obsolete_tag: serde_json::to_string(transaction.obsolete_tag()).unwrap(),
-            timestamp: serde_json::to_string(transaction.timestamp()).unwrap(),
-            index: serde_json::to_string(transaction.index()).unwrap(),
-            last_index: serde_json::to_string(transaction.last_index()).unwrap(),
+            payload: format!("{:?}", transaction.payload().to_inner().as_i8_slice()),
+            address: format!("{:?}", transaction.address().to_inner().as_i8_slice()),
+            value: *transaction.value().to_inner(),
+            obsolete_tag: format!("{:?}", transaction.obsolete_tag().to_inner().as_i8_slice()),
+            timestamp: *transaction.timestamp().to_inner(),
+            index: *transaction.index().to_inner(),
+            last_index: *transaction.last_index().to_inner(),
             bundle: transaction.bundle().as_bytes().to_vec(),
             trunk: transaction.trunk().as_bytes().to_vec(),
             branch: transaction.branch().as_bytes().to_vec(),
-            tag: serde_json::to_string(transaction.tag()).unwrap(),
-            attachment_ts: serde_json::to_string(transaction.attachment_ts()).unwrap(),
-            attachment_lbts: serde_json::to_string(transaction.attachment_lbts()).unwrap(),
-            attachment_ubts: serde_json::to_string(transaction.attachment_ubts()).unwrap(),
-            nonce: serde_json::to_string(transaction.nonce()).unwrap(),
+            tag: format!("{:?}", transaction.tag().to_inner().as_i8_slice()),
+            attachment_ts: *transaction.attachment_ts().to_inner(),
+            attachment_lbts: *transaction.attachment_lbts().to_inner(),
+            attachment_ubts: *transaction.attachment_ubts().to_inner(),
+            nonce: format!("{:?}", transaction.nonce().to_inner().as_i8_slice()),
         }
     }
 }
@@ -599,7 +603,7 @@ impl WereAddressesSpentFromResponseBuilder {
     }
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug)]
 /// Address can be used as input to spend balance
 pub struct Input {
     pub(crate) address: Address,

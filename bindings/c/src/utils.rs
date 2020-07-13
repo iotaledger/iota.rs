@@ -1,8 +1,8 @@
 use std::slice;
 
-use iota::crypto::Kerl;
-use iota::signing::{
-    IotaSeed, PrivateKey, PrivateKeyGenerator, PublicKey, Seed, WotsPrivateKeyGeneratorBuilder,
+use iota::crypto::ternary::Kerl;
+use iota::signing::ternary::{
+    TernarySeed, PrivateKey, PrivateKeyGenerator, PublicKey, Seed, WotsSpongePrivateKeyGeneratorBuilder,
     WotsSecurityLevel,
 };
 use iota::ternary::Trits;
@@ -15,17 +15,17 @@ pub extern "C" fn iota_address_gen(seed: *const i8, index: u64) -> *const i8 {
         slice::from_raw_parts(seed, 243)
     };
     let seed =
-        IotaSeed::<Kerl>::from_buf(Trits::try_from_raw(seed, 243).unwrap().to_owned()).unwrap();
+        TernarySeed::<Kerl>::from_buf(Trits::try_from_raw(seed, 243).unwrap().to_owned()).unwrap();
 
-    let address = WotsPrivateKeyGeneratorBuilder::<Kerl>::default()
+    let address = WotsSpongePrivateKeyGeneratorBuilder::<Kerl>::default()
         .security_level(WotsSecurityLevel::Low)
         .build()
         .unwrap()
-        .generate(&seed, index)
+        .generate_from_seed(&seed, index)
         .unwrap()
         .generate_public_key()
         .unwrap();
-    let ptr = address.as_bytes().as_ptr();
+    let ptr = address.to_trits().as_i8_slice().as_ptr();
     std::mem::forget(address);
 
     ptr

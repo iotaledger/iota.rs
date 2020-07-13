@@ -1,7 +1,7 @@
 use crate::error::Result;
-use iota_bundle_preview::{Hash, Transaction};
-use iota_crypto_preview::{Kerl, Sponge};
-use iota_ternary_preview::{T1B1Buf, TritBuf};
+use bee_crypto::ternary::{Hash, Kerl, Sponge};
+use bee_ternary::{T1B1Buf, TritBuf};
+use bee_transaction::bundled::BundledTransaction as Transaction;
 
 use crate::Client;
 
@@ -55,14 +55,18 @@ impl SendTrytesBuilder {
             gtta = gtta.reference(&hash);
         }
         let res = gtta.send().await?;
-        let mut trunk = res.trunk_transaction.as_trits().to_owned();
+        let mut trunk = res.trunk_transaction;
         let mut trytes = Vec::new();
         for tx in self.trytes {
             let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
-            tx.into_trits_allocated(&mut trits);
-            trits.copy_raw_bytes(&trunk, 7290, 243);
-            trits.copy_raw_bytes(res.branch_transaction.as_trits(), 7533, 243);
-            trunk = Kerl::default().digest(&trits).unwrap();
+            tx.into_trits_allocated(trits.as_slice_mut());
+            trits.subslice_mut(7290..7533).copy_from(trunk.as_trits());
+            trits
+                .subslice_mut(7533..7776)
+                .copy_from(res.branch_transaction.as_trits());
+            trunk
+                .0
+                .copy_from_slice(Kerl::default().digest(&trits).unwrap().as_i8_slice());
             trytes.push(
                 Transaction::from_trits(&trits).expect("Fail to convert trits to transaction"),
             );

@@ -7,10 +7,10 @@
 //! ```
 use anyhow::Result;
 use iota::{
-    bundle::{Address, TransactionField},
+    transaction::bundled::{Address, BundledTransactionField},
     client::Transfer,
-    crypto::Kerl,
-    signing::{IotaSeed, Seed},
+    crypto::ternary::Kerl,
+    signing::ternary::{TernarySeed, Seed},
     ternary::{T1B1Buf, TryteBuf},
 };
 use iota_conversion::Trinary;
@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
     let res = iota::Client::send_transfers(Some(
-        &IotaSeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(
                 "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
             )

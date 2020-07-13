@@ -1,14 +1,14 @@
-use iota::bundle;
+use iota::transaction::bundled as bundle;
 use iota::client::Transfer;
-use iota::crypto::Kerl;
-use iota::signing::{IotaSeed, Seed};
+use iota::crypto::ternary::Kerl;
+use iota::signing::ternary::{TernarySeed, Seed};
 use std::sync::atomic;
 
-pub struct CSeed(pub(crate) IotaSeed<Kerl>);
+pub struct CSeed(pub(crate) TernarySeed<Kerl>);
 
 #[no_mangle]
 pub extern "C" fn iota_seed_new() -> *mut CSeed {
-    Box::into_raw(Box::new(CSeed(IotaSeed::new())))
+    Box::into_raw(Box::new(CSeed(TernarySeed::new())))
 }
 
 #[no_mangle]
@@ -18,7 +18,7 @@ pub extern "C" fn iota_seed_free(ptr: *mut CSeed) {
     }
     unsafe {
         //Box::from_raw(ptr);
-        std::ptr::write_volatile(ptr, CSeed(IotaSeed::new()));
+        std::ptr::write_volatile(ptr, CSeed(TernarySeed::new()));
         atomic::compiler_fence(atomic::Ordering::SeqCst);
     }
 }
@@ -40,7 +40,7 @@ pub extern "C" fn iota_address_free(ptr: *mut Address) {
     }
 }
 
-pub use iota::bundle::Hash;
+pub use iota::crypto::ternary::Hash;
 
 #[no_mangle]
 pub extern "C" fn iota_hash_new() -> *mut Hash {
@@ -94,14 +94,14 @@ pub extern "C" fn iota_transfers_free(ptr: *mut Transfers) {
     }
 }
 
-pub struct Bundle(pub(crate) Vec<bundle::Transaction>);
+pub struct Bundle(pub(crate) Vec<bundle::BundledTransaction>);
 
 #[no_mangle]
 pub extern "C" fn iota_bundle_new() -> *mut Bundle {
     Box::into_raw(Box::new(Bundle(Vec::new())))
 }
 
-use iota::bundle::TransactionField;
+use iota::transaction::bundled::BundledTransactionField;
 use iota_conversion::Trinary;
 
 #[no_mangle]

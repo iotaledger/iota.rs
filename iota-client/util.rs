@@ -1,4 +1,5 @@
-use iota_bundle_preview::{Transaction, TransactionField};
+use bee_transaction::bundled::{BundledTransaction as Transaction, BundledTransactionField};
+use bee_transaction::TransactionVertex;
 use iota_conversion::{trytes, Trinary};
 
 // TODO use bee-ternary once it porvides a method.

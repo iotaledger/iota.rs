@@ -7,7 +7,7 @@
 //! ```
 use anyhow::Result;
 use iota::{
-    bundle::{Address, Tag, TransactionField},
+    transaction::bundled::{Address, Tag, BundledTransactionField},
     client::Transfer,
     ternary::TryteBuf,
 };

@@ -14,15 +14,15 @@ name = "iota_client"
 path = "lib.rs"
 
 [dependencies]
+bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
+bee-ternary = { version = "0.1.0-alpha", git = "https://github.com/iotaledger/bee.git", features = ["serde1"] }
+bee-signing = { git = "https://github.com/Alex6323/bee-p.git" }
+bee-crypto = { git = "https://github.com/Alex6323/bee-p.git" }
+iota-conversion = { version = "0.5.1", path = "../iota-conversion" }
 reqwest = { version = "0.10.6", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = "0.4.12"
-iota-bundle-preview = "0.1"
-iota-ternary-preview = "0.1"
-iota-signing-preview = "0.1"
-iota-crypto-preview = "0.1"
-iota-conversion = { version = "0.5.1", path = "../iota-conversion" }
 once_cell = "1.4.0"
 smol = {version = "0.1.18", features = ["tokio02"], optional = true }
 

@@ -6,17 +6,17 @@
 //! ```
 //! cargo run --example get_unchecked_address
 //! ```
-use iota::bundle::{Address, TransactionField};
-use iota::crypto::Kerl;
-use iota::signing::{
-    IotaSeed, PrivateKey, PrivateKeyGenerator, PublicKey, Seed, WotsPrivateKeyGeneratorBuilder,
+use iota::transaction::bundled::{Address, BundledTransactionField};
+use iota::crypto::ternary::Kerl;
+use iota::signing::ternary::{
+    TernarySeed, PrivateKey, PrivateKeyGenerator, PublicKey, Seed, WotsSpongePrivateKeyGeneratorBuilder,
     WotsSecurityLevel,
 };
 use iota::ternary::{T1B1Buf, TryteBuf};
 use iota_conversion::Trinary;
 
 fn main() {
-    let seed = IotaSeed::<Kerl>::from_buf(
+    let seed = TernarySeed::<Kerl>::from_buf(
         TryteBuf::try_from_str(
             "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
         )
@@ -27,15 +27,15 @@ fn main() {
     .unwrap();
 
     let address: Address = Address::try_from_inner(
-        WotsPrivateKeyGeneratorBuilder::<Kerl>::default()
+        WotsSpongePrivateKeyGeneratorBuilder::<Kerl>::default()
             .security_level(WotsSecurityLevel::Medium)
             .build()
             .unwrap()
-            .generate(&seed, 3)
+            .generate_from_seed(&seed, 3)
             .unwrap()
             .generate_public_key()
             .unwrap()
-            .trits()
+            .to_trits()
             .to_owned(),
     )
     .unwrap();

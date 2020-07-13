@@ -8,11 +8,15 @@ use crate::util::tx_trytes;
 use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
-use iota_bundle_preview::{Address, Hash, Transaction, TransactionField};
+use bee_crypto::ternary::Hash;
+use bee_crypto::ternary::Kerl;
+use bee_signing::ternary::TernarySeed as Seed;
+use bee_ternary::{T1B1Buf, TryteBuf};
+use bee_transaction::bundled::{
+    Address, BundledTransaction as Transaction, BundledTransactionField,
+};
+use bee_transaction::TransactionVertex;
 use iota_conversion::Trinary;
-use iota_crypto_preview::Kerl;
-use iota_signing_preview::IotaSeed;
-use iota_ternary_preview::TryteBuf;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 
@@ -255,7 +259,7 @@ impl Client {
     /// [`threshold`]: ../extended/struct.GetInputsBuilder.html#method.threshold
     /// [`index`]: ../extended/struct.GetInputsBuilder.html#method.index
     /// [`security`]: ../extended/struct.GetInputsBuilder.html#method.security
-    pub fn get_inputs(seed: &IotaSeed<Kerl>) -> GetInputsBuilder<'_> {
+    pub fn get_inputs(seed: &Seed<Kerl>) -> GetInputsBuilder<'_> {
         GetInputsBuilder::new(seed)
     }
 
@@ -275,17 +279,17 @@ impl Client {
 
     /// Gets latest solid subtangle milestone.
     pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
-        Ok(Hash::from_inner_unchecked(
-            // TODO missing impl error on Hash
-            TryteBuf::try_from_str(
-                &Client::get_node_info()
-                    .await?
-                    .latest_solid_subtangle_milestone,
-            )
-            .unwrap()
-            .as_trits()
-            .encode(),
-        ))
+        let trits = TryteBuf::try_from_str(
+            &Client::get_node_info()
+                .await?
+                .latest_solid_subtangle_milestone,
+        )
+        .unwrap()
+        .as_trits()
+        .encode::<T1B1Buf>();
+        let mut hash = Hash::zeros();
+        hash.0.copy_from_slice(trits.as_i8_slice());
+        Ok(hash) // TODO missing impl error on Hash
     }
 
     /// Gets all transaction hashes that a node is currently requesting from its neighbors.
@@ -320,7 +324,7 @@ impl Client {
     /// [`seed`]: ../extended/struct.GetNewAddressBuilder.html#method.seed
     /// [`index`]: ../extended/struct.GetNewAddressBuilder.html#method.index
     /// [`security`]: ../extended/struct.GetNewAddressBuilder.html#method.security
-    pub fn get_new_address(seed: &IotaSeed<Kerl>) -> GetNewAddressBuilder<'_> {
+    pub fn get_new_address(seed: &Seed<Kerl>) -> GetNewAddressBuilder<'_> {
         GetNewAddressBuilder::new(seed)
     }
 
@@ -458,7 +462,7 @@ impl Client {
     /// [`inputs`]: ../extended/struct.PrepareTransfersBuilder.html#method.inputs
     /// [`remainder`]: ../extended/struct.PrepareTransfersBuilder.html#method.remainder
     /// [`security`]: ../extended/struct.PrepareTransfersBuilder.html#method.security
-    pub fn prepare_transfers(seed: Option<&IotaSeed<Kerl>>) -> PrepareTransfersBuilder<'_> {
+    pub fn prepare_transfers(seed: Option<&Seed<Kerl>>) -> PrepareTransfersBuilder<'_> {
         PrepareTransfersBuilder::new(seed)
     }
 
@@ -520,7 +524,7 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTransfersBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTransfersBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTransfersBuilder.html#method.reference
-    pub fn send_transfers(seed: Option<&IotaSeed<Kerl>>) -> SendTransfersBuilder<'_> {
+    pub fn send_transfers(seed: Option<&Seed<Kerl>>) -> SendTransfersBuilder<'_> {
         SendTransfersBuilder::new(seed)
     }
 

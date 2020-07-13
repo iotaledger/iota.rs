@@ -1,6 +1,6 @@
 use crate::error::*;
-use iota_crypto_preview::Kerl;
-use iota_signing_preview::IotaSeed;
+use bee_crypto::ternary::Kerl;
+use bee_signing::ternary::TernarySeed as Seed;
 
 use crate::response::Input;
 use crate::Client;
@@ -8,16 +8,16 @@ use crate::Client;
 /// Builder to construct GetInputs API
 //#[derive(Debug)]
 pub struct GetInputsBuilder<'a> {
-    seed: &'a IotaSeed<Kerl>,
+    seed: &'a Seed<Kerl>,
     index: u64,
     security: u8,
     threshold: u64,
 }
 
 impl<'a> GetInputsBuilder<'a> {
-    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
+    pub(crate) fn new(seed: &'a Seed<Kerl>) -> Self {
         Self {
-            seed: seed,
+            seed,
             index: 0,
             security: 2,
             threshold: 0,

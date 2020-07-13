@@ -1,5 +1,5 @@
 use crate::error::Result;
-use iota_bundle_preview::Hash;
+use bee_crypto::ternary::Hash;
 use iota_conversion::Trinary;
 
 use crate::response::{GTTAResponse, GTTAResponseBuilder};

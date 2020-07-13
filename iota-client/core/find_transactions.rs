@@ -1,5 +1,6 @@
 use crate::error::Result;
-use iota_bundle_preview::{Address, Hash, Tag, TransactionField};
+use bee_crypto::ternary::Hash;
+use bee_transaction::bundled::{Address, BundledTransactionField, Tag};
 use iota_conversion::Trinary;
 
 use crate::response::{FindTransactionsResponse, FindTransactionsResponseBuilder};
