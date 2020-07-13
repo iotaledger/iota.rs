@@ -3,6 +3,7 @@ const client = require('../node')
 
 const seed = 'RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA'
 const uri = 'https://nodes.comnet.thetangle.org'
+const bundleHash = 'MKQKKUKBRQTJEQZRSJCPOABSBEHRMDLRKFHHYYIGZPNKKCDTXHJQBORAX9KEFDBDBZDEWZFOKOCICAUBC'
 
 describe('core', () => {
     it('should get the node info', () => {
@@ -30,7 +31,9 @@ describe('core', () => {
     it('should send transfers', () => {
         client.addNode(uri)
 
-        client.sendTransfers(seed, [{ value: 0 }], 10)
+        client.sendTransfers(seed, [{
+                value: 0
+            }], 10)
             .then(transactions => {
                 assert.equal(Array.isArray(transactions), true)
                 assert.equal(transactions.length, 1)
@@ -40,11 +43,26 @@ describe('core', () => {
 
     it('should traverse bundle', () => {
         client.addNode(uri)
-        
+
         client.traverseBundle('SVHIDTVSJRHLNFXIFUVYPIWBV9IZGCSMLUZCFOEQMCXMUTHRQCESOIHHKKEVXOUGGOYOSF9ATDMBFK999')
             .then(transactions => {
                 assert.equal(Array.isArray(transactions), true)
                 assert.equal(transactions.length, 1)
             })
+    })
+
+    it('should find transactions', () => {
+        client.addNode(uri)
+        client.findTransactions([bundleHash]).then(transaction => {
+            assert.equal(transaction.hashes.length, 0)
+        })
+    })
+
+    it('should get transaction trytes', () => {
+        client.addNode(uri)
+        client.getTrytes([
+            'SVHIDTVSJRHLNFXIFUVYPIWBV9IZGCSMLUZCFOEQMCXMUTHRQCESOIHHKKEVXOUGGOYOSF9ATDMBFK999',
+            'IITL9EALLVZEGFIFBCCAHUOKHFBIIKQACBCEVVNZUEQLUJTOPXRICFRZKJDQGSVHARJANFDDAHMERS999'
+        ]).then(trytes => console.log(trytes))
     })
 })

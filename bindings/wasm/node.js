@@ -41,12 +41,12 @@ function addNode(uri) {
     return wasm.addNode(uri)
 }
 
- /**
-  * gets the node info
-  */
- function getNodeInfo() {
-     return wasm.getNodeInfo()
- }
+/**
+ * gets the node info
+ */
+function getNodeInfo() {
+    return wasm.getNodeInfo()
+}
 
 /**
  * generates a new address and validates it on the IRI node
@@ -191,6 +191,29 @@ function traverseBundle(tailTransactionHash) {
     return wasm.traverseBundle(tailTransactionHash)
 }
 
+/**
+ * Finds the transactions with the specified filters
+ *
+ * @param {Hash[]} bundleHashes bundle hashes
+ * @param {String[]} tags transaction tags
+ * @param {Hash[]} approveesHashes transaction approvees hashes
+ * @param {String[]} addresses transaction addresses
+ */
+function findTransactions(bundleHashes, tags, approveesHashes, addresses) {
+    return wasm.findTransactions(bundleHashes, tags, approveesHashes, addresses)
+}
+
+/**
+ * Gets the trytes of the transaction with the given hash
+ *
+ * @param {Hash[]} transactionHashes the transaction hash
+ *
+ * @return the transaction trytes
+ */
+function getTrytes(transactionHashes) {
+    return wasm.getTrytes(transactionHashes)
+}
+
 module.exports = {
     addNode,
     getNodeInfo,
@@ -203,5 +226,7 @@ module.exports = {
     sendTransfers,
     storeAndBroadcast,
     storeTransactions,
-    traverseBundle
+    traverseBundle,
+    findTransactions,
+    getTrytes
 }

@@ -1,6 +1,6 @@
 {
   "name": "@iota/iota-rs-wasm",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "WASM binding for the iota.rs library",
   "repository": {
     "type": "git",
