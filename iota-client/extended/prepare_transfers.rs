@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use bee_crypto::ternary::{Hash, Kerl};
-use bee_signing::ternary::{TernarySeed as Seed, WotsSecurityLevel};
+use bee_signing::ternary::{TernarySeed as Seed, wots::WotsSecurityLevel};
 use bee_ternary::{T1B1Buf, TritBuf, TryteBuf};
 use bee_transaction::bundled::{
     Address, Bundle, BundledTransactionBuilder as TransactionBuilder, BundledTransactionField,
