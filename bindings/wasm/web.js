@@ -192,6 +192,29 @@ function traverseBundle(tailTransactionHash) {
     return __getClient().then(client => client.traverseBundle(tailTransactionHash))
 }
 
+/**
+ * Finds the transactions with the specified filters
+ *
+ * @param {Hash[]} bundleHashes bundle hashes
+ * @param {String[]} tags transaction tags
+ * @param {Hash[]} approveesHashes transaction approvees hashes
+ * @param {String[]} addresses transaction addresses
+ */
+function findTransactions(bundleHashes, tags, approveesHashes, addresses) {
+    return __getClient().then(client => client.findTransactions(bundleHashes, tags, approveesHashes, addresses))
+}
+
+/**
+ * Gets the trytes of the transaction with the given hashes
+ *
+ * @param {Hash[]} transactionHashes the transaction hashes
+ *
+ * @return the transaction trytes
+ */
+function getTrytes(transactionHashes) {
+    return __getClient().then(client => client.getTrytes(transactionHashes))
+}
+
 export {
     addNode,
     getNodeInfo,
@@ -204,5 +227,7 @@ export {
     sendTransfers,
     storeAndBroadcast,
     storeTransactions,
-    traverseBundle
+    traverseBundle,
+    findTransactions,
+    getTrytes
 }
