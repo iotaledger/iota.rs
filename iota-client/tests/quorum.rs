@@ -1,8 +1,9 @@
 mod common;
 use crate::common::*;
-use iota_bundle_preview::*;
+use bee_transaction::bundled::*;
+use bee_crypto::ternary::Hash;
 use iota_client::quorum;
-use iota_ternary_preview::*;
+use bee_ternary::*;
 
 #[smol_potat::test]
 async fn quorum_get_balances() {

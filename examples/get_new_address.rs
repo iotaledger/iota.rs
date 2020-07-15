@@ -6,16 +6,16 @@
 //! cargo run --example get_new_address
 //! ```
 use anyhow::Result;
-use iota::bundle::TransactionField;
-use iota::crypto::Kerl;
-use iota::signing::{IotaSeed, Seed};
+use iota::transaction::bundled::BundledTransactionField;
+use iota::crypto::ternary::Kerl;
+use iota::signing::ternary::{TernarySeed, Seed};
 use iota::ternary::{T1B1Buf, TryteBuf};
 use iota_conversion::Trinary;
 
 #[smol_potat::main]
 async fn main() -> Result<()> {
     // Create seed from your seed trytes
-    let seed = IotaSeed::<Kerl>::from_buf(
+    let seed = TernarySeed::<Kerl>::from_buf(
         TryteBuf::try_from_str(
             "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
         )

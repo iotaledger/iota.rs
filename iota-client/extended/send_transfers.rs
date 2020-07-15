@@ -1,7 +1,7 @@
 use crate::error::Result;
-use iota_bundle_preview::{Address, Hash, Transaction};
-use iota_crypto_preview::Kerl;
-use iota_signing_preview::IotaSeed;
+use bee_crypto::ternary::{Hash, Kerl};
+use bee_signing::ternary::TernarySeed as Seed;
+use bee_transaction::bundled::{Address, BundledTransaction as Transaction};
 
 use crate::response::{Input, Transfer};
 use crate::Client;
@@ -9,7 +9,7 @@ use crate::Client;
 /// Builder to construct SendTransfers API
 //#[derive(Debug)]
 pub struct SendTransfersBuilder<'a> {
-    seed: Option<&'a IotaSeed<Kerl>>,
+    seed: Option<&'a Seed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -20,7 +20,7 @@ pub struct SendTransfersBuilder<'a> {
 }
 
 impl<'a> SendTransfersBuilder<'a> {
-    pub(crate) fn new(seed: Option<&'a IotaSeed<Kerl>>) -> Self {
+    pub(crate) fn new(seed: Option<&'a Seed<Kerl>>) -> Self {
         Self {
             seed,
             transfers: Default::default(),

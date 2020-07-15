@@ -1,5 +1,6 @@
 use crate::error::Result;
-use iota_bundle_preview::{Hash, Transaction};
+use bee_crypto::ternary::Hash;
+use bee_transaction::bundled::BundledTransaction as Transaction;
 use iota_conversion::Trinary;
 
 use crate::response::{AttachToTangleResponse, AttachToTangleResponseBuilder};

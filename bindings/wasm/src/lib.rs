@@ -1,9 +1,8 @@
-use iota::bundle::{Address, Tag, TransactionField};
+use iota::transaction::bundled::{Address, Tag, BundledTransaction as Transaction, BundledTransactionField};
 use iota::client::response::{TransactionDef, Transfer};
-use iota::crypto::Kerl;
-use iota::signing::{IotaSeed, Seed};
+use iota::crypto::ternary::{Kerl, Hash};
+use iota::signing::ternary::{TernarySeed, Seed};
 use iota::ternary::{T1B1Buf, TryteBuf};
-use iota_bundle_preview::{Hash, Transaction};
 use iota_conversion::Trinary;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -61,12 +60,12 @@ fn js_error<T: std::fmt::Debug>(e: T) -> JsValue {
 }
 
 fn create_hash_from_string(bytes: String) -> Result<Hash, JsValue> {
-    let hash = Hash::from_inner_unchecked(
-        TryteBuf::try_from_str(&bytes)
-            .map_err(js_error)?
-            .as_trits()
-            .encode(),
-    );
+    let trits = TryteBuf::try_from_str(&bytes)
+    .unwrap()
+    .as_trits()
+    .encode::<T1B1Buf>();
+    let mut hash = Hash::zeros();
+    hash.0.copy_from_slice(trits.as_i8_slice());
     Ok(hash)
 }
 
@@ -306,39 +305,39 @@ pub async fn get_inclusion_states(
     Ok(response)
 }
 
-#[wasm_bindgen(js_name = "getInputs")]
-pub async fn get_inputs(
-    seed: String,
-    index: Option<f64>,
-    security: Option<u8>,
-    threshold: Option<f64>,
-) -> Result<JsValue, JsValue> {
-    let encoded_seed = IotaSeed::<Kerl>::from_buf(
-        TryteBuf::try_from_str(&seed)
-            .map_err(js_error)?
-            .as_trits()
-            .encode::<T1B1Buf>(),
-    )
-    .map_err(js_error)?;
-    let mut builder = iota::Client::get_inputs(&encoded_seed);
+// #[wasm_bindgen(js_name = "getInputs")]
+// pub async fn get_inputs(
+//     seed: String,
+//     index: Option<f64>,
+//     security: Option<u8>,
+//     threshold: Option<f64>,
+// ) -> Result<JsValue, JsValue> {
+//     let encoded_seed = TernarySeed::<Kerl>::from_buf(
+//         TryteBuf::try_from_str(&seed)
+//             .map_err(js_error)?
+//             .as_trits()
+//             .encode::<T1B1Buf>(),
+//     )
+//     .map_err(js_error)?;
+//     let mut builder = iota::Client::get_inputs(&encoded_seed);
 
-    if let Some(index) = index {
-        builder = builder.index(index as u64);
-    }
+//     if let Some(index) = index {
+//         builder = builder.index(index as u64);
+//     }
 
-    if let Some(security) = security {
-        builder = builder.security(security);
-    }
+//     if let Some(security) = security {
+//         builder = builder.security(security);
+//     }
 
-    if let Some(threshold) = threshold {
-        builder = builder.threshold(threshold as u64);
-    }
+//     if let Some(threshold) = threshold {
+//         builder = builder.threshold(threshold as u64);
+//     }
 
-    let inputs = builder.generate().await.map_err(js_error)?;
+//     let inputs = builder.generate().await.map_err(js_error)?;
 
-    let response = response_to_js_value(inputs)?;
-    Ok(response)
-}
+//     let response = response_to_js_value(inputs)?;
+//     Ok(response)
+// }
 
 #[wasm_bindgen(js_name = "getLatestInclusion")]
 pub async fn get_latest_inclusion(transaction_hashes: JsValue) -> Result<JsValue, JsValue> {
@@ -384,7 +383,7 @@ pub async fn get_new_address(
     index: Option<f64>,
     security: Option<u8>,
 ) -> Result<JsValue, JsValue> {
-    let encoded_seed = IotaSeed::<Kerl>::from_buf(
+    let encoded_seed = TernarySeed::<Kerl>::from_buf(
         TryteBuf::try_from_str(&seed)
             .map_err(js_error)?
             .as_trits()
@@ -503,7 +502,7 @@ pub async fn is_promotable(tail_hash: JsValue) -> Result<bool, JsValue> {
 
 #[wasm_bindgen(js_name = "prepareTransfers")]
 pub async fn prepare_transfers(seed: String) -> Result<JsValue, JsValue> {
-    let encoded_seed = IotaSeed::<Kerl>::from_buf(
+    let encoded_seed = TernarySeed::<Kerl>::from_buf(
         TryteBuf::try_from_str(&seed)
             .map_err(js_error)?
             .as_trits()
@@ -568,7 +567,7 @@ pub async fn send_transfers(
     transfers: JsValue,
     min_weight_magnitude: Option<u8>,
 ) -> Result<JsValue, JsValue> {
-    let encoded_seed = IotaSeed::<Kerl>::from_buf(
+    let encoded_seed = TernarySeed::<Kerl>::from_buf(
         TryteBuf::try_from_str(&seed)
             .map_err(js_error)?
             .as_trits()

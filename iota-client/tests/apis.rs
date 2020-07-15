@@ -1,11 +1,11 @@
 mod common;
 use crate::common::*;
-use iota_bundle_preview::*;
+use bee_crypto::ternary::*;
+use bee_signing::ternary::*;
+use bee_ternary::*;
+use bee_transaction::bundled::*;
 use iota_client::response::*;
 use iota_client::Client;
-use iota_crypto_preview::*;
-use iota_signing_preview::*;
-use iota_ternary_preview::*;
 
 #[smol_potat::test]
 async fn test_add_neighbors() {
@@ -194,7 +194,7 @@ async fn test_get_inclusion_states() {
 async fn test_get_inputs() {
     client_init();
     let _ = Client::get_inputs(
-        &IotaSeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -253,7 +253,7 @@ async fn test_get_missing_transactions() {
 async fn test_get_new_address() {
     client_init();
     let _ = Client::get_new_address(
-        &IotaSeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -363,7 +363,7 @@ async fn test_prepare_transfers_no_value() {
 
     client_init();
     let _ = Client::prepare_transfers(Some(
-        &IotaSeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -426,7 +426,7 @@ async fn test_send_transfers_no_value() {
 
     client_init();
     let _ = Client::send_transfers(Some(
-        &IotaSeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_buf(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -491,8 +491,8 @@ async fn test_were_addresses_spent_from() {
     assert_eq!(res.states[0], false);
 }
 
-fn tx() -> Transaction {
-    TransactionBuilder::new()
+fn tx() -> BundledTransaction {
+    BundledTransactionBuilder::new()
         .with_payload(Payload::zeros())
         .with_address(Address::zeros())
         .with_value(Value::from_inner_unchecked(0))

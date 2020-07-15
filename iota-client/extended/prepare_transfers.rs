@@ -1,13 +1,13 @@
 use std::cmp::Ordering;
 
-use iota_bundle_preview::{
-    Address, Bundle, Hash, Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp,
-    TransactionBuilder, TransactionField, Value, PAYLOAD_TRIT_LEN,
+use bee_crypto::ternary::{Hash, Kerl};
+use bee_signing::ternary::{TernarySeed as Seed, wots::WotsSecurityLevel};
+use bee_ternary::{T1B1Buf, TritBuf, TryteBuf};
+use bee_transaction::bundled::{
+    Address, Bundle, BundledTransactionBuilder as TransactionBuilder, BundledTransactionField,
+    Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp, Value, PAYLOAD_TRIT_LEN,
 };
 use iota_conversion::trytes_converter::to_trytes;
-use iota_crypto_preview::Kerl;
-use iota_signing_preview::{IotaSeed, WotsSecurityLevel};
-use iota_ternary_preview::{T1B1Buf, TritBuf, TryteBuf};
 
 use crate::error::*;
 use crate::response::{Input, Transfer};
@@ -16,7 +16,7 @@ use crate::Client;
 /// Builder to construct PrepareTransfers API
 //#[derive(Debug)]
 pub struct PrepareTransfersBuilder<'a> {
-    seed: Option<&'a IotaSeed<Kerl>>,
+    seed: Option<&'a Seed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -24,7 +24,7 @@ pub struct PrepareTransfersBuilder<'a> {
 }
 
 impl<'a> PrepareTransfersBuilder<'a> {
-    pub(crate) fn new(seed: Option<&'a IotaSeed<Kerl>>) -> Self {
+    pub(crate) fn new(seed: Option<&'a Seed<Kerl>>) -> Self {
         Self {
             seed,
             transfers: Default::default(),
@@ -104,7 +104,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
 
                 for i in message.chunks(PAYLOAD_TRIT_LEN) {
                     let mut trits = TritBuf::<T1B1Buf>::zeros(PAYLOAD_TRIT_LEN);
-                    trits.copy_raw_bytes(i, 0, i.len());
+                    trits.subslice_mut(0..i.len()).copy_from(i);
                     let payload = Payload::from_inner_unchecked(trits);
 
                     bundle.push(

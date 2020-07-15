@@ -1,23 +1,26 @@
 use crate::error::Result;
-use iota_bundle_preview::{Address, TransactionField};
-use iota_crypto_preview::Kerl;
-use iota_signing_preview::{
-    IotaSeed, PrivateKey, PrivateKeyGenerator, PublicKey, WotsPrivateKeyGeneratorBuilder,
-    WotsSecurityLevel,
+use bee_crypto::ternary::Kerl;
+use bee_signing::ternary::{
+    PrivateKey, PrivateKeyGenerator, PublicKey, TernarySeed as Seed,
+    wots::{
+        WotsSecurityLevel,
+        WotsSpongePrivateKeyGeneratorBuilder,
+    },
 };
+use bee_transaction::bundled::{Address, BundledTransactionField};
 
 use crate::Client;
 
 /// Builder to construct GetNewAddress API
 //#[derive(Debug)]
 pub struct GetNewAddressBuilder<'a> {
-    seed: &'a IotaSeed<Kerl>,
+    seed: &'a Seed<Kerl>,
     index: u64,
     security: WotsSecurityLevel,
 }
 
 impl<'a> GetNewAddressBuilder<'a> {
-    pub(crate) fn new(seed: &'a IotaSeed<Kerl>) -> Self {
+    pub(crate) fn new(seed: &'a Seed<Kerl>) -> Self {
         Self {
             seed: seed,
             index: 0,
@@ -49,15 +52,15 @@ impl<'a> GetNewAddressBuilder<'a> {
         loop {
             // TODO impl Error trait in iota_signing_preview
             let address = Address::from_inner_unchecked(
-                WotsPrivateKeyGeneratorBuilder::<Kerl>::default()
+                WotsSpongePrivateKeyGeneratorBuilder::<Kerl>::default()
                     .security_level(self.security)
                     .build()
                     .unwrap()
-                    .generate(self.seed, index)
+                    .generate_from_seed(self.seed, index)
                     .unwrap()
                     .generate_public_key()
                     .unwrap()
-                    .trits()
+                    .to_trits()
                     .to_owned(),
             );
 

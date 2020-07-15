@@ -5,9 +5,10 @@ use crate::error::*;
 use crate::response::*;
 use crate::Client;
 
-use iota_bundle_preview::{Address, Hash, TransactionField};
+use bee_transaction::bundled::{Address, BundledTransactionField};
+use bee_crypto::ternary::Hash;
 use iota_conversion::Trinary;
-use iota_ternary_preview::TryteBuf;
+use bee_ternary::TryteBuf;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
