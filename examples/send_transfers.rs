@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
     let res = iota::Client::send_transfers(Some(
-        &TernarySeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_trits(
             TryteBuf::try_from_str(
                 "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
             )
