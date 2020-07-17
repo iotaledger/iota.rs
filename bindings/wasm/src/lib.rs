@@ -383,7 +383,7 @@ pub async fn get_new_address(
     index: Option<f64>,
     security: Option<u8>,
 ) -> Result<JsValue, JsValue> {
-    let encoded_seed = TernarySeed::<Kerl>::from_buf(
+    let encoded_seed = TernarySeed::<Kerl>::from_trits(
         TryteBuf::try_from_str(&seed)
             .map_err(js_error)?
             .as_trits()
@@ -502,7 +502,7 @@ pub async fn is_promotable(tail_hash: JsValue) -> Result<bool, JsValue> {
 
 #[wasm_bindgen(js_name = "prepareTransfers")]
 pub async fn prepare_transfers(seed: String) -> Result<JsValue, JsValue> {
-    let encoded_seed = TernarySeed::<Kerl>::from_buf(
+    let encoded_seed = TernarySeed::<Kerl>::from_trits(
         TryteBuf::try_from_str(&seed)
             .map_err(js_error)?
             .as_trits()
@@ -567,7 +567,7 @@ pub async fn send_transfers(
     transfers: JsValue,
     min_weight_magnitude: Option<u8>,
 ) -> Result<JsValue, JsValue> {
-    let encoded_seed = TernarySeed::<Kerl>::from_buf(
+    let encoded_seed = TernarySeed::<Kerl>::from_trits(
         TryteBuf::try_from_str(&seed)
             .map_err(js_error)?
             .as_trits()
