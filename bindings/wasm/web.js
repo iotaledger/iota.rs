@@ -225,7 +225,7 @@ export {
     broadcastTransactions,
     checkConsistency,
     sendTransfers,
-    storeAndBroadcast,
+    storeAndBroadCast,
     storeTransactions,
     traverseBundle,
     findTransactions,
