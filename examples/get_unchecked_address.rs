@@ -19,7 +19,7 @@ use iota::ternary::{T1B1Buf, TryteBuf};
 use iota_conversion::Trinary;
 
 fn main() {
-    let seed = TernarySeed::<Kerl>::from_buf(
+    let seed = TernarySeed::<Kerl>::from_trits(
         TryteBuf::try_from_str(
             "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
         )

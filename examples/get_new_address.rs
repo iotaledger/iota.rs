@@ -15,7 +15,7 @@ use iota_conversion::Trinary;
 #[smol_potat::main]
 async fn main() -> Result<()> {
     // Create seed from your seed trytes
-    let seed = TernarySeed::<Kerl>::from_buf(
+    let seed = TernarySeed::<Kerl>::from_trits(
         TryteBuf::try_from_str(
             "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
         )

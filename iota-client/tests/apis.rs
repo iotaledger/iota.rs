@@ -194,7 +194,7 @@ async fn test_get_inclusion_states() {
 async fn test_get_inputs() {
     client_init();
     let _ = Client::get_inputs(
-        &TernarySeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_trits(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -253,7 +253,7 @@ async fn test_get_missing_transactions() {
 async fn test_get_new_address() {
     client_init();
     let _ = Client::get_new_address(
-        &TernarySeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_trits(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -363,7 +363,7 @@ async fn test_prepare_transfers_no_value() {
 
     client_init();
     let _ = Client::prepare_transfers(Some(
-        &TernarySeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_trits(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
@@ -426,7 +426,7 @@ async fn test_send_transfers_no_value() {
 
     client_init();
     let _ = Client::send_transfers(Some(
-        &TernarySeed::<Kerl>::from_buf(
+        &TernarySeed::<Kerl>::from_trits(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()
                 .as_trits()
