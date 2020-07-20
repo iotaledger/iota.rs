@@ -315,7 +315,6 @@ impl Client {
     }
 
     /// Generates and returns a new address by calling `find_transactions` until the first unused address is detected.
-    /// This stops working after a snapshot.
     /// # Parameters
     /// * [`seed`] - An iota seed.
     /// * [`index`] - (Optional) Key index to start search at. Default is 0.
