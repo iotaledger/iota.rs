@@ -5,7 +5,6 @@ use bee_signing::ternary::*;
 use bee_ternary::*;
 use bee_transaction::bundled::*;
 use iota_client::response::*;
-use iota_client::Client;
 
 #[smol_potat::test]
 async fn test_attach_to_tangle() {
