@@ -7,9 +7,9 @@
 //! ```
 use anyhow::Result;
 use iota::{
-    transaction::bundled::{Address, Tag, BundledTransactionField},
     client::Transfer,
     ternary::TryteBuf,
+    transaction::bundled::{Address, BundledTransactionField, Tag},
 };
 use iota_conversion::Trinary;
 
@@ -49,11 +49,13 @@ async fn main() -> Result<()> {
     });
 
     // Create a client instance
-    iota::Client::add_node("https://nodes.comnet.thetangle.org")?;
+    let mut iota = iota::Client::new();
+    iota.add_node("https://nodes.comnet.thetangle.org")?;
     // Call send_transfers api
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
-    let res = iota::Client::send(None)
+    let res = iota
+        .send(None)
         // Input the transfers
         .transfers(transfers)
         // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.

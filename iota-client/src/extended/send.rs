@@ -9,6 +9,7 @@ use crate::Client;
 /// Builder to construct Send API
 //#[derive(Debug)]
 pub struct SendBuilder<'a> {
+    client: &'a Client,
     seed: Option<&'a Seed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
@@ -20,8 +21,9 @@ pub struct SendBuilder<'a> {
 }
 
 impl<'a> SendBuilder<'a> {
-    pub(crate) fn new(seed: Option<&'a Seed<Kerl>>) -> Self {
+    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed<Kerl>>) -> Self {
         Self {
+            client,
             seed,
             transfers: Default::default(),
             security: 2,
@@ -78,7 +80,9 @@ impl<'a> SendBuilder<'a> {
 
     /// Send SendTransfers request
     pub async fn send(self) -> Result<Vec<Transaction>> {
-        let mut transfer = Client::prepare_transfers(self.seed)
+        let mut transfer = self
+            .client
+            .prepare_transfers(self.seed)
             .transfers(self.transfers)
             .security(self.security);
 
@@ -92,7 +96,9 @@ impl<'a> SendBuilder<'a> {
 
         let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().map(|x| x).collect();
         trytes.reverse();
-        let mut send_trytes = Client::send_trytes()
+        let mut send_trytes = self
+            .client
+            .send_trytes()
             .trytes(trytes)
             .depth(self.depth)
             .min_weight_magnitude(self.min_weight_magnitude);

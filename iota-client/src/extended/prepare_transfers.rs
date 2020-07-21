@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use bee_crypto::ternary::{Hash, Kerl};
-use bee_signing::ternary::{TernarySeed as Seed, wots::WotsSecurityLevel};
+use bee_signing::ternary::{wots::WotsSecurityLevel, TernarySeed as Seed};
 use bee_ternary::{T1B1Buf, TritBuf, TryteBuf};
 use bee_transaction::bundled::{
     Address, Bundle, BundledTransactionBuilder as TransactionBuilder, BundledTransactionField,
@@ -16,6 +16,7 @@ use crate::Client;
 /// Builder to construct PrepareTransfers API
 //#[derive(Debug)]
 pub struct PrepareTransfersBuilder<'a> {
+    client: &'a Client,
     seed: Option<&'a Seed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
@@ -24,8 +25,9 @@ pub struct PrepareTransfersBuilder<'a> {
 }
 
 impl<'a> PrepareTransfersBuilder<'a> {
-    pub(crate) fn new(seed: Option<&'a Seed<Kerl>>) -> Self {
+    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed<Kerl>>) -> Self {
         Self {
+            client,
             seed,
             transfers: Default::default(),
             security: 2,
@@ -66,7 +68,8 @@ impl<'a> PrepareTransfersBuilder<'a> {
             match self.inputs {
                 Some(i) => i,
                 None => {
-                    Client::get_inputs(self.seed.ok_or(Error::MissingSeed)?)
+                    self.client
+                        .get_inputs(self.seed.ok_or(Error::MissingSeed)?)
                         .index(0)
                         .security(self.security)
                         .threshold(total_output)
@@ -201,7 +204,8 @@ impl<'a> PrepareTransfersBuilder<'a> {
             let remainder = match self.remainder {
                 Some(r) => r,
                 None => {
-                    Client::get_new_address(self.seed.ok_or(Error::MissingSeed)?)
+                    self.client
+                        .generate_new_address(self.seed.ok_or(Error::MissingSeed)?)
                         .security(self.security)
                         .index(inputs.last().unwrap().index + 1)
                         .generate()
@@ -242,10 +246,10 @@ impl<'a> PrepareTransfersBuilder<'a> {
 
         if total_output > 0 {
             let inputs: Vec<(u64, Address, WotsSecurityLevel)> = inputs
-            .into_iter()
-            .map(|i| (i.index, i.address, security))
-            .collect();
-            
+                .into_iter()
+                .map(|i| (i.index, i.address, security))
+                .collect();
+
             Ok(bundle
                 .seal()
                 .expect("Fail to seal bundle")
@@ -264,6 +268,5 @@ impl<'a> PrepareTransfersBuilder<'a> {
                 .build()
                 .expect("Fail to build bundle"))
         }
-        
     }
 }

@@ -8,6 +8,7 @@ use crate::Client;
 /// Builder to construct GetInputs API
 //#[derive(Debug)]
 pub struct GetInputsBuilder<'a> {
+    client: &'a Client,
     seed: &'a Seed<Kerl>,
     index: u64,
     security: u8,
@@ -15,8 +16,9 @@ pub struct GetInputsBuilder<'a> {
 }
 
 impl<'a> GetInputsBuilder<'a> {
-    pub(crate) fn new(seed: &'a Seed<Kerl>) -> Self {
+    pub(crate) fn new(client: &'a Client, seed: &'a Seed<Kerl>) -> Self {
         Self {
+            client,
             seed,
             index: 0,
             security: 2,
@@ -54,13 +56,17 @@ impl<'a> GetInputsBuilder<'a> {
         let mut zero_balance_warning = 5;
 
         while zero_balance_warning != 0 {
-            let (next_index, address) = Client::get_new_address(self.seed)
+            let (next_index, address) = self
+                .client
+                .generate_new_address(self.seed)
                 .index(index)
                 .security(self.security)
                 .generate()
                 .await?;
 
-            let balance = Client::get_balances()
+            let balance = self
+                .client
+                .get_balances()
                 .addresses(&[address.clone()])
                 .send()
                 .await?

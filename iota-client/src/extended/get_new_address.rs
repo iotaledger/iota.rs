@@ -1,11 +1,8 @@
 use crate::error::Result;
 use bee_crypto::ternary::Kerl;
 use bee_signing::ternary::{
+    wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
     PrivateKey, PrivateKeyGenerator, PublicKey, TernarySeed as Seed,
-    wots::{
-        WotsSecurityLevel,
-        WotsSpongePrivateKeyGeneratorBuilder,
-    },
 };
 use bee_transaction::bundled::{Address, BundledTransactionField};
 
@@ -13,16 +10,18 @@ use crate::Client;
 
 /// Builder to construct GetNewAddress API
 //#[derive(Debug)]
-pub struct GetNewAddressBuilder<'a> {
+pub struct GenerateNewAddressBuilder<'a> {
+    client: &'a Client,
     seed: &'a Seed<Kerl>,
     index: u64,
     security: WotsSecurityLevel,
 }
 
-impl<'a> GetNewAddressBuilder<'a> {
-    pub(crate) fn new(seed: &'a Seed<Kerl>) -> Self {
+impl<'a> GenerateNewAddressBuilder<'a> {
+    pub(crate) fn new(client: &'a Client, seed: &'a Seed<Kerl>) -> Self {
         Self {
-            seed: seed,
+            client,
+            seed,
             index: 0,
             security: WotsSecurityLevel::Medium,
         }
@@ -64,7 +63,7 @@ impl<'a> GetNewAddressBuilder<'a> {
                     .to_owned(),
             );
 
-            if let Ok(false) = Client::is_address_used(&address).await {
+            if let Ok(false) = self.client.is_address_used(&address).await {
                 break Ok((index, address));
             }
 

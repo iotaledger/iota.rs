@@ -320,36 +320,6 @@ impl GetInclusionStatesResponseBuilder {
     }
 }
 
-/// getNeighbors Response Type
-#[derive(Clone, Debug, Serialize)]
-pub struct GetNeighborsResponse {
-    /// Vector of `NeighborResponse`
-    pub neighbors: Vec<NeighborResponse>,
-}
-
-/// getNeighbors Response Type
-#[derive(Clone, Debug, Deserialize)]
-pub(crate) struct GetNeighborsResponseBuilder {
-    neighbors: Option<Vec<NeighborResponse>>,
-    error: Option<String>,
-    exception: Option<String>,
-}
-
-impl GetNeighborsResponseBuilder {
-    pub(crate) async fn build(self) -> Result<GetNeighborsResponse> {
-        let mut neighbors = Vec::new();
-        if let Some(exception) = self.exception {
-            return Err(Error::ResponseError(exception));
-        } else if let Some(error) = self.error {
-            return Err(Error::ResponseError(error));
-        } else if let Some(s) = self.neighbors {
-            neighbors = s;
-        }
-
-        Ok(GetNeighborsResponse { neighbors })
-    }
-}
-
 /// getNodeAPIConfiguration Response Type
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetNodeAPIConfigurationResponse {

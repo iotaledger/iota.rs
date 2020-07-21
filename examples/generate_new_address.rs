@@ -6,10 +6,10 @@
 //! cargo run --example get_new_address
 //! ```
 use anyhow::Result;
-use iota::transaction::bundled::BundledTransactionField;
 use iota::crypto::ternary::Kerl;
-use iota::signing::ternary::{TernarySeed, Seed};
+use iota::signing::ternary::{Seed, TernarySeed};
 use iota::ternary::{T1B1Buf, TryteBuf};
+use iota::transaction::bundled::BundledTransactionField;
 use iota_conversion::Trinary;
 
 #[smol_potat::main]
@@ -26,11 +26,9 @@ async fn main() -> Result<()> {
     .unwrap();
 
     // The response of get_new_address is a tuple of an adress with its corresponding index from seed.
-    iota::Client::add_node("https://nodes.comnet.thetangle.org")?;
-    let (index, address) = iota::Client::get_new_address(&seed)
-        .generate()
-        .await
-        .unwrap();
+    let mut iota = iota::Client::new();
+    iota.add_node("https://nodes.comnet.thetangle.org")?;
+    let (index, address) = iota.generate_new_address(&seed).generate().await.unwrap();
 
     println!(
         "Index: {}, Address:{:?}",

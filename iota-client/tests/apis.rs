@@ -8,17 +8,10 @@ use iota_client::response::*;
 use iota_client::Client;
 
 #[smol_potat::test]
-async fn test_add_neighbors() {
-    client_init();
-    let _ = Client::add_neighbors(vec!["tcp://0.0.0.0:15600".to_owned()])
-        .await
-        .unwrap();
-}
-
-#[smol_potat::test]
 async fn test_attach_to_tangle() {
-    client_init();
-    let res = Client::attach_to_tangle()
+    let client = client_init();
+    let res = client
+        .attach_to_tangle()
         .trunk_transaction(&Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_TRUNK_HASH)
                 .unwrap()
@@ -42,34 +35,36 @@ async fn test_attach_to_tangle() {
 
 #[smol_potat::test]
 async fn test_broadcast_bundle() {
-    client_init();
-    let _ = Client::broadcast_bundle(&Hash::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    ))
-    .await
-    .unwrap();
+    let client = client_init();
+    let _ = client
+        .broadcast_bundle(&Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
 async fn test_broadcast_transactions() {
-    client_init();
-    let _ = Client::broadcast_transactions(&[tx()]).await.unwrap();
+    let client = client_init();
+    let _ = client.broadcast_transactions(&[tx()]).await.unwrap();
 }
 
 #[smol_potat::test]
 async fn test_check_consistency() {
-    client_init();
-    let res = Client::check_consistency(&[Hash::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    )])
-    .await
-    .unwrap();
+    let client = client_init();
+    let res = client
+        .check_consistency(&[Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        )])
+        .await
+        .unwrap();
 
     match res.state {
         true => assert!(res.info.is_none()),
@@ -79,8 +74,9 @@ async fn test_check_consistency() {
 
 #[smol_potat::test]
 async fn test_find_tx_by_bundle() {
-    client_init();
-    let _ = Client::find_transactions()
+    let client = client_init();
+    let _ = client
+        .find_transactions()
         .bundles(&[Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
                 .unwrap()
@@ -94,8 +90,9 @@ async fn test_find_tx_by_bundle() {
 
 #[smol_potat::test]
 async fn test_find_tx_by_address() {
-    client_init();
-    let _ = Client::find_transactions()
+    let client = client_init();
+    let _ = client
+        .find_transactions()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
@@ -109,8 +106,9 @@ async fn test_find_tx_by_address() {
 
 #[smol_potat::test]
 async fn test_find_tx_by_tag() {
-    client_init();
-    let _ = Client::find_transactions()
+    let client = client_init();
+    let _ = client
+        .find_transactions()
         .tags(&[Tag::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_TAG_0)
                 .unwrap()
@@ -124,8 +122,9 @@ async fn test_find_tx_by_tag() {
 
 #[smol_potat::test]
 async fn test_find_tx_by_approvee() {
-    client_init();
-    let _ = Client::find_transactions()
+    let client = client_init();
+    let _ = client
+        .find_transactions()
         .approvees(&[Hash::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
                 .unwrap()
@@ -139,8 +138,9 @@ async fn test_find_tx_by_approvee() {
 
 #[smol_potat::test]
 async fn test_get_balances() {
-    client_init();
-    let _ = Client::get_balances()
+    let client = client_init();
+    let _ = client
+        .get_balances()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()
@@ -154,21 +154,23 @@ async fn test_get_balances() {
 
 #[smol_potat::test]
 async fn test_get_bundle() {
-    client_init();
-    let _ = Client::get_bundle(&Hash::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    ))
-    .await
-    .unwrap();
+    let client = client_init();
+    let _ = client
+        .get_bundle(&Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
 async fn test_get_inclusion_states() {
-    client_init();
-    let res = Client::get_inclusion_states()
+    let client = client_init();
+    let res = client
+        .get_inclusion_states()
         .transactions(&[
             Hash::from_inner_unchecked(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
@@ -192,106 +194,79 @@ async fn test_get_inclusion_states() {
 
 #[smol_potat::test]
 async fn test_get_inputs() {
-    client_init();
-    let _ = Client::get_inputs(
-        &TernarySeed::<Kerl>::from_trits(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode::<T1B1Buf>(),
+    let client = client_init();
+    let _ = client
+        .get_inputs(
+            &TernarySeed::<Kerl>::from_trits(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
         )
-        .unwrap(),
-    )
-    .generate()
-    .await
-    .unwrap();
+        .generate()
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
-async fn test_get_latest_inclusion() {
-    client_init();
-    let _ = Client::get_latest_inclusion(&[
-        Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ),
-        Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ),
-    ])
-    .await;
-}
-
-#[smol_potat::test]
-async fn test_get_neighbors() {
-    client_init();
-
-    match Client::get_neighbors().await {
-        Ok(res) => {
-            assert!(res.neighbors.iter().all(|x| !x.address.is_empty()));
-        }
-        Err(e) => {
-            let error = format!("{}", e);
-            assert!(error.contains("COMMAND getNeighbors is not available on this node"));
-        }
-    }
-}
-
-#[smol_potat::test]
-#[ignore]
-async fn test_get_missing_transactions() {
-    client_init();
-    let _ = Client::get_missing_transactions().await.unwrap();
+async fn test_is_confirmed() {
+    let client = client_init();
+    let _ = client
+        .is_confirmed(&[
+            Hash::from_inner_unchecked(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode(),
+            ),
+            Hash::from_inner_unchecked(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
+                    .unwrap()
+                    .as_trits()
+                    .encode(),
+            ),
+        ])
+        .await;
 }
 
 #[smol_potat::test]
 async fn test_get_new_address() {
-    client_init();
-    let _ = Client::get_new_address(
-        &TernarySeed::<Kerl>::from_trits(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode::<T1B1Buf>(),
+    let client = client_init();
+    let _ = client
+        .generate_new_address(
+            &TernarySeed::<Kerl>::from_trits(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
         )
-        .unwrap(),
-    )
-    .generate()
-    .await
-    .unwrap();
+        .generate()
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
 #[ignore]
 async fn test_get_node_api_configuration() {
-    client_init();
-    Client::get_node_api_configuration().await.unwrap();
+    let client = client_init();
+    client.get_node_api_configuration().await.unwrap();
 }
 
 #[smol_potat::test]
 async fn test_get_node_info() {
-    client_init();
-    let _ = Client::get_node_info().await;
-}
-
-#[smol_potat::test]
-#[ignore]
-async fn test_get_tips() {
-    client_init();
-    let res = Client::get_tips().await.unwrap();
-
-    assert!(!res.hashes.is_empty());
+    let client = client_init();
+    let _ = client.get_node_info().await;
 }
 
 #[smol_potat::test]
 async fn test_get_transactions_to_approve() {
-    client_init();
-    Client::get_transactions_to_approve()
+    let client = client_init();
+    client
+        .get_transactions_to_approve()
         .depth(3)
         .send()
         .await
@@ -300,53 +275,56 @@ async fn test_get_transactions_to_approve() {
 
 #[smol_potat::test]
 async fn test_get_trytes() {
-    client_init();
-    let res = Client::get_trytes(&[
-        Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ),
-        Hash::from_inner_unchecked(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        ),
-    ])
-    .await
-    .unwrap();
+    let client = client_init();
+    let res = client
+        .get_trytes(&[
+            Hash::from_inner_unchecked(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode(),
+            ),
+            Hash::from_inner_unchecked(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_1)
+                    .unwrap()
+                    .as_trits()
+                    .encode(),
+            ),
+        ])
+        .await
+        .unwrap();
 
     assert!(!res.trytes.is_empty());
 }
 
 #[smol_potat::test]
 async fn test_is_address_used() {
-    client_init();
-    let res = Client::is_address_used(&Address::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_ADDRESS_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    ))
-    .await
-    .unwrap();
+    let client = client_init();
+    let res = client
+        .is_address_used(&Address::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_ADDRESS_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap();
 
     assert_eq!(res, false);
 }
 
 #[smol_potat::test]
 async fn test_is_promotable() {
-    client_init();
-    let _ = Client::is_promotable(&Hash::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    ))
-    .await
-    .unwrap();
+    let client = client_init();
+    let _ = client
+        .is_promotable(&Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
@@ -361,49 +339,39 @@ async fn test_prepare_transfers_no_value() {
         });
     }
 
-    client_init();
-    let _ = Client::prepare_transfers(Some(
-        &TernarySeed::<Kerl>::from_trits(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode::<T1B1Buf>(),
-        )
-        .unwrap(),
-    ))
-    .transfers(transfers)
-    .build()
-    .await
-    .unwrap();
-}
-
-#[smol_potat::test]
-async fn test_remove_neighbors() {
-    client_init();
-    let res = Client::remove_neighbors(vec!["tcp://0.0.0.0:15600".to_owned()])
+    let client = client_init();
+    let _ = client
+        .prepare_transfers(Some(
+            &TernarySeed::<Kerl>::from_trits(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
+        ))
+        .transfers(transfers)
+        .build()
         .await
         .unwrap();
-
-    if let Some(neighbor) = res.removed_neighbors {
-        assert_eq!(neighbor, 0);
-    }
 }
 
 #[smol_potat::test]
-async fn test_replay_bundle() {
-    client_init();
-    let _ = Client::replay_bundle(&Hash::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    ))
-    .await
-    .unwrap()
-    .depth(3)
-    .min_weight_magnitude(9)
-    .send()
-    .await;
+async fn test_reattach() {
+    let client = client_init();
+    let _ = client
+        .reattach(&Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_HASH_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap()
+        .depth(3)
+        .min_weight_magnitude(9)
+        .send()
+        .await;
 }
 
 // We don't do value transfer test since it's not ideal to be a general test case. But confirmed sample can be found here:
@@ -424,27 +392,29 @@ async fn test_send_transfers_no_value() {
         });
     }
 
-    client_init();
-    let _ = Client::send(Some(
-        &TernarySeed::<Kerl>::from_trits(
-            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-                .unwrap()
-                .as_trits()
-                .encode::<T1B1Buf>(),
-        )
-        .unwrap(),
-    ))
-    .transfers(transfers)
-    .min_weight_magnitude(10)
-    .send()
-    .await
-    .unwrap();
+    let client = client_init();
+    let _ = client
+        .send(Some(
+            &TernarySeed::<Kerl>::from_trits(
+                TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                    .unwrap()
+                    .as_trits()
+                    .encode::<T1B1Buf>(),
+            )
+            .unwrap(),
+        ))
+        .transfers(transfers)
+        .min_weight_magnitude(10)
+        .send()
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
 async fn test_send_trytes() {
-    client_init();
-    let _ = Client::send_trytes()
+    let client = client_init();
+    let _ = client
+        .send_trytes()
         .min_weight_magnitude(9)
         .trytes(vec![tx()])
         .send()
@@ -453,40 +423,42 @@ async fn test_send_trytes() {
 
 #[smol_potat::test]
 async fn test_store_and_broadcast() {
-    client_init();
-    Client::store_and_broadcast(&[tx()]).await.unwrap();
+    let client = client_init();
+    client.store_and_broadcast(&[tx()]).await.unwrap();
 }
 
 #[smol_potat::test]
 async fn test_store_transactions() {
-    client_init();
-    Client::store_transactions(&[tx()]).await.unwrap();
+    let client = client_init();
+    client.store_transactions(&[tx()]).await.unwrap();
 }
 
 #[smol_potat::test]
 async fn test_traverse_bundle() {
-    client_init();
-    let _ = Client::traverse_bundle(&Hash::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    ))
-    .await
-    .unwrap();
+    let client = client_init();
+    let _ = client
+        .traverse_bundle(&Hash::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        ))
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
 async fn test_were_addresses_spent_from() {
-    client_init();
-    let res = Client::were_addresses_spent_from(&[Address::from_inner_unchecked(
-        TryteBuf::try_from_str(TEST_ADDRESS_0)
-            .unwrap()
-            .as_trits()
-            .encode(),
-    )])
-    .await
-    .unwrap();
+    let client = client_init();
+    let res = client
+        .were_addresses_spent_from(&[Address::from_inner_unchecked(
+            TryteBuf::try_from_str(TEST_ADDRESS_0)
+                .unwrap()
+                .as_trits()
+                .encode(),
+        )])
+        .await
+        .unwrap();
 
     assert_eq!(res.states[0], false);
 }

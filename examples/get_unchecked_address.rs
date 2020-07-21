@@ -6,16 +6,13 @@
 //! ```
 //! cargo run --example get_unchecked_address
 //! ```
-use iota::transaction::bundled::{Address, BundledTransactionField};
 use iota::crypto::ternary::Kerl;
 use iota::signing::ternary::{
-    TernarySeed, PrivateKey, PrivateKeyGenerator, PublicKey, Seed,
-    wots::{
-        WotsSpongePrivateKeyGeneratorBuilder,
-        WotsSecurityLevel,
-    },
+    wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
+    PrivateKey, PrivateKeyGenerator, PublicKey, Seed, TernarySeed,
 };
 use iota::ternary::{T1B1Buf, TryteBuf};
+use iota::transaction::bundled::{Address, BundledTransactionField};
 use iota_conversion::Trinary;
 
 fn main() {
