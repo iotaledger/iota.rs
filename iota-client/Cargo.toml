@@ -15,7 +15,7 @@ path = "lib.rs"
 
 [dependencies]
 bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
-bee-ternary = { version = "0.2.0-alpha", git = "https://github.com/iotaledger/bee.git", features = ["serde1"] }
+bee-ternary = { version = "0.3.0-alpha", git = "https://github.com/iotaledger/bee.git", features = ["serde1"] }
 bee-signing = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-crypto = { git = "https://github.com/Alex6323/bee-p.git" }
 iota-conversion = { version = "0.5.1", path = "../iota-conversion" }
