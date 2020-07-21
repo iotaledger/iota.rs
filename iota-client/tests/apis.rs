@@ -425,7 +425,7 @@ async fn test_send_transfers_no_value() {
     }
 
     client_init();
-    let _ = Client::send_transfers(Some(
+    let _ = Client::send(Some(
         &TernarySeed::<Kerl>::from_trits(
             TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                 .unwrap()

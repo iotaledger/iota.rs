@@ -523,8 +523,8 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTransfersBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTransfersBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTransfersBuilder.html#method.reference
-    pub fn send_transfers(seed: Option<&Seed<Kerl>>) -> SendTransfersBuilder<'_> {
-        SendTransfersBuilder::new(seed)
+    pub fn send(seed: Option<&Seed<Kerl>>) -> SendBuilder<'_> {
+        SendBuilder::new(seed)
     }
 
     /// Perform Attaches to tanlge, stores and broadcasts a vector of transaction trytes.

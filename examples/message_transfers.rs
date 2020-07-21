@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
     // Call send_transfers api
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
-    let res = iota::Client::send_transfers(None)
+    let res = iota::Client::send(None)
         // Input the transfers
         .transfers(transfers)
         // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.

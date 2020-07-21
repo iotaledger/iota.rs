@@ -11,7 +11,6 @@ license = "MIT"
 
 [lib]
 name = "iota_client"
-path = "lib.rs"
 
 [dependencies]
 bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }

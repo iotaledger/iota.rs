@@ -6,9 +6,9 @@ use bee_transaction::bundled::{Address, BundledTransaction as Transaction};
 use crate::response::{Input, Transfer};
 use crate::Client;
 
-/// Builder to construct SendTransfers API
+/// Builder to construct Send API
 //#[derive(Debug)]
-pub struct SendTransfersBuilder<'a> {
+pub struct SendBuilder<'a> {
     seed: Option<&'a Seed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
@@ -19,7 +19,7 @@ pub struct SendTransfersBuilder<'a> {
     reference: Option<Hash>,
 }
 
-impl<'a> SendTransfersBuilder<'a> {
+impl<'a> SendBuilder<'a> {
     pub(crate) fn new(seed: Option<&'a Seed<Kerl>>) -> Self {
         Self {
             seed,
