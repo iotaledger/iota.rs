@@ -13,7 +13,6 @@ Specification of High Level Abstraction API
 * [Builder](#Builder)
 * [General API](#General-API)
     * [Send](#Send)
-    * [GetTransaction](#GetTransaction)
     * [FindTransactions](#FindTransactions)
     * [GenerateNewAddress](#GenerateNewAddress)
     * [GetAddresses](#GetAddresses)
@@ -778,6 +777,8 @@ Fetch inclusion states of the given transactions to determine if the transaction
 ### Returns:
 
 List of tuples with values of the transaction [Hash](#heading=Hash)es and a bool which is the confirm state of it.
+Depend on bee api in the end, this might be a enum instead of plan boolean. For instance, a node could return a state
+like `unkown` saying it not sure about the state of transaction because of pruning.
 
 
 ### Implementation Details
@@ -828,14 +829,6 @@ Does proof of work for the given transaction trytes. The `branch_transaction` an
 <a href="#Hash">Hash</a>
    </td>
    <td>Branch transaction hash provided by <a href="#GetTransactionToApprove">GetTransactionToApprove</a>.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>min_weight_magnitude</strong>
-   </td>
-   <td>usize
-   </td>
-   <td>Difficulty of PoW
    </td>
   </tr>
   <tr>
