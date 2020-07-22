@@ -53,6 +53,8 @@ pub struct Client {
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     pub(crate) mwm: u8,
+    pub(crate) quorum_size: u8,
+    pub(crate) quorum_threshold: u8,
 }
 
 impl Client {
@@ -62,6 +64,8 @@ impl Client {
             pool: HashSet::new(),
             client: reqwest::Client::new(),
             mwm: 14,
+            quorum_size: 1,
+            quorum_threshold: 100,
         }
     }
 
