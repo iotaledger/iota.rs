@@ -1,7 +1,7 @@
 //! Response types
 use crate::error::*;
 use bee_crypto::ternary::Hash;
-use bee_ternary::{TryteBuf, T3B1Buf};
+use bee_ternary::{T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField, Tag,
 };
@@ -39,9 +39,9 @@ impl From<&Transaction> for TransactionDef {
             timestamp: *transaction.timestamp().to_inner(),
             index: *transaction.index().to_inner(),
             last_index: *transaction.last_index().to_inner(),
-            bundle: format!("{}",transaction.bundle()),
-            trunk:  format!("{}",transaction.trunk()),
-            branch: format!("{}",transaction.branch()),
+            bundle: format!("{}", transaction.bundle()),
+            trunk: format!("{}", transaction.trunk()),
+            branch: format!("{}", transaction.branch()),
             tag: format!("{:?}", transaction.tag().to_inner().as_i8_slice()),
             attachment_ts: *transaction.attachment_ts().to_inner(),
             attachment_lbts: *transaction.attachment_lbts().to_inner(),
@@ -178,7 +178,16 @@ impl Serialize for FindTransactionsResponse {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("FindTransactionsResponse", 1)?;
-        let hashes: Vec<String> = self.hashes.iter().map(|hash| hash.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()).collect();
+        let hashes: Vec<String> = self
+            .hashes
+            .iter()
+            .map(|hash| {
+                hash.encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
+            .collect();
         state.serialize_field("hashes", &hashes)?;
         state.end()
     }
@@ -236,7 +245,16 @@ impl Serialize for GetBalancesResponse {
         state.serialize_field("balances", &self.balances)?;
         state.serialize_field("milestone_index", &self.milestone_index)?;
 
-        let references: Vec<String> = self.references.iter().map(|hash| hash.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()).collect();
+        let references: Vec<String> = self
+            .references
+            .iter()
+            .map(|hash| {
+                hash.encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
+            .collect();
         state.serialize_field("references", &references)?;
 
         state.end()
@@ -420,9 +438,25 @@ impl Serialize for GTTAResponse {
     {
         let mut state = serializer.serialize_struct("GTTAResponse", 2)?;
 
-        state.serialize_field("trunk_transaction", &self.trunk_transaction.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())?;
+        state.serialize_field(
+            "trunk_transaction",
+            &self
+                .trunk_transaction
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        )?;
 
-        state.serialize_field("branch_transaction", &self.branch_transaction.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())?;
+        state.serialize_field(
+            "branch_transaction",
+            &self
+                .branch_transaction
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        )?;
 
         state.end()
     }

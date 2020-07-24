@@ -1,14 +1,19 @@
+use bee_ternary::tryte::TryteBuf;
+use bee_ternary::*;
 use bee_transaction::bundled::{BundledTransaction as Transaction, BundledTransactionField};
 use bee_transaction::TransactionVertex;
-use bee_ternary::*;
-use bee_ternary::tryte::TryteBuf;
 
 use std::convert::TryInto;
 
 // TODO use bee-ternary once it porvides a method.
 /// Temporary util function to make a transaction trytes
 pub(crate) fn tx_trytes(tx: &Transaction) -> String {
-    let bundle = tx.bundle().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>();
+    let bundle = tx
+        .bundle()
+        .encode::<T3B1Buf>()
+        .iter_trytes()
+        .map(char::from)
+        .collect::<String>();
 
     fn num_to_tryte_string(num: i64, len: usize) -> String {
         let mut trytes: TritBuf<T1B1Buf> = num.into();
@@ -16,24 +21,67 @@ pub(crate) fn tx_trytes(tx: &Transaction) -> String {
         for i in 0..n {
             trytes.push(Btrit::Zero);
         }
-        trytes.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
+        trytes
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
     }
 
-    tx.payload().to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
-        + &tx.address().to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
+    tx.payload()
+        .to_inner()
+        .encode::<T3B1Buf>()
+        .iter_trytes()
+        .map(char::from)
+        .collect::<String>()
+        + &tx
+            .address()
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
         + &num_to_tryte_string(*tx.value().to_inner(), 81)
-        + &tx.obsolete_tag().to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
+        + &tx
+            .obsolete_tag()
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
         + &num_to_tryte_string(*tx.timestamp().to_inner() as i64, 27)
         + &num_to_tryte_string(*tx.index().to_inner() as i64, 27)
         + &num_to_tryte_string(*tx.last_index().to_inner() as i64, 27)
-        + &bundle 
-        + &tx.trunk().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
-        + &tx.branch().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
-        + &tx.tag().to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
+        + &bundle
+        + &tx
+            .trunk()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
+        + &tx
+            .branch()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
+        + &tx
+            .tag()
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
         + &num_to_tryte_string(*tx.attachment_ts().to_inner() as i64, 27)
         + &num_to_tryte_string(*tx.attachment_lbts().to_inner() as i64, 27)
         + &num_to_tryte_string(*tx.attachment_ubts().to_inner() as i64, 27)
-        + &tx.nonce().to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
+        + &tx
+            .nonce()
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
 }
 
 /// Converts a UTF-8 string containing ascii into a tryte-encoded string

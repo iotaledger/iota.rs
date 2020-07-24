@@ -1,7 +1,7 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
-use bee_transaction::bundled::{Address, BundledTransactionField, Tag};
 use bee_ternary::T3B1Buf;
+use bee_transaction::bundled::{Address, BundledTransactionField, Tag};
 
 use crate::response::{FindTransactionsResponse, FindTransactionsResponseBuilder};
 use crate::Client;
@@ -32,7 +32,12 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.bundles = Some(
             bundles
                 .iter()
-                .map(|h| (*h).encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
+                .map(|h| {
+                    (*h).encode::<T3B1Buf>()
+                        .iter_trytes()
+                        .map(char::from)
+                        .collect::<String>()
+                })
                 .collect(),
         );
         self
@@ -42,7 +47,13 @@ impl<'a> FindTransactionsBuilder<'a> {
     pub fn tags(mut self, tags: &[Tag]) -> Self {
         self.tags = Some(
             tags.iter()
-                .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
+                .map(|h| {
+                    h.to_inner()
+                        .encode::<T3B1Buf>()
+                        .iter_trytes()
+                        .map(char::from)
+                        .collect::<String>()
+                })
                 .collect(),
         );
         self
@@ -53,7 +64,13 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.approvees = Some(
             approvees
                 .iter()
-                .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
+                .map(|h| {
+                    h.to_inner()
+                        .encode::<T3B1Buf>()
+                        .iter_trytes()
+                        .map(char::from)
+                        .collect::<String>()
+                })
                 .collect(),
         );
         self
@@ -64,7 +81,13 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.addresses = Some(
             addresses
                 .iter()
-                .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
+                .map(|h| {
+                    h.to_inner()
+                        .encode::<T3B1Buf>()
+                        .iter_trytes()
+                        .map(char::from)
+                        .collect::<String>()
+                })
                 .collect(),
         );
         self

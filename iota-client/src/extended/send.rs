@@ -1,5 +1,5 @@
 use crate::error::Result;
-use bee_crypto::ternary::{Hash, sponge::Kerl};
+use bee_crypto::ternary::{sponge::Kerl, Hash};
 use bee_signing::ternary::TernarySeed as Seed;
 use bee_transaction::bundled::{Address, BundledTransaction as Transaction};
 

@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use bee_crypto::ternary::{Hash, sponge::Kerl};
+use bee_crypto::ternary::{sponge::Kerl, Hash};
 use bee_signing::ternary::{wots::WotsSecurityLevel, TernarySeed as Seed};
 use bee_ternary::{T1B1Buf, TritBuf};
 use bee_transaction::bundled::{
@@ -10,8 +10,8 @@ use bee_transaction::bundled::{
 
 use crate::error::*;
 use crate::response::{Input, Transfer};
-use crate::Client;
 use crate::util::str_to_trytes;
+use crate::Client;
 
 /// Builder to construct PrepareTransfers API
 //#[derive(Debug)]

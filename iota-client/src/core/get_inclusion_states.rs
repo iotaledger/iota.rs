@@ -24,7 +24,12 @@ impl<'a> GetInclusionStatesBuilder<'a> {
     pub fn transactions(mut self, transactions: &[Hash]) -> Self {
         self.transactions = transactions
             .iter()
-            .map(|h| (*h).encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
+            .map(|h| {
+                (*h).encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
             .collect();
         self
     }

@@ -1,6 +1,9 @@
 use crate::error::Result;
-use bee_crypto::ternary::{Hash, sponge::{Kerl, Sponge}};
-use bee_ternary::{T1B1Buf, TritBuf, T1B1, Trits};
+use bee_crypto::ternary::{
+    sponge::{Kerl, Sponge},
+    Hash,
+};
+use bee_ternary::{T1B1Buf, TritBuf, Trits, T1B1};
 use bee_transaction::bundled::BundledTransaction as Transaction;
 
 use crate::Client;

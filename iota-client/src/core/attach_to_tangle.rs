@@ -1,7 +1,7 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
-use bee_transaction::bundled::BundledTransaction as Transaction;
 use bee_ternary::T3B1Buf;
+use bee_transaction::bundled::BundledTransaction as Transaction;
 
 use crate::response::{AttachToTangleResponse, AttachToTangleResponseBuilder};
 use crate::util::tx_trytes;
@@ -30,13 +30,21 @@ impl<'a> AttachToTangleBuilder<'a> {
 
     /// Set trunk transaction hash
     pub fn trunk_transaction(mut self, trunk_transaction: &Hash) -> Self {
-        self.trunk_transaction = trunk_transaction.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>();
+        self.trunk_transaction = trunk_transaction
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>();
         self
     }
 
     /// Set branch transaction hash
     pub fn branch_transaction(mut self, branch_transaction: &Hash) -> Self {
-        self.branch_transaction = branch_transaction.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>();
+        self.branch_transaction = branch_transaction
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>();
         self
     }
 

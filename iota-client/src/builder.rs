@@ -1,7 +1,7 @@
 //! Builder of the Clinet Instnace
 
-use crate::error::*;
 use crate::client::Client;
+use crate::error::*;
 
 use std::collections::HashSet;
 use std::iter::FromIterator;
@@ -43,7 +43,7 @@ impl ClientBuilder {
         let url = Url::parse(url).map_err(|_| Error::UrlError)?;
         self.nodes.push(url);
         Ok(self)
-    } 
+    }
 
     /// Add a list of Iota nodes
     pub fn nodes(mut self, urls: &[&str]) -> Result<Self> {
@@ -52,10 +52,10 @@ impl ClientBuilder {
             self.nodes.push(url);
         }
         Ok(self)
-    } 
+    }
 
     // TODO node pool
-    
+
     /// Network of the Iota nodes belong to
     pub fn network(mut self, network: Network) -> Self {
         self.network = network;
@@ -70,7 +70,7 @@ impl ClientBuilder {
 
     /// The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to
     /// consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out
-    /// of 3 nodes when the quorum size is 3). 
+    /// of 3 nodes when the quorum size is 3).
     pub fn quorum_threshold(mut self, threshold: u8) -> Self {
         self.quorum_threshold = threshold;
         self

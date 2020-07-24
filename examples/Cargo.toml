@@ -8,7 +8,6 @@ publish = false
 [dev-dependencies]
 anyhow = "1.0.28"
 iota-core = { path = "../iota-core" }
-iota-conversion = { version = "0.5.0", path = "../iota-conversion" }
 smol = {version = "0.1.18", features = ["tokio02"] }
 smol-potat = "0.3.1"
 

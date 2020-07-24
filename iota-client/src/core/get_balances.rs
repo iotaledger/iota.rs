@@ -1,7 +1,7 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
-use bee_transaction::bundled::{Address, BundledTransactionField};
 use bee_ternary::T3B1Buf;
+use bee_transaction::bundled::{Address, BundledTransactionField};
 
 use crate::response::{GetBalancesResponse, GetBalancesResponseBuilder};
 use crate::Client;
@@ -27,7 +27,13 @@ impl<'a> GetBalancesBuilder<'a> {
     pub fn addresses(mut self, addresses: &[Address]) -> Self {
         self.addresses = addresses
             .iter()
-            .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
+            .map(|h| {
+                h.to_inner()
+                    .encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
             .collect();
         self
     }
@@ -36,7 +42,12 @@ impl<'a> GetBalancesBuilder<'a> {
     pub fn tips(mut self, tips: &[Hash]) -> Self {
         self.tips = Some(
             tips.iter()
-                .map(|h| (*h).encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
+                .map(|h| {
+                    (*h).encode::<T3B1Buf>()
+                        .iter_trytes()
+                        .map(char::from)
+                        .collect::<String>()
+                })
                 .collect(),
         );
         self

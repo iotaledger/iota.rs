@@ -30,7 +30,13 @@ impl<'a> GetTransactionsToApproveBuilder<'a> {
 
     /// Add reference hashes
     pub fn reference(mut self, reference: &Hash) -> Self {
-        self.reference = Some(reference.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>());
+        self.reference = Some(
+            reference
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        );
         self
     }
 
