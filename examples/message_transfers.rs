@@ -64,10 +64,16 @@ async fn main() -> Result<()> {
         .await?;
 
     // The response of send_transfers is vector of Transaction type. We choose the first one and see what is its bundle hash
-    println!("{:?}", res[0].bundle().to_inner().encode::<T3B1Buf>()
-    .iter_trytes()
-    .map(char::from)
-    .collect::<String>());
+    println!(
+        "{:?}",
+        res[0]
+            .bundle()
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
+    );
 
     Ok(())
 }

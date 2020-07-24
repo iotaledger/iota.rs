@@ -32,10 +32,12 @@ async fn main() -> Result<()> {
     println!(
         "Index: {}, Address:{:?}",
         index,
-        address.to_inner().encode::<T3B1Buf>()
-        .iter_trytes()
-        .map(char::from)
-        .collect::<String>()
+        address
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
     );
 
     Ok(())

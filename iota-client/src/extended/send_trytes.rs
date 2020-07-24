@@ -70,7 +70,7 @@ impl<'a> SendTrytesBuilder<'a> {
                 .subslice_mut(7533..7776)
                 .copy_from(res.branch_transaction.as_trits());
             let t: TritBuf<T1B1Buf> = Kerl::default().digest(&trits).unwrap();
-            trunk = Hash::try_from_inner(t).map_err(|_|Error::TernaryError)?;
+            trunk = Hash::try_from_inner(t).map_err(|_| Error::TernaryError)?;
             trytes.push(
                 Transaction::from_trits(&trits).expect("Fail to convert trits to transaction"),
             );

@@ -39,8 +39,13 @@ fn main() {
     )
     .unwrap();
 
-    println!("Address:{:?}", address.to_inner().encode::<T3B1Buf>()
-    .iter_trytes()
-    .map(char::from)
-    .collect::<String>());
+    println!(
+        "Address:{:?}",
+        address
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
+    );
 }

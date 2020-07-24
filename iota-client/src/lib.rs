@@ -23,4 +23,4 @@ pub use builder::ClientBuilder;
 pub use client::Client;
 pub use error::*;
 pub use response::*;
-pub use util::{str_to_trytes, bytes_to_trytes};
+pub use util::{bytes_to_trytes, str_to_trytes};
