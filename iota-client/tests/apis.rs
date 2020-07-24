@@ -6,6 +6,7 @@ use bee_signing::ternary::*;
 use bee_ternary::*;
 use bee_transaction::bundled::*;
 use iota_client::response::*;
+use iota_client::Url;
 
 #[smol_potat::test]
 async fn test_attach_to_tangle() {
@@ -253,13 +254,13 @@ async fn test_get_new_address() {
 #[ignore]
 async fn test_get_node_api_configuration() {
     let client = client_init();
-    client.get_node_api_configuration().await.unwrap();
+    client.get_node_api_configuration(Url::parse("https://nodes.comnet.thetangle.org").unwrap()).await.unwrap();
 }
 
 #[smol_potat::test]
 async fn test_get_node_info() {
     let client = client_init();
-    let _ = client.get_node_info().await;
+    let _ = client.get_node_info(Url::parse("https://nodes.comnet.thetangle.org").unwrap()).await;
 }
 
 #[smol_potat::test]

@@ -100,6 +100,7 @@ impl ClientBuilder {
 
         Ok(Client {
             pool: HashSet::from_iter(self.nodes.into_iter()),
+            sync: Vec::new(),
             client: reqwest::Client::new(),
             mwm,
             quorum_size,
