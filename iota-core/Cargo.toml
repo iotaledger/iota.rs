@@ -16,6 +16,6 @@ bee-signing = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client" }
 
-[features]
-quorum = ["iota-client/quorum"]
-wasm = ["iota-client/wasm"]
+#[features]
+#quorum = ["iota-client/quorum"]
+#wasm = ["iota-client/wasm"]
