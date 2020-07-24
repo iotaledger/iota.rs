@@ -23,9 +23,9 @@ pub const TEST_TX_TRYTES: &str = "BCDDPCADADXCBDVCEAKDXCHDWCEARBYBACXBOBCCEAHDXC
 
 pub fn client_init() -> iota_client::Client {
     //iota_client::Client::add_node("https://nodes.iota.cafe").unwrap();
-    let mut client = iota_client::Client::new();
-    client
-        .add_node("https://nodes.comnet.thetangle.org")
+    let client = iota_client::ClientBuilder::new().node("https://nodes.comnet.thetangle.org")
+        .unwrap()
+        .build()
         .unwrap();
     client
 }

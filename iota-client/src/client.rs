@@ -59,17 +59,17 @@ pub struct Client {
 }
 
 impl Client {
-    /// Create the instance of IOTA Client.
-    pub fn new() -> Self {
-        Self {
-            pool: Arc::new(RwLock::new(HashSet::new())),
-            sync: Arc::new(RwLock::new(Vec::new())),
-            client: reqwest::Client::new(),
-            mwm: 14,
-            quorum_size: 1,
-            quorum_threshold: 100,
-        }
-    }
+    // /// Create the instance of IOTA Client.
+    // pub fn new() -> Self {
+    //     Self {
+    //         pool: Arc::new(RwLock::new(HashSet::new())),
+    //         sync: Arc::new(RwLock::new(Vec::new())),
+    //         client: reqwest::Client::new(),
+    //         mwm: 14,
+    //         quorum_size: 1,
+    //         quorum_threshold: 100,
+    //     }
+    // }
 
     pub(crate) async fn sync(&mut self) {
         let mut sync_list: HashMap<u32, Vec<Url>> = HashMap::new();
@@ -97,7 +97,7 @@ impl Client {
 
     pub(crate) fn get_node(&self) -> Result<Url> {
         // TODO getbalance, isconfirmed and were_addresses_spent_from should do quorum mode
-        Ok(self.pool.read().unwrap().iter().next().ok_or(Error::NodePoolEmpty)?.clone())
+        Ok(self.sync.read().unwrap().iter().next().ok_or(Error::NodePoolEmpty)?.clone())
     }
 
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.

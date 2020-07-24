@@ -109,10 +109,11 @@ impl ClientBuilder {
         };
 
         let mut sync = client.clone();
+        smol::block_on(async {sync.sync().await});
         
-        std::thread::spawn(move || smol::future::block_on(async {
+        std::thread::spawn(move || smol::block_on(async {
             loop {
-                smol::Timer::new(std::time::Duration::from_secs(180)).await;
+                smol::Timer::after(std::time::Duration::from_secs(180)).await;
                 sync.sync().await;
             }
         }));
