@@ -15,7 +15,6 @@ bee-ternary = { version = "0.3.1-alpha", git = "https://github.com/iotaledger/be
 bee-signing = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client" }
-iota-conversion = { version = "0.5.1", path = "../iota-conversion" }
 
 [features]
 quorum = ["iota-client/quorum"]

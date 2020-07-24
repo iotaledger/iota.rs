@@ -2,16 +2,16 @@ use std::cmp::Ordering;
 
 use bee_crypto::ternary::{Hash, sponge::Kerl};
 use bee_signing::ternary::{wots::WotsSecurityLevel, TernarySeed as Seed};
-use bee_ternary::{T1B1Buf, TritBuf, TryteBuf};
+use bee_ternary::{T1B1Buf, TritBuf};
 use bee_transaction::bundled::{
     Address, Bundle, BundledTransactionBuilder as TransactionBuilder, BundledTransactionField,
     Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp, Value, PAYLOAD_TRIT_LEN,
 };
-use iota_conversion::trytes_converter::to_trytes;
 
 use crate::error::*;
 use crate::response::{Input, Transfer};
 use crate::Client;
+use crate::util::str_to_trytes;
 
 /// Builder to construct PrepareTransfers API
 //#[derive(Debug)]
@@ -95,10 +95,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
         // add transfers
         for transfer in self.transfers {
             if let Some(message) = transfer.message {
-                let message: TritBuf<T1B1Buf> = match to_trytes(&message) {
-                    Ok(s) => TryteBuf::try_from_str(&s).unwrap().as_trits().encode(),
-                    Err(_) => return Err(Error::TernaryError),
-                };
+                let message: TritBuf<T1B1Buf> = str_to_trytes(&message).as_trits().encode();
                 let mut value = transfer.value as i64;
                 let tag = match transfer.tag {
                     Some(t) => t,
