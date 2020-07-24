@@ -1,11 +1,12 @@
 use bee_transaction::bundled::{BundledTransaction as Transaction, BundledTransactionField};
 use bee_transaction::TransactionVertex;
+use bee_ternary::T3B1Buf;
 use iota_conversion::{trytes, Trinary};
 
 // TODO use bee-ternary once it porvides a method.
 /// Temporary util function to make a transaction trytes
 pub(crate) fn tx_trytes(tx: &Transaction) -> String {
-    let bundle = trytes(tx.bundle().as_bytes()).unwrap();
+    let bundle = tx.bundle().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>();
     trytes(tx.payload().to_inner().as_i8_slice()).unwrap()
         + &trytes(tx.address().to_inner().as_i8_slice()).unwrap()
         + &tx
@@ -27,9 +28,9 @@ pub(crate) fn tx_trytes(tx: &Transaction) -> String {
             .trits_with_length(27)
             .trytes()
             .unwrap()
-        + &bundle
-        + &trytes(tx.trunk().as_bytes()).unwrap()
-        + &trytes(tx.branch().as_bytes()).unwrap()
+        + &bundle 
+        + &tx.trunk().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
+        + &tx.branch().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>()
         + &trytes(tx.tag().to_inner().as_i8_slice()).unwrap()
         + &(*tx.attachment_ts().to_inner() as i64)
             .trits_with_length(27)

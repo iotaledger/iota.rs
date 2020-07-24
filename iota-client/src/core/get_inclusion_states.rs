@@ -1,6 +1,6 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
-use iota_conversion::Trinary;
+use bee_ternary::T3B1Buf;
 
 use crate::response::{GetInclusionStatesResponse, GetInclusionStatesResponseBuilder};
 use crate::Client;
@@ -24,7 +24,7 @@ impl<'a> GetInclusionStatesBuilder<'a> {
     pub fn transactions(mut self, transactions: &[Hash]) -> Self {
         self.transactions = transactions
             .iter()
-            .map(|h| h.as_bytes().trytes().unwrap())
+            .map(|h| (*h).encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
             .collect();
         self
     }

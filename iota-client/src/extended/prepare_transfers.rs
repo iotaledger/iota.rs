@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use bee_crypto::ternary::{Hash, Kerl};
+use bee_crypto::ternary::{Hash, sponge::Kerl};
 use bee_signing::ternary::{wots::WotsSecurityLevel, TernarySeed as Seed};
 use bee_ternary::{T1B1Buf, TritBuf, TryteBuf};
 use bee_transaction::bundled::{

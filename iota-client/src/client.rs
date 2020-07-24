@@ -6,11 +6,12 @@ use crate::response::*;
 use crate::util::tx_trytes;
 
 use std::collections::HashSet;
+use std::convert::TryFrom;
 
 use bee_crypto::ternary::Hash;
-use bee_crypto::ternary::Kerl;
+use bee_crypto::ternary::sponge::Kerl;
 use bee_signing::ternary::TernarySeed as Seed;
-use bee_ternary::{T1B1Buf, TryteBuf};
+use bee_ternary::{T1B1Buf, TryteBuf, T3B1Buf, Trits, T1B1, Btrit};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField,
 };
@@ -156,14 +157,14 @@ impl Client {
 
     /// Gets latest solid subtangle milestone.
     pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<Hash> {
-        let trits =
+        let trits:&Trits<T1B1<Btrit>> =
             TryteBuf::try_from_str(&self.get_node_info().await?.latest_solid_subtangle_milestone)
                 .unwrap()
                 .as_trits()
-                .encode::<T1B1Buf>();
+                .encode::<T1B1Buf>().as_slice();
         let mut hash = Hash::zeros();
-        hash.0.copy_from_slice(trits.as_i8_slice());
-        Ok(hash) // TODO missing impl error on Hash
+        hash = Hash::try_from(trits).unwrap();
+        Ok(hash)
     }
 
     /// Generates and returns a new address by calling `find_transactions` until the first unused address is detected.
@@ -319,7 +320,7 @@ impl Client {
     pub async fn get_trytes(&self, hashes: &[Hash]) -> Result<GetTrytesResponse> {
         let hashes: Vec<String> = hashes
             .iter()
-            .map(|h| h.as_bytes().trytes().unwrap())
+            .map(|h| (*h).encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
             .collect();
         let body = json!({
             "command": "getTrytes",
@@ -411,7 +412,7 @@ impl Client {
     pub async fn check_consistency(&self, tails: &[Hash]) -> Result<ConsistencyResponse> {
         let tails: Vec<String> = tails
             .iter()
-            .map(|h| h.as_bytes().trytes().unwrap())
+            .map(|h| (*h).encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
             .collect();
         let body = json!({
             "command": "checkConsistency",

@@ -1,6 +1,7 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
 use bee_transaction::bundled::{Address, BundledTransactionField, Tag};
+use bee_ternary::T3B1Buf;
 use iota_conversion::Trinary;
 
 use crate::response::{FindTransactionsResponse, FindTransactionsResponseBuilder};
@@ -32,7 +33,7 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.bundles = Some(
             bundles
                 .iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
+                .map(|h| (*h).encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
                 .collect(),
         );
         self

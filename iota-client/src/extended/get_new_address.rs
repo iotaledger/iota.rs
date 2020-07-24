@@ -1,5 +1,5 @@
 use crate::error::Result;
-use bee_crypto::ternary::Kerl;
+use bee_crypto::ternary::sponge::Kerl;
 use bee_signing::ternary::{
     wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
     PrivateKey, PrivateKeyGenerator, PublicKey, TernarySeed as Seed,
@@ -59,7 +59,7 @@ impl<'a> GenerateNewAddressBuilder<'a> {
                     .unwrap()
                     .generate_public_key()
                     .unwrap()
-                    .to_trits()
+                    .as_trits()
                     .to_owned(),
             );
 

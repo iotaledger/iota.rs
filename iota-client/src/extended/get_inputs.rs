@@ -1,5 +1,5 @@
 use crate::error::*;
-use bee_crypto::ternary::Kerl;
+use bee_crypto::ternary::sponge::Kerl;
 use bee_signing::ternary::TernarySeed as Seed;
 
 use crate::response::Input;
@@ -53,7 +53,7 @@ impl<'a> GetInputsBuilder<'a> {
         let mut index = self.index;
         let mut total = 0;
         let mut inputs = Vec::new();
-        let mut zero_balance_warning = 5;
+        let mut zero_balance_warning: i32 = 5;
 
         while zero_balance_warning != 0 {
             let (next_index, address) = self

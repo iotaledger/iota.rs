@@ -1,6 +1,6 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
-use iota_conversion::Trinary;
+use bee_ternary::T3B1Buf;
 
 use crate::response::{GTTAResponse, GTTAResponseBuilder};
 use crate::Client;
@@ -30,7 +30,7 @@ impl<'a> GetTransactionsToApproveBuilder<'a> {
 
     /// Add reference hashes
     pub fn reference(mut self, reference: &Hash) -> Self {
-        self.reference = Some(reference.as_bytes().trytes().unwrap());
+        self.reference = Some(reference.encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>());
         self
     }
 
