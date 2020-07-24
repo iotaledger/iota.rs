@@ -22,6 +22,6 @@ mod util;
 pub use builder::ClientBuilder;
 pub use client::Client;
 pub use error::*;
+pub use reqwest::Url;
 pub use response::*;
 pub use util::{bytes_to_trytes, str_to_trytes};
-pub use reqwest::Url;

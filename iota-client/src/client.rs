@@ -5,7 +5,7 @@ use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
 
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 
 use bee_crypto::ternary::sponge::Kerl;
@@ -73,14 +73,16 @@ impl Client {
 
     pub(crate) async fn sync(&mut self) {
         let mut sync_list: HashMap<u32, Vec<Url>> = HashMap::new();
-        for url  in &*self.pool.read().unwrap() {
+        for url in &*self.pool.read().unwrap() {
             if let Ok(milestone) = self.get_node_info(url.clone()).await {
-                let set = sync_list.entry(milestone.latest_solid_subtangle_milestone_index).or_insert(Vec::new());
+                let set = sync_list
+                    .entry(milestone.latest_solid_subtangle_milestone_index)
+                    .or_insert(Vec::new());
                 set.push(url.clone());
             };
         }
 
-        *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x,_)|*x).unwrap().1;
+        *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
     }
 
     /// Add a node to the node pool.
@@ -97,7 +99,14 @@ impl Client {
 
     pub(crate) fn get_node(&self) -> Result<Url> {
         // TODO getbalance, isconfirmed and were_addresses_spent_from should do quorum mode
-        Ok(self.sync.read().unwrap().iter().next().ok_or(Error::NodePoolEmpty)?.clone())
+        Ok(self
+            .sync
+            .read()
+            .unwrap()
+            .iter()
+            .next()
+            .ok_or(Error::NodePoolEmpty)?
+            .clone())
     }
 
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
@@ -171,11 +180,15 @@ impl Client {
 
     /// Gets latest solid subtangle milestone.
     pub async fn get_latest_solid_subtangle_milestone(&self, url: Url) -> Result<Hash> {
-        let trits =
-            TryteBuf::try_from_str(&self.get_node_info(url).await?.latest_solid_subtangle_milestone)
-                .unwrap()
-                .as_trits()
-                .encode::<T1B1Buf>();
+        let trits = TryteBuf::try_from_str(
+            &self
+                .get_node_info(url)
+                .await?
+                .latest_solid_subtangle_milestone,
+        )
+        .unwrap()
+        .as_trits()
+        .encode::<T1B1Buf>();
         let hash = Hash::try_from_inner(trits).unwrap();
         Ok(hash)
     }
@@ -302,7 +315,10 @@ impl Client {
     }
 
     /// Gets a node's API configuration settings.
-    pub async fn get_node_api_configuration(&self, url: Url) -> Result<GetNodeAPIConfigurationResponse> {
+    pub async fn get_node_api_configuration(
+        &self,
+        url: Url,
+    ) -> Result<GetNodeAPIConfigurationResponse> {
         let body = json!( {
             "command": "getNodeAPIConfiguration",
         });

@@ -31,7 +31,7 @@ async fn test_attach_to_tangle() {
             .send()
             .await
             .unwrap();
-    
+
         assert!(!res.trytes.is_empty());
     })
 }
@@ -256,13 +256,18 @@ async fn test_get_new_address() {
 #[ignore]
 async fn test_get_node_api_configuration() {
     let client = client_init();
-    client.get_node_api_configuration(Url::parse("https://nodes.comnet.thetangle.org").unwrap()).await.unwrap();
+    client
+        .get_node_api_configuration(Url::parse("https://nodes.comnet.thetangle.org").unwrap())
+        .await
+        .unwrap();
 }
 
 #[smol_potat::test]
 async fn test_get_node_info() {
     let client = client_init();
-    let _ = client.get_node_info(Url::parse("https://nodes.comnet.thetangle.org").unwrap()).await;
+    let _ = client
+        .get_node_info(Url::parse("https://nodes.comnet.thetangle.org").unwrap())
+        .await;
 }
 
 #[smol_potat::test]

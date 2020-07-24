@@ -109,14 +109,16 @@ impl ClientBuilder {
         };
 
         let mut sync = client.clone();
-        smol::block_on(async {sync.sync().await});
-        
-        std::thread::spawn(move || smol::block_on(async {
-            loop {
-                smol::Timer::after(std::time::Duration::from_secs(180)).await;
-                sync.sync().await;
-            }
-        }));
+        smol::block_on(async { sync.sync().await });
+
+        std::thread::spawn(move || {
+            smol::block_on(async {
+                loop {
+                    smol::Timer::after(std::time::Duration::from_secs(180)).await;
+                    sync.sync().await;
+                }
+            })
+        });
 
         Ok(client)
     }
