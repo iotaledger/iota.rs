@@ -5,6 +5,7 @@ use crate::error::*;
 
 use std::collections::HashSet;
 use std::iter::FromIterator;
+use std::sync::{Arc, RwLock};
 
 use reqwest::Url;
 
@@ -98,12 +99,27 @@ impl ClientBuilder {
             x => x,
         };
 
-        Ok(Client {
-            pool: HashSet::from_iter(self.nodes.into_iter()),
+        let client = Client {
+            pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
+            sync: Arc::new(RwLock::new(Vec::new())),
             client: reqwest::Client::new(),
             mwm,
             quorum_size,
             quorum_threshold,
-        })
+        };
+
+        let mut sync = client.clone();
+        smol::block_on(async { sync.sync().await });
+
+        std::thread::spawn(move || {
+            smol::block_on(async {
+                loop {
+                    smol::Timer::after(std::time::Duration::from_secs(180)).await;
+                    sync.sync().await;
+                }
+            })
+        });
+
+        Ok(client)
     }
 }

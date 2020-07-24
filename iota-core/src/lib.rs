@@ -14,6 +14,6 @@ pub use bee_ternary as ternary;
 pub use bee_transaction as transaction;
 pub use iota_client as client;
 
-pub use client::Client;
+pub use client::{Client, ClientBuilder};
 
 // TODO prelude

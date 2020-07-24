@@ -5,7 +5,8 @@ use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, RwLock};
 
 use bee_crypto::ternary::sponge::Kerl;
 use bee_crypto::ternary::Hash;
@@ -30,8 +31,8 @@ macro_rules! response {
             .json()
             .await?
     };
-    ($body:ident, $node:ident) => {
-        Client::get()
+    ($self:ident, $body:ident, $node:ident) => {
+        $self
             .client
             .post($node)
             .header("Content-Type", "application/json")
@@ -45,10 +46,11 @@ macro_rules! response {
 }
 
 /// An instance of the client using IRI URI
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Client {
     /// Node pool of IOTA nodes
-    pub(crate) pool: HashSet<Url>,
+    pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
+    pub(crate) sync: Arc<RwLock<Vec<Url>>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     pub(crate) mwm: u8,
@@ -57,31 +59,54 @@ pub struct Client {
 }
 
 impl Client {
-    /// Create the instance of IOTA Client.
-    pub fn new() -> Self {
-        Self {
-            pool: HashSet::new(),
-            client: reqwest::Client::new(),
-            mwm: 14,
-            quorum_size: 1,
-            quorum_threshold: 100,
+    // /// Create the instance of IOTA Client.
+    // pub fn new() -> Self {
+    //     Self {
+    //         pool: Arc::new(RwLock::new(HashSet::new())),
+    //         sync: Arc::new(RwLock::new(Vec::new())),
+    //         client: reqwest::Client::new(),
+    //         mwm: 14,
+    //         quorum_size: 1,
+    //         quorum_threshold: 100,
+    //     }
+    // }
+
+    pub(crate) async fn sync(&mut self) {
+        let mut sync_list: HashMap<u32, Vec<Url>> = HashMap::new();
+        for url in &*self.pool.read().unwrap() {
+            if let Ok(milestone) = self.get_node_info(url.clone()).await {
+                let set = sync_list
+                    .entry(milestone.latest_solid_subtangle_milestone_index)
+                    .or_insert(Vec::new());
+                set.push(url.clone());
+            };
         }
+
+        *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
     }
 
     /// Add a node to the node pool.
     pub fn add_node(&mut self, uri: &str) -> Result<bool> {
         let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
-        Ok(self.pool.insert(url))
+        Ok(self.pool.write().unwrap().insert(url))
     }
 
     /// Remove a node from the node pool.
     pub fn remove_node(&mut self, uri: &str) -> Result<bool> {
         let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
-        Ok(self.pool.remove(&url))
+        Ok(self.pool.write().unwrap().remove(&url))
     }
 
     pub(crate) fn get_node(&self) -> Result<Url> {
-        Ok(self.pool.iter().next().ok_or(Error::NodePoolEmpty)?.clone())
+        // TODO getbalance, isconfirmed and were_addresses_spent_from should do quorum mode
+        Ok(self
+            .sync
+            .read()
+            .unwrap()
+            .iter()
+            .next()
+            .ok_or(Error::NodePoolEmpty)?
+            .clone())
     }
 
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
@@ -154,12 +179,16 @@ impl Client {
     }
 
     /// Gets latest solid subtangle milestone.
-    pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<Hash> {
-        let trits =
-            TryteBuf::try_from_str(&self.get_node_info().await?.latest_solid_subtangle_milestone)
-                .unwrap()
-                .as_trits()
-                .encode::<T1B1Buf>();
+    pub async fn get_latest_solid_subtangle_milestone(&self, url: Url) -> Result<Hash> {
+        let trits = TryteBuf::try_from_str(
+            &self
+                .get_node_info(url)
+                .await?
+                .latest_solid_subtangle_milestone,
+        )
+        .unwrap()
+        .as_trits()
+        .encode::<T1B1Buf>();
         let hash = Hash::try_from_inner(trits).unwrap();
         Ok(hash)
     }
@@ -275,23 +304,26 @@ impl Client {
     }
 
     /// Gets information about a node.
-    pub async fn get_node_info(&self) -> Result<GetNodeInfoResponse> {
+    pub async fn get_node_info(&self, url: Url) -> Result<GetNodeInfoResponse> {
         let body = json!( {
             "command": "getNodeInfo",
         });
 
-        let res = response!(self, body);
+        let res = response!(self, body, url);
 
         Ok(res)
     }
 
     /// Gets a node's API configuration settings.
-    pub async fn get_node_api_configuration(&self) -> Result<GetNodeAPIConfigurationResponse> {
+    pub async fn get_node_api_configuration(
+        &self,
+        url: Url,
+    ) -> Result<GetNodeAPIConfigurationResponse> {
         let body = json!( {
             "command": "getNodeAPIConfiguration",
         });
 
-        let res = response!(self, body);
+        let res = response!(self, body, url);
 
         Ok(res)
     }
