@@ -1,19 +1,21 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
-use iota_conversion::Trinary;
+use bee_ternary::T3B1Buf;
 
 use crate::response::{GetInclusionStatesResponse, GetInclusionStatesResponseBuilder};
 use crate::Client;
 
 /// Builder to construct getInclusionStates API
 #[derive(Debug)]
-pub struct GetInclusionStatesBuilder {
+pub struct GetInclusionStatesBuilder<'a> {
+    client: &'a Client,
     transactions: Vec<String>,
 }
 
-impl GetInclusionStatesBuilder {
-    pub(crate) fn new() -> Self {
+impl<'a> GetInclusionStatesBuilder<'a> {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
+            client,
             transactions: Default::default(),
         }
     }
@@ -22,7 +24,12 @@ impl GetInclusionStatesBuilder {
     pub fn transactions(mut self, transactions: &[Hash]) -> Self {
         self.transactions = transactions
             .iter()
-            .map(|h| h.as_bytes().trytes().unwrap())
+            .map(|h| {
+                (*h).encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
             .collect();
         self
     }
@@ -34,7 +41,8 @@ impl GetInclusionStatesBuilder {
             "transactions": self.transactions,
         });
 
-        let res: GetInclusionStatesResponseBuilder = response!(body);
+        let client = self.client;
+        let res: GetInclusionStatesResponseBuilder = response!(client, body);
         res.build().await
     }
 }

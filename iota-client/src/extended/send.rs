@@ -1,14 +1,15 @@
 use crate::error::Result;
-use bee_crypto::ternary::{Hash, Kerl};
+use bee_crypto::ternary::{sponge::Kerl, Hash};
 use bee_signing::ternary::TernarySeed as Seed;
 use bee_transaction::bundled::{Address, BundledTransaction as Transaction};
 
 use crate::response::{Input, Transfer};
 use crate::Client;
 
-/// Builder to construct SendTransfers API
+/// Builder to construct Send API
 //#[derive(Debug)]
-pub struct SendTransfersBuilder<'a> {
+pub struct SendBuilder<'a> {
+    client: &'a Client,
     seed: Option<&'a Seed<Kerl>>,
     transfers: Vec<Transfer>,
     security: u8,
@@ -19,9 +20,10 @@ pub struct SendTransfersBuilder<'a> {
     reference: Option<Hash>,
 }
 
-impl<'a> SendTransfersBuilder<'a> {
-    pub(crate) fn new(seed: Option<&'a Seed<Kerl>>) -> Self {
+impl<'a> SendBuilder<'a> {
+    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed<Kerl>>) -> Self {
         Self {
+            client,
             seed,
             transfers: Default::default(),
             security: 2,
@@ -78,7 +80,9 @@ impl<'a> SendTransfersBuilder<'a> {
 
     /// Send SendTransfers request
     pub async fn send(self) -> Result<Vec<Transaction>> {
-        let mut transfer = Client::prepare_transfers(self.seed)
+        let mut transfer = self
+            .client
+            .prepare_transfers(self.seed)
             .transfers(self.transfers)
             .security(self.security);
 
@@ -92,7 +96,9 @@ impl<'a> SendTransfersBuilder<'a> {
 
         let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().map(|x| x).collect();
         trytes.reverse();
-        let mut send_trytes = Client::send_trytes()
+        let mut send_trytes = self
+            .client
+            .send_trytes()
             .trytes(trytes)
             .depth(self.depth)
             .min_weight_magnitude(self.min_weight_magnitude);

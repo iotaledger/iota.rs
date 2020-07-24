@@ -9,8 +9,9 @@ use anyhow::Result;
 
 #[smol_potat::main]
 async fn main() -> Result<()> {
-    iota::Client::add_node("https://nodes.comnet.thetangle.org")?;
-    let node_info = iota::Client::get_node_info().await?;
+    let mut iota = iota::Client::new();
+    iota.add_node("https://nodes.comnet.thetangle.org")?;
+    let node_info = iota.get_node_info().await?;
     println!("{:#?}", node_info);
     Ok(())
 }

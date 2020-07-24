@@ -1,11 +1,9 @@
 [workspace]
 members = [
     "iota-core",
-    "iota-conversion",
-    "iota-constants",
     "iota-client",
     "examples",
 
-    "bindings/c",
-    "bindings/wasm",
+    #"bindings/c",
+    #"bindings/wasm",
 ]

@@ -1,20 +1,22 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
-use iota_conversion::Trinary;
+use bee_ternary::T3B1Buf;
 
 use crate::response::{GTTAResponse, GTTAResponseBuilder};
 use crate::Client;
 
 /// Builder to construct getTransactionsToApprove API
 #[derive(Debug)]
-pub struct GetTransactionsToApproveBuilder {
+pub struct GetTransactionsToApproveBuilder<'a> {
+    client: &'a Client,
     depth: u8,
     reference: Option<String>,
 }
 
-impl GetTransactionsToApproveBuilder {
-    pub(crate) fn new() -> Self {
+impl<'a> GetTransactionsToApproveBuilder<'a> {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
+            client,
             depth: Default::default(),
             reference: Default::default(),
         }
@@ -28,7 +30,13 @@ impl GetTransactionsToApproveBuilder {
 
     /// Add reference hashes
     pub fn reference(mut self, reference: &Hash) -> Self {
-        self.reference = Some(reference.as_bytes().trytes().unwrap());
+        self.reference = Some(
+            reference
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        );
         self
     }
 
@@ -43,7 +51,8 @@ impl GetTransactionsToApproveBuilder {
             body["reference"] = json!(reference);
         }
 
-        let res: GTTAResponseBuilder = response!(body);
+        let client = self.client;
+        let res: GTTAResponseBuilder = response!(client, body);
         res.build().await
     }
 }

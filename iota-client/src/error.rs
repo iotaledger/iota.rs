@@ -10,6 +10,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     /// Missing required iota seed
     MissingSeed,
+    /// Missing required iota seed
+    MissingNode,
     /// No node available in the node pool
     NodePoolEmpty,
     /// Hash is not tail of the bundle
@@ -34,6 +36,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::MissingSeed => "Must provide seed to prepare transfer".fmt(f),
+            Error::MissingNode => "Must provide node to create instance".fmt(f),
             Error::NodePoolEmpty => "No node available".fmt(f),
             Error::NotTailHash => "Provided hash is not tail".fmt(f),
             Error::QuorumError => "Fail to find quorum result".fmt(f),

@@ -1,7 +1,7 @@
 //! Response types
 use crate::error::*;
 use bee_crypto::ternary::Hash;
-use bee_ternary::TryteBuf;
+use bee_ternary::{T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField, Tag,
 };
@@ -19,9 +19,9 @@ pub struct TransactionDef {
     timestamp: u64,
     index: usize,
     last_index: usize,
-    bundle: Vec<i8>,
-    trunk: Vec<i8>,
-    branch: Vec<i8>,
+    bundle: String,
+    trunk: String,
+    branch: String,
     tag: String,
     attachment_ts: u64,
     attachment_lbts: u64,
@@ -39,9 +39,9 @@ impl From<&Transaction> for TransactionDef {
             timestamp: *transaction.timestamp().to_inner(),
             index: *transaction.index().to_inner(),
             last_index: *transaction.last_index().to_inner(),
-            bundle: transaction.bundle().as_bytes().to_vec(),
-            trunk: transaction.trunk().as_bytes().to_vec(),
-            branch: transaction.branch().as_bytes().to_vec(),
+            bundle: format!("{}", transaction.bundle()),
+            trunk: format!("{}", transaction.trunk()),
+            branch: format!("{}", transaction.branch()),
             tag: format!("{:?}", transaction.tag().to_inner().as_i8_slice()),
             attachment_ts: *transaction.attachment_ts().to_inner(),
             attachment_lbts: *transaction.attachment_lbts().to_inner(),
@@ -178,7 +178,16 @@ impl Serialize for FindTransactionsResponse {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("FindTransactionsResponse", 1)?;
-        let hashes: Vec<&[i8]> = self.hashes.iter().map(|hash| hash.as_bytes()).collect();
+        let hashes: Vec<String> = self
+            .hashes
+            .iter()
+            .map(|hash| {
+                hash.encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
+            .collect();
         state.serialize_field("hashes", &hashes)?;
         state.end()
     }
@@ -236,7 +245,16 @@ impl Serialize for GetBalancesResponse {
         state.serialize_field("balances", &self.balances)?;
         state.serialize_field("milestone_index", &self.milestone_index)?;
 
-        let references: Vec<&[i8]> = self.references.iter().map(|hash| hash.as_bytes()).collect();
+        let references: Vec<String> = self
+            .references
+            .iter()
+            .map(|hash| {
+                hash.encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
+            .collect();
         state.serialize_field("references", &references)?;
 
         state.end()
@@ -317,36 +335,6 @@ impl GetInclusionStatesResponseBuilder {
         }
 
         Ok(GetInclusionStatesResponse { states })
-    }
-}
-
-/// getNeighbors Response Type
-#[derive(Clone, Debug, Serialize)]
-pub struct GetNeighborsResponse {
-    /// Vector of `NeighborResponse`
-    pub neighbors: Vec<NeighborResponse>,
-}
-
-/// getNeighbors Response Type
-#[derive(Clone, Debug, Deserialize)]
-pub(crate) struct GetNeighborsResponseBuilder {
-    neighbors: Option<Vec<NeighborResponse>>,
-    error: Option<String>,
-    exception: Option<String>,
-}
-
-impl GetNeighborsResponseBuilder {
-    pub(crate) async fn build(self) -> Result<GetNeighborsResponse> {
-        let mut neighbors = Vec::new();
-        if let Some(exception) = self.exception {
-            return Err(Error::ResponseError(exception));
-        } else if let Some(error) = self.error {
-            return Err(Error::ResponseError(error));
-        } else if let Some(s) = self.neighbors {
-            neighbors = s;
-        }
-
-        Ok(GetNeighborsResponse { neighbors })
     }
 }
 
@@ -450,9 +438,25 @@ impl Serialize for GTTAResponse {
     {
         let mut state = serializer.serialize_struct("GTTAResponse", 2)?;
 
-        state.serialize_field("trunk_transaction", &self.trunk_transaction.as_bytes())?;
+        state.serialize_field(
+            "trunk_transaction",
+            &self
+                .trunk_transaction
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        )?;
 
-        state.serialize_field("branch_transaction", &self.branch_transaction.as_bytes())?;
+        state.serialize_field(
+            "branch_transaction",
+            &self
+                .branch_transaction
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        )?;
 
         state.end()
     }

@@ -1,21 +1,23 @@
 use crate::error::Result;
 use bee_crypto::ternary::Hash;
+use bee_ternary::T3B1Buf;
 use bee_transaction::bundled::{Address, BundledTransactionField};
-use iota_conversion::Trinary;
 
 use crate::response::{GetBalancesResponse, GetBalancesResponseBuilder};
 use crate::Client;
 
 /// Builder to construct getBalances API
 #[derive(Debug)]
-pub struct GetBalancesBuilder {
+pub struct GetBalancesBuilder<'a> {
+    client: &'a Client,
     addresses: Vec<String>,
     tips: Option<Vec<String>>,
 }
 
-impl GetBalancesBuilder {
-    pub(crate) fn new() -> Self {
+impl<'a> GetBalancesBuilder<'a> {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
+            client,
             addresses: Default::default(),
             tips: Default::default(),
         }
@@ -25,7 +27,13 @@ impl GetBalancesBuilder {
     pub fn addresses(mut self, addresses: &[Address]) -> Self {
         self.addresses = addresses
             .iter()
-            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+            .map(|h| {
+                h.to_inner()
+                    .encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
             .collect();
         self
     }
@@ -34,7 +42,12 @@ impl GetBalancesBuilder {
     pub fn tips(mut self, tips: &[Hash]) -> Self {
         self.tips = Some(
             tips.iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
+                .map(|h| {
+                    (*h).encode::<T3B1Buf>()
+                        .iter_trytes()
+                        .map(char::from)
+                        .collect::<String>()
+                })
                 .collect(),
         );
         self
@@ -51,7 +64,8 @@ impl GetBalancesBuilder {
             body["tips"] = json!(reference);
         }
 
-        let res: GetBalancesResponseBuilder = response!(body);
+        let client = self.client;
+        let res: GetBalancesResponseBuilder = response!(client, body);
         res.build().await
     }
 }

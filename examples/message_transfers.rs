@@ -7,11 +7,10 @@
 //! ```
 use anyhow::Result;
 use iota::{
-    transaction::bundled::{Address, Tag, BundledTransactionField},
     client::Transfer,
-    ternary::TryteBuf,
+    ternary::{T3B1Buf, TryteBuf},
+    transaction::bundled::{Address, BundledTransactionField, Tag},
 };
-use iota_conversion::Trinary;
 
 #[smol_potat::main]
 async fn main() -> Result<()> {
@@ -49,11 +48,13 @@ async fn main() -> Result<()> {
     });
 
     // Create a client instance
-    iota::Client::add_node("https://nodes.comnet.thetangle.org")?;
+    let mut iota = iota::Client::new();
+    iota.add_node("https://nodes.comnet.thetangle.org")?;
     // Call send_transfers api
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
-    let res = iota::Client::send_transfers(None)
+    let res = iota
+        .send(None)
         // Input the transfers
         .transfers(transfers)
         // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.
@@ -63,7 +64,16 @@ async fn main() -> Result<()> {
         .await?;
 
     // The response of send_transfers is vector of Transaction type. We choose the first one and see what is its bundle hash
-    println!("{:?}", res[0].bundle().to_inner().as_i8_slice().trytes());
+    println!(
+        "{:?}",
+        res[0]
+            .bundle()
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
+    );
 
     Ok(())
 }

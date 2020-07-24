@@ -1,22 +1,27 @@
-use crate::error::Result;
-use bee_crypto::ternary::{Hash, Kerl, Sponge};
+use crate::error::*;
+use bee_crypto::ternary::{
+    sponge::{Kerl, Sponge},
+    Hash,
+};
 use bee_ternary::{T1B1Buf, TritBuf};
-use bee_transaction::bundled::BundledTransaction as Transaction;
+use bee_transaction::bundled::{BundledTransaction as Transaction, BundledTransactionField};
 
 use crate::Client;
 
 /// Builder to construct sendTrytes API
 //#[derive(Debug)]
-pub struct SendTrytesBuilder {
+pub struct SendTrytesBuilder<'a> {
+    client: &'a Client,
     trytes: Vec<Transaction>,
     depth: u8,
     min_weight_magnitude: u8,
     reference: Option<Hash>,
 }
 
-impl SendTrytesBuilder {
-    pub(crate) fn new() -> Self {
+impl<'a> SendTrytesBuilder<'a> {
+    pub(crate) fn new(client: &'a Client) -> Self {
         Self {
+            client,
             trytes: Default::default(),
             depth: Default::default(),
             min_weight_magnitude: Default::default(),
@@ -50,7 +55,7 @@ impl SendTrytesBuilder {
 
     /// Send SendTrytes request
     pub async fn send(self) -> Result<Vec<Transaction>> {
-        let mut gtta = Client::get_transactions_to_approve().depth(self.depth);
+        let mut gtta = self.client.get_transactions_to_approve().depth(self.depth);
         if let Some(hash) = self.reference {
             gtta = gtta.reference(&hash);
         }
@@ -64,15 +69,16 @@ impl SendTrytesBuilder {
             trits
                 .subslice_mut(7533..7776)
                 .copy_from(res.branch_transaction.as_trits());
-            trunk
-                .0
-                .copy_from_slice(Kerl::default().digest(&trits).unwrap().as_i8_slice());
+            let t: TritBuf<T1B1Buf> = Kerl::default().digest(&trits).unwrap();
+            trunk = Hash::try_from_inner(t).map_err(|_| Error::TernaryError)?;
             trytes.push(
                 Transaction::from_trits(&trits).expect("Fail to convert trits to transaction"),
             );
         }
 
-        let res = Client::attach_to_tangle()
+        let res = self
+            .client
+            .attach_to_tangle()
             .trytes(&trytes)
             .branch_transaction(&res.branch_transaction)
             .trunk_transaction(&res.trunk_transaction)
@@ -81,7 +87,7 @@ impl SendTrytesBuilder {
             .await?
             .trytes;
 
-        Client::store_and_broadcast(&res).await?;
+        self.client.store_and_broadcast(&res).await?;
 
         Ok(res)
     }
