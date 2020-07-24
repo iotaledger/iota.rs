@@ -6,11 +6,10 @@
 //! cargo run --example get_new_address
 //! ```
 use anyhow::Result;
-use iota::crypto::ternary::Kerl;
+use iota::crypto::ternary::sponge::Kerl;
 use iota::signing::ternary::{Seed, TernarySeed};
-use iota::ternary::{T1B1Buf, TryteBuf};
+use iota::ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use iota::transaction::bundled::BundledTransactionField;
-use iota_conversion::Trinary;
 
 #[smol_potat::main]
 async fn main() -> Result<()> {
@@ -33,7 +32,10 @@ async fn main() -> Result<()> {
     println!(
         "Index: {}, Address:{:?}",
         index,
-        address.to_inner().as_i8_slice().trytes()
+        address.to_inner().encode::<T3B1Buf>()
+        .iter_trytes()
+        .map(char::from)
+        .collect::<String>()
     );
 
     Ok(())

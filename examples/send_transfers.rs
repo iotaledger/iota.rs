@@ -8,12 +8,11 @@
 use anyhow::Result;
 use iota::{
     client::Transfer,
-    crypto::ternary::Kerl,
+    crypto::ternary::sponge::Kerl,
     signing::ternary::{Seed, TernarySeed},
-    ternary::{T1B1Buf, TryteBuf},
+    ternary::{T1B1Buf, T3B1Buf, TryteBuf},
     transaction::bundled::{Address, BundledTransactionField},
 };
-use iota_conversion::Trinary;
 
 #[smol_potat::main]
 async fn main() -> Result<()> {
@@ -63,7 +62,10 @@ async fn main() -> Result<()> {
     .await?;
 
     // The response of send_transfers is vector of Transaction type. We choose the first one and see what is its bundle hash
-    println!("{:?}", res[0].bundle().to_inner().as_i8_slice().trytes());
+    println!("{:?}", res[0].bundle().to_inner().encode::<T3B1Buf>()
+    .iter_trytes()
+    .map(char::from)
+    .collect::<String>());
 
     Ok(())
 }

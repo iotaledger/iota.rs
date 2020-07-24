@@ -1,6 +1,7 @@
 mod common;
 use crate::common::*;
 use bee_crypto::ternary::*;
+use bee_crypto::ternary::sponge::Kerl;
 use bee_signing::ternary::*;
 use bee_ternary::*;
 use bee_transaction::bundled::*;

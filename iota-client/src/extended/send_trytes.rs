@@ -1,14 +1,12 @@
-use crate::error::Result;
+use crate::error::*;
 use bee_crypto::ternary::{
     sponge::{Kerl, Sponge},
     Hash,
 };
-use bee_ternary::{T1B1Buf, TritBuf, Trits, T1B1};
-use bee_transaction::bundled::BundledTransaction as Transaction;
+use bee_ternary::{T1B1Buf, TritBuf};
+use bee_transaction::bundled::{BundledTransaction as Transaction, BundledTransactionField};
 
 use crate::Client;
-
-use std::convert::TryFrom;
 
 /// Builder to construct sendTrytes API
 //#[derive(Debug)]
@@ -72,7 +70,7 @@ impl<'a> SendTrytesBuilder<'a> {
                 .subslice_mut(7533..7776)
                 .copy_from(res.branch_transaction.as_trits());
             let t: TritBuf<T1B1Buf> = Kerl::default().digest(&trits).unwrap();
-            trunk = Hash::try_from(t.as_slice())?;
+            trunk = Hash::try_from_inner(t).map_err(|_|Error::TernaryError)?;
             trytes.push(
                 Transaction::from_trits(&trits).expect("Fail to convert trits to transaction"),
             );

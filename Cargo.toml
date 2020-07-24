@@ -2,7 +2,7 @@
 members = [
     "iota-core",
     "iota-client",
-    #"examples",
+    "examples",
 
     #"bindings/c",
     #"bindings/wasm",

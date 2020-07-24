@@ -6,12 +6,11 @@ use crate::response::*;
 use crate::util::tx_trytes;
 
 use std::collections::HashSet;
-use std::convert::TryFrom;
 
 use bee_crypto::ternary::sponge::Kerl;
 use bee_crypto::ternary::Hash;
 use bee_signing::ternary::TernarySeed as Seed;
-use bee_ternary::{Btrit, T1B1Buf, T3B1Buf, Trits, TryteBuf, T1B1};
+use bee_ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField,
 };
@@ -156,14 +155,12 @@ impl Client {
 
     /// Gets latest solid subtangle milestone.
     pub async fn get_latest_solid_subtangle_milestone(&self) -> Result<Hash> {
-        let trits: &Trits<T1B1<Btrit>> =
+        let trits =
             TryteBuf::try_from_str(&self.get_node_info().await?.latest_solid_subtangle_milestone)
                 .unwrap()
                 .as_trits()
-                .encode::<T1B1Buf>()
-                .as_slice();
-        let mut hash = Hash::zeros();
-        hash = Hash::try_from(trits).unwrap();
+                .encode::<T1B1Buf>();
+        let hash = Hash::try_from_inner(trits).unwrap();
         Ok(hash)
     }
 

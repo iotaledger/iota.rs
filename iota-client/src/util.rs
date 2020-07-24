@@ -17,8 +17,8 @@ pub(crate) fn tx_trytes(tx: &Transaction) -> String {
 
     fn num_to_tryte_string(num: i64, len: usize) -> String {
         let mut trytes: TritBuf<T1B1Buf> = num.into();
-        let n = trytes.len() - len;
-        for i in 0..n {
+        let n = len - trytes.len();
+        for _ in 0..n {
             trytes.push(Btrit::Zero);
         }
         trytes
@@ -93,8 +93,16 @@ pub fn str_to_trytes(input: &str) -> TryteBuf {
 pub fn bytes_to_trytes(input: &[u8]) -> TryteBuf {
     let mut trytes = TryteBuf::with_capacity(input.len() * 2);
     for byte in input {
-        let first = (byte % 27 - 13) as i8;
-        let second = (byte / 27) as i8;
+        let first: i8 = match (byte % 27) as i8 {
+            b @ 0..=13 => b,
+            b @ 14..=26 => b - 27,
+            _ => unreachable!(),
+        };
+        let second = match (byte / 27) as i8 {
+            b @ 0..=13 => b,
+            b @ 14..=26 => b - 27,
+            _ => unreachable!(),
+        };
 
         trytes.push(first.try_into().unwrap());
         trytes.push(second.try_into().unwrap());
