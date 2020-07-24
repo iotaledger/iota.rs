@@ -69,32 +69,32 @@ jobs:
         with:
           command: test
 
-  wasm:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        rust: [stable]
-    steps:
-      - uses: actions/checkout@v2
+  # wasm:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest, windows-latest, macos-latest]
+  #       rust: [stable]
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Install latest ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: ${{ matrix.rust }}
-            profile: minimal
-            override: true
+  #     - name: Install latest ${{ matrix.rust }}
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #           toolchain: ${{ matrix.rust }}
+  #           profile: minimal
+  #           override: true
 
-      - name: Install wasm-pack
-        run: cargo install wasm-pack
+  #     - name: Install wasm-pack
+  #       run: cargo install wasm-pack
 
-      - name: Install npm dependencies
-        run: |
-          cd ./bindings/wasm
-          yarn
+  #     - name: Install npm dependencies
+  #       run: |
+  #         cd ./bindings/wasm
+  #         yarn
 
-      - name: Run yarn test
-        run: |
-          cd ./bindings/wasm
-          yarn test
+  #     - name: Run yarn test
+  #       run: |
+  #         cd ./bindings/wasm
+  #         yarn test
