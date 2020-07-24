@@ -16,7 +16,6 @@ use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField,
 };
 use bee_transaction::TransactionVertex;
-use iota_conversion::Trinary;
 use reqwest::Url;
 
 macro_rules! response {
@@ -377,7 +376,7 @@ impl Client {
     ) -> Result<WereAddressesSpentFromResponse> {
         let addresses: Vec<String> = addresses
             .iter()
-            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+            .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
             .collect();
         let body = json!({
             "command": "wereAddressesSpentFrom",

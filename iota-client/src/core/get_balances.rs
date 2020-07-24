@@ -2,7 +2,6 @@ use crate::error::Result;
 use bee_crypto::ternary::Hash;
 use bee_transaction::bundled::{Address, BundledTransactionField};
 use bee_ternary::T3B1Buf;
-use iota_conversion::Trinary;
 
 use crate::response::{GetBalancesResponse, GetBalancesResponseBuilder};
 use crate::Client;
@@ -28,7 +27,7 @@ impl<'a> GetBalancesBuilder<'a> {
     pub fn addresses(mut self, addresses: &[Address]) -> Self {
         self.addresses = addresses
             .iter()
-            .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+            .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
             .collect();
         self
     }

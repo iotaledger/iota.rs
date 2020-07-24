@@ -2,7 +2,6 @@ use crate::error::Result;
 use bee_crypto::ternary::Hash;
 use bee_transaction::bundled::{Address, BundledTransactionField, Tag};
 use bee_ternary::T3B1Buf;
-use iota_conversion::Trinary;
 
 use crate::response::{FindTransactionsResponse, FindTransactionsResponseBuilder};
 use crate::Client;
@@ -43,7 +42,7 @@ impl<'a> FindTransactionsBuilder<'a> {
     pub fn tags(mut self, tags: &[Tag]) -> Self {
         self.tags = Some(
             tags.iter()
-                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+                .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
                 .collect(),
         );
         self
@@ -54,7 +53,7 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.approvees = Some(
             approvees
                 .iter()
-                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+                .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
                 .collect(),
         );
         self
@@ -65,7 +64,7 @@ impl<'a> FindTransactionsBuilder<'a> {
         self.addresses = Some(
             addresses
                 .iter()
-                .map(|h| h.to_inner().as_i8_slice().trytes().unwrap())
+                .map(|h| h.to_inner().encode::<T3B1Buf>().iter_trytes().map(char::from).collect::<String>())
                 .collect(),
         );
         self
