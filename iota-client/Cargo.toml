@@ -32,6 +32,6 @@ smol-potat = "0.3.3"
 #quorum = ["smol"]
 #wasm = ["chrono/wasmbind"]
 
-[[test]]
-name = "quorum"
-required-features = ["quorum"]
+#[[test]]
+#name = "quorum"
+#required-features = ["quorum"]
