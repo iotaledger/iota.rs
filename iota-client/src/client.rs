@@ -6,6 +6,7 @@ use crate::response::*;
 use crate::util::tx_trytes;
 
 use std::collections::{HashSet, HashMap};
+use std::sync::{Arc, RwLock};
 
 use bee_crypto::ternary::sponge::Kerl;
 use bee_crypto::ternary::Hash;
@@ -45,11 +46,11 @@ macro_rules! response {
 }
 
 /// An instance of the client using IRI URI
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Client {
     /// Node pool of IOTA nodes
-    pub(crate) pool: HashSet<Url>,
-    pub(crate) sync: Vec<Url>,
+    pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
+    pub(crate) sync: Arc<RwLock<Vec<Url>>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     pub(crate) mwm: u8,
@@ -61,8 +62,8 @@ impl Client {
     /// Create the instance of IOTA Client.
     pub fn new() -> Self {
         Self {
-            pool: HashSet::new(),
-            sync: Vec::new(),
+            pool: Arc::new(RwLock::new(HashSet::new())),
+            sync: Arc::new(RwLock::new(Vec::new())),
             client: reqwest::Client::new(),
             mwm: 14,
             quorum_size: 1,
@@ -70,32 +71,33 @@ impl Client {
         }
     }
 
-    async fn sync(&mut self) {
+    pub(crate) async fn sync(&mut self) {
         let mut sync_list: HashMap<u32, Vec<Url>> = HashMap::new();
-        for url  in &self.pool {
+        for url  in &*self.pool.read().unwrap() {
             if let Ok(milestone) = self.get_node_info(url.clone()).await {
                 let set = sync_list.entry(milestone.latest_solid_subtangle_milestone_index).or_insert(Vec::new());
                 set.push(url.clone());
             };
         }
 
-        self.sync = sync_list.into_iter().max_by_key(|(x,_)|*x).unwrap().1;
+        *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x,_)|*x).unwrap().1;
     }
 
     /// Add a node to the node pool.
     pub fn add_node(&mut self, uri: &str) -> Result<bool> {
         let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
-        Ok(self.pool.insert(url))
+        Ok(self.pool.write().unwrap().insert(url))
     }
 
     /// Remove a node from the node pool.
     pub fn remove_node(&mut self, uri: &str) -> Result<bool> {
         let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
-        Ok(self.pool.remove(&url))
+        Ok(self.pool.write().unwrap().remove(&url))
     }
 
     pub(crate) fn get_node(&self) -> Result<Url> {
-        Ok(self.sync.iter().next().ok_or(Error::NodePoolEmpty)?.clone())
+        // TODO getbalance, isconfirmed and were_addresses_spent_from should do quorum mode
+        Ok(self.pool.read().unwrap().iter().next().ok_or(Error::NodePoolEmpty)?.clone())
     }
 
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
