@@ -201,10 +201,7 @@ impl Client {
     /// [`seed`]: ../extended/struct.GenerateNewAddressBuilder.html#method.seed
     /// [`index`]: ../extended/struct.GenerateNewAddressBuilder.html#method.index
     /// [`security`]: ../extended/struct.GenerateNewAddressBuilder.html#method.security
-    pub fn generate_new_address<'a>(
-        &'a self,
-        seed: &'a Seed,
-    ) -> GenerateNewAddressBuilder<'a> {
+    pub fn generate_new_address<'a>(&'a self, seed: &'a Seed) -> GenerateNewAddressBuilder<'a> {
         GenerateNewAddressBuilder::new(self, seed)
     }
 
@@ -222,10 +219,7 @@ impl Client {
     /// [`inputs`]: ../extended/struct.PrepareTransfersBuilder.html#method.inputs
     /// [`remainder`]: ../extended/struct.PrepareTransfersBuilder.html#method.remainder
     /// [`security`]: ../extended/struct.PrepareTransfersBuilder.html#method.security
-    pub fn prepare_transfers<'a>(
-        &'a self,
-        seed: Option<&'a Seed>,
-    ) -> PrepareTransfersBuilder<'a> {
+    pub fn prepare_transfers<'a>(&'a self, seed: Option<&'a Seed>) -> PrepareTransfersBuilder<'a> {
         PrepareTransfersBuilder::new(self, seed)
     }
 

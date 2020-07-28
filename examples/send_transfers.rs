@@ -36,7 +36,9 @@ async fn main() -> Result<()> {
     });
 
     // Create a client instance
-    let iota = iota::ClientBuilder::new().node("https://nodes.comnet.thetangle.org")?.build()?;
+    let iota = iota::ClientBuilder::new()
+        .node("https://nodes.comnet.thetangle.org")?
+        .build()?;
     // Call send_transfers api
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.

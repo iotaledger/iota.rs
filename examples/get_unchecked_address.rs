@@ -8,8 +8,9 @@
 //! ```
 use iota::crypto::ternary::sponge::Kerl;
 use iota::signing::ternary::{
+    seed::Seed,
     wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
-    PrivateKey, PrivateKeyGenerator, PublicKey, seed::Seed,
+    PrivateKey, PrivateKeyGenerator, PublicKey,
 };
 use iota::ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use iota::transaction::bundled::{Address, BundledTransactionField};

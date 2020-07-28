@@ -24,7 +24,9 @@ async fn main() -> Result<()> {
     .unwrap();
 
     // The response of get_new_address is a tuple of an adress with its corresponding index from seed.
-    let iota = iota::ClientBuilder::new().node("https://nodes.comnet.thetangle.org")?.build()?;
+    let iota = iota::ClientBuilder::new()
+        .node("https://nodes.comnet.thetangle.org")?
+        .build()?;
     let (index, address) = iota.generate_new_address(&seed).generate().await.unwrap();
 
     println!(

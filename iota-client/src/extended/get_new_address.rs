@@ -1,8 +1,9 @@
 use crate::error::Result;
 use bee_crypto::ternary::sponge::Kerl;
 use bee_signing::ternary::{
+    seed::Seed,
     wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
-    PrivateKey, PrivateKeyGenerator, PublicKey, seed::Seed,
+    PrivateKey, PrivateKeyGenerator, PublicKey,
 };
 use bee_transaction::bundled::{Address, BundledTransactionField};
 
