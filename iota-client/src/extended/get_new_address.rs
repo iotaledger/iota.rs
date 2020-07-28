@@ -1,8 +1,9 @@
 use crate::error::Result;
 use bee_crypto::ternary::sponge::Kerl;
 use bee_signing::ternary::{
+    seed::Seed,
     wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
-    PrivateKey, PrivateKeyGenerator, PublicKey, TernarySeed as Seed,
+    PrivateKey, PrivateKeyGenerator, PublicKey,
 };
 use bee_transaction::bundled::{Address, BundledTransactionField};
 
@@ -12,13 +13,13 @@ use crate::Client;
 //#[derive(Debug)]
 pub struct GenerateNewAddressBuilder<'a> {
     client: &'a Client,
-    seed: &'a Seed<Kerl>,
+    seed: &'a Seed,
     index: u64,
     security: WotsSecurityLevel,
 }
 
 impl<'a> GenerateNewAddressBuilder<'a> {
-    pub(crate) fn new(client: &'a Client, seed: &'a Seed<Kerl>) -> Self {
+    pub(crate) fn new(client: &'a Client, seed: &'a Seed) -> Self {
         Self {
             client,
             seed,

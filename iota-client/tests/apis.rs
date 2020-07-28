@@ -1,8 +1,7 @@
 mod common;
 use crate::common::*;
-use bee_crypto::ternary::sponge::Kerl;
 use bee_crypto::ternary::*;
-use bee_signing::ternary::*;
+use bee_signing::ternary::seed::Seed;
 use bee_ternary::*;
 use bee_transaction::bundled::*;
 use iota_client::response::*;
@@ -200,7 +199,7 @@ async fn test_get_inputs() {
     let client = client_init();
     let _ = client
         .get_inputs(
-            &TernarySeed::<Kerl>::from_trits(
+            &Seed::from_trits(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                     .unwrap()
                     .as_trits()
@@ -239,7 +238,7 @@ async fn test_get_new_address() {
     let client = client_init();
     let _ = client
         .generate_new_address(
-            &TernarySeed::<Kerl>::from_trits(
+            &Seed::from_trits(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                     .unwrap()
                     .as_trits()
@@ -350,7 +349,7 @@ async fn test_prepare_transfers_no_value() {
     let client = client_init();
     let _ = client
         .prepare_transfers(Some(
-            &TernarySeed::<Kerl>::from_trits(
+            &Seed::from_trits(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                     .unwrap()
                     .as_trits()
@@ -403,7 +402,7 @@ async fn test_send_transfers_no_value() {
     let client = client_init();
     let _ = client
         .send(Some(
-            &TernarySeed::<Kerl>::from_trits(
+            &Seed::from_trits(
                 TryteBuf::try_from_str(TEST_BUNDLE_TX_0)
                     .unwrap()
                     .as_trits()

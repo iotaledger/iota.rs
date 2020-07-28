@@ -8,9 +8,8 @@ use crate::util::tx_trytes;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 
-use bee_crypto::ternary::sponge::Kerl;
 use bee_crypto::ternary::Hash;
-use bee_signing::ternary::TernarySeed as Seed;
+use bee_signing::ternary::seed::Seed;
 use bee_ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField,
@@ -128,7 +127,7 @@ impl Client {
     /// [`depth`]: ../extended/struct.SendTransfersBuilder.html#method.depth
     /// [`min_weight_magnitude`]: ../extended/struct.SendTransfersBuilder.html#method.min_weight_magnitude
     /// [`reference`]: ../extended/struct.SendTransfersBuilder.html#method.reference
-    pub fn send<'a>(&'a self, seed: Option<&'a Seed<Kerl>>) -> SendBuilder<'a> {
+    pub fn send<'a>(&'a self, seed: Option<&'a Seed>) -> SendBuilder<'a> {
         SendBuilder::new(self, seed)
     }
 
@@ -160,7 +159,7 @@ impl Client {
     /// [`threshold`]: ../extended/struct.GetInputsBuilder.html#method.threshold
     /// [`index`]: ../extended/struct.GetInputsBuilder.html#method.index
     /// [`security`]: ../extended/struct.GetInputsBuilder.html#method.security
-    pub fn get_inputs<'a>(&'a self, seed: &'a Seed<Kerl>) -> GetInputsBuilder<'a> {
+    pub fn get_inputs<'a>(&'a self, seed: &'a Seed) -> GetInputsBuilder<'a> {
         GetInputsBuilder::new(self, seed)
     }
 
@@ -202,10 +201,7 @@ impl Client {
     /// [`seed`]: ../extended/struct.GenerateNewAddressBuilder.html#method.seed
     /// [`index`]: ../extended/struct.GenerateNewAddressBuilder.html#method.index
     /// [`security`]: ../extended/struct.GenerateNewAddressBuilder.html#method.security
-    pub fn generate_new_address<'a>(
-        &'a self,
-        seed: &'a Seed<Kerl>,
-    ) -> GenerateNewAddressBuilder<'a> {
+    pub fn generate_new_address<'a>(&'a self, seed: &'a Seed) -> GenerateNewAddressBuilder<'a> {
         GenerateNewAddressBuilder::new(self, seed)
     }
 
@@ -223,10 +219,7 @@ impl Client {
     /// [`inputs`]: ../extended/struct.PrepareTransfersBuilder.html#method.inputs
     /// [`remainder`]: ../extended/struct.PrepareTransfersBuilder.html#method.remainder
     /// [`security`]: ../extended/struct.PrepareTransfersBuilder.html#method.security
-    pub fn prepare_transfers<'a>(
-        &'a self,
-        seed: Option<&'a Seed<Kerl>>,
-    ) -> PrepareTransfersBuilder<'a> {
+    pub fn prepare_transfers<'a>(&'a self, seed: Option<&'a Seed>) -> PrepareTransfersBuilder<'a> {
         PrepareTransfersBuilder::new(self, seed)
     }
 
