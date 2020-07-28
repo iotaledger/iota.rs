@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
-use bee_crypto::ternary::{sponge::Kerl, Hash};
-use bee_signing::ternary::{wots::WotsSecurityLevel, TernarySeed as Seed};
+use bee_crypto::ternary::Hash;
+use bee_signing::ternary::{wots::WotsSecurityLevel, seed::Seed};
 use bee_ternary::{T1B1Buf, TritBuf};
 use bee_transaction::bundled::{
     Address, Bundle, BundledTransactionBuilder as TransactionBuilder, BundledTransactionField,
@@ -17,7 +17,7 @@ use crate::Client;
 //#[derive(Debug)]
 pub struct PrepareTransfersBuilder<'a> {
     client: &'a Client,
-    seed: Option<&'a Seed<Kerl>>,
+    seed: Option<&'a Seed>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -25,7 +25,7 @@ pub struct PrepareTransfersBuilder<'a> {
 }
 
 impl<'a> PrepareTransfersBuilder<'a> {
-    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed<Kerl>>) -> Self {
+    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed>) -> Self {
         Self {
             client,
             seed,

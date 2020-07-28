@@ -9,13 +9,13 @@
 use iota::crypto::ternary::sponge::Kerl;
 use iota::signing::ternary::{
     wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
-    PrivateKey, PrivateKeyGenerator, PublicKey, Seed, TernarySeed,
+    PrivateKey, PrivateKeyGenerator, PublicKey, seed::Seed,
 };
 use iota::ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use iota::transaction::bundled::{Address, BundledTransactionField};
 
 fn main() {
-    let seed = TernarySeed::<Kerl>::from_trits(
+    let seed = Seed::from_trits(
         TryteBuf::try_from_str(
             "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
         )

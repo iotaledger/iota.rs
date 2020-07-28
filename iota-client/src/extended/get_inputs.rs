@@ -1,6 +1,5 @@
 use crate::error::*;
-use bee_crypto::ternary::sponge::Kerl;
-use bee_signing::ternary::TernarySeed as Seed;
+use bee_signing::ternary::seed::Seed;
 
 use crate::response::Input;
 use crate::Client;
@@ -9,14 +8,14 @@ use crate::Client;
 //#[derive(Debug)]
 pub struct GetInputsBuilder<'a> {
     client: &'a Client,
-    seed: &'a Seed<Kerl>,
+    seed: &'a Seed,
     index: u64,
     security: u8,
     threshold: u64,
 }
 
 impl<'a> GetInputsBuilder<'a> {
-    pub(crate) fn new(client: &'a Client, seed: &'a Seed<Kerl>) -> Self {
+    pub(crate) fn new(client: &'a Client, seed: &'a Seed) -> Self {
         Self {
             client,
             seed,

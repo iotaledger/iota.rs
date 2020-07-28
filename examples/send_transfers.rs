@@ -8,8 +8,7 @@
 use anyhow::Result;
 use iota::{
     client::Transfer,
-    crypto::ternary::sponge::Kerl,
-    signing::ternary::{Seed, TernarySeed},
+    signing::ternary::seed::Seed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
     transaction::bundled::{Address, BundledTransactionField},
 };
@@ -42,7 +41,7 @@ async fn main() -> Result<()> {
     // Below is just a dummy seed which just serves as an example.
     // If you want to replace your own. It probably should be a seed with balance on comnet/devnet.
     let res = iota.send(Some(
-        &TernarySeed::<Kerl>::from_trits(
+        &Seed::from_trits(
             TryteBuf::try_from_str(
                 "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
             )

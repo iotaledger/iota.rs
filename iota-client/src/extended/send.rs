@@ -1,6 +1,6 @@
 use crate::error::Result;
-use bee_crypto::ternary::{sponge::Kerl, Hash};
-use bee_signing::ternary::TernarySeed as Seed;
+use bee_crypto::ternary::Hash;
+use bee_signing::ternary::seed::Seed;
 use bee_transaction::bundled::{Address, BundledTransaction as Transaction};
 
 use crate::response::{Input, Transfer};
@@ -10,7 +10,7 @@ use crate::Client;
 //#[derive(Debug)]
 pub struct SendBuilder<'a> {
     client: &'a Client,
-    seed: Option<&'a Seed<Kerl>>,
+    seed: Option<&'a Seed>,
     transfers: Vec<Transfer>,
     security: u8,
     inputs: Option<Vec<Input>>,
@@ -21,7 +21,7 @@ pub struct SendBuilder<'a> {
 }
 
 impl<'a> SendBuilder<'a> {
-    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed<Kerl>>) -> Self {
+    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed>) -> Self {
         Self {
             client,
             seed,
