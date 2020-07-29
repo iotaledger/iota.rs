@@ -15,6 +15,7 @@ pub mod client;
 pub mod core;
 pub mod error;
 pub mod extended;
+pub mod raw;
 pub mod response;
 pub mod trivial;
 mod util;
