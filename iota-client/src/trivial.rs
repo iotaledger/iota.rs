@@ -1,8 +1,8 @@
 //! Trivial API that users usually don't need to call.
 
+use crate::client::Client;
 use crate::error::*;
 use crate::extended::*;
-use crate::client::Client;
 
 use bee_crypto::ternary::Hash;
 use bee_signing::ternary::seed::Seed;

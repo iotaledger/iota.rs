@@ -1,13 +1,12 @@
 //! Main API of iota stack. These are the recommended methods to call with the nodes.
 
+use crate::client::Client;
 use crate::core::*;
 use crate::error::*;
 use crate::extended::*;
-use crate::client::Client;
 
 use bee_crypto::ternary::Hash;
 use bee_signing::ternary::seed::Seed;
-
 
 impl Client {
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
@@ -33,7 +32,7 @@ impl Client {
         SendBuilder::new(self, seed)
     }
 
-        /// Finds transactions that contain the given values in their transaction fields.
+    /// Finds transactions that contain the given values in their transaction fields.
     /// The parameters define the transaction fields to search for, including bundles, addresses, tags, and approvees.
     /// Using multiple transaction fields, returns transactions hashes at the intersection of those values.
     /// # Parameters
@@ -65,7 +64,10 @@ impl Client {
 
     // TODO get_addresses
 
-    // TODO get_balance
+    /// Returns the balance for a provided seed by checking the addresses for a seed up until a given point.
+    pub async fn get_balance(&self, seed: &Seed) -> Result<u64> {
+        Ok(GetInputsBuilder::new(self, seed).generate().await?.0)
+    }
 
     /// Gets the confirmed balance of an address.
     /// If the tips parameter is missing, the returned balance is correct as of the latest confirmed milestone.

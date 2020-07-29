@@ -1,10 +1,10 @@
 //! Raw API of any Bee/IRI/Hornet node.
 
+use crate::client::Client;
 use crate::core::*;
 use crate::error::*;
 use crate::response::*;
 use crate::util::tx_trytes;
-use crate::client::Client;
 
 use bee_crypto::ternary::Hash;
 use bee_ternary::T3B1Buf;
