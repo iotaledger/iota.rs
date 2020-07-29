@@ -62,7 +62,10 @@ impl Client {
         GenerateNewAddressBuilder::new(self, seed)
     }
 
-    // TODO get_addresses
+    /// Return a list of addresses with checksum from the seed regardless of their validity.
+    pub fn get_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
+        GetAddressesBuilder::new(seed)
+    }
 
     /// Returns the balance for a provided seed by checking the addresses for a seed up until a given point.
     pub async fn get_balance(&self, seed: &Seed) -> Result<u64> {
