@@ -142,7 +142,7 @@ async fn test_find_tx_by_approvee() {
 async fn test_get_balances() {
     let client = client_init();
     let _ = client
-        .get_balances()
+        .get_balance_of_addresses()
         .addresses(&[Address::from_inner_unchecked(
             TryteBuf::try_from_str(TEST_ADDRESS_0)
                 .unwrap()

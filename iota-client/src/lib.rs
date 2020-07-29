@@ -8,6 +8,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_json;
 
+pub mod api;
 pub mod builder;
 #[macro_use]
 pub mod client;
