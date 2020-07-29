@@ -28,7 +28,7 @@ fn main() {
 
     let address: Address = Address::try_from_inner(
         WotsSpongePrivateKeyGeneratorBuilder::<Kerl>::default()
-            .security_level(WotsSecurityLevel::Medium)
+            .with_security_level(WotsSecurityLevel::Medium)
             .build()
             .unwrap()
             .generate_from_seed(&seed, 3)

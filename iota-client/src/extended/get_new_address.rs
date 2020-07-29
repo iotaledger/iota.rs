@@ -53,7 +53,7 @@ impl<'a> GenerateNewAddressBuilder<'a> {
             // TODO impl Error trait in iota_signing_preview
             let address = Address::from_inner_unchecked(
                 WotsSpongePrivateKeyGeneratorBuilder::<Kerl>::default()
-                    .security_level(self.security)
+                    .with_security_level(self.security)
                     .build()
                     .unwrap()
                     .generate_from_seed(self.seed, index)
