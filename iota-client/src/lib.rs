@@ -14,9 +14,8 @@ pub mod client;
 pub mod core;
 pub mod error;
 pub mod extended;
-// #[cfg(feature = "quorum")]
-// pub mod quorum;
 pub mod response;
+pub mod trivial;
 mod util;
 
 pub use builder::ClientBuilder;
