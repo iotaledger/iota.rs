@@ -49,12 +49,14 @@ async fn test_broadcast_bundle() {
         .unwrap();
 }
 
+#[ignore]
 #[smol_potat::test]
 async fn test_broadcast_transactions() {
     let client = client_init();
     let _ = client.broadcast_transactions(&[tx()]).await.unwrap();
 }
 
+#[ignore]
 #[smol_potat::test]
 async fn test_check_consistency() {
     let client = client_init();
@@ -320,6 +322,7 @@ async fn test_is_address_used() {
     assert_eq!(res, false);
 }
 
+#[ignore]
 #[smol_potat::test]
 async fn test_is_promotable() {
     let client = client_init();
@@ -428,6 +431,7 @@ async fn test_send_trytes() {
         .await;
 }
 
+#[ignore]
 #[smol_potat::test]
 async fn test_store_and_broadcast() {
     let client = client_init();
