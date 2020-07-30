@@ -35,6 +35,7 @@ async fn test_attach_to_tangle() {
     })
 }
 
+#[ignore]
 #[smol_potat::test]
 async fn test_broadcast_bundle() {
     let client = client_init();
