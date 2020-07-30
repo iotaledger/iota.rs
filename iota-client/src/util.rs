@@ -1,7 +1,7 @@
 use bee_ternary::tryte::TryteBuf;
 use bee_ternary::*;
 use bee_transaction::bundled::{BundledTransaction as Transaction, BundledTransactionField};
-use bee_transaction::TransactionVertex;
+use bee_transaction::Vertex;
 
 use std::convert::TryInto;
 
