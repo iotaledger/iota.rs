@@ -14,7 +14,7 @@ use bee_ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField,
 };
-use bee_transaction::TransactionVertex;
+use bee_transaction::Vertex;
 use reqwest::Url;
 
 macro_rules! response {

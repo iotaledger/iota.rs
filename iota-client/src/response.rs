@@ -5,7 +5,7 @@ use bee_ternary::{T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField, Tag,
 };
-use bee_transaction::TransactionVertex;
+use bee_transaction::Vertex;
 use serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 
 // TODO: remove this struct once iota_bundle_preview::Transaction implements Serialize
