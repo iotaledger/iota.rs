@@ -17,7 +17,7 @@ bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-ternary = { version = "0.3.1-alpha", git = "https://github.com/iotaledger/bee.git", features = ["serde1"] }
 bee-signing = { git = "https://github.com/iotaledger/bee.git" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git" }
-reqwest = { version = "0.10.6", features = ["json"] }
+reqwest = { version = "0.10.6", features = ["json", "rustls-tls"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = "0.4.12"
