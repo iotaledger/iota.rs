@@ -3,7 +3,7 @@
 //! Run with:
 //!
 //! ```
-//! cargo run --example get_new_address
+//! cargo run --example generate_new_address
 //! ```
 use anyhow::Result;
 use iota::signing::ternary::seed::Seed;
