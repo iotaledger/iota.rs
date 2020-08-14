@@ -30,7 +30,7 @@ impl<'a> SendBuilder<'a> {
             inputs: None,
             remainder: None,
             depth: 3,
-            min_weight_magnitude: 14,
+            min_weight_magnitude: client.mwm,
             reference: Default::default(),
         }
     }
