@@ -23,10 +23,10 @@ Specification of High Level Abstraction API
 * [Bee / IRI API](#Bee-/-IRI-API)
     * [AttachToTangle](#AttachToTangle)
     * [GetInclusionState](#GetInclusionState)
-    * [GetTransactionToApprove](#GetTransactionToApprove)
-    * [GetTrytes](#GetTrytes)
-    * [BroadcastTransactions](#BroadcastTransactions)
-    * [StoreTransactions](#StoreTransactions)
+    * [GetMessagesToApprove](#GetMessagesToApprove)
+    * [GetBytes](#GetBytes)
+    * [BroadcastMessages](#BroadcastMessages)
+    * [StoreMessages](#StoreMessages)
     * [WereAddressesSpentFrom](#WereAddressesSpentFrom)
 * [Objects](#Objects)
     * [Network](#Network)
@@ -259,9 +259,9 @@ Following are the steps for implementing this method if provided value is zero:
 *   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
 
 
-## GetTransaction
+## GetMessage
 
-Retrieve a single transaction object using the transaction hash; Given the variable transaction length/atomic transactions in Chrysalis this will be a more commonly used function over retrieving multiple transactions from a bundle which we won’t have any more with Chrysalis.
+Retrieve a single message object using the message hash; Given the variable transaction length/atomic transactions in Chrysalis this will be a more commonly used function over retrieving multiple transactions from a bundle which we won’t have any more with Chrysalis.
 
 
 ### Parameters
@@ -279,7 +279,7 @@ Retrieve a single transaction object using the transaction hash; Given the varia
    </td>
   </tr>
   <tr>
-   <td><strong>transaction_hash</strong>
+   <td><strong>message_hash</strong>
    </td>
    <td>&#10004;
    </td>
@@ -317,8 +317,8 @@ Following are the steps for implementing this method: \
 
 
 
-*   Validate transaction hash semantics;
-*   Get transaction trytes using [getTrytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
+*   Validate message hash semantics;
+*   Get transaction bytes using [getBytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
 *   Parse transaction trytes to transaction object (See [asTransactionObject()](https://github.com/iotaledger/iota.js/blob/next/packages/transaction-converter/src/index.ts#L236) for parsing trytes to transaction object)
 
 
@@ -417,7 +417,7 @@ Find multiple messages using one or multiple fields. If multiple search fields a
 
 ### Return
 
-A list of [Transaction](#Transaction)s
+A list of [Message](#Message)s
 
 
 ### Implementation Details
