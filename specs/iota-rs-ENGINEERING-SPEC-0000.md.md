@@ -1125,13 +1125,40 @@ Network will be an enumeration with elements of **[mainnet|comnet|devnet]. **Som
 
 ## Hash
 
-A valid IOTA hash which can be treated as many objects like Address, Transaction hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters.
 
+<table>
+  <tr>
+    <td><strong>Property</strong></td>
+    <td><strong>Required</strong></td>
+    <td><strong>Type</strong></td>
+    <td><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td>seed</td>
+    <td>&#10004;</td>
+    <td>[u8; 32]</td>
+    <td>A valid IOTA hash which can be treated as many objects like Address, Transaction hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters.</td>
+  </tr>
+</table>
 
 ## Seed
 
-An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid.
 
+
+<table>
+  <tr>
+    <td><strong>Property</strong></td>
+    <td><strong>Required</strong></td>
+    <td><strong>Type</strong></td>
+    <td><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td>seed</td>
+    <td>&#10004;</td>
+    <td>[u8; 32]</td>
+    <td>An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid.</td>
+  </tr>
+</table>
 
 ## Encoding
 
@@ -1148,26 +1175,63 @@ The converter/encoder used to convert the message into bytes/trytes (whatever th
 
 The message object returned by various functions; based on the RFC for the Message object.
 
-```
-{
-	'message_id': '716f6e863f744b9ac22c97ec7b76ea5f5908bc5b2f67c61510bfc4751384ea7a',
-	'parent_1_id': '666f6e863f744b9ac22c97ec7b76ea5f5908bc5b2f67c61510bfc4751384ea7a',
-	'parent_2_id': '8baf6e863f744b9ac22c97ec7b76ea5f5908bc5b2f67c61510bfc4751384ea7a',
-	'payload_length': 1337,
-	'payload': PayloadObject (See Signed Transaction RFC),
-	'nonce': 123465
-	
-}
-```
-
-Apart from that it will have some helper functions/attributes for better higher level abstraction:
-
-```
-{
-	'data': 'This is the raw data converted using the converter, this is what mainly will be used from this object',
-	'created_at': DateTime object,
-	'attached_at': DateTime object,
-	'value': 0,
-	'is_confirmed': true, # magic functionality that either returns true or checks again if the transaction is confirmed now or still not.
-} 
-```
+<table>
+  <tr>
+    <td><strong>Property</strong></td>
+    <td><strong>Required</strong></td>
+    <td><strong>Type</strong></td>
+    <td><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td>version</td>
+    <td>&#10004;</td>
+    <td>number</td>
+    <td>Message version. Defaults to `1`.</td>
+  </tr>
+  <tr>
+    <td>trunk</td>
+    <td>&#10004;</td>
+    <td>string</td>
+    <td>Message id of the first message this message refers to.</td>
+  </tr>
+  <tr>
+    <td>branch</td>
+    <td>&#10004;</td>
+    <td>string</td>
+    <td>Message id of the second message this message refers to.</td>
+  </tr>
+  <tr>
+    <td>payload_length</td>
+    <td>&#10004;</td>
+    <td>number</td>
+    <td>Length of the payload.</td>
+  </tr>
+    <tr>
+    <td>payload</td>
+    <td>&#10004;</td>
+    <td>
+        <a href="#signedtransactionpayload">SignedTransactionPayload</a> |
+        <a href="#unsigneddatapayload">UnsignedDataPayload</a> |
+        <a href="#signeddatapayload">SignedDataPayload</a>
+    </td>
+    <td>Transaction amount (exposed as a custom type with additional methods).</td>
+  </tr>
+  <tr>
+    <td>timestamp</td>
+    <td>&#10004;</td>
+    <td><a href="#timestamp">Timestamp</a></td>
+    <td>Transaction timestamp (exposed as a custom type with additional methods).</td>
+  </tr>
+  <tr>
+    <td>nonce</td>
+    <td>&#10004;</td>
+    <td>string</td>
+    <td>Transaction nonce.</td>
+  </tr>
+  <tr>
+    <td>confirmed</td>
+    <td>&#10004;</td>
+    <td>boolean</td>
+    <td>Determines if the transaction is confirmed.</td>
+  </tr>
+</table>
