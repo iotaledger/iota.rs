@@ -13,7 +13,7 @@ Specification of High Level Abstraction API
 * [Builder](#Builder)
 * [General API](#General-API)
     * [Send](#Send)
-    * [FindTransactions](#FindTransactions)
+    * [FindMessages](#FindMessages)
     * [GenerateNewAddress](#GenerateNewAddress)
     * [GetAddresses](#GetAddresses)
     * [GetBalance](#GetBalance)
@@ -23,17 +23,17 @@ Specification of High Level Abstraction API
 * [Bee / IRI API](#Bee-/-IRI-API)
     * [AttachToTangle](#AttachToTangle)
     * [GetInclusionState](#GetInclusionState)
-    * [GetTransactionToApprove](#GetTransactionToApprove)
-    * [GetTrytes](#GetTrytes)
-    * [BroadcastTransactions](#BroadcastTransactions)
-    * [StoreTransactions](#StoreTransactions)
+    * [GetMessagesToApprove](#GetMessagesToApprove)
+    * [GetBytes](#GetBytes)
+    * [BroadcastMessages](#BroadcastMessages)
+    * [StoreMessages](#StoreMessages)
     * [WereAddressesSpentFrom](#WereAddressesSpentFrom)
 * [Objects](#Objects)
     * [Network](#Network)
     * [Hash](#Hash)
     * [Seed](#Seed)
     * [Encoding](#Encoding)
-    * [Transaction](#Transaction)
+    * [Message](#Message)
 
 
 # Introduction
@@ -259,9 +259,9 @@ Following are the steps for implementing this method if provided value is zero:
 *   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
 
 
-## GetTransaction
+## GetMessage
 
-Retrieve a single transaction object using the transaction hash; Given the variable transaction length/atomic transactions in Chrysalis this will be a more commonly used function over retrieving multiple transactions from a bundle which we won’t have any more with Chrysalis.
+Retrieve a single message object using the message hash; Given the variable transaction length/atomic transactions in Chrysalis this will be a more commonly used function over retrieving multiple transactions from a bundle which we won’t have any more with Chrysalis.
 
 
 ### Parameters
@@ -279,7 +279,7 @@ Retrieve a single transaction object using the transaction hash; Given the varia
    </td>
   </tr>
   <tr>
-   <td><strong>transaction_hash</strong>
+   <td><strong>message_hash</strong>
    </td>
    <td>&#10004;
    </td>
@@ -317,14 +317,14 @@ Following are the steps for implementing this method: \
 
 
 
-*   Validate transaction hash semantics;
-*   Get transaction trytes using [getTrytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
+*   Validate message hash semantics;
+*   Get transaction bytes using [getBytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
 *   Parse transaction trytes to transaction object (See [asTransactionObject()](https://github.com/iotaledger/iota.js/blob/next/packages/transaction-converter/src/index.ts#L236) for parsing trytes to transaction object)
 
 
-## FindTransactions
+## FindMessages
 
-Find multiple transactions using one or multiple fields. If multiple search fields are provided consider the search function to work as a AND implementation.
+Find multiple messages using one or multiple fields. If multiple search fields are provided consider the search function to work as a AND implementation.
 
 
 ### Parameters
@@ -417,7 +417,7 @@ Find multiple transactions using one or multiple fields. If multiple search fiel
 
 ### Return
 
-A list of [Transaction](#Transaction)s
+A list of [Message](#Message)s
 
 
 ### Implementation Details
@@ -787,7 +787,7 @@ Following are the steps for implementing this method: \
 *   Return the list of transactions state tuples.
 
 
-# Bee / IRI API
+# Bee / Hornet API
 
 API of Bee and Hornet will still be public. Users who know these relative low level API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet
 haven't finalized their APIs either. Following items and signatures might change later.
@@ -795,7 +795,7 @@ haven't finalized their APIs either. Following items and signatures might change
 
 ## AttachToTangle
 
-Does proof of work for the given transaction trytes. The `branch_transaction` and `trunk_transaction` parameters are returned from the [GetTransactionToApprove](#GetTransactionToApprove) method.
+Does proof of work for the given transaction trytes. The `branch_transaction` and `trunk_transaction` parameters are returned from the [GetMessagesToApprove](#GetMessagesToApprove) method.
 
 ### Parameters
 
@@ -819,7 +819,7 @@ Does proof of work for the given transaction trytes. The `branch_transaction` an
    <td>
 <a href="#Hash">Hash</a>
    </td>
-   <td>Trunk transaction hash provided by <a href="#GetTransactionToApprove">GetTransactionToApprove</a>.
+   <td>Trunk transaction hash provided by <a href="#GetMessagesToApprove">GetMessagesToApprove</a>.
    </td>
   </tr>
   <tr>
@@ -830,7 +830,7 @@ Does proof of work for the given transaction trytes. The `branch_transaction` an
    <td>
 <a href="#Hash">Hash</a>
    </td>
-   <td>Branch transaction hash provided by <a href="#GetTransactionToApprove">GetTransactionToApprove</a>.
+   <td>Branch transaction hash provided by <a href="#GetMessagesToApprove">GetMassagesToApprove</a>.
    </td>
   </tr>
   <tr>
@@ -850,7 +850,7 @@ Does proof of work for the given transaction trytes. The `branch_transaction` an
 
 ### Returns:
 
-List of [Transaction](#Transaction) which are ready to broadcast and store to tangle.
+List of [Message](#Message) objects which are ready to broadcast and store to tangle.
 
 
 ### Implementation Details
@@ -1144,20 +1144,30 @@ The converter/encoder used to convert the message into bytes/trytes (whatever th
 *   Encoding::Ascii (legacy fallback to Ascii character to Tryte conversion only, implemented as done in the Typescript/Go/Python lib (current Rust implementation is incomplete and does not include characters beyond alphanumeric).
 
 
-## Transaction
+## Message
 
-The transaction object. If we still use Ternary for encoding it would display this:
-
+The message object returned by various functions; based on the RFC for the Message object.
 
 ```
 {
-	'hash': 'transaction_hash_here',
-	'raw_data': 'RAWTRYTESORBYTES',
+	'message_id': '716f6e863f744b9ac22c97ec7b76ea5f5908bc5b2f67c61510bfc4751384ea7a',
+	'parent_1_id': '666f6e863f744b9ac22c97ec7b76ea5f5908bc5b2f67c61510bfc4751384ea7a',
+	'parent_2_id': '8baf6e863f744b9ac22c97ec7b76ea5f5908bc5b2f67c61510bfc4751384ea7a',
+	'payload_length': 1337,
+	'payload': PayloadObject (See Signed Transaction RFC),
+	'nonce': 123465
+	
+}
+```
+
+Apart from that it will have some helper functions/attributes for better higher level abstraction:
+
+```
+{
 	'data': 'This is the raw data converted using the converter, this is what mainly will be used from this object',
-	'address': 'ADDRESSOFTHETX',
 	'created_at': DateTime object,
 	'attached_at': DateTime object,
 	'value': 0,
 	'is_confirmed': true, # magic functionality that either returns true or checks again if the transaction is confirmed now or still not.
-	Other relevant fields depending on atomic transaction spec (trunk, branch tx hashes, nonce, etc, to be defined/completed)
-}
+} 
+```
