@@ -1,102 +1,68 @@
-name: build_and_test
+name: Build and run tests
 
 on:
   push:
     branches:
-      - dev
+      - master
   pull_request:
     branches:
       - dev
+    paths-ignore:
+      - 'specs/**'
 
 jobs:
-  build_and_test:
-    runs-on: ${{ matrix.os }}
+  build-and-test:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        rust: [stable]
+
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Set current week of the year in environnement
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
-        run: echo "::set-env name=CURRENT_WEEK::$(date +%V)"
-      
-      - name: Set current week of the year in environnement
-        if: startsWith(matrix.os, 'windows')
-        run: echo "::set-env name=CURRENT_WEEK::$(Get-Date -UFormat %V)"
+    - uses: actions/checkout@v2
 
-      - name: Cache cargo registry
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/registry
-          key: ${{ matrix.rust }}-${{ matrix.os }}-cargo-registry-${{ env.CURRENT_WEEK }}-build_and_test
-      - name: Cache cargo index
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/git
-          key: ${{ matrix.rust }}-${{ matrix.os }}-cargo-index-${{ env.CURRENT_WEEK }}-build_and_test
-      - name: Cache cargo binaries
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/bin
-          key: ${{ matrix.rust }}-${{ matrix.os }}-cargo-binaries-${{ env.CURRENT_WEEK }}-build_and_test
-      - name: Cache .rustup
-        uses: actions/cache@v1
-        with:
-          path: ~/.rustup
-          key: ${{ matrix.rust }}-${{ matrix.os }}-rustup-${{ env.CURRENT_WEEK }}-build_and_test
-      - name: Cache cargo build
-        uses: actions/cache@v1
-        with:
-          path: target
-          key: ${{ matrix.rust }}-${{ matrix.os }}-cargo-build-target-${{ env.CURRENT_WEEK }}-build_and_test
+    - name: Install stable toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
 
-      - name: Install latest ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: ${{ matrix.rust }}
-            profile: minimal
-            override: true
+    - name: Get current date
+      run: echo "::set-env name=CURRENT_DATE::$(date +'%Y-%m-%d')"
 
-      - name: Run cargo check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --all --benches --bins --examples --tests --all-features
+    - name: Cache cargo registry
+      uses: actions/cache@v2
+      with:
+        path: ~/.cargo/registry
+        # Add date to the cache to keep it up to date
+        key: cargo-registry-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          cargo-registry-${{ hashFiles('**/Cargo.toml') }}
+    - name: Cache cargo index
+      uses: actions/cache@v2
+      with:
+        path: ~/.cargo/git
+        # Add date to the cache to keep it up to date
+        key: cargo-index-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          cargo-index-${{ hashFiles('**/Cargo.toml') }}
+    - name: Cache cargo target
+      uses: actions/cache@v2
+      with:
+        path: target
+        # Add date to the cache to keep it up to date
+        key: cargo-build-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --all --release
 
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-
-  # wasm:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ubuntu-latest, windows-latest, macos-latest]
-  #       rust: [stable]
-  #   steps:
-  #     - uses: actions/checkout@v2
-
-  #     - name: Install latest ${{ matrix.rust }}
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #           toolchain: ${{ matrix.rust }}
-  #           profile: minimal
-  #           override: true
-
-  #     - name: Install wasm-pack
-  #       run: cargo install wasm-pack
-
-  #     - name: Install npm dependencies
-  #       run: |
-  #         cd ./bindings/wasm
-  #         yarn
-
-  #     - name: Run yarn test
-  #       run: |
-  #         cd ./bindings/wasm
-  #         yarn test
+    - name: Run tests
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all --release -- --test-threads=1
