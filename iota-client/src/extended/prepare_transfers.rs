@@ -242,15 +242,15 @@ impl<'a> PrepareTransfersBuilder<'a> {
         };
 
         if total_output > 0 {
-            let inputs: Vec<(u64, Address, WotsSecurityLevel)> = inputs
+            let inputs: Vec<(usize, Address, WotsSecurityLevel)> = inputs
                 .into_iter()
-                .map(|i| (i.index, i.address, security))
+                .map(|i| (i.index as usize, i.address, security))
                 .collect();
 
             Ok(bundle
                 .seal()
                 .expect("Fail to seal bundle")
-                .sign(self.seed.ok_or(Error::MissingSeed)?, &inputs)
+                .sign(self.seed.ok_or(Error::MissingSeed)?, &inputs[..])
                 .expect("Fail to sign bundle")
                 .attach_local(Hash::zeros(), Hash::zeros())
                 .expect("Fail to attach bundle")
