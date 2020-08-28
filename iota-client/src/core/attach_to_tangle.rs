@@ -23,7 +23,7 @@ impl<'a> AttachToTangleBuilder<'a> {
             client,
             trunk_transaction: Default::default(),
             branch_transaction: Default::default(),
-            min_weight_magnitude: 14,
+            min_weight_magnitude: client.mwm,
             trytes: Default::default(),
         }
     }

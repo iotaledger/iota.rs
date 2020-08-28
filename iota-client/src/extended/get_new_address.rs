@@ -56,7 +56,7 @@ impl<'a> GenerateNewAddressBuilder<'a> {
                     .with_security_level(self.security)
                     .build()
                     .unwrap()
-                    .generate_from_seed(self.seed, index)
+                    .generate_from_seed(self.seed, index as usize)
                     .unwrap()
                     .generate_public_key()
                     .unwrap()

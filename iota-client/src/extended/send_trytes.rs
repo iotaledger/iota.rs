@@ -24,7 +24,7 @@ impl<'a> SendTrytesBuilder<'a> {
             client,
             trytes: Default::default(),
             depth: Default::default(),
-            min_weight_magnitude: Default::default(),
+            min_weight_magnitude: client.mwm,
             reference: Default::default(),
         }
     }
