@@ -4,6 +4,7 @@ use crate::error::*;
 use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
+use crate::builder::ClientBuilder;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
@@ -58,17 +59,10 @@ pub struct Client {
 }
 
 impl Client {
-    // /// Create the instance of IOTA Client.
-    // pub fn new() -> Self {
-    //     Self {
-    //         pool: Arc::new(RwLock::new(HashSet::new())),
-    //         sync: Arc::new(RwLock::new(Vec::new())),
-    //         client: reqwest::Client::new(),
-    //         mwm: 14,
-    //         quorum_size: 1,
-    //         quorum_threshold: 100,
-    //     }
-    // }
+    /// Create the builder to instntiate the IOTA Client.
+    pub fn new() -> ClientBuilder {
+        ClientBuilder::new()
+    }
 
     pub(crate) async fn sync(&mut self) {
         let mut sync_list: HashMap<u32, Vec<Url>> = HashMap::new();
