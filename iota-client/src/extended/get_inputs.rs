@@ -65,7 +65,7 @@ impl<'a> GetInputsBuilder<'a> {
 
             let balance = self
                 .client
-                .get_balances()
+                .get_balance_of_addresses()
                 .addresses(&[address.clone()])
                 .send()
                 .await?

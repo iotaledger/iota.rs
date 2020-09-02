@@ -266,14 +266,10 @@ impl Client {
     /// This endpoint returns data only if the node is synchronized.
     /// # Parameters
     /// * [`addresses`] - Address for which to get the balance (do not include the checksum)
-    /// * [`threshold`] - (Optional) Confirmation threshold between 0 and 100, default is 100.
-    /// * [`tips`] - (Optional) Tips whose history of transactions to traverse to find the balance
     ///
     /// [`addresses`]: ../core/struct.GetBalancesBuilder.html#method.addresses
-    /// [`threshold`]: ../core/struct.GetBalancesBuilder.html#method.threshold
-    /// [`tips`]: ../core/struct.GetBalancesBuilder.html#method.tips
-    pub fn get_balances(&self) -> GetBalancesBuilder<'_> {
-        GetBalancesBuilder::new(self)
+    pub fn get_balance_of_addresses(&self) -> GetBalanceOfAddressesBuilder<'_> {
+        GetBalanceOfAddressesBuilder::new(self)
     }
 
     /// Gets the inclusion states of a set of transactions.
