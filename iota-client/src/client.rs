@@ -199,6 +199,12 @@ impl Client {
         GenerateNewAddressBuilder::new(self, seed)
     }
 
+    /// Return a list of addresses with checksum from the seed regardless of their validity.
+    pub fn get_addresses(&self, _seed: &Seed, _start: usize, _end: usize) -> Vec<Hash> {
+        // TODO waiting bee-signing-ext to be merged in bee-p at least
+        Vec::new()
+    }
+
     /// Prepares the transaction trytes by generating a bundle, filling in transfers and inputs,
     /// adding remainder and signing all input transactions.
     /// # Parameters
