@@ -261,6 +261,12 @@ impl Client {
         AttachToTangleBuilder::new(self)
     }
 
+    /// Get the balance for a provided seed by checking the addresses for a seed up until a given point.
+    pub fn get_balance(&self, _seed: &Seed, _index: usize) -> u64{
+        // TODO waiting for node api
+        0
+    }
+
     /// Gets the confirmed balance of an address.
     /// If the tips parameter is missing, the returned balance is correct as of the latest confirmed milestone.
     /// This endpoint returns data only if the node is synchronized.
