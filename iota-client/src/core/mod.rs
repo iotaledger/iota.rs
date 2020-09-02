@@ -8,6 +8,6 @@ mod get_transactions_to_approve;
 
 pub use attach_to_tangle::AttachToTangleBuilder;
 pub use find_transactions::FindTransactionsBuilder;
-pub use get_balances::GetBalancesBuilder;
+pub use get_balances::GetBalanceOfAddressesBuilder;
 pub use get_inclusion_states::GetInclusionStatesBuilder;
 pub use get_transactions_to_approve::GetTransactionsToApproveBuilder;
