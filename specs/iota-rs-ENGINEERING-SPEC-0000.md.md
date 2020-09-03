@@ -8,32 +8,30 @@ Specification of High Level Abstraction API
 
 
 * [High Level Abstraction API Spec](#High-Level-Abstraction-API-Spec)
-    * [Table of Content](#Table-of-Content)
+  * [Table of Content](#Table-of-Content)
 * [Introduction](#Introduction)
 * [Builder](#Builder)
 * [General API](#General-API)
-    * [Send](#Send)
-    * [FindMessages](#FindMessages)
-    * [GenerateNewAddress](#GenerateNewAddress)
-    * [GetAddresses](#GetAddresses)
-    * [GetBalance](#GetBalance)
-    * [GetBalanceOfAddresses](#GetBalanceOfAddresses)
-    * [Reattach](#Reattach)
-    * [IsConfirmed](#IsConfirmed)
-* [Bee / IRI API](#Bee-/-IRI-API)
-    * [AttachToTangle](#AttachToTangle)
-    * [GetInclusionState](#GetInclusionState)
-    * [GetMessagesToApprove](#GetMessagesToApprove)
-    * [GetBytes](#GetBytes)
-    * [BroadcastMessages](#BroadcastMessages)
-    * [StoreMessages](#StoreMessages)
-    * [WereAddressesSpentFrom](#WereAddressesSpentFrom)
+  * [Send](#Send)
+  * [FindMessages](#FindMessages)
+  * [GenerateNewAddress](#GenerateNewAddress)
+  * [GetAddresses](#GetAddresses)
+  * [GetBalance](#GetBalance)
+  * [GetBalanceOfAddresses](#GetBalanceOfAddresses)
+  * [Reattach](#Reattach)
+  * [IsConfirmed](#IsConfirmed)
+* [Full Node API](#Full-Node-API)
+  * [`get_info`](#get_info-get-info)
+  * [`get_messages`](#get_messages-get-messages)
+  * [`send_messages`](#send_messages-send-messages)
+  * [`get_transactions`](#get_transactions-get-transactions)
+  * [`get_outputs`](#get_outputs-get-outputs)
 * [Objects](#Objects)
-    * [Network](#Network)
-    * [Hash](#Hash)
-    * [Seed](#Seed)
-    * [Encoding](#Encoding)
-    * [Message](#Message)
+  * [Network](#Network)
+  * [Hash](#Hash)
+  * [Seed](#Seed)
+  * [Encoding](#Encoding)
+  * [Message](#Message)
 
 
 # Introduction
@@ -800,347 +798,33 @@ None
 
 A Response Object similar to this:
 
-```
-{
-    "data": {
-       "name": string,
-       "version": string,
-       "availableProcessors": uint,
-       "freeMemory": uint,
-       “operatingNetwork”: string
-       "coordinatorAddress": string,
-       "lastMilestone": messageHash,
-       "lastMilestoneIndex": uint,
-       "lastSolidMilestone": messageHash,
-       "lastSolidMilestoneIndex": uint,
-       "snapshotIndex": uint,
-       "numNeighbors": uint,
-       "time": uint,
-       "plugins": stringArray,
-       "dbSizeInBytes": uint
-   }
+```rust
+struct getInfoResponse {
+  name: String,
+  version: String,
+  availableProcessors: usize,
+  freeMemory: usize,
+  operatingNetwork: String
+  coordinatorAddress: String,
+  lastMilestone: messageHash,
+  lastMilestoneIndex: usize,
+  lastSolidMilestone: messageHash,
+  lastSolidMilestoneIndex: usize,
+  snapshotIndex: usize,
+  numNeighbors: usize,
+  time: usize,
+  plugins: Vec<String>,
+  dbSizeInBytes: usize,
 }
 ```
 
-## AttachToTangle
+## `get_messages()` (`GET /messages`)
 
-Does proof of work for the given transaction trytes. The `branch_transaction` and `trunk_transaction` parameters are returned from the [GetMessagesToApprove](#GetMessagesToApprove) method.
+## `send_messages()` (`POST /messages`)
 
-### Parameters
+## `get_transactions()` (`GET /transactions`)
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>trunk_transaction</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>Trunk transaction hash provided by <a href="#GetMessagesToApprove">GetMessagesToApprove</a>.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>branch_transaction</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>Branch transaction hash provided by <a href="#GetMessagesToApprove">GetMassagesToApprove</a>.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>trytes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[
-<a href="#Transaction">Transaction</a>]
-   </td>
-   <td>List of transactions. When sending transactions in a bundle, make sure that the trytes of the last transaction in the bundle are in index 0 of the array.
-   </td>
-  </tr>
-</table>
-
-
-
-### Returns:
-
-List of [Message](#Message) objects which are ready to broadcast and store to tangle.
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate _trunk transaction hash_ semantics;
-*   Validate _branch transaction hash_ semantics;
-*   Validate min weight magnitude;
-*   Validate trytes semantics; The last element should be the last transaction of the bundle.
-*   Return the list of transactions that are attached to tangle.
-
-
-## GetInclusionState
-
-Gets the inclusion states of a set of transactions. This endpoint determines if a transaction is confirmed by the network (referenced by a valid milestone). 
-
-Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Hash">Hash</a>]
-   </td>
-   <td>List of transaction hashes for which you want to get the inclusion state
-   </td>
-  </tr>
-</table>
-
-
-
-### Returns:
-
-List of tuples with values of the transaction [Hash](#Hash)es and a bool which is the confirm state of it.
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate transaction hashes semantics;
-*   Return the list of transactions state tuples.
-
-
-## GetTransactionToApprove
-
-Gets two consistent tip transaction hashes to use as branch/trunk transactions.
-
-Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>depth</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Number of milestones to go back to start the tip selection algorithm. <strong>Default is 3.</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>reference</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>Transaction hash from which to start the weighted random walk. Use this parameter to make sure the returned tip transaction hashes approve a given reference transaction
-   </td>
-  </tr>
-</table>
-
-
-
-### Returns:
-
-A tuple with trunk and branch transaction [Hash](#Hash)es.
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate reference hash semantics if provided;
-*   Return the transactions tuple.
-
-## BroadcastTransactions
-
-Broadcast transactions to the connected node. This will be useful if the initial broadcast fails. 
-
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transactions</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Transaction">Transaction</a>]
-   </td>
-   <td>List of the transactions that need to be broadcasted.
-   </td>
-  </tr>
-</table>
-
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate _transactions_ semantics;
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
-
-
-## StoreTransactions
-
-Store transactions to the connected node. 
-
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transactions</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Transaction">Transaction</a>]
-   </td>
-   <td>List of the transactions that need to be stored.
-   </td>
-  </tr>
-</table>
-
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate _transactions_ semantics;
-*   Store transactions to the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
-
-
-## WereAddressesSpentFrom
-
-Checks if an address was ever withdrawn from. Will be required for WOTS to Ed25519 transition.
-
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>addresses</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[Address]
-   </td>
-   <td>List of addresses with checksum.
-   </td>
-  </tr>
-</table>
-
-
-
-### Return
-
-A list of tuples with values of  (Address, bool). The bool is the result of the address accordingly. 
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate _addresses_ semantics;
-*   Get spend statuses using [wereAddressesSpentFrom()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#wereaddressesspentfrom);
-*   Return the spend statuses.
-
+## `get_outputs()` (`GET /outputs`)
 
 # Objects
 
