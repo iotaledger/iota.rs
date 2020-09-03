@@ -780,18 +780,47 @@ like `unkown` saying it not sure about the state of transaction because of pruni
 
 Following are the steps for implementing this method: \
 
-
-
-
 *   Query the confirmation state (using [getInclusionStates()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getinclusionstates)) of the provided transaction. 
 *   Return the list of transactions state tuples.
 
 
-# Bee / Hornet API
+# Full Node API
 
-API of Bee and Hornet will still be public. Users who know these relative low level API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet
-haven't finalized their APIs either. Following items and signatures might change later.
+API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
 
+## `get_info()` (`GET /info`)
+
+Returns information about the node.
+
+### Parameters
+
+None
+
+### Returns
+
+A Response Object similar to this:
+
+```
+{
+    "data": {
+       "name": string,
+       "version": string,
+       "availableProcessors": uint,
+       "freeMemory": uint,
+       “operatingNetwork”: string
+       "coordinatorAddress": string,
+       "lastMilestone": messageHash,
+       "lastMilestoneIndex": uint,
+       "lastSolidMilestone": messageHash,
+       "lastSolidMilestoneIndex": uint,
+       "snapshotIndex": uint,
+       "numNeighbors": uint,
+       "time": uint,
+       "plugins": stringArray,
+       "dbSizeInBytes": uint
+   }
+}
+```
 
 ## AttachToTangle
 
