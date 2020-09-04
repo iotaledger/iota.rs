@@ -843,8 +843,9 @@ Find all messages filtered by provided parameters.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hash** | ✘ | [Hash] | The hash of message. |
-| **tag** | ✘ | [Hash] | The tag field in indexation payload. |
+| **hashes** | ✘ | [[Hash]] | The hashes of messages. |
+| **tags** | ✘ | [[Hash]] | The tag field in indexation payload. |
+| **confirmed** | ✘ | bool | Search messages that are confirmed if this sets to ture. |
 
 *At least one parameter has to be provided.
 
@@ -854,9 +855,53 @@ A vector of [Message] object.
 
 ## `send_messages()` (`POST /messages`)
 
+Submit a message as a JSON object to the node. If certain fields are missing the node tries to take care of it (e.g. missing nonce, missing branch/trunk, …) and builds the message. On success, the node stores the message and broadcasts it to its peers. Furthermore it returns the hash of the message.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **messages** | ✘ | [[Message]] | The list of messages. |
+
+### Returns
+
+A vector of Message [Hash] object.
+
 ## `get_transactions()` (`GET /transactions`)
 
+Find all transactions filtered by provided parameters.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **hashes** | ✘ | [[Hash]] | The hashes of messages. |
+| **addresses** | ✘ | [[Hash]] | The hashes of addresses. |
+| **confirmed** | ✘ | bool | Search transaction that are confirmed if this sets to ture. |
+
+*At least one parameter has to be provided.
+
+### Returns
+
+A vector of [Message] object.
+
 ## `get_outputs()` (`GET /outputs`)
+
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **hashes** | ✘ | [[Hash]] | The hashes of messages. |
+| **addresses** | ✘ | [[Hash]] | The hashes of addresses. |
+
+*At least one parameter has to be provided.
+
+### Returns
+
+A vector of [Output] object.
+
 
 # Objects
 
@@ -865,7 +910,7 @@ Here are the objects used in the API above. They aim to provide a secure way to 
 
 ## Network
 
-Network is an enumeration with elements of **[mainnet|comnet|devnet]. **Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
+Network is an enumeration with elements of **[mainnet|comnet|devnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
 
 ```rust
 enum Network {
@@ -880,7 +925,7 @@ enum Network {
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hash** | ✔ | `[u8; 32]` | A valid IOTA hash which can be treated as many objects like Address, Transaction hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters. |
+| **hash** | ✔ | `[u8; 32]` | A valid IOTA hash which can be treated as many objects like Address, Message hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters. |
 
 ## Seed
 [Seed]: #Seed
@@ -909,3 +954,12 @@ The message object returned by various functions; based on the RFC for the Messa
 [Payload]: #Payload
 
 The payload object returned by various functions; based on the RFC for the payload object.
+
+## Output
+[Output]: #Output
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **producer** | ✔ | [Hash] | The hash of the message which contains this output. |
+| **balance** | ✔ | usize | The balance in this output. |
+| **spent** | ✔ | bool | The output has been spent if true. |
