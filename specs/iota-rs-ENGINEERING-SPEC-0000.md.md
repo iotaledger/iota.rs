@@ -22,6 +22,7 @@ Specification of High Level Abstraction API
   * [IsConfirmed](#IsConfirmed)
 * [Full Node API](#Full-Node-API)
   * [`get_info`](#get_info-get-info)
+  * [`get_tips`](#get_tips-get-tips)
   * [`get_messages`](#get_messages-get-messages)
   * [`send_messages`](#send_messages-send-messages)
   * [`get_transactions`](#get_transactions-get-transactions)
@@ -818,7 +819,38 @@ struct getInfoResponse {
 }
 ```
 
+## `get_tips()` (`GET /tips`)
+
+Returns two non-lazy tips. There could be however the case that the node can provide only one tip, or in the worst-case no tip. The array therefore needs to be validated.
+
+### Parameters
+
+None
+
+### Returns
+
+A tuple with two hashes:
+
+```rust
+(Hash, Hash)
+```
+
 ## `get_messages()` (`GET /messages`)
+
+Find all messages filtered by provided parameters.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **hash** | ✘ | [Hash] | The hash of message. |
+| **tag** | ✘ | [Hash] | The tag field in indexation payload. |
+
+*At least one parameter has to be provided.
+
+### Returns
+
+A vector of [Message] object.
 
 ## `send_messages()` (`POST /messages`)
 
@@ -833,118 +865,47 @@ Here are the objects used in the API above. They aim to provide a secure way to 
 
 ## Network
 
-Network will be an enumeration with elements of **[mainnet|comnet|devnet]. **Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
+Network is an enumeration with elements of **[mainnet|comnet|devnet]. **Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
 
+```rust
+enum Network {
+  Mainnet,
+  Comnet,
+  Devnet,
+}
+```
 
 ## Hash
+[Hash]: #Hash
 
-
-<table>
-  <tr>
-    <td><strong>Property</strong></td>
-    <td><strong>Required</strong></td>
-    <td><strong>Type</strong></td>
-    <td><strong>Description</strong></td>
-  </tr>
-  <tr>
-    <td>seed</td>
-    <td>&#10004;</td>
-    <td>[u8; 32]</td>
-    <td>A valid IOTA hash which can be treated as many objects like Address, Transaction hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters.</td>
-  </tr>
-</table>
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **hash** | ✔ | `[u8; 32]` | A valid IOTA hash which can be treated as many objects like Address, Transaction hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters. |
 
 ## Seed
+[Seed]: #Seed
 
-
-
-<table>
-  <tr>
-    <td><strong>Property</strong></td>
-    <td><strong>Required</strong></td>
-    <td><strong>Type</strong></td>
-    <td><strong>Description</strong></td>
-  </tr>
-  <tr>
-    <td>seed</td>
-    <td>&#10004;</td>
-    <td>[u8; 32]</td>
-    <td>An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid.</td>
-  </tr>
-</table>
-
-## Encoding
-
-The converter/encoder used to convert the message into bytes/trytes (whatever the transaction would need). We should offer several off-the-shelve encoders for this to set some standards, if we still use Ternary for encoding it would like this:
-
-
-
-*   Encoding::Bytes (convert bytes to trytes using the most efficient method for this, to be defined)
-*   Encoding::UTF8 (the default, converts UTF-8/Unicode to trytes which basically comes down to being an alias for converters.Bytes but maybe with another conversion function in there to convert a Unicode string to UTF-8/bytes first).
-*   Encoding::Ascii (legacy fallback to Ascii character to Tryte conversion only, implemented as done in the Typescript/Go/Python lib (current Rust implementation is incomplete and does not include characters beyond alphanumeric).
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
 ## Message
+[Message]: #Message
 
 The message object returned by various functions; based on the RFC for the Message object.
 
-<table>
-  <tr>
-    <td><strong>Property</strong></td>
-    <td><strong>Required</strong></td>
-    <td><strong>Type</strong></td>
-    <td><strong>Description</strong></td>
-  </tr>
-  <tr>
-    <td>version</td>
-    <td>&#10004;</td>
-    <td>number</td>
-    <td>Message version. Defaults to `1`.</td>
-  </tr>
-  <tr>
-    <td>trunk</td>
-    <td>&#10004;</td>
-    <td>string</td>
-    <td>Message id of the first message this message refers to.</td>
-  </tr>
-  <tr>
-    <td>branch</td>
-    <td>&#10004;</td>
-    <td>string</td>
-    <td>Message id of the second message this message refers to.</td>
-  </tr>
-  <tr>
-    <td>payload_length</td>
-    <td>&#10004;</td>
-    <td>number</td>
-    <td>Length of the payload.</td>
-  </tr>
-    <tr>
-    <td>payload</td>
-    <td>&#10004;</td>
-    <td>
-        <a href="#signedtransactionpayload">SignedTransactionPayload</a> |
-        <a href="#unsigneddatapayload">UnsignedDataPayload</a> |
-        <a href="#signeddatapayload">SignedDataPayload</a>
-    </td>
-    <td>Transaction amount (exposed as a custom type with additional methods).</td>
-  </tr>
-  <tr>
-    <td>timestamp</td>
-    <td>&#10004;</td>
-    <td><a href="#timestamp">Timestamp</a></td>
-    <td>Transaction timestamp (exposed as a custom type with additional methods).</td>
-  </tr>
-  <tr>
-    <td>nonce</td>
-    <td>&#10004;</td>
-    <td>string</td>
-    <td>Transaction nonce.</td>
-  </tr>
-  <tr>
-    <td>confirmed</td>
-    <td>&#10004;</td>
-    <td>boolean</td>
-    <td>Determines if the transaction is confirmed.</td>
-  </tr>
-</table>
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **version** | ✔ | usize | Message version. Defaults to `1`. |
+| **trunk** | ✔ | [Hash] | Message hash of the first message this message refers to. |
+| **branch** | ✔ | [Hash] | Message hash of the second message this message refers to. |
+| **payload_length** | ✔ | usize | Length of the payload. |
+| **payload** | ✔ | [[Payload]] | List of the payload. |
+| **timestamp** | ✔ | usize | Transaction timestamp (exposed as a custom type with additional methods). |
+| **nonce** | ✔ | [Hash] | Transaction nonce. |
+| **confirmed** | ✔ | bool | Determines if the transaction is confirmed. |
+
+## Payload
+[Payload]: #Payload
+
+The payload object returned by various functions; based on the RFC for the payload object.
