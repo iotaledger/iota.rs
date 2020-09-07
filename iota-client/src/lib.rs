@@ -13,8 +13,10 @@ pub mod builder;
 pub mod client;
 pub mod error;
 pub mod types;
+pub mod node;
 
 pub use builder::ClientBuilder;
 pub use client::Client;
 pub use error::*;
 pub use reqwest::Url;
+pub use types::*;

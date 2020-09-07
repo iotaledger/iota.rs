@@ -1,9 +1,9 @@
-use bee_transaction::atomic::{
-    Hash, Message, 
-};
+//! Types of several IOTA APIs related objects
+
+use bee_transaction::atomic::Hash;
 
 /// Response of GET /info endpoint
-pub struct GetInfoResponse {
+pub struct NodeInfo {
     /// Iota node Name
     pub name: String,
     /// Iota node version
@@ -17,11 +17,11 @@ pub struct GetInfoResponse {
 /// Output data
 pub struct Output {
     /// Producer of the output
-    producer: Hash,
+    pub producer: Hash,
     /// Corresponding address
-    address: Hash,
+    pub address: Hash,
     /// Balance amount
-    amount: u64,
+    pub amount: u64,
     /// Spend status of the output
-    spent: bool,
+    pub spent: bool,
 }
