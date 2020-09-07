@@ -801,21 +801,20 @@ A Response Object similar to this:
 
 ```rust
 struct getInfoResponse {
-  name: String,
-  version: String,
-  availableProcessors: usize,
-  freeMemory: usize,
-  operatingNetwork: String
-  coordinatorAddress: String,
-  lastMilestone: messageHash,
-  lastMilestoneIndex: usize,
-  lastSolidMilestone: messageHash,
-  lastSolidMilestoneIndex: usize,
-  snapshotIndex: usize,
-  numNeighbors: usize,
-  time: usize,
-  plugins: Vec<String>,
-  dbSizeInBytes: usize,
+       name: String,
+       version: String,
+       isHealthy: bool,
+       operatingNetwork: String,
+       peers: usize,
+       coordinatorAddress: String,
+       isSynced: bool,
+       latestMilestone: Hash,
+       latestMilestoneIndex: usize,
+       latestSolidMilestone: Hash,
+       latestSolidMilestoneIndex: usize,
+       pruningIndex: usize,
+       time: usize,
+       features": Vec<String>,
 }
 ```
 

@@ -11,17 +11,10 @@ extern crate serde_json;
 pub mod builder;
 #[macro_use]
 pub mod client;
-pub mod core;
 pub mod error;
-pub mod extended;
-// #[cfg(feature = "quorum")]
-// pub mod quorum;
-pub mod response;
-mod util;
+pub mod types;
 
 pub use builder::ClientBuilder;
 pub use client::Client;
 pub use error::*;
 pub use reqwest::Url;
-pub use response::*;
-pub use util::{bytes_to_trytes, str_to_trytes};
