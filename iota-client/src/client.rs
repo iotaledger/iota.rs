@@ -58,10 +58,10 @@ impl Client {
         ClientBuilder::new()
     }
 
-    pub(crate) async fn sync(&mut self) {
+    pub(crate) fn sync(&mut self) {
         let mut sync_list: HashMap<usize, Vec<Url>> = HashMap::new();
         for url in &*self.pool.read().unwrap() {
-            if let Ok(milestone) = self.get_info(url.clone()).await {
+            if let Ok(milestone) = self.get_info(url.clone()) {
                 let set = sync_list
                     .entry(milestone.latest_solid_subtangle_milestone_index)
                     .or_insert(Vec::new());
@@ -101,7 +101,7 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
     
     /// GET /info endpoint
-    pub async fn get_info(&self, _url: Url) -> Result<GetInfoResponse> {
+    pub fn get_info(&self, _url: Url) -> Result<GetInfoResponse> {
         Ok(GetInfoResponse {
             name: String::from("Bee"),
             version: String::from("v0.1.0"),
