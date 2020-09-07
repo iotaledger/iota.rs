@@ -960,5 +960,6 @@ The payload object returned by various functions; based on the RFC for the paylo
 | Field | Requried | Type | Definition |
 | - | - | - | - |
 | **producer** | ✔ | [Hash] | The hash of the message which contains this output. |
+| **address** | ✔ | [Hash] | Corresponding address |
 | **balance** | ✔ | usize | The balance in this output. |
 | **spent** | ✔ | bool | The output has been spent if true. |

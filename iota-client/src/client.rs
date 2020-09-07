@@ -1,10 +1,11 @@
 //! The Client module to connect through IRI with API usages
 use crate::error::*;
 use crate::builder::ClientBuilder;
+use crate::node::*;
 use crate::types::*;
 
 use bee_transaction::atomic::{
-    Hash, Message, 
+    Hash, Message,
 };
 
 use reqwest::Url;
@@ -97,12 +98,12 @@ impl Client {
     // }
 
     //////////////////////////////////////////////////////////////////////
-    // Chrysalis Node API
+    // Node API
     //////////////////////////////////////////////////////////////////////
     
     /// GET /info endpoint
-    pub fn get_info(&self, _url: Url) -> Result<GetInfoResponse> {
-        Ok(GetInfoResponse {
+    pub fn get_info(&self, _url: Url) -> Result<NodeInfo> {
+        Ok(NodeInfo {
             name: String::from("Bee"),
             version: String::from("v0.1.0"),
             is_healthy: true,
@@ -116,17 +117,22 @@ impl Client {
     }
 
     /// GET /messages/* endpoint
-    pub fn get_messages(&self) -> Result<Vec<Message>> {
-        Ok(Vec::new())
+    pub fn get_messages(&self) -> GetMessagesBuilder<'_> {
+        GetMessagesBuilder::new(self)
     }
 
-    /// GET /transactions/* endpoint
-    pub fn get_transactions(&self) -> Result<Vec<Message>> {
-        Ok(Vec::new())
+    /// POST /messages endpoint
+    pub fn post_messages(&self, _messages: Vec<Message>) -> Result<Vec<Hash>> {
+        Ok(Vec::new())        
+    }
+
+    /// GET /transaction-messages/* endpoint
+    pub fn get_transactions(&self) -> GetTransactionsBuilder<'_> {
+        GetTransactionsBuilder::new(self)
     }
 
     /// GET /outputs/* endpoint
-    pub fn get_outputs(&self) -> Result<Vec<Output>> {
-        Ok(Vec::new())
+    pub fn get_outputs(&self) -> GetOutputsBuilder<'_> {
+        GetOutputsBuilder::new(self)
     }
 }
