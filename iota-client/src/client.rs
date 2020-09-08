@@ -135,4 +135,19 @@ impl Client {
     pub fn get_outputs(&self) -> GetOutputsBuilder<'_> {
         GetOutputsBuilder::new(self)
     }
+
+
+    //////////////////////////////////////////////////////////////////////
+    // High level API
+    //////////////////////////////////////////////////////////////////////
+    
+    /// Reattaches messages for provided message hashes. Messages can be reattached only if they are valid and haven't been
+    /// confirmed for a while. 
+    pub fn reattach(&self, hashes: &[Hash]) -> Result<Vec<Message>> {
+        let messages = self.get_messages()
+            .hashes(hashes)
+            .get()?;
+        self.post_messages(messages.clone())?;
+        Ok(messages)
+    }
 }
