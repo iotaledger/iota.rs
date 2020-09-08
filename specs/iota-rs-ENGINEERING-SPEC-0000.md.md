@@ -18,13 +18,12 @@ Specification of High Level Abstraction API
   * [GetAddresses](#GetAddresses)
   * [GetBalance](#GetBalance)
   * [GetBalanceOfAddresses](#GetBalanceOfAddresses)
-  * [Reattach](#Reattach)
-  * [IsConfirmed](#IsConfirmed)
+  * [`reattach`](#reattach)
 * [Full Node API](#Full-Node-API)
   * [`get_info`](#get_info-get-info)
   * [`get_tips`](#get_tips-get-tips)
   * [`get_messages`](#get_messages-get-messages)
-  * [`send_messages`](#send_messages-send-messages)
+  * [`post_messages`](#post_messages-post-messages)
   * [`get_transactions`](#get_transactions-get-transactions)
   * [`get_outputs`](#get_outputs-get-outputs)
 * [Objects](#Objects)
@@ -683,105 +682,30 @@ Following are the steps for implementing this method: \
 *   Return the latest balance.
 
 
-## Reattach
+## `reattach()`
 
-Reattaches transaction for provided transaction hash. 
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>The hash of the transaction that need to be reattached.
-   </td>
-  </tr>
-</table>
-
-
-
-### Returns:
-
-Newly reattached [Transaction](#Transaction).
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Only an unconfirmed transaction should be allowed to reattach. The method should validate the confirmation state (using [getInclusionStates()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getinclusionstates)) of the provided transaction. If a transaction hash of a confirmed transaction is provided, the method should error out;
-*   The method should also validate if the transaction reattachment is necessary. This can be done by checking if the transaction falls below max depth. The criteria of checking whether the transaction has fallen below max depth is through time. If 11 minutes have passed since the timestamp of the most recent (reattachment), the transaction can be allowed to be reattached. See [this](https://github.com/iotaledger/trinity-wallet/blob/3fab4f671c97e805a2b0ade99b4abb8b508c2842/src/shared/libs/iota/transfers.js#L141) implementation for reference;
-*   Get transactions to approve using [getTransactionsToApprove()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettransactionstoapprove);
-*   Perform proof-of-work (If _offload_pow_ is set to true, the proof-of-work should be offloaded to the selected node using [attachToTangle()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#attachtotangle). Otherwise, proof-of-work should be performed locally)
-*   Store transactions on the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions);
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions). 
-
-
-## IsConfirmed
-
-Fetch inclusion states of the given transactions to determine if the transactions are confirmed.
+Reattaches messages for provided message hashes. Messages can be reattached only if they are valid and haven't been
+confirmed for a while. 
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Hash">Hash</a>]
-   </td>
-   <td>List of transaction hashes for which you want to get the inclusion state
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **hashes** | ✔ | [[Hash]] | The hashes of messages. |
 
 ### Returns:
 
-List of tuples with values of the transaction [Hash](#heading=Hash)es and a bool which is the confirm state of it.
-Depend on bee api in the end, this might be a enum instead of plan boolean. For instance, a node could return a state
-like `unkown` saying it not sure about the state of transaction because of pruning.
-
+Newly reattached [Message](#Message).
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
+Following are the steps for implementing this method: 
 
-*   Query the confirmation state (using [getInclusionStates()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getinclusionstates)) of the provided transaction. 
-*   Return the list of transactions state tuples.
-
+* Only unconfirmed messages should be allowed to reattach. The method should validate the confirmation state of the provided messages. If a message hash of a confirmed message is provided, the method should error out;
+* The method should also validate if the message reattachment is necessary. This can be done by checking if the message falls below max depth. The criteria of checking whether the message has fallen below max depth is through time. If 11 minutes have passed since the timestamp of the most recent (reattachment), the message can be allowed to be reattached. See [this](https://github.com/iotaledger/trinity-wallet/blob/3fab4f671c97e805a2b0ade99b4abb8b508c2842/src/shared/libs/iota/transfers.js#L141) implementation for reference;
+* Get tips pair using [`get_tips()`](#get_tips-get-tips);
+* Perform proof-of-work;
+* Store messages on the tangle using [`post_messages()`](#post_messages-post-messages);
 
 # Full Node API
 
@@ -852,7 +776,7 @@ Find all messages filtered by provided parameters.
 
 A vector of [Message] object.
 
-## `send_messages()` (`POST /messages`)
+## `post_messages()` (`POST /messages`)
 
 Submit a message as a JSON object to the node. If certain fields are missing the node tries to take care of it (e.g. missing nonce, missing branch/trunk, …) and builds the message. On success, the node stores the message and broadcasts it to its peers. Furthermore it returns the hash of the message.
 
