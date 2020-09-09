@@ -13,8 +13,7 @@ Specification of High Level Abstraction API
 * [Builder](#Builder)
 * [General API](#General-API)
   * [Send](#Send)
-  * [FindMessages](#FindMessages)
-  * [GenerateNewAddress](#GenerateNewAddress)
+  * [`get_unspent_address`](#get_unspent_address)
   * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
@@ -27,11 +26,14 @@ Specification of High Level Abstraction API
   * [`get_transactions`](#get_transactions-get-transactions)
   * [`get_outputs`](#get_outputs-get-outputs)
 * [Objects](#Objects)
-  * [Network](#Network)
-  * [Hash](#Hash)
-  * [Seed](#Seed)
-  * [Encoding](#Encoding)
-  * [Message](#Message)
+  * [`Network`]
+  * [`Hash`]
+  * [`Seed`]
+  * [`Message`]
+  * [`Payload`]
+  * [`Output`]
+  * [`BIP32Path`]
+  * [`Address`]
 
 
 # Introduction
@@ -255,248 +257,33 @@ Following are the steps for implementing this method if provided value is zero:
 *   Store transactions on the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions);
 *   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
 
+## `get_unspent_address()`
 
-## GetMessage
-
-Retrieve a single message object using the message hash; Given the variable transaction length/atomic transactions in Chrysalis this will be a more commonly used function over retrieving multiple transactions from a bundle which we won’t have any more with Chrysalis.
-
+Return a valid unuspent address.
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>message_hash</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>The hash of the transaction we are fetching; since we are just looking to use this function to get 1 transaction in total only this parameter makes sense unlike an address which can contain multiple transactions.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>encoding</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Encoding">Encoding</a>
-   </td>
-   <td>The converter/encoder that was used to convert the message into bytes/trytes (whatever the transaction would need). The underlying functionality of this function will automatically process the raw transaction data and use this converter (default to utf-8/bytes) to give the end user something usable back. This converter can be any function including some defaults as documented in the `send` function. <strong>Default to Encoding::UTF8</strong>
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
 
-[Transaction](#Transaction)
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate message hash semantics;
-*   Get transaction bytes using [getBytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
-*   Parse transaction trytes to transaction object (See [asTransactionObject()](https://github.com/iotaledger/iota.js/blob/next/packages/transaction-converter/src/index.ts#L236) for parsing trytes to transaction object)
-
-
-## FindMessages
-
-Find multiple messages using one or multiple fields. If multiple search fields are provided consider the search function to work as a AND implementation.
-
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>An optional argument where you can provide a list of transaction hashes that will be fetched. 
-   </td>
-  </tr>
-  <tr>
-   <td><strong>address</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>An address to find the transactions for; One address can contain multiple transactions.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>tag</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>A tag to search for, returns transactions starting with the provided tag prefix. This can be useful for for example prefix tags like in the Industry Marketplace or Location data (IOTA Area Codes).
-   </td>
-  </tr>
-  <tr>
-   <td><strong>offset</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td><strong>By default this function will return up to 100 of the latest transactions</strong> matching the search criteria. In order to allow iterating over more transactions we can provide an offset which by default is 0. Page 1 would be offset: 0, limit: 100, page 2 would be offset: 100, limit 100, etc. We might want to be able to provide something else like a transaction hash for offset instead since transactions might move to a second page while iterating because a new transaction came in while iterating.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>limit</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>The amount of transactions to retrieve in 1 go. <strong>By default this is 100.</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>encoding</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Encoding">Encoding</a>
-   </td>
-   <td>The converter/encoder that was used to convert the message into bytes/trytes (whatever the transaction would need). The underlying functionality of this function will automatically process the raw transaction data and use this converter (default to utf-8/bytes) to give the end user something usable back. This converter can be any function including some defaults as documented in the `send` function. <strong>Default to Encoding::UTF8</strong>
-   </td>
-  </tr>
-</table>
-
-
-
-### Return
-
-A list of [Message](#Message)s
-
+Return a tuple with type of `([Address], usize)` as the address and corresponding index.
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
+Following are the steps for implementing this method:
+
+* Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
+* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Repeat the above step till there's an unuspent addresses found;
+* Return the address with corresponding index on the wallet chain;
 
 
-
-
-*   Validate _transaction_hashes_;
-*   Validate _address_;
-*   Validate _tag_;
-*   If the _transaction_hashes _parameter is provided, it should ignore all other parameters and fetch transaction trytes for the provided hashes using [getTrytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
-*   If the transaction_hashes parameter is not provided, it should fetch transaction hashes using [findTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#findtransactions). Duplicate transaction hashes should be removed. Transaction trytes of deduplicated transaction hashes should be fetched using [getTrytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
-*   Details of _limit_ and _offset_ parameters are yet to be decided;
-*   All transaction trytes fetched from the network should be parsed to transaction objects (see [asTransactionObject()](https://github.com/iotaledger/iota.js/blob/next/packages/transaction-converter/src/index.ts#L236) for a reference implementation).
-
-
-## GenerateNewAddress
-
-Return a valid unused address with checksum.
-
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>index</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Key index to start search at. <strong>Default is 0.</strong>
-   </td>
-  </tr>
-</table>
-
-
-
-### Return
-
-[Hash](#Hash) of Address with checksum
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Start generating address at index 0 with a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20;
-*   Check for balances and transactions on the generated addresses using [getBalances()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getbalances) and [findTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#findtransactions);
-*   If there are no transactions and zero balances on all addresses, return the (checksummed) address with the least index that has no transactions and zero balance;
-*   If there are transactions or any balance on the generated addresses, generate more gap limit number of addresses starting from the index of the last address with transactions or balance. Repeat this process until a set of addresses is found with zero balances and no transactions. Once such a set of addresses is found, return the (checksummed) address with the least index that has no transactions and zero balance.
-
-
-## `get_addresses`
+## `get_addresses()`
 
 Return a list of addresses from the seed regardless of their validity.
 
@@ -545,7 +332,7 @@ Following are the steps for implementing this method:
 * Accumulate the positive balances and return the result.
 
 
-## `get_address_balances`
+## `get_address_balances()`
 
 Return the balance in iota for the given addresses; No seed or security level needed to do this since we are only checking and already know the addresses.
 
@@ -717,7 +504,8 @@ A vector of [Output] object.
 Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
 
 
-## Network
+## `Network`
+[`Network`]: #Network
 
 Network is an enumeration with elements of **[mainnet|comnet|devnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
 
@@ -729,22 +517,22 @@ enum Network {
 }
 ```
 
-## Hash
-[Hash]: #Hash
+## `Hash`
+[`Hash`]: #Hash
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
 | **hash** | ✔ | `[u8; 32]` | A valid IOTA hash which can be treated as many objects like Address, Message hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters. |
 
-## Seed
-[Seed]: #Seed
+## `Seed`
+[`Seed`]: #Seed
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
-## Message
-[Message]: #Message
+## `Message`
+[`Message`]: #Message
 
 The message object returned by various functions; based on the RFC for the Message object.
 
@@ -759,25 +547,30 @@ The message object returned by various functions; based on the RFC for the Messa
 | **nonce** | ✔ | [Hash] | Transaction nonce. |
 | **confirmed** | ✔ | bool | Determines if the transaction is confirmed. |
 
-## Payload
-[Payload]: #Payload
+## `Payload`
+[`Payload`]: #Payload
 
 The payload object returned by various functions; based on the RFC for the payload object.
 
-## Output
-[Output]: #Output
+## `Output`
+[`Output`]: #Output
 
 The contexts of an output address
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
 | **producer** | ✔ | [Hash] | The hash of the message which contains this output. |
-| **address** | ✔ | [Hash] | Corresponding address |
+| **address** | ✔ | [Address] | Corresponding address |
 | **balance** | ✔ | usize | The balance in this output. |
 | **spent** | ✔ | bool | The output has been spent if true. |
 
-## BIP32Path
-[BIP32Path]: #BIP32Path
+## `BIP32Path`
+[`BIP32Path`]: #BIP32Path
 
 A valid BIP32 path. The field is ommited.
+
+## `Address`
+[`Address`]: #Address
+
+An address is a enum which could be either Ed25519 format or the legay WOTS.
 

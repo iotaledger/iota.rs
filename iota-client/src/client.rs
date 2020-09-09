@@ -140,6 +140,11 @@ impl Client {
     // High level API
     //////////////////////////////////////////////////////////////////////
 
+    /// Return a valid unuspent address.
+    pub fn get_unspent_address<'a>(&'a self, seed: &'a Ed25519Seed) -> GetUnspentAddressBuilder<'a> {
+        GetUnspentAddressBuilder::new(self, seed)
+    }
+
     /// Return a list of addresses from the seed regardless of their validity.
     pub fn get_addresses<'a>(&'a self, seed: &'a Ed25519Seed) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(self, seed)
