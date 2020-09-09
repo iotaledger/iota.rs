@@ -8,8 +8,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 /// Error type of the iota client crate.
 pub enum Error {
-    /// Missing required iota seed
-    MissingSeed,
+    /// Missing required parameters
+    MissingParameter,
+    /// Found Spent Address that still has balance
+    SpentAddress,
     /// Missing required iota seed
     MissingNode,
     /// No node available in the node pool
@@ -35,7 +37,8 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::MissingSeed => "Must provide seed to prepare transfer".fmt(f),
+            Error::MissingParameter => "Must provide required parameters".fmt(f),
+            Error::SpentAddress => "Found Spent Address that still has balance.".fmt(f),
             Error::MissingNode => "Must provide node to create instance".fmt(f),
             Error::NodePoolEmpty => "No node available".fmt(f),
             Error::NotTailHash => "Provided hash is not tail".fmt(f),
