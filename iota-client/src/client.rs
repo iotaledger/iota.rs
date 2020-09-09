@@ -1,12 +1,12 @@
 //! The Client module to connect through IRI with API usages
-use crate::error::*;
+use crate::api::*;
 use crate::builder::ClientBuilder;
+use crate::error::*;
 use crate::node::*;
 use crate::types::*;
 
-use bee_transaction::atomic::{
-    Hash, Message,
-};
+use bee_signing_ext::binary::Ed25519Seed;
+use bee_transaction::atomic::{payload::signed_transaction::Address, Hash, Message};
 
 use reqwest::Url;
 
@@ -100,7 +100,7 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
     // Node API
     //////////////////////////////////////////////////////////////////////
-    
+
     /// GET /info endpoint
     pub fn get_info(&self, _url: Url) -> Result<NodeInfo> {
         Ok(NodeInfo {
@@ -113,7 +113,7 @@ impl Client {
 
     /// GET /tips endpoint
     pub fn get_tips(&self) -> Result<(Hash, Hash)> {
-        Ok((Hash([0;32]), Hash([0;32])))
+        Ok((Hash([0; 32]), Hash([0; 32])))
     }
 
     /// GET /messages/* endpoint
@@ -123,7 +123,7 @@ impl Client {
 
     /// POST /messages endpoint
     pub fn post_messages(&self, _messages: Vec<Message>) -> Result<Vec<Hash>> {
-        Ok(Vec::new())        
+        Ok(Vec::new())
     }
 
     /// GET /transaction-messages/* endpoint
@@ -136,17 +136,32 @@ impl Client {
         GetOutputsBuilder::new(self)
     }
 
-
     //////////////////////////////////////////////////////////////////////
     // High level API
     //////////////////////////////////////////////////////////////////////
-    
+
+    /// Return a list of addresses from the seed regardless of their validity.
+    pub fn get_addresses<'a>(&'a self, seed: &'a Ed25519Seed) -> GetAddressesBuilder<'a> {
+        GetAddressesBuilder::new(self, seed)
+    }
+
+    /// Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`. Addresses with balance must be consecutive, so this method will return once it encounters a zero balance address.
+    pub fn get_balance<'a>(&'a self, seed: &'a Ed25519Seed) -> GetBalanceBuilder<'a> {
+        GetBalanceBuilder::new(self, seed)
+    }
+
+    /// Returns the balance in iota for the given addresses; No seed or security level
+    /// needed to do this since we are only checking and already know the addresses.
+    /// For convinience, it returns a vector of `Output` so users can get more contexts about
+    /// addresses.
+    pub fn get_addresses_balance(&self, addresses: &[Address]) -> Result<Vec<Output>> {
+        self.get_outputs().addresses(addresses).get()
+    }
+
     /// Reattaches messages for provided message hashes. Messages can be reattached only if they are valid and haven't been
-    /// confirmed for a while. 
+    /// confirmed for a while.
     pub fn reattach(&self, hashes: &[Hash]) -> Result<Vec<Message>> {
-        let messages = self.get_messages()
-            .hashes(hashes)
-            .get()?;
+        let messages = self.get_messages().hashes(hashes).get()?;
         self.post_messages(messages.clone())?;
         Ok(messages)
     }

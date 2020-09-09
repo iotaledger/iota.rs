@@ -8,12 +8,13 @@ extern crate serde;
 #[macro_use]
 extern crate serde_json;
 
+pub mod api;
 pub mod builder;
 #[macro_use]
 pub mod client;
 pub mod error;
-pub mod types;
 pub mod node;
+pub mod types;
 
 pub use builder::ClientBuilder;
 pub use client::Client;

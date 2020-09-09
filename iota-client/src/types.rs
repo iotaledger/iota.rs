@@ -16,7 +16,7 @@ pub struct NodeInfo {
 
 /// Output data
 pub struct Output {
-    /// Producer of the output
+    /// Producer message of the output
     pub producer: Hash,
     /// Corresponding address
     pub address: Hash,

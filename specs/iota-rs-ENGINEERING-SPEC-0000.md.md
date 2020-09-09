@@ -15,9 +15,9 @@ Specification of High Level Abstraction API
   * [Send](#Send)
   * [FindMessages](#FindMessages)
   * [GenerateNewAddress](#GenerateNewAddress)
-  * [GetAddresses](#GetAddresses)
-  * [GetBalance](#GetBalance)
-  * [GetBalanceOfAddresses](#GetBalanceOfAddresses)
+  * [`get_addresses`](#get_addresses)
+  * [`get_balance`](#get_balance)
+  * [`get_address_balances`](#get_address_balances)
   * [`reattach`](#reattach)
 * [Full Node API](#Full-Node-API)
   * [`get_info`](#get_info-get-info)
@@ -37,7 +37,6 @@ Specification of High Level Abstraction API
 # Introduction
 
 This document specifies a user friendly API to be used in the client libraries. The main implementation will be in Rust which will receive automatically compiled client libraries in other languages via C or Webassembly bindings. There are also many crates to support developers creating foreign function interfaces with native bindings. 
-
 
 # Builder
 
@@ -497,190 +496,77 @@ Following are the steps for implementing this method: \
 *   If there are transactions or any balance on the generated addresses, generate more gap limit number of addresses starting from the index of the last address with transactions or balance. Repeat this process until a set of addresses is found with zero balances and no transactions. Once such a set of addresses is found, return the (checksummed) address with the least index that has no transactions and zero balance.
 
 
-## GetAddresses
+## `get_addresses`
 
-Return a list of addresses with checksum from the seed regardless of their validity.
-
+Return a list of addresses from the seed regardless of their validity.
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>start</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Key index to start search at. <strong>Default is 0.</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>end</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>uszie
-   </td>
-   <td>Key index to end the search. <strong>Default is 20.</strong>
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **range** | ✘ | std::ops::Range | Range indice of the addresses we want to search for **Default is (0..20)** |
 
 ### Return
 
-A list of Address [Hash](#Hash)es with checksum
-
+A list of Address [Hash](#Hash)es
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
-
-
-
+Following are the steps for implementing this method:
 
 *   Start generating address at index 0 with a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20;
-*   Return the (checksummed) addresses.
+*   Return the addresses.
 
+## `get_balance()`
 
-## GetBalance
-
-Returns the balance for a provided seed by checking the addresses for a seed up until a given point. 
-
+Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`. Addresses with balance must be consecutive, so this method will return once it encounters a zero balance address.
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>index</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Key index to start search at. <strong>Default is 0.</strong>
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
 
-Account balance in type of usize.
-
+Total Account balance.
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
+Following are the steps for implementing this method:
+
+* Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
+* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Repeat the above step till an addresses of zero balance is found;
+* Accumulate the positive balances and return the result.
 
 
+## `get_address_balances`
 
-
-*   Start generating address at index 0 with a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20;
-*   Check for balances on the generated addresses using [getBalances()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getbalances) and keep track of the positive balances;
-*   Repeat the above step till a set of addresses are found that all have zero balances;
-*   Accumulate the positive balances and return the result.
-
-
-## GetBalanceOfAddresses
-
-Returns the balance in iota for the given addresses; No seed or security level needed to do this since we are only checking and already know the addresses.
-
+Return the balance in iota for the given addresses; No seed or security level needed to do this since we are only checking and already know the addresses.
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>addresses</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[Address]
-   </td>
-   <td>List of addresses with checksum.
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **addresses** | ✔ | [[Hash]] | List of addresses with checksum. |
 
 ### Return
 
 A list of tuples with value of  (Address, usize). The usize is the balance of the address accordingly. 
 
-
 ### Implementation details:
 
-Following are the steps for implementing this method: \
-
-
-
+Following are the steps for implementing this method:
 
 *   Validate _address_ semantics;
-*   Get latest balance for the provided address using [getBalances()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getbalances);
-*   Return the latest balance.
-
+*   Get latest balance for the provided address using [`get_outputs()`](#get_outputs-get-outputs) with addresses as
+    parameter;
+*   Return the list of Output which contains corresponding pairs of address and balance.
 
 ## `reattach()`
 
@@ -881,9 +767,17 @@ The payload object returned by various functions; based on the RFC for the paylo
 ## Output
 [Output]: #Output
 
+The contexts of an output address
+
 | Field | Requried | Type | Definition |
 | - | - | - | - |
 | **producer** | ✔ | [Hash] | The hash of the message which contains this output. |
 | **address** | ✔ | [Hash] | Corresponding address |
 | **balance** | ✔ | usize | The balance in this output. |
 | **spent** | ✔ | bool | The output has been spent if true. |
+
+## BIP32Path
+[BIP32Path]: #BIP32Path
+
+A valid BIP32 path. The field is ommited.
+

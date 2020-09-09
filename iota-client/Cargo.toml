@@ -16,6 +16,7 @@ name = "iota_client"
 bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-ternary = { version = "0.3.2-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 reqwest = { version = "0.10.6", features = ["json", "rustls-tls", "native-tls-vendored"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
