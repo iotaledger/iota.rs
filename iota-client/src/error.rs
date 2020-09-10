@@ -10,14 +10,14 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     /// Missing required parameters
     MissingParameter,
+    /// Invalid parameters
+    InvalidParameter(String),
     /// Found Spent Address that still has balance
     SpentAddress,
     /// Missing required iota seed
     MissingNode,
     /// No node available in the node pool
     NodePoolEmpty,
-    /// Hash is not tail of the bundle
-    NotTailHash,
     /// Error when processing quorum data
     QuorumError,
     /// Quorum result didn't pass the minimum threshold
@@ -28,27 +28,27 @@ pub enum Error {
     ResponseError(String),
     /// Ternary conversion error
     TernaryError,
-    /// Inputs balance cannot satisfy threshold requirement
-    ThresholdNotEnough,
     /// Error on Url type conversion
     UrlError,
+    /// The wallet account doesn't have enough balance
+    NotEnoughBalance(u64),
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::MissingParameter => "Must provide required parameters".fmt(f),
+            Error::MissingParameter => write!(f, "Must provide required parameters"),
+            Error::InvalidParameter(s) => write!(f, "Parameter is invalid:{}", s),
             Error::SpentAddress => "Found Spent Address that still has balance.".fmt(f),
             Error::MissingNode => "Must provide node to create instance".fmt(f),
             Error::NodePoolEmpty => "No node available".fmt(f),
-            Error::NotTailHash => "Provided hash is not tail".fmt(f),
             Error::QuorumError => "Fail to find quorum result".fmt(f),
             Error::QuorumThreshold => "Quorum result didn't pass the minimum threshold".fmt(f),
             Error::ReqwestError(e) => e.fmt(f),
             Error::ResponseError(s) => s.fmt(f),
-            Error::ThresholdNotEnough => "Cannot find enough inputs to satisify threshold".fmt(f),
             Error::TernaryError => "Fail to convert message to trytes".fmt(f),
             Error::UrlError => "Fail to parse url".fmt(f),
+            Error::NotEnoughBalance(v) => write!(f, "The wallet account doesn't have enough balance. It only has {:?}", v),
         }
     }
 }

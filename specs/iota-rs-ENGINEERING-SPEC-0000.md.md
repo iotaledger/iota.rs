@@ -12,7 +12,7 @@ Specification of High Level Abstraction API
 * [Introduction](#Introduction)
 * [Builder](#Builder)
 * [General API](#General-API)
-  * [Send](#Send)
+  * [`send`](#send)
   * [`get_unspent_address`](#get_unspent_address)
   * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
@@ -141,121 +141,40 @@ export const NODELIST_ENDPOINTS = [
 
 Finalize the builder will run the instance in the background. Users don’t need to worry about the return object handling.
 
-
 # General API
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
 
-## Send
+## `send()`
 
-A generic send function for easily sending data or value transactions. 
-
+A generic send function for easily sending value transaction messages. 
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>address</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-
-<a href="#Hash">Hash</a>
-   </td>
-   <td>The address to send to. This should be a valid Address with correct checksum. Otherwise, it will return an error.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>value</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>u64
-   </td>
-   <td>The amount of IOTA to send, in iota. If this is a data only transaction we can ignore this field or provide 0. If the amount of this field is higher than 0 we need to provide a seed as well *
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>message </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>String
-   </td>
-   <td>A message to send together with this transaction. Note: String in rust is utf-8 encoded which is compatible to ascii. If users want to use other encodings, they will have to convert themselves. 
-   </td>
-  </tr>
-  <tr>
-   <td><strong>local_pow </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>bool
-   </td>
-   <td>Determines if proof-of-work should be offloaded to the connected node. <strong>Default to false.</strong>
-   </td>
-  </tr>
-</table>
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed of the account we are going to spend. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **address** | ✔ | [Address] | The address to send to. |
+| **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it connot be zero. |
+| **index** | ✘ | u32 | Start index of the wallet account address. Default is 0, but note taht **it's recommended to provide index** since this method consider spent address as error for security. And because this is a stateless crate, account user should keep track of what's the unuspent address index of corresponding wallet chain themselves. |
 
 ### Return
 
-A simple transaction hash. Since bundles have no place anymore and transactions can have a variable size with Atomic transactions this makes most sense. It could be a transaction object as well if that makes more sense.
-
+The [Message] object we build.
 
 ### Implementation Details
 
-There could be two different scenarios if which this method is used: \
+There could be two different scenarios if which this method is used:
 
-
-
-
-1. Data transaction:  \
-Following are the steps for implementing this method if provided value is zero:
-*   Validate address and its checksum;
-*   Validate message semantics;
-*   Get transactions to approve using [getTransactionsToApprove()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettransactionstoapprove);
-*   Perform proof-of-work (If _local_pow_ is set to false, the proof-of-work should be offloaded to the selected node using [attachToTangle()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#attachtotangle). Otherwise, proof-of-work should be performed locally)
-*   Store transactions on the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions);
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
-2. Value transaction:
-
-	Following are the steps for implementing this method if provided value is greater than    zero:
-
-
-
-*   Validate address and its checksum;
-*   Validate message semantics;
-*   Prepare inputs (See [Input Selection process](https://docs.google.com/document/d/17JHw7HpNn3_qKKXaxoQJFxQv4em9xomh0EvvWOzIQzI/edit#heading=h.eby2xfmp8y49) for more details. Input selection process should make sure the _value_ doesn’t exceed the total balance);
-*   Sign transaction (To be decided how this will be signed using _external_signer_);
-*   Get transactions to approve using [getTransactionsToApprove()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettransactionstoapprove);
-*   Perform proof-of-work (If _local_pow_ is set to false, the proof-of-work should be offloaded to the selected node using [attachToTangle()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#attachtotangle). Otherwise, proof-of-work should be performed locally)
-*   Store transactions on the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions);
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
+* Validate inputs, such as address, seed, and path to check if they are correct. For example, the provided path must be
+  wallet chain which should have depth of 2;
+* Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
+* Build and Validate the Message with signed transaction payloads accordingly;
+* Get tips using [`get_tips()`](#get_tips);
+* Perform proof-of-work locally; 
+* Send the message using [`post_messages()`](#post_messages);
 
 ## `get_unspent_address()`
 
