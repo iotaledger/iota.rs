@@ -140,6 +140,11 @@ impl Client {
     // High level API
     //////////////////////////////////////////////////////////////////////
 
+    /// A generic send function for easily sending value transaction messages. 
+    pub fn send() {
+        
+    }
+
     /// Return a valid unuspent address.
     pub fn get_unspent_address<'a>(&'a self, seed: &'a Ed25519Seed) -> GetUnspentAddressBuilder<'a> {
         GetUnspentAddressBuilder::new(self, seed)
