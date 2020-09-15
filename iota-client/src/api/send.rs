@@ -36,7 +36,7 @@ impl<'a> SendBuilder<'a> {
     /// Consume the builder and get the API result
     pub fn get(self) -> Result<u64> {
         let path = match self.path {
-            Some(p) => p.0,
+            Some(p) => p,
             None => return Err(Error::MissingParameter),
         };
 
@@ -50,7 +50,7 @@ impl<'a> SendBuilder<'a> {
             let addresses = self
                 .client
                 .get_addresses(self.seed)
-                .path(BIP32Path(path.clone()))
+                .path(path.clone())
                 .range(index..index + 20)
                 .get()?;
 

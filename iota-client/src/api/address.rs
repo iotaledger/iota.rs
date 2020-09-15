@@ -39,7 +39,7 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Consume the builder and get the API result
     pub fn get(self) -> Result<Vec<Address>> {
         let mut path = match self.path {
-            Some(p) => p.0,
+            Some(p) => p,
             None => return Err(Error::MissingParameter),
         };
 
@@ -51,11 +51,10 @@ impl<'a> GetAddressesBuilder<'a> {
         let mut addresses = Vec::new();
         for i in range {
             path.push(i as u32);
-            let public_key =
-                Ed25519PrivateKey::generate_from_seed(self.seed, BIP32Path(path.clone()))
-                    .expect("Invalid Seed & BIP32Path")
-                    .generate_public_key()
-                    .to_bytes();
+            let public_key = Ed25519PrivateKey::generate_from_seed(self.seed, &path)
+                .expect("Invalid Seed & BIP32Path")
+                .generate_public_key()
+                .to_bytes();
             addresses.push(Address::from_ed25519_bytes(public_key));
             path.pop();
         }

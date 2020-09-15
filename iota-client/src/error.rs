@@ -48,7 +48,11 @@ impl fmt::Display for Error {
             Error::ResponseError(s) => s.fmt(f),
             Error::TernaryError => "Fail to convert message to trytes".fmt(f),
             Error::UrlError => "Fail to parse url".fmt(f),
-            Error::NotEnoughBalance(v) => write!(f, "The wallet account doesn't have enough balance. It only has {:?}", v),
+            Error::NotEnoughBalance(v) => write!(
+                f,
+                "The wallet account doesn't have enough balance. It only has {:?}",
+                v
+            ),
         }
     }
 }
