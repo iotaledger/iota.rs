@@ -1,9 +1,6 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::atomic::{
-    payload::signed_transaction::Address,
-    Hash
-};
+use bee_transaction::atomic::{payload::signed_transaction::Address, Hash};
 /// Response of GET /info endpoint
 pub struct NodeInfo {
     /// Iota node Name

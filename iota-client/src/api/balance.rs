@@ -2,13 +2,8 @@ use crate::{Client, Error, Result};
 
 use bee_signing_ext::binary::{BIP32Path, Ed25519Seed as Seed};
 use bee_transaction::atomic::{
-    Hash,
+    payload::{signed_transaction::Address, Indexation, Payload},
     Message,
-    payload::{
-        Payload,
-        Indexation,
-        signed_transaction::Address,
-    },
 };
 
 use std::num::NonZeroU64;
@@ -64,23 +59,26 @@ impl<'a> GetBalanceBuilder<'a> {
     pub fn get(self) -> Result<Message> {
         let path = match self.path {
             Some(p) => {
-                if p.0.len() != 2 {
-                    return Err(Error::InvalidParameter(String::from("Must provide BIP32Path with depth of 2")));
+                if p.depth() != 2 {
+                    return Err(Error::InvalidParameter(String::from(
+                        "Must provide BIP32Path with depth of 2",
+                    )));
                 }
-                p.0
-            },
+                p
+            }
             None => return Err(Error::MissingParameter),
         };
 
         let address = match self.address {
             Some(a) => {
                 if self.client.get_addresses_balance(&[a])?[0].spent {
-                    return Err(Error::InvalidParameter(String::from("Address is already spent")));
+                    return Err(Error::InvalidParameter(String::from(
+                        "Address is already spent",
+                    )));
                 }
-            },
+            }
             None => return Err(Error::MissingParameter),
         };
-
 
         let value = match self.value {
             Some(v) => v.get(),
@@ -99,7 +97,7 @@ impl<'a> GetBalanceBuilder<'a> {
             let addresses = self
                 .client
                 .get_addresses(self.seed)
-                .path(BIP32Path(path.clone()))
+                .path(path.clone())
                 .range(index..index + 20)
                 .get()?;
 
@@ -134,18 +132,18 @@ impl<'a> GetBalanceBuilder<'a> {
             return Err(Error::NotEnoughBalance(balance));
         }
 
-        // get tips 
+        // get tips
         let tips = self.client.get_tips()?;
 
         // TODO building signed_transaction payload
-        
+
         let message = Message {
             trunk: tips.0,
             branch: tips.1,
-            payload: Payload::Indexation(Box::new(Indexation{ tag: [0;16] })),
+            payload: Payload::Indexation(Box::new(Indexation { tag: [0; 16] })),
             nonce: 0,
         };
-        
+
         // TODO POW
 
         Ok(message)
