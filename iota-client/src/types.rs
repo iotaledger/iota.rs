@@ -23,4 +23,6 @@ pub struct Output {
     pub amount: u64,
     /// Spend status of the output
     pub spent: bool,
+    /// Output index.
+    pub output_index: u8,
 }
