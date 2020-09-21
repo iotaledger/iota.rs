@@ -2,6 +2,7 @@
 
 use bee_transaction::atomic::{payload::signed_transaction::Address, Hash};
 /// Response of GET /info endpoint
+#[derive(Clone, Debug)]
 pub struct NodeInfo {
     /// Iota node Name
     pub name: String,
@@ -14,6 +15,7 @@ pub struct NodeInfo {
 }
 
 /// Output data
+#[derive(Clone, Debug)]
 pub struct Output {
     /// Producer message of the output
     pub producer: Hash,
@@ -25,4 +27,22 @@ pub struct Output {
     pub spent: bool,
     /// Output index.
     pub output_index: u8,
+}
+
+/// Transfers structure
+///
+/// Users could use this to construct output address with amount of iota they want to get.
+#[derive(Clone, Debug)]
+pub struct Transfers(pub Vec<(Address, u64)>);
+
+impl Transfers {
+    /// Create Transfers starting with one address
+    pub fn new(address: Address, amount: u64) -> Self {
+        Self(vec![(address, amount)])
+    }
+    
+    /// Add more address to the Transfers
+    pub fn add(&mut self, address: Address, amount: u64) {
+        self.0.push((address, amount));
+    }
 }

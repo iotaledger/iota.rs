@@ -141,8 +141,9 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// A generic send function for easily sending value transaction messages.
-    pub fn send() {}
-
+    pub fn sned<'a>(&'a self, seed: &'a Ed25519Seed) -> SendBuilder<'a> {
+        SendBuilder::new(self, seed)
+    }
     /// Return a valid unuspent address.
     pub fn get_unspent_address<'a>(
         &'a self,

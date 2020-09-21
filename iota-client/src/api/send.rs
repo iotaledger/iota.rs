@@ -1,6 +1,7 @@
-use crate::{Client, Error, Result};
+use crate::{Client, Error, Result, Output, Transfers};
 
 use bee_signing_ext::binary::{BIP32Path, Ed25519Seed as Seed};
+use bee_transaction::prelude::Hash;
 
 /// Builder of send API
 pub struct SendBuilder<'a> {
@@ -8,6 +9,7 @@ pub struct SendBuilder<'a> {
     seed: &'a Seed,
     path: Option<&'a BIP32Path>,
     index: Option<usize>,
+    transfers: Option<Transfers>,
 }
 
 impl<'a> SendBuilder<'a> {
@@ -18,6 +20,7 @@ impl<'a> SendBuilder<'a> {
             seed,
             path: None,
             index: None,
+            transfers: None,
         }
     }
 
@@ -33,8 +36,14 @@ impl<'a> SendBuilder<'a> {
         self
     }
 
+    /// Set transfers to the builder
+    pub fn transfers(mut self, transfers: Transfers) -> Self {
+        self.transfers = Some(transfers);
+        self
+    }
+
     /// Consume the builder and get the API result
-    pub fn post(self) -> Result<u64> {
+    pub fn post(self) -> Result<Vec<Hash>> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter),
@@ -45,7 +54,13 @@ impl<'a> SendBuilder<'a> {
             None => 0,
         };
 
+        let transfers = match self.transfers {
+            Some(t) => t,
+            None => return Err(Error::MissingParameter),
+        };
+
         let mut balance = 0;
+        let mut inputs = Vec::new();
         loop {
             let addresses = self
                 .client
@@ -67,6 +82,7 @@ impl<'a> SendBuilder<'a> {
                     false => {
                         if output.amount != 0 {
                             balance += output.amount;
+                            inputs.push(output);
                         } else {
                             end = true;
                         }
@@ -80,6 +96,7 @@ impl<'a> SendBuilder<'a> {
             }
         }
 
-        Ok(balance)
+        // TODO build the transaction
+        self.client.post_messages(Vec::new())
     }
 }
