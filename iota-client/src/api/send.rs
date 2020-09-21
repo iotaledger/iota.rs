@@ -6,7 +6,7 @@ use bee_signing_ext::binary::{BIP32Path, Ed25519Seed as Seed};
 pub struct SendBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
-    path: Option<BIP32Path>,
+    path: Option<&'a BIP32Path>,
     index: Option<usize>,
 }
 
@@ -22,7 +22,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Set path to the builder
-    pub fn path(mut self, path: BIP32Path) -> Self {
+    pub fn path(mut self, path: &'a BIP32Path) -> Self {
         self.path = Some(path);
         self
     }
@@ -34,7 +34,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub fn get(self) -> Result<u64> {
+    pub fn post(self) -> Result<u64> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter),
@@ -50,7 +50,7 @@ impl<'a> SendBuilder<'a> {
             let addresses = self
                 .client
                 .get_addresses(self.seed)
-                .path(path.clone())
+                .path(path)
                 .range(index..index + 20)
                 .get()?;
 

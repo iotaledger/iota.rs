@@ -9,7 +9,7 @@ use std::ops::Range;
 pub struct GetAddressesBuilder<'a> {
     _client: &'a Client,
     seed: &'a Seed,
-    path: Option<BIP32Path>,
+    path: Option<&'a BIP32Path>,
     range: Option<Range<usize>>,
 }
 
@@ -25,7 +25,7 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Set path to the builder
-    pub fn path(mut self, path: BIP32Path) -> Self {
+    pub fn path(mut self, path: &'a BIP32Path) -> Self {
         self.path = Some(path);
         self
     }
@@ -39,7 +39,7 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Consume the builder and get the API result
     pub fn get(self) -> Result<Vec<Address>> {
         let mut path = match self.path {
-            Some(p) => p,
+            Some(p) => p.clone(),
             None => return Err(Error::MissingParameter),
         };
 

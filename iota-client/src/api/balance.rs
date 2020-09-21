@@ -12,8 +12,8 @@ use std::num::NonZeroU64;
 pub struct GetBalanceBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
-    path: Option<BIP32Path>,
-    address: Option<Address>,
+    path: Option<&'a BIP32Path>,
+    address: Option<&'a Address>,
     value: Option<NonZeroU64>,
     index: Option<usize>,
 }
@@ -32,13 +32,13 @@ impl<'a> GetBalanceBuilder<'a> {
     }
 
     /// Set path to the builder
-    pub fn path(mut self, path: BIP32Path) -> Self {
+    pub fn path(mut self, path: &'a BIP32Path) -> Self {
         self.path = Some(path);
         self
     }
 
     /// Set address to the builder
-    pub fn address(mut self, address: Address) -> Self {
+    pub fn address(mut self, address: &'a Address) -> Self {
         self.address = Some(address);
         self
     }
@@ -71,7 +71,7 @@ impl<'a> GetBalanceBuilder<'a> {
 
         let address = match self.address {
             Some(a) => {
-                if self.client.get_addresses_balance(&[a])?[0].spent {
+                if self.client.get_addresses_balance(&[a.clone()])?[0].spent {
                     return Err(Error::InvalidParameter(String::from(
                         "Address is already spent",
                     )));
@@ -97,7 +97,7 @@ impl<'a> GetBalanceBuilder<'a> {
             let addresses = self
                 .client
                 .get_addresses(self.seed)
-                .path(path.clone())
+                .path(path)
                 .range(index..index + 20)
                 .get()?;
 

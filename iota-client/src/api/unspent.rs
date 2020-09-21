@@ -7,7 +7,7 @@ use bee_transaction::atomic::payload::signed_transaction::Address;
 pub struct GetUnspentAddressBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
-    path: Option<BIP32Path>,
+    path: Option<&'a BIP32Path>,
     index: Option<usize>,
 }
 
@@ -23,7 +23,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     }
 
     /// Set path to the builder
-    pub fn path(mut self, path: BIP32Path) -> Self {
+    pub fn path(mut self, path: &'a BIP32Path) -> Self {
         self.path = Some(path);
         self
     }
@@ -50,7 +50,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             let addresses = self
                 .client
                 .get_addresses(self.seed)
-                .path(path.clone())
+                .path(path)
                 .range(index..index + 20)
                 .get()?;
 
