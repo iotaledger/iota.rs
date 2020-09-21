@@ -176,4 +176,14 @@ impl Client {
         self.post_messages(messages.clone())?;
         Ok(messages)
     }
+
+    /// Check if a transaction-message is confirmed.
+    /// Should GET `/transaction-messages/is-confirmed`
+    pub fn is_confirmed<'a>(&self, hashes: &'a [Hash]) -> Result<HashMap<&'a Hash, bool>> {
+        let mut map = HashMap::new();
+        for hash in hashes {
+            map.insert(hash, true);
+        }
+        Ok(map)
+    }
 }

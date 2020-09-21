@@ -1,6 +1,6 @@
 use crate::{Client, Result};
 
-use bee_transaction::prelude::{Hash, Message, Address};
+use bee_transaction::prelude::{Address, Hash, Message};
 
 /// Builder of GET /transaction-messages/* endpoint
 pub struct GetTransactionsBuilder<'a> {
