@@ -55,7 +55,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 .expect("Invalid Seed & BIP32Path")
                 .generate_public_key()
                 .to_bytes();
-            addresses.push(Address::from_ed25519_bytes(public_key));
+            addresses.push(Address::from_ed25519_bytes(&public_key));
             path.pop();
         }
 
