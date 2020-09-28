@@ -5,7 +5,7 @@ use crate::error::*;
 use crate::node::*;
 use crate::types::*;
 
-use bee_signing_ext::binary::Ed25519Seed;
+use bee_signing_ext::Seed;
 use bee_transaction::atomic::{payload::signed_transaction::Address, Hash, Message};
 
 use reqwest::Url;
@@ -141,24 +141,21 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// A generic send function for easily sending value transaction messages.
-    pub fn sned<'a>(&'a self, seed: &'a Ed25519Seed) -> SendBuilder<'a> {
+    pub fn sned<'a>(&'a self, seed: &'a Seed) -> SendBuilder<'a> {
         SendBuilder::new(self, seed)
     }
     /// Return a valid unuspent address.
-    pub fn get_unspent_address<'a>(
-        &'a self,
-        seed: &'a Ed25519Seed,
-    ) -> GetUnspentAddressBuilder<'a> {
+    pub fn get_unspent_address<'a>(&'a self, seed: &'a Seed) -> GetUnspentAddressBuilder<'a> {
         GetUnspentAddressBuilder::new(self, seed)
     }
 
     /// Return a list of addresses from the seed regardless of their validity.
-    pub fn get_addresses<'a>(&'a self, seed: &'a Ed25519Seed) -> GetAddressesBuilder<'a> {
+    pub fn get_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(self, seed)
     }
 
     /// Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`. Addresses with balance must be consecutive, so this method will return once it encounters a zero balance address.
-    pub fn get_balance<'a>(&'a self, seed: &'a Ed25519Seed) -> GetBalanceBuilder<'a> {
+    pub fn get_balance<'a>(&'a self, seed: &'a Seed) -> GetBalanceBuilder<'a> {
         GetBalanceBuilder::new(self, seed)
     }
 

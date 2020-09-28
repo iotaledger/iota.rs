@@ -8,6 +8,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 /// Error type of the iota client crate.
 pub enum Error {
+    /// Error when building transaction messages
+    TransactionError,
     /// Missing required parameters
     MissingParameter,
     /// Invalid parameters
@@ -37,6 +39,7 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Error::TransactionError => write!(f, "Error when building transaction message"),
             Error::MissingParameter => write!(f, "Must provide required parameters"),
             Error::InvalidParameter(s) => write!(f, "Parameter is invalid:{}", s),
             Error::SpentAddress => "Found Spent Address that still has balance.".fmt(f),

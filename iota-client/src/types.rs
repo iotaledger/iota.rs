@@ -40,7 +40,7 @@ impl Transfers {
     pub fn new(address: Address, amount: u64) -> Self {
         Self(vec![(address, amount)])
     }
-    
+
     /// Add more address to the Transfers
     pub fn add(&mut self, address: Address, amount: u64) {
         self.0.push((address, amount));

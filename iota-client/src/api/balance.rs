@@ -1,20 +1,12 @@
 use crate::{Client, Error, Result};
 
-use bee_signing_ext::binary::{BIP32Path, Ed25519Seed as Seed};
-use bee_transaction::atomic::{
-    payload::{signed_transaction::Address, Indexation, Payload},
-    Message,
-};
-
-use std::num::NonZeroU64;
+use bee_signing_ext::{binary::BIP32Path, Seed};
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
     path: Option<&'a BIP32Path>,
-    address: Option<&'a Address>,
-    value: Option<NonZeroU64>,
     index: Option<usize>,
 }
 
@@ -25,8 +17,6 @@ impl<'a> GetBalanceBuilder<'a> {
             client,
             seed,
             path: None,
-            address: None,
-            value: None,
             index: None,
         }
     }
@@ -37,18 +27,6 @@ impl<'a> GetBalanceBuilder<'a> {
         self
     }
 
-    /// Set address to the builder
-    pub fn address(mut self, address: &'a Address) -> Self {
-        self.address = Some(address);
-        self
-    }
-
-    /// Set value to the builder
-    pub fn value(mut self, value: NonZeroU64) -> Self {
-        self.value = Some(value);
-        self
-    }
-
     /// Set index to the builder
     pub fn index(mut self, index: usize) -> Self {
         self.index = Some(index);
@@ -56,7 +34,7 @@ impl<'a> GetBalanceBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub fn get(self) -> Result<Message> {
+    pub fn get(self) -> Result<u64> {
         let path = match self.path {
             Some(p) => {
                 if p.depth() != 2 {
@@ -69,22 +47,6 @@ impl<'a> GetBalanceBuilder<'a> {
             None => return Err(Error::MissingParameter),
         };
 
-        let address = match self.address {
-            Some(a) => {
-                if self.client.get_addresses_balance(&[a.clone()])?[0].spent {
-                    return Err(Error::InvalidParameter(String::from(
-                        "Address is already spent",
-                    )));
-                }
-            }
-            None => return Err(Error::MissingParameter),
-        };
-
-        let value = match self.value {
-            Some(v) => v.get(),
-            None => return Err(Error::MissingParameter),
-        };
-
         let mut index = match self.index {
             Some(r) => r,
             None => 0,
@@ -92,7 +54,6 @@ impl<'a> GetBalanceBuilder<'a> {
 
         // get account balance and check with value
         let mut balance = 0;
-        let mut inputs = Vec::new();
         loop {
             let addresses = self
                 .client
@@ -114,7 +75,6 @@ impl<'a> GetBalanceBuilder<'a> {
                     false => {
                         if output.amount != 0 {
                             balance += output.amount;
-                            inputs.push(output);
                         } else {
                             end = true;
                         }
@@ -128,24 +88,6 @@ impl<'a> GetBalanceBuilder<'a> {
             }
         }
 
-        if balance < value {
-            return Err(Error::NotEnoughBalance(balance));
-        }
-
-        // get tips
-        let tips = self.client.get_tips()?;
-
-        // TODO building signed_transaction payload
-
-        let message = Message {
-            trunk: tips.0,
-            branch: tips.1,
-            payload: Payload::Indexation(Box::new(Indexation { tag: [0; 16] })),
-            nonce: 0,
-        };
-
-        // TODO POW
-
-        Ok(message)
+        Ok(balance)
     }
 }

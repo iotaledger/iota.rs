@@ -1,6 +1,9 @@
 use crate::{Client, Error, Result};
 
-use bee_signing_ext::binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed as Seed};
+use bee_signing_ext::{
+    binary::{BIP32Path, Ed25519PrivateKey},
+    Seed,
+};
 use bee_transaction::atomic::payload::signed_transaction::Address;
 
 use std::ops::Range;
@@ -48,14 +51,19 @@ impl<'a> GetAddressesBuilder<'a> {
             None => 0..20,
         };
 
+        let seed = match self.seed {
+            Seed::Ed25519(s) => s,
+            _ => panic!("Other seed scheme isn't supported yet."),
+        };
+
         let mut addresses = Vec::new();
         for i in range {
             path.push(i as u32);
-            let public_key = Ed25519PrivateKey::generate_from_seed(self.seed, &path)
+            let public_key = Ed25519PrivateKey::generate_from_seed(seed, &path)
                 .expect("Invalid Seed & BIP32Path")
                 .generate_public_key()
                 .to_bytes();
-            addresses.push(Address::from_ed25519_bytes(public_key));
+            addresses.push(Address::from_ed25519_bytes(&public_key));
             path.pop();
         }
 
