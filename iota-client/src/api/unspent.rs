@@ -1,6 +1,6 @@
 use crate::{Client, Error, Result};
 
-use bee_signing_ext::binary::{BIP32Path, Ed25519Seed as Seed};
+use bee_signing_ext::{binary::BIP32Path, Seed};
 use bee_transaction::atomic::payload::signed_transaction::Address;
 
 /// Builder of get_unspent_address API

@@ -1,7 +1,9 @@
-use crate::{Client, Error, Result, Output, Transfers};
+use crate::{Client, Error, Result};
 
-use bee_signing_ext::binary::{BIP32Path, Ed25519Seed as Seed};
-use bee_transaction::prelude::Hash;
+use bee_signing_ext::{binary::BIP32Path, Seed};
+use bee_transaction::prelude::*;
+
+use std::num::NonZeroU64;
 
 /// Builder of send API
 pub struct SendBuilder<'a> {
@@ -9,7 +11,7 @@ pub struct SendBuilder<'a> {
     seed: &'a Seed,
     path: Option<&'a BIP32Path>,
     index: Option<usize>,
-    transfers: Option<Transfers>,
+    outputs: Vec<Output>,
 }
 
 impl<'a> SendBuilder<'a> {
@@ -20,7 +22,7 @@ impl<'a> SendBuilder<'a> {
             seed,
             path: None,
             index: None,
-            transfers: None,
+            outputs: Vec::new(),
         }
     }
 
@@ -37,8 +39,9 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Set transfers to the builder
-    pub fn transfers(mut self, transfers: Transfers) -> Self {
-        self.transfers = Some(transfers);
+    pub fn output(mut self, address: Address, amount: NonZeroU64) -> Self {
+        let output = Output::new(address, amount);
+        self.outputs.push(output);
         self
     }
 
@@ -54,10 +57,9 @@ impl<'a> SendBuilder<'a> {
             None => 0,
         };
 
-        let transfers = match self.transfers {
-            Some(t) => t,
-            None => return Err(Error::MissingParameter),
-        };
+        if self.outputs.len() == 0 {
+            return Err(Error::MissingParameter);
+        }
 
         let mut balance = 0;
         let mut inputs = Vec::new();
@@ -72,7 +74,7 @@ impl<'a> SendBuilder<'a> {
             let outputs = self.client.get_outputs().addresses(&addresses).get()?;
 
             let mut end = false;
-            for output in outputs {
+            for (offset, output) in outputs.into_iter().enumerate() {
                 match output.spent {
                     true => {
                         if output.amount != 0 {
@@ -82,7 +84,12 @@ impl<'a> SendBuilder<'a> {
                     false => {
                         if output.amount != 0 {
                             balance += output.amount;
-                            inputs.push(output);
+                            let mut address_path = path.clone();
+                            address_path.push(offset as u32);
+                            inputs.push((
+                                Input::new(output.producer, output.output_index),
+                                address_path,
+                            ));
                         } else {
                             end = true;
                         }
@@ -96,7 +103,30 @@ impl<'a> SendBuilder<'a> {
             }
         }
 
-        // TODO build the transaction
-        self.client.post_messages(Vec::new())
+        // Build signed transaction payload
+        let outputs = self.outputs;
+        let total = outputs.iter().fold(0, |acc, x| acc + x.amount().get());
+        if balance <= total {
+            return Err(Error::NotEnoughBalance(balance));
+        }
+        // TODO overflow check?
+        let payload = SignedTransactionBuilder::new(self.seed)
+            .set_inputs(inputs)
+            .set_outputs(outputs)
+            .build()
+            .map_err(|_| Error::TransactionError)?;
+
+        // get tips
+        let tips = self.client.get_tips()?;
+
+        // building message
+        let payload = Payload::SignedTransaction(Box::new(payload));
+        let message = Message::new()
+            .tips(tips)
+            .payload(payload)
+            .buid()
+            .map_err(|_| Error::TransactionError)?;
+
+        self.client.post_messages(vec![message])
     }
 }
