@@ -124,7 +124,7 @@ impl<'a> SendBuilder<'a> {
         let message = Message::new()
             .tips(tips)
             .payload(payload)
-            .buid()
+            .build()
             .map_err(|_| Error::TransactionError)?;
 
         self.client.post_messages(vec![message])
