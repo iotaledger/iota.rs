@@ -121,10 +121,10 @@ impl<'a> SendBuilder<'a> {
 
         // building message
         let payload = Payload::SignedTransaction(Box::new(payload));
-        let message = Message::new()
+        let message = Message::builder()
             .tips(tips)
             .payload(payload)
-            .buid()
+            .build()
             .map_err(|_| Error::TransactionError)?;
 
         self.client.post_messages(vec![message])
