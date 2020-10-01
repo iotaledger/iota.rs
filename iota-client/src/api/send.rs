@@ -40,7 +40,7 @@ impl<'a> SendBuilder<'a> {
 
     /// Set transfers to the builder
     pub fn output(mut self, address: Address, amount: NonZeroU64) -> Self {
-        let output = Output::new(address, amount);
+        let output = SigLockedSingleDeposit::new(address, amount).into();
         self.outputs.push(output);
         self
     }
@@ -87,7 +87,7 @@ impl<'a> SendBuilder<'a> {
                             let mut address_path = path.clone();
                             address_path.push(offset as u32);
                             inputs.push((
-                                Input::new(output.producer, output.output_index),
+                                UTXOInput::new(output.producer, output.output_index).into(),
                                 address_path,
                             ));
                         } else {
