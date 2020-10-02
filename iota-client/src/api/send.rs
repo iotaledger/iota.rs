@@ -105,7 +105,10 @@ impl<'a> SendBuilder<'a> {
 
         // Build signed transaction payload
         let outputs = self.outputs;
-        let total = outputs.iter().fold(0, |acc, x| acc + x.amount().get());
+        let total = outputs.iter().fold(0, |acc, x| {
+            let Output::SigLockedSingleDeposit(x) = x;
+            acc + &x.amount().get()
+        });
         if balance <= total {
             return Err(Error::NotEnoughBalance(balance));
         }

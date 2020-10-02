@@ -113,7 +113,7 @@ impl Client {
 
     /// GET /tips endpoint
     pub fn get_tips(&self) -> Result<(Hash, Hash)> {
-        Ok((Hash([0; 32]), Hash([0; 32])))
+        Ok((Hash::new([0; 32]), Hash::new([0; 32])))
     }
 
     /// GET /messages/* endpoint
