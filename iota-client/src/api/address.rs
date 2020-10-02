@@ -5,6 +5,8 @@ use bee_signing_ext::{
     Seed,
 };
 use bee_transaction::atomic::payload::signed_transaction::Address;
+use bee_transaction::atomic::payload::signed_transaction::Ed25519Address;
+
 
 use std::ops::Range;
 
@@ -63,7 +65,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 .expect("Invalid Seed & BIP32Path")
                 .generate_public_key()
                 .to_bytes();
-            addresses.push(Address::from_ed25519_bytes(&public_key));
+            addresses.push(Address::Ed25519(Ed25519Address::new(public_key)));
             path.pop();
         }
 
