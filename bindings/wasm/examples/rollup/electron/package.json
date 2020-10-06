@@ -11,7 +11,7 @@
     "electron-is-dev": "^1.1.0"
   },
   "devDependencies": {
-    "electron": "^8.0.0"
+    "electron": "^8.5.2"
   },
   "keywords": [
     "capacitor",
