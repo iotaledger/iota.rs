@@ -40,7 +40,7 @@ impl<'a> SendBuilder<'a> {
 
     /// Set transfers to the builder
     pub fn output(mut self, address: Address, amount: NonZeroU64) -> Self {
-        let output = SigLockedSingleDeposit::new(address, amount).into();
+        let output = SignatureSingleDepositOutput::new(address, amount).into();
         self.outputs.push(output);
         self
     }
@@ -87,7 +87,9 @@ impl<'a> SendBuilder<'a> {
                             let mut address_path = path.clone();
                             address_path.push(offset as u32);
                             inputs.push((
-                                UTXOInput::new(output.producer, output.output_index).into(),
+                                UTXOInput::new(output.producer, output.output_index)
+                                    .map_err(|_| Error::TransactionError)?
+                                    .into(),
                                 address_path,
                             ));
                         } else {
@@ -106,7 +108,7 @@ impl<'a> SendBuilder<'a> {
         // Build signed transaction payload
         let outputs = self.outputs;
         let total = outputs.iter().fold(0, |acc, x| {
-            let Output::SigLockedSingleDeposit(x) = x;
+            let Output::SignatureSingleDeposit(x) = x;
             acc + &x.amount().get()
         });
         if balance <= total {
@@ -120,16 +122,17 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::TransactionError)?;
 
         // get tips
-        let tips = self.client.get_tips()?;
+        let (parent1, parent2) = self.client.get_tips()?;
 
         // building message
         let payload = Payload::SignedTransaction(Box::new(payload));
         let message = Message::builder()
-            .tips(tips)
+            .parent1(parent1)
+            .parent2(parent2)
             .payload(payload)
             .build()
             .map_err(|_| Error::TransactionError)?;
 
-        self.client.post_messages(vec![message])
+        self.client.post_messages(&[message])
     }
 }

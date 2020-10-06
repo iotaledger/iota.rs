@@ -15,7 +15,7 @@ pub struct NodeInfo {
 }
 
 /// Output data
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Output {
     /// Producer message of the output
     pub producer: Hash,
@@ -32,7 +32,7 @@ pub struct Output {
 /// Transfers structure
 ///
 /// Users could use this to construct output address with amount of iota they want to get.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Transfers(pub Vec<(Address, u64)>);
 
 impl Transfers {

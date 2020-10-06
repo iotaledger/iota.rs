@@ -122,7 +122,7 @@ impl Client {
     }
 
     /// POST /messages endpoint
-    pub fn post_messages(&self, _messages: Vec<Message>) -> Result<Vec<Hash>> {
+    pub fn post_messages(&self, _messages: &[Message]) -> Result<Vec<Hash>> {
         Ok(Vec::new())
     }
 
@@ -171,17 +171,17 @@ impl Client {
     /// confirmed for a while.
     pub fn reattach(&self, hashes: &[Hash]) -> Result<Vec<Message>> {
         let messages = self.get_messages().hashes(hashes).get()?;
-        self.post_messages(messages.clone())?;
+        self.post_messages(&messages)?;
         Ok(messages)
     }
 
     /// Check if a transaction-message is confirmed.
     /// Should GET `/transaction-messages/is-confirmed`
-    pub fn is_confirmed<'a>(&self, hashes: &'a [Hash]) -> Result<HashMap<&'a Hash, bool>> {
-        let mut map = HashMap::new();
-        for hash in hashes {
-            map.insert(hash, true);
+    pub fn is_confirmed<'a>(&self, hashes: &'a [Hash]) -> Result<Vec<bool>> {
+        let mut states = vec![];
+        for _ in hashes {
+            states.push(true);
         }
-        Ok(map)
+        Ok(states)
     }
 }
