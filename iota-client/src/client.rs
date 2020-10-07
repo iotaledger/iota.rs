@@ -6,7 +6,7 @@ use crate::node::*;
 use crate::types::*;
 
 use bee_signing_ext::Seed;
-use bee_transaction::atomic::{payload::signed_transaction::Address, Hash, Message};
+use bee_transaction::prelude::{Address, Hash, Message};
 
 use reqwest::Url;
 

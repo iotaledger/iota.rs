@@ -40,7 +40,7 @@ impl<'a> SendBuilder<'a> {
 
     /// Set transfers to the builder
     pub fn output(mut self, address: Address, amount: NonZeroU64) -> Self {
-        let output = SignatureSingleDepositOutput::new(address, amount).into();
+        let output = SignatureLockedSingleOutput::new(address, amount).into();
         self.outputs.push(output);
         self
     }
@@ -108,14 +108,14 @@ impl<'a> SendBuilder<'a> {
         // Build signed transaction payload
         let outputs = self.outputs;
         let total = outputs.iter().fold(0, |acc, x| {
-            let Output::SignatureSingleDeposit(x) = x;
+            let Output::SignatureLockedSingle(x) = x;
             acc + &x.amount().get()
         });
         if balance <= total {
             return Err(Error::NotEnoughBalance(balance));
         }
         // TODO overflow check?
-        let payload = SignedTransactionBuilder::new(self.seed)
+        let payload = TransactionBuilder::new(self.seed)
             .set_inputs(inputs)
             .set_outputs(outputs)
             .build()
@@ -125,7 +125,7 @@ impl<'a> SendBuilder<'a> {
         let (parent1, parent2) = self.client.get_tips()?;
 
         // building message
-        let payload = Payload::SignedTransaction(Box::new(payload));
+        let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
             .parent1(parent1)
             .parent2(parent2)

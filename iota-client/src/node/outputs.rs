@@ -1,6 +1,6 @@
 use crate::{Client, Output, Result};
 
-use bee_transaction::atomic::{payload::signed_transaction::Address, Hash};
+use bee_transaction::prelude::{Address, Hash};
 
 /// Builder of GET /outputs/* endpoint
 pub struct GetOutputsBuilder<'a> {
