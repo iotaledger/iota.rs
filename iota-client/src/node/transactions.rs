@@ -1,11 +1,11 @@
 use crate::{Client, Result};
 
-use bee_transaction::prelude::{Address, Hash, Message};
+use bee_transaction::prelude::{Address, Message, MessageId};
 
 /// Builder of GET /transaction-messages/* endpoint
 pub struct GetTransactionsBuilder<'a> {
     _client: &'a Client,
-    hashes: Option<&'a [Hash]>,
+    hashes: Option<&'a [MessageId]>,
     addresses: Option<&'a [Address]>,
     confirmed: bool,
 }
@@ -22,7 +22,7 @@ impl<'a> GetTransactionsBuilder<'a> {
     }
 
     /// Set message hashes to the builder
-    pub fn hashes(mut self, hashes: &'a [Hash]) -> Self {
+    pub fn hashes(mut self, hashes: &'a [MessageId]) -> Self {
         self.hashes = Some(hashes);
         self
     }

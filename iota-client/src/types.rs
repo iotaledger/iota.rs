@@ -1,6 +1,6 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::{Address, Hash};
+use bee_transaction::prelude::{Address, MessageId};
 /// Response of GET /info endpoint
 #[derive(Clone, Debug)]
 pub struct NodeInfo {
@@ -18,7 +18,7 @@ pub struct NodeInfo {
 #[derive(Debug)]
 pub struct Output {
     /// Producer message of the output
-    pub producer: Hash,
+    pub producer: MessageId,
     /// Corresponding address
     pub address: Address,
     /// Balance amount

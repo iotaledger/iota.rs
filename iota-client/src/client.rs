@@ -6,7 +6,7 @@ use crate::node::*;
 use crate::types::*;
 
 use bee_signing_ext::Seed;
-use bee_transaction::prelude::{Address, Hash, Message};
+use bee_transaction::prelude::{Address, Message, MessageId};
 
 use reqwest::Url;
 
@@ -112,8 +112,8 @@ impl Client {
     }
 
     /// GET /tips endpoint
-    pub fn get_tips(&self) -> Result<(Hash, Hash)> {
-        Ok((Hash::new([0; 32]), Hash::new([0; 32])))
+    pub fn get_tips(&self) -> Result<(MessageId, MessageId)> {
+        Ok((MessageId::new([0; 32]), MessageId::new([0; 32])))
     }
 
     /// GET /messages/* endpoint
@@ -122,7 +122,7 @@ impl Client {
     }
 
     /// POST /messages endpoint
-    pub fn post_messages(&self, _messages: &[Message]) -> Result<Vec<Hash>> {
+    pub fn post_messages(&self, _messages: &[Message]) -> Result<Vec<MessageId>> {
         Ok(Vec::new())
     }
 
@@ -169,7 +169,7 @@ impl Client {
 
     /// Reattaches messages for provided message hashes. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub fn reattach(&self, hashes: &[Hash]) -> Result<Vec<Message>> {
+    pub fn reattach(&self, hashes: &[MessageId]) -> Result<Vec<Message>> {
         let messages = self.get_messages().hashes(hashes).get()?;
         self.post_messages(&messages)?;
         Ok(messages)
@@ -177,7 +177,10 @@ impl Client {
 
     /// Check if a transaction-message is confirmed.
     /// Should GET `/transaction-messages/is-confirmed`
-    pub fn is_confirmed<'a>(&self, hashes: &'a [Hash]) -> Result<HashMap<&'a Hash, bool>> {
+    pub fn is_confirmed<'a>(
+        &self,
+        hashes: &'a [MessageId],
+    ) -> Result<HashMap<&'a MessageId, bool>> {
         let mut map = HashMap::new();
         for hash in hashes {
             map.insert(hash, true);

@@ -46,7 +46,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub fn post(self) -> Result<Vec<Hash>> {
+    pub fn post(self) -> Result<Vec<MessageId>> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter),
