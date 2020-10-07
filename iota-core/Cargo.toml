@@ -10,7 +10,7 @@ license = "Apache-2.0"
 name = "iota"
 
 [dependencies]
-bee-transaction = { git = "https://github.com/wusyong/bee-p.git", branch = "atomic-tx" }
+bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-ternary = { version = "0.3.1-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
