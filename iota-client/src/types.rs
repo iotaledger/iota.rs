@@ -46,3 +46,6 @@ impl Transfers {
         self.0.push((address, amount));
     }
 }
+
+/// Transaction identifier
+pub type TransactionId = MessageId;

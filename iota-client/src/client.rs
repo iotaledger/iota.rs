@@ -101,7 +101,12 @@ impl Client {
     // Node API
     //////////////////////////////////////////////////////////////////////
 
-    /// GET /info endpoint
+    /// GET /health endpoint
+    pub fn get_health(&self, _url: Url) -> bool {
+        true
+    }
+
+    /// GET /api/v1/info endpoint
     pub fn get_info(&self, _url: Url) -> Result<NodeInfo> {
         Ok(NodeInfo {
             name: String::from("Bee"),
@@ -111,29 +116,42 @@ impl Client {
         })
     }
 
-    /// GET /tips endpoint
+    /// GET /api/v1/tips endpoint
     pub fn get_tips(&self) -> Result<(MessageId, MessageId)> {
         Ok((MessageId::new([0; 32]), MessageId::new([0; 32])))
     }
 
-    /// GET /messages/* endpoint
-    pub fn get_messages(&self) -> GetMessagesBuilder<'_> {
-        GetMessagesBuilder::new(self)
+    /// POST /api/v1/messages endpoint
+    pub fn post_messages(&self, _messages: &Message) -> Result<MessageId> {
+        Ok(MessageId::new([0; 32]))
     }
 
-    /// POST /messages endpoint
-    pub fn post_messages(&self, _messages: &[Message]) -> Result<Vec<MessageId>> {
+    /// GET /api/v1/message/{messageId} endpoint
+    pub fn get_message<'a>(&'a self, message_id: &'a MessageId) -> GetMessageBuilder<'a> {
+        GetMessageBuilder::new(self, message_id)
+    }
+
+    /// GET /api/v1/messages endpoint
+    /// Search for messages matching the index
+    pub fn get_messages(&self, _index: String) -> Result<Vec<MessageId>> {
         Ok(Vec::new())
     }
 
-    /// GET /transaction-messages/* endpoint
-    pub fn get_transactions(&self) -> GetTransactionsBuilder<'_> {
-        GetTransactionsBuilder::new(self)
+    /// GET /api/v1/output/{outputId} endpoint
+    /// Find an output by its transaction_id and corresponding output_index.
+    pub fn get_output(&self, _transaction_id: TransactionId, _output_index: u8) -> Result<Vec<Output>> {
+        Ok(Vec::new())
     }
 
-    /// GET /outputs/* endpoint
-    pub fn get_outputs(&self) -> GetOutputsBuilder<'_> {
-        GetOutputsBuilder::new(self)
+    /// GET /api/v1/address/{address} endpoint
+    pub fn get_address<'a>(&'a self, address: &'a Address) -> GetAddressBuilder<'a> {
+        GetAddressBuilder::new(self, address)
+    }
+
+    /// GET /api/v1/mileston/{index} endpoint
+    /// Get the milestone by the given index.
+    pub fn get_milestone(&self, _index: u64) -> Result<MessageId> {
+        Ok(MessageId::new([0; 32]))
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -141,9 +159,10 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// A generic send function for easily sending value transaction messages.
-    pub fn sned<'a>(&'a self, seed: &'a Seed) -> SendBuilder<'a> {
+    pub fn send<'a>(&'a self, seed: &'a Seed) -> SendBuilder<'a> {
         SendBuilder::new(self, seed)
     }
+
     /// Return a valid unuspent address.
     pub fn get_unspent_address<'a>(&'a self, seed: &'a Seed) -> GetUnspentAddressBuilder<'a> {
         GetUnspentAddressBuilder::new(self, seed)
@@ -167,12 +186,12 @@ impl Client {
         self.get_outputs().addresses(addresses).get()
     }
 
-    /// Reattaches messages for provided message hashes. Messages can be reattached only if they are valid and haven't been
+    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub fn reattach(&self, hashes: &[MessageId]) -> Result<Vec<Message>> {
-        let messages = self.get_messages().hashes(hashes).get()?;
-        self.post_messages(&messages)?;
-        Ok(messages)
+    pub fn reattach(&self, id: &MessageId) -> Result<Vec<Message>> {
+        let message = self.get_message().id(id).get()?;
+        self.post_messages(&message)?;
+        Ok(message)
     }
 
     /// Check if a transaction-message is confirmed.

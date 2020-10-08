@@ -276,14 +276,14 @@ Following are the steps for implementing this method:
 
 ## `reattach()`
 
-Reattaches messages for provided message hashes. Messages can be reattached only if they are valid and haven't been
+Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
 confirmed for a while. 
 
 ### Parameters
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hashes** | ✔ | [[Hash]] | The hashes of messages. |
+| **hashes** | ✔ | [[Hash]] | The identifier of message. |
 
 ### Returns:
 
@@ -303,7 +303,19 @@ Following are the steps for implementing this method:
 
 API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
 
-## `get_info()` (`GET /info`)
+## `get_health()` (`GET /health`)
+
+Returns the health of the node, which can be used for load-balancing or uptime monitoring.
+
+### Parameters
+
+None
+
+### Returns
+
+Boolean to indicate if node is healthy.
+
+## `get_info()` (`GET /api/v1/info`)
 
 Returns information about the node.
 
@@ -350,7 +362,7 @@ A tuple with two hashes:
 (Hash, Hash)
 ```
 
-## `get_messages()` (`GET /messages`)
+## `get_message()` (`GET /api/v1/message/{messageId}}`)
 
 Find all messages filtered by provided parameters.
 
@@ -358,15 +370,16 @@ Find all messages filtered by provided parameters.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hashes** | ✘ | [[Hash]] | The hashes of messages. |
-| **tags** | ✘ | [[Hash]] | The tag field in indexation payload. |
-| **confirmed** | ✘ | bool | Search messages that are confirmed if this sets to ture. |
-
-*At least one parameter has to be provided.
+| **message_id** | ✘ | [Hash] | The identifier of message. |
 
 ### Returns
 
-A vector of [Message] object.
+Depend on the final calling method, users could get different outputs they need:
+
+- `metadata()`: Return metadata of the message.
+- `data()`: Return a [Message] object.
+- `raw()`: Return the given message raw data.
+- `children()`: Returns the list of message IDs that reference a message by its identifier.
 
 ## `post_messages()` (`POST /messages`)
 
@@ -390,7 +403,7 @@ Find all transactions filtered by provided parameters.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hashes** | ✘ | [[Hash]] | The hashes of messages. |
+| **hashes** | ✘ | [[Hash]] | The identifier of message. |
 | **addresses** | ✘ | [[Hash]] | The hashes of addresses. |
 | **confirmed** | ✘ | bool | Search transaction that are confirmed if this sets to ture. |
 
@@ -408,7 +421,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hashes** | ✘ | [[Hash]] | The hashes of messages. |
+| **hashes** | ✘ | [[Hash]] | The identifier of message. |
 | **addresses** | ✘ | [[Hash]] | The hashes of addresses. |
 
 *At least one parameter has to be provided.

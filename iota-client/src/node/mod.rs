@@ -1,9 +1,7 @@
 //! Iota node APIs
 
-mod messages;
-mod outputs;
-mod transactions;
+mod message;
+mod address;
 
-pub use messages::*;
-pub use outputs::*;
-pub use transactions::*;
+pub use message::*;
+pub use address::*;
