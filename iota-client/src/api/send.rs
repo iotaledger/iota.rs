@@ -74,7 +74,12 @@ impl<'a> SendBuilder<'a> {
             let mut end = false;
             for address in addresses {
                 let address_outputs = self.client.get_address(&address).outputs()?;
-                for (offset, output) in address_outputs.into_iter().enumerate() {
+                let mut outputs = vec![];
+                for (transaction_id, output_index) in address_outputs.output_ids {
+                    let curr_outputs = self.client.get_output(transaction_id, output_index)?;
+                    outputs.extend(curr_outputs.into_iter());
+                }
+                for (offset, output) in outputs.into_iter().enumerate() {
                     match output.spent {
                         true => {
                             if output.amount != 0 {
@@ -99,7 +104,6 @@ impl<'a> SendBuilder<'a> {
                     }
                 }
             }
-
 
             match end {
                 true => break,

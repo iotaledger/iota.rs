@@ -8,7 +8,7 @@ use crate::types::*;
 use bee_signing_ext::Seed;
 use bee_transaction::prelude::{Address, Message, MessageId};
 
-use reqwest::{Url, IntoUrl};
+use reqwest::{IntoUrl, Url};
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
@@ -144,7 +144,11 @@ impl Client {
 
     /// GET /api/v1/output/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub fn get_output(&self, _transaction_id: TransactionId, _output_index: u8) -> Result<Vec<Output>> {
+    pub fn get_output(
+        &self,
+        _transaction_id: TransactionId,
+        _output_index: u8,
+    ) -> Result<Vec<Output>> {
         Ok(Vec::new())
     }
 
@@ -185,9 +189,9 @@ impl Client {
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub fn reattach(&self, id: &MessageId) -> Result<Vec<Message>> {
+    pub fn reattach(&self, id: &MessageId) -> Result<Message> {
         let message = self.get_message(id).data()?;
-        self.post_messages(&message[0])?;
+        self.post_messages(&message)?;
         Ok(message)
     }
 

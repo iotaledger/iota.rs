@@ -18,13 +18,13 @@ impl<'a> GetMessageBuilder<'a> {
     }
 
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
-    pub fn data(self) -> Result<Vec<Message>> {
-        Ok(Vec::new())
+    pub fn data(self) -> Result<Message> {
+        todo!()
     }
 
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
-    pub fn metadata(self) -> Result<Vec<Message>> {
-        Ok(Vec::new())
+    pub fn metadata(self) -> Result<Message> {
+        todo!()
     }
 
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
