@@ -79,9 +79,9 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
-        if self.nodes.len() == 0 {
-            return Err(Error::MissingNode);
-        }
+        // if self.nodes.len() == 0 {
+        //     return Err(Error::MissingNode);
+        // }
 
         let mwm = match self.network {
             Network::Mainnet => 14,
@@ -108,16 +108,14 @@ impl ClientBuilder {
             quorum_threshold,
         };
 
-        let mut sync = client.clone();
-        smol::block_on(async { sync.sync() });
+        //let mut sync = client.clone();
+        //tokio::block_on(async { sync.sync() });
 
-        std::thread::spawn(move || {
-            smol::block_on(async {
-                loop {
-                    smol::Timer::after(std::time::Duration::from_secs(180)).await;
-                    sync.sync();
-                }
-            })
+        tokio::spawn(async {
+            loop {
+                tokio::time::delay_for(std::time::Duration::from_secs(180)).await;
+                //sync.sync();
+            }
         });
 
         Ok(client)

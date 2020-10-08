@@ -8,7 +8,7 @@ use crate::types::*;
 use bee_signing_ext::Seed;
 use bee_transaction::prelude::{Address, Message, MessageId};
 
-use reqwest::Url;
+use reqwest::{Url, IntoUrl};
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
@@ -59,19 +59,19 @@ impl Client {
         ClientBuilder::new()
     }
 
-    pub(crate) fn sync(&mut self) {
-        let mut sync_list: HashMap<usize, Vec<Url>> = HashMap::new();
-        for url in &*self.pool.read().unwrap() {
-            if let Ok(milestone) = self.get_info(url.clone()) {
-                let set = sync_list
-                    .entry(milestone.latest_solid_subtangle_milestone_index)
-                    .or_insert(Vec::new());
-                set.push(url.clone());
-            };
-        }
+    // pub(crate) fn sync(&mut self) {
+    //     let mut sync_list: HashMap<usize, Vec<Url>> = HashMap::new();
+    //     for url in &*self.pool.read().unwrap() {
+    //         if let Ok(milestone) = self.get_info(url.clone()) {
+    //             let set = sync_list
+    //                 .entry(milestone.latest_milestone_index)
+    //                 .or_insert(Vec::new());
+    //             set.push(url.clone());
+    //         };
+    //     }
 
-        *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
-    }
+    //     *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
+    // }
 
     /// Add a node to the node pool.
     pub fn add_node(&mut self, uri: &str) -> Result<bool> {
@@ -102,18 +102,23 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// GET /health endpoint
-    pub fn get_health(&self, _url: Url) -> bool {
-        true
+    pub async fn get_health<T: IntoUrl>(&self, url: T) -> Result<bool> {
+        let mut url = url.into_url()?;
+        url.set_path("health");
+        let r = self.client.get(url).send().await?;
+
+        match r.status().as_u16() {
+            200 => Ok(true),
+            _ => Ok(false),
+        }
     }
 
     /// GET /api/v1/info endpoint
-    pub fn get_info(&self, _url: Url) -> Result<NodeInfo> {
-        Ok(NodeInfo {
-            name: String::from("Bee"),
-            version: String::from("v0.1.0"),
-            is_healthy: true,
-            latest_solid_subtangle_milestone_index: 0,
-        })
+    pub async fn get_info<T: IntoUrl>(&self, url: T) -> Result<Response<NodeInfo>> {
+        let mut url = url.into_url()?;
+        url.set_path("api/v1/info");
+        let r = self.client.get(url).send().await?.json().await?;
+        Ok(r)
     }
 
     /// GET /api/v1/tips endpoint
