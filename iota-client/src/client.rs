@@ -178,19 +178,11 @@ impl Client {
         GetBalanceBuilder::new(self, seed)
     }
 
-    /// Returns the balance in iota for the given addresses; No seed or security level
-    /// needed to do this since we are only checking and already know the addresses.
-    /// For convinience, it returns a vector of `Output` so users can get more contexts about
-    /// addresses.
-    pub fn get_addresses_balance(&self, addresses: &[Address]) -> Result<Vec<Output>> {
-        self.get_outputs().addresses(addresses).get()
-    }
-
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
     pub fn reattach(&self, id: &MessageId) -> Result<Vec<Message>> {
-        let message = self.get_message().id(id).get()?;
-        self.post_messages(&message)?;
+        let message = self.get_message(id).data()?;
+        self.post_messages(&message[0])?;
         Ok(message)
     }
 

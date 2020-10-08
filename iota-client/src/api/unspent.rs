@@ -46,7 +46,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             None => 0,
         };
 
-        let address = loop {
+        let result = loop {
             let addresses = self
                 .client
                 .get_addresses(self.seed)
@@ -54,22 +54,17 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .range(index..index + 20)
                 .get()?;
 
-            let outputs = self.client.get_outputs().addresses(&addresses).get()?;
-
-            let mut address = None;
-            for output in outputs {
-                match output.spent {
-                    true => {
-                        if output.amount != 0 {
-                            return Err(Error::SpentAddress);
-                        }
-                    }
-                    false => {
-                        address = Some(output.address);
+            // TODO we assume all addressees are unspent and valid if balance > 0
+            let mut address = None; 
+            for a in addresses {
+                let address_balance = self.client.get_address(&a).balance()?;
+                match address_balance {
+                    0 => {
+                        address = Some(a);
                         break;
                     }
+                    _ => index += 1,
                 }
-                index += 1;
             }
 
             if let Some(a) = address {
@@ -77,6 +72,6 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             }
         };
 
-        Ok(address)
+        Ok(result)
     }
 }

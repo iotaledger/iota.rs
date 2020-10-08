@@ -46,7 +46,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub fn post(self) -> Result<Vec<MessageId>> {
+    pub fn post(self) -> Result<MessageId> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter),
@@ -71,33 +71,35 @@ impl<'a> SendBuilder<'a> {
                 .range(index..index + 20)
                 .get()?;
 
-            let outputs = self.client.get_outputs().addresses(&addresses).get()?;
-
             let mut end = false;
-            for (offset, output) in outputs.into_iter().enumerate() {
-                match output.spent {
-                    true => {
-                        if output.amount != 0 {
-                            return Err(Error::SpentAddress);
+            for address in addresses {
+                let address_outputs = self.client.get_address(&address).outputs()?;
+                for (offset, output) in address_outputs.into_iter().enumerate() {
+                    match output.spent {
+                        true => {
+                            if output.amount != 0 {
+                                return Err(Error::SpentAddress);
+                            }
                         }
-                    }
-                    false => {
-                        if output.amount != 0 {
-                            balance += output.amount;
-                            let mut address_path = path.clone();
-                            address_path.push(offset as u32);
-                            inputs.push((
-                                UTXOInput::new(output.producer, output.output_index)
-                                    .map_err(|_| Error::TransactionError)?
-                                    .into(),
-                                address_path,
-                            ));
-                        } else {
-                            end = true;
+                        false => {
+                            if output.amount != 0 {
+                                balance += output.amount;
+                                let mut address_path = path.clone();
+                                address_path.push(offset as u32);
+                                inputs.push((
+                                    UTXOInput::new(output.producer, output.output_index)
+                                        .map_err(|_| Error::TransactionError)?
+                                        .into(),
+                                    address_path,
+                                ));
+                            } else {
+                                end = true;
+                            }
                         }
                     }
                 }
             }
+
 
             match end {
                 true => break,
@@ -133,6 +135,6 @@ impl<'a> SendBuilder<'a> {
             .build()
             .map_err(|_| Error::TransactionError)?;
 
-        self.client.post_messages(&[message])
+        self.client.post_messages(&message)
     }
 }

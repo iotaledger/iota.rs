@@ -62,23 +62,16 @@ impl<'a> GetBalanceBuilder<'a> {
                 .range(index..index + 20)
                 .get()?;
 
-            let outputs = self.client.get_outputs().addresses(&addresses).get()?;
-
+            // TODO we assume all addressees are unspent and valid if balance > 0
             let mut end = false;
-            for output in outputs {
-                match output.spent {
-                    true => {
-                        if output.amount != 0 {
-                            return Err(Error::SpentAddress);
-                        }
+            for address in addresses {
+                let address_balance = self.client.get_address(&address).balance()?;
+                match address_balance {
+                    0 => {
+                        end = true;
+                        break;
                     }
-                    false => {
-                        if output.amount != 0 {
-                            balance += output.amount;
-                        } else {
-                            end = true;
-                        }
-                    }
+                    _ => balance += address_balance,
                 }
             }
 

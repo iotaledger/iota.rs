@@ -40,7 +40,7 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
-    /// Consume the builder and get the API result
+    /// Consume the builder and get the vector of Address
     pub fn get(self) -> Result<Vec<Address>> {
         let mut path = match self.path {
             Some(p) => p.clone(),
