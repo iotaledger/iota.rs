@@ -6,7 +6,7 @@ use crate::node::*;
 use crate::types::*;
 
 use bee_signing_ext::Seed;
-use bee_transaction::prelude::{Address, Message, MessageId};
+use bee_transaction::prelude::{Address, Message, MessageId, TransactionId};
 
 use reqwest::{IntoUrl, Url};
 
@@ -147,7 +147,7 @@ impl Client {
     pub fn get_output(
         &self,
         _transaction_id: TransactionId,
-        _output_index: u8,
+        _output_index: u16,
     ) -> Result<Vec<Output>> {
         Ok(Vec::new())
     }

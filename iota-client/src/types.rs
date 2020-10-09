@@ -1,6 +1,6 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::{Address, MessageId};
+use bee_transaction::prelude::{Address, TransactionId};
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -56,7 +56,7 @@ impl ResponseType for NodeInfo {}
 #[derive(Debug)]
 pub struct Output {
     /// Producer message of the output
-    pub producer: MessageId,
+    pub producer: TransactionId,
     /// Corresponding address
     pub address: Address,
     /// Balance amount
@@ -64,7 +64,7 @@ pub struct Output {
     /// Spend status of the output
     pub spent: bool,
     /// Output index.
-    pub output_index: u8,
+    pub output_index: u16,
 }
 
 /// Outputs that use a given address.
@@ -77,7 +77,7 @@ pub struct AddressOutputs {
     /// Count.
     pub count: u64,
     /// Outputs used by the address.
-    pub output_ids: Vec<(TransactionId, u8)>,
+    pub output_ids: Vec<(TransactionId, u16)>,
 }
 
 /// Transfers structure
@@ -97,6 +97,3 @@ impl Transfers {
         self.0.push((address, amount));
     }
 }
-
-/// Transaction identifier
-pub type TransactionId = MessageId;
