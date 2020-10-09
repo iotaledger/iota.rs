@@ -91,7 +91,7 @@ impl<'a> PrepareTransfersBuilder<'a> {
 
         let timestamp = chrono::Utc::now().timestamp();
 
-        let mut bundle = OutgoingBundleBuilder::new();
+        let mut bundle = OutgoingBundleBuilder::default();
         // add transfers
         for transfer in self.transfers {
             if let Some(message) = transfer.message {
