@@ -1,16 +1,9 @@
-#[test]
-fn test_get_info() {
-    tokio::runtime::Runtime::new().unwrap().block_on(async {
-        let c = iota_client::Client::new().build().unwrap();
-        let r = c.get_info("http://0.0.0.0:14265").await.unwrap();
-        println!("{:#?}", r);
-    });
+#[tokio::test]
+async fn test_get_info() {
+    iota_client::Client::get_info("http://0.0.0.0:14265").await.unwrap();
 }
 
-#[test]
-fn test_get_health() {
-    tokio::runtime::Runtime::new().unwrap().block_on(async {
-        let c = iota_client::Client::new().build().unwrap();
-        let _ = c.get_health("http://0.0.0.0:14265").await.unwrap();
-    });
+#[tokio::test]
+async fn test_get_health() {
+    iota_client::Client::get_health("http://0.0.0.0:14265").await.unwrap();
 }

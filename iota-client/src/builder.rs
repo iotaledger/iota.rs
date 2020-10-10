@@ -108,15 +108,15 @@ impl ClientBuilder {
             quorum_threshold,
         };
 
-        //let mut sync = client.clone();
-        //tokio::block_on(async { sync.sync() });
+        // let mut sync = client.clone();
+        // tokio::block_on(async { sync.sync() });
 
-        tokio::spawn(async {
-            loop {
-                tokio::time::delay_for(std::time::Duration::from_secs(180)).await;
-                //sync.sync();
-            }
-        });
+        // tokio::spawn(async {
+        //     loop {
+        //         tokio::time::delay_for(std::time::Duration::from_secs(180)).await;
+        //         sync.sync();
+        //     }
+        // });
 
         Ok(client)
     }

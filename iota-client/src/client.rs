@@ -59,6 +59,8 @@ impl Client {
         ClientBuilder::new()
     }
 
+    // TODO Implement syncing process
+
     // pub(crate) fn sync(&mut self) {
     //     let mut sync_list: HashMap<usize, Vec<Url>> = HashMap::new();
     //     for url in &*self.pool.read().unwrap() {
@@ -72,18 +74,6 @@ impl Client {
 
     //     *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
     // }
-
-    /// Add a node to the node pool.
-    pub fn add_node(&mut self, uri: &str) -> Result<bool> {
-        let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
-        Ok(self.pool.write().unwrap().insert(url))
-    }
-
-    /// Remove a node from the node pool.
-    pub fn remove_node(&mut self, uri: &str) -> Result<bool> {
-        let url = Url::parse(uri).map_err(|_| Error::UrlError)?;
-        Ok(self.pool.write().unwrap().remove(&url))
-    }
 
     // pub(crate) fn get_node(&self) -> Result<Url> {
     //     // TODO getbalance, isconfirmed and were_addresses_spent_from should do quorum mode
@@ -102,10 +92,10 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// GET /health endpoint
-    pub async fn get_health<T: IntoUrl>(&self, url: T) -> Result<bool> {
+    pub async fn get_health<T: IntoUrl>(url: T) -> Result<bool> {
         let mut url = url.into_url()?;
         url.set_path("health");
-        let r = self.client.get(url).send().await?;
+        let r = reqwest::get(url).await?;
 
         match r.status().as_u16() {
             200 => Ok(true),
@@ -114,10 +104,10 @@ impl Client {
     }
 
     /// GET /api/v1/info endpoint
-    pub async fn get_info<T: IntoUrl>(&self, url: T) -> Result<Response<NodeInfo>> {
+    pub async fn get_info<T: IntoUrl>(url: T) -> Result<Response<NodeInfo>> {
         let mut url = url.into_url()?;
         url.set_path("api/v1/info");
-        let r = self.client.get(url).send().await?.json().await?;
+        let r = reqwest::get(url).await?.json().await?;
         Ok(r)
     }
 
