@@ -34,6 +34,8 @@ pub enum Error {
     UrlError,
     /// The wallet account doesn't have enough balance
     NotEnoughBalance(u64),
+    /// Hex string convert error
+    FromHexError(hex::FromHexError),
 }
 
 impl fmt::Display for Error {
@@ -56,6 +58,7 @@ impl fmt::Display for Error {
                 "The wallet account doesn't have enough balance. It only has {:?}",
                 v
             ),
+            Error::FromHexError(e) => e.fmt(f),
         }
     }
 }
@@ -65,5 +68,11 @@ impl std::error::Error for Error {}
 impl From<reqwest::Error> for Error {
     fn from(error: reqwest::Error) -> Self {
         Error::ReqwestError(error)
+    }
+}
+
+impl From<hex::FromHexError> for Error {
+    fn from(error: hex::FromHexError) -> Self {
+        Error::FromHexError(error)
     }
 }

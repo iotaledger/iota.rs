@@ -7,6 +7,7 @@ use crate::types::*;
 
 use bee_signing_ext::Seed;
 use bee_transaction::prelude::{Address, Message, MessageId, TransactionId};
+use bee_transaction::atomic::MESSAGE_ID_LENGTH;
 
 use reqwest::{IntoUrl, Url};
 
@@ -75,17 +76,17 @@ impl Client {
     //     *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
     // }
 
-    // pub(crate) fn get_node(&self) -> Result<Url> {
-    //     // TODO getbalance, isconfirmed and were_addresses_spent_from should do quorum mode
-    //     Ok(self
-    //         .sync
-    //         .read()
-    //         .unwrap()
-    //         .iter()
-    //         .next()
-    //         .ok_or(Error::NodePoolEmpty)?
-    //         .clone())
-    // }
+    /// Get a node candidate from the node pool.
+    pub(crate) fn get_node(&self) -> Result<Url> {
+        Ok(self
+            .pool
+            .read()
+            .unwrap()
+            .iter()
+            .next()
+            .ok_or(Error::NodePoolEmpty)?
+            .clone())
+    }
 
     //////////////////////////////////////////////////////////////////////
     // Node API
@@ -112,8 +113,16 @@ impl Client {
     }
 
     /// GET /api/v1/tips endpoint
-    pub fn get_tips(&self) -> Result<(MessageId, MessageId)> {
-        Ok((MessageId::new([0; 32]), MessageId::new([0; 32])))
+    pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
+        let mut url = self.get_node()?;
+        url.set_path("api/v1/tips");
+        let r = self.client.get(url).send().await?.json::<Response<Tips>>().await?.data;
+
+        let mut tip1 = [0u8; MESSAGE_ID_LENGTH];
+        let mut tip2 = [0u8; MESSAGE_ID_LENGTH];
+        hex::decode_to_slice(r.tip1, &mut tip1)?;
+        hex::decode_to_slice(r.tip2, &mut tip2)?;
+        Ok((MessageId::new(tip1), MessageId::new(tip2)))
     }
 
     /// POST /api/v1/messages endpoint

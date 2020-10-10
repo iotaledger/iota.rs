@@ -1,6 +1,6 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::{Address, TransactionId};
+use bee_transaction::prelude::{Address, TransactionId, MessageId};
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -8,7 +8,7 @@ pub trait ResponseType {}
 /// Response from the Iota node.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Response<T: ResponseType> {
-    data: T,
+    pub(crate) data: T,
 }
 
 impl<T: ResponseType> Response<T> {
@@ -18,7 +18,7 @@ impl<T: ResponseType> Response<T> {
     }
 }
 
-/// Response of GET /info endpoint
+/// Response of GET /api/v1/info endpoint
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeInfo {
     /// Iota node Name
@@ -52,6 +52,19 @@ pub struct NodeInfo {
 
 impl ResponseType for NodeInfo {}
 
+/// Response of GET /api/v1/tips endpoint
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub(crate) struct Tips {
+    /// Message ID of tip 1
+    #[serde(rename = "tip1MessageId")]
+    pub(crate) tip1: String,
+    /// Message ID of tip 2
+    #[serde(rename = "tip2MessageId")]
+    pub(crate) tip2: String,
+}
+
+impl ResponseType for Tips {}
+ 
 /// Output data
 #[derive(Debug)]
 pub struct Output {
