@@ -55,7 +55,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .get()?;
 
             // TODO we assume all addressees are unspent and valid if balance > 0
-            let mut address = None; 
+            let mut address = None;
             for a in addresses {
                 let address_balance = self.client.get_address(&a).balance()?;
                 match address_balance {

@@ -1,6 +1,6 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::{Address, TransactionId, MessageId};
+use bee_transaction::prelude::{Address, MessageId, TransactionId};
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -64,7 +64,7 @@ pub(crate) struct Tips {
 }
 
 impl ResponseType for Tips {}
- 
+
 /// Output data
 #[derive(Debug)]
 pub struct Output {

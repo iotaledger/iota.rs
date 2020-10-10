@@ -128,7 +128,7 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::TransactionError)?;
 
         // get tips
-        let (parent1, parent2) = (MessageId::new([0; 32]), MessageId::new([0; 32]));//self.client.get_tips()?;
+        let (parent1, parent2) = (MessageId::new([0; 32]), MessageId::new([0; 32])); //self.client.get_tips()?;
 
         // building message
         let payload = Payload::Transaction(Box::new(payload));

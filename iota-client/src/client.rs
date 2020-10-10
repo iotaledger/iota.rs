@@ -6,8 +6,8 @@ use crate::node::*;
 use crate::types::*;
 
 use bee_signing_ext::Seed;
-use bee_transaction::prelude::{Address, Message, MessageId, TransactionId};
 use bee_transaction::atomic::MESSAGE_ID_LENGTH;
+use bee_transaction::prelude::{Address, Message, MessageId, TransactionId};
 
 use reqwest::{IntoUrl, Url};
 
@@ -116,7 +116,14 @@ impl Client {
     pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
-        let r = self.client.get(url).send().await?.json::<Response<Tips>>().await?.data;
+        let r = self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<Response<Tips>>()
+            .await?
+            .data;
 
         let mut tip1 = [0u8; MESSAGE_ID_LENGTH];
         let mut tip2 = [0u8; MESSAGE_ID_LENGTH];
@@ -134,7 +141,7 @@ impl Client {
     pub fn get_message<'a>(&'a self, message_id: &'a MessageId) -> GetMessageBuilder<'a> {
         GetMessageBuilder::new(self, message_id)
     }
-
+    // 41c2cad13245da7b061cddb0b8d6ef166430f8fee6d1aafe5ad5971ea7f7c729
     /// GET /api/v1/messages endpoint
     /// Search for messages matching the index
     pub fn get_messages(&self, _index: String) -> Result<Vec<MessageId>> {

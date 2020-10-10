@@ -6,7 +6,6 @@ use bee_signing_ext::{
 };
 use bee_transaction::prelude::{Address, Ed25519Address};
 
-
 use std::ops::Range;
 
 /// Builder of get_addresses API
