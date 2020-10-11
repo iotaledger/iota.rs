@@ -96,9 +96,9 @@ impl Client {
     pub async fn get_health<T: IntoUrl>(url: T) -> Result<bool> {
         let mut url = url.into_url()?;
         url.set_path("health");
-        let r = reqwest::get(url).await?;
+        let resp = reqwest::get(url).await?;
 
-        match r.status().as_u16() {
+        match resp.status().as_u16() {
             200 => Ok(true),
             _ => Ok(false),
         }
@@ -108,24 +108,27 @@ impl Client {
     pub async fn get_info<T: IntoUrl>(url: T) -> Result<Response<NodeInfo>> {
         let mut url = url.into_url()?;
         url.set_path("api/v1/info");
-        let r = reqwest::get(url).await?.json().await?;
-        Ok(r)
+        let resp = reqwest::get(url).await?;
+
+        match resp.status().as_u16() {
+            200 => Ok(resp.json().await?),
+            status => Err(Error::ResponseError(status)),
+        }
     }
 
     /// GET /api/v1/tips endpoint
     pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
-        let r = self
-            .client
-            .get(url)
-            .send()
-            .await?
-            .json::<Response<Tips>>()
-            .await?
-            .data;
+        let resp = reqwest::get(url).await?;
 
-        Ok((hex_to_message_id(&r.tip1)?, hex_to_message_id(&r.tip2)?))
+        match resp.status().as_u16() {
+            200 => {
+                let pair = resp.json::<Response<Tips>>().await?.data;
+                Ok((hex_to_message_id(&pair.tip1)?, hex_to_message_id(&pair.tip2)?))
+            }
+            status => Err(Error::ResponseError(status)),
+        }
     }
 
     /// POST /api/v1/messages endpoint

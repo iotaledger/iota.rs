@@ -1,4 +1,4 @@
-use crate::{Client, Result, Response, MessageIds};
+use crate::{Client, MessageIds, Response, Result, Error};
 
 use bee_transaction::atomic::{Message, MessageId};
 
@@ -10,9 +10,7 @@ pub struct GetMessageBuilder<'a> {
 impl<'a> GetMessageBuilder<'a> {
     /// Create GET /api/v1/message endpoint builder
     pub fn new(client: &'a Client) -> Self {
-        Self {
-            client,
-        }
+        Self { client }
     }
 
     /// GET /api/v1/message endpoint
@@ -21,9 +19,15 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         url.set_path("api/v1/messages");
         url.set_query(Some(&format!("index={}", index)));
+        let resp = reqwest::get(url).await?;
 
-        let r = self.client.client.get(url).send().await?.json::<Response<MessageIds>>().await?;
-        Ok(r.data.inner)
+        match resp.status().as_u16() {
+            200 => {
+                let ids = resp.json::<Response<MessageIds>>().await?;
+                Ok(ids.data.inner)
+            }
+            status => Err(Error::ResponseError(status)),
+        }
     }
 
     /// Consume the builder and find a message by its identifer. This method returns the given message object.

@@ -18,6 +18,8 @@ pub enum Error {
     InvalidParameter(String),
     /// Found Spent Address that still has balance
     SpentAddress,
+    /// Error from RestAPI calls with status code other than 200
+    ResponseError(u16),
     /// No node available in the node pool
     NodePoolEmpty,
     /// Error on Url type conversion
@@ -44,6 +46,7 @@ impl fmt::Display for Error {
                 v
             ),
             Error::FromHexError(e) => e.fmt(f),
+            Error::ResponseError(s) => write!(f, "Response error with status code {}", s),
         }
     }
 }
