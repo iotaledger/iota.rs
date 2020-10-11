@@ -6,40 +6,14 @@ use crate::node::*;
 use crate::types::*;
 
 use bee_signing_ext::Seed;
-use bee_transaction::atomic::MESSAGE_ID_LENGTH;
-use bee_transaction::prelude::{Address, Message, MessageId, TransactionId};
+use bee_transaction::prelude::{Address, Ed25519Address, Message, MessageId};
 
 use reqwest::{IntoUrl, Url};
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 
-// macro_rules! response {
-//     ($self:ident, $body:ident) => {
-//         $self
-//             .client
-//             .post($self.get_node()?)
-//             .header("Content-Type", "application/json")
-//             .header("X-IOTA-API-Version", "1")
-//             .body($body.to_string())
-//             .send()
-//             .await?
-//             .json()
-//             .await?
-//     };
-//     ($self:ident, $body:ident, $node:ident) => {
-//         $self
-//             .client
-//             .post($node)
-//             .header("Content-Type", "application/json")
-//             .header("X-IOTA-API-Version", "1")
-//             .body($body.to_string())
-//             .send()
-//             .await?
-//             .json()
-//             .await?
-//     };
-// }
+const ADDRESS_LENGTH: usize = 32;
 
 /// An instance of the client using IRI URI
 #[derive(Debug, Clone)]
@@ -143,11 +117,33 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub fn get_output(
-        &self,
-        _output_id: &OutputIdHex,
-    ) -> Result<Vec<Output>> {
-        Ok(Vec::new())
+    pub async fn get_output(&self, output_id: &OutputIdHex) -> Result<OutputContext> {
+        let mut url = self.get_node()?;
+        url.set_path(&format!("api/v1/outputs/{}", output_id.0));
+        let resp = reqwest::get(url).await?;
+
+        match resp.status().as_u16() {
+            200 => {
+                let raw = resp.json::<Response<RawOutput>>().await?.data;
+                Ok(OutputContext {
+                    message_id: raw.message_id,
+                    transaction_id: raw.transaction_id,
+                    output_index: raw.output_index,
+                    is_spent: raw.is_spent,
+                    amount: raw.amount,
+                    address: {
+                        if raw.output.type_ == 0 && raw.output.address.type_ == 0 {
+                            let mut address = [0u8; ADDRESS_LENGTH];
+                            hex::decode_to_slice(raw.output.address.ed25519, &mut address)?;
+                            Address::from(Ed25519Address::from(address))
+                        } else {
+                            return Err(Error::InvalidParameter("address type".to_string()));
+                        }
+                    },
+                })
+            }
+            status => Err(Error::ResponseError(status)),
+        }
     }
 
     /// GET /api/v1/addresses/{address} endpoint

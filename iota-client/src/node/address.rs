@@ -1,4 +1,4 @@
-use crate::{AddressOutputs, Client, Result, Error, AddressBalance, Response, OutputIdHex};
+use crate::{AddressBalance, AddressOutputs, Client, Error, OutputIdHex, Response, Result};
 
 use bee_transaction::prelude::Address;
 
@@ -19,7 +19,7 @@ impl<'a> GetAddressBuilder<'a> {
     pub async fn balance(self, address: &'a Address) -> Result<u64> {
         let address = match address {
             Address::Ed25519(a) => a.to_bech32(),
-            _ => return Err(Error::InvalidParameter("address".to_string()))
+            _ => return Err(Error::InvalidParameter("address".to_string())),
         };
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/addresses/{}", address));
@@ -40,7 +40,7 @@ impl<'a> GetAddressBuilder<'a> {
     pub async fn outputs(self, address: &'a Address) -> Result<Box<[OutputIdHex]>> {
         let address = match address {
             Address::Ed25519(a) => a.to_bech32(),
-            _ => return Err(Error::InvalidParameter("address".to_string()))
+            _ => return Err(Error::InvalidParameter("address".to_string())),
         };
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/addresses/{}/outputs", address));
@@ -48,7 +48,11 @@ impl<'a> GetAddressBuilder<'a> {
 
         match resp.status().as_u16() {
             200 => {
-                let r = resp.json::<Response<AddressOutputs>>().await?.data.output_ids;
+                let r = resp
+                    .json::<Response<AddressOutputs>>()
+                    .await?
+                    .data
+                    .output_ids;
                 Ok(r)
             }
             status => Err(Error::ResponseError(status)),

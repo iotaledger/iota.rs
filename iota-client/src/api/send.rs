@@ -5,6 +5,8 @@ use bee_transaction::prelude::*;
 
 use std::num::NonZeroU64;
 
+const TRANSACTION_ID_LENGTH: usize = 32;
+
 /// Builder of send API
 pub struct SendBuilder<'a> {
     client: &'a Client,
@@ -76,11 +78,11 @@ impl<'a> SendBuilder<'a> {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
                 for output_id in address_outputs.iter() {
-                    let curr_outputs = self.client.get_output(output_id)?;
-                    outputs.extend(curr_outputs.into_iter());
+                    let curr_outputs = self.client.get_output(output_id).await?;
+                    outputs.push(curr_outputs);
                 }
                 for (offset, output) in outputs.into_iter().enumerate() {
-                    match output.spent {
+                    match output.is_spent {
                         true => {
                             if output.amount != 0 {
                                 return Err(Error::SpentAddress);
@@ -91,10 +93,17 @@ impl<'a> SendBuilder<'a> {
                                 balance += output.amount;
                                 let mut address_path = path.clone();
                                 address_path.push(offset as u32);
+
+                                let mut transaction_id = [0u8; TRANSACTION_ID_LENGTH];
+                                hex::decode_to_slice(output.transaction_id.0, &mut transaction_id)?;
+
                                 inputs.push((
-                                    UTXOInput::new(output.producer, output.output_index)
-                                        .map_err(|_| Error::TransactionError)?
-                                        .into(),
+                                    UTXOInput::new(
+                                        TransactionId::from(transaction_id),
+                                        output.output_index,
+                                    )
+                                    .map_err(|_| Error::TransactionError)?
+                                    .into(),
                                     address_path,
                                 ));
                             } else {

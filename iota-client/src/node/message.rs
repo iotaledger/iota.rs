@@ -1,4 +1,6 @@
-use crate::{Client, MessageIds, Response, Result, Error, MessageIdHex, MessageMetadata, ChildrenMessageIds};
+use crate::{
+    ChildrenMessageIds, Client, Error, MessageIdHex, MessageIds, MessageMetadata, Response, Result,
+};
 
 use bee_transaction::atomic::Message;
 
@@ -31,7 +33,7 @@ impl<'a> GetMessageBuilder<'a> {
     }
 
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
-    pub fn data(self, message_id: &MessageIdHex) -> Result<Message> {
+    pub fn data(self, _message_id: &MessageIdHex) -> Result<Message> {
         todo!()
     }
 

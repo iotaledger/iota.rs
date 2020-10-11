@@ -1,9 +1,21 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::{Address, TransactionId};
+use bee_transaction::prelude::Address;
 
 /// Marker trait for response
 pub trait ResponseType {}
+
+/// Hex string of message ID
+#[derive(Debug, Deserialize)]
+pub struct MessageIdHex(pub String);
+
+/// Hex transaction of output ID
+#[derive(Debug, Deserialize)]
+pub struct TransactionIdHex(pub String);
+
+/// Hex string of output ID
+#[derive(Debug, Deserialize)]
+pub struct OutputIdHex(pub String);
 
 /// Response from the Iota node.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -51,14 +63,6 @@ pub struct NodeInfo {
 }
 
 impl ResponseType for NodeInfo {}
-
-/// Hex string of message ID
-#[derive(Debug, Deserialize)]
-pub struct MessageIdHex(pub(crate) String);
-
-/// Hex string of output ID
-#[derive(Debug, Deserialize)]
-pub struct OutputIdHex(pub String);
 
 /// Response of GET /api/v1/tips endpoint
 #[derive(Debug, Deserialize)]
@@ -122,19 +126,50 @@ pub(crate) struct AddressBalance {
 
 impl ResponseType for AddressBalance {}
 
-/// Output data
+/// Output raw data
 #[derive(Debug, Deserialize)]
-pub struct Output {
-    /// Producer message of the output
-    pub producer: TransactionId,
+pub(crate) struct RawOutput {
+    #[serde(rename = "messageId")]
+    pub(crate) message_id: MessageIdHex,
+    #[serde(rename = "transactionId")]
+    pub(crate) transaction_id: TransactionIdHex,
+    #[serde(rename = "outputIndex")]
+    pub(crate) output_index: u16,
+    #[serde(rename = "isSpent")]
+    pub(crate) is_spent: bool,
+    pub(crate) output: SLS,
+    pub(crate) amount: u64,
+}
+
+impl ResponseType for RawOutput {}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct SLS {
+    pub(crate) type_: u8,
+    pub(crate) address: EdAddress,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct EdAddress {
+    pub(crate) type_: u8,
+    pub(crate) ed25519: String,
+}
+
+/// Output data
+#[derive(Debug)]
+pub struct OutputContext {
+    /// Message ID of the output
+    pub message_id: MessageIdHex,
+    /// Transaction ID of the output
+    pub transaction_id: TransactionIdHex,
+    /// Output index.
+    pub output_index: u16,
+    /// Spend status of the output
+    pub is_spent: bool,
     /// Corresponding address
     pub address: Address,
     /// Balance amount
     pub amount: u64,
-    /// Spend status of the output
-    pub spent: bool,
-    /// Output index.
-    pub output_index: u16,
 }
 
 /// Outputs that use a given address.
