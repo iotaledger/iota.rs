@@ -44,7 +44,7 @@ impl<'a> GetBalanceBuilder<'a> {
                 }
                 p
             }
-            None => return Err(Error::MissingParameter),
+            None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
         };
 
         let mut index = match self.index {

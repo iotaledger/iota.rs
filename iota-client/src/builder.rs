@@ -79,9 +79,9 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
-        // if self.nodes.len() == 0 {
-        //     return Err(Error::MissingNode);
-        // }
+        if self.nodes.len() == 0 {
+            return Err(Error::MissingParameter(String::from("Iota node")));
+        }
 
         let mwm = match self.network {
             Network::Mainnet => 14,

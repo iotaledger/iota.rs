@@ -23,3 +23,16 @@ async fn test_get_tips() {
         .await
         .unwrap();
 }
+
+#[tokio::test]
+async fn test_get_message() {
+    iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap()
+        .get_message()
+        .index("TEST")
+        .await
+        .unwrap();
+}

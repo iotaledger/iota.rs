@@ -125,11 +125,7 @@ impl Client {
             .await?
             .data;
 
-        let mut tip1 = [0u8; MESSAGE_ID_LENGTH];
-        let mut tip2 = [0u8; MESSAGE_ID_LENGTH];
-        hex::decode_to_slice(r.tip1, &mut tip1)?;
-        hex::decode_to_slice(r.tip2, &mut tip2)?;
-        Ok((MessageId::new(tip1), MessageId::new(tip2)))
+        Ok((hex_to_message_id(&r.tip1)?, hex_to_message_id(&r.tip2)?))
     }
 
     /// POST /api/v1/messages endpoint
@@ -138,14 +134,8 @@ impl Client {
     }
 
     /// GET /api/v1/message/{messageId} endpoint
-    pub fn get_message<'a>(&'a self, message_id: &'a MessageId) -> GetMessageBuilder<'a> {
-        GetMessageBuilder::new(self, message_id)
-    }
-    // 41c2cad13245da7b061cddb0b8d6ef166430f8fee6d1aafe5ad5971ea7f7c729
-    /// GET /api/v1/messages endpoint
-    /// Search for messages matching the index
-    pub fn get_messages(&self, _index: String) -> Result<Vec<MessageId>> {
-        Ok(Vec::new())
+    pub fn get_message(&self) -> GetMessageBuilder<'_> {
+        GetMessageBuilder::new(self)
     }
 
     /// GET /api/v1/output/{outputId} endpoint
@@ -195,8 +185,8 @@ impl Client {
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub fn reattach(&self, id: &MessageId) -> Result<Message> {
-        let message = self.get_message(id).data()?;
+    pub fn reattach(&self, message_id: &MessageId) -> Result<Message> {
+        let message = self.get_message().data(message_id)?;
         self.post_messages(&message)?;
         Ok(message)
     }
@@ -213,4 +203,10 @@ impl Client {
         }
         Ok(map)
     }
+}
+
+pub(crate) fn hex_to_message_id(data: &str) -> Result<MessageId> {
+    let mut m = [0; MESSAGE_ID_LENGTH];
+    hex::decode_to_slice(data, &mut m)?;
+    Ok(MessageId::new(m))
 }

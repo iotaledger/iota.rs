@@ -38,7 +38,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     pub fn get(self) -> Result<(Address, usize)> {
         let path = match self.path {
             Some(p) => p,
-            None => return Err(Error::MissingParameter),
+            None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
         };
 
         let mut index = match self.index {

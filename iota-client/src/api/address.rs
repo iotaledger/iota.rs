@@ -43,7 +43,7 @@ impl<'a> GetAddressesBuilder<'a> {
     pub fn get(self) -> Result<Vec<Address>> {
         let mut path = match self.path {
             Some(p) => p.clone(),
-            None => return Err(Error::MissingParameter),
+            None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
         };
 
         let range = match self.range {

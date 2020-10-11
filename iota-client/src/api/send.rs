@@ -49,7 +49,7 @@ impl<'a> SendBuilder<'a> {
     pub fn post(self) -> Result<MessageId> {
         let path = match self.path {
             Some(p) => p,
-            None => return Err(Error::MissingParameter),
+            None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
         };
 
         let mut index = match self.index {
@@ -58,7 +58,7 @@ impl<'a> SendBuilder<'a> {
         };
 
         if self.outputs.len() == 0 {
-            return Err(Error::MissingParameter);
+            return Err(Error::MissingParameter(String::from("Outputs")));
         }
 
         let mut balance = 0;

@@ -19,7 +19,7 @@ impl<T: ResponseType> Response<T> {
 }
 
 /// Response of GET /api/v1/info endpoint
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NodeInfo {
     /// Iota node Name
     pub name: String,
@@ -53,7 +53,7 @@ pub struct NodeInfo {
 impl ResponseType for NodeInfo {}
 
 /// Response of GET /api/v1/tips endpoint
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) struct Tips {
     /// Message ID of tip 1
     #[serde(rename = "tip1MessageId")]
@@ -64,6 +64,15 @@ pub(crate) struct Tips {
 }
 
 impl ResponseType for Tips {}
+
+/// Collection of meesage ID
+#[derive(Debug, Deserialize)]
+pub(crate) struct MessageIds {
+    #[serde(rename = "messageIds")]
+    pub(crate) inner: Box<[MessageId]>,
+}
+
+impl ResponseType for MessageIds {}
 
 /// Output data
 #[derive(Debug)]
