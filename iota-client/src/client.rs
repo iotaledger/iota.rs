@@ -117,7 +117,7 @@ impl Client {
     }
 
     /// GET /api/v1/tips endpoint
-    pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
+    pub async fn get_tips(&self) -> Result<(MessageIdHex, MessageIdHex)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
         let resp = reqwest::get(url).await?;
@@ -125,7 +125,7 @@ impl Client {
         match resp.status().as_u16() {
             200 => {
                 let pair = resp.json::<Response<Tips>>().await?.data;
-                Ok((hex_to_message_id(&pair.tip1)?, hex_to_message_id(&pair.tip2)?))
+                Ok((pair.tip1, pair.tip2))
             }
             status => Err(Error::ResponseError(status)),
         }
@@ -136,30 +136,39 @@ impl Client {
         Ok(MessageId::new([0; 32]))
     }
 
-    /// GET /api/v1/message/{messageId} endpoint
+    /// GET /api/v1/messages/{messageId} endpoint
     pub fn get_message(&self) -> GetMessageBuilder<'_> {
         GetMessageBuilder::new(self)
     }
 
-    /// GET /api/v1/output/{outputId} endpoint
+    /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
     pub fn get_output(
         &self,
-        _transaction_id: TransactionId,
-        _output_index: u16,
+        _output_id: &OutputIdHex,
     ) -> Result<Vec<Output>> {
         Ok(Vec::new())
     }
 
-    /// GET /api/v1/address/{address} endpoint
-    pub fn get_address<'a>(&'a self, address: &'a Address) -> GetAddressBuilder<'a> {
-        GetAddressBuilder::new(self, address)
+    /// GET /api/v1/addresses/{address} endpoint
+    pub fn get_address<'a>(&'a self) -> GetAddressBuilder<'a> {
+        GetAddressBuilder::new(self)
     }
 
-    /// GET /api/v1/mileston/{index} endpoint
+    /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
-    pub fn get_milestone(&self, _index: u64) -> Result<MessageId> {
-        Ok(MessageId::new([0; 32]))
+    pub async fn get_milestone(&self, index: u64) -> Result<Milestone> {
+        let mut url = self.get_node()?;
+        url.set_path(&format!("api/v1/milestones/{}", index));
+        let resp = reqwest::get(url).await?;
+
+        match resp.status().as_u16() {
+            200 => {
+                let milestone = resp.json::<Response<Milestone>>().await?.data;
+                Ok(milestone)
+            }
+            status => Err(Error::ResponseError(status)),
+        }
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -188,7 +197,7 @@ impl Client {
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub fn reattach(&self, message_id: &MessageId) -> Result<Message> {
+    pub fn reattach(&self, message_id: &MessageIdHex) -> Result<Message> {
         let message = self.get_message().data(message_id)?;
         self.post_messages(&message)?;
         Ok(message)
@@ -208,8 +217,8 @@ impl Client {
     }
 }
 
-pub(crate) fn hex_to_message_id(data: &str) -> Result<MessageId> {
-    let mut m = [0; MESSAGE_ID_LENGTH];
-    hex::decode_to_slice(data, &mut m)?;
-    Ok(MessageId::new(m))
-}
+// pub(crate) fn hex_to_message_id(data: &str) -> Result<MessageId> {
+//     let mut m = [0; MESSAGE_ID_LENGTH];
+//     hex::decode_to_slice(data, &mut m)?;
+//     Ok(MessageId::new(m))
+// }

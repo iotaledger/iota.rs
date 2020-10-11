@@ -46,7 +46,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub fn post(self) -> Result<MessageId> {
+    pub async fn post(self) -> Result<MessageId> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
@@ -73,10 +73,10 @@ impl<'a> SendBuilder<'a> {
 
             let mut end = false;
             for address in addresses {
-                let address_outputs = self.client.get_address(&address).outputs()?;
+                let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
-                for (transaction_id, output_index) in address_outputs.output_ids {
-                    let curr_outputs = self.client.get_output(transaction_id, output_index)?;
+                for output_id in address_outputs.iter() {
+                    let curr_outputs = self.client.get_output(output_id)?;
                     outputs.extend(curr_outputs.into_iter());
                 }
                 for (offset, output) in outputs.into_iter().enumerate() {

@@ -1,6 +1,6 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::{Address, MessageId, TransactionId};
+use bee_transaction::prelude::{Address, TransactionId};
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -52,15 +52,23 @@ pub struct NodeInfo {
 
 impl ResponseType for NodeInfo {}
 
+/// Hex string of message ID
+#[derive(Debug, Deserialize)]
+pub struct MessageIdHex(pub(crate) String);
+
+/// Hex string of output ID
+#[derive(Debug, Deserialize)]
+pub struct OutputIdHex(pub String);
+
 /// Response of GET /api/v1/tips endpoint
 #[derive(Debug, Deserialize)]
 pub(crate) struct Tips {
     /// Message ID of tip 1
     #[serde(rename = "tip1MessageId")]
-    pub(crate) tip1: String,
+    pub(crate) tip1: MessageIdHex,
     /// Message ID of tip 2
     #[serde(rename = "tip2MessageId")]
-    pub(crate) tip2: String,
+    pub(crate) tip2: MessageIdHex,
 }
 
 impl ResponseType for Tips {}
@@ -69,13 +77,53 @@ impl ResponseType for Tips {}
 #[derive(Debug, Deserialize)]
 pub(crate) struct MessageIds {
     #[serde(rename = "messageIds")]
-    pub(crate) inner: Box<[MessageId]>,
+    pub(crate) inner: Box<[MessageIdHex]>,
 }
 
 impl ResponseType for MessageIds {}
 
+/// Response of GET /api/v1/messages/{messageId} endpoint
+#[derive(Debug, Deserialize)]
+pub struct MessageMetadata {
+    /// Message ID
+    #[serde(rename = "messageId")]
+    pub message_id: MessageIdHex,
+    /// Message ID of parent1
+    #[serde(rename = "parent1MessageId")]
+    pub parent1: MessageIdHex,
+    /// Message ID of parent2
+    #[serde(rename = "parent2MessageId")]
+    pub parent2: MessageIdHex,
+    /// Solid status
+    #[serde(rename = "isSolid")]
+    pub is_solid: bool,
+    /// Promote status
+    #[serde(rename = "shouldPromote")]
+    pub should_prmote: bool,
+    /// Reattach status
+    #[serde(rename = "shouldReattach")]
+    pub should_reattach: bool,
+}
+
+impl ResponseType for MessageMetadata {}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct ChildrenMessageIds {
+    #[serde(rename = "childrenMessageIds")]
+    pub(crate) inner: Box<[MessageIdHex]>,
+}
+
+impl ResponseType for ChildrenMessageIds {}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct AddressBalance {
+    pub(crate) balance: u64,
+}
+
+impl ResponseType for AddressBalance {}
+
 /// Output data
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Output {
     /// Producer message of the output
     pub producer: TransactionId,
@@ -90,17 +138,28 @@ pub struct Output {
 }
 
 /// Outputs that use a given address.
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct AddressOutputs {
-    /// Corresponding address.
-    pub address: Address,
-    /// Max results.
-    pub max_results: u64,
-    /// Count.
-    pub count: u64,
     /// Outputs used by the address.
-    pub output_ids: Vec<(TransactionId, u16)>,
+    pub output_ids: Box<[OutputIdHex]>,
 }
+
+impl ResponseType for AddressOutputs {}
+
+/// Milestone from Iota node
+#[derive(Debug, Deserialize)]
+pub struct Milestone {
+    /// Milestone index
+    #[serde(rename = "milestoneIndex")]
+    pub milestone_index: u64,
+    /// Milestone ID
+    #[serde(rename = "messageId")]
+    pub message_ids: MessageIdHex,
+    /// Timestamp
+    pub timestamp: u64,
+}
+
+impl ResponseType for Milestone {}
 
 /// Transfers structure
 ///

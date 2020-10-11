@@ -34,7 +34,7 @@ impl<'a> GetBalanceBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub fn get(self) -> Result<u64> {
+    pub async fn get(self) -> Result<u64> {
         let path = match self.path {
             Some(p) => {
                 if p.depth() != 2 {
@@ -65,7 +65,7 @@ impl<'a> GetBalanceBuilder<'a> {
             // TODO we assume all addressees are unspent and valid if balance > 0
             let mut end = false;
             for address in addresses {
-                let address_balance = self.client.get_address(&address).balance()?;
+                let address_balance = self.client.get_address().balance(&address).await?;
                 match address_balance {
                     0 => {
                         end = true;

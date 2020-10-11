@@ -35,7 +35,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub fn get(self) -> Result<(Address, usize)> {
+    pub async fn get(self) -> Result<(Address, usize)> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
@@ -57,7 +57,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             // TODO we assume all addressees are unspent and valid if balance > 0
             let mut address = None;
             for a in addresses {
-                let address_balance = self.client.get_address(&a).balance()?;
+                let address_balance = self.client.get_address().balance(&a).await?;
                 match address_balance {
                     0 => {
                         address = Some(a);
