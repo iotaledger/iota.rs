@@ -106,8 +106,18 @@ impl Client {
     }
 
     /// POST /api/v1/messages endpoint
-    pub fn post_messages(&self, _messages: &Message) -> Result<MessageId> {
-        Ok(MessageId::new([0; 32]))
+    pub async fn post_messages(&self, message: &Message) -> Result<MessageIdHex> {
+        let mut url = self.get_node()?;
+        url.set_path("api/v1/messages");
+        let resp = self.client.post(url).json(&message).send().await?;
+
+        match resp.status().as_u16() {
+            200 => {
+                let m = resp.json::<Response<PostMessageId>>().await?.data;
+                Ok(m.message_id)
+            }
+            status => Err(Error::ResponseError(status)),
+        }
     }
 
     /// GET /api/v1/messages/{messageId} endpoint
@@ -193,9 +203,9 @@ impl Client {
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub fn reattach(&self, message_id: &MessageIdHex) -> Result<Message> {
-        let message = self.get_message().data(message_id)?;
-        self.post_messages(&message)?;
+    pub async fn reattach(&self, message_id: &MessageIdHex) -> Result<Message> {
+        let message = self.get_message().data(message_id).await?;
+        self.post_messages(&message).await?;
         Ok(message)
     }
 

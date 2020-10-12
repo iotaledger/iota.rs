@@ -33,8 +33,18 @@ impl<'a> GetMessageBuilder<'a> {
     }
 
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
-    pub fn data(self, _message_id: &MessageIdHex) -> Result<Message> {
-        todo!()
+    pub async fn data(self, message_id: &MessageIdHex) -> Result<Message> {
+        let mut url = self.client.get_node()?;
+        url.set_path(&format!("api/v1/messages/{}", message_id.0));
+        let resp = reqwest::get(url).await?;
+
+        match resp.status().as_u16() {
+            200 => {
+                let meta = resp.json::<Response<Message>>().await?;
+                Ok(meta.data)
+            }
+            status => Err(Error::ResponseError(status)),
+        }
     }
 
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.

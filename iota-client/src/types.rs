@@ -1,9 +1,11 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::Address;
+use bee_transaction::prelude::{Address, Message};
 
 /// Marker trait for response
 pub trait ResponseType {}
+
+impl ResponseType for Message {}
 
 /// Hex string of message ID
 #[derive(Debug, Deserialize)]
@@ -76,6 +78,14 @@ pub(crate) struct Tips {
 }
 
 impl ResponseType for Tips {}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct PostMessageId {
+    #[serde(rename = "messageId")]
+    pub(crate) message_id: MessageIdHex,
+}
+
+impl ResponseType for PostMessageId {}
 
 /// Collection of meesage ID
 #[derive(Debug, Deserialize)]
