@@ -1,3 +1,5 @@
+use iota_client::MessageIdHex;
+
 #[tokio::test]
 async fn test_get_info() {
     iota_client::Client::get_info("http://0.0.0.0:14265")
@@ -25,7 +27,7 @@ async fn test_get_tips() {
 }
 
 #[tokio::test]
-async fn test_get_message() {
+async fn test_get_message_by_index() {
     iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
@@ -33,6 +35,44 @@ async fn test_get_message() {
         .unwrap()
         .get_message()
         .index("TEST")
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn test_get_message_metadata() {
+    iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap()
+        .get_message()
+        .metadata(&MessageIdHex(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")))
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn test_get_message_children() {
+    iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap()
+        .get_message()
+        .children(&MessageIdHex(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")))
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn test_get_milestone() {
+    iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap()
+        .get_milestone(1)
         .await
         .unwrap();
 }

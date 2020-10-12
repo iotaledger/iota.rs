@@ -4,18 +4,18 @@ use crate::{
 
 use bee_transaction::atomic::Message;
 
-/// Builder of GET /api/v1/message/{messageId} endpoint
+/// Builder of GET /api/v1/messages/{messageId} endpoint
 pub struct GetMessageBuilder<'a> {
     client: &'a Client,
 }
 
 impl<'a> GetMessageBuilder<'a> {
-    /// Create GET /api/v1/message endpoint builder
+    /// Create GET /api/v1/messages endpoint builder
     pub fn new(client: &'a Client) -> Self {
         Self { client }
     }
 
-    /// GET /api/v1/message endpoint
+    /// GET /api/v1/messages?index={Index} endpoint
     /// Consume the builder and search for messages matching the index
     pub async fn index(self, index: &str) -> Result<Box<[MessageIdHex]>> {
         let mut url = self.client.get_node()?;
@@ -32,6 +32,7 @@ impl<'a> GetMessageBuilder<'a> {
         }
     }
 
+    /// GET /api/v1/messages/{messageID} endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
     pub async fn data(self, message_id: &MessageIdHex) -> Result<Message> {
         let mut url = self.client.get_node()?;
@@ -47,6 +48,7 @@ impl<'a> GetMessageBuilder<'a> {
         }
     }
 
+    /// GET /api/v1/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
     pub async fn metadata(self, message_id: &MessageIdHex) -> Result<MessageMetadata> {
         let mut url = self.client.get_node()?;
@@ -62,6 +64,7 @@ impl<'a> GetMessageBuilder<'a> {
         }
     }
 
+    /// GET /api/v1/messages/{messageID}/children endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
     pub async fn raw(self, message_id: &MessageIdHex) -> Result<String> {
         let mut url = self.client.get_node()?;

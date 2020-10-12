@@ -111,12 +111,6 @@ pub struct MessageMetadata {
     /// Solid status
     #[serde(rename = "isSolid")]
     pub is_solid: bool,
-    /// Promote status
-    #[serde(rename = "shouldPromote")]
-    pub should_prmote: bool,
-    /// Reattach status
-    #[serde(rename = "shouldReattach")]
-    pub should_reattach: bool,
 }
 
 impl ResponseType for MessageMetadata {}
