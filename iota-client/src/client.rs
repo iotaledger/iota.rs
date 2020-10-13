@@ -6,7 +6,7 @@ use crate::node::*;
 use crate::types::*;
 
 use bee_signing_ext::Seed;
-use bee_message::prelude::{Address, Ed25519Address, Message, MessageId};
+use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, TransactionId};
 
 use reqwest::{IntoUrl, Url};
 
@@ -91,7 +91,7 @@ impl Client {
     }
 
     /// GET /api/v1/tips endpoint
-    pub async fn get_tips(&self) -> Result<(MessageIdString, MessageIdString)> {
+    pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
         let resp = reqwest::get(url).await?;
@@ -99,14 +99,18 @@ impl Client {
         match resp.status().as_u16() {
             200 => {
                 let pair = resp.json::<Response<Tips>>().await?.data;
-                Ok((pair.tip1, pair.tip2))
+                let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
+                hex::decode_to_slice(pair.tip1, &mut tip1)?;
+                hex::decode_to_slice(pair.tip2, &mut tip2)?;
+
+                Ok((MessageId::from(tip1), MessageId::from(tip2)))
             }
             status => Err(Error::ResponseError(status)),
         }
     }
 
     /// POST /api/v1/messages endpoint
-    pub async fn post_messages(&self, message: &Message) -> Result<MessageIdString> {
+    pub async fn post_messages(&self, message: &Message) -> Result<MessageId> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
         let resp = self.client.post(url).json(&message).send().await?;
@@ -114,7 +118,9 @@ impl Client {
         match resp.status().as_u16() {
             200 => {
                 let m = resp.json::<Response<PostMessageId>>().await?.data;
-                Ok(m.message_id)
+                let mut message_id = [0u8; 32];
+                hex::decode_to_slice(m.message_id, &mut message_id)?;
+                Ok(MessageId::from(message_id))
             }
             status => Err(Error::ResponseError(status)),
         }
@@ -127,9 +133,9 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output_id: &OutputIdString) -> Result<OutputContext> {
+    pub async fn get_output(&self, transaction: &TransactionId, output_index: u16) -> Result<OutputContext> {
         let mut url = self.get_node()?;
-        url.set_path(&format!("api/v1/outputs/{}", output_id.0));
+        url.set_path(&format!("api/v1/outputs/{}{}", transaction, output_index));
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {
@@ -203,7 +209,7 @@ impl Client {
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub async fn reattach(&self, message_id: &MessageIdString) -> Result<Message> {
+    pub async fn reattach(&self, message_id: &MessageId) -> Result<Message> {
         let message = self.get_message().data(message_id).await?;
         self.post_messages(&message).await?;
         Ok(message)

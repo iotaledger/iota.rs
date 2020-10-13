@@ -1,4 +1,4 @@
-use iota_client::MessageIdString;
+use iota_client::hex_to_message_id;
 
 #[tokio::test]
 async fn test_get_info() {
@@ -47,7 +47,20 @@ async fn test_get_message_metadata() {
         .build()
         .unwrap()
         .get_message()
-        .metadata(&MessageIdString::try_from(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")).unwrap())
+        .metadata(&hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn test_get_message_raw() {
+    iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap()
+        .get_message()
+        .raw(&hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
         .await
         .unwrap();
 }
@@ -60,7 +73,7 @@ async fn test_get_message_children() {
         .build()
         .unwrap()
         .get_message()
-        .children(&MessageIdString::try_from(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")).unwrap())
+        .children(&hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
         .await
         .unwrap();
 }

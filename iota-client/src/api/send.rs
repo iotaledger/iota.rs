@@ -1,4 +1,4 @@
-use crate::{Client, Error, MessageIdString, Result};
+use crate::{Client, Error, Result};
 
 use bee_signing_ext::{binary::BIP32Path, Seed};
 use bee_message::prelude::*;
@@ -48,7 +48,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn post(self) -> Result<MessageIdString> {
+    pub async fn post(self) -> Result<MessageId> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
@@ -78,7 +78,7 @@ impl<'a> SendBuilder<'a> {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
                 for output_id in address_outputs.iter() {
-                    let curr_outputs = self.client.get_output(output_id).await?;
+                    let curr_outputs = self.client.get_output(&output_id.0, output_id.1).await?;
                     outputs.push(curr_outputs);
                 }
                 for (offset, output) in outputs.into_iter().enumerate() {
@@ -95,7 +95,7 @@ impl<'a> SendBuilder<'a> {
                                 address_path.push(offset as u32);
 
                                 let mut transaction_id = [0u8; TRANSACTION_ID_LENGTH];
-                                hex::decode_to_slice(output.transaction_id.0, &mut transaction_id)?;
+                                hex::decode_to_slice(output.transaction_id, &mut transaction_id)?;
 
                                 inputs.push((
                                     UTXOInput::new(

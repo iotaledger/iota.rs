@@ -1,44 +1,32 @@
 //! Types of several IOTA APIs related objects
 use crate::{Result, Error};
 
-use bee_message::prelude::{Address, Message};
+use bee_message::prelude::{Address, Message, MessageId};
 
 /// Marker trait for response
 pub trait ResponseType {}
 
 impl ResponseType for Message {}
 
-/// Hex string of message ID
-#[derive(Debug, Deserialize)]
-pub struct MessageIdString(pub(crate) String);
-
-impl MessageIdString {
-
-    /// Try to convert a string to MessageID string
-    pub fn try_from<T: ToString>(value: T) -> Result<Self> {
-        let string = value.to_string();
-        if string.len() != 64 {
-            return Err(Error::InvalidParameter("string length".to_string()));
-        }
-        
-        for c in string.chars() {
-            match c {
-                '0'..='9' | 'a'..='z' => (),
-                _ => return Err(Error::InvalidParameter("hex character".to_string())), 
-            }
-        }
-
-        Ok(MessageIdString(string))
+/// Try to convert a hex string to MessageID
+pub fn hex_to_message_id<T: ToString>(value: T) -> Result<MessageId> {
+    let string = value.to_string();
+    if string.len() != 64 {
+        return Err(Error::InvalidParameter("string length".to_string()));
     }
+    
+    for c in string.chars() {
+        match c {
+            '0'..='9' | 'a'..='z' => (),
+            _ => return Err(Error::InvalidParameter("hex character".to_string())), 
+        }
+    }
+
+    let mut bytes = [0u8; 32];
+    hex::decode_to_slice(string.as_bytes(), &mut bytes)?;
+
+    Ok(MessageId::new(bytes))
 }
-
-/// Hex transaction of output ID
-#[derive(Debug, Deserialize)]
-pub struct TransactionIdString(pub(crate) String);
-
-/// Hex string of output ID
-#[derive(Debug, Deserialize)]
-pub struct OutputIdString(pub(crate) String);
 
 /// Response from the Iota node.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -92,10 +80,10 @@ impl ResponseType for NodeInfo {}
 pub(crate) struct Tips {
     /// Message ID of tip 1
     #[serde(rename = "tip1MessageId")]
-    pub(crate) tip1: MessageIdString,
+    pub(crate) tip1: String,
     /// Message ID of tip 2
     #[serde(rename = "tip2MessageId")]
-    pub(crate) tip2: MessageIdString,
+    pub(crate) tip2: String,
 }
 
 impl ResponseType for Tips {}
@@ -103,7 +91,7 @@ impl ResponseType for Tips {}
 #[derive(Debug, Deserialize)]
 pub(crate) struct PostMessageId {
     #[serde(rename = "messageId")]
-    pub(crate) message_id: MessageIdString,
+    pub(crate) message_id: String,
 }
 
 impl ResponseType for PostMessageId {}
@@ -112,7 +100,7 @@ impl ResponseType for PostMessageId {}
 #[derive(Debug, Deserialize)]
 pub(crate) struct MessageIds {
     #[serde(rename = "messageIds")]
-    pub(crate) inner: Box<[MessageIdString]>,
+    pub(crate) inner: Box<[String]>,
 }
 
 impl ResponseType for MessageIds {}
@@ -122,16 +110,18 @@ impl ResponseType for MessageIds {}
 pub struct MessageMetadata {
     /// Message ID
     #[serde(rename = "messageId")]
-    pub message_id: MessageIdString,
+    pub message_id: String,
     /// Message ID of parent1
     #[serde(rename = "parent1MessageId")]
-    pub parent1: MessageIdString,
+    pub parent1: String,
     /// Message ID of parent2
     #[serde(rename = "parent2MessageId")]
-    pub parent2: MessageIdString,
+    pub parent2: String,
     /// Solid status
     #[serde(rename = "isSolid")]
     pub is_solid: bool,
+    /// Payload detail
+    pub payload: Option<serde_json::Value>,
 }
 
 impl ResponseType for MessageMetadata {}
@@ -139,7 +129,7 @@ impl ResponseType for MessageMetadata {}
 #[derive(Debug, Deserialize)]
 pub(crate) struct ChildrenMessageIds {
     #[serde(rename = "childrenMessageIds")]
-    pub(crate) inner: Box<[MessageIdString]>,
+    pub(crate) inner: Box<[String]>,
 }
 
 impl ResponseType for ChildrenMessageIds {}
@@ -155,9 +145,9 @@ impl ResponseType for AddressBalance {}
 #[derive(Debug, Deserialize)]
 pub(crate) struct RawOutput {
     #[serde(rename = "messageId")]
-    pub(crate) message_id: MessageIdString,
+    pub(crate) message_id: String,
     #[serde(rename = "transactionId")]
-    pub(crate) transaction_id: TransactionIdString,
+    pub(crate) transaction_id: String,
     #[serde(rename = "outputIndex")]
     pub(crate) output_index: u16,
     #[serde(rename = "isSpent")]
@@ -184,9 +174,9 @@ pub(crate) struct EdAddress {
 #[derive(Debug)]
 pub struct OutputContext {
     /// Message ID of the output
-    pub message_id: MessageIdString,
+    pub message_id: String,
     /// Transaction ID of the output
-    pub transaction_id: TransactionIdString,
+    pub transaction_id: String,
     /// Output index.
     pub output_index: u16,
     /// Spend status of the output
@@ -201,7 +191,7 @@ pub struct OutputContext {
 #[derive(Debug, Deserialize)]
 pub struct AddressOutputs {
     /// Outputs used by the address.
-    pub output_ids: Box<[OutputIdString]>,
+    pub output_ids: Box<[String]>,
 }
 
 impl ResponseType for AddressOutputs {}
@@ -214,7 +204,7 @@ pub struct Milestone {
     pub milestone_index: u64,
     /// Milestone ID
     #[serde(rename = "messageId")]
-    pub message_ids: MessageIdString,
+    pub message_ids: String,
     /// Timestamp
     pub timestamp: u64,
 }

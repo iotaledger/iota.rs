@@ -1,6 +1,6 @@
-use crate::{AddressBalance, AddressOutputs, Client, Error, OutputIdString, Response, Result};
+use crate::{AddressBalance, AddressOutputs, Client, Error, Response, Result};
 
-use bee_message::prelude::Address;
+use bee_message::prelude::{Address, TransactionId};
 
 /// Builder of GET /api/v1/address/{messageId} endpoint
 pub struct GetAddressBuilder<'a> {
@@ -37,7 +37,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get all outputs that use a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance reasons.
     /// User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &'a Address) -> Result<Box<[OutputIdString]>> {
+    pub async fn outputs(self, address: &'a Address) -> Result<Box<[(TransactionId, u16)]>> {
         let address = match address {
             Address::Ed25519(a) => a.to_bech32(),
             _ => return Err(Error::InvalidParameter("address".to_string())),
@@ -53,7 +53,12 @@ impl<'a> GetAddressBuilder<'a> {
                     .await?
                     .data
                     .output_ids;
-                Ok(r)
+                r.into_iter().map(|s| {
+                    let mut transaction_id = [0u8; 32];
+                    hex::decode_to_slice(&s[..64], &mut transaction_id)?;
+                    let index = s[64..].parse::<u16>().map_err(|_| Error::InvalidParameter("index".to_string()))?;
+                    Ok((TransactionId::new(transaction_id), index))
+                }).collect::<Result<Box<[(TransactionId, u16)]>>>()
             }
             status => Err(Error::ResponseError(status)),
         }
