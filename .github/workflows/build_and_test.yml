@@ -26,7 +26,7 @@ jobs:
         override: true
 
     - name: Get current date
-      run: echo "::set-env name=CURRENT_DATE::$(date +'%Y-%m-%d')"
+      run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
     - name: Cache cargo registry
       uses: actions/cache@v2
