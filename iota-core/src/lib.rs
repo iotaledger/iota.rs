@@ -11,7 +11,7 @@
 pub use bee_crypto as crypto;
 pub use bee_signing as signing;
 pub use bee_ternary as ternary;
-pub use bee_transaction as transaction;
+pub use bee_message as message;
 pub use iota_client as client;
 
 pub use client::{Client, ClientBuilder};

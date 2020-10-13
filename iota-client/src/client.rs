@@ -6,7 +6,7 @@ use crate::node::*;
 use crate::types::*;
 
 use bee_signing_ext::Seed;
-use bee_transaction::prelude::{Address, Ed25519Address, Message, MessageId};
+use bee_message::prelude::{Address, Ed25519Address, Message, MessageId};
 
 use reqwest::{IntoUrl, Url};
 

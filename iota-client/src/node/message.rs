@@ -2,7 +2,7 @@ use crate::{
     ChildrenMessageIds, Client, Error, MessageIdHex, MessageIds, MessageMetadata, Response, Result,
 };
 
-use bee_transaction::atomic::Message;
+use bee_message::Message;
 
 /// Builder of GET /api/v1/messages/{messageId} endpoint
 pub struct GetMessageBuilder<'a> {

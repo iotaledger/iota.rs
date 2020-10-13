@@ -1,6 +1,6 @@
 use crate::{AddressBalance, AddressOutputs, Client, Error, OutputIdHex, Response, Result};
 
-use bee_transaction::prelude::Address;
+use bee_message::prelude::Address;
 
 /// Builder of GET /api/v1/address/{messageId} endpoint
 pub struct GetAddressBuilder<'a> {

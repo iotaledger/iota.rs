@@ -1,6 +1,6 @@
 //! Types of several IOTA APIs related objects
 
-use bee_transaction::prelude::{Address, Message};
+use bee_message::prelude::{Address, Message};
 
 /// Marker trait for response
 pub trait ResponseType {}

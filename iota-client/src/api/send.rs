@@ -1,7 +1,7 @@
 use crate::{Client, Error, MessageIdHex, Result};
 
 use bee_signing_ext::{binary::BIP32Path, Seed};
-use bee_transaction::prelude::*;
+use bee_message::prelude::*;
 
 use std::num::NonZeroU64;
 
