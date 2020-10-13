@@ -1,4 +1,4 @@
-use iota_client::MessageIdHex;
+use iota_client::MessageIdString;
 
 #[tokio::test]
 async fn test_get_info() {
@@ -47,7 +47,7 @@ async fn test_get_message_metadata() {
         .build()
         .unwrap()
         .get_message()
-        .metadata(&MessageIdHex(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")))
+        .metadata(&MessageIdString::try_from(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")).unwrap())
         .await
         .unwrap();
 }
@@ -60,7 +60,7 @@ async fn test_get_message_children() {
         .build()
         .unwrap()
         .get_message()
-        .children(&MessageIdHex(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")))
+        .children(&MessageIdString::try_from(String::from("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")).unwrap())
         .await
         .unwrap();
 }

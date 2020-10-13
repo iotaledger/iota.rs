@@ -1,4 +1,4 @@
-use crate::{AddressBalance, AddressOutputs, Client, Error, OutputIdHex, Response, Result};
+use crate::{AddressBalance, AddressOutputs, Client, Error, OutputIdString, Response, Result};
 
 use bee_message::prelude::Address;
 
@@ -37,7 +37,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get all outputs that use a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance reasons.
     /// User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &'a Address) -> Result<Box<[OutputIdHex]>> {
+    pub async fn outputs(self, address: &'a Address) -> Result<Box<[OutputIdString]>> {
         let address = match address {
             Address::Ed25519(a) => a.to_bech32(),
             _ => return Err(Error::InvalidParameter("address".to_string())),

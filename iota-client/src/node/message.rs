@@ -1,5 +1,5 @@
 use crate::{
-    ChildrenMessageIds, Client, Error, MessageIdHex, MessageIds, MessageMetadata, Response, Result,
+    ChildrenMessageIds, Client, Error, MessageIdString, MessageIds, MessageMetadata, Response, Result,
 };
 
 use bee_message::Message;
@@ -17,7 +17,7 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages?index={Index} endpoint
     /// Consume the builder and search for messages matching the index
-    pub async fn index(self, index: &str) -> Result<Box<[MessageIdHex]>> {
+    pub async fn index(self, index: &str) -> Result<Box<[MessageIdString]>> {
         let mut url = self.client.get_node()?;
         url.set_path("api/v1/messages");
         url.set_query(Some(&format!("index={}", index)));
@@ -34,7 +34,7 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages/{messageID} endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
-    pub async fn data(self, message_id: &MessageIdHex) -> Result<Message> {
+    pub async fn data(self, message_id: &MessageIdString) -> Result<Message> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}", message_id.0));
         let resp = reqwest::get(url).await?;
@@ -50,7 +50,7 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
-    pub async fn metadata(self, message_id: &MessageIdHex) -> Result<MessageMetadata> {
+    pub async fn metadata(self, message_id: &MessageIdString) -> Result<MessageMetadata> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id.0));
         let resp = reqwest::get(url).await?;
@@ -66,7 +66,7 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages/{messageID}/children endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
-    pub async fn raw(self, message_id: &MessageIdHex) -> Result<String> {
+    pub async fn raw(self, message_id: &MessageIdString) -> Result<String> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id.0));
         let resp = reqwest::get(url).await?;
@@ -78,7 +78,7 @@ impl<'a> GetMessageBuilder<'a> {
     }
 
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
-    pub async fn children(self, message_id: &MessageIdHex) -> Result<Box<[MessageIdHex]>> {
+    pub async fn children(self, message_id: &MessageIdString) -> Result<Box<[MessageIdString]>> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/children", message_id.0));
         let resp = reqwest::get(url).await?;

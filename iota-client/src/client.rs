@@ -91,7 +91,7 @@ impl Client {
     }
 
     /// GET /api/v1/tips endpoint
-    pub async fn get_tips(&self) -> Result<(MessageIdHex, MessageIdHex)> {
+    pub async fn get_tips(&self) -> Result<(MessageIdString, MessageIdString)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
         let resp = reqwest::get(url).await?;
@@ -106,7 +106,7 @@ impl Client {
     }
 
     /// POST /api/v1/messages endpoint
-    pub async fn post_messages(&self, message: &Message) -> Result<MessageIdHex> {
+    pub async fn post_messages(&self, message: &Message) -> Result<MessageIdString> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
         let resp = self.client.post(url).json(&message).send().await?;
@@ -127,7 +127,7 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output_id: &OutputIdHex) -> Result<OutputContext> {
+    pub async fn get_output(&self, output_id: &OutputIdString) -> Result<OutputContext> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/outputs/{}", output_id.0));
         let resp = reqwest::get(url).await?;
@@ -203,7 +203,7 @@ impl Client {
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub async fn reattach(&self, message_id: &MessageIdHex) -> Result<Message> {
+    pub async fn reattach(&self, message_id: &MessageIdString) -> Result<Message> {
         let message = self.get_message().data(message_id).await?;
         self.post_messages(&message).await?;
         Ok(message)

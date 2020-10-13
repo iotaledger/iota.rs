@@ -1,4 +1,4 @@
-use crate::{Client, Error, MessageIdHex, Result};
+use crate::{Client, Error, MessageIdString, Result};
 
 use bee_signing_ext::{binary::BIP32Path, Seed};
 use bee_message::prelude::*;
@@ -48,7 +48,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn post(self) -> Result<MessageIdHex> {
+    pub async fn post(self) -> Result<MessageIdString> {
         let path = match self.path {
             Some(p) => p,
             None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
