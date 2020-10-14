@@ -5,8 +5,8 @@ use crate::error::*;
 use crate::node::*;
 use crate::types::*;
 
-use bee_signing_ext::Seed;
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, TransactionId};
+use bee_signing_ext::Seed;
 
 use reqwest::{IntoUrl, Url};
 
@@ -113,16 +113,26 @@ impl Client {
     pub async fn post_messages(&self, message: &Message) -> Result<MessageId> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
-        let resp = self.client.post(url).json(&message).send().await?;
+        let message: MessageJson = message.into();
+        let resp = self
+            .client
+            .post(url)
+            .header("content-type", "application/json; charset=UTF-8")
+            .json(&message)
+            .send()
+            .await?;
 
         match resp.status().as_u16() {
-            200 => {
+            201 => {
                 let m = resp.json::<Response<PostMessageId>>().await?.data;
                 let mut message_id = [0u8; 32];
                 hex::decode_to_slice(m.message_id, &mut message_id)?;
                 Ok(MessageId::from(message_id))
             }
-            status => Err(Error::ResponseError(status)),
+            status => {
+                println!("resp: {:#?}", resp);
+                Err(Error::ResponseError(status))
+            }
         }
     }
 
@@ -133,7 +143,11 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, transaction: &TransactionId, output_index: u16) -> Result<OutputContext> {
+    pub async fn get_output(
+        &self,
+        transaction: &TransactionId,
+        output_index: u16,
+    ) -> Result<OutputContext> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/outputs/{}{}", transaction, output_index));
         let resp = reqwest::get(url).await?;

@@ -1,7 +1,7 @@
 use crate::{Client, Error, Result};
 
-use bee_signing_ext::{binary::BIP32Path, Seed};
 use bee_message::prelude::Address;
+use bee_signing_ext::{binary::BIP32Path, Seed};
 
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {

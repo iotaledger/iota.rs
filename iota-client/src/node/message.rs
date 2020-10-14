@@ -1,6 +1,4 @@
-use crate::{
-    ChildrenMessageIds, Client, Error, MessageIds, MessageMetadata, Response, Result,
-};
+use crate::{ChildrenMessageIds, Client, Error, MessageIds, MessageMetadata, Response, Result};
 
 use bee_message::{Message, MessageId};
 
@@ -26,11 +24,15 @@ impl<'a> GetMessageBuilder<'a> {
         match resp.status().as_u16() {
             200 => {
                 let ids = resp.json::<Response<MessageIds>>().await?;
-                ids.data.inner.into_iter().map(|s| {
-                    let mut message_id = [0u8; 32];
-                    hex::decode_to_slice(s, &mut message_id)?;
-                    Ok(MessageId::from(message_id))
-                }).collect::<Result<Box<[MessageId]>>>()
+                ids.data
+                    .inner
+                    .into_iter()
+                    .map(|s| {
+                        let mut message_id = [0u8; 32];
+                        hex::decode_to_slice(s, &mut message_id)?;
+                        Ok(MessageId::from(message_id))
+                    })
+                    .collect::<Result<Box<[MessageId]>>>()
             }
             status => Err(Error::ResponseError(status)),
         }
@@ -90,11 +92,15 @@ impl<'a> GetMessageBuilder<'a> {
         match resp.status().as_u16() {
             200 => {
                 let meta = resp.json::<Response<ChildrenMessageIds>>().await?;
-                meta.data.inner.into_iter().map(|s| {
-                    let mut message_id = [0u8; 32];
-                    hex::decode_to_slice(s, &mut message_id)?;
-                    Ok(MessageId::from(message_id))
-                }).collect::<Result<Box<[MessageId]>>>()
+                meta.data
+                    .inner
+                    .into_iter()
+                    .map(|s| {
+                        let mut message_id = [0u8; 32];
+                        hex::decode_to_slice(s, &mut message_id)?;
+                        Ok(MessageId::from(message_id))
+                    })
+                    .collect::<Result<Box<[MessageId]>>>()
             }
             status => Err(Error::ResponseError(status)),
         }

@@ -1,7 +1,12 @@
 //! Types of several IOTA APIs related objects
-use crate::{Result, Error};
+use crate::{Error, Result};
 
-use bee_message::prelude::{Address, Message, MessageId};
+use bee_message::prelude::{
+    Address, Indexation, Input, Message, MessageId, Output, Payload, SignatureUnlock, Transaction,
+    TransactionEssence, UnlockBlock,
+};
+
+use std::convert::{From, TryFrom};
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -14,11 +19,11 @@ pub fn hex_to_message_id<T: ToString>(value: T) -> Result<MessageId> {
     if string.len() != 64 {
         return Err(Error::InvalidParameter("string length".to_string()));
     }
-    
+
     for c in string.chars() {
         match c {
             '0'..='9' | 'a'..='z' => (),
-            _ => return Err(Error::InvalidParameter("hex character".to_string())), 
+            _ => return Err(Error::InvalidParameter("hex character".to_string())),
         }
     }
 
@@ -120,8 +125,6 @@ pub struct MessageMetadata {
     /// Solid status
     #[serde(rename = "isSolid")]
     pub is_solid: bool,
-    /// Payload detail
-    pub payload: Option<serde_json::Value>,
 }
 
 impl ResponseType for MessageMetadata {}
@@ -226,5 +229,193 @@ impl Transfers {
     /// Add more address to the Transfers
     pub fn add(&mut self, address: Address, amount: u64) {
         self.0.push((address, amount));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct MessageJson {
+    version: u8,
+    #[serde(rename = "parent1MessageId")]
+    parent1: String,
+    #[serde(rename = "parent2MessageId")]
+    parent2: String,
+    payload: PayloadJson,
+    nonce: u64,
+}
+
+impl From<&Message> for MessageJson {
+    fn from(i: &Message) -> Self {
+        Self {
+            version: 1,
+            parent1: i.parent1().to_string(),
+            parent2: i.parent2().to_string(),
+            payload: i.payload().into(),
+            nonce: i.nonce(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct PayloadJson {
+    type_: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    index: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    data: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    essence: Option<TransactionEssenceJson>,
+    #[serde(rename = "unlockBlocks")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    unlock_blocks: Option<Box<[UnlockBlockJson]>>,
+}
+
+impl From<&Payload> for PayloadJson {
+    fn from(i: &Payload) -> Self {
+        match i {
+            Payload::Transaction(i) => Self {
+                type_: 0,
+                index: None,
+                data: None,
+                essence: Some((&i.essence).into()),
+                unlock_blocks: Some(i.unlock_blocks.iter().map(|input| input.into()).collect()),
+            },
+            Payload::Indexation(_i) => Self {
+                type_: 2,
+                index: Some(String::from("TEST")),
+                data: Some(String::from("TESTING")),
+                essence: None,
+                unlock_blocks: None,
+            },
+            _ => todo!(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct TransactionEssenceJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    inputs: Box<[InputJson]>,
+    outputs: Box<[OutputJson]>,
+    payload: serde_json::Value,
+}
+
+impl From<&TransactionEssence> for TransactionEssenceJson {
+    fn from(i: &TransactionEssence) -> Self {
+        Self {
+            type_: 0,
+            inputs: i.inputs().into_iter().map(|input| input.into()).collect(),
+            outputs: i.outputs().into_iter().map(|input| input.into()).collect(),
+            payload: serde_json::Value::Null,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct InputJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    #[serde(rename = "transactionId")]
+    transaction_id: String,
+    #[serde(rename = "transactionOutputIndex")]
+    transaction_output_index: u16,
+}
+
+impl From<&Input> for InputJson {
+    fn from(i: &Input) -> Self {
+        match i {
+            Input::UTXO(i) => Self {
+                type_: 0,
+                transaction_id: i.id().to_string(),
+                transaction_output_index: i.index(),
+            },
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct OutputJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    address: AddressJson,
+    amount: u64,
+}
+
+impl From<&Output> for OutputJson {
+    fn from(i: &Output) -> Self {
+        match i {
+            Output::SignatureLockedSingle(s) => Self {
+                type_: 0,
+                address: s.address().into(),
+                amount: s.amount().get(),
+            },
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct AddressJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    address: String,
+}
+
+impl From<&Address> for AddressJson {
+    fn from(i: &Address) -> Self {
+        match i {
+            Address::Ed25519(a) => Self {
+                type_: 1,
+                address: a.to_string(),
+            },
+            _ => panic!("This library doesn't support WOTS."),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct UnlockBlockJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    signature: Option<SignatureJson>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reference: Option<u16>,
+}
+
+impl From<&UnlockBlock> for UnlockBlockJson {
+    fn from(i: &UnlockBlock) -> Self {
+        match i {
+            UnlockBlock::Signature(s) => Self {
+                type_: 0,
+                signature: Some(s.into()),
+                reference: None,
+            },
+            UnlockBlock::Reference(s) => Self {
+                type_: 1,
+                signature: None,
+                reference: Some(s.index()),
+            },
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct SignatureJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    publickey: String,
+    signature: String,
+}
+
+impl From<&SignatureUnlock> for SignatureJson {
+    fn from(i: &SignatureUnlock) -> Self {
+        match i {
+            SignatureUnlock::Ed25519(a) => Self {
+                type_: 1,
+                publickey: hex::encode(a.public_key()),
+                signature: hex::encode(a.signature()),
+            },
+            _ => panic!("This library doesn't support WOTS."),
+        }
     }
 }

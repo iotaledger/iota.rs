@@ -47,7 +47,10 @@ async fn test_get_message_metadata() {
         .build()
         .unwrap()
         .get_message()
-        .metadata(&hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
+        .metadata(
+            &hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")
+                .unwrap(),
+        )
         .await
         .unwrap();
 }
@@ -60,7 +63,10 @@ async fn test_get_message_raw() {
         .build()
         .unwrap()
         .get_message()
-        .raw(&hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
+        .raw(
+            &hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")
+                .unwrap(),
+        )
         .await
         .unwrap();
 }
@@ -73,7 +79,10 @@ async fn test_get_message_children() {
         .build()
         .unwrap()
         .get_message()
-        .children(&hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
+        .children(
+            &hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")
+                .unwrap(),
+        )
         .await
         .unwrap();
 }

@@ -1,7 +1,7 @@
 use crate::{Client, Error, Result};
 
-use bee_signing_ext::{binary::BIP32Path, Seed};
 use bee_message::prelude::*;
+use bee_signing_ext::{binary::BIP32Path, Seed};
 
 use std::num::NonZeroU64;
 

@@ -1,10 +1,10 @@
 use crate::{Client, Error, Result};
 
+use bee_message::prelude::{Address, Ed25519Address};
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed,
 };
-use bee_message::prelude::{Address, Ed25519Address};
 
 use std::ops::Range;
 

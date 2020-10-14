@@ -53,12 +53,16 @@ impl<'a> GetAddressBuilder<'a> {
                     .await?
                     .data
                     .output_ids;
-                r.into_iter().map(|s| {
-                    let mut transaction_id = [0u8; 32];
-                    hex::decode_to_slice(&s[..64], &mut transaction_id)?;
-                    let index = s[64..].parse::<u16>().map_err(|_| Error::InvalidParameter("index".to_string()))?;
-                    Ok((TransactionId::new(transaction_id), index))
-                }).collect::<Result<Box<[(TransactionId, u16)]>>>()
+                r.into_iter()
+                    .map(|s| {
+                        let mut transaction_id = [0u8; 32];
+                        hex::decode_to_slice(&s[..64], &mut transaction_id)?;
+                        let index = s[64..]
+                            .parse::<u16>()
+                            .map_err(|_| Error::InvalidParameter("index".to_string()))?;
+                        Ok((TransactionId::new(transaction_id), index))
+                    })
+                    .collect::<Result<Box<[(TransactionId, u16)]>>>()
             }
             status => Err(Error::ResponseError(status)),
         }
