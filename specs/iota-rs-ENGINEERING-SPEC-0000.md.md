@@ -78,7 +78,8 @@ A generic send function for easily sending value transaction messages.
 | **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **address** | ✔ | [Address] | The address to send to. |
 | **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it connot be zero. |
-| **index** | ✘ | u32 | Start index of the wallet account address. Default is 0, but note taht **it's recommended to provide index** since this method consider spent address as error for security. And because this is a stateless crate, account user should keep track of what's the unuspent address index of corresponding wallet chain themselves. |
+| **index** | ✘ | u32 | Start index of the wallet account address. Default is 0, but note taht it's recommended to provide index since this method consider spent address as error for security. And because this is a stateless crate, account user should keep track of what's the unuspent address index of corresponding wallet chain themselves. |
+| **indexation** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
 
 ### Return
 
@@ -120,7 +121,6 @@ Following are the steps for implementing this method:
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
 * Repeat the above step till there's an unuspent addresses found;
 * Return the address with corresponding index on the wallet chain;
-
 
 ## `get_addresses()`
 
