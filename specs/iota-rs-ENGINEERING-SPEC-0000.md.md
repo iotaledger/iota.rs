@@ -19,12 +19,13 @@ Specification of High Level Abstraction API
   * [`get_address_balances`](#get_address_balances)
   * [`reattach`](#reattach)
 * [Full Node API](#Full-Node-API)
-  * [`get_info`](#get_info-get-info)
-  * [`get_tips`](#get_tips-get-tips)
-  * [`get_messages`](#get_messages-get-messages)
-  * [`post_messages`](#post_messages-post-messages)
-  * [`get_transactions`](#get_transactions-get-transactions)
-  * [`get_outputs`](#get_outputs-get-outputs)
+  * [`get_info`](#get_info)
+  * [`get_tips`](#get_tips)
+  * [`get_message`](#get_message)
+  * [`post_message`](#post_message)
+  * [`get_output`](#get_output)
+  * [`get_address`](#get_address)
+  * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
   * [`Network`]
   * [`Hash`]
@@ -223,7 +224,9 @@ Following are the steps for implementing this method:
 
 API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
 
-## `get_health()` (`GET /health`)
+## `get_health()`
+
+(`GET /health`)
 
 Returns the health of the node, which can be used for load-balancing or uptime monitoring.
 
@@ -235,7 +238,9 @@ None
 
 Boolean to indicate if node is healthy.
 
-## `get_info()` (`GET /api/v1/info`)
+## `get_info()`
+
+(`GET /api/v1/info`)
 
 Returns information about the node.
 
@@ -266,7 +271,9 @@ struct getInfoResponse {
 }
 ```
 
-## `get_tips()` (`GET /tips`)
+## `get_tips()`
+
+(`GET /tips`)
 
 Returns two non-lazy tips. There could be however the case that the node can provide only one tip, or in the worst-case no tip. The array therefore needs to be validated.
 
@@ -282,7 +289,9 @@ A tuple with two hashes:
 (Hash, Hash)
 ```
 
-## `get_message()` (`GET /api/v1/message/{messageId}}`)
+## `get_message()`
+
+(`GET /api/v1/message/{messageId}}`)
 
 Find all messages filtered by provided parameters.
 
@@ -301,7 +310,9 @@ Depend on the final calling method, users could get different outputs they need:
 - `raw()`: Return the given message raw data.
 - `children()`: Returns the list of message IDs that reference a message by its identifier.
 
-## `post_messages()` (`POST /messages`)
+## `post_message()`
+
+(`POST /message`)
 
 Submit a message as a JSON object to the node. If certain fields are missing the node tries to take care of it (e.g. missing nonce, missing branch/trunk, …) and builds the message. On success, the node stores the message and broadcasts it to its peers. Furthermore it returns the hash of the message.
 
@@ -315,25 +326,9 @@ Submit a message as a JSON object to the node. If certain fields are missing the
 
 A vector of Message [Hash] object.
 
-## `get_transactions()` (`GET /transactions`)
+## `get_output()`
 
-Find all transactions filtered by provided parameters.
-
-### Parameters
-
-| Field | Requried | Type | Definition |
-| - | - | - | - |
-| **hashes** | ✘ | [[Hash]] | The identifier of message. |
-| **addresses** | ✘ | [[Hash]] | The hashes of addresses. |
-| **confirmed** | ✘ | bool | Search transaction that are confirmed if this sets to ture. |
-
-*At least one parameter has to be provided.
-
-### Returns
-
-A vector of [Message] object.
-
-## `get_outputs()` (`GET /outputs`)
+(`GET /outputs`)
 
 Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
 
@@ -341,15 +336,44 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hashes** | ✘ | [[Hash]] | The identifier of message. |
-| **addresses** | ✘ | [[Hash]] | The hashes of addresses. |
-
-*At least one parameter has to be provided.
+| **outputId** | ✘ | [Hash] | Identifier of the output. An output is identified by the concatenation of transaction_id+output_index. |
 
 ### Returns
 
-A vector of [Output] object.
+An [Output] object.
 
+## `get_address()`
+
+(`GET /outputs`)
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **address** | ✘ | [Address] | The address to search for. |
+
+### Returns
+
+Depend on the final calling method, users could get different outputs they need:
+
+- `balance()`: Return metadata of the address.
+- `outputs()`: Return output IDs of the address.
+
+## `get_milestone()`
+
+(`GET /milestones`)
+
+Get the milestone by the given index.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **index** | ✘ | u32 | Index of the milestone. |
+
+### Returns
+
+An [Milestone] object.
 
 # Objects
 
