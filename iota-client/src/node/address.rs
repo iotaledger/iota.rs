@@ -18,7 +18,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// User should sweep the address to reduce the amount of outputs.
     pub async fn balance(self, address: &'a Address) -> Result<u64> {
         let address = match address {
-            Address::Ed25519(a) => a.to_bech32(),
+            Address::Ed25519(a) => a.to_string(),
             _ => return Err(Error::InvalidParameter("address".to_string())),
         };
         let mut url = self.client.get_node()?;
@@ -39,7 +39,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, address: &'a Address) -> Result<Box<[(TransactionId, u16)]>> {
         let address = match address {
-            Address::Ed25519(a) => a.to_bech32(),
+            Address::Ed25519(a) => a.to_string(),
             _ => return Err(Error::InvalidParameter("address".to_string())),
         };
         let mut url = self.client.get_node()?;

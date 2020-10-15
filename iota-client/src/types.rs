@@ -21,17 +21,36 @@ pub fn hex_to_message_id<T: ToString>(value: T) -> Result<MessageId> {
         return Err(Error::InvalidParameter("string length".to_string()));
     }
 
-    for c in string.chars() {
-        match c {
-            '0'..='9' | 'a'..='z' => (),
-            _ => return Err(Error::InvalidParameter("hex character".to_string())),
-        }
+    let mut bytes = [0u8; 32];
+    hex::decode_to_slice(string, &mut bytes)?;
+
+    Ok(MessageId::new(bytes))
+}
+
+/// Try to convert a hex string to TransactionID
+pub fn hex_to_transaction_id<T: ToString>(value: T) -> Result<TransactionId> {
+    let string = value.to_string();
+    if string.len() != 64 {
+        return Err(Error::InvalidParameter("string length".to_string()));
+    }
+
+    let mut bytes = [0u8; 32];
+    hex::decode_to_slice(string, &mut bytes)?;
+
+    Ok(TransactionId::new(bytes))
+}
+
+/// Try to convert a hex string to Address
+pub fn hex_to_address<T: ToString>(value: T) -> Result<Address> {
+    let string = value.to_string();
+    if string.len() != 64 {
+        return Err(Error::InvalidParameter("string length".to_string()));
     }
 
     let mut bytes = [0u8; 32];
     hex::decode_to_slice(string.as_bytes(), &mut bytes)?;
 
-    Ok(MessageId::new(bytes))
+    Ok(Ed25519Address::new(bytes).into())
 }
 
 /// Response from the Iota node.
@@ -140,6 +159,7 @@ impl ResponseType for ChildrenMessageIds {}
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct AddressBalance {
+    pub(crate) count: usize,
     pub(crate) balance: u64,
 }
 
@@ -176,7 +196,7 @@ pub(crate) struct EdAddress {
 
 /// Output data
 #[derive(Debug)]
-pub struct OutputContext {
+pub struct OutputMetadata {
     /// Message ID of the output
     pub message_id: String,
     /// Transaction ID of the output
@@ -195,6 +215,7 @@ pub struct OutputContext {
 #[derive(Debug, Deserialize)]
 pub struct AddressOutputs {
     /// Outputs used by the address.
+    #[serde(rename = "outputIds")]
     pub output_ids: Box<[String]>,
 }
 

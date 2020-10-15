@@ -147,15 +147,15 @@ impl Client {
         &self,
         transaction: &TransactionId,
         output_index: u16,
-    ) -> Result<OutputContext> {
+    ) -> Result<OutputMetadata> {
         let mut url = self.get_node()?;
-        url.set_path(&format!("api/v1/outputs/{}{}", transaction, output_index));
+        url.set_path(&format!("api/v1/outputs/{}{}", transaction.to_string(), output_index));
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {
             200 => {
                 let raw = resp.json::<Response<RawOutput>>().await?.data;
-                Ok(OutputContext {
+                Ok(OutputMetadata {
                     message_id: raw.message_id,
                     transaction_id: raw.transaction_id,
                     output_index: raw.output_index,
