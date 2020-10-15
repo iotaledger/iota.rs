@@ -40,6 +40,22 @@ async fn test_get_message_by_index() {
 }
 
 #[tokio::test]
+async fn test_get_message_data() {
+    iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap()
+        .get_message()
+        .data(
+            &hex_to_message_id("63ec182d5ff9e228af83f8a00f0437ef6b061d6a64282f7dd623f94b621e0636")
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn test_get_message_metadata() {
     iota_client::Client::new()
         .node("http://0.0.0.0:14265")

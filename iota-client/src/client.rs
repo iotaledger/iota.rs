@@ -221,13 +221,13 @@ impl Client {
         GetBalanceBuilder::new(self, seed)
     }
 
-    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
-    /// confirmed for a while.
-    pub async fn reattach(&self, message_id: &MessageId) -> Result<Message> {
-        let message = self.get_message().data(message_id).await?;
-        self.post_messages(&message).await?;
-        Ok(message)
-    }
+    // /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+    // /// confirmed for a while.
+    // pub async fn reattach(&self, message_id: &MessageId) -> Result<Message> {
+    //     let message = self.get_message().data(message_id).await?;
+    //     self.post_messages(&message).await?;
+    //     Ok(message)
+    // }
 
     /// Check if a transaction-message is confirmed.
     /// Should GET `/transaction-messages/is-confirmed`

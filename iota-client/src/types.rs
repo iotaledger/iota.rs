@@ -2,11 +2,12 @@
 use crate::{Error, Result};
 
 use bee_message::prelude::{
-    Address, Indexation, Input, Message, MessageId, Output, Payload, SignatureUnlock, Transaction,
-    TransactionEssence, UnlockBlock,
+    Address, Ed25519Address, Ed25519Signature, Indexation, Input, Message, MessageId, Output,
+    Payload, ReferenceUnlock, SignatureLockedSingleOutput, SignatureUnlock, Transaction,
+    TransactionEssence, TransactionId, UTXOInput, UnlockBlock,
 };
 
-use std::convert::{From, TryFrom};
+use std::convert::{From, TryFrom, TryInto};
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -232,8 +233,8 @@ impl Transfers {
     }
 }
 
-#[derive(Debug, Serialize)]
-pub struct MessageJson {
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct MessageJson {
     version: u8,
     #[serde(rename = "parent1MessageId")]
     parent1: String,
@@ -242,6 +243,8 @@ pub struct MessageJson {
     payload: PayloadJson,
     nonce: u64,
 }
+
+impl ResponseType for MessageJson {}
 
 impl From<&Message> for MessageJson {
     fn from(i: &Message) -> Self {
@@ -255,8 +258,26 @@ impl From<&Message> for MessageJson {
     }
 }
 
-#[derive(Debug, Serialize)]
+impl TryFrom<MessageJson> for Message {
+    type Error = crate::Error;
+
+    fn try_from(value: MessageJson) -> Result<Self> {
+        let mut parent1 = [0u8; 32];
+        hex::decode_to_slice(value.parent1, &mut parent1)?;
+        let mut parent2 = [0u8; 32];
+        hex::decode_to_slice(value.parent2, &mut parent2)?;
+        Ok(Message::builder()
+            .parent1(MessageId::new(parent1))
+            .parent2(MessageId::new(parent2))
+            .payload(value.payload.try_into()?)
+            .build()?)
+        // .nonce(value.nonce) TODO: Missing nounce method
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct PayloadJson {
+    #[serde(rename = "type")]
     type_: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
     index: Option<String>,
@@ -291,7 +312,33 @@ impl From<&Payload> for PayloadJson {
     }
 }
 
-#[derive(Debug, Serialize)]
+impl TryFrom<PayloadJson> for Payload {
+    type Error = crate::Error;
+
+    fn try_from(value: PayloadJson) -> Result<Self> {
+        match value.type_ {
+            0 => {
+                let unlock_blocks = value
+                    .unlock_blocks
+                    .expect("Must have unlcok blocks.")
+                    .into_vec()
+                    .into_iter()
+                    .map(|unlock| unlock.try_into())
+                    .filter_map(|i| i.ok())
+                    .collect();
+                let transaction = Transaction {
+                    essence: value.essence.expect("Must have essence.").try_into()?,
+                    unlock_blocks,
+                };
+
+                Ok(Payload::Transaction(Box::new(transaction)))
+            }
+            _ => todo!(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct TransactionEssenceJson {
     #[serde(rename = "type")]
     type_: u8,
@@ -311,7 +358,39 @@ impl From<&TransactionEssence> for TransactionEssenceJson {
     }
 }
 
-#[derive(Debug, Serialize)]
+impl TryFrom<TransactionEssenceJson> for TransactionEssence {
+    type Error = crate::Error;
+
+    fn try_from(value: TransactionEssenceJson) -> Result<Self> {
+        let mut builder = TransactionEssence::builder();
+
+        let inputs: Vec<Input> = value
+            .inputs
+            .into_vec()
+            .into_iter()
+            .map(|input| input.try_into())
+            .filter_map(|i| i.ok())
+            .collect();
+        for input in inputs {
+            builder = builder.add_input(input);
+        }
+
+        let outputs: Vec<Output> = value
+            .outputs
+            .into_vec()
+            .into_iter()
+            .map(|output| output.try_into())
+            .filter_map(|i| i.ok())
+            .collect();
+        for output in outputs {
+            builder = builder.add_output(output);
+        }
+
+        Ok(builder.finish()?)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct InputJson {
     #[serde(rename = "type")]
     type_: u8,
@@ -333,7 +412,18 @@ impl From<&Input> for InputJson {
     }
 }
 
-#[derive(Debug, Serialize)]
+impl TryFrom<InputJson> for Input {
+    type Error = crate::Error;
+
+    fn try_from(value: InputJson) -> Result<Self> {
+        let mut id = [0u8; 32];
+        hex::decode_to_slice(value.transaction_id, &mut id)?;
+        let input = UTXOInput::new(TransactionId::from(id), value.transaction_output_index)?;
+        Ok(input.into())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct OutputJson {
     #[serde(rename = "type")]
     type_: u8,
@@ -353,7 +443,22 @@ impl From<&Output> for OutputJson {
     }
 }
 
-#[derive(Debug, Serialize)]
+impl TryFrom<OutputJson> for Output {
+    type Error = crate::Error;
+
+    fn try_from(value: OutputJson) -> Result<Self> {
+        let output = SignatureLockedSingleOutput::new(
+            value.address.try_into()?,
+            value
+                .amount
+                .try_into()
+                .expect("Output amount cannot be zero."),
+        );
+        Ok(output.into())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct AddressJson {
     #[serde(rename = "type")]
     type_: u8,
@@ -372,7 +477,23 @@ impl From<&Address> for AddressJson {
     }
 }
 
-#[derive(Debug, Serialize)]
+impl TryFrom<AddressJson> for Address {
+    type Error = crate::Error;
+
+    fn try_from(value: AddressJson) -> Result<Self> {
+        match value.type_ {
+            1 => {
+                let mut address = [0u8; 32];
+                hex::decode_to_slice(value.address, &mut address)?;
+                let address = Ed25519Address::from(address);
+                Ok(address.into())
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct UnlockBlockJson {
     #[serde(rename = "type")]
     type_: u8,
@@ -399,10 +520,35 @@ impl From<&UnlockBlock> for UnlockBlockJson {
     }
 }
 
-#[derive(Debug, Serialize)]
+impl TryFrom<UnlockBlockJson> for UnlockBlock {
+    type Error = crate::Error;
+
+    fn try_from(value: UnlockBlockJson) -> Result<Self> {
+        match value.type_ {
+            0 => {
+                let sig: SignatureUnlock = value
+                    .signature
+                    .expect("Must contain signature.")
+                    .try_into()?;
+                Ok(sig.into())
+            }
+            1 => {
+                let reference: ReferenceUnlock = value
+                    .reference
+                    .expect("Must contain reference.")
+                    .try_into()?;
+                Ok(reference.into())
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct SignatureJson {
     #[serde(rename = "type")]
     type_: u8,
+    #[serde(rename = "publicKey")]
     publickey: String,
     signature: String,
 }
@@ -417,5 +563,16 @@ impl From<&SignatureUnlock> for SignatureJson {
             },
             _ => panic!("This library doesn't support WOTS."),
         }
+    }
+}
+
+impl TryFrom<SignatureJson> for SignatureUnlock {
+    type Error = crate::Error;
+
+    fn try_from(value: SignatureJson) -> Result<Self> {
+        let mut public_key = [0u8; 32];
+        hex::decode_to_slice(value.publickey, &mut public_key)?;
+        let signature = value.signature.as_bytes().to_vec().into_boxed_slice();
+        Ok(Ed25519Signature::new(public_key, signature).into())
     }
 }

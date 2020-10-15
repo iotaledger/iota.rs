@@ -1,6 +1,10 @@
-use crate::{ChildrenMessageIds, Client, Error, MessageIds, MessageMetadata, Response, Result};
+use crate::{
+    ChildrenMessageIds, Client, Error, MessageIds, MessageJson, MessageMetadata, Response, Result,
+};
 
 use bee_message::{Message, MessageId};
+
+use std::convert::TryInto;
 
 /// Builder of GET /api/v1/messages/{messageId} endpoint
 pub struct GetMessageBuilder<'a> {
@@ -47,8 +51,8 @@ impl<'a> GetMessageBuilder<'a> {
 
         match resp.status().as_u16() {
             200 => {
-                let meta = resp.json::<Response<Message>>().await?;
-                Ok(meta.data)
+                let meta = resp.json::<Response<MessageJson>>().await?;
+                Ok(meta.data.try_into()?)
             }
             status => Err(Error::ResponseError(status)),
         }

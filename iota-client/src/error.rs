@@ -28,6 +28,8 @@ pub enum Error {
     ReqwestError(reqwest::Error),
     /// Hex string convert error
     FromHexError(hex::FromHexError),
+    /// Message types error
+    MessageError(bee_message::Error),
 }
 
 impl fmt::Display for Error {
@@ -47,6 +49,7 @@ impl fmt::Display for Error {
             ),
             Error::FromHexError(e) => e.fmt(f),
             Error::ResponseError(s) => write!(f, "Response error with status code {}", s),
+            Error::MessageError(e) => e.fmt(f),
         }
     }
 }
@@ -62,5 +65,11 @@ impl From<reqwest::Error> for Error {
 impl From<hex::FromHexError> for Error {
     fn from(error: hex::FromHexError) -> Self {
         Error::FromHexError(error)
+    }
+}
+
+impl From<bee_message::Error> for Error {
+    fn from(error: bee_message::Error) -> Self {
+        Error::MessageError(error)
     }
 }
