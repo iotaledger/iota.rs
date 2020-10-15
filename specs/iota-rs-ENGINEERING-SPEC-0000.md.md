@@ -44,98 +44,18 @@ This document specifies a user friendly API to be used in the client libraries. 
 
 The data structure to initialize the instance of the Higher level client library. This is always called first when starting a new interaction with the library. Note: This is the common approach to do initialization in Rust. Different languages might use different methods such as just calling an initialization function directly.
 
-
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>network</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Network">Network</a>
-   </td>
-   <td>Pass an enumeration with elements of <strong> [ mainnet | comnet | devnet ] </strong>to determine the network. If none of the below are given node_pool_urls will default to nood pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: \
-
-<p>
-```
-<p>
-export const NODELIST_ENDPOINTS = [
-<p>
-	'https://nodes.iota.works/api/ssl/live',
-<p>
-	'https://iota-node-api.now.sh/api/ssl/live',
-<p>
-	'https://iota.dance/api/ssl/live',
-<p>
-];
-<p>
-```
-   </td>
-  </tr>
-  <tr>
-   <td><strong>node </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>String
-   </td>
-   <td>The URL of a node to connect to; format: `<a href="https://node:port">https://node:port</a>`
-   </td>
-  </tr>
-  <tr>
-   <td><strong>nodes </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>[String]
-   </td>
-   <td>A list of nodes to connect to; nodes are added with the `<a href="https://node:port">https://node:port</a>` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>node_pool_urls </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>String
-   </td>
-   <td>A list of URLs containing address pools of multiple nodes in JSON format; Example of such a endpoint: <a href="https://nodes.iota.works/api/ssl/live">https://nodes.iota.works/api/ssl/live</a> - will pick a random pool from the list and will automatically retry if the URL is not available with another one. Consider the nodes found in this list as being entered in the nodes parameter.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>quorum_size </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>If multiple nodes are given the quorum size defines how many of these nodes will be queried at the same time to check for quorum. If this parameter is not given it defaults to either the length of the `nodes` parameter list, or if node_pool_urls is given a sensible default like 3.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>quorum_threshold </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3).
-   </td>
-  </tr>
-</table>
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **network** | ✔ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to nood pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **node** | ✘ | String | The URL of a node to connect to; format: `https://node:port` |
+| **nodes** | ✘ | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **node_pool_urls** | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **quorum_size** | ✘ | usize | If multiple nodes are given the quorum size defines how many of these nodes will be queried at the same time to check for quorum. If this parameter is not given it defaults to either the length of the `nodes` parameter list, or if node_pool_urls is given a sensible default like 3. |
+| **quorum_threshold** | ✘ | usize | The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3). |
+| **local_pow** | ✘ | bool | If not defined it checks for remote PoW capability and uses that, if no remote PoW it does local PoW. Either not filled in, True or False. |
+| **state_adapter** | ✘ | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way (SQLite?). This feature is not strictly needed but would be great to have. |
 
 ### Return
 
