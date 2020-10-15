@@ -13,6 +13,8 @@ Specification of High Level Abstraction API
 * [Builder](#Builder)
 * [General API](#General-API)
   * [`send`](#send)
+  * [`find_messages`](#find_messages)
+  * [`find_outputs`](#find_outputs)
   * [`get_unspent_address`](#get_unspent_address)
   * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
@@ -97,6 +99,35 @@ There could be two different scenarios if which this method is used:
 * Get tips using [`get_tips()`](#get_tips);
 * Perform proof-of-work locally; 
 * Send the message using [`post_messages()`](#post_messages);
+
+## `find_messages()`
+
+Find all messages by provided message IDs.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [[Hash]] | The identifier of message. |
+
+### Returns
+
+A vector of [Message] Object.
+
+## `find_messages()`
+
+Find all messages by provided message IDs.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **output_id** | ✔ | [[Hash]] | The identifier of output. |
+| **addresses** | ✔ | [[Address]] | The identifier of address. |
+
+### Returns
+
+A vector of [Output] Object.
 
 ## `get_unspent_address()`
 
@@ -320,11 +351,11 @@ Submit a message as a JSON object to the node. If certain fields are missing the
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **messages** | ✘ | [[Message]] | The list of messages. |
+| **message** | ✔ | [[Message]] | The message object. |
 
 ### Returns
 
-A vector of Message [Hash] object.
+A message [Hash] object.
 
 ## `get_output()`
 
@@ -336,7 +367,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **outputId** | ✘ | [Hash] | Identifier of the output. An output is identified by the concatenation of transaction_id+output_index. |
+| **outputId** | ✔ | [Hash] | Identifier of the output. An output is identified by the concatenation of transaction_id+output_index. |
 
 ### Returns
 
@@ -350,7 +381,7 @@ An [Output] object.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **address** | ✘ | [Address] | The address to search for. |
+| **address** | ✔ | [Address] | The address to search for. |
 
 ### Returns
 
@@ -369,7 +400,7 @@ Get the milestone by the given index.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **index** | ✘ | u32 | Index of the milestone. |
+| **index** | ✔ | u32 | Index of the milestone. |
 
 ### Returns
 
