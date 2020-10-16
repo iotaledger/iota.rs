@@ -21,6 +21,7 @@ Specification of High Level Abstraction API
   * [`get_address_balances`](#get_address_balances)
   * [`reattach`](#reattach)
 * [Full Node API](#Full-Node-API)
+  * [`get_health`](#get_health)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
   * [`get_message`](#get_message)
@@ -108,7 +109,7 @@ Find all messages by provided message IDs.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **message_id** | ✔ | [[Hash]] | The identifier of message. |
+| **message_id** | ✔ | [[MessageId]] | The identifier of message. |
 
 ### Returns
 
@@ -122,7 +123,7 @@ Find all messages by provided message IDs.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✔ | [[Hash]] | The identifier of output. |
+| **output_id** | ✔ | [[MessageId]] | The identifier of output. |
 | **addresses** | ✔ | [[Address]] | The identifier of address. |
 
 ### Returns
@@ -168,7 +169,7 @@ Return a list of addresses from the seed regardless of their validity.
 
 ### Return
 
-A list of Address [Hash](#Hash)es
+A list of Address [MessageId](#Hash)es
 
 ### Implementation Details
 
@@ -211,7 +212,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **addresses** | ✔ | [[Hash]] | List of addresses with checksum. |
+| **addresses** | ✔ | [[MessageId]] | List of addresses with checksum. |
 
 ### Return
 
@@ -235,7 +236,7 @@ confirmed for a while.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hashes** | ✔ | [[Hash]] | The identifier of message. |
+| **hashes** | ✔ | [[MessageId]] | The identifier of message. |
 
 ### Returns:
 
@@ -284,21 +285,17 @@ None
 A Response Object similar to this:
 
 ```rust
-struct getInfoResponse {
-       name: String,
-       version: String,
-       isHealthy: bool,
-       operatingNetwork: String,
-       peers: usize,
-       coordinatorAddress: String,
-       isSynced: bool,
-       latestMilestone: Hash,
-       latestMilestoneIndex: usize,
-       latestSolidMilestone: Hash,
-       latestSolidMilestoneIndex: usize,
-       pruningIndex: usize,
-       time: usize,
-       features": Vec<String>,
+pub struct NodeInfo {
+    pub name: String,
+    pub version: String,
+    pub is_healthy: bool,
+    pub coordinator_public_key: String,
+    pub latest_milestone_message_id: String,
+    pub latest_milestone_index: usize,
+    pub solid_milestone_message_id: String,
+    pub solid_milestone_index: usize,
+    pub pruning_index: usize,
+    pub features: Vec<String>,
 }
 ```
 
@@ -306,7 +303,7 @@ struct getInfoResponse {
 
 (`GET /tips`)
 
-Returns two non-lazy tips. There could be however the case that the node can provide only one tip, or in the worst-case no tip. The array therefore needs to be validated.
+Returns two non-lazy tips. In case the node can only provide one tip, tip1 and tip2 are identical.
 
 ### Parameters
 
@@ -314,48 +311,50 @@ None
 
 ### Returns
 
-A tuple with two hashes:
+A tuple with two [MessageId]:
 
 ```rust
-(Hash, Hash)
+(MessageId, MessageId)
 ```
 
 ## `get_message()`
 
-(`GET /api/v1/message/{messageId}}`)
+(`GET /api/v1/messages`)
 
-Find all messages filtered by provided parameters.
+Endpoint collection all about GET messages.
 
 ### Parameters
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **message_id** | ✘ | [Hash] | The identifier of message. |
+| **index** | `metadata()`, `data()`, `raw()`, `children()` | String | Indexation key of the message. |
+| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MEssageId] | The identifier of message. |
 
 ### Returns
 
-Depend on the final calling method, users could get different outputs they need:
+Depend on the final calling method, users could get different results they need:
 
+- `index()`: Retrun messages with matching the index key.
 - `metadata()`: Return metadata of the message.
 - `data()`: Return a [Message] object.
-- `raw()`: Return the given message raw data.
-- `children()`: Returns the list of message IDs that reference a message by its identifier.
+- `raw()`: Return the raw data of given message.
+- `children()`: Return the list of [messageId]s that reference a message by its identifier.
 
 ## `post_message()`
 
 (`POST /message`)
 
-Submit a message as a JSON object to the node. If certain fields are missing the node tries to take care of it (e.g. missing nonce, missing branch/trunk, …) and builds the message. On success, the node stores the message and broadcasts it to its peers. Furthermore it returns the hash of the message.
+Submit a message. The node takes care of missing fields and tries to build the message. On success, the message will be stored in the Tangle. This endpoint will return the identifier of the message.
 
 ### Parameters
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **message** | ✔ | [[Message]] | The message object. |
+| **message** | ✔ | [Message] | The message object. |
 
 ### Returns
 
-A message [Hash] object.
+The [MessageId] of the message object.
 
 ## `get_output()`
 
@@ -367,11 +366,12 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **outputId** | ✔ | [Hash] | Identifier of the output. An output is identified by the concatenation of transaction_id+output_index. |
+| **transactionId** | ✔ | [TransactionId] | Identifier of the transaction. |
+| **output_index** | ✔ | u16 | Output index of the outout |
 
 ### Returns
 
-An [Output] object.
+An [OutputMetadata] that contains various information about the output.
 
 ## `get_address()`
 
@@ -387,8 +387,8 @@ An [Output] object.
 
 Depend on the final calling method, users could get different outputs they need:
 
-- `balance()`: Return metadata of the address.
-- `outputs()`: Return output IDs of the address.
+- `balance()`: Return confirmed balance of the address.
+- `outputs()`: Return transactio IDs with corresponding output index of the address it has.
 
 ## `get_milestone()`
 
@@ -412,7 +412,7 @@ Here are the objects used in the API above. They aim to provide a secure way to 
 
 
 ## `Network`
-[`Network`]: #Network
+[Network]: #Network
 
 Network is an enumeration with elements of **[mainnet|comnet|devnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
 
@@ -424,15 +424,17 @@ enum Network {
 }
 ```
 
-## `Hash`
-[`Hash`]: #Hash
+## `MessageId`
+[MessageId]: #MessageId
 
-| Field | Requried | Type | Definition |
-| - | - | - | - |
-| **hash** | ✔ | `[u8; 32]` | A valid IOTA hash which can be treated as many objects like Address, Message hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters. |
+MessageId is a 32 bytes array which can represent as hex string.
+
+```rust
+struct MessageId([u8; MESSAGE_ID_LENGTH]);
+```
 
 ## `Seed`
-[`Seed`]: #Seed
+[Seed]: #Seed
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
@@ -441,43 +443,127 @@ enum Network {
 ## `Message`
 [`Message`]: #Message
 
-The message object returned by various functions; based on the RFC for the Message object.
+The message object returned by various functions; based on the RFC for the Message object. Here's the brief overview of each components in Message type would look like:
 
-| Field | Requried | Type | Definition |
-| - | - | - | - |
-| **version** | ✔ | usize | Message version. Defaults to `1`. |
-| **trunk** | ✔ | [Hash] | Message hash of the first message this message refers to. |
-| **branch** | ✔ | [Hash] | Message hash of the second message this message refers to. |
-| **payload_length** | ✔ | usize | Length of the payload. |
-| **payload** | ✔ | [[Payload]] | List of the payload. |
-| **timestamp** | ✔ | usize | Transaction timestamp (exposed as a custom type with additional methods). |
-| **nonce** | ✔ | [Hash] | Transaction nonce. |
-| **confirmed** | ✔ | bool | Determines if the transaction is confirmed. |
+```rust
+struct Message {
+    parent1: MessageId,
+    parent2: MessageId,
+    payload: Payload,
+    nonce: u64,
+}
 
-## `Payload`
-[`Payload`]: #Payload
+enum Payload {
+    Transaction(Box<Transaction>),
+    Milestone(Box<Milestone>),
+    Indexation(Box<Indexation>),
+}
 
-The payload object returned by various functions; based on the RFC for the payload object.
+struct Transaction {
+    pub essence: TransactionEssence,
+    pub unlock_blocks: Vec<UnlockBlock>,
+}
 
-## `Output`
-[`Output`]: #Output
+struct Milestone {
+    index: u32,
+    timestamp: u64,
+    merkle_proof: Box<[u8]>,
+    signatures: Vec<Box<[u8]>>,
+}
 
-The contexts of an output address
+struct Indexation {
+    index: String,
+    data: Box<[u8]>,
+}
 
-| Field | Requried | Type | Definition |
-| - | - | - | - |
-| **producer** | ✔ | [Hash] | The hash of the message which contains this output. |
-| **address** | ✔ | [Address] | Corresponding address |
-| **balance** | ✔ | usize | The balance in this output. |
-| **spent** | ✔ | bool | The output has been spent if true. |
+struct TransactionEssence {
+    pub(crate) inputs: Box<[Input]>,
+    pub(crate) outputs: Box<[Output]>,
+    pub(crate) payload: Option<Payload>,
+}
+
+enum Input {
+    UTXO(UTXOInput),
+}
+
+struct UTXOInput {
+    id: TransactionId,
+    index: u16,
+}
+
+enum Output {
+    SignatureLockedSingle(SignatureLockedSingleOutput),
+}
+
+struct SignatureLockedSingleOutput {
+    address: Address,
+    amount: NonZeroU64,
+}
+
+enum UnlockBlock {
+    Signature(SignatureUnlock),
+    Reference(ReferenceUnlock),
+}
+
+enum SignatureUnlock {
+    Wots(WotsSignature),
+    Ed25519(Ed25519Signature),
+}
+
+struct Ed25519Signature {
+    public_key: [u8; 32],
+    signature: Box<[u8]>,
+}
+
+struct WotsSignature(Vec<u8>);
+
+struct ReferenceUnlock(u16);
+```
+
+## `OutputMestadata`
+[`OutputMestadata`]: #OutputMestadata
+
+The mestadata of an output:
+
+```rust
+pub struct OutputMetadata {
+    /// Message ID of the output
+    pub message_id: String,
+    /// Transaction ID of the output
+    pub transaction_id: String,
+    /// Output index.
+    pub output_index: u16,
+    /// Spend status of the output
+    pub is_spent: bool,
+    /// Corresponding address
+    pub address: Address,
+    /// Balance amount
+    pub amount: u64,
+}
+```
 
 ## `BIP32Path`
-[`BIP32Path`]: #BIP32Path
+[BIP32Path]: #BIP32Path
 
-A valid BIP32 path. The field is ommited.
+A valid BIP32 path. The field is ommited. Users can create from a String like `m/0'/0'/1'` for example.
 
 ## `Address`
-[`Address`]: #Address
+[Address]: #Address
 
-An address is a enum which could be either Ed25519 format or the legay WOTS.
+An address is a enum which could be either Ed25519 format or the legay WOTS. Users can create from a correct fixed length bytes.
 
+## `Milestone`
+[Milestone]: #Milestone
+
+A milestone metadata.
+
+```rust
+struct Milestone {
+    /// Milestone index
+    pub milestone_index: u64,
+    /// Milestone ID
+    pub message_ids: String,
+    /// Timestamp
+    pub timestamp: u64,
+}
+```
