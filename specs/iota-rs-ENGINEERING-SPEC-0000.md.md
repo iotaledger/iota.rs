@@ -59,7 +59,7 @@ The data structure to initialize the instance of the Higher level client library
 | **quorum_size** | ✘ | usize | If multiple nodes are given the quorum size defines how many of these nodes will be queried at the same time to check for quorum. If this parameter is not given it defaults to either the length of the `nodes` parameter list, or if node_pool_urls is given a sensible default like 3. |
 | **quorum_threshold** | ✘ | usize | The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3). |
 | **local_pow** | ✘ | bool | If not defined it checks for remote PoW capability and uses that, if no remote PoW it does local PoW. Either not filled in, True or False. |
-| **state_adapter** | ✘ | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way (SQLite?). This feature is not strictly needed but would be great to have. |
+| **state_adapter** | ✘ | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
 
 ### Return
 
@@ -72,7 +72,7 @@ Here is the high level abstraction API collection with sensible default values f
 
 ## `send()`
 
-A generic send function for easily sending value transaction messages. 
+A generic send function for easily sending a value transaction message. 
 
 ### Parameters
 
@@ -117,18 +117,18 @@ A vector of [Message] Object.
 
 ## `find_messages()`
 
-Find all messages by provided message IDs.
+Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
 
 ### Parameters
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✔ | [[MessageId]] | The identifier of output. |
+| **output_id** | ✔ | [([TransactionId], u16)] | The identifier of transaction and the output index. |
 | **addresses** | ✔ | [[Address]] | The identifier of address. |
 
 ### Returns
 
-A vector of [Output] Object.
+A vector of [OutputMetadata] Object.
 
 ## `get_unspent_address()`
 
@@ -144,7 +144,7 @@ Return a valid unuspent address.
 
 ### Return
 
-Return a tuple with type of `([Address], usize)` as the address and corresponding index.
+Return a tuple with type of `([Address], usize)` as the address and corresponding index in the account.
 
 ### Implementation Details
 
@@ -169,7 +169,7 @@ Return a list of addresses from the seed regardless of their validity.
 
 ### Return
 
-A list of Address [MessageId](#Hash)es
+A list of [Address]es
 
 ### Implementation Details
 
@@ -229,14 +229,14 @@ Following are the steps for implementing this method:
 
 ## `reattach()`
 
-Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+Reattach a message for provided message id. Message can be reattached only if they are valid and haven't been
 confirmed for a while. 
 
 ### Parameters
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **hashes** | ✔ | [[MessageId]] | The identifier of message. |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
 
 ### Returns:
 
