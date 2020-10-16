@@ -153,7 +153,7 @@ impl Client {
         url.set_path(&format!(
             "api/v1/outputs/{}{}",
             transaction.to_string(),
-            output_index
+            hex::encode(output_index.to_le_bytes())
         ));
         let resp = reqwest::get(url).await?;
 
