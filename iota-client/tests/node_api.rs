@@ -1,5 +1,6 @@
-use iota_client::{hex_to_message_id, hex_to_address, hex_to_transaction_id};
+use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
 
+#[ignore]
 #[tokio::test]
 async fn test_get_info() {
     iota_client::Client::get_info("http://0.0.0.0:14265")
@@ -7,6 +8,7 @@ async fn test_get_info() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_health() {
     iota_client::Client::get_health("http://0.0.0.0:14265")
@@ -14,6 +16,7 @@ async fn test_get_health() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_tips() {
     iota_client::Client::new()
@@ -26,6 +29,7 @@ async fn test_get_tips() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_by_index() {
     iota_client::Client::new()
@@ -39,6 +43,7 @@ async fn test_get_message_by_index() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_data() {
     iota_client::Client::new()
@@ -55,6 +60,7 @@ async fn test_get_message_data() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_metadata() {
     iota_client::Client::new()
@@ -71,6 +77,7 @@ async fn test_get_message_metadata() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_raw() {
     iota_client::Client::new()
@@ -87,6 +94,7 @@ async fn test_get_message_raw() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_children() {
     iota_client::Client::new()
@@ -103,9 +111,9 @@ async fn test_get_message_children() {
         .unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_address_balance() {
-    
     let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
@@ -118,13 +126,13 @@ async fn test_get_address_balance() {
         )
         .await
         .unwrap();
-    
-        println!("{:#?}", r);
+
+    println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_address_outputs() {
-    
     let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
@@ -137,29 +145,32 @@ async fn test_get_address_outputs() {
         )
         .await
         .unwrap();
-    
-        println!("{:#?}", r);
+
+    println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_output() {
-    
     let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
         .build()
         .unwrap()
         .get_output(
-            &hex_to_transaction_id("0000000000000000000000000000000000000000000000000000000000000000")
-                .unwrap(),
-            0
+            &hex_to_transaction_id(
+                "0000000000000000000000000000000000000000000000000000000000000000",
+            )
+            .unwrap(),
+            0,
         )
         .await
         .unwrap();
-    
-        println!("{:#?}", r);
+
+    println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_milestone() {
     iota_client::Client::new()

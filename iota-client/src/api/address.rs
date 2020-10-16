@@ -8,6 +8,8 @@ use bee_signing_ext::{
 
 use std::ops::Range;
 
+const HARDEND: u32 = 1 << 31;
+
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     _client: &'a Client,
@@ -58,9 +60,11 @@ impl<'a> GetAddressesBuilder<'a> {
 
         let mut addresses = Vec::new();
         for i in range {
-            path.push(i as u32);
+            path.push(i as u32 + HARDEND);
             let public_key = Ed25519PrivateKey::generate_from_seed(seed, &path)
-                .expect("Invalid Seed & BIP32Path")
+                .expect(
+                    "Invalid Seed & BIP32Path. Probably because the index of path is not hardened.",
+                )
                 .generate_public_key()
                 .to_bytes();
             addresses.push(Address::Ed25519(Ed25519Address::new(public_key)));

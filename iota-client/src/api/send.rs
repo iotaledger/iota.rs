@@ -148,6 +148,6 @@ impl<'a> SendBuilder<'a> {
             .build()
             .map_err(|_| Error::TransactionError)?;
 
-        self.client.post_messages(&message).await
+        self.client.post_message(&message).await
     }
 }

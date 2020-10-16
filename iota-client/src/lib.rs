@@ -8,7 +8,6 @@ extern crate serde;
 
 pub mod api;
 pub mod builder;
-#[macro_use]
 pub mod client;
 pub mod error;
 pub mod node;

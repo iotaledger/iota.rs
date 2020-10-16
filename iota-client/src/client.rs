@@ -110,10 +110,11 @@ impl Client {
     }
 
     /// POST /api/v1/messages endpoint
-    pub async fn post_messages(&self, message: &Message) -> Result<MessageId> {
+    pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
         let message: MessageJson = message.into();
+        println!("{:#?}", serde_json::to_string(&message));
         let resp = self
             .client
             .post(url)
@@ -149,7 +150,11 @@ impl Client {
         output_index: u16,
     ) -> Result<OutputMetadata> {
         let mut url = self.get_node()?;
-        url.set_path(&format!("api/v1/outputs/{}{}", transaction.to_string(), output_index));
+        url.set_path(&format!(
+            "api/v1/outputs/{}{}",
+            transaction.to_string(),
+            output_index
+        ));
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {

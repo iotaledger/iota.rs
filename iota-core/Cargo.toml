@@ -11,7 +11,8 @@ name = "iota"
 
 [dependencies]
 bee-message = { git = "https://github.com/Alex6323/bee-p.git" }
-bee-ternary = { version = "0.3.1-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
-bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client" }
+
+[dev-dependencies]
+tokio = { version = "0.2.22", features = ["macros"] }
