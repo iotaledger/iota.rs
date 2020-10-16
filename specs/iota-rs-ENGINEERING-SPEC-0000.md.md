@@ -327,7 +327,7 @@ Endpoint collection all about GET messages.
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **index** | `metadata()`, `data()`, `raw()`, `children()` | String | Indexation key of the message. |
+| **index** | `index()` | String | Indexation key of the message. |
 | **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MEssageId] | The identifier of message. |
 
 ### Returns
