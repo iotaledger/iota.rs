@@ -103,7 +103,7 @@ There could be two different scenarios if which this method is used:
 
 ## `find_messages()`
 
-Find all messages by provided message IDs.
+Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
 
 ### Parameters
 
@@ -115,9 +115,9 @@ Find all messages by provided message IDs.
 
 A vector of [Message] Object.
 
-## `find_messages()`
+## `find_outputs()`
 
-Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
+Find all outputs based on the requests criteria. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
 
 ### Parameters
 
