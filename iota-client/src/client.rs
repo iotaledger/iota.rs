@@ -167,7 +167,7 @@ impl Client {
                     is_spent: raw.is_spent,
                     amount: raw.output.amount,
                     address: {
-                        if raw.output.type_ == 1 && raw.output.address.type_ == 1 {
+                        if raw.output.type_ == 0 && raw.output.address.type_ == 1 {
                             let mut address = [0u8; ADDRESS_LENGTH];
                             hex::decode_to_slice(raw.output.address.address, &mut address)?;
                             Address::from(Ed25519Address::from(address))
