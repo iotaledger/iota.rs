@@ -165,11 +165,11 @@ impl Client {
                     transaction_id: raw.transaction_id,
                     output_index: raw.output_index,
                     is_spent: raw.is_spent,
-                    amount: raw.amount,
+                    amount: raw.output.amount,
                     address: {
                         if raw.output.type_ == 0 && raw.output.address.type_ == 0 {
                             let mut address = [0u8; ADDRESS_LENGTH];
-                            hex::decode_to_slice(raw.output.address.ed25519, &mut address)?;
+                            hex::decode_to_slice(raw.output.address.address, &mut address)?;
                             Address::from(Ed25519Address::from(address))
                         } else {
                             return Err(Error::InvalidParameter("address type".to_string()));

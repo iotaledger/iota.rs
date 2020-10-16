@@ -177,21 +177,23 @@ pub(crate) struct RawOutput {
     #[serde(rename = "isSpent")]
     pub(crate) is_spent: bool,
     pub(crate) output: SLS,
-    pub(crate) amount: u64,
 }
 
 impl ResponseType for RawOutput {}
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct SLS {
+    #[serde(rename = "type")]
     pub(crate) type_: u8,
-    pub(crate) address: EdAddress,
+    pub(crate) address: SLSAddress,
+    pub(crate) amount: u64,
 }
 
 #[derive(Debug, Deserialize)]
-pub(crate) struct EdAddress {
+pub(crate) struct SLSAddress {
+    #[serde(rename = "type")]
     pub(crate) type_: u8,
-    pub(crate) ed25519: String,
+    pub(crate) address: String,
 }
 
 /// Output data
