@@ -370,6 +370,17 @@ pub struct GetNodeInfoResponse {
     /// IRI version
     #[serde(rename = "appVersion")]
     pub app_version: String,
+    /// Address of coordinator
+    #[serde(rename = "coordinatorAddress")]
+    pub coordinator_address: String,
+    /// Features owned by node
+    pub features: Vec<String>,
+    /// Node Synchronization with network
+    #[serde(rename = "isSynced")]
+    pub is_sync: bool,
+    /// Is Node synced, has active neighbors and fresh latest milestone
+    #[serde(rename = "isHealthy")]
+    pub is_healthy: bool,
     /// Number of threads IRI is using
     #[serde(rename = "jreAvailableProcessors")]
     pub jre_available_processors: Option<u16>,
@@ -391,6 +402,9 @@ pub struct GetNodeInfoResponse {
     /// Latest milestone index on IRI node
     #[serde(rename = "latestMilestoneIndex")]
     pub latest_milestone_index: u32,
+    /// Latest solid subtangle milestone index on IRI node
+    #[serde(rename = "lastSnapshottedMilestoneIndex")]
+    pub last_snapshotted_milestone_index: u32,
     /// Latest solid subtangle milestone on IRI node
     #[serde(rename = "latestSolidSubtangleMilestone")]
     pub latest_solid_subtangle_milestone: String,

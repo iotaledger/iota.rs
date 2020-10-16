@@ -64,7 +64,7 @@ impl<'a> SendTrytesBuilder<'a> {
         let mut trytes = Vec::new();
         for tx in self.trytes {
             let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
-            tx.into_trits_allocated(trits.as_slice_mut());
+            tx.as_trits_allocated(trits.as_slice_mut());
             trits.subslice_mut(7290..7533).copy_from(trunk.as_trits());
             trits
                 .subslice_mut(7533..7776)

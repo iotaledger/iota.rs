@@ -7,7 +7,7 @@ description = "Client to use Iota APIs"
 repository = "https://github.com/iotaledger/iota.rs"
 homepage = "https://github.com/iotaledger/iota.rs"
 documentation = "https://docs.rs/iota-client"
-license = "MIT"
+license = "Apache-2.0"
 
 [lib]
 name = "iota_client"
@@ -17,7 +17,7 @@ bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-ternary = { version = "0.3.1-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-reqwest = { version = "0.10.6", features = ["json", "rustls-tls"], default-features = false }
+reqwest = { version = "0.10.6", features = ["json", "rustls-tls", "native-tls-vendored"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = "0.4.12"
