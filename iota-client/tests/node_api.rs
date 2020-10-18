@@ -1,3 +1,4 @@
+use bee_message::prelude::*;
 use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
 
 #[ignore]
@@ -19,7 +20,7 @@ async fn test_get_health() {
 #[ignore]
 #[tokio::test]
 async fn test_get_tips() {
-    iota_client::Client::new()
+    let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
         .build()
@@ -27,37 +28,68 @@ async fn test_get_tips() {
         .get_tips()
         .await
         .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[ignore]
+#[tokio::test]
+async fn test_post_message_with_indexation() {
+    let index = Indexation::new(String::from("Hello"), Box::new([]));
+
+    let client = iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let tips = client.get_tips().await.unwrap();
+
+    let message = Message::builder()
+        .parent1(tips.0)
+        .parent2(tips.1)
+        .payload(Payload::Indexation(Box::new(index)))
+        .build()
+        .unwrap();
+
+    let r = client.post_message(&message).await.unwrap();
+
+    println!("{}", r);
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_get_message_by_index() {
-    iota_client::Client::new()
+    let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
         .build()
         .unwrap()
         .get_message()
-        .index("TEST")
+        .index("HORNET Spammer")
         .await
         .unwrap();
+
+    println!("{:#?}", r);
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_get_message_data() {
-    iota_client::Client::new()
+    let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
         .build()
         .unwrap()
         .get_message()
         .data(
-            &hex_to_message_id("63ec182d5ff9e228af83f8a00f0437ef6b061d6a64282f7dd623f94b621e0636")
+            &hex_to_message_id("2d7ef1e96f034ae002c6fba062503a842ab9d622b38040f8362a857f4f99c3c9")
                 .unwrap(),
         )
         .await
         .unwrap();
+
+    println!("{:#?}", r);
 }
 
 #[ignore]
@@ -173,12 +205,14 @@ async fn test_get_output() {
 #[ignore]
 #[tokio::test]
 async fn test_get_milestone() {
-    iota_client::Client::new()
+    let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
         .build()
         .unwrap()
-        .get_milestone(1)
+        .get_milestone(2)
         .await
         .unwrap();
+
+    println!("{:#?}", r);
 }

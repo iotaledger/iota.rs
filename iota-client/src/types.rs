@@ -1,11 +1,7 @@
 //! Types of several IOTA APIs related objects
 use crate::{Error, Result};
 
-use bee_message::prelude::{
-    Address, Ed25519Address, Ed25519Signature, Indexation, Input, Message, MessageId, Output,
-    Payload, ReferenceUnlock, SignatureLockedSingleOutput, SignatureUnlock, Transaction,
-    TransactionEssence, TransactionId, UTXOInput, UnlockBlock,
-};
+use bee_message::prelude::*;
 
 use std::convert::{From, TryFrom, TryInto};
 
@@ -225,7 +221,7 @@ impl ResponseType for AddressOutputs {}
 
 /// Milestone from Iota node
 #[derive(Debug, Deserialize)]
-pub struct Milestone {
+pub struct MilestoneMetadata {
     /// Milestone index
     #[serde(rename = "milestoneIndex")]
     pub milestone_index: u64,
@@ -236,7 +232,7 @@ pub struct Milestone {
     pub timestamp: u64,
 }
 
-impl ResponseType for Milestone {}
+impl ResponseType for MilestoneMetadata {}
 
 /// Transfers structure
 ///
@@ -326,7 +322,7 @@ impl From<&Payload> for PayloadJson {
             Payload::Indexation(_i) => Self {
                 type_: 2,
                 index: Some(String::from("TEST")),
-                data: Some(String::from("TESTING")),
+                data: Some(String::from("")),
                 essence: None,
                 unlock_blocks: None,
             },
@@ -355,6 +351,18 @@ impl TryFrom<PayloadJson> for Payload {
                 };
 
                 Ok(Payload::Transaction(Box::new(transaction)))
+            }
+            2 => {
+                let indexation = Indexation::new(
+                    value.index.expect("Must have index."),
+                    value
+                        .data
+                        .expect("Must have data.")
+                        .as_bytes()
+                        .to_vec()
+                        .into_boxed_slice(),
+                );
+                Ok(Payload::Indexation(Box::new(indexation)))
             }
             _ => todo!(),
         }

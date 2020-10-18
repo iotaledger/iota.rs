@@ -114,7 +114,6 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
         let message: MessageJson = message.into();
-        println!("{:#?}", serde_json::to_string(&message));
         let resp = self
             .client
             .post(url)
@@ -131,7 +130,7 @@ impl Client {
                 Ok(MessageId::from(message_id))
             }
             status => {
-                println!("resp: {:#?}", resp);
+                println!("resp: {:#?}", resp.json::<serde_json::Value>().await);
                 Err(Error::ResponseError(status))
             }
         }
@@ -189,14 +188,14 @@ impl Client {
 
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone(&self, index: u64) -> Result<Milestone> {
+    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneMetadata> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {
             200 => {
-                let milestone = resp.json::<Response<Milestone>>().await?.data;
+                let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
                 Ok(milestone)
             }
             status => Err(Error::ResponseError(status)),
