@@ -20,14 +20,14 @@ Specification of High Level Abstraction API
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
   * [`reattach`](#reattach)
+  * [`get_message`](#get_message)
+  * [`get_output`](#get_output)
+  * [`get_address`](#get_address)
 * [Full Node API](#Full-Node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
-  * [`get_message`](#get_message)
   * [`post_message`](#post_message)
-  * [`get_output`](#get_output)
-  * [`get_address`](#get_address)
   * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
   * [`Network`]
@@ -65,7 +65,7 @@ The data structure to initialize the instance of the Higher level client library
 
 Finalize the builder will run the instance in the background. Users don’t need to worry about the return object handling.
 
-# General API
+# General High level API
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
@@ -82,8 +82,8 @@ A generic send function for easily sending a value transaction message.
 | **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **address** | ✔ | [Address] | The address to send to. |
 | **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it connot be zero. |
-| **index** | ✘ | u32 | Start index of the wallet account address. Default is 0, but note taht it's recommended to provide index since this method consider spent address as error for security. And because this is a stateless crate, account user should keep track of what's the unuspent address index of corresponding wallet chain themselves. |
-| **indexation** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
+| **payload** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be use. |
+| **indexation_key** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
 
 ### Return
 
@@ -252,9 +252,67 @@ Following are the steps for implementing this method:
 * Perform proof-of-work;
 * Store messages on the tangle using [`post_messages()`](#post_messages-post-messages);
 
-# Full Node API
+## `get_message()`
 
-API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
+(`GET /api/v1/messages`)
+
+Endpoint collection all about GET messages.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **index** | `index()` | String | Indexation key of the message. |
+| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MEssageId] | The identifier of message. |
+
+### Returns
+
+Depend on the final calling method, users could get different results they need:
+
+- `index()`: Retrun messages with matching the index key.
+- `metadata()`: Return metadata of the message.
+- `data()`: Return a [Message] object.
+- `raw()`: Return the raw data of given message.
+- `children()`: Return the list of [messageId]s that reference a message by its identifier.
+
+## `get_output()`
+
+(`GET /outputs`)
+
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **transactionId** | ✔ | [TransactionId] | Identifier of the transaction. |
+| **output_index** | ✔ | u16 | Output index of the outout |
+
+### Returns
+
+An [OutputMetadata] that contains various information about the output.
+
+## `get_address()`
+
+(`GET /outputs`)
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Address] | The address to search for. |
+
+### Returns
+
+Depend on the final calling method, users could get different outputs they need:
+
+- `balance()`: Return confirmed balance of the address.
+- `outputs()`: Return transactio IDs with corresponding output index of the address it has.
+
+
+# Low level Node API
+
+Low level API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
 
 ## `get_health()`
 
@@ -317,29 +375,6 @@ A tuple with two [MessageId]:
 (MessageId, MessageId)
 ```
 
-## `get_message()`
-
-(`GET /api/v1/messages`)
-
-Endpoint collection all about GET messages.
-
-### Parameters
-
-| Field | Requried | Type | Definition |
-| - | - | - | - |
-| **index** | `index()` | String | Indexation key of the message. |
-| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MEssageId] | The identifier of message. |
-
-### Returns
-
-Depend on the final calling method, users could get different results they need:
-
-- `index()`: Retrun messages with matching the index key.
-- `metadata()`: Return metadata of the message.
-- `data()`: Return a [Message] object.
-- `raw()`: Return the raw data of given message.
-- `children()`: Return the list of [messageId]s that reference a message by its identifier.
-
 ## `post_message()`
 
 (`POST /message`)
@@ -355,40 +390,6 @@ Submit a message. The node takes care of missing fields and tries to build the m
 ### Returns
 
 The [MessageId] of the message object.
-
-## `get_output()`
-
-(`GET /outputs`)
-
-Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
-
-### Parameters
-
-| Field | Requried | Type | Definition |
-| - | - | - | - |
-| **transactionId** | ✔ | [TransactionId] | Identifier of the transaction. |
-| **output_index** | ✔ | u16 | Output index of the outout |
-
-### Returns
-
-An [OutputMetadata] that contains various information about the output.
-
-## `get_address()`
-
-(`GET /outputs`)
-
-### Parameters
-
-| Field | Requried | Type | Definition |
-| - | - | - | - |
-| **address** | ✔ | [Address] | The address to search for. |
-
-### Returns
-
-Depend on the final calling method, users could get different outputs they need:
-
-- `balance()`: Return confirmed balance of the address.
-- `outputs()`: Return transactio IDs with corresponding output index of the address it has.
 
 ## `get_milestone()`
 
