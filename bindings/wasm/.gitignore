@@ -1,7 +1,0 @@
-/target
-**/*.rs.bk
-Cargo.lock
-
-node_modules
-wasm-web
-wasm-node
