@@ -82,8 +82,8 @@ A generic send function for easily sending a value transaction message.
 | **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **address** | ✔ | [Address] | The address to send to. |
 | **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it connot be zero. |
-| **payload** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be use. |
-| **indexation_key** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
+| **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be use. |
+| **indexation** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
 
 ### Return
 
@@ -109,7 +109,8 @@ Find all messages by provided message IDs. This method will try to query mutiple
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **message_id** | ✔ | [[MessageId]] | The identifier of message. |
+| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
+| **message_id** | ✘ | [[MessageId]] | The identifier of message. |
 
 ### Returns
 
@@ -294,7 +295,7 @@ An [OutputMetadata] that contains various information about the output.
 
 ## `get_address()`
 
-(`GET /outputs`)
+(`GET /addresses`)
 
 ### Parameters
 
