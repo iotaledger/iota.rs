@@ -1,5 +1,8 @@
+// These are E2E test samples, so they are ignored by default.
+
 use bee_message::prelude::*;
 use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
+use bee_signing_ext::binary::Ed25519PrivateKey;
 
 #[ignore]
 #[tokio::test]
@@ -55,6 +58,34 @@ async fn test_post_message_with_indexation() {
     let r = client.post_message(&message).await.unwrap();
 
     println!("{}", r);
+}
+
+#[ignore]
+#[tokio::test]
+async fn test_post_message_with_transaction() {
+    let key = Ed25519PrivateKey::from_bytes(&hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap()).unwrap();
+    let pubkey = key.generate_public_key();
+    println!("{:?}", hex::encode(pubkey.to_bytes()));
+    // let index = Indexation::new(String::from("Hello"), Box::new([]));
+
+    // let client = iota_client::Client::new()
+    //     .node("http://0.0.0.0:14265")
+    //     .unwrap()
+    //     .build()
+    //     .unwrap();
+
+    // let tips = client.get_tips().await.unwrap();
+
+    // let message = Message::builder()
+    //     .parent1(tips.0)
+    //     .parent2(tips.1)
+    //     .payload(Payload::Indexation(Box::new(index)))
+    //     .build()
+    //     .unwrap();
+
+    // let r = client.post_message(&message).await.unwrap();
+
+    // println!("{}", r);
 }
 
 #[ignore]
