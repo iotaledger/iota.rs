@@ -30,14 +30,14 @@ Specification of High Level Abstraction API
   * [`post_message`](#post_message)
   * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
-  * [`Network`]
-  * [`Hash`]
-  * [`Seed`]
-  * [`Message`]
-  * [`Payload`]
-  * [`Output`]
-  * [`BIP32Path`]
-  * [`Address`]
+  * [Network]
+  * [Hash]
+  * [Seed]
+  * [Message]
+  * [Payload]
+  * [Output]
+  * [BIP32Path]
+  * [Address]
 
 
 # Introduction
@@ -123,8 +123,8 @@ Find all outputs based on the requests criteria. This method will try to query m
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✔ | [([TransactionId], u16)] | The identifier of transaction and the output index. |
-| **addresses** | ✔ | [[Address]] | The identifier of address. |
+| **output_id** | ✘ | [([TransactionId], u16)] | The identifier of transaction and the output index. |
+| **addresses** | ✘ | [[Address]] | The identifier of address. |
 
 ### Returns
 
@@ -442,7 +442,7 @@ struct MessageId([u8; MESSAGE_ID_LENGTH]);
 | **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
 ## `Message`
-[`Message`]: #Message
+[Message]: #Message
 
 The message object returned by various functions; based on the RFC for the Message object. Here's the brief overview of each components in Message type would look like:
 
