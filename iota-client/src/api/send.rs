@@ -1,7 +1,8 @@
 use crate::{Client, Error, Result};
 
 use bee_message::prelude::*;
-use bee_signing_ext::{binary::BIP32Path, Seed};
+use bee_signing_ext::{binary::{BIP32Path, Ed25519PrivateKey}, Seed, Signer};
+use bee_common_ext::packable::Packable;
 
 use std::num::NonZeroU64;
 
@@ -131,12 +132,49 @@ impl<'a> SendBuilder<'a> {
         if balance <= total {
             return Err(Error::NotEnoughBalance(balance));
         }
+        let essence = essence.finish()?;
+        let mut serialized_essence = Vec::new();
+        essence.pack(&mut serialized_essence)
+            .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
+
+        let mut unlock_blocks = Vec::new();
+        let mut last_index = (None, -1);
+        for path in paths.iter() {
+            // Check if current path is same as previous path
+            if last_index.0 == Some(path) {
+                // If so, add a reference unlock block
+                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(last_index.1 as u16)?));
+            } else {
+                // If not, we should create a signature unlock block
+                match &self.seed {
+                    Seed::Ed25519(s) => {
+                        let private_key = Ed25519PrivateKey::generate_from_seed(s, path)
+                            .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
+                        let public_key = private_key.generate_public_key().to_bytes();
+                        // The block should sign the entire transaction essence part of the transaction payload
+                        let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
+                        unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
+                            public_key, signature,
+                        ))));
+                    }
+                    Seed::Wots(_) => {
+                        panic!("Wots signing scheme isn't supported.")
+                    }
+                }
+
+                // Update last signature block path and index
+                last_index = (Some(path), (unlock_blocks.len() - 1) as isize);
+            }
+        }
         // TODO overflow check
-        //essence.add_input(input) output
-        let payload = TransactionBuilder::new()
-            .with_essence(essence.finish()?)
-            // TODO .add_unlock_block(unlock_block)
-            .finish()
+        let mut payload_builder = TransactionBuilder::new()
+            .with_essence(essence);
+        
+        for unlock in unlock_blocks {
+            payload_builder = payload_builder.add_unlock_block(unlock);
+        }
+
+        let payload = payload_builder.finish()
             .map_err(|_| Error::TransactionError)?;
 
         // get tips
