@@ -124,7 +124,7 @@ Find all outputs based on the requests criteria. This method will try to query m
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✘ | [([TransactionId], u16)] | The identifier of transaction and the output index. |
+| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
 | **addresses** | ✘ | [[Address]] | The identifier of address. |
 
 ### Returns
@@ -286,8 +286,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Field | Requried | Type | Definition |
 | - | - | - | - |
-| **transactionId** | ✔ | [TransactionId] | Identifier of the transaction. |
-| **output_index** | ✔ | u16 | Output index of the outout |
+| **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
 
 ### Returns
 

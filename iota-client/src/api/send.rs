@@ -78,7 +78,7 @@ impl<'a> SendBuilder<'a> {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
                 for output_id in address_outputs.iter() {
-                    let curr_outputs = self.client.get_output(&output_id.0, output_id.1).await?;
+                    let curr_outputs = self.client.get_output(output_id).await?;
                     outputs.push(curr_outputs);
                 }
                 for (offset, output) in outputs.into_iter().enumerate() {

@@ -1,6 +1,6 @@
 use crate::{AddressBalance, AddressOutputs, Client, Error, Response, Result};
 
-use bee_message::prelude::{Address, TransactionId};
+use bee_message::prelude::{Address, TransactionId, UTXOInput};
 
 /// Builder of GET /api/v1/address/{messageId} endpoint
 pub struct GetAddressBuilder<'a> {
@@ -37,7 +37,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get all outputs that use a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance reasons.
     /// User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &'a Address) -> Result<Box<[(TransactionId, u16)]>> {
+    pub async fn outputs(self, address: &'a Address) -> Result<Box<[UTXOInput]>> {
         let address = match address {
             Address::Ed25519(a) => a.to_string(),
             _ => return Err(Error::InvalidParameter("address".to_string())),
@@ -60,9 +60,9 @@ impl<'a> GetAddressBuilder<'a> {
                         let index = s[64..]
                             .parse::<u16>()
                             .map_err(|_| Error::InvalidParameter("index".to_string()))?;
-                        Ok((TransactionId::new(transaction_id), index))
+                        Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
                     })
-                    .collect::<Result<Box<[(TransactionId, u16)]>>>()
+                    .collect::<Result<Box<[UTXOInput]>>>()
             }
             status => Err(Error::ResponseError(status)),
         }

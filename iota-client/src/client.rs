@@ -5,7 +5,7 @@ use crate::error::*;
 use crate::node::*;
 use crate::types::*;
 
-use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, TransactionId};
+use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_signing_ext::Seed;
 
 use reqwest::{IntoUrl, Url};
@@ -143,16 +143,12 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(
-        &self,
-        transaction: &TransactionId,
-        output_index: u16,
-    ) -> Result<OutputMetadata> {
+    pub async fn get_output(&self, output: &UTXOInput) -> Result<OutputMetadata> {
         let mut url = self.get_node()?;
         url.set_path(&format!(
             "api/v1/outputs/{}{}",
-            transaction.to_string(),
-            hex::encode(output_index.to_le_bytes())
+            output.id().to_string(),
+            hex::encode(output.index().to_le_bytes())
         ));
         let resp = reqwest::get(url).await?;
 

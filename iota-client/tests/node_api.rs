@@ -1,8 +1,8 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
 use bee_signing_ext::binary::Ed25519PrivateKey;
+use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
 
 #[ignore]
 #[tokio::test]
@@ -63,7 +63,10 @@ async fn test_post_message_with_indexation() {
 #[ignore]
 #[tokio::test]
 async fn test_post_message_with_transaction() {
-    let key = Ed25519PrivateKey::from_bytes(&hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap()).unwrap();
+    let key = Ed25519PrivateKey::from_bytes(
+        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
+    )
+    .unwrap();
     let pubkey = key.generate_public_key();
     println!("{:?}", hex::encode(pubkey.to_bytes()));
     // let index = Indexation::new(String::from("Hello"), Box::new([]));
@@ -221,11 +224,14 @@ async fn test_get_output() {
         .build()
         .unwrap()
         .get_output(
-            &hex_to_transaction_id(
-                "0000000000000000000000000000000000000000000000000000000000000000",
+            &UTXOInput::new(
+                hex_to_transaction_id(
+                    "0000000000000000000000000000000000000000000000000000000000000000",
+                )
+                .unwrap(),
+                0,
             )
             .unwrap(),
-            0,
         )
         .await
         .unwrap();
