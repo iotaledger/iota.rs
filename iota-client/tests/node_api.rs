@@ -1,8 +1,10 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use bee_signing_ext::binary::Ed25519PrivateKey;
+use bee_signing_ext::binary::{BIP32Path, Ed25519PrivateKey};
 use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
+
+use std::num::NonZeroU64;
 
 #[ignore]
 #[tokio::test]
@@ -63,32 +65,60 @@ async fn test_post_message_with_indexation() {
 #[ignore]
 #[tokio::test]
 async fn test_post_message_with_transaction() {
-    let key = Ed25519PrivateKey::from_bytes(
+    let client = iota_client::Client::new()
+        .node("http://0.0.0.0:14265")
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let seed = Seed::from_ed25519_bytes(
         &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
     )
     .unwrap();
-    let pubkey = key.generate_public_key();
-    println!("{:?}", hex::encode(pubkey.to_bytes()));
-    // let index = Indexation::new(String::from("Hello"), Box::new([]));
+    let mut output_address = [0u8; 32];
+    hex::decode_to_slice(
+        "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92",
+        &mut output_address,
+    )
+    .unwrap();
+    let output_address = Ed25519Address::new(output_address);
+    let inputs = client
+        .get_address()
+        .outputs(&output_address.into())
+        .await
+        .unwrap();
 
-    // let client = iota_client::Client::new()
-    //     .node("http://0.0.0.0:14265")
-    //     .unwrap()
-    //     .build()
-    //     .unwrap();
+    let address = client
+        .get_unspent_address(&Seed::from_ed25519_bytes(&[0u8; 32]).unwrap())
+        .path(&BIP32Path::from_str("m").unwrap())
+        .get()
+        .await
+        .unwrap();
+    let output = Output::from(SignatureLockedSingleOutput::new(
+        address.0,
+        NonZeroU64::new(100).unwrap(),
+    ));
 
-    // let tips = client.get_tips().await.unwrap();
+    let transaction = TransactionBuilder::new(&seed)
+        .set_inputs(vec![(
+            inputs[0].clone().into(),
+            BIP32Path::from_str("m").unwrap(),
+        )])
+        .set_outputs(vec![output])
+        .build()
+        .unwrap();
 
-    // let message = Message::builder()
-    //     .parent1(tips.0)
-    //     .parent2(tips.1)
-    //     .payload(Payload::Indexation(Box::new(index)))
-    //     .build()
-    //     .unwrap();
+    let tips = client.get_tips().await.unwrap();
+    let message = Message::builder()
+        .parent1(tips.0)
+        .parent2(tips.1)
+        .payload(Payload::Transaction(Box::new(transaction)))
+        .build()
+        .unwrap();
 
-    // let r = client.post_message(&message).await.unwrap();
+    let r = client.post_message(&message).await.unwrap();
 
-    // println!("{}", r);
+    println!("{}", r);
 }
 
 #[ignore]
@@ -117,7 +147,7 @@ async fn test_get_message_data() {
         .unwrap()
         .get_message()
         .data(
-            &hex_to_message_id("2d7ef1e96f034ae002c6fba062503a842ab9d622b38040f8362a857f4f99c3c9")
+            &hex_to_message_id("e60361a661b2f767860307a9ed64d856f88e6b3190a4fcc1531a0fa93c9aeb00")
                 .unwrap(),
         )
         .await
@@ -129,18 +159,20 @@ async fn test_get_message_data() {
 #[ignore]
 #[tokio::test]
 async fn test_get_message_metadata() {
-    iota_client::Client::new()
+    let r = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
         .unwrap()
         .build()
         .unwrap()
         .get_message()
         .metadata(
-            &hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")
+            &hex_to_message_id("e60361a661b2f767860307a9ed64d856f88e6b3190a4fcc1531a0fa93c9aeb00")
                 .unwrap(),
         )
         .await
         .unwrap();
+
+    println!("{:#?}", r);
 }
 
 #[ignore]

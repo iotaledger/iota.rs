@@ -345,7 +345,11 @@ impl TryFrom<PayloadJson> for Payload {
                     .map(|unlock| unlock.try_into())
                     .filter_map(|i| i.ok())
                     .collect();
-                let transaction: Transaction = (value.essence.expect("Must have essence.").try_into()?, unlock_blocks).try_into()?;
+                let transaction: Transaction = (
+                    value.essence.expect("Must have essence.").try_into()?,
+                    unlock_blocks,
+                )
+                    .try_into()?;
 
                 Ok(Payload::Transaction(Box::new(transaction)))
             }
