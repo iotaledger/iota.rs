@@ -80,7 +80,7 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
         if self.nodes.len() == 0 {
-            return Err(Error::MissingNode);
+            return Err(Error::MissingParameter(String::from("Iota node")));
         }
 
         let mwm = match self.network {
@@ -108,17 +108,15 @@ impl ClientBuilder {
             quorum_threshold,
         };
 
-        let mut sync = client.clone();
-        smol::block_on(async { sync.sync().await });
+        // let mut sync = client.clone();
+        // tokio::block_on(async { sync.sync() });
 
-        std::thread::spawn(move || {
-            smol::block_on(async {
-                loop {
-                    smol::Timer::after(std::time::Duration::from_secs(180)).await;
-                    sync.sync().await;
-                }
-            })
-        });
+        // tokio::spawn(async {
+        //     loop {
+        //         tokio::time::delay_for(std::time::Duration::from_secs(180)).await;
+        //         sync.sync();
+        //     }
+        // });
 
         Ok(client)
     }

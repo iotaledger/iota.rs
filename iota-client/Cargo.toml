@@ -13,24 +13,16 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
-bee-ternary = { version = "0.3.2-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
+bee-common-ext = { git = "https://github.com/Alex6323/bee-p.git" }
+bee-message = { git = "https://github.com/wusyong/bee-p.git", branch = "bee-message" }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-reqwest = { version = "0.10.6", features = ["json", "rustls-tls", "native-tls-vendored"], default-features = false }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+reqwest = { version = "0.10.6", features = ["json", "rustls-tls"], default-features = false }
+serde = { version = "1.0.116", features = ["derive"] }
+serde_json = "1.0.58"
 chrono = "0.4.12"
-smol = {version = "0.1.18", features = ["tokio02"] }
+hex = "0.4.2"
 
 [dev-dependencies]
-anyhow = "1.0.31"
-smol-potat = "0.3.3"
-
-#[features]
-#quorum = ["smol"]
-#wasm = ["chrono/wasmbind"]
-
-#[[test]]
-#name = "quorum"
-#required-features = ["quorum"]
+tokio = { version = "0.2.22", features = ["macros"] }

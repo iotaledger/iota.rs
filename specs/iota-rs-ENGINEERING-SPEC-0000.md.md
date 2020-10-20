@@ -8,1230 +8,563 @@ Specification of High Level Abstraction API
 
 
 * [High Level Abstraction API Spec](#High-Level-Abstraction-API-Spec)
-    * [Table of Content](#Table-of-Content)
+  * [Table of Content](#Table-of-Content)
 * [Introduction](#Introduction)
 * [Builder](#Builder)
 * [General API](#General-API)
-    * [Send](#Send)
-    * [FindMessages](#FindMessages)
-    * [GenerateNewAddress](#GenerateNewAddress)
-    * [GetAddresses](#GetAddresses)
-    * [GetBalance](#GetBalance)
-    * [GetBalanceOfAddresses](#GetBalanceOfAddresses)
-    * [Reattach](#Reattach)
-    * [IsConfirmed](#IsConfirmed)
-* [Bee / IRI API](#Bee-/-IRI-API)
-    * [AttachToTangle](#AttachToTangle)
-    * [GetInclusionState](#GetInclusionState)
-    * [GetMessagesToApprove](#GetMessagesToApprove)
-    * [GetBytes](#GetBytes)
-    * [BroadcastMessages](#BroadcastMessages)
-    * [StoreMessages](#StoreMessages)
-    * [WereAddressesSpentFrom](#WereAddressesSpentFrom)
+  * [`send`](#send)
+  * [`find_messages`](#find_messages)
+  * [`find_outputs`](#find_outputs)
+  * [`get_unspent_address`](#get_unspent_address)
+  * [`get_addresses`](#get_addresses)
+  * [`get_balance`](#get_balance)
+  * [`get_address_balances`](#get_address_balances)
+  * [`reattach`](#reattach)
+  * [`get_message`](#get_message)
+  * [`get_output`](#get_output)
+  * [`get_address`](#get_address)
+* [Full Node API](#Full-Node-API)
+  * [`get_health`](#get_health)
+  * [`get_info`](#get_info)
+  * [`get_tips`](#get_tips)
+  * [`post_message`](#post_message)
+  * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
-    * [Network](#Network)
-    * [Hash](#Hash)
-    * [Seed](#Seed)
-    * [Encoding](#Encoding)
-    * [Message](#Message)
+  * [Network]
+  * [Hash]
+  * [Seed]
+  * [Message]
+  * [Payload]
+  * [Output]
+  * [BIP32Path]
+  * [Address]
 
 
 # Introduction
 
 This document specifies a user friendly API to be used in the client libraries. The main implementation will be in Rust which will receive automatically compiled client libraries in other languages via C or Webassembly bindings. There are also many crates to support developers creating foreign function interfaces with native bindings. 
 
-
 # Builder
 
 The data structure to initialize the instance of the Higher level client library. This is always called first when starting a new interaction with the library. Note: This is the common approach to do initialization in Rust. Different languages might use different methods such as just calling an initialization function directly.
 
-
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>network</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Network">Network</a>
-   </td>
-   <td>Pass an enumeration with elements of <strong> [ mainnet | comnet | devnet ] </strong>to determine the network. If none of the below are given node_pool_urls will default to nood pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: \
-
-<p>
-```
-<p>
-export const NODELIST_ENDPOINTS = [
-<p>
-	'https://nodes.iota.works/api/ssl/live',
-<p>
-	'https://iota-node-api.now.sh/api/ssl/live',
-<p>
-	'https://iota.dance/api/ssl/live',
-<p>
-];
-<p>
-```
-   </td>
-  </tr>
-  <tr>
-   <td><strong>node </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>String
-   </td>
-   <td>The URL of a node to connect to; format: `<a href="https://node:port">https://node:port</a>`
-   </td>
-  </tr>
-  <tr>
-   <td><strong>nodes </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>[String]
-   </td>
-   <td>A list of nodes to connect to; nodes are added with the `<a href="https://node:port">https://node:port</a>` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>node_pool_urls </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>String
-   </td>
-   <td>A list of URLs containing address pools of multiple nodes in JSON format; Example of such a endpoint: <a href="https://nodes.iota.works/api/ssl/live">https://nodes.iota.works/api/ssl/live</a> - will pick a random pool from the list and will automatically retry if the URL is not available with another one. Consider the nodes found in this list as being entered in the nodes parameter.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>quorum_size </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>If multiple nodes are given the quorum size defines how many of these nodes will be queried at the same time to check for quorum. If this parameter is not given it defaults to either the length of the `nodes` parameter list, or if node_pool_urls is given a sensible default like 3.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>quorum_threshold </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3).
-   </td>
-  </tr>
-</table>
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **network** | ✔ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to nood pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **node** | ✘ | String | The URL of a node to connect to; format: `https://node:port` |
+| **nodes** | ✘ | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **node_pool_urls** | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **quorum_size** | ✘ | usize | If multiple nodes are given the quorum size defines how many of these nodes will be queried at the same time to check for quorum. If this parameter is not given it defaults to either the length of the `nodes` parameter list, or if node_pool_urls is given a sensible default like 3. |
+| **quorum_threshold** | ✘ | usize | The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3). |
+| **local_pow** | ✘ | bool | If not defined it checks for remote PoW capability and uses that, if no remote PoW it does local PoW. Either not filled in, True or False. |
+| **state_adapter** | ✘ | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
 
 ### Return
 
 Finalize the builder will run the instance in the background. Users don’t need to worry about the return object handling.
 
-
-# General API
+# General High level API
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
 
-## Send
+## `send()`
 
-A generic send function for easily sending data or value transactions. 
-
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>address</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-
-<a href="#Hash">Hash</a>
-   </td>
-   <td>The address to send to. This should be a valid Address with correct checksum. Otherwise, it will return an error.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>value</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>u64
-   </td>
-   <td>The amount of IOTA to send, in iota. If this is a data only transaction we can ignore this field or provide 0. If the amount of this field is higher than 0 we need to provide a seed as well *
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>message </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>String
-   </td>
-   <td>A message to send together with this transaction. Note: String in rust is utf-8 encoded which is compatible to ascii. If users want to use other encodings, they will have to convert themselves. 
-   </td>
-  </tr>
-  <tr>
-   <td><strong>local_pow </strong>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>bool
-   </td>
-   <td>Determines if proof-of-work should be offloaded to the connected node. <strong>Default to false.</strong>
-   </td>
-  </tr>
-</table>
-
-### Return
-
-A simple transaction hash. Since bundles have no place anymore and transactions can have a variable size with Atomic transactions this makes most sense. It could be a transaction object as well if that makes more sense.
-
-
-### Implementation Details
-
-There could be two different scenarios if which this method is used: \
-
-
-
-
-1. Data transaction:  \
-Following are the steps for implementing this method if provided value is zero:
-*   Validate address and its checksum;
-*   Validate message semantics;
-*   Get transactions to approve using [getTransactionsToApprove()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettransactionstoapprove);
-*   Perform proof-of-work (If _local_pow_ is set to false, the proof-of-work should be offloaded to the selected node using [attachToTangle()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#attachtotangle). Otherwise, proof-of-work should be performed locally)
-*   Store transactions on the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions);
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
-2. Value transaction:
-
-	Following are the steps for implementing this method if provided value is greater than    zero:
-
-
-
-*   Validate address and its checksum;
-*   Validate message semantics;
-*   Prepare inputs (See [Input Selection process](https://docs.google.com/document/d/17JHw7HpNn3_qKKXaxoQJFxQv4em9xomh0EvvWOzIQzI/edit#heading=h.eby2xfmp8y49) for more details. Input selection process should make sure the _value_ doesn’t exceed the total balance);
-*   Sign transaction (To be decided how this will be signed using _external_signer_);
-*   Get transactions to approve using [getTransactionsToApprove()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettransactionstoapprove);
-*   Perform proof-of-work (If _local_pow_ is set to false, the proof-of-work should be offloaded to the selected node using [attachToTangle()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#attachtotangle). Otherwise, proof-of-work should be performed locally)
-*   Store transactions on the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions);
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
-
-
-## GetMessage
-
-Retrieve a single message object using the message hash; Given the variable transaction length/atomic transactions in Chrysalis this will be a more commonly used function over retrieving multiple transactions from a bundle which we won’t have any more with Chrysalis.
-
+A generic send function for easily sending a value transaction message. 
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>message_hash</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>The hash of the transaction we are fetching; since we are just looking to use this function to get 1 transaction in total only this parameter makes sense unlike an address which can contain multiple transactions.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>encoding</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Encoding">Encoding</a>
-   </td>
-   <td>The converter/encoder that was used to convert the message into bytes/trytes (whatever the transaction would need). The underlying functionality of this function will automatically process the raw transaction data and use this converter (default to utf-8/bytes) to give the end user something usable back. This converter can be any function including some defaults as documented in the `send` function. <strong>Default to Encoding::UTF8</strong>
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed of the account we are going to spend. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **address** | ✔ | [Address] | The address to send to. |
+| **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it connot be zero. |
+| **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be use. |
+| **indexation** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
 
 ### Return
 
-[Transaction](#Transaction)
-
+The [Message] object we build.
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
+There could be two different scenarios if which this method is used:
 
+* Validate inputs, such as address, seed, and path to check if they are correct. For example, the provided path must be
+  wallet chain which should have depth of 2;
+* Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
+* Build and Validate the Message with signed transaction payloads accordingly;
+* Get tips using [`get_tips()`](#get_tips);
+* Perform proof-of-work locally; 
+* Send the message using [`post_messages()`](#post_messages);
 
+## `find_messages()`
 
-
-*   Validate message hash semantics;
-*   Get transaction bytes using [getBytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
-*   Parse transaction trytes to transaction object (See [asTransactionObject()](https://github.com/iotaledger/iota.js/blob/next/packages/transaction-converter/src/index.ts#L236) for parsing trytes to transaction object)
-
-
-## FindMessages
-
-Find multiple messages using one or multiple fields. If multiple search fields are provided consider the search function to work as a AND implementation.
-
+Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
 
 ### Parameters
 
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
+| **message_id** | ✘ | [[MessageId]] | The identifier of message. |
 
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>An optional argument where you can provide a list of transaction hashes that will be fetched. 
-   </td>
-  </tr>
-  <tr>
-   <td><strong>address</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>An address to find the transactions for; One address can contain multiple transactions.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>tag</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>A tag to search for, returns transactions starting with the provided tag prefix. This can be useful for for example prefix tags like in the Industry Marketplace or Location data (IOTA Area Codes).
-   </td>
-  </tr>
-  <tr>
-   <td><strong>offset</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td><strong>By default this function will return up to 100 of the latest transactions</strong> matching the search criteria. In order to allow iterating over more transactions we can provide an offset which by default is 0. Page 1 would be offset: 0, limit: 100, page 2 would be offset: 100, limit 100, etc. We might want to be able to provide something else like a transaction hash for offset instead since transactions might move to a second page while iterating because a new transaction came in while iterating.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>limit</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>The amount of transactions to retrieve in 1 go. <strong>By default this is 100.</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>encoding</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Encoding">Encoding</a>
-   </td>
-   <td>The converter/encoder that was used to convert the message into bytes/trytes (whatever the transaction would need). The underlying functionality of this function will automatically process the raw transaction data and use this converter (default to utf-8/bytes) to give the end user something usable back. This converter can be any function including some defaults as documented in the `send` function. <strong>Default to Encoding::UTF8</strong>
-   </td>
-  </tr>
-</table>
+### Returns
 
+A vector of [Message] Object.
 
+## `find_outputs()`
 
-### Return
-
-A list of [Message](#Message)s
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate _transaction_hashes_;
-*   Validate _address_;
-*   Validate _tag_;
-*   If the _transaction_hashes _parameter is provided, it should ignore all other parameters and fetch transaction trytes for the provided hashes using [getTrytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
-*   If the transaction_hashes parameter is not provided, it should fetch transaction hashes using [findTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#findtransactions). Duplicate transaction hashes should be removed. Transaction trytes of deduplicated transaction hashes should be fetched using [getTrytes()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettrytes);
-*   Details of _limit_ and _offset_ parameters are yet to be decided;
-*   All transaction trytes fetched from the network should be parsed to transaction objects (see [asTransactionObject()](https://github.com/iotaledger/iota.js/blob/next/packages/transaction-converter/src/index.ts#L236) for a reference implementation).
-
-
-## GenerateNewAddress
-
-Return a valid unused address with checksum.
-
+Find all outputs based on the requests criteria. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
 
 ### Parameters
 
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
+| **addresses** | ✘ | [[Address]] | The identifier of address. |
 
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>index</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Key index to start search at. <strong>Default is 0.</strong>
-   </td>
-  </tr>
-</table>
+### Returns
 
+A vector of [OutputMetadata] Object.
 
+## `get_unspent_address()`
+
+Return a valid unuspent address.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
 
-[Hash](#Hash) of Address with checksum
-
+Return a tuple with type of `([Address], usize)` as the address and corresponding index in the account.
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
+Following are the steps for implementing this method:
 
+* Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
+* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Repeat the above step till there's an unuspent addresses found;
+* Return the address with corresponding index on the wallet chain;
 
+## `get_addresses()`
 
+Return a list of addresses from the seed regardless of their validity.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **range** | ✘ | std::ops::Range | Range indice of the addresses we want to search for **Default is (0..20)** |
+
+### Return
+
+A list of [Address]es
+
+### Implementation Details
+
+Following are the steps for implementing this method:
 
 *   Start generating address at index 0 with a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20;
-*   Check for balances and transactions on the generated addresses using [getBalances()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getbalances) and [findTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#findtransactions);
-*   If there are no transactions and zero balances on all addresses, return the (checksummed) address with the least index that has no transactions and zero balance;
-*   If there are transactions or any balance on the generated addresses, generate more gap limit number of addresses starting from the index of the last address with transactions or balance. Repeat this process until a set of addresses is found with zero balances and no transactions. Once such a set of addresses is found, return the (checksummed) address with the least index that has no transactions and zero balance.
+*   Return the addresses.
 
+## `get_balance()`
 
-## GetAddresses
-
-Return a list of addresses with checksum from the seed regardless of their validity.
-
+Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`. Addresses with balance must be consecutive, so this method will return once it encounters a zero balance address.
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>start</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Key index to start search at. <strong>Default is 0.</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>end</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>uszie
-   </td>
-   <td>Key index to end the search. <strong>Default is 20.</strong>
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
 
-A list of Address [Hash](#Hash)es with checksum
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Start generating address at index 0 with a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20;
-*   Return the (checksummed) addresses.
-
-
-## GetBalance
-
-Returns the balance for a provided seed by checking the addresses for a seed up until a given point. 
-
-
-### Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>seed</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Seed">Seed</a>
-   </td>
-   <td>Only required for value transfers; this is a draft, seed storage will probably be handled by a secure vault which should be used directly in the higher level client libs
-   </td>
-  </tr>
-  <tr>
-   <td><strong>index</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Key index to start search at. <strong>Default is 0.</strong>
-   </td>
-  </tr>
-</table>
-
-
-
-### Return
-
-Account balance in type of usize.
-
+Total Account balance.
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
+Following are the steps for implementing this method:
+
+* Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
+* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Repeat the above step till an addresses of zero balance is found;
+* Accumulate the positive balances and return the result.
 
 
+## `get_address_balances()`
 
-
-*   Start generating address at index 0 with a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20;
-*   Check for balances on the generated addresses using [getBalances()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getbalances) and keep track of the positive balances;
-*   Repeat the above step till a set of addresses are found that all have zero balances;
-*   Accumulate the positive balances and return the result.
-
-
-## GetBalanceOfAddresses
-
-Returns the balance in iota for the given addresses; No seed or security level needed to do this since we are only checking and already know the addresses.
-
+Return the balance in iota for the given addresses; No seed or security level needed to do this since we are only checking and already know the addresses.
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>addresses</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[Address]
-   </td>
-   <td>List of addresses with checksum.
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **addresses** | ✔ | [[MessageId]] | List of addresses with checksum. |
 
 ### Return
 
 A list of tuples with value of  (Address, usize). The usize is the balance of the address accordingly. 
 
-
 ### Implementation details:
 
-Following are the steps for implementing this method: \
-
-
-
+Following are the steps for implementing this method:
 
 *   Validate _address_ semantics;
-*   Get latest balance for the provided address using [getBalances()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getbalances);
-*   Return the latest balance.
+*   Get latest balance for the provided address using [`get_outputs()`](#get_outputs-get-outputs) with addresses as
+    parameter;
+*   Return the list of Output which contains corresponding pairs of address and balance.
 
+## `reattach()`
 
-## Reattach
-
-Reattaches transaction for provided transaction hash. 
+Reattach a message for provided message id. Message can be reattached only if they are valid and haven't been
+confirmed for a while. 
 
 ### Parameters
 
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>The hash of the transaction that need to be reattached.
-   </td>
-  </tr>
-</table>
-
-
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
 
 ### Returns:
 
-Newly reattached [Transaction](#Transaction).
-
+Newly reattached [Message](#Message).
 
 ### Implementation Details
 
-Following are the steps for implementing this method: \
+Following are the steps for implementing this method: 
 
+* Only unconfirmed messages should be allowed to reattach. The method should validate the confirmation state of the provided messages. If a message hash of a confirmed message is provided, the method should error out;
+* The method should also validate if the message reattachment is necessary. This can be done by checking if the message falls below max depth. The criteria of checking whether the message has fallen below max depth is through time. If 11 minutes have passed since the timestamp of the most recent (reattachment), the message can be allowed to be reattached. See [this](https://github.com/iotaledger/trinity-wallet/blob/3fab4f671c97e805a2b0ade99b4abb8b508c2842/src/shared/libs/iota/transfers.js#L141) implementation for reference;
+* Get tips pair using [`get_tips()`](#get_tips-get-tips);
+* Perform proof-of-work;
+* Store messages on the tangle using [`post_messages()`](#post_messages-post-messages);
 
+## `get_message()`
 
+(`GET /api/v1/messages`)
 
-*   Only an unconfirmed transaction should be allowed to reattach. The method should validate the confirmation state (using [getInclusionStates()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getinclusionstates)) of the provided transaction. If a transaction hash of a confirmed transaction is provided, the method should error out;
-*   The method should also validate if the transaction reattachment is necessary. This can be done by checking if the transaction falls below max depth. The criteria of checking whether the transaction has fallen below max depth is through time. If 11 minutes have passed since the timestamp of the most recent (reattachment), the transaction can be allowed to be reattached. See [this](https://github.com/iotaledger/trinity-wallet/blob/3fab4f671c97e805a2b0ade99b4abb8b508c2842/src/shared/libs/iota/transfers.js#L141) implementation for reference;
-*   Get transactions to approve using [getTransactionsToApprove()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#gettransactionstoapprove);
-*   Perform proof-of-work (If _offload_pow_ is set to true, the proof-of-work should be offloaded to the selected node using [attachToTangle()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#attachtotangle). Otherwise, proof-of-work should be performed locally)
-*   Store transactions on the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions);
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions). 
-
-
-## IsConfirmed
-
-Fetch inclusion states of the given transactions to determine if the transactions are confirmed.
+Endpoint collection all about GET messages.
 
 ### Parameters
 
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **index** | `index()` | String | Indexation key of the message. |
+| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MEssageId] | The identifier of message. |
 
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Hash">Hash</a>]
-   </td>
-   <td>List of transaction hashes for which you want to get the inclusion state
-   </td>
-  </tr>
-</table>
+### Returns
 
+Depend on the final calling method, users could get different results they need:
 
+- `index()`: Retrun messages with matching the index key.
+- `metadata()`: Return metadata of the message.
+- `data()`: Return a [Message] object.
+- `raw()`: Return the raw data of given message.
+- `children()`: Return the list of [messageId]s that reference a message by its identifier.
 
-### Returns:
+## `get_output()`
 
-List of tuples with values of the transaction [Hash](#heading=Hash)es and a bool which is the confirm state of it.
-Depend on bee api in the end, this might be a enum instead of plan boolean. For instance, a node could return a state
-like `unkown` saying it not sure about the state of transaction because of pruning.
+(`GET /outputs`)
 
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Query the confirmation state (using [getInclusionStates()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#getinclusionstates)) of the provided transaction. 
-*   Return the list of transactions state tuples.
-
-
-# Bee / Hornet API
-
-API of Bee and Hornet will still be public. Users who know these relative low level API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet
-haven't finalized their APIs either. Following items and signatures might change later.
-
-
-## AttachToTangle
-
-Does proof of work for the given transaction trytes. The `branch_transaction` and `trunk_transaction` parameters are returned from the [GetMessagesToApprove](#GetMessagesToApprove) method.
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
 
 ### Parameters
 
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
 
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>trunk_transaction</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>Trunk transaction hash provided by <a href="#GetMessagesToApprove">GetMessagesToApprove</a>.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>branch_transaction</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>Branch transaction hash provided by <a href="#GetMessagesToApprove">GetMassagesToApprove</a>.
-   </td>
-  </tr>
-  <tr>
-   <td><strong>trytes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[
-<a href="#Transaction">Transaction</a>]
-   </td>
-   <td>List of transactions. When sending transactions in a bundle, make sure that the trytes of the last transaction in the bundle are in index 0 of the array.
-   </td>
-  </tr>
-</table>
+### Returns
 
+An [OutputMetadata] that contains various information about the output.
 
+## `get_address()`
 
-### Returns:
-
-List of [Message](#Message) objects which are ready to broadcast and store to tangle.
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate _trunk transaction hash_ semantics;
-*   Validate _branch transaction hash_ semantics;
-*   Validate min weight magnitude;
-*   Validate trytes semantics; The last element should be the last transaction of the bundle.
-*   Return the list of transactions that are attached to tangle.
-
-
-## GetInclusionState
-
-Gets the inclusion states of a set of transactions. This endpoint determines if a transaction is confirmed by the network (referenced by a valid milestone). 
-
-Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transaction_hashes</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Hash">Hash</a>]
-   </td>
-   <td>List of transaction hashes for which you want to get the inclusion state
-   </td>
-  </tr>
-</table>
-
-
-
-### Returns:
-
-List of tuples with values of the transaction [Hash](#Hash)es and a bool which is the confirm state of it.
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate transaction hashes semantics;
-*   Return the list of transactions state tuples.
-
-
-## GetTransactionToApprove
-
-Gets two consistent tip transaction hashes to use as branch/trunk transactions.
-
-Parameters
-
-
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>depth</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>usize
-   </td>
-   <td>Number of milestones to go back to start the tip selection algorithm. <strong>Default is 3.</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>reference</strong>
-<p>
-   </td>
-   <td>&#10008;
-   </td>
-   <td>
-<a href="#Hash">Hash</a>
-   </td>
-   <td>Transaction hash from which to start the weighted random walk. Use this parameter to make sure the returned tip transaction hashes approve a given reference transaction
-   </td>
-  </tr>
-</table>
-
-
-
-### Returns:
-
-A tuple with trunk and branch transaction [Hash](#Hash)es.
-
-
-### Implementation Details
-
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate reference hash semantics if provided;
-*   Return the transactions tuple.
-
-## BroadcastTransactions
-
-Broadcast transactions to the connected node. This will be useful if the initial broadcast fails. 
-
+(`GET /addresses`)
 
 ### Parameters
 
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Address] | The address to search for. |
 
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transactions</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Transaction">Transaction</a>]
-   </td>
-   <td>List of the transactions that need to be broadcasted.
-   </td>
-  </tr>
-</table>
+### Returns
+
+Depend on the final calling method, users could get different outputs they need:
+
+- `balance()`: Return confirmed balance of the address.
+- `outputs()`: Return transactio IDs with corresponding output index of the address it has.
 
 
+# Low level Node API
 
-### Implementation Details
+Low level API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
 
-Following are the steps for implementing this method: \
+## `get_health()`
 
+(`GET /health`)
 
-
-
-*   Validate _transactions_ semantics;
-*   Broadcast transactions to the tangle using [broadcastTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
-
-
-## StoreTransactions
-
-Store transactions to the connected node. 
-
+Returns the health of the node, which can be used for load-balancing or uptime monitoring.
 
 ### Parameters
 
+None
 
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>transactions</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[<a href="#Transaction">Transaction</a>]
-   </td>
-   <td>List of the transactions that need to be stored.
-   </td>
-  </tr>
-</table>
+### Returns
 
+Boolean to indicate if node is healthy.
 
+## `get_info()`
 
-### Implementation Details
+(`GET /api/v1/info`)
 
-Following are the steps for implementing this method: \
-
-
-
-
-*   Validate _transactions_ semantics;
-*   Store transactions to the tangle using [storeTransactions()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#storetransactions).
-
-
-## WereAddressesSpentFrom
-
-Checks if an address was ever withdrawn from. Will be required for WOTS to Ed25519 transition.
-
+Returns information about the node.
 
 ### Parameters
 
+None
 
-<table>
-  <tr>
-   <td>Field
-   </td>
-   <td>Required
-   </td>
-   <td>Type
-   </td>
-   <td>Description
-   </td>
-  </tr>
-  <tr>
-   <td><strong>addresses</strong>
-   </td>
-   <td>&#10004;
-   </td>
-   <td>[Address]
-   </td>
-   <td>List of addresses with checksum.
-   </td>
-  </tr>
-</table>
+### Returns
 
+A Response Object similar to this:
 
+```rust
+pub struct NodeInfo {
+    pub name: String,
+    pub version: String,
+    pub is_healthy: bool,
+    pub coordinator_public_key: String,
+    pub latest_milestone_message_id: String,
+    pub latest_milestone_index: usize,
+    pub solid_milestone_message_id: String,
+    pub solid_milestone_index: usize,
+    pub pruning_index: usize,
+    pub features: Vec<String>,
+}
+```
 
-### Return
+## `get_tips()`
 
-A list of tuples with values of  (Address, bool). The bool is the result of the address accordingly. 
+(`GET /tips`)
 
+Returns two non-lazy tips. In case the node can only provide one tip, tip1 and tip2 are identical.
 
-### Implementation Details
+### Parameters
 
-Following are the steps for implementing this method: \
+None
 
+### Returns
 
+A tuple with two [MessageId]:
 
+```rust
+(MessageId, MessageId)
+```
 
-*   Validate _addresses_ semantics;
-*   Get spend statuses using [wereAddressesSpentFrom()](https://docs.iota.org/docs/node-software/0.1/iri/references/api-reference#wereaddressesspentfrom);
-*   Return the spend statuses.
+## `post_message()`
 
+(`POST /message`)
+
+Submit a message. The node takes care of missing fields and tries to build the message. On success, the message will be stored in the Tangle. This endpoint will return the identifier of the message.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **message** | ✔ | [Message] | The message object. |
+
+### Returns
+
+The [MessageId] of the message object.
+
+## `get_milestone()`
+
+(`GET /milestones`)
+
+Get the milestone by the given index.
+
+### Parameters
+
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **index** | ✔ | u32 | Index of the milestone. |
+
+### Returns
+
+An [Milestone] object.
 
 # Objects
 
 Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
 
 
-## Network
+## `Network`
+[Network]: #Network
 
-Network will be an enumeration with elements of **[mainnet|comnet|devnet]. **Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
+Network is an enumeration with elements of **[mainnet|comnet|devnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
 
+```rust
+enum Network {
+  Mainnet,
+  Comnet,
+  Devnet,
+}
+```
 
-## Hash
+## `MessageId`
+[MessageId]: #MessageId
 
+MessageId is a 32 bytes array which can represent as hex string.
 
-<table>
-  <tr>
-    <td><strong>Property</strong></td>
-    <td><strong>Required</strong></td>
-    <td><strong>Type</strong></td>
-    <td><strong>Description</strong></td>
-  </tr>
-  <tr>
-    <td>seed</td>
-    <td>&#10004;</td>
-    <td>[u8; 32]</td>
-    <td>A valid IOTA hash which can be treated as many objects like Address, Transaction hash, and more. The inner structure of course will instantiate the actual objects. This serves as a convenient but secure way for users passing parameters.</td>
-  </tr>
-</table>
+```rust
+struct MessageId([u8; MESSAGE_ID_LENGTH]);
+```
 
-## Seed
+## `Seed`
+[Seed]: #Seed
 
+| Field | Requried | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
+## `Message`
+[Message]: #Message
 
-<table>
-  <tr>
-    <td><strong>Property</strong></td>
-    <td><strong>Required</strong></td>
-    <td><strong>Type</strong></td>
-    <td><strong>Description</strong></td>
-  </tr>
-  <tr>
-    <td>seed</td>
-    <td>&#10004;</td>
-    <td>[u8; 32]</td>
-    <td>An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid.</td>
-  </tr>
-</table>
+The message object returned by various functions; based on the RFC for the Message object. Here's the brief overview of each components in Message type would look like:
 
-## Encoding
+```rust
+struct Message {
+    parent1: MessageId,
+    parent2: MessageId,
+    payload: Payload,
+    nonce: u64,
+}
 
-The converter/encoder used to convert the message into bytes/trytes (whatever the transaction would need). We should offer several off-the-shelve encoders for this to set some standards, if we still use Ternary for encoding it would like this:
+enum Payload {
+    Transaction(Box<Transaction>),
+    Milestone(Box<Milestone>),
+    Indexation(Box<Indexation>),
+}
 
+struct Transaction {
+    pub essence: TransactionEssence,
+    pub unlock_blocks: Vec<UnlockBlock>,
+}
 
+struct Milestone {
+    index: u32,
+    timestamp: u64,
+    merkle_proof: Box<[u8]>,
+    signatures: Vec<Box<[u8]>>,
+}
 
-*   Encoding::Bytes (convert bytes to trytes using the most efficient method for this, to be defined)
-*   Encoding::UTF8 (the default, converts UTF-8/Unicode to trytes which basically comes down to being an alias for converters.Bytes but maybe with another conversion function in there to convert a Unicode string to UTF-8/bytes first).
-*   Encoding::Ascii (legacy fallback to Ascii character to Tryte conversion only, implemented as done in the Typescript/Go/Python lib (current Rust implementation is incomplete and does not include characters beyond alphanumeric).
+struct Indexation {
+    index: String,
+    data: Box<[u8]>,
+}
 
+struct TransactionEssence {
+    pub(crate) inputs: Box<[Input]>,
+    pub(crate) outputs: Box<[Output]>,
+    pub(crate) payload: Option<Payload>,
+}
 
-## Message
+enum Input {
+    UTXO(UTXOInput),
+}
 
-The message object returned by various functions; based on the RFC for the Message object.
+struct UTXOInput {
+    id: TransactionId,
+    index: u16,
+}
 
-<table>
-  <tr>
-    <td><strong>Property</strong></td>
-    <td><strong>Required</strong></td>
-    <td><strong>Type</strong></td>
-    <td><strong>Description</strong></td>
-  </tr>
-  <tr>
-    <td>version</td>
-    <td>&#10004;</td>
-    <td>number</td>
-    <td>Message version. Defaults to `1`.</td>
-  </tr>
-  <tr>
-    <td>trunk</td>
-    <td>&#10004;</td>
-    <td>string</td>
-    <td>Message id of the first message this message refers to.</td>
-  </tr>
-  <tr>
-    <td>branch</td>
-    <td>&#10004;</td>
-    <td>string</td>
-    <td>Message id of the second message this message refers to.</td>
-  </tr>
-  <tr>
-    <td>payload_length</td>
-    <td>&#10004;</td>
-    <td>number</td>
-    <td>Length of the payload.</td>
-  </tr>
-    <tr>
-    <td>payload</td>
-    <td>&#10004;</td>
-    <td>
-        <a href="#signedtransactionpayload">SignedTransactionPayload</a> |
-        <a href="#unsigneddatapayload">UnsignedDataPayload</a> |
-        <a href="#signeddatapayload">SignedDataPayload</a>
-    </td>
-    <td>Transaction amount (exposed as a custom type with additional methods).</td>
-  </tr>
-  <tr>
-    <td>timestamp</td>
-    <td>&#10004;</td>
-    <td><a href="#timestamp">Timestamp</a></td>
-    <td>Transaction timestamp (exposed as a custom type with additional methods).</td>
-  </tr>
-  <tr>
-    <td>nonce</td>
-    <td>&#10004;</td>
-    <td>string</td>
-    <td>Transaction nonce.</td>
-  </tr>
-  <tr>
-    <td>confirmed</td>
-    <td>&#10004;</td>
-    <td>boolean</td>
-    <td>Determines if the transaction is confirmed.</td>
-  </tr>
-</table>
+enum Output {
+    SignatureLockedSingle(SignatureLockedSingleOutput),
+}
+
+struct SignatureLockedSingleOutput {
+    address: Address,
+    amount: NonZeroU64,
+}
+
+enum UnlockBlock {
+    Signature(SignatureUnlock),
+    Reference(ReferenceUnlock),
+}
+
+enum SignatureUnlock {
+    Wots(WotsSignature),
+    Ed25519(Ed25519Signature),
+}
+
+struct Ed25519Signature {
+    public_key: [u8; 32],
+    signature: Box<[u8]>,
+}
+
+struct WotsSignature(Vec<u8>);
+
+struct ReferenceUnlock(u16);
+```
+
+## `OutputMestadata`
+[`OutputMestadata`]: #OutputMestadata
+
+The mestadata of an output:
+
+```rust
+pub struct OutputMetadata {
+    /// Message ID of the output
+    pub message_id: String,
+    /// Transaction ID of the output
+    pub transaction_id: String,
+    /// Output index.
+    pub output_index: u16,
+    /// Spend status of the output
+    pub is_spent: bool,
+    /// Corresponding address
+    pub address: Address,
+    /// Balance amount
+    pub amount: u64,
+}
+```
+
+## `BIP32Path`
+[BIP32Path]: #BIP32Path
+
+A valid BIP32 path. The field is ommited. Users can create from a String like `m/0'/0'/1'` for example.
+
+## `Address`
+[Address]: #Address
+
+An address is a enum which could be either Ed25519 format or the legay WOTS. Users can create from a correct fixed length bytes.
+
+## `Milestone`
+[Milestone]: #Milestone
+
+A milestone metadata.
+
+```rust
+struct Milestone {
+    /// Milestone index
+    pub milestone_index: u64,
+    /// Milestone ID
+    pub message_ids: String,
+    /// Timestamp
+    pub timestamp: u64,
+}
+```

@@ -1,32 +1,21 @@
 [package]
 name = "examples"
 version = "0.0.0"
-authors = ["Yu-Wei Wu <wusyong9104@gmail.com>"]
-edition = "2018"
 publish = false
+edition = "2018"
 
 [dev-dependencies]
-anyhow = "1.0.28"
-iota-core = { path = "../iota-core" }
-smol = {version = "0.1.18", features = ["tokio02"] }
-smol-potat = "0.3.1"
+tokio = { version = "0.2.22", features = ["full"] }
+iota-core = { path = "../iota-core"}
 
 [[example]]
-name = "generate_new_address"
-path = "generate_new_address.rs"
+name = "address"
+path = "address.rs"
 
 [[example]]
-name = "get_node_info"
-path = "get_node_info.rs"
+name = "balance"
+path = "balance.rs"
 
 [[example]]
-name = "get_unchecked_address"
-path = "get_unchecked_address.rs"
-
-[[example]]
-name = "message_transfers"
-path = "message_transfers.rs"
-
-[[example]]
-name = "send_transfers"
-path = "send_transfers.rs"
+name = "transaction"
+path = "transaction.rs"

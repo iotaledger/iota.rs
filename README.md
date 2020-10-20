@@ -1,9 +1,6 @@
 # iota.rs
 
-[![Build status](https://img.shields.io/github/workflow/status/iotaledger/iota.rs/build_and_test)](https://github.com/iotaledger/iota.rs/actions)
-[![Version](https://img.shields.io/crates/v/iota-core.svg)](https://crates.io/crates/iota-core)
-[![Documentation](https://docs.rs/iota-core/badge.svg?version=0.2.0-alpha)](https://docs.rs/iota-core/0.2.0-alpha.1/iota/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/iotaledger/iota.rs/blob/master/LICENSE)
+🚧 This repository is currently moving to Chrysalis part 2! It will have many breaking change along the way, and binding crates are not working at the moment. Please use with caution! 🚧
 
 This is the **alpha** version of official Rust library, which allows you to do the following:
 * Create transactions
@@ -11,7 +8,7 @@ This is the **alpha** version of official Rust library, which allows you to do t
 * Generate addresses
 * Interact with an IOTA node
 
-This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-core` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `send_transfers` and `traverse_bundle` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
+This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-core` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `post_message` and `get_outputs` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
 |Table of contents|
 |:----|
@@ -35,7 +32,7 @@ Using the library is fairly easy, just add it as dependancy in `Cargo.toml`:
 
 ```
 [dependencies]
-iota-core = { git = "https://github.com/iotaledger/iota.rs" }
+iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 ```
 
 And then you can use the library in your code with `iota`
@@ -55,7 +52,7 @@ cargo doc --document-private-items --no-deps --open
 You can see the examples in [examples](examples/) directory and try them with:
 
 ```
-cargo run --example send_transfers
+cargo run --example balance
 ```
 
 ## Supporting the project
@@ -66,4 +63,4 @@ If you want to get involved in the community, need help with setting up, have an
 
 ## License
 
-The MIT license can be found [here](LICENSE).
+The Apache 2.0 license can be found [here](LICENSE).
