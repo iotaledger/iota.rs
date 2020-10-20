@@ -316,8 +316,8 @@ impl From<&Payload> for PayloadJson {
                 type_: 0,
                 index: None,
                 data: None,
-                essence: Some((&i.essence).into()),
-                unlock_blocks: Some(i.unlock_blocks.iter().map(|input| input.into()).collect()),
+                essence: Some((i.essence()).into()),
+                unlock_blocks: Some(i.unlock_blocks().iter().map(|input| input.into()).collect()),
             },
             Payload::Indexation(_i) => Self {
                 type_: 2,
@@ -345,10 +345,7 @@ impl TryFrom<PayloadJson> for Payload {
                     .map(|unlock| unlock.try_into())
                     .filter_map(|i| i.ok())
                     .collect();
-                let transaction = Transaction {
-                    essence: value.essence.expect("Must have essence.").try_into()?,
-                    unlock_blocks,
-                };
+                let transaction: Transaction = (value.essence.expect("Must have essence.").try_into()?, unlock_blocks).try_into()?;
 
                 Ok(Payload::Transaction(Box::new(transaction)))
             }
