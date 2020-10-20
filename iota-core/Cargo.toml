@@ -10,7 +10,7 @@ license = "Apache-2.0"
 name = "iota"
 
 [dependencies]
-bee-message = { git = "https://github.com/Alex6323/bee-p.git", branch = "transaction-builder" }
+bee-message = { git = "https://github.com/Alex6323/bee-p.git" }
 bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client" }
 
