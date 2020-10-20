@@ -64,7 +64,8 @@ impl<'a> SendBuilder<'a> {
         }
 
         let mut balance = 0;
-        let mut inputs = Vec::new();
+        let mut paths = Vec::new();
+        let mut essence = TransactionEssence::builder();
         loop {
             let addresses = self
                 .client
@@ -97,14 +98,13 @@ impl<'a> SendBuilder<'a> {
                                 let mut transaction_id = [0u8; TRANSACTION_ID_LENGTH];
                                 hex::decode_to_slice(output.transaction_id, &mut transaction_id)?;
 
-                                inputs.push((
+                                paths.push(address_path);
+                                essence = essence.add_input(Input::UTXO(
                                     UTXOInput::new(
                                         TransactionId::from(transaction_id),
                                         output.output_index,
                                     )
-                                    .map_err(|_| Error::TransactionError)?
-                                    .into(),
-                                    address_path,
+                                    .map_err(|_| Error::TransactionError)?,
                                 ));
                             } else {
                                 end = true;
@@ -122,18 +122,21 @@ impl<'a> SendBuilder<'a> {
 
         // Build signed transaction payload
         let outputs = self.outputs;
-        let total = outputs.iter().fold(0, |acc, x| {
-            let Output::SignatureLockedSingle(x) = x;
-            acc + &x.amount().get()
-        });
+        let mut total = 0;
+        for output in outputs {
+            let Output::SignatureLockedSingle(x) = &output;
+            total += x.amount().get();
+            essence = essence.add_output(output);
+        }
         if balance <= total {
             return Err(Error::NotEnoughBalance(balance));
         }
-        // TODO overflow check?
-        let payload = TransactionBuilder::new(self.seed)
-            .set_inputs(inputs)
-            .set_outputs(outputs)
-            .build()
+        // TODO overflow check
+        //essence.add_input(input) output
+        let payload = TransactionBuilder::new()
+            .with_essence(essence.finish()?)
+            // TODO .add_unlock_block(unlock_block)
+            .finish()
             .map_err(|_| Error::TransactionError)?;
 
         // get tips
@@ -145,7 +148,7 @@ impl<'a> SendBuilder<'a> {
             .parent1(parent1)
             .parent2(parent2)
             .payload(payload)
-            .build()
+            .finish()
             .map_err(|_| Error::TransactionError)?;
 
         self.client.post_message(&message).await

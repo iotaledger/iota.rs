@@ -60,15 +60,15 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
-    pub async fn metadata(self, message_id: &MessageId) -> Result<MessageMetadata> {
+    pub async fn metadata(self, message_id: &MessageId) -> Result<serde_json::Value> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id));
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {
             200 => {
-                let meta = resp.json::<Response<MessageMetadata>>().await?;
-                Ok(meta.data)
+                let meta = resp.json::<serde_json::Value>().await?;
+                Ok(meta)
             }
             status => Err(Error::ResponseError(status)),
         }

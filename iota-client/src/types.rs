@@ -289,7 +289,7 @@ impl TryFrom<MessageJson> for Message {
             .parent1(MessageId::new(parent1))
             .parent2(MessageId::new(parent2))
             .payload(value.payload.try_into()?)
-            .build()?)
+            .finish()?)
         // .nonce(value.nonce) TODO: Missing nounce method
     }
 }
@@ -337,21 +337,19 @@ impl TryFrom<PayloadJson> for Payload {
     fn try_from(value: PayloadJson) -> Result<Self> {
         match value.type_ {
             0 => {
+                let mut transaction = Transaction::builder();
+                transaction = transaction
+                    .with_essence(value.essence.expect("Must have essence.").try_into()?);
+
                 let unlock_blocks = value
                     .unlock_blocks
                     .expect("Must have unlcok blocks.")
-                    .into_vec()
-                    .into_iter()
-                    .map(|unlock| unlock.try_into())
-                    .filter_map(|i| i.ok())
-                    .collect();
-                let transaction: Transaction = (
-                    value.essence.expect("Must have essence.").try_into()?,
-                    unlock_blocks,
-                )
-                    .try_into()?;
+                    .into_vec();
+                for unlock_block in unlock_blocks {
+                    transaction = transaction.add_unlock_block(unlock_block.try_into()?);
+                }
 
-                Ok(Payload::Transaction(Box::new(transaction)))
+                Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
             2 => {
                 let indexation = Indexation::new(
@@ -604,7 +602,7 @@ impl TryFrom<SignatureJson> for SignatureUnlock {
     fn try_from(value: SignatureJson) -> Result<Self> {
         let mut public_key = [0u8; 32];
         hex::decode_to_slice(value.publickey, &mut public_key)?;
-        let signature = value.signature.as_bytes().to_vec().into_boxed_slice();
+        let signature = hex::decode(value.signature)?.into_boxed_slice();
         Ok(Ed25519Signature::new(public_key, signature).into())
     }
 }

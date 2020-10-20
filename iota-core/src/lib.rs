@@ -18,4 +18,4 @@ pub use client::{Client, ClientBuilder};
 pub use client::*;
 pub use message::prelude;
 pub use prelude::*;
-pub use signing::binary::BIP32Path;
+pub use signing::{binary::BIP32Path, Seed};
