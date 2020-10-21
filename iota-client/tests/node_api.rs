@@ -52,9 +52,9 @@ async fn test_post_message_with_indexation() {
     let tips = client.get_tips().await.unwrap();
 
     let message = Message::builder()
-        .parent1(tips.0)
-        .parent2(tips.1)
-        .payload(Payload::Indexation(Box::new(index)))
+        .with_parent1(tips.0)
+        .with_parent2(tips.1)
+        .with_payload(Payload::Indexation(Box::new(index)))
         .finish()
         .unwrap();
 
@@ -130,9 +130,9 @@ async fn test_post_message_with_transaction() {
     //println!("{:#?}", transaction);
     let tips = client.get_tips().await.unwrap();
     let message = Message::builder()
-        .parent1(tips.0)
-        .parent2(tips.1)
-        .payload(Payload::Transaction(Box::new(transaction)))
+        .with_parent1(tips.0)
+        .with_parent2(tips.1)
+        .with_payload(Payload::Transaction(Box::new(transaction)))
         .finish()
         .unwrap();
 

@@ -286,9 +286,9 @@ impl TryFrom<MessageJson> for Message {
         let mut parent2 = [0u8; 32];
         hex::decode_to_slice(value.parent2, &mut parent2)?;
         Ok(Message::builder()
-            .parent1(MessageId::new(parent1))
-            .parent2(MessageId::new(parent2))
-            .payload(value.payload.try_into()?)
+            .with_parent1(MessageId::new(parent1))
+            .with_parent2(MessageId::new(parent2))
+            .with_payload(value.payload.try_into()?)
             .finish()?)
         // .nonce(value.nonce) TODO: Missing nounce method
     }

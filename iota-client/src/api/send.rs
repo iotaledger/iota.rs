@@ -183,9 +183,9 @@ impl<'a> SendBuilder<'a> {
         // building message
         let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
-            .parent1(parent1)
-            .parent2(parent2)
-            .payload(payload)
+            .with_parent1(parent1)
+            .with_parent2(parent2)
+            .with_payload(payload)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
