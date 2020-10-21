@@ -1,8 +1,12 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_common_ext::packable::Packable;
+use bee_message::payload::transaction::TransactionEssenceBuilder;
 use bee_message::prelude::*;
-use bee_signing_ext::{Seed, Signer, binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed}};
+use bee_signing_ext::{
+    binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed},
+    Seed, Signer,
+};
 use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
 
 use std::num::NonZeroU64;
@@ -112,7 +116,8 @@ async fn test_post_message_with_transaction() {
     let essence = TransactionEssenceBuilder::new()
         .add_input(inputs[0].clone().into())
         .add_output(output)
-        .finish().unwrap();
+        .finish()
+        .unwrap();
     let mut serialized_essence = vec![];
     essence.pack(&mut serialized_essence).unwrap();
 

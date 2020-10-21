@@ -21,9 +21,9 @@ async fn main() {
     let tips = client.get_tips().await.unwrap();
 
     let message = Message::builder()
-        .parent1(tips.0)
-        .parent2(tips.1)
-        .payload(Payload::Indexation(Box::new(index)))
+        .with_parent1(tips.0)
+        .with_parent2(tips.1)
+        .with_payload(Payload::Indexation(Box::new(index)))
         .finish()
         .unwrap();
     println!("message: {:?}", message);
@@ -31,13 +31,13 @@ async fn main() {
 
     println!("MessageId {}", r);
 
-    let r = client.get_message().index(&"Hello").await.unwrap();
+    let fetched_messages = client.get_message().index(&"Hello").await.unwrap();
 
-    println!("{:#?}", r);
+    println!("{:#?}", fetched_messages);
 
     let r = client
         .get_message()
-        .data(&hex_to_message_id(r[0]).unwrap())
+        .data(&hex_to_message_id(fetched_messages[0]).unwrap())
         .await
         .unwrap();
 
