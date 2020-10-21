@@ -79,7 +79,7 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
-        if self.nodes.len() == 0 {
+        if self.nodes.is_empty() {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
 

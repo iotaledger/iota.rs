@@ -319,10 +319,10 @@ impl From<&Payload> for PayloadJson {
                 essence: Some((i.essence()).into()),
                 unlock_blocks: Some(i.unlock_blocks().iter().map(|input| input.into()).collect()),
             },
-            Payload::Indexation(_i) => Self {
+            Payload::Indexation(i) => Self {
                 type_: 2,
-                index: Some(String::from("TEST")),
-                data: Some(String::from("")),
+                index: Some(i.index().to_string()),
+                data: Some(hex::encode(i.data())),
                 essence: None,
                 unlock_blocks: None,
             },
@@ -381,8 +381,8 @@ impl From<&TransactionEssence> for TransactionEssenceJson {
     fn from(i: &TransactionEssence) -> Self {
         Self {
             type_: 0,
-            inputs: i.inputs().into_iter().map(|input| input.into()).collect(),
-            outputs: i.outputs().into_iter().map(|input| input.into()).collect(),
+            inputs: i.inputs().iter().map(|input| input.into()).collect(),
+            outputs: i.outputs().iter().map(|input| input.into()).collect(),
             payload: serde_json::Value::Null,
         }
     }

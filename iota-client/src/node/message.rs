@@ -1,6 +1,4 @@
-use crate::{
-    ChildrenMessageIds, Client, Error, MessageIds, MessageJson, MessageMetadata, Response, Result,
-};
+use crate::{ChildrenMessageIds, Client, Error, MessageIds, MessageJson, Response, Result};
 
 use bee_message::{Message, MessageId};
 
@@ -30,7 +28,7 @@ impl<'a> GetMessageBuilder<'a> {
                 let ids = resp.json::<Response<MessageIds>>().await?;
                 ids.data
                     .inner
-                    .into_iter()
+                    .iter()
                     .map(|s| {
                         let mut message_id = [0u8; 32];
                         hex::decode_to_slice(s, &mut message_id)?;
@@ -98,7 +96,7 @@ impl<'a> GetMessageBuilder<'a> {
                 let meta = resp.json::<Response<ChildrenMessageIds>>().await?;
                 meta.data
                     .inner
-                    .into_iter()
+                    .iter()
                     .map(|s| {
                         let mut message_id = [0u8; 32];
                         hex::decode_to_slice(s, &mut message_id)?;

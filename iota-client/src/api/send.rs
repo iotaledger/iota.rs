@@ -1,8 +1,11 @@
 use crate::{Client, Error, Result};
 
-use bee_message::prelude::*;
-use bee_signing_ext::{binary::{BIP32Path, Ed25519PrivateKey}, Seed, Signer};
 use bee_common_ext::packable::Packable;
+use bee_message::prelude::*;
+use bee_signing_ext::{
+    binary::{BIP32Path, Ed25519PrivateKey},
+    Seed, Signer,
+};
 
 use std::num::NonZeroU64;
 
@@ -60,7 +63,7 @@ impl<'a> SendBuilder<'a> {
             None => 0,
         };
 
-        if self.outputs.len() == 0 {
+        if self.outputs.is_empty() {
             return Err(Error::MissingParameter(String::from("Outputs")));
         }
 
@@ -134,7 +137,8 @@ impl<'a> SendBuilder<'a> {
         }
         let essence = essence.finish()?;
         let mut serialized_essence = Vec::new();
-        essence.pack(&mut serialized_essence)
+        essence
+            .pack(&mut serialized_essence)
             .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
 
         let mut unlock_blocks = Vec::new();
@@ -143,7 +147,9 @@ impl<'a> SendBuilder<'a> {
             // Check if current path is same as previous path
             if last_index.0 == Some(path) {
                 // If so, add a reference unlock block
-                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(last_index.1 as u16)?));
+                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(
+                    last_index.1 as u16,
+                )?));
             } else {
                 // If not, we should create a signature unlock block
                 match &self.seed {
@@ -153,13 +159,11 @@ impl<'a> SendBuilder<'a> {
                         let public_key = private_key.generate_public_key().to_bytes();
                         // The block should sign the entire transaction essence part of the transaction payload
                         let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
-                        unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
-                            public_key, signature,
-                        ))));
+                        unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(
+                            Ed25519Signature::new(public_key, signature),
+                        )));
                     }
-                    Seed::Wots(_) => {
-                        panic!("Wots signing scheme isn't supported.")
-                    }
+                    Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
                 }
 
                 // Update last signature block path and index
@@ -167,14 +171,13 @@ impl<'a> SendBuilder<'a> {
             }
         }
         // TODO overflow check
-        let mut payload_builder = TransactionBuilder::new()
-            .with_essence(essence);
-        
+        let mut payload_builder = TransactionBuilder::new().with_essence(essence);
         for unlock in unlock_blocks {
             payload_builder = payload_builder.add_unlock_block(unlock);
         }
 
-        let payload = payload_builder.finish()
+        let payload = payload_builder
+            .finish()
             .map_err(|_| Error::TransactionError)?;
 
         // get tips

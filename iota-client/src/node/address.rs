@@ -53,7 +53,7 @@ impl<'a> GetAddressBuilder<'a> {
                     .await?
                     .data
                     .output_ids;
-                r.into_iter()
+                r.iter()
                     .map(|s| {
                         let mut transaction_id = [0u8; 32];
                         hex::decode_to_slice(&s[..64], &mut transaction_id)?;

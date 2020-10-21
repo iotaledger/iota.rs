@@ -7,6 +7,7 @@ edition = "2018"
 [dev-dependencies]
 tokio = { version = "0.2.22", features = ["full"] }
 iota-core = { path = "../iota-core"}
+hex = "0.4.2"
 
 [[example]]
 name = "address"
@@ -15,6 +16,10 @@ path = "address.rs"
 [[example]]
 name = "balance"
 path = "balance.rs"
+
+[[example]]
+name = "indexation"
+path = "indexation.rs"
 
 [[example]]
 name = "transaction"
