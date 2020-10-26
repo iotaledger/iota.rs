@@ -13,9 +13,7 @@ Specification of High Level Abstraction API
 * [Builder](#Builder)
 * [General API](#General-API)
   * [`send`](#send)
-  * [`find_messages`](#find_messages)
-  * [`find_outputs`](#find_outputs)
-  * [`find_addresses`](#find_addresses)
+  * [`get_message`](#get_message)
   * [`get_unspent_address`](#get_unspent_address)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
@@ -25,9 +23,11 @@ Specification of High Level Abstraction API
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
   * [`post_message`](#post_message)
-  * [`get_message`](#get_message)
   * [`get_output`](#get_output)
   * [`get_address`](#get_address)
+  * [`find_messages`](#find_messages)
+  * [`find_outputs`](#find_outputs)
+  * [`find_addresses`](#find_addresses)
   * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
   * [Network]
@@ -80,13 +80,15 @@ A generic send function for easily sending a value transaction message.
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **seed** | ✔ | [Seed] | The seed of the account we are going to spend. |
-| **address** | ✔ | [Address] | The address to send to. |
-| **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
+| **seed** | ✘ | [Seed] | The seed of the account we are going to spend. |
+| **address** | ✘ | [Address] | The address to send to. |
+| **value** | ✘ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
 | **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be used. |
 | **indexation_key** | ✘ | String | An optional indexation key of the indexation payload. |
-| **data** | ✘ | String | An optional indexation data of the indexation payload. |
+| **data** | ✘ | [u8] | An optional indexation data of the indexation payload. |
+
+* If only `indexation_key` and `data` are provided. This method will create a message with only indexation payload instead.
 
 ### Return
 
@@ -104,35 +106,28 @@ There could be two different scenarios in which this method can be used:
 * Perform proof-of-work locally; 
 * Send the message using [`post_messages()`](#post_messages);
 
-## `find_messages()`
+## `get_message()`
 
-Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
+(`GET /api/v1/messages`)
 
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
-| **message_id** | ✘ | [[MessageId]] | The identifier of message. |
-
-### Returns
-
-A vector of [Message] Object.
-
-## `find_outputs()`
-
-Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit. 
+Endpoint collection all about GET messages.
 
 ### Parameters
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
-| **addresses** | ✘ | [[Address]] | The identifier of address. |
+| **index** | `index()` | String | Indexation key of the message. |
+| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MessageId] | The identifier of message. |
 
 ### Returns
 
-A vector of [OutputMetadata] Object.
+Depend on the final calling method, users could get different results they need:
+
+- `index()`: Return messages with matching the index key.
+- `metadata()`: Return metadata of the message.
+- `data()`: Return a [Message] object.
+- `raw()`: Return the raw data of given message.
+- `children()`: Return the list of [messageId]s that reference a message by its identifier.
 
 ## `get_unspent_address()`
 
@@ -158,22 +153,6 @@ Following are the steps for implementing this method:
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
-
-## `find_addresses()`
-
-Return a list of addresses from the seed regardless of their validity.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **range** | ✘ | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
-
-### Return
-
-A list of [Address]es
 
 ### Implementation Details
 
@@ -230,17 +209,6 @@ Following are the steps for implementing this method:
 *   Get latest balance for the provided address using [`get_outputs()`](#get_outputs-get-outputs) with addresses as
     parameter;
 *   Return the list of Output which contains corresponding pairs of address and balance.
-
-## `reattach()`
-
-Reattach a message for provided message id. Message can be reattached only if they are valid and haven't been
-confirmed for a while. 
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message_id** | ✔ | [MessageId] | The identifier of message. |
 
 ### Returns:
 
@@ -337,34 +305,11 @@ Submit a message. The node takes care of missing fields and tries to build the m
 
 The [MessageId] of the message object.
 
-## `get_message()`
-
-(`GET /api/v1/messages`)
-
-Endpoint collection all about GET messages.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **index** | `index()` | String | Indexation key of the message. |
-| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MessageId] | The identifier of message. |
-
-### Returns
-
-Depend on the final calling method, users could get different results they need:
-
-- `index()`: Return messages with matching the index key.
-- `metadata()`: Return metadata of the message.
-- `data()`: Return a [Message] object.
-- `raw()`: Return the raw data of given message.
-- `children()`: Return the list of [messageId]s that reference a message by its identifier.
-
 ## `get_output()`
 
 (`GET /outputs`)
 
-Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction. It will have additional methods such as reattach to perform extra functionality.
 
 ### Parameters
 
@@ -392,6 +337,52 @@ Depend on the final calling method, users could get different outputs they need:
 
 - `balance()`: Return confirmed balance of the address.
 - `outputs()`: Return transaction IDs with corresponding output index of the address it has.
+
+## `find_messages()`
+
+Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
+| **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
+
+### Returns
+
+A vector of [Message] Object.
+
+## `find_outputs()`
+
+Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit. 
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
+| **addresses** | ✘ | [[Address]] | The identifier of address. |
+
+### Returns
+
+A vector of [OutputMetadata] Object.
+
+## `find_addresses()`
+
+Return a list of addresses from the seed regardless of their validity.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **range** | ✘ | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
+
+### Return
+
+A list of [Address]es
 
 ## `get_milestone()`
 
