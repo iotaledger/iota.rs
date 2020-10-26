@@ -52,7 +52,7 @@ The data structure to initialize the instance of the Higher level client library
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **network** | ✔ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **network** | ✘ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
 | **node** | ✘ | String | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_pool_urls** | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
@@ -60,6 +60,8 @@ The data structure to initialize the instance of the Higher level client library
 | **quorum_threshold** | ✘ | usize | The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3). |
 | **local_pow** | ✘ | bool | If not defined it checks for remote PoW capability and uses that, if no remote PoW it does local PoW. Either not filled in, True or False. |
 | **state_adapter** | ✘ | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
+
+* Note that there must be at least one node to build the instance successfully.
 
 ### Return
 
