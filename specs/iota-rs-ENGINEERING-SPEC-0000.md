@@ -20,7 +20,6 @@ Specification of High Level Abstraction API
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
   * [`reattach`](#reattach)
-  * [`get_address`](#get_address)
 * [Full Node API](#Full-Node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
@@ -28,6 +27,7 @@ Specification of High Level Abstraction API
   * [`post_message`](#post_message)
   * [`get_message`](#get_message)
   * [`get_output`](#get_output)
+  * [`get_address`](#get_address)
   * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
   * [Network]
@@ -254,24 +254,6 @@ Following are the steps for implementing this method:
 * Perform proof-of-work;
 * Store messages on the tangle using [`post_messages()`](#post_messages-post-messages);
 
-## `get_address()`
-
-(`GET /addresses`)
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **address** | ✔ | [Address] | The address to search for. |
-
-### Returns
-
-Depend on the final calling method, users could get different outputs they need:
-
-- `balance()`: Return confirmed balance of the address.
-- `outputs()`: Return transaction IDs with corresponding output index of the address it has.
-
-
 # Low level Node API
 
 Low level API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
@@ -391,6 +373,23 @@ Get the producer of the output, the corresponding address, amount and spend stat
 ### Returns
 
 An [OutputMetadata] that contains various information about the output.
+
+## `get_address()`
+
+(`GET /addresses`)
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Address] | The address to search for. |
+
+### Returns
+
+Depend on the final calling method, users could get different outputs they need:
+
+- `balance()`: Return confirmed balance of the address.
+- `outputs()`: Return transaction IDs with corresponding output index of the address it has.
 
 ## `get_milestone()`
 
