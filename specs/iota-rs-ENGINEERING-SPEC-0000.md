@@ -79,9 +79,9 @@ A generic send function for easily sending a value transaction message.
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed of the account we are going to spend. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **address** | ✔ | [Address] | The address to send to. |
 | **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be used. |
 | **indexation** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
 
@@ -140,7 +140,7 @@ Return a valid unspent address.
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
@@ -165,7 +165,7 @@ Return a list of addresses from the seed regardless of their validity.
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **range** | ✘ | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
 
 ### Return
@@ -188,7 +188,7 @@ Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 de
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
