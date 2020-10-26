@@ -20,14 +20,14 @@ Specification of High Level Abstraction API
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
   * [`reattach`](#reattach)
-  * [`get_message`](#get_message)
-  * [`get_output`](#get_output)
   * [`get_address`](#get_address)
 * [Full Node API](#Full-Node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
   * [`post_message`](#post_message)
+  * [`get_message`](#get_message)
+  * [`get_output`](#get_output)
   * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
   * [Network]
@@ -254,45 +254,6 @@ Following are the steps for implementing this method:
 * Perform proof-of-work;
 * Store messages on the tangle using [`post_messages()`](#post_messages-post-messages);
 
-## `get_message()`
-
-(`GET /api/v1/messages`)
-
-Endpoint collection all about GET messages.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **index** | `index()` | String | Indexation key of the message. |
-| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MessageId] | The identifier of message. |
-
-### Returns
-
-Depend on the final calling method, users could get different results they need:
-
-- `index()`: Return messages with matching the index key.
-- `metadata()`: Return metadata of the message.
-- `data()`: Return a [Message] object.
-- `raw()`: Return the raw data of given message.
-- `children()`: Return the list of [messageId]s that reference a message by its identifier.
-
-## `get_output()`
-
-(`GET /outputs`)
-
-Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
-
-### Returns
-
-An [OutputMetadata] that contains various information about the output.
-
 ## `get_address()`
 
 (`GET /addresses`)
@@ -391,6 +352,45 @@ Submit a message. The node takes care of missing fields and tries to build the m
 ### Returns
 
 The [MessageId] of the message object.
+
+## `get_message()`
+
+(`GET /api/v1/messages`)
+
+Endpoint collection all about GET messages.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **index** | `index()` | String | Indexation key of the message. |
+| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MessageId] | The identifier of message. |
+
+### Returns
+
+Depend on the final calling method, users could get different results they need:
+
+- `index()`: Return messages with matching the index key.
+- `metadata()`: Return metadata of the message.
+- `data()`: Return a [Message] object.
+- `raw()`: Return the raw data of given message.
+- `children()`: Return the list of [messageId]s that reference a message by its identifier.
+
+## `get_output()`
+
+(`GET /outputs`)
+
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
+
+### Returns
+
+An [OutputMetadata] that contains various information about the output.
 
 ## `get_milestone()`
 
