@@ -20,8 +20,6 @@ pub enum Error {
     QuorumError,
     /// Quorum result didn't pass the minimum threshold
     QuorumThreshold,
-    /// Errors from reqwest api call
-    ReqwestError(reqwest::Error),
     /// Response error from IRI query
     ResponseError(String),
     /// Ternary conversion error
@@ -30,6 +28,8 @@ pub enum Error {
     ThresholdNotEnough,
     /// Error on Url type conversion
     UrlError,
+    /// Error on IO
+    IoError(std::io::Error),
 }
 
 impl fmt::Display for Error {
@@ -41,7 +41,7 @@ impl fmt::Display for Error {
             Error::NotTailHash => "Provided hash is not tail".fmt(f),
             Error::QuorumError => "Fail to find quorum result".fmt(f),
             Error::QuorumThreshold => "Quorum result didn't pass the minimum threshold".fmt(f),
-            Error::ReqwestError(e) => e.fmt(f),
+            Error::IoError(e) => e.fmt(f),
             Error::ResponseError(s) => s.fmt(f),
             Error::ThresholdNotEnough => "Cannot find enough inputs to satisify threshold".fmt(f),
             Error::TernaryError => "Fail to convert message to trytes".fmt(f),
@@ -52,8 +52,8 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-impl From<reqwest::Error> for Error {
-    fn from(error: reqwest::Error) -> Self {
-        Error::ReqwestError(error)
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        Error::IoError(error)
     }
 }

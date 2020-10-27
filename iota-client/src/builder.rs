@@ -7,8 +7,6 @@ use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::sync::{Arc, RwLock};
 
-use reqwest::Url;
-
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
 pub enum Network {
@@ -22,7 +20,7 @@ pub enum Network {
 
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
-    nodes: Vec<Url>,
+    nodes: Vec<String>,
     network: Network,
     quorum_size: u8,
     quorum_threshold: u8,
@@ -41,16 +39,14 @@ impl ClientBuilder {
 
     /// Add a Iota node
     pub fn node(mut self, url: &str) -> Result<Self> {
-        let url = Url::parse(url).map_err(|_| Error::UrlError)?;
-        self.nodes.push(url);
+        self.nodes.push(url.to_string());
         Ok(self)
     }
 
     /// Add a list of Iota nodes
     pub fn nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
-            let url = Url::parse(url).map_err(|_| Error::UrlError)?;
-            self.nodes.push(url);
+            self.nodes.push(url.to_string());
         }
         Ok(self)
     }
@@ -101,24 +97,10 @@ impl ClientBuilder {
 
         let client = Client {
             pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
-            sync: Arc::new(RwLock::new(Vec::new())),
-            client: reqwest::Client::new(),
             mwm,
             quorum_size,
             quorum_threshold,
         };
-
-        let mut sync = client.clone();
-        smol::block_on(async { sync.sync().await });
-
-        std::thread::spawn(move || {
-            smol::block_on(async {
-                loop {
-                    smol::Timer::after(std::time::Duration::from_secs(180)).await;
-                    sync.sync().await;
-                }
-            })
-        });
 
         Ok(client)
     }
