@@ -14,10 +14,10 @@ Specification of High Level Abstraction API
 * [General API](#General-API)
   * [`send`](#send)
   * [`get_message`](#get_message)
+  * [`find_messages`](#find_messages)
   * [`get_unspent_address`](#get_unspent_address)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
-  * [`reattach`](#reattach)
 * [Full Node API](#Full-Node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
@@ -25,7 +25,6 @@ Specification of High Level Abstraction API
   * [`post_message`](#post_message)
   * [`get_output`](#get_output)
   * [`get_address`](#get_address)
-  * [`find_messages`](#find_messages)
   * [`find_outputs`](#find_outputs)
   * [`find_addresses`](#find_addresses)
   * [`get_milestone`](#get_milestone)
@@ -116,18 +115,31 @@ Endpoint collection all about GET messages.
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **index** | `index()` | String | Indexation key of the message. |
-| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MessageId] | The identifier of message. |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
 
 ### Returns
 
 Depend on the final calling method, users could get different results they need:
 
-- `index()`: Return messages with matching the index key.
 - `metadata()`: Return metadata of the message.
 - `data()`: Return a [Message] object.
 - `raw()`: Return the raw data of given message.
 - `children()`: Return the list of [messageId]s that reference a message by its identifier.
+
+## `find_messages()`
+
+Find all messages by provided message IDs. This method will try to query multiple nodes if the request amount exceed individual node limit. 
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
+| **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
+
+### Returns
+
+A vector of [Message] Object.
 
 ## `get_unspent_address()`
 
@@ -195,7 +207,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **addresses** | ✔ | [[MessageId]] | List of addresses with checksum. |
+| **addresses** | ✔ | [[Address]] | List of addresses with checksum. |
 
 ### Return
 
@@ -337,21 +349,6 @@ Depend on the final calling method, users could get different outputs they need:
 
 - `balance()`: Return confirmed balance of the address.
 - `outputs()`: Return transaction IDs with corresponding output index of the address it has.
-
-## `find_messages()`
-
-Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
-| **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
-
-### Returns
-
-A vector of [Message] Object.
 
 ## `find_outputs()`
 
