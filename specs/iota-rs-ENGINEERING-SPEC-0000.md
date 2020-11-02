@@ -80,10 +80,10 @@ A generic send function for easily sending a value transaction message.
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✘ | [Seed] | The seed of the account we are going to spend. |
-| **address** | ✘ | [Address] | The address to send to. |
+| **address** | ✘ | [\[Address\]] | The address(es) to send to. |
 | **value** | ✘ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
 | **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be used. |
+| **output** | ✘ | \[Output\] | Users can manually pick their own output instead of having node decide on which output should be used. |
 | **indexation_key** | ✘ | String | An optional indexation key of the indexation payload. |
 | **data** | ✘ | [u8] | An optional indexation data of the indexation payload. |
 
