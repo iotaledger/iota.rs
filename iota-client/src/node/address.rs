@@ -2,6 +2,8 @@ use crate::{AddressBalance, AddressOutputs, Client, Error, Response, Result};
 
 use bee_message::prelude::{Address, TransactionId, UTXOInput};
 
+use std::convert::TryInto;
+
 /// Builder of GET /api/v1/address/{messageId} endpoint
 pub struct GetAddressBuilder<'a> {
     client: &'a Client,
@@ -57,9 +59,12 @@ impl<'a> GetAddressBuilder<'a> {
                     .map(|s| {
                         let mut transaction_id = [0u8; 32];
                         hex::decode_to_slice(&s[..64], &mut transaction_id)?;
-                        let index = s[64..]
-                            .parse::<u16>()
-                            .map_err(|_| Error::InvalidParameter("index".to_string()))?;
+                        let index = u16::from_le_bytes(
+                            hex::decode(&s[64..])
+                                .map_err(|_| Error::InvalidParameter("index".to_string()))?[..]
+                                .try_into()
+                                .map_err(|_| Error::InvalidParameter("index".to_string()))?,
+                        );
                         Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
                     })
                     .collect::<Result<Box<[UTXOInput]>>>()
