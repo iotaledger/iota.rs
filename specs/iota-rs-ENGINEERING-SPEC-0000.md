@@ -50,9 +50,9 @@ The data structure to initialize the instance of the Higher level client library
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
-| **network** | ✔ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to nood pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **network** | ✔ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
 | **node** | ✘ | String | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_pool_urls** | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
@@ -76,13 +76,13 @@ A generic send function for easily sending a value transaction message.
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed of the account we are going to spend. |
 | **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **address** | ✔ | [Address] | The address to send to. |
-| **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it connot be zero. |
-| **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be use. |
+| **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
+| **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be used. |
 | **indexation** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
 
 ### Return
@@ -91,7 +91,7 @@ The [Message] object we build.
 
 ### Implementation Details
 
-There could be two different scenarios if which this method is used:
+There could be two different scenarios in which this method can be used:
 
 * Validate inputs, such as address, seed, and path to check if they are correct. For example, the provided path must be
   wallet chain which should have depth of 2;
@@ -107,7 +107,7 @@ Find all messages by provided message IDs. This method will try to query mutiple
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
 | **message_id** | ✘ | [[MessageId]] | The identifier of message. |
@@ -118,11 +118,11 @@ A vector of [Message] Object.
 
 ## `find_outputs()`
 
-Find all outputs based on the requests criteria. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
+Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit. 
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **output_id** | ✘ | [UTXOInput] | The identifier of output. |
 | **addresses** | ✘ | [[Address]] | The identifier of address. |
@@ -133,11 +133,11 @@ A vector of [OutputMetadata] Object.
 
 ## `get_unspent_address()`
 
-Return a valid unuspent address.
+Return a valid unspent address.
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
 | **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
@@ -153,7 +153,7 @@ Following are the steps for implementing this method:
 
 * Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
-* Repeat the above step till there's an unuspent addresses found;
+* Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
 
 ## `get_addresses()`
@@ -162,11 +162,11 @@ Return a list of addresses from the seed regardless of their validity.
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
 | **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **range** | ✘ | std::ops::Range | Range indice of the addresses we want to search for **Default is (0..20)** |
+| **range** | ✘ | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
 
 ### Return
 
@@ -185,7 +185,7 @@ Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 de
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
 | **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
@@ -201,7 +201,7 @@ Following are the steps for implementing this method:
 
 * Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
-* Repeat the above step till an addresses of zero balance is found;
+* Repeat the above step till an address of zero balance is found;
 * Accumulate the positive balances and return the result.
 
 
@@ -211,7 +211,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **addresses** | ✔ | [[MessageId]] | List of addresses with checksum. |
 
@@ -235,7 +235,7 @@ confirmed for a while.
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
 
@@ -261,16 +261,16 @@ Endpoint collection all about GET messages.
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **index** | `index()` | String | Indexation key of the message. |
-| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MEssageId] | The identifier of message. |
+| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MessageId] | The identifier of message. |
 
 ### Returns
 
 Depend on the final calling method, users could get different results they need:
 
-- `index()`: Retrun messages with matching the index key.
+- `index()`: Return messages with matching the index key.
 - `metadata()`: Return metadata of the message.
 - `data()`: Return a [Message] object.
 - `raw()`: Return the raw data of given message.
@@ -284,7 +284,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
 
@@ -298,7 +298,7 @@ An [OutputMetadata] that contains various information about the output.
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **address** | ✔ | [Address] | The address to search for. |
 
@@ -307,7 +307,7 @@ An [OutputMetadata] that contains various information about the output.
 Depend on the final calling method, users could get different outputs they need:
 
 - `balance()`: Return confirmed balance of the address.
-- `outputs()`: Return transactio IDs with corresponding output index of the address it has.
+- `outputs()`: Return transaction IDs with corresponding output index of the address it has.
 
 
 # Low level Node API
@@ -383,7 +383,7 @@ Submit a message. The node takes care of missing fields and tries to build the m
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **message** | ✔ | [Message] | The message object. |
 
@@ -399,7 +399,7 @@ Get the milestone by the given index.
 
 ### Parameters
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **index** | ✔ | u32 | Index of the milestone. |
 
@@ -437,7 +437,7 @@ struct MessageId([u8; MESSAGE_ID_LENGTH]);
 ## `Seed`
 [Seed]: #Seed
 
-| Field | Requried | Type | Definition |
+| Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
@@ -521,10 +521,10 @@ struct WotsSignature(Vec<u8>);
 struct ReferenceUnlock(u16);
 ```
 
-## `OutputMestadata`
-[`OutputMestadata`]: #OutputMestadata
+## `OutputMetadata`
+[`OutputMetadata`]: #OutputMetadata
 
-The mestadata of an output:
+The metadata of an output:
 
 ```rust
 pub struct OutputMetadata {
@@ -546,12 +546,12 @@ pub struct OutputMetadata {
 ## `BIP32Path`
 [BIP32Path]: #BIP32Path
 
-A valid BIP32 path. The field is ommited. Users can create from a String like `m/0'/0'/1'` for example.
+A valid BIP32 path. The field is omitted. Users can create from a String like `m/0'/0'/1'` for example.
 
 ## `Address`
 [Address]: #Address
 
-An address is a enum which could be either Ed25519 format or the legay WOTS. Users can create from a correct fixed length bytes.
+An address is an enum which could be either Ed25519 format or the legacy WOTS. Users can create from a correct fixed length bytes.
 
 ## `Milestone`
 [Milestone]: #Milestone

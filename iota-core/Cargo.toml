@@ -5,6 +5,8 @@ authors = ["YuWeiWu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Core library of IOTA"
 license = "Apache-2.0"
+repository = "https://github.com/iotaledger/iota.rs"
+homepage = "https://iota.org"
 
 [lib]
 name = "iota"

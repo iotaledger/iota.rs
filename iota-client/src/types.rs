@@ -196,9 +196,9 @@ pub(crate) struct SLSAddress {
 #[derive(Debug)]
 pub struct OutputMetadata {
     /// Message ID of the output
-    pub message_id: String,
+    pub message_id: Vec<u8>,
     /// Transaction ID of the output
-    pub transaction_id: String,
+    pub transaction_id: Vec<u8>,
     /// Output index.
     pub output_index: u16,
     /// Spend status of the output

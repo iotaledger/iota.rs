@@ -156,9 +156,8 @@ impl Client {
             200 => {
                 let raw = resp.json::<Response<RawOutput>>().await?.data;
                 Ok(OutputMetadata {
-                    message_id: String::from_utf8_lossy(&hex::decode(raw.message_id)?).to_string(),
-                    transaction_id: String::from_utf8_lossy(&hex::decode(raw.transaction_id)?)
-                        .to_string(),
+                    message_id: hex::decode(raw.message_id)?,
+                    transaction_id: hex::decode(raw.transaction_id)?,
                     output_index: raw.output_index,
                     is_spent: raw.is_spent,
                     amount: raw.output.amount,
