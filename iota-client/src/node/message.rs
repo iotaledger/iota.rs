@@ -1,4 +1,6 @@
-use crate::{ChildrenMessageIds, Client, Error, MessageIds, MessageJson, Response, Result};
+use crate::{
+    ChildrenMessageIds, Client, Error, MessageIds, MessageJson, MessageMetadata, Response, Result,
+};
 
 use bee_message::{Message, MessageId};
 
@@ -58,14 +60,14 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
-    pub async fn metadata(self, message_id: &MessageId) -> Result<serde_json::Value> {
+    pub async fn metadata(self, message_id: &MessageId) -> Result<MessageMetadata> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id));
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {
             200 => {
-                let meta = resp.json::<serde_json::Value>().await?;
+                let meta = resp.json::<MessageMetadata>().await?;
                 Ok(meta)
             }
             status => Err(Error::ResponseError(status)),
