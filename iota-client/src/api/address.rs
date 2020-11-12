@@ -5,7 +5,11 @@ use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed,
 };
-
+use blake2::{
+    digest::{Update, VariableOutput},
+    VarBlake2b,
+};
+use core::convert::TryInto;
 use std::ops::Range;
 
 const HARDEND: u32 = 1 << 31;
@@ -67,7 +71,14 @@ impl<'a> GetAddressesBuilder<'a> {
                 )
                 .generate_public_key()
                 .to_bytes();
-            addresses.push(Address::Ed25519(Ed25519Address::new(public_key)));
+            // Hash the public key to get the address
+            let mut hasher = VarBlake2b::new(32).unwrap();
+            hasher.update(public_key);
+            let mut result: [u8; 32] = [0; 32];
+            hasher.finalize_variable(|res| {
+                result = res.try_into().expect("Invalid Length of Public Key");
+            });
+            addresses.push(Address::Ed25519(Ed25519Address::new(result)));
             path.pop();
         }
 
