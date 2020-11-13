@@ -69,6 +69,34 @@ The data structure to initialize the instance of the Higher level client library
 
 Finalize the builder will run the instance in the background. Users don’t need to worry about the return object handling.
 
+# Quorum Related Operations
+
+## Sync Process
+
+When a `Client` instance (The instance which is used for calling the client APIs) is built, the status of each node listed in the `node_pool_urls` should be checked first. If the returned status of the node information is healthy, which means the node is synced, then this node will be pushed back into a `synced_node_list`. The rust-like pseudo code of `synced_node_list` construction process follows.
+
+```rust
+synced_node_list = Vec::new()
+for node in node_pool_urls{
+   status = Client.get_info(node).await?;
+   if status == healthy{
+      synced_node_list.push(node)
+   }
+}
+```
+
+When a return value from an API (e.g., the balance in an address) needs to be determined by quorum (i.e., not by a single healthy node only), then all the nodes in the `synced_node_list` will be queried to determine the final value.
+
+* Unsolved Questions 
+  - We make the iota.rs to be a static library, so whenever a user uses an API, then the `Client` instance should be built again, so as the `synced_node_list`. In this way we don't have to maintain the nodes status in the background.
+  - We set a timeout for the `Client` instance. If the time is out, then the `Client` instance is needed to perform the sync process again, so as to get the latest `synced_node_list`.
+  - We make the iota.rs maintain the up-to-date synced nodes. In this way we need a mechanism to update the each node status in the iota.rs, like 1) periodically queries healthy/unhealthy nodes 2) subscribe events from nodes 3) any other efficient syncing mechanism.
+  
+## List of APIs Whose Results Based on `quorum_size` Nodes
+
+* Unsolved Question:
+  - We need to define the list of APIs (e.g., `get_balance()`, `get_address_balances`, etc.), whose returned values should depend on the `quorum_size` nodes.
+
 # General High level API
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
