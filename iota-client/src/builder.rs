@@ -106,6 +106,8 @@ impl ClientBuilder {
             mwm,
             quorum_size,
             quorum_threshold,
+            mqtt_client: None,
+            mqtt_topic_handlers: Default::default(),
         };
 
         // let mut sync = client.clone();

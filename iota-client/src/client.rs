@@ -2,6 +2,7 @@
 use crate::api::*;
 use crate::builder::ClientBuilder;
 use crate::error::*;
+pub use crate::node::Topic;
 use crate::node::*;
 use crate::types::*;
 
@@ -10,13 +11,26 @@ use bee_signing_ext::Seed;
 
 use reqwest::{IntoUrl, Url};
 
+use rumqttc::Client as MqttClient;
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 const ADDRESS_LENGTH: usize = 32;
 
-/// An instance of the client using IRI URI
+type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
+pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
+
+/// An event from a MQTT topic.
 #[derive(Debug, Clone)]
+pub struct TopicEvent {
+    /// the MQTT topic.
+    pub topic: String,
+    /// The MQTT event payload.
+    pub payload: String,
+}
+
+/// An instance of the client using IRI URI
+#[derive(Clone)]
 pub struct Client {
     /// Node pool of IOTA nodes
     pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
@@ -26,6 +40,22 @@ pub struct Client {
     pub(crate) mwm: u8,
     pub(crate) quorum_size: u8,
     pub(crate) quorum_threshold: u8,
+    /// A MQTT client to subscribe/unsubscribe to topics.
+    pub(crate) mqtt_client: Option<MqttClient>,
+    pub(crate) mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>,
+}
+
+impl std::fmt::Debug for Client {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Client")
+            .field("pool", &self.pool)
+            .field("sync", &self.sync)
+            .field("client", &self.client)
+            .field("mwm", &self.mwm)
+            .field("quorum_size", &self.quorum_size)
+            .field("quorum_threshold", &self.quorum_threshold)
+            .finish()
+    }
 }
 
 impl Client {
@@ -60,6 +90,15 @@ impl Client {
             .next()
             .ok_or(Error::NodePoolEmpty)?
             .clone())
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    // MQTT API
+    //////////////////////////////////////////////////////////////////////
+
+    /// Returns a handle to the MQTT topics manager.
+    pub fn subscriber(&mut self) -> MqttManager<'_> {
+        MqttManager::new(self)
     }
 
     //////////////////////////////////////////////////////////////////////

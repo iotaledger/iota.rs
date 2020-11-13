@@ -30,6 +30,10 @@ pub enum Error {
     FromHexError(hex::FromHexError),
     /// Message types error
     MessageError(bee_message::Error),
+    /// Mqtt client error
+    MqttClientError(rumqttc::ClientError),
+    /// Invalid MQTT topic.
+    InvalidMqttTopic(String),
 }
 
 impl fmt::Display for Error {
@@ -50,6 +54,8 @@ impl fmt::Display for Error {
             Error::FromHexError(e) => e.fmt(f),
             Error::ResponseError(s) => write!(f, "Response error with status code {}", s),
             Error::MessageError(e) => e.fmt(f),
+            Error::MqttClientError(e) => e.fmt(f),
+            Error::InvalidMqttTopic(topic) => write!(f, "The topic {} is invalid", topic),
         }
     }
 }
@@ -71,5 +77,11 @@ impl From<hex::FromHexError> for Error {
 impl From<bee_message::Error> for Error {
     fn from(error: bee_message::Error) -> Self {
         Error::MessageError(error)
+    }
+}
+
+impl From<rumqttc::ClientError> for Error {
+    fn from(error: rumqttc::ClientError) -> Self {
+        Error::MqttClientError(error)
     }
 }
