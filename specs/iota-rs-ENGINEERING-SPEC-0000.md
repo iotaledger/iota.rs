@@ -18,6 +18,7 @@ Specification of High Level Abstraction API
   * [`get_unspent_address`](#get_unspent_address)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
+  * [`retry`](#retry)
 * [Full Node API](#Full-Node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
@@ -28,6 +29,8 @@ Specification of High Level Abstraction API
   * [`find_outputs`](#find_outputs)
   * [`find_addresses`](#find_addresses)
   * [`get_milestone`](#get_milestone)
+  * [`reattach`](#reattach)
+  * [`promote`](#promote)
 * [Objects](#Objects)
   * [Network]
   * [Hash]
@@ -222,6 +225,17 @@ Following are the steps for implementing this method:
     parameter;
 *   Return the list of Output which contains corresponding pairs of address and balance.
 
+## `retry()`
+
+Retries (promotes or reattaches) a message for provided message id. Message should only be retried only if they are valid and haven't been
+confirmed for a while. 
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
+
 ### Returns:
 
 Newly reattached [Message](#Message).
@@ -230,11 +244,9 @@ Newly reattached [Message](#Message).
 
 Following are the steps for implementing this method: 
 
-* Only unconfirmed messages should be allowed to reattach. The method should validate the confirmation state of the provided messages. If a message hash of a confirmed message is provided, the method should error out;
-* The method should also validate if the message reattachment is necessary. This can be done by checking if the message falls below max depth. The criteria of checking whether the message has fallen below max depth is through time. If 11 minutes have passed since the timestamp of the most recent (reattachment), the message can be allowed to be reattached. See [this](https://github.com/iotaledger/trinity-wallet/blob/3fab4f671c97e805a2b0ade99b4abb8b508c2842/src/shared/libs/iota/transfers.js#L141) implementation for reference;
-* Get tips pair using [`get_tips()`](#get_tips-get-tips);
-* Perform proof-of-work;
-* Store messages on the tangle using [`post_messages()`](#post_messages-post-messages);
+* Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;    
+* The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
+* Use [reattach](#reattach) or [promote](#promote) accordingly.
 
 # Low level Node API
 
@@ -396,6 +408,38 @@ Get the milestone by the given index.
 ### Returns
 
 An [Milestone] object.
+
+## `reattach()`
+
+Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
+
+Reattaches a message. The method should validate if a reattachment is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary reattachments. 
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
+
+### Returns
+
+Newly reattached [Message](#Message).
+
+## `promote()`
+
+Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
+
+Promotes a message. The method should validate if a promotion is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary promotions.
+ 
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
+
+### Returns
+
+Newly promoted [Message](#Message).
 
 # Objects
 
