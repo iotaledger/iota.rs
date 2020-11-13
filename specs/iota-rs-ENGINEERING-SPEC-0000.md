@@ -13,21 +13,21 @@ Specification of High Level Abstraction API
 * [Builder](#Builder)
 * [General API](#General-API)
   * [`send`](#send)
+  * [`get_message`](#get_message)
   * [`find_messages`](#find_messages)
-  * [`find_outputs`](#find_outputs)
   * [`get_unspent_address`](#get_unspent_address)
-  * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
   * [`retry`](#retry)
-  * [`get_message`](#get_message)
-  * [`get_output`](#get_output)
-  * [`get_address`](#get_address)
 * [Full Node API](#Full-Node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
   * [`post_message`](#post_message)
+  * [`get_output`](#get_output)
+  * [`get_address`](#get_address)
+  * [`find_outputs`](#find_outputs)
+  * [`find_addresses`](#find_addresses)
   * [`get_milestone`](#get_milestone)
   * [`reattach`](#reattach)
   * [`promote`](#promote)
@@ -54,7 +54,7 @@ The data structure to initialize the instance of the Higher level client library
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **network** | ✔ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **network** | ✘ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
 | **node** | ✘ | String | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_pool_urls** | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
@@ -62,6 +62,8 @@ The data structure to initialize the instance of the Higher level client library
 | **quorum_threshold** | ✘ | usize | The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3). |
 | **local_pow** | ✘ | bool | If not defined it checks for remote PoW capability and uses that, if no remote PoW it does local PoW. Either not filled in, True or False. |
 | **state_adapter** | ✘ | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
+
+* Note that there must be at least one node to build the instance successfully.
 
 ### Return
 
@@ -80,12 +82,15 @@ A generic send function for easily sending a value transaction message.
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **seed** | ✔ | [Seed] | The seed of the account we are going to spend. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **address** | ✔ | [Address] | The address to send to. |
-| **value** | ✔ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
-| **output** | ✘ | Output | Users can manually pick their own output instead of having node decide on which output should be used. |
-| **indexation** | ✘ | Indexation | An optional indexation payload with indexation key and data. Both fields can be optional too. |
+| **seed** | ✘ | [Seed] | The seed of the account we are going to spend. |
+| **address** | ✘ | \[[Address]\] | The address(es) to send to. |
+| **value** | ✘ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **output** | ✘ | \[Output\] | Users can manually pick their own output instead of having node decide on which output should be used. |
+| **indexation_key** | ✘ | String | An optional indexation key of the indexation payload. |
+| **data** | ✘ | [u8] | An optional indexation data of the indexation payload. |
+
+* If only `indexation_key` and `data` are provided. This method will create a message with only indexation payload instead.
 
 ### Return
 
@@ -103,35 +108,41 @@ There could be two different scenarios in which this method can be used:
 * Perform proof-of-work locally; 
 * Send the message using [`post_messages()`](#post_messages);
 
+## `get_message()`
+
+(`GET /api/v1/messages`)
+
+Endpoint collection all about GET messages.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
+
+### Returns
+
+Depend on the final calling method, users could get different results they need:
+
+- `metadata()`: Return metadata of the message.
+- `data()`: Return a [Message] object.
+- `raw()`: Return the raw data of given message.
+- `children()`: Return the list of [messageId]s that reference a message by its identifier.
+
 ## `find_messages()`
 
-Find all messages by provided message IDs. This method will try to query mutiple nodes if the request amount exceed individual node limit. 
+Find all messages by provided message IDs. This method will try to query multiple nodes if the request amount exceed individual node limit. 
 
 ### Parameters
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
-| **message_id** | ✘ | [[MessageId]] | The identifier of message. |
+| **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
 
 ### Returns
 
 A vector of [Message] Object.
-
-## `find_outputs()`
-
-Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit. 
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
-| **addresses** | ✘ | [[Address]] | The identifier of address. |
-
-### Returns
-
-A vector of [OutputMetadata] Object.
 
 ## `get_unspent_address()`
 
@@ -142,7 +153,7 @@ Return a valid unspent address.
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
@@ -157,22 +168,6 @@ Following are the steps for implementing this method:
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
-
-## `get_addresses()`
-
-Return a list of addresses from the seed regardless of their validity.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **range** | ✘ | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
-
-### Return
-
-A list of [Address]es
 
 ### Implementation Details
 
@@ -190,7 +185,7 @@ Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 de
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✔ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
 | **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
@@ -215,7 +210,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **addresses** | ✔ | [[MessageId]] | List of addresses with checksum. |
+| **addresses** | ✔ | [[Address]] | List of addresses with checksum. |
 
 ### Return
 
@@ -252,63 +247,6 @@ Following are the steps for implementing this method:
 * Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;    
 * The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
-
-## `get_message()`
-
-(`GET /api/v1/messages`)
-
-Endpoint collection all about GET messages.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **index** | `index()` | String | Indexation key of the message. |
-| **message_id** | `metadata()`, `data()`, `raw()`, `children()` | [MessageId] | The identifier of message. |
-
-### Returns
-
-Depend on the final calling method, users could get different results they need:
-
-- `index()`: Return messages with matching the index key.
-- `metadata()`: Return metadata of the message.
-- `data()`: Return a [Message] object.
-- `raw()`: Return the raw data of given message.
-- `children()`: Return the list of [messageId]s that reference a message by its identifier.
-
-## `get_output()`
-
-(`GET /outputs`)
-
-Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
-
-### Returns
-
-An [OutputMetadata] that contains various information about the output.
-
-## `get_address()`
-
-(`GET /addresses`)
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **address** | ✔ | [Address] | The address to search for. |
-
-### Returns
-
-Depend on the final calling method, users could get different outputs they need:
-
-- `balance()`: Return confirmed balance of the address.
-- `outputs()`: Return transaction IDs with corresponding output index of the address it has.
-
 
 # Low level Node API
 
@@ -390,6 +328,70 @@ Submit a message. The node takes care of missing fields and tries to build the m
 ### Returns
 
 The [MessageId] of the message object.
+
+## `get_output()`
+
+(`GET /outputs`)
+
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction. It will have additional methods such as reattach to perform extra functionality.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
+
+### Returns
+
+An [OutputMetadata] that contains various information about the output.
+
+## `get_address()`
+
+(`GET /addresses`)
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Address] | The address to search for. |
+
+### Returns
+
+Depend on the final calling method, users could get different outputs they need:
+
+- `balance()`: Return confirmed balance of the address.
+- `outputs()`: Return transaction IDs with corresponding output index of the address it has.
+
+## `find_outputs()`
+
+Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit. 
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
+| **addresses** | ✘ | [[Address]] | The identifier of address. |
+
+### Returns
+
+A vector of [OutputMetadata] Object.
+
+## `find_addresses()`
+
+Return a list of addresses from the seed regardless of their validity.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **seed** | ✔ | [Seed] | The seed we want to search for. |
+| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **range** | ✘ | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
+
+### Return
+
+A list of [Address]es
 
 ## `get_milestone()`
 
