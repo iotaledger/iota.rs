@@ -63,26 +63,35 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<MqttClient> {
       for node in client.pool.read().unwrap().iter() {
         let host = node.host_str().unwrap();
         let mqttoptions = MqttOptions::new(host, host, 1883);
-        let (mqtt_client, mut connection) = MqttClient::new(mqttoptions, 10);
+        let (_, mut connection) = MqttClient::new(mqttoptions.clone(), 10);
         // poll the event loop until we find a ConnAck event,
         // which means that the mqtt client is ready to be used on this host
         // if the event loop returns an error, we check the next node
-        for event in connection.iter() {
-          match event {
-            Ok(event) => {
-              if let Event::Incoming(incoming) = event {
-                if let Incoming::ConnAck(_) = incoming {
-                  client.mqtt_client = Some(mqtt_client);
-                  break;
+        // note that we need to do this on a separate thread to prevent tokio runtime panics
+        let got_ack = std::thread::spawn(move || {
+          let mut got_ack = false;
+          for event in connection.iter() {
+            match event {
+              Ok(event) => {
+                if let Event::Incoming(incoming) = event {
+                  if let Incoming::ConnAck(_) = incoming {
+                    got_ack = true;
+                    break;
+                  }
                 }
               }
+              Err(_) => break,
             }
-            Err(_) => break,
           }
-        }
+          got_ack
+        })
+        .join()
+        .unwrap();
 
         // if we found a valid mqtt connection, loop it on a separate thread
-        if client.mqtt_client.is_some() {
+        if got_ack {
+          let (mqtt_client, connection) = MqttClient::new(mqttoptions, 10);
+          client.mqtt_client = Some(mqtt_client);
           poll_mqtt(client.mqtt_topic_handlers.clone(), connection);
         }
       }
