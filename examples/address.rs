@@ -21,7 +21,7 @@ async fn main() {
     println!("Get an unspent address: {:#?}", address);
 
     let addresses = iota
-        .get_addresses(&seed)
+        .find_addresses(&seed)
         .path(&path)
         .range(0..3)
         .get()

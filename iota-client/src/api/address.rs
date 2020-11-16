@@ -14,7 +14,7 @@ use std::ops::Range;
 
 const HARDEND: u32 = 1 << 31;
 
-/// Builder of get_addresses API
+/// Builder of find_addresses API
 pub struct GetAddressesBuilder<'a> {
     _client: &'a Client,
     seed: &'a Seed,
@@ -23,7 +23,7 @@ pub struct GetAddressesBuilder<'a> {
 }
 
 impl<'a> GetAddressesBuilder<'a> {
-    /// Create get_addresses builder
+    /// Create find_addresses builder
     pub fn new(_client: &'a Client, seed: &'a Seed) -> Self {
         Self {
             _client,
