@@ -1,6 +1,6 @@
 use crate::{Client, Error, Result};
 
-use bee_common_ext::packable::Packable;
+use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
@@ -70,8 +70,9 @@ impl<'a> SendBuilder<'a> {
         let mut total_to_spend = 0;
         let mut total_already_spent = 0;
         for output in &self.outputs {
-            let Output::SignatureLockedSingle(x) = &output;
-            total_to_spend += x.amount().get();
+            if let Output::SignatureLockedSingle(x) = &output {
+                total_to_spend += x.amount().get();
+            }
         }
 
         let mut paths = Vec::new();
@@ -206,6 +207,8 @@ impl<'a> SendBuilder<'a> {
         // building message
         let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
+            // TODO: make the newtwork id configurable
+            .with_network_id(0)
             .with_parent1(tips.0)
             .with_parent2(tips.1)
             .with_payload(payload)

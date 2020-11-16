@@ -147,8 +147,8 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path(&format!(
             "api/v1/outputs/{}{}",
-            output.id().to_string(),
-            hex::encode(output.index().to_le_bytes())
+            output.output_id().transaction_id().to_string(),
+            hex::encode(output.output_id().index().to_le_bytes())
         ));
         let resp = reqwest::get(url).await?;
 
