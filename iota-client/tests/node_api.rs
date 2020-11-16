@@ -1,10 +1,10 @@
 // These are E2E test samples, so they are ignored by default.
 
-use bee_common_ext::packable::Packable;
+use bee_common::packable::Packable;
 use bee_message::payload::transaction::TransactionEssenceBuilder;
 use bee_message::prelude::*;
 use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed},
+    binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
 use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
@@ -45,7 +45,7 @@ async fn test_get_tips() {
 #[ignore]
 #[tokio::test]
 async fn test_post_message_with_indexation() {
-    let index = Indexation::new(String::from("Hello"), Box::new([]));
+    let index = Indexation::new(String::from("Hello"), &[]).unwrap();
 
     let client = iota_client::Client::new()
         .node("http://0.0.0.0:14265")
@@ -56,6 +56,7 @@ async fn test_post_message_with_indexation() {
     let tips = client.get_tips().await.unwrap();
 
     let message = Message::builder()
+        .with_network_id(0)
         .with_parent1(tips.0)
         .with_parent2(tips.1)
         .with_payload(Payload::Indexation(Box::new(index)))
@@ -135,6 +136,7 @@ async fn test_post_message_with_transaction() {
     //println!("{:#?}", transaction);
     let tips = client.get_tips().await.unwrap();
     let message = Message::builder()
+        .with_network_id(0)
         .with_parent1(tips.0)
         .with_parent2(tips.1)
         .with_payload(Payload::Transaction(Box::new(transaction)))

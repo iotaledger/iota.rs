@@ -13,8 +13,9 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-common-ext = { git = "https://github.com/Alex6323/bee-p.git" }
-bee-message = { git = "https://github.com/Alex6323/bee-p.git" }
+bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-common-ext = { git = "https://github.com/Alex6323/bee-p.git", branch = "chrysalis-pt-2"}
+bee-message = { git = "https://github.com/Alex6323/bee-p.git", branch = "chrysalis-pt-2"}
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }

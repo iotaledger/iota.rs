@@ -7,10 +7,8 @@ async fn main() {
     let index = Indexation::new(
         String::from("Hello"),
         String::from("Tangle")
-            .as_bytes()
-            .to_vec()
-            .into_boxed_slice(),
-    );
+            .as_bytes(),
+    ).unwrap();
 
     let client = Client::new()
         .nodes(&vec!["http://localhost:14265"])
@@ -21,6 +19,7 @@ async fn main() {
     let tips = client.get_tips().await.unwrap();
 
     let message = Message::builder()
+        .with_network_id(0)
         .with_parent1(tips.0)
         .with_parent2(tips.1)
         .with_payload(Payload::Indexation(Box::new(index)))
@@ -42,7 +41,7 @@ async fn main() {
         .unwrap();
 
     println!("{:#?}", r);
-    if let Payload::Indexation(i) = r.payload() {
+    if let Payload::Indexation(i) = r.payload().as_ref().unwrap() {
         println!(
             "Data: {}",
             String::from_utf8(hex::decode(i.data()).unwrap()).expect("Found invalid UTF-8")
