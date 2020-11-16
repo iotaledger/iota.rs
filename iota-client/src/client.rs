@@ -175,6 +175,29 @@ impl Client {
             status => Err(Error::ResponseError(status)),
         }
     }
+    /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if 
+    /// the request amount exceed individual node limit.
+    pub async fn find_outputs(&self, outputs: &[UTXOInput], addresses: &[Address]) -> Result<Vec<OutputMetadata>> {
+        let mut output_metadata = Vec::<OutputMetadata>::new();
+        
+        // Use `get_output` API to get the `OutputMetadata`
+        for output in outputs {
+            let meta_data = self.get_output(output).await?;
+            output_metadata.push(meta_data);
+        }
+
+        // Use `get_address()` API to get the address outputs first, then use the `get_output()`
+        // to get the `OutputMetadata`
+        for address in addresses {
+            let address_outputs = self.get_address().outputs(&address).await?;
+            for output in address_outputs.iter()  {
+                let meta_data = self.get_output(output).await?;
+                output_metadata.push(meta_data);
+            }
+
+        }
+        Ok(output_metadata)
+    }
 
     /// GET /api/v1/addresses/{address} endpoint
     pub fn get_address<'a>(&'a self) -> GetAddressBuilder<'a> {
