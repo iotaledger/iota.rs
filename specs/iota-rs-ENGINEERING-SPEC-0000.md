@@ -186,7 +186,7 @@ Return a valid unspent address.
 
 ### Return
 
-Return a tuple with type of `([Address], usize)` as the address and corresponding index in the account.
+Return a tuple with type of `(Address, usize)` as the address and corresponding index in the account.
 
 ### Implementation Details
 
@@ -367,11 +367,11 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **outputId** | ✔ | [UTXOInput] | Identifier of the output. |
+| **outputId** | ✔ | UTXOInput | Identifier of the output. |
 
 ### Returns
 
-An [OutputMetadata] that contains various information about the output.
+An OutputMetadata that contains various information about the output.
 
 ## `get_address()`
 
