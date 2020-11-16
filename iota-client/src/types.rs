@@ -271,7 +271,7 @@ impl From<&Message> for MessageJson {
             version: 1,
             parent1: i.parent1().to_string(),
             parent2: i.parent2().to_string(),
-            payload: i.payload().into(),
+            payload: i.payload().as_ref().unwrap().into(),
             nonce: i.nonce(),
         }
     }
@@ -286,6 +286,8 @@ impl TryFrom<MessageJson> for Message {
         let mut parent2 = [0u8; 32];
         hex::decode_to_slice(value.parent2, &mut parent2)?;
         Ok(Message::builder()
+            // TODO: make the newtwork id configurable
+            .with_network_id(0)
             .with_parent1(MessageId::new(parent1))
             .with_parent2(MessageId::new(parent2))
             .with_payload(value.payload.try_into()?)
@@ -357,10 +359,8 @@ impl TryFrom<PayloadJson> for Payload {
                     value
                         .data
                         .expect("Must have data.")
-                        .as_bytes()
-                        .to_vec()
-                        .into_boxed_slice(),
-                );
+                        .as_bytes(),
+                ).unwrap();
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
             _ => todo!(),
@@ -435,9 +435,10 @@ impl From<&Input> for InputJson {
         match i {
             Input::UTXO(i) => Self {
                 type_: 0,
-                transaction_id: i.id().to_string(),
-                transaction_output_index: i.index(),
+                transaction_id: i.output_id().to_string(),
+                transaction_output_index: i.output_id().index(),
             },
+            _ => todo!(),
         }
     }
 }
@@ -469,6 +470,7 @@ impl From<&Output> for OutputJson {
                 address: s.address().into(),
                 amount: s.amount().get(),
             },
+            _ => todo!(),
         }
     }
 }
@@ -546,6 +548,7 @@ impl From<&UnlockBlock> for UnlockBlockJson {
                 signature: None,
                 reference: Some(s.index()),
             },
+            _ => todo!(),
         }
     }
 }
