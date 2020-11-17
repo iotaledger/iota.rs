@@ -175,26 +175,35 @@ impl Client {
             status => Err(Error::ResponseError(status)),
         }
     }
-    /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if 
+    /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceed individual node limit.
-    pub async fn find_outputs(&self, outputs: &[UTXOInput], addresses: &[Address]) -> Result<Vec<OutputMetadata>> {
+    pub async fn find_outputs(
+        &self,
+        outputs: &[UTXOInput],
+        addresses: &[Address],
+    ) -> Result<Vec<OutputMetadata>> {
         let mut output_metadata = Vec::<OutputMetadata>::new();
-        
-        // Use `get_output` API to get the `OutputMetadata`
+        // Use a `HashSet` to prevent duplicate output.
+        let mut output_to_query = HashSet::<UTXOInput>::new();
+
+        // Collect the `UTXOInput` in the HashSet.
         for output in outputs {
-            let meta_data = self.get_output(output).await?;
-            output_metadata.push(meta_data);
+            output_to_query.insert(output.to_owned());
         }
 
-        // Use `get_address()` API to get the address outputs first, then use the `get_output()`
-        // to get the `OutputMetadata`
+        // Use `get_address()` API to get the address outputs first,
+        // then collect the `UTXOInput` in the HashSet.
         for address in addresses {
             let address_outputs = self.get_address().outputs(&address).await?;
-            for output in address_outputs.iter()  {
-                let meta_data = self.get_output(output).await?;
-                output_metadata.push(meta_data);
+            for output in address_outputs.iter() {
+                output_to_query.insert(output.to_owned());
             }
+        }
 
+        // Use `get_output` API to get the `OutputMetadata`.
+        for output in output_to_query {
+            let meta_data = self.get_output(&output).await?;
+            output_metadata.push(meta_data);
         }
         Ok(output_metadata)
     }
@@ -220,6 +229,48 @@ impl Client {
         }
     }
 
+    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+    /// confirmed for a while.
+    pub async fn reattach(&self, message_id: &MessageId) -> Result<Message> {
+        // Get the Message object by the MessageID.
+        let message = self.get_message().data(message_id).await?;
+
+        // Change the fields of parent1 and parent2.
+        let tips = self.get_tips().await?;
+        let reattach_message = Message::builder()
+            // TODO: make the newtwork id configurable
+            .with_network_id(0)
+            .with_parent1(tips.0)
+            .with_parent2(tips.1)
+            .with_payload(message.payload().to_owned().unwrap())
+            .finish()
+            .map_err(|_| Error::TransactionError)?;
+
+        // Post the modified
+        self.post_message(&reattach_message).await?;
+        Ok(message)
+    }
+
+    /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+    /// method should error out and should not allow unnecessary promotions.
+    pub async fn promote(&self, message_id: &MessageId) -> Result<Message> {
+        // Get the Message object by the MessageID.
+        let message = self.get_message().data(message_id).await?;
+
+        // Create a new message (zero value message) for which one tip would be the actual message
+        let tips = self.get_tips().await?;
+        let promote_message = Message::builder()
+            // TODO: make the newtwork id configurable
+            .with_network_id(0)
+            .with_parent1(tips.0)
+            .with_parent2(*message_id)
+            .finish()
+            .map_err(|_| Error::TransactionError)?;
+
+        self.post_message(&promote_message).await?;
+        Ok(message)
+    }
+
     //////////////////////////////////////////////////////////////////////
     // High level API
     //////////////////////////////////////////////////////////////////////
@@ -239,18 +290,27 @@ impl Client {
         GetAddressesBuilder::new(self, seed)
     }
 
-    /// Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`. Addresses with balance must be consecutive, so this method will return once it encounters a zero balance address.
+    /// Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path
+    /// of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`.
+    /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
+    /// balance address.
     pub fn get_balance<'a>(&'a self, seed: &'a Seed) -> GetBalanceBuilder<'a> {
         GetBalanceBuilder::new(self, seed)
     }
 
-    // /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
-    // /// confirmed for a while.
-    // pub async fn reattach(&self, message_id: &MessageId) -> Result<Message> {
-    //     let message = self.get_message().data(message_id).await?;
-    //     self.post_messages(&message).await?;
-    //     Ok(message)
-    // }
+    /// Retries (promotes or reattaches) a message for provided message id. Message should only be
+    /// retried only if they are valid and haven't been confirmed for a while.
+    pub async fn retry(&self, message_id: &MessageId) -> Result<Message> {
+        // Get the metadata to check if it needs to promote or reattach
+        let message_metadata = self.get_message().metadata(message_id).await?;
+        if message_metadata.should_promote {
+            return self.promote(message_id).await;
+        } else if message_metadata.should_reattach {
+            return self.reattach(message_id).await;
+        } else {
+            return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));
+        }
+    }
 
     /// Check if a transaction-message is confirmed.
     /// Should GET `/transaction-messages/is-confirmed`

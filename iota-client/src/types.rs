@@ -141,6 +141,12 @@ pub struct MessageMetadata {
     /// Solid status
     #[serde(rename = "isSolid")]
     pub is_solid: bool,
+    /// Should promote
+    #[serde(rename = "shouldPromote")]
+    pub should_promote: bool,
+    /// Should reattach
+    #[serde(rename = "shouldReattach")]
+    pub should_reattach: bool,
 }
 
 impl ResponseType for MessageMetadata {}
@@ -356,11 +362,9 @@ impl TryFrom<PayloadJson> for Payload {
             2 => {
                 let indexation = Indexation::new(
                     value.index.expect("Must have index."),
-                    value
-                        .data
-                        .expect("Must have data.")
-                        .as_bytes(),
-                ).unwrap();
+                    value.data.expect("Must have data.").as_bytes(),
+                )
+                .unwrap();
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
             _ => todo!(),

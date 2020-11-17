@@ -30,6 +30,8 @@ pub enum Error {
     FromHexError(hex::FromHexError),
     /// Message types error
     MessageError(bee_message::Error),
+    /// The message cannot be promoted or reattached
+    NoNeedPromoteOrReattach(String),
 }
 
 impl fmt::Display for Error {
@@ -50,6 +52,9 @@ impl fmt::Display for Error {
             Error::FromHexError(e) => e.fmt(f),
             Error::ResponseError(s) => write!(f, "Response error with status code {}", s),
             Error::MessageError(e) => e.fmt(f),
+            Error::NoNeedPromoteOrReattach(s) => {
+                write!(f, "Message ID {} cannot be promoted or reattached", s)
+            }
         }
     }
 }
