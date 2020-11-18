@@ -231,7 +231,7 @@ impl Client {
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub async fn reattach(&self, message_id: &MessageId) -> Result<Message> {
+    pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
@@ -247,16 +247,13 @@ impl Client {
             .map_err(|_| Error::TransactionError)?;
 
         // Post the modified
-        self.post_message(&reattach_message).await?;
-        Ok(message)
+        let message_id = self.post_message(&reattach_message).await?;
+        Ok((message_id, reattach_message))
     }
 
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
     /// method should error out and should not allow unnecessary promotions.
-    pub async fn promote(&self, message_id: &MessageId) -> Result<Message> {
-        // Get the Message object by the MessageID.
-        let message = self.get_message().data(message_id).await?;
-
+    pub async fn promote(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
         let promote_message = Message::builder()
@@ -267,8 +264,8 @@ impl Client {
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
-        self.post_message(&promote_message).await?;
-        Ok(message)
+        let message_id = self.post_message(&promote_message).await?;
+        Ok((message_id, promote_message))
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -300,7 +297,7 @@ impl Client {
 
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
     /// retried only if they are valid and haven't been confirmed for a while.
-    pub async fn retry(&self, message_id: &MessageId) -> Result<Message> {
+    pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the metadata to check if it needs to promote or reattach
         let message_metadata = self.get_message().metadata(message_id).await?;
         if message_metadata.should_promote {
