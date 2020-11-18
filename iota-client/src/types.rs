@@ -240,6 +240,14 @@ pub struct MilestoneMetadata {
 
 impl ResponseType for MilestoneMetadata {}
 
+/// Address and the coresponding balance returned by the get_address_balances() API.
+pub struct AddressBalancePair {
+    /// Address
+    pub address: Address,
+    /// Balance in the address
+    pub balance: u64,
+}
+
 /// Transfers structure
 ///
 /// Users could use this to construct output address with amount of iota they want to get.

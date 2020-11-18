@@ -295,6 +295,23 @@ impl Client {
         GetBalanceBuilder::new(self, seed)
     }
 
+    /// Return the balance in iota for the given addresses; No seed or security level needed to do this
+    /// since we are only checking and already know the addresses.
+    pub async fn get_address_balances(
+        &self,
+        addresses: &[Address],
+    ) -> Result<Vec<AddressBalancePair>> {
+        let mut address_balance_pairs = Vec::new();
+        for address in addresses {
+            let balance = self.get_address().balance(address).await?;
+            address_balance_pairs.push(AddressBalancePair {
+                address: address.clone(),
+                balance: balance,
+            });
+        }
+        Ok(address_balance_pairs)
+    }
+
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
     /// retried only if they are valid and haven't been confirmed for a while.
     pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
