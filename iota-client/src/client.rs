@@ -287,6 +287,41 @@ impl Client {
         GetAddressesBuilder::new(self, seed)
     }
 
+    /// Find all messages by provided message IDs. This method will try to query multiple nodes
+    /// if the request amount exceed individual node limit.
+    pub async fn find_messages(
+        &self,
+        indexation_keys: &[String],
+        message_ids: &[MessageId],
+    ) -> Result<Vec<Message>> {
+        let mut messages = Vec::new();
+
+        // Use a `HashSet` to prevent duplicate message_ids.
+        let mut message_ids_to_query = HashSet::<MessageId>::new();
+
+        // Collect the `MessageId` in the HashSet.
+        for message_id in message_ids {
+            message_ids_to_query.insert(message_id.to_owned());
+        }
+
+        // Use `get_message().index()` API to get the message ID first,
+        // then collect the `MessageId` in the HashSet.
+        for index in indexation_keys {
+            let message_ids = self.get_message().index(&index).await?;
+            for message_id in message_ids.iter() {
+                message_ids_to_query.insert(message_id.to_owned());
+            }
+        }
+
+        // Use `get_message().data()` API to get the `Message`.
+        for message_id in message_ids_to_query {
+            let message = self.get_message().data(&message_id).await.unwrap();
+            messages.push(message);
+        }
+
+        Ok(messages)
+    }
+
     /// Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path
     /// of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
