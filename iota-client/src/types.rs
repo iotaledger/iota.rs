@@ -260,7 +260,7 @@ pub(crate) struct MessageJson {
     #[serde(rename = "parent2MessageId")]
     parent2: String,
     payload: PayloadJson,
-    nonce: u64,
+    nonce: String,
 }
 
 impl ResponseType for MessageJson {}
@@ -272,7 +272,7 @@ impl From<&Message> for MessageJson {
             parent1: i.parent1().to_string(),
             parent2: i.parent2().to_string(),
             payload: i.payload().as_ref().unwrap().into(),
-            nonce: i.nonce(),
+            nonce: i.nonce().to_string(),
         }
     }
 }
@@ -285,14 +285,19 @@ impl TryFrom<MessageJson> for Message {
         hex::decode_to_slice(value.parent1, &mut parent1)?;
         let mut parent2 = [0u8; 32];
         hex::decode_to_slice(value.parent2, &mut parent2)?;
+        let nonce = value.nonce;
         Ok(Message::builder()
             // TODO: make the newtwork id configurable
-            .with_network_id(0)
+            // TODO temporarily removed .with_network_id(0)
             .with_parent1(MessageId::new(parent1))
             .with_parent2(MessageId::new(parent2))
             .with_payload(value.payload.try_into()?)
+            .with_nonce(
+                nonce
+                    .parse()
+                    .map_err(|_| crate::Error::InvalidParameter(format!("nonce {}", nonce)))?,
+            )
             .finish()?)
-        // .nonce(value.nonce) TODO: Missing nounce method
     }
 }
 
@@ -356,11 +361,9 @@ impl TryFrom<PayloadJson> for Payload {
             2 => {
                 let indexation = Indexation::new(
                     value.index.expect("Must have index."),
-                    value
-                        .data
-                        .expect("Must have data.")
-                        .as_bytes(),
-                ).unwrap();
+                    value.data.expect("Must have data.").as_bytes(),
+                )
+                .unwrap();
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
             _ => todo!(),
