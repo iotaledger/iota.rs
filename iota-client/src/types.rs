@@ -268,7 +268,6 @@ impl Transfers {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct MessageJson {
-    version: u8,
     #[serde(rename = "parent1MessageId")]
     parent1: String,
     #[serde(rename = "parent2MessageId")]
@@ -282,7 +281,6 @@ impl ResponseType for MessageJson {}
 impl From<&Message> for MessageJson {
     fn from(i: &Message) -> Self {
         Self {
-            version: 1,
             parent1: i.parent1().to_string(),
             parent2: i.parent2().to_string(),
             payload: i.payload().as_ref().unwrap().into(),
