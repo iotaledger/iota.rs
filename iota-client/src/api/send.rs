@@ -81,7 +81,7 @@ impl<'a> SendBuilder<'a> {
         while !end {
             let addresses = self
                 .client
-                .get_addresses(self.seed)
+                .find_addresses(self.seed)
                 .path(path)
                 .range(index..index + 20)
                 .get()?;
