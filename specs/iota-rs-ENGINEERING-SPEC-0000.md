@@ -255,7 +255,7 @@ Following are the steps for implementing this method:
 
 ## `retry()`
 
-Retries (promotes or reattaches) a message for provided message id. Message should only be retried only if they are valid and haven't been confirmed for a while. Note that a user needs to maintain a monitoring list of the newly reattached `MessageId`, e.g., if message M1 is reattached by using a new message M2, then the user needs to monitor both M1 and M2. Only if both M1 and M2 are valid and haven't been confirmed for a while, then the user can use retry() again. The possibility of using this function is quite low, because the confirmation throughput of the node is expected to be quite high.
+Retries (promotes or reattaches) a message for provided message id. Messages should only be retried only if they are valid and haven't been confirmed for a while. Note that a user needs to maintain a monitoring list of the newly reattached `MessageId`, e.g., if message M1 is reattached by using a new message M2, then the user needs to monitor both M1 and M2. Only if both M1 and M2 are valid and haven't been confirmed for a while, then the user can use retry() again. The possibility of using this function is quite low, because the confirmation throughput of the node is expected to be quite high.
 
 ### Parameters
 
