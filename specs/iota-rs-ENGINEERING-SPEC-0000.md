@@ -19,6 +19,8 @@ Specification of High Level Abstraction API
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
   * [`retry`](#retry)
+  * [`subscribe`](#subscribe)
+  * [`unsubscribe`](#unsubscribe)
 * [Full Node API](#Full-Node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
@@ -52,16 +54,21 @@ The data structure to initialize the instance of the Higher level client library
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **network** | ✘ | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
-| **node** | ✘ | String | The URL of a node to connect to; format: `https://node:port` |
-| **nodes** | ✘ | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **node_pool_urls** | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **quorum_size** | ✘ | usize | If multiple nodes are given the quorum size defines how many of these nodes will be queried at the same time to check for quorum. If this parameter is not given it defaults to either the length of the `nodes` parameter list, or if node_pool_urls is given a sensible default like 3. |
-| **quorum_threshold** | ✘ | usize | The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out of 3 nodes when the quorum size is 3). |
-| **local_pow** | ✘ | bool | If not defined it checks for remote PoW capability and uses that, if no remote PoW it does local PoW. Either not filled in, True or False. |
-| **state_adapter** | ✘ | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
+| Field | Required | Default Value | Type | Definition |
+| - | - | - | - | - |
+| **network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **node** | ✘ | None | String | The URL of a node to connect to; format: `https://node:port` |
+| **nodes** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **node_sync_interval** | ✘ | 60 | std::num::NonZeroU64 | The interval in seconds to check for node health and sync |
+| **get_info_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
+| **get_health_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
+| **get_milestone_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
+| **get_tips_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
+| **post_message_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
+| **post_message_remote_pow_timeout** | ✘ | 30000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
+| **node_pool_urls** | None | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
+| **state_adapter** | ✘ | None | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -69,11 +76,20 @@ The data structure to initialize the instance of the Higher level client library
 
 Finalize the builder will run the instance in the background. Users don’t need to worry about the return object handling.
 
-# Quorum Related Operations
+
+## On initialization
+On initialisation, call getNodeInfo API. Check the health of each node in the node list, place any nodes that are unresponsive or with isHealthy = false on a temporary blacklist. Store important metadata including MQTT port, network, remote proof of work for each node.
+
+| Node metadata | Description |
+| - | - |
+| network | If this parameter does not match the global builder parameter, add node to blacklist and return error. |
+| mqtt_port | Used in establishing MQTT subscriptions. If failure to connect to MQTT, place node in blacklist. |
+| pow | If the global local_pow parameter is set to false, then put any nodes with pow true in the blacklist. |
+
 
 ## Sync Process
 
-When a `Client` instance (The instance which is used for calling the client APIs) is built, the status of each node listed in the `node_pool_urls` should be checked first. If the returned status of the node information is healthy, which means the node is synced, then this node will be pushed back into a `synced_node_list`. The rust-like pseudo code of `synced_node_list` construction process follows.
+When a `Client` instance (The instance which is used for calling the client APIs) is built, the status of each node listed in the `node_pool_urls` should be checked first. If the returned status of the node information is healthy, which means the node is synced, then this node will be pushed back into a `synced_node_list`. The rust-like pseudo code of `synced_node_list` construction process follows. The process of syncing a node is repeated every 60 seconds or at the interval specified in the `node_sync_interval` argument of the initializer if set.
 
 ```rust
 synced_node_list = Vec::new()
@@ -85,18 +101,11 @@ for node in node_pool_urls{
 }
 ```
 
-When a return value from an API (e.g., the balance in an address) needs to be determined by quorum (i.e., not by a single healthy node only), then all the nodes in the `synced_node_list` will be queried to determine the final value.
-
 * Unsolved Questions 
   - We make the iota.rs to be a static library, so whenever a user uses an API, then the `Client` instance should be built again, so as the `synced_node_list`. In this way we don't have to maintain the nodes status in the background.
   - We set a timeout for the `Client` instance. If the time is out, then the `Client` instance is needed to perform the sync process again, so as to get the latest `synced_node_list`.
   - We make the iota.rs maintain the up-to-date synced nodes. In this way we need a mechanism to update the each node status in the iota.rs, like 1) periodically queries healthy/unhealthy nodes 2) subscribe events from nodes 3) any other efficient syncing mechanism.
   
-## List of APIs Whose Results Based on `quorum_size` Nodes
-
-* Unsolved Question:
-  - We need to define the list of APIs (e.g., `get_balance()`, `get_address_balances`, etc.), whose returned values should depend on the `quorum_size` nodes.
-
 # General High level API
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
@@ -108,15 +117,15 @@ A generic send function for easily sending a value transaction message.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✘ | [Seed] | The seed of the account we are going to spend. |
-| **address** | ✘ | \[[Address]\] | The address(es) to send to. |
-| **value** | ✘ | std::num::NonZeroU64 | The amount of IOTA to send. It is type of NoneZero types, so it cannot be zero. |
-| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **output** | ✘ | \[Output\] | Users can manually pick their own output instead of having node decide on which output should be used. |
-| **indexation_key** | ✘ | String | An optional indexation key of the indexation payload. |
-| **data** | ✘ | [u8] | An optional indexation data of the indexation payload. |
+| Field | Required | Default | Type | Definition |
+| - | - | - | - | - |
+| **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
+| **address** | ✘ | None | \[[Address]\] | The address(es) to send to, applies to value transactions only. |
+| **value** | ✘ | 0 | u64 | The amount of IOTA to send. If the value is zero the message object will have a IndexationPayload instead of a SignedTransactionPayload with an embedded IndexationPayload |
+| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **output** | ✘ | None | \[Output\] | Users can manually pick their own output instead of having node decide on which output should be used. |
+| **indexation_key** | ✘ | None | String | An optional indexation key of the indexation payload. |
+| **data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
 
 * If only `indexation_key` and `data` are provided. This method will create a message with only indexation payload instead.
 
@@ -179,10 +188,10 @@ Return a valid unspent address.
 ### Parameters
 
 | Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
+| - | - | - | - | - |
+| **seed** | ✔ | - | [Seed] | The seed we want to search for. |
+| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
 
@@ -211,10 +220,10 @@ Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 de
 ### Parameters
 
 | Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **index** | ✘ | u32 | Start index of the address. **Default is 0.** |
+| - | - | - | - | - |
+| **seed** | ✔ | - | [Seed] | The seed we want to search for. |
+| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
 
@@ -266,6 +275,36 @@ Retries (promotes or reattaches) a message for provided message id. Messages sho
 ### Returns:
 
 A tuple with the newly promoted or reattached `(MessageId,  Message)`.
+
+## `subscribe()`
+
+Subscribe to a node event topic (MQTT); Every time a event is detected the given callback function will be executed.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **topic** | ✔ | [Topic] | Topic | The topic to monitor for events |
+| **callback** | ✘ | [CallbackFunction(topic, result)]| A callback function to call every time the event with the given topic is detected. |
+
+### Returns
+
+Nothing apart from a Ok() result if succesful
+
+## `unsubscribe()`
+
+Unsubscribe from a node event topic or topics (MQTT) cancelling the earlier set callback functions being executed.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **topic** | ✘ | [Topic] | Topic | The topic(s) to cancel monitoring for, if none given cancel all event monitoring |
+
+### Returns
+
+Nothing apart from a Ok() result if succesful
+
 
 ### Implementation Details
 
@@ -410,11 +449,11 @@ Return a list of addresses from the seed regardless of their validity.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✔ | [Seed] | The seed we want to search for. |
-| **path** | ✘ | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **range** | ✘ | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
+| Field | Required | Default | Type | Definition |
+| - | - | - | - | - |
+| **seed** | ✔ | None | [Seed] | The seed we want to search for. |
+| **path** | ✘ |`m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **range** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
 
 ### Return
 
@@ -629,3 +668,19 @@ struct Milestone {
     pub timestamp: u64,
 }
 ```
+
+## `Topic`
+[Topic]: #Topic
+
+A string with the exact MQTT topic to monitor, can have one of the following variations:
+
+```milestones/latest
+milestones/solid
+messages/{messageId}/metadata
+outputs/{outputId}
+addresses/{address}/outputs
+messages
+messages/indexation/{index}
+messages/referenced
+```
+
