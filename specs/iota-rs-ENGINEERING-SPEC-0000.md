@@ -255,8 +255,7 @@ Following are the steps for implementing this method:
 
 ## `retry()`
 
-Retries (promotes or reattaches) a message for provided message id. Message should only be retried only if they are valid and haven't been
-confirmed for a while. 
+Retries (promotes or reattaches) a message for provided message id. Message should only be retried only if they are valid and haven't been confirmed for a while. Note that a user needs to maintain a monitoring list of the newly reattached `MessageId`, e.g., if message M1 is reattached by using a new message M2, then the user needs to monitor both M1 and M2. Only if both M1 and M2 are valid and haven't been confirmed for a while, then the user can use retry() again. The possibility of using this function is quite low, because the confirmation throughput of the node is expected to be quite high.
 
 ### Parameters
 
@@ -266,7 +265,7 @@ confirmed for a while.
 
 ### Returns:
 
-Newly reattached [Message](#Message).
+A tuple with the newly promoted or reattached `(MessageId,  Message)`.
 
 ### Implementation Details
 
@@ -451,7 +450,7 @@ Reattaches a message. The method should validate if a reattachment is necessary 
 
 ### Returns
 
-Newly reattached [Message](#Message).
+A tuple with the newly reattached `(MessageId,  Message)`.
 
 ## `promote()`
 
@@ -467,7 +466,7 @@ Promotes a message. The method should validate if a promotion is necessary throu
 
 ### Returns
 
-Newly promoted [Message](#Message).
+A tuple with the newly promoted `(MessageId,  Message)`.
 
 # Objects
 
