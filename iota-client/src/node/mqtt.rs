@@ -71,7 +71,7 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
             "ws"
           },
           node.host_str().unwrap(),
-          node.port().unwrap_or(14265)
+          node.port_or_known_default().unwrap()
         );
         let mqtt_options = CreateOptionsBuilder::new()
           .server_uri(uri)
