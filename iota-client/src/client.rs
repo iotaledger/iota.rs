@@ -11,7 +11,7 @@ use bee_signing_ext::Seed;
 
 use reqwest::{IntoUrl, Url};
 
-use rumqttc::Client as MqttClient;
+use paho_mqtt::Client as MqttClient;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -30,7 +30,6 @@ pub struct TopicEvent {
 }
 
 /// An instance of the client using IRI URI
-#[derive(Clone)]
 pub struct Client {
     /// Node pool of IOTA nodes
     pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
@@ -391,9 +390,9 @@ impl Client {
     pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the metadata to check if it needs to promote or reattach
         let message_metadata = self.get_message().metadata(message_id).await?;
-        if message_metadata.should_promote {
+        if message_metadata.should_promote.unwrap_or(false) {
             return self.promote(message_id).await;
-        } else if message_metadata.should_reattach {
+        } else if message_metadata.should_reattach.unwrap_or(false) {
             return self.reattach(message_id).await;
         } else {
             return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));

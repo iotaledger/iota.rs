@@ -1,12 +1,13 @@
 use crate::client::{Client, TopicEvent, TopicHandlerMap};
 use crate::Result;
-use regex::Regex;
-use rumqttc::{
-  Client as MqttClient, Connection as MqttConnection, Event, Incoming, MqttOptions, QoS,
+use paho_mqtt::{
+  Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, MQTT_VERSION_3_1_1,
 };
+use regex::Regex;
 
 use std::convert::TryFrom;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 macro_rules! lazy_static {
   ($init:expr => $type:ty) => {{
@@ -56,65 +57,59 @@ impl Topic {
   }
 }
 
-pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<MqttClient> {
-  match client.mqtt_client.clone() {
-    Some(c) => Ok(c),
+pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
+  match client.mqtt_client {
+    Some(ref c) => Ok(c),
     None => {
       for node in client.pool.read().unwrap().iter() {
-        let host = node.host_str().unwrap();
-        let mqttoptions = MqttOptions::new(host, host, 1883);
-        let (_, mut connection) = MqttClient::new(mqttoptions.clone(), 10);
-        // poll the event loop until we find a ConnAck event,
-        // which means that the mqtt client is ready to be used on this host
-        // if the event loop returns an error, we check the next node
-        // note that we need to do this on a separate thread to prevent tokio runtime panics
-        let got_ack = std::thread::spawn(move || {
-          let mut got_ack = false;
-          for event in connection.iter() {
-            match event {
-              Ok(event) => {
-                if let Event::Incoming(incoming) = event {
-                  if let Incoming::ConnAck(_) = incoming {
-                    got_ack = true;
-                    break;
-                  }
-                }
-              }
-              Err(_) => break,
-            }
-          }
-          got_ack
-        })
-        .join()
-        .unwrap();
+        // node.set_path("mqtt");
+        let uri = &format!(
+          "{}://{}:{}/mqtt",
+          if node.scheme() == "https" {
+            "wss"
+          } else {
+            "ws"
+          },
+          node.host_str().unwrap(),
+          node.port().unwrap_or(14265)
+        );
+        let mqtt_options = CreateOptionsBuilder::new()
+          .server_uri(uri)
+          .client_id(format!("iota.rs-mqtt-client-{}", uri))
+          .finalize();
+        let mut mqtt_client = MqttClient::new(mqtt_options)?;
 
-        // if we found a valid mqtt connection, loop it on a separate thread
-        if got_ack {
-          let (mqtt_client, connection) = MqttClient::new(mqttoptions, 10);
+        let conn_opts = ConnectOptionsBuilder::new()
+          .keep_alive_interval(Duration::from_secs(20))
+          .mqtt_version(MQTT_VERSION_3_1_1)
+          .clean_session(true)
+          .finalize();
+
+        if let Ok(_) = mqtt_client.connect(conn_opts) {
+          poll_mqtt(client.mqtt_topic_handlers.clone(), &mut mqtt_client);
           client.mqtt_client = Some(mqtt_client);
-          poll_mqtt(client.mqtt_topic_handlers.clone(), connection);
+          break;
         }
       }
       client
         .mqtt_client
-        .clone()
-        .ok_or_else(|| crate::Error::NodePoolEmpty)
+        .as_ref()
+        .ok_or_else(|| crate::Error::MqttConnectionNotFound)
     }
   }
 }
 
-fn poll_mqtt(mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>, connection: MqttConnection) {
-  let mut connection = connection;
+fn poll_mqtt(mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>, client: &mut MqttClient) {
+  let receiver = client.start_consuming();
   std::thread::spawn(move || {
-    for event in connection.iter() {
-      if let Ok(Event::Incoming(Incoming::Publish(p))) = event {
-        let event_topic = p.topic;
+    while let Ok(message) = receiver.recv() {
+      if let Some(message) = message {
+        let topic = message.topic().to_string();
         let mqtt_topic_handlers_guard = mqtt_topic_handlers.lock().unwrap();
-        if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(event_topic.clone())) {
-          let event_payload = String::from_utf8_lossy(&*p.payload).to_string();
+        if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
           let event = TopicEvent {
-            topic: event_topic,
-            payload: event_payload,
+            topic,
+            payload: message.payload_str().to_string(),
           };
           for handler in handlers {
             handler(&event)
@@ -157,18 +152,27 @@ impl<'a> MqttManager<'a> {
     mut self,
     callback: C,
   ) -> Result<()> {
-    let mut client = get_mqtt_client(&mut self.client)?;
+    let client = get_mqtt_client(&mut self.client)?;
     let cb = Arc::new(
       Box::new(callback) as Box<dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static>
     );
-    let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-    let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
-    for topic in self.topics {
-      client.subscribe(&topic.0, QoS::AtLeastOnce)?;
-      match mqtt_topic_handlers.get_mut(&topic) {
-        Some(handlers) => handlers.push(cb.clone()),
-        None => {
-          mqtt_topic_handlers.insert(topic, vec![cb.clone()]);
+    client.subscribe_many(
+      &self
+        .topics
+        .iter()
+        .map(|t| t.0.clone())
+        .collect::<Vec<String>>(),
+      &vec![1; self.topics.len()],
+    )?;
+    {
+      let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
+      let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+      for topic in self.topics {
+        match mqtt_topic_handlers.get_mut(&topic) {
+          Some(handlers) => handlers.push(cb.clone()),
+          None => {
+            mqtt_topic_handlers.insert(topic, vec![cb.clone()]);
+          }
         }
       }
     }
@@ -178,18 +182,25 @@ impl<'a> MqttManager<'a> {
   /// Unsubscribe from the given topics.
   /// If no topics were provided, the function will unsubscribe from every subscribed topic.
   pub fn unsubscribe(mut self) -> Result<()> {
-    let mut client = get_mqtt_client(&mut self.client)?;
-    let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-    let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
-
-    let topics = if self.topics.is_empty() {
-      mqtt_topic_handlers.keys().cloned().collect()
-    } else {
-      self.topics
+    let topics = {
+      let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
+      let mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+      if self.topics.is_empty() {
+        mqtt_topic_handlers.keys().cloned().collect()
+      } else {
+        self.topics
+      }
     };
-    for topic in topics {
-      client.unsubscribe(&topic.0)?;
-      mqtt_topic_handlers.remove(&topic);
+
+    let client = get_mqtt_client(&mut self.client)?;
+    client.unsubscribe_many(&topics.iter().map(|t| t.0.clone()).collect::<Vec<String>>())?;
+
+    {
+      let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
+      let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+      for topic in topics {
+        mqtt_topic_handlers.remove(&topic);
+      }
     }
     Ok(())
   }

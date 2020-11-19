@@ -33,9 +33,11 @@ pub enum Error {
     /// The message cannot be promoted or reattached
     NoNeedPromoteOrReattach(String),
     /// Mqtt client error
-    MqttClientError(rumqttc::ClientError),
+    MqttClientError(paho_mqtt::MqttError),
     /// Invalid MQTT topic.
     InvalidMqttTopic(String),
+    /// MQTT connection not found (all nodes MQTT's are disabled)
+    MqttConnectionNotFound,
 }
 
 impl fmt::Display for Error {
@@ -61,6 +63,10 @@ impl fmt::Display for Error {
             }
             Error::MqttClientError(e) => e.fmt(f),
             Error::InvalidMqttTopic(topic) => write!(f, "The topic {} is invalid", topic),
+            Error::MqttConnectionNotFound => write!(
+                f,
+                "MQTT connection not found (all nodes have the MQTT plugin disabled)"
+            ),
         }
     }
 }
@@ -85,8 +91,8 @@ impl From<bee_message::Error> for Error {
     }
 }
 
-impl From<rumqttc::ClientError> for Error {
-    fn from(error: rumqttc::ClientError) -> Self {
+impl From<paho_mqtt::MqttError> for Error {
+    fn from(error: paho_mqtt::MqttError) -> Self {
         Error::MqttClientError(error)
     }
 }
