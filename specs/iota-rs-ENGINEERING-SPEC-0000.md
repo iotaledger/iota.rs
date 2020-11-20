@@ -59,7 +59,7 @@ The data structure to initialize the instance of the Higher level client library
 | **network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
 | **node** | ✘ | None | String | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **node_sync_interval** | ✘ | 60 | std::num::NonZeroU64 | The interval in seconds to check for node health and sync |
+| **node_sync_interval** | ✘ | 60000 | std::num::NonZeroU64 | The interval in milliseconds to check for node health and sync |
 | **get_info_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
 | **get_health_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
 | **get_milestone_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
@@ -182,7 +182,7 @@ Return a valid unspent address.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
 | **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
@@ -214,7 +214,7 @@ Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 de
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
 | **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
