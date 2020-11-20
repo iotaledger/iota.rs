@@ -100,11 +100,6 @@ for node in node_pool_urls{
    }
 }
 ```
-
-* Unsolved Questions 
-  - We make the iota.rs to be a static library, so whenever a user uses an API, then the `Client` instance should be built again, so as the `synced_node_list`. In this way we don't have to maintain the nodes status in the background.
-  - We set a timeout for the `Client` instance. If the time is out, then the `Client` instance is needed to perform the sync process again, so as to get the latest `synced_node_list`.
-  - We make the iota.rs maintain the up-to-date synced nodes. In this way we need a mechanism to update the each node status in the iota.rs, like 1) periodically queries healthy/unhealthy nodes 2) subscribe events from nodes 3) any other efficient syncing mechanism.
   
 # General High level API
 
