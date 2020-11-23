@@ -29,6 +29,32 @@ pub struct TopicEvent {
     pub payload: String,
 }
 
+/// The MQTT broker options.
+pub struct BrokerOptions {
+    pub(crate) automatic_disconnect: bool,
+}
+
+impl Default for BrokerOptions {
+    fn default() -> Self {
+        Self {
+            automatic_disconnect: true,
+        }
+    }
+}
+
+impl BrokerOptions {
+    /// Creates the default broker options.
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not.
+    pub fn automatic_disconnect(mut self, automatic_disconnect: bool) -> Self {
+        self.automatic_disconnect = automatic_disconnect;
+        self
+    }
+}
+
 /// An instance of the client using IRI URI
 pub struct Client {
     /// Node pool of IOTA nodes
@@ -42,6 +68,7 @@ pub struct Client {
     /// A MQTT client to subscribe/unsubscribe to topics.
     pub(crate) mqtt_client: Option<MqttClient>,
     pub(crate) mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>,
+    pub(crate) broker_options: BrokerOptions,
 }
 
 impl std::fmt::Debug for Client {

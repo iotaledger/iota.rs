@@ -14,7 +14,7 @@ pub mod node;
 pub mod types;
 
 pub use builder::ClientBuilder;
-pub use client::{Client, Topic, TopicEvent};
+pub use client::{BrokerOptions, Client, Topic, TopicEvent};
 pub use error::*;
 pub use reqwest::Url;
 pub use types::*;

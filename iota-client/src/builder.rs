@@ -1,6 +1,6 @@
 //! Builder of the Clinet Instnace
 
-use crate::client::Client;
+use crate::client::{BrokerOptions, Client};
 use crate::error::*;
 
 use std::collections::HashSet;
@@ -26,6 +26,7 @@ pub struct ClientBuilder {
     network: Network,
     quorum_size: u8,
     quorum_threshold: u8,
+    broker_options: BrokerOptions,
 }
 
 impl ClientBuilder {
@@ -36,6 +37,7 @@ impl ClientBuilder {
             network: Network::Mainnet,
             quorum_size: 3,
             quorum_threshold: 50,
+            broker_options: Default::default(),
         }
     }
 
@@ -77,6 +79,12 @@ impl ClientBuilder {
         self
     }
 
+    /// Sets the MQTT broker options.
+    pub fn broker_options(mut self, options: BrokerOptions) -> Self {
+        self.broker_options = options;
+        self
+    }
+
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
         if self.nodes.is_empty() {
@@ -108,6 +116,7 @@ impl ClientBuilder {
             quorum_threshold,
             mqtt_client: None,
             mqtt_topic_handlers: Default::default(),
+            broker_options: self.broker_options,
         };
 
         // let mut sync = client.clone();

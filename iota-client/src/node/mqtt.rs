@@ -1,7 +1,8 @@
 use crate::client::{Client, TopicEvent, TopicHandlerMap};
 use crate::Result;
 use paho_mqtt::{
-  Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, MQTT_VERSION_3_1_1,
+  Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder,
+  MQTT_VERSION_3_1_1,
 };
 use regex::Regex;
 
@@ -123,12 +124,58 @@ fn poll_mqtt(mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>, client: &mut Mqtt
 /// MQTT subscriber.
 pub struct MqttManager<'a> {
   client: &'a mut Client,
-  topics: Vec<Topic>,
 }
 
 impl<'a> MqttManager<'a> {
   /// Initializes a new instance of the mqtt subscriber.
   pub fn new(client: &'a mut Client) -> Self {
+    Self { client }
+  }
+
+  /// Add a new topic to the list.
+  pub fn topic(self, topic: Topic) -> MqttTopicManager<'a> {
+    MqttTopicManager::new(self.client).topic(topic)
+  }
+
+  /// Add a collection of topics to the list.
+  pub fn topics(self, topics: Vec<Topic>) -> MqttTopicManager<'a> {
+    MqttTopicManager::new(self.client).topics(topics)
+  }
+
+  /// Unsubscribes from all subscriptions.
+  pub fn unsubscribe(self) -> crate::Result<()> {
+    MqttTopicManager::new(self.client).unsubscribe()
+  }
+
+  /// Disconnects the broker.
+  /// This will clear the stored topic handlers and close the MQTT connection.
+  pub fn disconnect(mut self) -> Result<()> {
+    let client = get_mqtt_client(&mut self.client)?;
+
+    let disconnect_options = DisconnectOptionsBuilder::new().finalize();
+    client.disconnect(disconnect_options)?;
+    self.client.mqtt_client = None;
+
+    {
+      let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
+      let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+      mqtt_topic_handlers.clear()
+    }
+
+    Ok(())
+  }
+}
+
+/// The MQTT topic manager.
+/// Subscribes and unsubscribes from topics.
+pub struct MqttTopicManager<'a> {
+  client: &'a mut Client,
+  topics: Vec<Topic>,
+}
+
+impl<'a> MqttTopicManager<'a> {
+  /// Initializes a new instance of the mqtt topic manager.
+  fn new(client: &'a mut Client) -> Self {
     Self {
       client,
       topics: vec![],
@@ -195,13 +242,19 @@ impl<'a> MqttManager<'a> {
     let client = get_mqtt_client(&mut self.client)?;
     client.unsubscribe_many(&topics.iter().map(|t| t.0.clone()).collect::<Vec<String>>())?;
 
-    {
+    let empty_topic_handlers = {
       let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
       let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
       for topic in topics {
         mqtt_topic_handlers.remove(&topic);
       }
+      mqtt_topic_handlers.is_empty()
+    };
+
+    if self.client.broker_options.automatic_disconnect && empty_topic_handlers {
+      MqttManager::new(self.client).disconnect()?;
     }
+
     Ok(())
   }
 }

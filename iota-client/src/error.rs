@@ -33,7 +33,7 @@ pub enum Error {
     /// The message cannot be promoted or reattached
     NoNeedPromoteOrReattach(String),
     /// Mqtt client error
-    MqttClientError(paho_mqtt::MqttError),
+    MqttClientError(paho_mqtt::errors::Error),
     /// Invalid MQTT topic.
     InvalidMqttTopic(String),
     /// MQTT connection not found (all nodes MQTT's are disabled)
@@ -91,8 +91,8 @@ impl From<bee_message::Error> for Error {
     }
 }
 
-impl From<paho_mqtt::MqttError> for Error {
-    fn from(error: paho_mqtt::MqttError) -> Self {
+impl From<paho_mqtt::errors::Error> for Error {
+    fn from(error: paho_mqtt::errors::Error) -> Self {
         Error::MqttClientError(error)
     }
 }
