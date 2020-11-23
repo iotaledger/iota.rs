@@ -56,7 +56,7 @@ async fn test_post_message_with_indexation() {
     let tips = client.get_tips().await.unwrap();
 
     let message = Message::builder()
-        // TODO temporarily removed .with_network_id(0)
+        .with_network_id(0)
         .with_parent1(tips.0)
         .with_parent2(tips.1)
         .with_payload(Payload::Indexation(Box::new(index)))
@@ -136,7 +136,7 @@ async fn test_post_message_with_transaction() {
     //println!("{:#?}", transaction);
     let tips = client.get_tips().await.unwrap();
     let message = Message::builder()
-        // TODO temporarily removed .with_network_id(0)
+        .with_network_id(0)
         .with_parent1(tips.0)
         .with_parent2(tips.1)
         .with_payload(Payload::Transaction(Box::new(transaction)))
