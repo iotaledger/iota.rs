@@ -239,7 +239,7 @@ impl Client {
         let tips = self.get_tips().await?;
         let reattach_message = Message::builder()
             // TODO: make the newtwork id configurable
-            // TODO: temporarily remove .with_network_id(0)
+            .with_network_id(0)
             .with_parent1(tips.0)
             .with_parent2(tips.1)
             .with_payload(message.payload().to_owned().unwrap())
@@ -258,7 +258,7 @@ impl Client {
         let tips = self.get_tips().await?;
         let promote_message = Message::builder()
             // TODO: make the newtwork id configurable
-            // TODO: temporarily remove .with_network_id(0)
+            .with_network_id(0)
             .with_parent1(tips.0)
             .with_parent2(*message_id)
             .finish()

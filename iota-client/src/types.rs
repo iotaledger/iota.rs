@@ -300,7 +300,7 @@ impl TryFrom<MessageJson> for Message {
         let nonce = value.nonce;
         Ok(Message::builder()
             // TODO: make the newtwork id configurable
-            // TODO temporarily removed .with_network_id(0)
+            .with_network_id(0)
             .with_parent1(MessageId::new(parent1))
             .with_parent2(MessageId::new(parent2))
             .with_payload(value.payload.try_into()?)
