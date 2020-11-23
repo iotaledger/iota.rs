@@ -84,6 +84,7 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
           .keep_alive_interval(Duration::from_secs(20))
           .mqtt_version(MQTT_VERSION_3_1_1)
           .clean_session(true)
+          .connect_timeout(client.broker_options.timeout)
           .finalize();
 
         if let Ok(_) = mqtt_client.connect(conn_opts) {
@@ -152,7 +153,9 @@ impl<'a> MqttManager<'a> {
   pub fn disconnect(mut self) -> Result<()> {
     let client = get_mqtt_client(&mut self.client)?;
 
-    let disconnect_options = DisconnectOptionsBuilder::new().finalize();
+    let disconnect_options = DisconnectOptionsBuilder::new()
+      .timeout(self.client.broker_options.timeout)
+      .finalize();
     client.disconnect(disconnect_options)?;
     self.client.mqtt_client = None;
 

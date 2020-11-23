@@ -9,11 +9,12 @@ use crate::types::*;
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_signing_ext::Seed;
 
+use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
 
-use paho_mqtt::Client as MqttClient;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, RwLock};
+use std::time::Duration;
 
 const ADDRESS_LENGTH: usize = 32;
 
@@ -32,12 +33,14 @@ pub struct TopicEvent {
 /// The MQTT broker options.
 pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
+    pub(crate) timeout: Duration,
 }
 
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
             automatic_disconnect: true,
+            timeout: Duration::from_secs(30),
         }
     }
 }
@@ -51,6 +54,12 @@ impl BrokerOptions {
     /// Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not.
     pub fn automatic_disconnect(mut self, automatic_disconnect: bool) -> Self {
         self.automatic_disconnect = automatic_disconnect;
+        self
+    }
+
+    /// Sets the timeout used for the MQTT operations.
+    pub fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
         self
     }
 }
