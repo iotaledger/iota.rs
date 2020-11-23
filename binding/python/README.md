@@ -23,6 +23,16 @@ go run main.go tool snapgen alphanet1 625d17d4a4b21cd5edeb57544b9d2d66ce22985fb6
 - `$ ./run_coo_bootstrap.sh `
 
 2. Build the iota-client-python library
+- **IMPORTANT**: Enable the `iota-core-python` in your `Cargo.toml`
+```toml
+[workspace]
+members = [
+    "iota-core",
+    "iota-core-python",
+    "iota-client",
+    "examples",
+]
+``` 
 - `$ cargo build --release`
 - The built library is located in `target/release/`
 - On MacOS, rename `libiota_client.dylib` to `iota_client.so`, on Windows `libiota_client.dll` to `iota_client.pyd`, and on Linux `libiota_client.so` to `iota_client.so`.
