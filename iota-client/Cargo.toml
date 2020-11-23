@@ -28,3 +28,7 @@ blake2 = "0.9"
 
 [dev-dependencies]
 tokio = { version = "0.2.22", features = ["macros"] }
+
+[dependencies.pyo3]
+version = "0.12.3"
+features = ["extension-module"]

@@ -4,6 +4,7 @@ use crate::builder::ClientBuilder;
 use crate::error::*;
 use crate::node::*;
 use crate::types::*;
+use pyo3::prelude::*;
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_signing_ext::Seed;
@@ -16,6 +17,7 @@ use std::sync::{Arc, RwLock};
 const ADDRESS_LENGTH: usize = 32;
 
 /// An instance of the client using IRI URI
+#[pyclass]
 #[derive(Debug, Clone)]
 pub struct Client {
     /// Node pool of IOTA nodes

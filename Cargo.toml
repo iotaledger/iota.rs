@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "iota-core",
+    "iota-core-python",
     "iota-client",
 
     "examples",
