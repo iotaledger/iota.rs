@@ -208,7 +208,7 @@ impl<'a> SendBuilder<'a> {
         let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
             // TODO: make the newtwork id configurable
-            // TODO temporarily removed .with_network_id(0)
+            .with_network_id(0)
             .with_parent1(tips.0)
             .with_parent2(tips.1)
             .with_payload(payload)
