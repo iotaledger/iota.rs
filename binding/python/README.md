@@ -23,12 +23,12 @@ go run main.go tool snapgen alphanet1 625d17d4a4b21cd5edeb57544b9d2d66ce22985fb6
 - `$ ./run_coo_bootstrap.sh `
 
 2. Build the iota-client-python library
-- **IMPORTANT**: Enable the `iota-core-python` in your `Cargo.toml`
+- **IMPORTANT**: Enable the `binding/python/iota-core-python` in your `Cargo.toml`
 ```toml
 [workspace]
 members = [
     "iota-core",
-    "iota-core-python",
+    "binding/python/iota-core-python",
     "iota-client",
     "examples",
 ]
