@@ -1,6 +1,6 @@
 # IOTA Client Python Library
 
-## Requirments
+## Requirements
 - Rust 1.45.0+
 - Python 3.6+
 
