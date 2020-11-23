@@ -47,7 +47,7 @@ impl Client {
     fn get_address_balances(&self, address: &str) -> u64 {
         let address = hex_to_address(address).unwrap(); // Insert the address to search for
         let mut rt = tokio::runtime::Runtime::new().unwrap();
-        let mut balance: u64 = 999;
+        let mut balance: u64 = 0;
         rt.block_on(async {
             balance = self.client.get_address().balance(&address).await.unwrap();
         });
