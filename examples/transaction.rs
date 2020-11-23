@@ -9,9 +9,12 @@ async fn main() {
         .unwrap()
         .build()
         .unwrap();
+    let seed = Seed::from_ed25519_bytes(
+        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
+    )
+    .unwrap(); // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
 
-    let seed = Seed::from_ed25519_bytes(&[0u8; 32]).unwrap(); // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    let path = BIP32Path::from_str("m/0'/0'").unwrap(); // Insert your account path. Note that index must be hardened(like 0', 123').
+    let path = BIP32Path::from_str("m/").unwrap(); // Insert your account path. Note that index must be hardened(like 0', 123').
     let balance = iota
         .send(&seed)
         .path(&path)

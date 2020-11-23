@@ -1,14 +1,13 @@
 use crate::{Client, Error, Result};
 
-use bee_common_ext::packable::Packable;
+use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-
-use std::num::NonZeroU64;
-
+use std::{convert::TryInto, num::NonZeroU64};
+const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
 
 /// Builder of send API
@@ -67,18 +66,26 @@ impl<'a> SendBuilder<'a> {
             return Err(Error::MissingParameter(String::from("Outputs")));
         }
 
-        let mut balance = 0;
+        // Calculate the total tokens to spend
+        let mut total_to_spend = 0;
+        let mut total_already_spent = 0;
+        for output in &self.outputs {
+            if let Output::SignatureLockedSingle(x) = &output {
+                total_to_spend += x.amount().get();
+            }
+        }
+
         let mut paths = Vec::new();
         let mut essence = TransactionEssence::builder();
-        loop {
+        let mut end = false;
+        while !end {
             let addresses = self
                 .client
-                .get_addresses(self.seed)
+                .find_addresses(self.seed)
                 .path(path)
                 .range(index..index + 20)
                 .get()?;
 
-            let mut end = false;
             for address in addresses {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
@@ -86,6 +93,16 @@ impl<'a> SendBuilder<'a> {
                     let curr_outputs = self.client.get_output(output_id).await?;
                     outputs.push(curr_outputs);
                 }
+
+                // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
+                // up the addresses belonging to the seed. Note that we don't really count the exact 20
+                // consecutive empty addresses, which is uncessary. We just need to check the address range,
+                // [k*20, k*20 + 20), where k is natural number, and to see if the outpus are all empty.
+                if outputs.is_empty() {
+                    end = true;
+                    break;
+                }
+
                 for (offset, output) in outputs.into_iter().enumerate() {
                     match output.is_spent {
                         true => {
@@ -94,14 +111,14 @@ impl<'a> SendBuilder<'a> {
                             }
                         }
                         false => {
-                            if output.amount != 0 {
-                                balance += output.amount;
+                            if output.amount != 0 && total_already_spent < total_to_spend {
+                                total_already_spent += output.amount;
                                 let mut address_path = path.clone();
-                                address_path.push(offset as u32);
-
-                                let mut transaction_id = [0u8; TRANSACTION_ID_LENGTH];
-                                hex::decode_to_slice(output.transaction_id, &mut transaction_id)?;
-
+                                address_path.push(offset as u32 + HARDEND);
+                                let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output
+                                    .transaction_id[..]
+                                    .try_into()
+                                    .map_err(|_| Error::TransactionError)?;
                                 paths.push(address_path);
                                 essence = essence.add_input(Input::UTXO(
                                     UTXOInput::new(
@@ -110,30 +127,34 @@ impl<'a> SendBuilder<'a> {
                                     )
                                     .map_err(|_| Error::TransactionError)?,
                                 ));
-                            } else {
-                                end = true;
+
+                                // Output the remaining tokens back to the original address
+                                if total_already_spent > total_to_spend {
+                                    essence = essence.add_output(
+                                        SignatureLockedSingleOutput::new(
+                                            address.clone(),
+                                            NonZeroU64::new(total_already_spent - total_to_spend)
+                                                .unwrap(),
+                                        )
+                                        .into(),
+                                    );
+                                }
                             }
                         }
                     }
                 }
             }
+            index += 20;
+        }
 
-            match end {
-                true => break,
-                false => index += 20,
-            }
+        if total_already_spent < total_to_spend {
+            return Err(Error::NotEnoughBalance(total_to_spend));
         }
 
         // Build signed transaction payload
         let outputs = self.outputs;
-        let mut total = 0;
         for output in outputs {
-            let Output::SignatureLockedSingle(x) = &output;
-            total += x.amount().get();
             essence = essence.add_output(output);
-        }
-        if balance <= total {
-            return Err(Error::NotEnoughBalance(balance));
         }
         let essence = essence.finish()?;
         let mut serialized_essence = Vec::new();
@@ -181,13 +202,15 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::TransactionError)?;
 
         // get tips
-        let (parent1, parent2) = (MessageId::new([0; 32]), MessageId::new([0; 32])); //self.client.get_tips()?;
+        let tips = self.client.get_tips().await.unwrap();
 
         // building message
         let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
-            .with_parent1(parent1)
-            .with_parent2(parent2)
+            // TODO: make the newtwork id configurable
+            // TODO temporarily removed .with_network_id(0)
+            .with_parent1(tips.0)
+            .with_parent2(tips.1)
             .with_payload(payload)
             .finish()
             .map_err(|_| Error::TransactionError)?;
