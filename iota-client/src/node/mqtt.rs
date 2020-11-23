@@ -151,7 +151,7 @@ impl<'a> MqttManager<'a> {
   /// Disconnects the broker.
   /// This will clear the stored topic handlers and close the MQTT connection.
   pub fn disconnect(mut self) -> Result<()> {
-    let timeout = { self.client.broker_options.timeout };
+    let timeout = self.client.broker_options.timeout;
     let client = get_mqtt_client(&mut self.client)?;
 
     let disconnect_options = DisconnectOptionsBuilder::new().timeout(timeout).finalize();
