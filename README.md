@@ -26,6 +26,14 @@ To use the library, we recommend update your Rust to latest stable version [`rus
 
 `no_std` is not supported currently, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once new library implementation is ready.
 
+### macOS
+
+To compile this crate on macOS, a `cmake` installation is required and the `OPENSSL_ROOT_DIR` environment variable must be set.
+
+```
+$ export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
+```
+
 ## Using the library
 
 Using the library is fairly easy, just add it as dependancy in `Cargo.toml`:
