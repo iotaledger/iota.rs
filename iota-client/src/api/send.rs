@@ -6,6 +6,7 @@ use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
+use std::collections::HashMap;
 use std::{convert::TryInto, num::NonZeroU64};
 const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
@@ -17,6 +18,14 @@ pub struct SendBuilder<'a> {
     path: Option<&'a BIP32Path>,
     index: Option<usize>,
     outputs: Vec<Output>,
+}
+
+/// Structure for sorting of UnlockBlocks
+// TODO: move the sorting process to the `Message` crate
+struct AddressIndexRecorder {
+    input: Input,
+    address_index: usize,
+    address_path: BIP32Path,
 }
 
 impl<'a> SendBuilder<'a> {
@@ -77,8 +86,15 @@ impl<'a> SendBuilder<'a> {
 
         let mut paths = Vec::new();
         let mut essence = TransactionEssence::builder();
-        let mut end = false;
-        while !end {
+        let mut empty_address_count: u32 = 0;
+        let mut address_index_recorders = Vec::new();
+
+        // The gap limit is 20
+        while empty_address_count != 20 {
+            // Reset the empty_address_count for each run of output address searching
+            empty_address_count = 0;
+
+            // Get the addresses in the BIP path/index ~ path/index+20
             let addresses = self
                 .client
                 .find_addresses(self.seed)
@@ -86,7 +102,8 @@ impl<'a> SendBuilder<'a> {
                 .range(index..index + 20)
                 .get()?;
 
-            for address in addresses {
+            // For each address, get the address outputs
+            for (address_index, address) in addresses.iter().enumerate() {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
                 for output_id in address_outputs.iter() {
@@ -99,11 +116,11 @@ impl<'a> SendBuilder<'a> {
                 // consecutive empty addresses, which is uncessary. We just need to check the address range,
                 // [k*20, k*20 + 20), where k is natural number, and to see if the outpus are all empty.
                 if outputs.is_empty() {
-                    end = true;
-                    break;
+                    // Accumulate the empty_address_count for each run of output address searching
+                    empty_address_count += 1;
                 }
 
-                for (offset, output) in outputs.into_iter().enumerate() {
+                for (_offset, output) in outputs.into_iter().enumerate() {
                     match output.is_spent {
                         true => {
                             if output.amount != 0 {
@@ -114,20 +131,27 @@ impl<'a> SendBuilder<'a> {
                             if output.amount != 0 && total_already_spent < total_to_spend {
                                 total_already_spent += output.amount;
                                 let mut address_path = path.clone();
-                                address_path.push(offset as u32 + HARDEND);
+                                // Note that we need to sign the original address, i.e., `path/index`,
+                                // instead of `path/index/_offset` or `path/_offset`.
+                                address_path.push(address_index as u32 + HARDEND);
                                 let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output
                                     .transaction_id[..]
                                     .try_into()
                                     .map_err(|_| Error::TransactionError)?;
-                                paths.push(address_path);
-                                essence = essence.add_input(Input::UTXO(
+                                paths.push(address_path.clone());
+                                let input = Input::UTXO(
                                     UTXOInput::new(
                                         TransactionId::from(transaction_id),
                                         output.output_index,
                                     )
                                     .map_err(|_| Error::TransactionError)?,
-                                ));
-
+                                );
+                                essence = essence.add_input(input.clone());
+                                address_index_recorders.push(AddressIndexRecorder {
+                                    input,
+                                    address_index,
+                                    address_path,
+                                });
                                 // Output the remaining tokens back to the original address
                                 if total_already_spent > total_to_spend {
                                     essence = essence.add_output(
@@ -163,20 +187,24 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
 
         let mut unlock_blocks = Vec::new();
-        let mut last_index = (None, -1);
-        for path in paths.iter() {
+        let mut current_block_index: usize = 0;
+        let mut signature_indexes = HashMap::<usize, usize>::new();
+        address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
+
+        for recorder in address_index_recorders.iter() {
             // Check if current path is same as previous path
-            if last_index.0 == Some(path) {
-                // If so, add a reference unlock block
+            // If so, add a reference unlock block
+            if let Some(block_index) = signature_indexes.get(&recorder.address_index) {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(
-                    last_index.1 as u16,
+                    *block_index as u16,
                 )?));
             } else {
                 // If not, we should create a signature unlock block
                 match &self.seed {
                     Seed::Ed25519(s) => {
-                        let private_key = Ed25519PrivateKey::generate_from_seed(s, path)
-                            .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
+                        let private_key =
+                            Ed25519PrivateKey::generate_from_seed(s, &recorder.address_path)
+                                .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
                         let public_key = private_key.generate_public_key().to_bytes();
                         // The block should sign the entire transaction essence part of the transaction payload
                         let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
@@ -186,9 +214,10 @@ impl<'a> SendBuilder<'a> {
                     }
                     Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
                 }
+                signature_indexes.insert(recorder.address_index, current_block_index);
 
-                // Update last signature block path and index
-                last_index = (Some(path), (unlock_blocks.len() - 1) as isize);
+                // Update current block index
+                current_block_index += 1;
             }
         }
         // TODO overflow check
