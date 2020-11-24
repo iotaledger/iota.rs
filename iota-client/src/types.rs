@@ -141,12 +141,18 @@ pub struct MessageMetadata {
     /// Solid status
     #[serde(rename = "isSolid")]
     pub is_solid: bool,
-    /// Should promote
+    /// Is the message referenced by a milestone.
+    #[serde(rename = "referencedByMilestoneIndex")]
+    pub referenced_by_milestone_index: Option<u64>,
+    /// The ledger inclusion state.
+    #[serde(rename = "ledgerInclusionState")]
+    pub ledger_inclusion_state: Option<String>,
+    /// Should the message be promoted. Filled only when the message is solid.
     #[serde(rename = "shouldPromote")]
-    pub should_promote: bool,
-    /// Should reattach
+    pub should_promote: Option<bool>,
+    /// Should the message be reattached. Filled only when the message is solid.
     #[serde(rename = "shouldReattach")]
-    pub should_reattach: bool,
+    pub should_reattach: Option<bool>,
 }
 
 impl ResponseType for MessageMetadata {}

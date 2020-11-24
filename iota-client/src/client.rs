@@ -2,21 +2,69 @@
 use crate::api::*;
 use crate::builder::ClientBuilder;
 use crate::error::*;
+pub use crate::node::Topic;
 use crate::node::*;
 use crate::types::*;
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_signing_ext::Seed;
 
+use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
 
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
+use std::time::Duration;
 
 const ADDRESS_LENGTH: usize = 32;
 
-/// An instance of the client using IRI URI
+type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
+pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
+
+/// An event from a MQTT topic.
 #[derive(Debug, Clone)]
+pub struct TopicEvent {
+    /// the MQTT topic.
+    pub topic: String,
+    /// The MQTT event payload.
+    pub payload: String,
+}
+
+/// The MQTT broker options.
+pub struct BrokerOptions {
+    pub(crate) automatic_disconnect: bool,
+    pub(crate) timeout: Duration,
+}
+
+impl Default for BrokerOptions {
+    fn default() -> Self {
+        Self {
+            automatic_disconnect: true,
+            timeout: Duration::from_secs(30),
+        }
+    }
+}
+
+impl BrokerOptions {
+    /// Creates the default broker options.
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not.
+    pub fn automatic_disconnect(mut self, automatic_disconnect: bool) -> Self {
+        self.automatic_disconnect = automatic_disconnect;
+        self
+    }
+
+    /// Sets the timeout used for the MQTT operations.
+    pub fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+}
+
+/// An instance of the client using IRI URI
 pub struct Client {
     /// Node pool of IOTA nodes
     pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
@@ -26,6 +74,23 @@ pub struct Client {
     pub(crate) mwm: u8,
     pub(crate) quorum_size: u8,
     pub(crate) quorum_threshold: u8,
+    /// A MQTT client to subscribe/unsubscribe to topics.
+    pub(crate) mqtt_client: Option<MqttClient>,
+    pub(crate) mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>,
+    pub(crate) broker_options: BrokerOptions,
+}
+
+impl std::fmt::Debug for Client {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Client")
+            .field("pool", &self.pool)
+            .field("sync", &self.sync)
+            .field("client", &self.client)
+            .field("mwm", &self.mwm)
+            .field("quorum_size", &self.quorum_size)
+            .field("quorum_threshold", &self.quorum_threshold)
+            .finish()
+    }
 }
 
 impl Client {
@@ -60,6 +125,15 @@ impl Client {
             .next()
             .ok_or(Error::NodePoolEmpty)?
             .clone())
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    // MQTT API
+    //////////////////////////////////////////////////////////////////////
+
+    /// Returns a handle to the MQTT topics manager.
+    pub fn subscriber(&mut self) -> MqttManager<'_> {
+        MqttManager::new(self)
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -352,9 +426,9 @@ impl Client {
     pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the metadata to check if it needs to promote or reattach
         let message_metadata = self.get_message().metadata(message_id).await?;
-        if message_metadata.should_promote {
+        if message_metadata.should_promote.unwrap_or(false) {
             return self.promote(message_id).await;
-        } else if message_metadata.should_reattach {
+        } else if message_metadata.should_reattach.unwrap_or(false) {
             return self.reattach(message_id).await;
         } else {
             return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));
