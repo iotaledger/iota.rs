@@ -1,12 +1,7 @@
 // These are E2E test samples, so they are ignored by default.
 
-use bee_common::packable::Packable;
-use bee_message::payload::transaction::TransactionEssenceBuilder;
 use bee_message::prelude::*;
-use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey},
-    Seed, Signer,
-};
+use bee_signing_ext::{binary::BIP32Path, Seed};
 use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
 
 use std::num::NonZeroU64;
@@ -71,81 +66,33 @@ async fn test_post_message_with_indexation() {
 #[ignore]
 #[tokio::test]
 async fn test_post_message_with_transaction() {
-    let client = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let iota = iota_client::Client::new() // Crate a client instance builder
+        .node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .build()
         .unwrap();
 
-    // let seed = Ed25519Seed::from_bytes(
-    //     &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
-    // )
-    // .unwrap();
-
-    // let pri =
-    //     Ed25519PrivateKey::generate_from_seed(&seed, &BIP32Path::from_str("m").unwrap()).unwrap();
-    let private_key = Ed25519PrivateKey::from_bytes(
+    // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    let seed = Seed::from_ed25519_bytes(
         &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
     )
     .unwrap();
-    let public_key = private_key.generate_public_key().to_bytes();
-    //println!("{}", hex::encode(public_key));
 
-    let mut output_address = [0u8; 32];
-    hex::decode_to_slice(
-        "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92",
-        &mut output_address,
-    )
-    .unwrap();
-    let output_address = Ed25519Address::new(output_address);
-    let inputs = client
-        .get_address()
-        .outputs(&output_address.into())
+    // Insert your account path. Note that index must be hardened(like 0', 123').
+    let path = BIP32Path::from_str("m/").unwrap();
+    let message_id = iota
+        .send(&seed)
+        .path(&path)
+        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        .output(
+            hex_to_address("5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8")
+                .unwrap(),
+            NonZeroU64::new(100).unwrap(),
+        )
+        .post()
         .await
         .unwrap();
-
-    let address = client
-        .get_unspent_address(&Seed::from_ed25519_bytes(&[0u8; 32]).unwrap())
-        .path(&BIP32Path::from_str("m").unwrap())
-        .get()
-        .await
-        .unwrap();
-    let output = Output::from(SignatureLockedSingleOutput::new(
-        address.0,
-        NonZeroU64::new(100).unwrap(),
-    ));
-    let essence = TransactionEssenceBuilder::new()
-        .add_input(inputs[0].clone().into())
-        .add_output(output)
-        .finish()
-        .unwrap();
-    let mut serialized_essence = vec![];
-    essence.pack(&mut serialized_essence).unwrap();
-
-    let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
-    let unlock = UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
-        public_key, signature,
-    )));
-
-    let transaction = TransactionBuilder::new()
-        .with_essence(essence)
-        .add_unlock_block(unlock)
-        .finish()
-        .unwrap();
-
-    //println!("{:#?}", transaction);
-    let tips = client.get_tips().await.unwrap();
-    let message = Message::builder()
-        .with_network_id(0)
-        .with_parent1(tips.0)
-        .with_parent2(tips.1)
-        .with_payload(Payload::Transaction(Box::new(transaction)))
-        .finish()
-        .unwrap();
-
-    let r = client.post_message(&message).await.unwrap();
-
-    println!("{}", r);
+    println!("Message ID: {:?}", message_id);
 }
 
 #[ignore]
@@ -174,7 +121,7 @@ async fn test_get_message_data() {
         .unwrap()
         .get_message()
         .data(
-            &hex_to_message_id("abf677332011485dfd741df6900f92b615a26721e4e6adfa074dccacad471f1b")
+            &hex_to_message_id("1bf33857f8a3960b23d841fbf4a8b72b7bcb80e749d05abd95b85bcca816b600")
                 .unwrap(),
         )
         .await
