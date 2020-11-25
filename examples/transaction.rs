@@ -151,7 +151,7 @@ async fn main() {
     delay_for(Duration::from_millis(15000)).await;
     let message_metadata = iota.get_message().metadata(&message_id.unwrap()).await;
     println!(
-        "The ledgerInclusionState: {}",
+        "The ledgerInclusionState: {:?}",
         message_metadata.unwrap().ledger_inclusion_state
     );
 }
