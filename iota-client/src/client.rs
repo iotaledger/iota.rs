@@ -426,9 +426,9 @@ impl Client {
     pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the metadata to check if it needs to promote or reattach
         let message_metadata = self.get_message().metadata(message_id).await?;
-        if message_metadata.should_promote.unwrap_or(false) {
+        if message_metadata.should_promote {
             return self.promote(message_id).await;
-        } else if message_metadata.should_reattach.unwrap_or(false) {
+        } else if message_metadata.should_reattach {
             return self.reattach(message_id).await;
         } else {
             return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));
