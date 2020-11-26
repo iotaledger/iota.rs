@@ -11,6 +11,7 @@ use bee_signing_ext::Seed;
 
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
+use serde::Serialize;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, RwLock};
@@ -22,7 +23,7 @@ type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
 pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
 
 /// An event from a MQTT topic.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TopicEvent {
     /// the MQTT topic.
     pub topic: String,
