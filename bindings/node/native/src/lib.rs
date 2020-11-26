@@ -9,7 +9,6 @@ use tokio::runtime::Runtime;
 use std::{
     any::Any,
     collections::HashMap,
-    fmt,
     panic::{catch_unwind, AssertUnwindSafe},
     sync::{Arc, Mutex, RwLock},
 };
@@ -21,35 +20,16 @@ type ClientInstanceMap = Arc<RwLock<HashMap<String, Arc<RwLock<Client>>>>>;
 
 pub(crate) type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub(crate) enum Error {
-    AnyhowError(anyhow::Error),
-    ClientError(iota::client::Error),
+    #[error("`{0}`")]
+    AnyhowError(#[from] anyhow::Error),
+    #[error("`{0}`")]
+    ClientError(#[from] iota::client::Error),
+    #[error("`{0}`")]
+    AddressError(#[from] bech32::Error),
+    #[error("`{0}`")]
     Panic(String),
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::AnyhowError(e) => e.fmt(f),
-            Error::Panic(message) => write!(f, "Panic: {}", message),
-            Error::ClientError(e) => e.fmt(f),
-        }
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl From<anyhow::Error> for Error {
-    fn from(error: anyhow::Error) -> Self {
-        Error::AnyhowError(error)
-    }
-}
-
-impl From<iota::client::Error> for Error {
-    fn from(error: iota::client::Error) -> Self {
-        Error::ClientError(error)
-    }
 }
 
 pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {

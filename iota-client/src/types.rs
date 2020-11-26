@@ -205,7 +205,7 @@ pub(crate) struct SLSAddress {
 }
 
 /// Output data
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct OutputMetadata {
     /// Message ID of the output
     pub message_id: Vec<u8>,
