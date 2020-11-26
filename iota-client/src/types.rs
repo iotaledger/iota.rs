@@ -63,7 +63,7 @@ impl<T: ResponseType> Response<T> {
 }
 
 /// Response of GET /api/v1/info endpoint
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeInfo {
     /// Iota node Name
     pub name: String,
@@ -97,7 +97,7 @@ pub struct NodeInfo {
 impl ResponseType for NodeInfo {}
 
 /// Response of GET /api/v1/tips endpoint
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Tips {
     /// Message ID of tip 1
     #[serde(rename = "tip1MessageId")]
@@ -109,7 +109,7 @@ pub(crate) struct Tips {
 
 impl ResponseType for Tips {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct PostMessageId {
     #[serde(rename = "messageId")]
     pub(crate) message_id: String,
@@ -118,7 +118,7 @@ pub(crate) struct PostMessageId {
 impl ResponseType for PostMessageId {}
 
 /// Collection of meesage ID
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct MessageIds {
     #[serde(rename = "messageIds")]
     pub(crate) inner: Box<[String]>,
@@ -127,7 +127,7 @@ pub(crate) struct MessageIds {
 impl ResponseType for MessageIds {}
 
 /// Response of GET /api/v1/messages/{messageId} endpoint
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MessageMetadata {
     /// Message ID
     #[serde(rename = "messageId")]
@@ -157,7 +157,7 @@ pub struct MessageMetadata {
 
 impl ResponseType for MessageMetadata {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct ChildrenMessageIds {
     #[serde(rename = "childrenMessageIds")]
     pub(crate) inner: Box<[String]>,
@@ -165,7 +165,7 @@ pub(crate) struct ChildrenMessageIds {
 
 impl ResponseType for ChildrenMessageIds {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct AddressBalance {
     pub(crate) count: usize,
     pub(crate) balance: u64,
@@ -174,7 +174,7 @@ pub(crate) struct AddressBalance {
 impl ResponseType for AddressBalance {}
 
 /// Output raw data
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct RawOutput {
     #[serde(rename = "messageId")]
     pub(crate) message_id: String,
@@ -189,7 +189,7 @@ pub(crate) struct RawOutput {
 
 impl ResponseType for RawOutput {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SLS {
     #[serde(rename = "type")]
     pub(crate) type_: u8,
@@ -197,7 +197,7 @@ pub(crate) struct SLS {
     pub(crate) amount: u64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SLSAddress {
     #[serde(rename = "type")]
     pub(crate) type_: u8,
@@ -222,7 +222,7 @@ pub struct OutputMetadata {
 }
 
 /// Outputs that use a given address.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AddressOutputs {
     /// Outputs used by the address.
     #[serde(rename = "outputIds")]
@@ -232,7 +232,7 @@ pub struct AddressOutputs {
 impl ResponseType for AddressOutputs {}
 
 /// Milestone from Iota node
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MilestoneMetadata {
     /// Milestone index
     #[serde(rename = "milestoneIndex")]

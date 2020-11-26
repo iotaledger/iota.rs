@@ -1,4 +1,4 @@
-const { Client, TopicSubscriber } = require('../native')
+const { Client, TopicSubscriber, MessageFinder } = require('../native')
 
 function promisify (fn) {
   return function () {
@@ -28,6 +28,14 @@ TopicSubscriber.prototype.subscribe = function (cb) {
   })
   poll(this, cb)
 }
+
+Client.prototype.getInfo = promisify(Client.prototype.getInfo)
+Client.prototype.getTips = promisify(Client.prototype.getTips)
+MessageFinder.prototype.index = promisify(MessageFinder.prototype.index)
+MessageFinder.prototype.data = promisify(MessageFinder.prototype.data)
+MessageFinder.prototype.raw = promisify(MessageFinder.prototype.raw)
+MessageFinder.prototype.children = promisify(MessageFinder.prototype.children)
+MessageFinder.prototype.metadata = promisify(MessageFinder.prototype.metadata)
 
 module.exports = {
   Client

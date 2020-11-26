@@ -2,15 +2,16 @@ use backtrace::Backtrace;
 use futures::{Future, FutureExt};
 use iota::Client;
 use neon::prelude::*;
-use once_cell::sync::Lazy;
+use once_cell::sync::{Lazy, OnceCell};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use tokio::runtime::Runtime;
 
 use std::{
     any::Any,
     collections::HashMap,
     fmt,
     panic::{catch_unwind, AssertUnwindSafe},
-    sync::{Arc, RwLock},
+    sync::{Arc, Mutex, RwLock},
 };
 
 mod classes;
@@ -49,6 +50,12 @@ impl From<iota::client::Error> for Error {
     fn from(error: iota::client::Error) -> Self {
         Error::ClientError(error)
     }
+}
+
+pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
+    static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();
+    let runtime = INSTANCE.get_or_init(|| Mutex::new(Runtime::new().unwrap()));
+    runtime.lock().unwrap().block_on(cb)
 }
 
 /// Gets the client instances map.

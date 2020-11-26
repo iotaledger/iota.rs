@@ -10,7 +10,7 @@ use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInpu
 use bee_signing_ext::Seed;
 
 use paho_mqtt::Client as MqttClient;
-use reqwest::{IntoUrl, Url};
+use reqwest::Url;
 use serde::Serialize;
 
 use std::collections::{HashMap, HashSet};
@@ -142,8 +142,8 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// GET /health endpoint
-    pub async fn get_health<T: IntoUrl>(url: T) -> Result<bool> {
-        let mut url = url.into_url()?;
+    pub async fn get_health(&self) -> Result<bool> {
+        let mut url = self.get_node()?;
         url.set_path("health");
         let resp = reqwest::get(url).await?;
 
@@ -154,8 +154,8 @@ impl Client {
     }
 
     /// GET /api/v1/info endpoint
-    pub async fn get_info<T: IntoUrl>(url: T) -> Result<Response<NodeInfo>> {
-        let mut url = url.into_url()?;
+    pub async fn get_info(&self) -> Result<Response<NodeInfo>> {
+        let mut url = self.get_node()?;
         url.set_path("api/v1/info");
         let resp = reqwest::get(url).await?;
 
