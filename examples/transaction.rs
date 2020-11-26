@@ -23,12 +23,12 @@ use tokio::time::delay_for;
 
 #[tokio::main]
 async fn main() {
-    let mut iota = Client::new() // Crate a client instance builder
+    let iota = Client::new() // Crate a client instance builder
         .node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .build()
         .unwrap();
-    iota.start_sync_process();
+
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
     let seed = Seed::from_ed25519_bytes(
         &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),

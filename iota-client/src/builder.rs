@@ -115,7 +115,7 @@ impl ClientBuilder {
             x => x,
         };
 
-        let client = Client {
+        let mut client = Client {
             nodes: self.nodes.clone(),
             pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
             sync: Arc::new(Mutex::new(Vec::new())),
@@ -140,7 +140,7 @@ impl ClientBuilder {
         //         sync.sync();
         //     }
         // });
-
+        client.start_sync_process();
         Ok(client)
     }
 }
