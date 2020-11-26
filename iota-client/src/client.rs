@@ -13,8 +13,14 @@ use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
 
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Mutex, RwLock};
+use std::num::NonZeroU64;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc, Mutex, RwLock,
+};
+use std::thread;
 use std::time::Duration;
+use tokio;
 
 const ADDRESS_LENGTH: usize = 32;
 
@@ -67,8 +73,12 @@ impl BrokerOptions {
 /// An instance of the client using IRI URI
 pub struct Client {
     /// Node pool of IOTA nodes
+    pub(crate) nodes: Vec<Url>,
     pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
-    pub(crate) sync: Arc<RwLock<Vec<Url>>>,
+    pub(crate) sync: Arc<Mutex<Vec<Url>>>,
+    pub(crate) stop_sync: Arc<AtomicBool>,
+    pub(crate) sync_handle: Option<thread::JoinHandle<()>>,
+    pub(crate) node_sync_interval: NonZeroU64,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     pub(crate) mwm: u8,
@@ -93,6 +103,16 @@ impl std::fmt::Debug for Client {
     }
 }
 
+impl Drop for Client {
+    /// Gracefully shutdown the `Client`
+    fn drop(&mut self) {
+        self.stop_sync.store(true, Ordering::Relaxed);
+        if let Some(handle) = self.sync_handle.take() {
+            handle.join().expect("failed to join thread");
+        }
+    }
+}
+
 impl Client {
     /// Create the builder to instntiate the IOTA Client.
     pub fn new() -> ClientBuilder {
@@ -114,6 +134,32 @@ impl Client {
 
     //     *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
     // }
+    /// Sync the node lists per node_sync_interval milliseconds
+    pub fn start_sync_process(&mut self) {
+        let sync = self.sync.clone();
+        let node_sync_interval = u64::from(self.node_sync_interval);
+        let stop_sync = self.stop_sync.clone();
+        let nodes = self.nodes.clone();
+        let mut runtime = tokio::runtime::Runtime::new().unwrap();
+        let handle: thread::JoinHandle<()> = thread::spawn(move || {
+            while !stop_sync.load(Ordering::Relaxed) {
+                thread::sleep(Duration::from_millis(node_sync_interval));
+                let mut synced_nodes = Vec::<Url>::new();
+                for node_url in &nodes {
+                    // Put the healty node url into the synced_nodes
+                    if runtime
+                        .block_on(async { Client::get_health(node_url.clone()).await })
+                        .unwrap_or(false)
+                    {
+                        synced_nodes.push(node_url.clone());
+                    }
+                }
+                // Update the sync list
+                *sync.lock().unwrap() = synced_nodes;
+            }
+        });
+        self.sync_handle = Some(handle);
+    }
 
     /// Get a node candidate from the node pool.
     pub(crate) fn get_node(&self) -> Result<Url> {

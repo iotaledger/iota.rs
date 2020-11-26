@@ -3,11 +3,11 @@
 use crate::client::{BrokerOptions, Client};
 use crate::error::*;
 
+use reqwest::Url;
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use std::sync::{Arc, RwLock};
-
-use reqwest::Url;
+use std::num::NonZeroU64;
+use std::sync::{atomic::AtomicBool, Arc, Mutex, RwLock};
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
@@ -23,6 +23,7 @@ pub enum Network {
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
     nodes: Vec<Url>,
+    node_sync_interval: NonZeroU64,
     network: Network,
     quorum_size: u8,
     quorum_threshold: u8,
@@ -34,6 +35,7 @@ impl ClientBuilder {
     pub fn new() -> Self {
         Self {
             nodes: Vec::new(),
+            node_sync_interval: NonZeroU64::new(60000).unwrap(),
             network: Network::Mainnet,
             quorum_size: 3,
             quorum_threshold: 50,
@@ -45,6 +47,12 @@ impl ClientBuilder {
     pub fn node(mut self, url: &str) -> Result<Self> {
         let url = Url::parse(url).map_err(|_| Error::UrlError)?;
         self.nodes.push(url);
+        Ok(self)
+    }
+
+    /// Set the node sync interval
+    pub fn node_sync_interval(mut self, node_sync_interval: NonZeroU64) -> Result<Self> {
+        self.node_sync_interval = node_sync_interval;
         Ok(self)
     }
 
@@ -108,8 +116,12 @@ impl ClientBuilder {
         };
 
         let client = Client {
+            nodes: self.nodes.clone(),
             pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
-            sync: Arc::new(RwLock::new(Vec::new())),
+            sync: Arc::new(Mutex::new(Vec::new())),
+            stop_sync: Arc::new(AtomicBool::new(false)),
+            sync_handle: None,
+            node_sync_interval: self.node_sync_interval,
             client: reqwest::Client::new(),
             mwm,
             quorum_size,
