@@ -434,19 +434,6 @@ impl Client {
             return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));
         }
     }
-
-    /// Check if a transaction-message is confirmed.
-    /// Should GET `/transaction-messages/is-confirmed`
-    pub fn is_confirmed<'a>(
-        &self,
-        hashes: &'a [MessageId],
-    ) -> Result<HashMap<&'a MessageId, bool>> {
-        let mut map = HashMap::new();
-        for hash in hashes {
-            map.insert(hash, true);
-        }
-        Ok(map)
-    }
 }
 
 // pub(crate) fn hex_to_message_id(data: &str) -> Result<MessageId> {
