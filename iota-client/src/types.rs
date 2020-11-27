@@ -273,7 +273,7 @@ impl Transfers {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct MessageJson {
+pub struct MessageJson {
     #[serde(rename = "parent1MessageId")]
     parent1: String,
     #[serde(rename = "parent2MessageId")]
@@ -320,7 +320,7 @@ impl TryFrom<MessageJson> for Message {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct PayloadJson {
+pub struct PayloadJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -390,7 +390,7 @@ impl TryFrom<PayloadJson> for Payload {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct TransactionEssenceJson {
+pub struct TransactionEssenceJson {
     #[serde(rename = "type")]
     type_: u8,
     inputs: Box<[InputJson]>,
@@ -442,7 +442,7 @@ impl TryFrom<TransactionEssenceJson> for TransactionEssence {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct InputJson {
+pub struct InputJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(rename = "transactionId")]
@@ -476,7 +476,7 @@ impl TryFrom<InputJson> for Input {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct OutputJson {
+pub struct OutputJson {
     #[serde(rename = "type")]
     type_: u8,
     address: AddressJson,
@@ -512,7 +512,7 @@ impl TryFrom<OutputJson> for Output {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct AddressJson {
+pub struct AddressJson {
     #[serde(rename = "type")]
     type_: u8,
     address: String,
@@ -547,7 +547,7 @@ impl TryFrom<AddressJson> for Address {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct UnlockBlockJson {
+pub struct UnlockBlockJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -599,7 +599,7 @@ impl TryFrom<UnlockBlockJson> for UnlockBlock {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct SignatureJson {
+pub struct SignatureJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(rename = "publicKey")]
