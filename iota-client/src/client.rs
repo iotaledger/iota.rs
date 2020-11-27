@@ -415,7 +415,7 @@ impl Client {
             let balance = self.get_address().balance(address).await?;
             address_balance_pairs.push(AddressBalancePair {
                 address: address.clone(),
-                balance: balance,
+                balance,
             });
         }
         Ok(address_balance_pairs)
