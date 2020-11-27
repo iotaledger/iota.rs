@@ -30,6 +30,14 @@ pub enum Error {
     FromHexError(hex::FromHexError),
     /// Message types error
     MessageError(bee_message::Error),
+    /// The message cannot be promoted or reattached
+    NoNeedPromoteOrReattach(String),
+    /// Mqtt client error
+    MqttClientError(paho_mqtt::errors::Error),
+    /// Invalid MQTT topic.
+    InvalidMqttTopic(String),
+    /// MQTT connection not found (all nodes MQTT's are disabled)
+    MqttConnectionNotFound,
 }
 
 impl fmt::Display for Error {
@@ -50,6 +58,15 @@ impl fmt::Display for Error {
             Error::FromHexError(e) => e.fmt(f),
             Error::ResponseError(s) => write!(f, "Response error with status code {}", s),
             Error::MessageError(e) => e.fmt(f),
+            Error::NoNeedPromoteOrReattach(s) => {
+                write!(f, "Message ID {} cannot be promoted or reattached", s)
+            }
+            Error::MqttClientError(e) => e.fmt(f),
+            Error::InvalidMqttTopic(topic) => write!(f, "The topic {} is invalid", topic),
+            Error::MqttConnectionNotFound => write!(
+                f,
+                "MQTT connection not found (all nodes have the MQTT plugin disabled)"
+            ),
         }
     }
 }
@@ -71,5 +88,11 @@ impl From<hex::FromHexError> for Error {
 impl From<bee_message::Error> for Error {
     fn from(error: bee_message::Error) -> Self {
         Error::MessageError(error)
+    }
+}
+
+impl From<paho_mqtt::errors::Error> for Error {
+    fn from(error: paho_mqtt::errors::Error) -> Self {
+        Error::MqttClientError(error)
     }
 }

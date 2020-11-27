@@ -24,3 +24,7 @@ path = "indexation.rs"
 [[example]]
 name = "transaction"
 path = "transaction.rs"
+
+[[example]]
+name = "mqtt"
+path = "mqtt.rs"

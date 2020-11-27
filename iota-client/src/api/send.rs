@@ -1,14 +1,14 @@
 use crate::{Client, Error, Result};
 
-use bee_common_ext::packable::Packable;
+use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-
-use std::num::NonZeroU64;
-
+use std::collections::HashMap;
+use std::{convert::TryInto, num::NonZeroU64};
+const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
 
 /// Builder of send API
@@ -18,6 +18,14 @@ pub struct SendBuilder<'a> {
     path: Option<&'a BIP32Path>,
     index: Option<usize>,
     outputs: Vec<Output>,
+}
+
+/// Structure for sorting of UnlockBlocks
+// TODO: move the sorting process to the `Message` crate
+struct AddressIndexRecorder {
+    input: Input,
+    address_index: usize,
+    address_path: BIP32Path,
 }
 
 impl<'a> SendBuilder<'a> {
@@ -67,26 +75,52 @@ impl<'a> SendBuilder<'a> {
             return Err(Error::MissingParameter(String::from("Outputs")));
         }
 
-        let mut balance = 0;
+        // Calculate the total tokens to spend
+        let mut total_to_spend = 0;
+        let mut total_already_spent = 0;
+        for output in &self.outputs {
+            if let Output::SignatureLockedSingle(x) = &output {
+                total_to_spend += x.amount().get();
+            }
+        }
+
         let mut paths = Vec::new();
         let mut essence = TransactionEssence::builder();
-        loop {
+        let mut empty_address_count: u32 = 0;
+        let mut address_index_recorders = Vec::new();
+
+        // The gap limit is 20
+        while empty_address_count != 20 {
+            // Reset the empty_address_count for each run of output address searching
+            empty_address_count = 0;
+
+            // Get the addresses in the BIP path/index ~ path/index+20
             let addresses = self
                 .client
-                .get_addresses(self.seed)
+                .find_addresses(self.seed)
                 .path(path)
                 .range(index..index + 20)
                 .get()?;
 
-            let mut end = false;
-            for address in addresses {
+            // For each address, get the address outputs
+            for (address_index, address) in addresses.iter().enumerate() {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
                 for output_id in address_outputs.iter() {
                     let curr_outputs = self.client.get_output(output_id).await?;
                     outputs.push(curr_outputs);
                 }
-                for (offset, output) in outputs.into_iter().enumerate() {
+
+                // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
+                // up the addresses belonging to the seed. Note that we don't really count the exact 20
+                // consecutive empty addresses, which is uncessary. We just need to check the address range,
+                // [k*20, k*20 + 20), where k is natural number, and to see if the outpus are all empty.
+                if outputs.is_empty() {
+                    // Accumulate the empty_address_count for each run of output address searching
+                    empty_address_count += 1;
+                }
+
+                for (_offset, output) in outputs.into_iter().enumerate() {
                     match output.is_spent {
                         true => {
                             if output.amount != 0 {
@@ -94,46 +128,57 @@ impl<'a> SendBuilder<'a> {
                             }
                         }
                         false => {
-                            if output.amount != 0 {
-                                balance += output.amount;
+                            if output.amount != 0 && total_already_spent < total_to_spend {
+                                total_already_spent += output.amount;
                                 let mut address_path = path.clone();
-                                address_path.push(offset as u32);
-
-                                let mut transaction_id = [0u8; TRANSACTION_ID_LENGTH];
-                                hex::decode_to_slice(output.transaction_id, &mut transaction_id)?;
-
-                                paths.push(address_path);
-                                essence = essence.add_input(Input::UTXO(
+                                // Note that we need to sign the original address, i.e., `path/index`,
+                                // instead of `path/index/_offset` or `path/_offset`.
+                                address_path.push(address_index as u32 + HARDEND);
+                                let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output
+                                    .transaction_id[..]
+                                    .try_into()
+                                    .map_err(|_| Error::TransactionError)?;
+                                paths.push(address_path.clone());
+                                let input = Input::UTXO(
                                     UTXOInput::new(
                                         TransactionId::from(transaction_id),
                                         output.output_index,
                                     )
                                     .map_err(|_| Error::TransactionError)?,
-                                ));
-                            } else {
-                                end = true;
+                                );
+                                essence = essence.add_input(input.clone());
+                                address_index_recorders.push(AddressIndexRecorder {
+                                    input,
+                                    address_index,
+                                    address_path,
+                                });
+                                // Output the remaining tokens back to the original address
+                                if total_already_spent > total_to_spend {
+                                    essence = essence.add_output(
+                                        SignatureLockedSingleOutput::new(
+                                            address.clone(),
+                                            NonZeroU64::new(total_already_spent - total_to_spend)
+                                                .unwrap(),
+                                        )
+                                        .into(),
+                                    );
+                                }
                             }
                         }
                     }
                 }
             }
+            index += 20;
+        }
 
-            match end {
-                true => break,
-                false => index += 20,
-            }
+        if total_already_spent < total_to_spend {
+            return Err(Error::NotEnoughBalance(total_to_spend));
         }
 
         // Build signed transaction payload
         let outputs = self.outputs;
-        let mut total = 0;
         for output in outputs {
-            let Output::SignatureLockedSingle(x) = &output;
-            total += x.amount().get();
             essence = essence.add_output(output);
-        }
-        if balance <= total {
-            return Err(Error::NotEnoughBalance(balance));
         }
         let essence = essence.finish()?;
         let mut serialized_essence = Vec::new();
@@ -142,20 +187,24 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
 
         let mut unlock_blocks = Vec::new();
-        let mut last_index = (None, -1);
-        for path in paths.iter() {
+        let mut current_block_index: usize = 0;
+        let mut signature_indexes = HashMap::<usize, usize>::new();
+        address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
+
+        for recorder in address_index_recorders.iter() {
             // Check if current path is same as previous path
-            if last_index.0 == Some(path) {
-                // If so, add a reference unlock block
+            // If so, add a reference unlock block
+            if let Some(block_index) = signature_indexes.get(&recorder.address_index) {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(
-                    last_index.1 as u16,
+                    *block_index as u16,
                 )?));
             } else {
                 // If not, we should create a signature unlock block
                 match &self.seed {
                     Seed::Ed25519(s) => {
-                        let private_key = Ed25519PrivateKey::generate_from_seed(s, path)
-                            .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
+                        let private_key =
+                            Ed25519PrivateKey::generate_from_seed(s, &recorder.address_path)
+                                .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
                         let public_key = private_key.generate_public_key().to_bytes();
                         // The block should sign the entire transaction essence part of the transaction payload
                         let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
@@ -165,9 +214,10 @@ impl<'a> SendBuilder<'a> {
                     }
                     Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
                 }
+                signature_indexes.insert(recorder.address_index, current_block_index);
 
-                // Update last signature block path and index
-                last_index = (Some(path), (unlock_blocks.len() - 1) as isize);
+                // Update current block index
+                current_block_index += 1;
             }
         }
         // TODO overflow check
@@ -181,13 +231,15 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::TransactionError)?;
 
         // get tips
-        let (parent1, parent2) = (MessageId::new([0; 32]), MessageId::new([0; 32])); //self.client.get_tips()?;
+        let tips = self.client.get_tips().await.unwrap();
 
         // building message
         let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
-            .with_parent1(parent1)
-            .with_parent2(parent2)
+            // TODO: make the newtwork id configurable
+            .with_network_id(0)
+            .with_parent1(tips.0)
+            .with_parent2(tips.1)
             .with_payload(payload)
             .finish()
             .map_err(|_| Error::TransactionError)?;

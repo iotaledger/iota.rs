@@ -64,11 +64,10 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id));
         let resp = reqwest::get(url).await?;
-
         match resp.status().as_u16() {
             200 => {
-                let meta = resp.json::<MessageMetadata>().await?;
-                Ok(meta)
+                let meta = resp.json::<Response<MessageMetadata>>().await?;
+                Ok(meta.data)
             }
             status => Err(Error::ResponseError(status)),
         }
