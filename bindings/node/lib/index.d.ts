@@ -3,9 +3,22 @@ export declare interface Message { }
 export declare interface MessageMetadata { }
 export declare interface OutputMetadata { }
 export declare interface MilestoneMetadata { }
+export declare interface BrokerOptions {
+  automaticDisconnect: bool
+  // timeout in milliseconds
+  timeout: number
+}
+
+export declare class ClientBuilder {
+  node(url: string): ClientBuilder
+  nodes(urls: string[]): ClientBuilder
+  quorumSize(size: number): ClientBuilder
+  quorumThreshold(threshold: number): ClientBuilder
+  brokerOptions(options: BrokerOptions): ClientBuilder
+  build(): Client
+}
 
 export declare class Client {
-  constructor(node: string | string[])
   subscriber(): TopicSubscriber
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>

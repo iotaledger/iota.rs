@@ -1,4 +1,4 @@
-const { Client } = require('../lib/')
+const { ClientBuilder } = require('../lib/')
 
-const client = new Client('http://localhost:14265')
+const client = new ClientBuilder().node('http://localhost:14265').build()
 client.subscriber().topic('milestones/latest').topic('milestones/solid').subscribe(console.log)

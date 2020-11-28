@@ -98,7 +98,9 @@ pub(crate) fn convert_panics<T, F: FnOnce() -> Result<T>>(f: F) -> Result<T> {
 }
 
 register_module!(mut cx, {
+    cx.export_class::<JsClientBuilder>("ClientBuilder")?;
     cx.export_class::<JsClient>("Client")?;
     cx.export_class::<JsTopicSubscriber>("TopicSubscriber")?;
+    cx.export_class::<JsMessageFinder>("MessageFinder")?;
     Ok(())
 });

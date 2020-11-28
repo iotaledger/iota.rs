@@ -11,7 +11,7 @@ use bee_signing_ext::Seed;
 
 use paho_mqtt::Client as MqttClient;
 use reqwest::Url;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, RwLock};
@@ -32,16 +32,30 @@ pub struct TopicEvent {
 }
 
 /// The MQTT broker options.
+#[derive(Debug, Clone, Deserialize)]
 pub struct BrokerOptions {
+    #[serde(
+        default = "default_broker_automatic_disconnect",
+        rename = "automaticDisconnect"
+    )]
     pub(crate) automatic_disconnect: bool,
+    #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
+}
+
+fn default_broker_automatic_disconnect() -> bool {
+    true
+}
+
+fn default_broker_timeout() -> Duration {
+    Duration::from_secs(30)
 }
 
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
-            automatic_disconnect: true,
-            timeout: Duration::from_secs(30),
+            automatic_disconnect: default_broker_automatic_disconnect(),
+            timeout: default_broker_timeout(),
         }
     }
 }
