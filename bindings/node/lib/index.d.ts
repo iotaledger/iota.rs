@@ -9,6 +9,11 @@ export declare interface BrokerOptions {
   timeout: number
 }
 
+export declare interface Address {
+  type: number
+  data: string
+}
+
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
@@ -26,15 +31,23 @@ export declare class ValueTransactionSender {
 }
 
 export declare class UnspentAddressGetter {
-  path(bip32path: string): ValueTransactionSender
-  index(index: number): ValueTransactionSender
-  send(): Promise<[string, number]>
+  path(bip32path: string): UnspentAddressGetter
+  index(index: number): UnspentAddressGetter
+  get(): Promise<[Address, number]>
+}
+
+export declare class AddressFinder {
+  path(bip32path: string): AddressFinder
+  index(index: number): AddressFinder
+  range(start: number, end: number): AddressFinder
+  get(): Address[]
 }
 
 export declare class Client {
   subscriber(): TopicSubscriber
   send(seed: string): ValueTransactionSender
   getUnspentAddress(seed: string): UnspentAddressGetter
+  findAddresses(seed: string): AddressFinder
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: Message): Promise<string>

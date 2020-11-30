@@ -8,6 +8,7 @@ use neon::prelude::*;
 use std::{
     convert::TryInto,
     num::NonZeroU64,
+    ops::Range,
     str::FromStr,
     sync::{Arc, Mutex},
 };
@@ -109,7 +110,7 @@ impl Task for ClientTask {
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;
-                    let tips = vec![tips.0.to_string(), tips.1.to_string()];
+                    let tips = vec![tips.0, tips.1];
                     serde_json::to_string(&tips).unwrap()
                 }
                 Api::PostMessage(message) => {
@@ -118,9 +119,7 @@ impl Task for ClientTask {
                 }
                 Api::GetMessagesByIndexation(index) => {
                     let messages = client.get_message().index(index.as_str()).await?;
-                    let messages_str: Vec<String> =
-                        messages.iter().map(|m| m.to_string()).collect();
-                    serde_json::to_string(&messages_str).unwrap()
+                    serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetMessage(id) => {
                     let message = client.get_message().data(&id).await?;
@@ -133,9 +132,7 @@ impl Task for ClientTask {
                 Api::GetRawMessage(id) => client.get_message().raw(&id).await?,
                 Api::GetMessageChildren(id) => {
                     let messages = client.get_message().children(&id).await?;
-                    let messages_str: Vec<String> =
-                        messages.iter().map(|m| m.to_string()).collect();
-                    serde_json::to_string(&messages_str).unwrap()
+                    serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetOutput(id) => {
                     let output = client.get_output(id).await?;
@@ -233,6 +230,21 @@ declare_types! {
             let client_id = cx.string(client_id);
 
             Ok(JsUnspentAddressGetter::new(&mut cx, vec![client_id, seed])?.upcast())
+        }
+
+        method findAddresses(mut cx) {
+            let seed = cx.argument::<JsString>(0)?;
+            // validate the seed
+            Seed::from_ed25519_bytes(seed.value().as_bytes()).expect("invalid seed");
+            let client_id = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                id.to_string()
+            };
+            let client_id = cx.string(client_id);
+
+            Ok(JsAddressFinder::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -593,8 +605,8 @@ declare_types! {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &(*this.borrow(&guard)).path;
-                let mut send_path = ref_.lock().unwrap();
-                send_path.replace(path);
+                let mut get_path = ref_.lock().unwrap();
+                get_path.replace(path);
             }
 
             Ok(cx.this().upcast())
@@ -606,8 +618,8 @@ declare_types! {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &(*this.borrow(&guard)).index;
-                let mut send_index = ref_.lock().unwrap();
-                send_index.replace(index);
+                let mut get_index = ref_.lock().unwrap();
+                get_index.replace(index);
             }
 
             Ok(cx.this().upcast())
@@ -631,6 +643,85 @@ declare_types! {
             }
 
             Ok(cx.undefined().upcast())
+        }
+    }
+}
+
+pub struct AddressFinder {
+    client_id: String,
+    seed: String,
+    path: Arc<Mutex<Option<BIP32Path>>>,
+    range: Arc<Mutex<Option<Range<usize>>>>,
+}
+
+declare_types! {
+    pub class JsAddressFinder for AddressFinder {
+        init(mut cx) {
+            let client_id = cx.argument::<JsString>(0)?.value();
+            let seed = cx.argument::<JsString>(1)?.value();
+            Ok(AddressFinder {
+                client_id,
+                seed,
+                path: Arc::new(Mutex::new(None)),
+                range: Arc::new(Mutex::new(None)),
+            })
+        }
+
+        method path(mut cx) {
+            let path = cx.argument::<JsString>(0)?.value();
+            let path = BIP32Path::from_str(path.as_str()).expect("invalid bip32 path");
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).path;
+                let mut find_path = ref_.lock().unwrap();
+                find_path.replace(path);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method range(mut cx) {
+            let start = cx.argument::<JsNumber>(0)?.value() as usize;
+            let end = cx.argument::<JsNumber>(1)?.value() as usize;
+            let range = Range { start, end };
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).range;
+                let mut find_range = ref_.lock().unwrap();
+                find_range.replace(range);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method get(mut cx) {
+            let addresses_json = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+
+                let seed = Seed::from_ed25519_bytes(ref_.seed.as_bytes()).expect("invalid seed");
+
+                let client = crate::get_client(ref_.client_id.clone());
+                let client = client.read().unwrap();
+                let mut getter = client.find_addresses(&seed);
+
+                let path = &*ref_.path.lock().unwrap();
+                if let Some(path) = path {
+                    getter = getter.path(&path);
+                }
+                if let Some(range) = &*ref_.range.lock().unwrap() {
+                    getter = getter.range(range.clone());
+                }
+                getter.get().map(|addresses| serde_json::to_string(&addresses).unwrap())
+            };
+
+            match addresses_json {
+                Ok(addresses) => Ok(cx.string(addresses).upcast()),
+                Err(e) => cx.throw_error(e.to_string()),
+            }
         }
     }
 }

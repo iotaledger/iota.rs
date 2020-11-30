@@ -4,7 +4,8 @@ const {
   TopicSubscriber,
   MessageFinder,
   ValueTransactionSender,
-  UnspentAddressGetter
+  UnspentAddressGetter,
+  AddressFinder
 } = require('../native')
 
 function promisify (fn, parse = true) {
@@ -69,6 +70,11 @@ MessageFinder.prototype.metadata = promisify(MessageFinder.prototype.metadata)
 ValueTransactionSender.prototype.send = promisify(ValueTransactionSender.prototype.send, false)
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)
+
+const findAddressesGetter = AddressFinder.prototype.get
+AddressFinder.prototype.get = function () {
+  return JSON.parse(findAddressesGetter.apply(this))
+}
 
 module.exports = {
   ClientBuilder
