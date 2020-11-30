@@ -43,9 +43,9 @@ client.getTips().then(console.log).catch(console.error)
 
 Adds an IOTA node to the client pool.
 
-| Param | Type                | Default                | Description |
-| ----- | ------------------- | ---------------------- | ----------- |
-| url   | <code>string</code> | <code>undefined</code> | A node URL  |
+| Param | Type                | Description |
+| ----- | ------------------- | ----------- |
+| url   | <code>string</code> | A node URL  |
 
 **Returns** the client builder instance for chained calls.
 
@@ -53,9 +53,9 @@ Adds an IOTA node to the client pool.
 
 Adds a list of IOTA nodes to the client pool.
 
-| Param | Type                  | Default                | Description           |
-| ----- | --------------------- | ---------------------- | --------------------- |
-| url   | <code>string[]</code> | <code>undefined</code> | An array of node URLs |
+| Param | Type                  | Description           |
+| ----- | --------------------- | --------------------- |
+| url   | <code>string[]</code> | An array of node URLs |
 
 **Returns** the client builder instance for chained calls.
 
@@ -63,9 +63,9 @@ Adds a list of IOTA nodes to the client pool.
 
 Defines how many of nodes will be queried at the same time to check for quorum.
 
-| Param | Type                | Default                | Description                              |
-| ----- | ------------------- | ---------------------- | ---------------------------------------- |
-| size  | <code>number</code> | <code>undefined</code> | The number of nodes that will be queried |
+| Param | Type                | Description                              |
+| ----- | ------------------- | ---------------------------------------- |
+| size  | <code>number</code> | The number of nodes that will be queried |
 
 **Returns** the client builder instance for chained calls.
 
@@ -73,9 +73,9 @@ Defines how many of nodes will be queried at the same time to check for quorum.
 
 Defines the minimum amount of nodes from the quorum pool that need to agree if we want to consider the result true.
 
-| Param     | Type                | Default                | Description             |
-| --------- | ------------------- | ---------------------- | ----------------------- |
-| threshold | <code>number</code> | <code>undefined</code> | Minimum amount of nodes |
+| Param     | Type                | Description             |
+| --------- | ------------------- | ----------------------- |
+| threshold | <code>number</code> | Minimum amount of nodes |
 
 **Returns** the client builder instance for chained calls.
 
@@ -83,9 +83,9 @@ Defines the minimum amount of nodes from the quorum pool that need to agree if w
 
 Sets the options for the MQTT connection with the node.
 
-| Param   | Type                                         | Default                | Description             |
-| ------- | -------------------------------------------- | ---------------------- | ----------------------- |
-| options | <code>[BrokerOptions](#brokeroptions)</code> | <code>undefined</code> | The MQTT broker options |
+| Param   | Type                                         | Description             |
+| ------- | -------------------------------------------- | ----------------------- |
+| options | <code>[BrokerOptions](#brokeroptions)</code> | The MQTT broker options |
 
 **Returns** the client builder instance for chained calls.
 
@@ -107,9 +107,9 @@ Gets a handle to the MQTT topic subscriber.
 
 Initiates the builder to send funds.
 
-| Param | Type                | Default                | Description                      |
-| ----- | ------------------- | ---------------------- | -------------------------------- |
-| seed  | <code>string</code> | <code>undefined</code> | The seed of the account to spend |
+| Param | Type                | Description                      |
+| ----- | ------------------- | -------------------------------- |
+| seed  | <code>string</code> | The seed of the account to spend |
 
 **Returns** a [ValueTransactionSender](#valuetransactionsender) instance.
 
@@ -117,9 +117,9 @@ Initiates the builder to send funds.
 
 Get a valid unspent address.
 
-| Param | Type                | Default                | Description        |
-| ----- | ------------------- | ---------------------- | ------------------ |
-| seed  | <code>string</code> | <code>undefined</code> | The seed to search |
+| Param | Type                | Description        |
+| ----- | ------------------- | ------------------ |
+| seed  | <code>string</code> | The seed to search |
 
 **Returns** a [UnspentAddressGetter](#unspentaddressgetter) instance.
 
@@ -127,9 +127,9 @@ Get a valid unspent address.
 
 Find addresses from the seed regardless of their validity.
 
-| Param | Type                | Default                | Description        |
-| ----- | ------------------- | ---------------------- | ------------------ |
-| seed  | <code>string</code> | <code>undefined</code> | The seed to search |
+| Param | Type                | Description        |
+| ----- | ------------------- | ------------------ |
+| seed  | <code>string</code> | The seed to search |
 
 **Returns** a [AddressFinder](#addressfinder) instance.
 
@@ -137,10 +137,10 @@ Find addresses from the seed regardless of their validity.
 
 Finds all messages associated with the given indexation keys and message ids.
 
-| Param          | Type                  | Default                | Description                             |
-| -------------- | --------------------- | ---------------------- | --------------------------------------- |
-| indexationKeys | <code>string[]</code> | <code>undefined</code> | The list of indexations keys too search |
-| messageIds     | <code>string[]</code> | <code>undefined</code> | The list of message ids to search       |
+| Param          | Type                  | Description                             |
+| -------------- | --------------------- | --------------------------------------- |
+| indexationKeys | <code>string[]</code> | The list of indexations keys too search |
+| messageIds     | <code>string[]</code> | The list of message ids to search       |
 
 **Returns** a promise resolving to the list of the found messages.
 
@@ -148,9 +148,9 @@ Finds all messages associated with the given indexation keys and message ids.
 
 Get balance on a given seed and its wallet chain BIP32 path.
 
-| Param | Type                | Default                | Description        |
-| ----- | ------------------- | ---------------------- | ------------------ |
-| seed  | <code>string</code> | <code>undefined</code> | The seed to search |
+| Param | Type                | Description        |
+| ----- | ------------------- | ------------------ |
+| seed  | <code>string</code> | The seed to search |
 
 **Returns** a [BalanceGetter](#balancegetter) instance.
 
@@ -158,9 +158,9 @@ Get balance on a given seed and its wallet chain BIP32 path.
 
 Get the balance in iotas for the given addresses.
 
-| Param     | Type                  | Default                | Description                     |
-| --------- | --------------------- | ---------------------- | ------------------------------- |
-| addresses | <code>string[]</code> | <code>undefined</code> | The list of addresses to search |
+| Param     | Type                  | Description                     |
+| --------- | --------------------- | ------------------------------- |
+| addresses | <code>string[]</code> | The list of addresses to search |
 
 **Returns** A promise resolving to the list of `{ address, balance }` pairs.
 
@@ -168,9 +168,9 @@ Get the balance in iotas for the given addresses.
 
 Retries (promotes or reattaches) the message associated with the given id.
 
-| Param     | Type                | Default                | Description                    |
-| --------- | ------------------- | ---------------------- | ------------------------------ |
-| messageId | <code>string</code> | <code>undefined</code> | The id of the message to retry |
+| Param     | Type                | Description                    |
+| --------- | ------------------- | ------------------------------ |
+| messageId | <code>string</code> | The id of the message to retry |
 
 **Returns** A promise resolving to the new [Message](#message) instance.
 
@@ -190,9 +190,9 @@ Gets two non-lazy tips.
 
 Submits a message.
 
-| Param   | Type                             | Default                | Description           |
-| ------- | -------------------------------- | ---------------------- | --------------------- |
-| message | <code>[Message](#message)</code> | <code>undefined</code> | The message to submit |
+| Param   | Type                             | Description           |
+| ------- | -------------------------------- | --------------------- |
+| message | <code>[Message](#message)</code> | The message to submit |
 
 **Returns** the message identifier.
 
@@ -206,9 +206,9 @@ Gets a message from its identifier.
 
 Gets the UTXO outputs associated with the given output id.
 
-| Param    | Type                | Default                | Description                    |
-| -------- | ------------------- | ---------------------- | ------------------------------ |
-| outputId | <code>string</code> | <code>undefined</code> | The id of the output to search |
+| Param    | Type                | Description                    |
+| -------- | ------------------- | ------------------------------ |
+| outputId | <code>string</code> | The id of the output to search |
 
 **Returns** a promise resolving to the associated [OutputMetadata](#outputmetadata).
 
@@ -216,10 +216,10 @@ Gets the UTXO outputs associated with the given output id.
 
 Gets the UTXO outputs associated with the given output ids and addresses.
 
-| Param     | Type                  | Default                | Description                      |
-| --------- | --------------------- | ---------------------- | -------------------------------- |
-| addresses | <code>string[]</code> | <code>undefined</code> | The list of addresses to search  |
-| outputIds | <code>string[]</code> | <code>undefined</code> | The list of output ids to search |
+| Param     | Type                  | Description                      |
+| --------- | --------------------- | -------------------------------- |
+| addresses | <code>string[]</code> | The list of addresses to search  |
+| outputIds | <code>string[]</code> | The list of output ids to search |
 
 **Returns** a promise resolving to a list of [OutputMetadata](#outputmetadata).
 
@@ -227,9 +227,9 @@ Gets the UTXO outputs associated with the given output ids and addresses.
 
 Gets the UTXO outputs associated with the given address.
 
-| Param   | Type                | Default                | Description               |
-| ------- | ------------------- | ---------------------- | ------------------------- |
-| address | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| Param   | Type                | Description               |
+| ------- | ------------------- | ------------------------- |
+| address | <code>string</code> | The address Bech32 string |
 
 **Returns** a promise resolving to a list of output ids.
 
@@ -237,17 +237,17 @@ Gets the UTXO outputs associated with the given address.
 
 Gets the balance of the given address.
 
-| Param   | Type                | Default                | Description               |
-| ------- | ------------------- | ---------------------- | ------------------------- |
-| address | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| Param   | Type                | Description               |
+| ------- | ------------------- | ------------------------- |
+| address | <code>string</code> | The address Bech32 string |
 
 #### getMilestone(index): Promise<MilestoneMetadata>
 
 Gets the milestone by the given index.
 
-| Param | Type                | Default                | Description                |
-| ----- | ------------------- | ---------------------- | -------------------------- |
-| index | <code>number</code> | <code>undefined</code> | The index of the milestone |
+| Param | Type                | Description                |
+| ----- | ------------------- | -------------------------- |
+| index | <code>number</code> | The index of the milestone |
 
 **Returns** a promise resolving to the [MilestoneMetadata](#milestonemetadata).
 
@@ -255,9 +255,9 @@ Gets the milestone by the given index.
 
 Reattaches the message associated with the given id.
 
-| Param     | Type                | Default                | Description                       |
-| --------- | ------------------- | ---------------------- | --------------------------------- |
-| messageId | <code>string</code> | <code>undefined</code> | The id of the message to reattach |
+| Param     | Type                | Description                       |
+| --------- | ------------------- | --------------------------------- |
+| messageId | <code>string</code> | The id of the message to reattach |
 
 **Returns** A promise resolving to the new [Message](#message) instance.
 
@@ -265,9 +265,9 @@ Reattaches the message associated with the given id.
 
 Promotes the message associated with the given id.
 
-| Param     | Type                | Default                | Description                      |
-| --------- | ------------------- | ---------------------- | -------------------------------- |
-| messageId | <code>string</code> | <code>undefined</code> | The id of the message to promote |
+| Param     | Type                | Description                      |
+| --------- | ------------------- | -------------------------------- |
+| messageId | <code>string</code> | The id of the message to promote |
 
 **Returns** A promise resolving to the new [Message](#message) instance.
 
@@ -277,9 +277,9 @@ Promotes the message associated with the given id.
 
 Adds a topic to this manager instance.
 
-| Param | Type                | Default                | Description  |
-| ----- | ------------------- | ---------------------- | ------------ |
-| topic | <code>string</code> | <code>undefined</code> | A MQTT topic |
+| Param | Type                | Description  |
+| ----- | ------------------- | ------------ |
+| topic | <code>string</code> | A MQTT topic |
 
 **Returns** the topic subscriber instance for chained calls.
 
@@ -287,9 +287,9 @@ Adds a topic to this manager instance.
 
 Adds a list of topics to this manager instance.
 
-| Param  | Type                  | Default                | Description             |
-| ------ | --------------------- | ---------------------- | ----------------------- |
-| topics | <code>string[]</code> | <code>undefined</code> | An array of MQTT topics |
+| Param  | Type                  | Description             |
+| ------ | --------------------- | ----------------------- |
+| topics | <code>string[]</code> | An array of MQTT topics |
 
 **Returns** the topic subscriber instance for chained calls.
 
@@ -297,9 +297,9 @@ Adds a list of topics to this manager instance.
 
 Subscribe to the provided topics.
 
-| Param | Type                  | Default                | Description                                                      |
-| ----- | --------------------- | ---------------------- | ---------------------------------------------------------------- |
-| cb    | <code>function</code> | <code>undefined</code> | The topic handler callback in the form of `(err, message) => {}` |
+| Param | Type                  | Description                                                      |
+| ----- | --------------------- | ---------------------------------------------------------------- |
+| cb    | <code>function</code> | The topic handler callback in the form of `(err, message) => {}` |
 
 **Returns** the topic subscriber instance for chained calls.
 
@@ -307,9 +307,9 @@ Subscribe to the provided topics.
 
 Unsubscribes from the provided topics.
 
-| Param | Type                  | Default                | Description                                                                                |
-| ----- | --------------------- | ---------------------- | ------------------------------------------------------------------------------------------ |
-| cb    | <code>function</code> | <code>undefined</code> | A callback executed when the unsubscribe is finished in the form of `(err, message) => {}` |
+| Param | Type                  | Description                                                                                |
+| ----- | --------------------- | ------------------------------------------------------------------------------------------ |
+| cb    | <code>function</code> | A callback executed when the unsubscribe is finished in the form of `(err, message) => {}` |
 
 **Returns** the topic subscriber instance for chained calls.
 
@@ -321,9 +321,9 @@ Submits a value transaction message.
 
 Sets the account BIP32 path. This field is required.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| path  | <code>string</code> | <code>undefined</code> | The account BIP32 path |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| path  | <code>string</code> | The account BIP32 path |
 
 **Returns** the message submit instance for chained calls.
 
@@ -331,10 +331,10 @@ Sets the account BIP32 path. This field is required.
 
 Adds an output to the transaction.
 
-| Param   | Type                | Default                | Description        |
-| ------- | ------------------- | ---------------------- | ------------------ |
-| address | <code>string</code> | <code>undefined</code> | The output address |
-| amount  | <code>number</code> | <code>undefined</code> | The output amount  |
+| Param   | Type                | Description        |
+| ------- | ------------------- | ------------------ |
+| address | <code>string</code> | The output address |
+| amount  | <code>number</code> | The output amount  |
 
 **Returns** the message submit instance for chained calls.
 
@@ -342,9 +342,9 @@ Adds an output to the transaction.
 
 Sets the initial address index to search for balance. Defaults to 0 if the function isn't called.
 
-| Param | Type                | Default                | Description               |
-| ----- | ------------------- | ---------------------- | ------------------------- |
-| index | <code>number</code> | <code>undefined</code> | The initial address index |
+| Param | Type                | Description               |
+| ----- | ------------------- | ------------------------- |
+| index | <code>number</code> | The initial address index |
 
 **Returns** the message submit instance for chained calls.
 
@@ -362,9 +362,9 @@ Gets a valid unspent address associated with the seed.
 
 Sets the account BIP32 path. This field is required.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| path  | <code>string</code> | <code>undefined</code> | The account BIP32 path |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| path  | <code>string</code> | The account BIP32 path |
 
 **Returns** the address getter instance for chained calls.
 
@@ -372,9 +372,9 @@ Sets the account BIP32 path. This field is required.
 
 Sets the initial address index. Defaults to 0 if the function isn't called.
 
-| Param | Type                | Default                | Description               |
-| ----- | ------------------- | ---------------------- | ------------------------- |
-| index | <code>number</code> | <code>undefined</code> | The initial address index |
+| Param | Type                | Description               |
+| ----- | ------------------- | ------------------------- |
+| index | <code>number</code> | The initial address index |
 
 **Returns** the address getter instance for chained calls.
 
@@ -392,9 +392,9 @@ Finds addresses on a given seed.
 
 Sets the account BIP32 path. This field is required.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| path  | <code>string</code> | <code>undefined</code> | The account BIP32 path |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| path  | <code>string</code> | The account BIP32 path |
 
 **Returns** the address finder instance for chained calls.
 
@@ -402,10 +402,10 @@ Sets the account BIP32 path. This field is required.
 
 Defines the range of addresses to get. Defaults to `0..20` if the function isn't called.
 
-| Param | Type                | Default                | Description             |
-| ----- | ------------------- | ---------------------- | ----------------------- |
-| start | <code>number</code> | <code>undefined</code> | The first address index |
-| end   | <code>number</code> | <code>undefined</code> | The last address index  |
+| Param | Type                | Description             |
+| ----- | ------------------- | ----------------------- |
+| start | <code>number</code> | The first address index |
+| end   | <code>number</code> | The last address index  |
 
 **Returns** the address finder instance for chained calls.
 
@@ -423,9 +423,9 @@ Gets balance on a given seed.
 
 Sets the account BIP32 path. This field is required.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| path  | <code>string</code> | <code>undefined</code> | The account BIP32 path |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| path  | <code>string</code> | The account BIP32 path |
 
 **Returns** the balance getter instance for chained calls.
 
@@ -433,9 +433,9 @@ Sets the account BIP32 path. This field is required.
 
 Sets the initial address index. Defaults to 0 if the function isn't called.
 
-| Param | Type                | Default                | Description               |
-| ----- | ------------------- | ---------------------- | ------------------------- |
-| index | <code>number</code> | <code>undefined</code> | The initial address index |
+| Param | Type                | Description               |
+| ----- | ------------------- | ------------------------- |
+| index | <code>number</code> | The initial address index |
 
 **Returns** the balance getter instance for chained calls.
 
@@ -451,9 +451,9 @@ Gets a message by indexation key or identifier.
 
 #### index(index): Promise<string[]>
 
-| Param | Type                | Default                | Description        |
-| ----- | ------------------- | ---------------------- | ------------------ |
-| index | <code>string</code> | <code>undefined</code> | The indexation key |
+| Param | Type                | Description        |
+| ----- | ------------------- | ------------------ |
+| index | <code>string</code> | The indexation key |
 
 Gets a list of message identifiers associated with the given indexation key.
 
@@ -463,9 +463,9 @@ Gets a list of message identifiers associated with the given indexation key.
 
 Gets the message object associated with the given identifier.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| id    | <code>string</code> | <code>undefined</code> | The message identifier |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| id    | <code>string</code> | The message identifier |
 
 **Returns** a [Message](#message) object.
 
@@ -473,9 +473,9 @@ Gets the message object associated with the given identifier.
 
 Gets the message raw data.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| id    | <code>string</code> | <code>undefined</code> | The message identifier |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| id    | <code>string</code> | The message identifier |
 
 **Returns** the message raw data as string.
 
@@ -483,9 +483,9 @@ Gets the message raw data.
 
 Gets the children of the given message.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| id    | <code>string</code> | <code>undefined</code> | The message identifier |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| id    | <code>string</code> | The message identifier |
 
 **Returns** the list of message ids of the message children.
 
@@ -493,9 +493,9 @@ Gets the children of the given message.
 
 Gets the metadata of the given message.
 
-| Param | Type                | Default                | Description            |
-| ----- | ------------------- | ---------------------- | ---------------------- |
-| id    | <code>string</code> | <code>undefined</code> | The message identifier |
+| Param | Type                | Description            |
+| ----- | ------------------- | ---------------------- |
+| id    | <code>string</code> | The message identifier |
 
 **Returns** a [MessageMetadata](#messagemetadata) object.
 
