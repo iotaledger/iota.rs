@@ -28,8 +28,7 @@ pub use address_finder::JsAddressFinder;
 mod balance_getter;
 pub use balance_getter::JsBalanceGetter;
 
-/// Parses a bech32 address string.
-fn parse_address(address: String) -> crate::Result<Address> {
+fn parse_bech32_address(address: String) -> crate::Result<Address> {
     let address_ed25519 = Vec::from_base32(&bech32::decode(&address)?.1)?;
     let address = Address::Ed25519(Ed25519Address::new(
         address_ed25519[1..]
@@ -37,6 +36,18 @@ fn parse_address(address: String) -> crate::Result<Address> {
             .map_err(|_| anyhow::anyhow!("invalid address length"))?,
     ));
     Ok(address)
+}
+
+/// Parses a bech32 address string.
+fn parse_address(address: String) -> crate::Result<Address> {
+    match parse_bech32_address(address.clone()) {
+        Ok(address) => Ok(address),
+        Err(_) => Ok(Address::Ed25519(Ed25519Address::new(
+            hex::decode(address)?
+                .try_into()
+                .expect("invalid address length"),
+        ))),
+    }
 }
 
 pub struct ClientWrapper(String);

@@ -130,10 +130,7 @@ export declare interface BrokerOptions {
   timeout: number
 }
 
-export declare interface Address {
-  type: 'Wots' | 'Ed25519'
-  data: string
-}
+export declare type Address = 'string'
 
 export declare interface AddressBalance {
   address: Address,

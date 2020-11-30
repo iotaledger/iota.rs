@@ -29,6 +29,8 @@ pub(crate) enum Error {
     #[error("`{0}`")]
     AddressError(#[from] bech32::Error),
     #[error("`{0}`")]
+    HexError(#[from] hex::FromHexError),
+    #[error("`{0}`")]
     Panic(String),
 }
 

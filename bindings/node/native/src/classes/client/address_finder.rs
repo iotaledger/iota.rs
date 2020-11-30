@@ -2,15 +2,15 @@ use iota::{BIP32Path, Seed};
 use neon::prelude::*;
 
 use std::{
-  ops::Range,
-  sync::{Arc, Mutex},
+    ops::Range,
+    sync::{Arc, Mutex},
 };
 
 pub struct AddressFinder {
-  client_id: String,
-  seed: String,
-  path: Arc<Mutex<Option<BIP32Path>>>,
-  range: Arc<Mutex<Option<Range<usize>>>>,
+    client_id: String,
+    seed: String,
+    path: Arc<Mutex<Option<BIP32Path>>>,
+    range: Arc<Mutex<Option<Range<usize>>>>,
 }
 
 declare_types! {
@@ -74,7 +74,10 @@ declare_types! {
                 if let Some(range) = &*ref_.range.lock().unwrap() {
                     getter = getter.range(range.clone());
                 }
-                getter.get().map(|addresses| serde_json::to_string(&addresses).unwrap())
+                getter.get().map(|addresses| {
+                    let addresses: Vec<String> = addresses.iter().map(|a| a.to_bech32()).collect();
+                    serde_json::to_string(&addresses).unwrap()
+                })
             };
 
             match addresses_json {
