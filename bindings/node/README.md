@@ -523,6 +523,61 @@ Gets the metadata of the given message.
 | payload   | <code>[Payload](#payload)</code> | Message payload                                |
 | nonce     | <code>number</code>              | Message nonce                                  |
 
+#### Payload
+
+| Field | Type                                                                     | Description             |
+| ----- | ------------------------------------------------------------------------ | ----------------------- |
+| type  | <code>'Transaction' \| 'Indexation' \| 'Milestone'</code>                | Payload type identifier |
+| data  | <code>TransactionPayload \| IndexationPayload \| MilestonePayload</code> | Payload data            |
+
+##### TransactionPayload
+
+| Field         | Type                                   | Description         |
+| ------------- | -------------------------------------- | ------------------- |
+| essence       | <code>TransactionPayloadEssence</code> | Transaction essence |
+| unlock_blocks | <code>UnlockBlock[]</code>             | Unlock blocks       |
+
+- TransactionEssence
+
+| Field   | Type                              | Description          |
+| ------- | --------------------------------- | -------------------- |
+| inputs  | <code>Input[]</code>              | Inputs               |
+| outputs | <code>Output[]</code>             | Outputs              |
+| payload | <code>Payload \| undefined</code> | Payload for chaining |
+
+- Input
+
+| Field | Type                | Description              |
+| ----- | ------------------- | ------------------------ |
+| type  | <code>'UTXO'</code> | Input type identifier    |
+| data  | <code>string</code> | The associated output id |
+
+- Output
+
+| Field | Type                                             | Description            |
+| ----- | ------------------------------------------------ | ---------------------- |
+| type  | <code>'SignatureLockedSingle'</code>             | Output type identifier |
+| data  | <code>{ address: string, amount: number }</code> | The output definition  |
+
+- UnlockBlock
+
+| Field | Type                                                                           | Description                                           |
+| ----- | ------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| type  | <code>'Signature' \| 'Reference'</code>                                        | Unlock block type identifier                          |
+| data  | <code>WotsSignatureUnlockBlock \| Ed25519SignatureUnlockBlock \| number</code> | Unlock block data (signature type or reference index) |
+
+- WotsSignatureUnlockBlock = number[] (WOTS signature)
+
+- Ed25519SignatureUnlockBlock
+
+| Field      | Type                  | Description        |
+| ---------- | --------------------- | ------------------ |
+| public_key | <code>number[]</code> | Ed25519 public key |
+| signature  | <code>number[]</code> | Ed25519 signature  |
+
+##### IndexationPayload
+##### MilestonePayload
+
 ### MessageMetadata
 
 | Field                      | Type                              | Description                                               |
