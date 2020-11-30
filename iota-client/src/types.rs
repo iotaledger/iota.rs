@@ -272,8 +272,9 @@ impl Transfers {
     }
 }
 
+/// JSON struct for Message
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct MessageJson {
+pub struct MessageJson {
     #[serde(rename = "parent1MessageId")]
     parent1: String,
     #[serde(rename = "parent2MessageId")]
@@ -319,8 +320,9 @@ impl TryFrom<MessageJson> for Message {
     }
 }
 
+/// JSON struct for Payload
 #[derive(Debug, Serialize, Deserialize)]
-struct PayloadJson {
+pub struct PayloadJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -368,7 +370,7 @@ impl TryFrom<PayloadJson> for Payload {
 
                 let unlock_blocks = value
                     .unlock_blocks
-                    .expect("Must have unlcok blocks.")
+                    .expect("Must have unlock blocks.")
                     .into_vec();
                 for unlock_block in unlock_blocks {
                     transaction = transaction.add_unlock_block(unlock_block.try_into()?);
@@ -379,7 +381,7 @@ impl TryFrom<PayloadJson> for Payload {
             2 => {
                 let indexation = Indexation::new(
                     value.index.expect("Must have index."),
-                    value.data.expect("Must have data.").as_bytes(),
+                    &hex::decode(value.data.expect("Must have data."))?,
                 )
                 .unwrap();
                 Ok(Payload::Indexation(Box::new(indexation)))
@@ -389,22 +391,28 @@ impl TryFrom<PayloadJson> for Payload {
     }
 }
 
+/// JSON struct for TransactionEssence
 #[derive(Debug, Serialize, Deserialize)]
-struct TransactionEssenceJson {
+pub struct TransactionEssenceJson {
     #[serde(rename = "type")]
     type_: u8,
     inputs: Box<[InputJson]>,
     outputs: Box<[OutputJson]>,
-    payload: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    payload: Option<Box<PayloadJson>>,
 }
 
 impl From<&TransactionEssence> for TransactionEssenceJson {
     fn from(i: &TransactionEssence) -> Self {
+        let indexation_payload = match i.payload().as_ref() {
+            Some(r) => Some(Box::new(PayloadJson::from(r))),
+            _ => None,
+        };
         Self {
             type_: 0,
             inputs: i.inputs().iter().map(|input| input.into()).collect(),
             outputs: i.outputs().iter().map(|input| input.into()).collect(),
-            payload: serde_json::Value::Null,
+            payload: indexation_payload,
         }
     }
 }
@@ -437,12 +445,18 @@ impl TryFrom<TransactionEssenceJson> for TransactionEssence {
             builder = builder.add_output(output);
         }
 
+        builder = match value.payload {
+            Some(indexation) => builder.with_payload(Payload::try_from(*indexation).expect("Invalid indexation in TransactionEssenceJson")),
+            _ => builder
+        };
+
         Ok(builder.finish()?)
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct InputJson {
+/// JSON struct for Input
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct InputJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(rename = "transactionId")]
@@ -456,7 +470,7 @@ impl From<&Input> for InputJson {
         match i {
             Input::UTXO(i) => Self {
                 type_: 0,
-                transaction_id: i.output_id().to_string(),
+                transaction_id: i.output_id().to_string()[..64].to_string(),
                 transaction_output_index: i.output_id().index(),
             },
             _ => todo!(),
@@ -475,8 +489,9 @@ impl TryFrom<InputJson> for Input {
     }
 }
 
+/// JSON struct for Output
 #[derive(Debug, Serialize, Deserialize)]
-struct OutputJson {
+pub struct OutputJson {
     #[serde(rename = "type")]
     type_: u8,
     address: AddressJson,
@@ -511,8 +526,9 @@ impl TryFrom<OutputJson> for Output {
     }
 }
 
+/// JSON struct for Address
 #[derive(Debug, Serialize, Deserialize)]
-struct AddressJson {
+pub struct AddressJson {
     #[serde(rename = "type")]
     type_: u8,
     address: String,
@@ -546,12 +562,13 @@ impl TryFrom<AddressJson> for Address {
     }
 }
 
+/// JSON struct for UnlockBlock
 #[derive(Debug, Serialize, Deserialize)]
-struct UnlockBlockJson {
+pub struct UnlockBlockJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
-    signature: Option<SignatureJson>,
+    signature: Option<SignatureUnlockJson>,
     #[serde(skip_serializing_if = "Option::is_none")]
     reference: Option<u16>,
 }
@@ -598,8 +615,9 @@ impl TryFrom<UnlockBlockJson> for UnlockBlock {
     }
 }
 
+/// JSON struct for SignatureUnlock
 #[derive(Debug, Serialize, Deserialize)]
-struct SignatureJson {
+pub struct SignatureUnlockJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(rename = "publicKey")]
@@ -607,7 +625,7 @@ struct SignatureJson {
     signature: String,
 }
 
-impl From<&SignatureUnlock> for SignatureJson {
+impl From<&SignatureUnlock> for SignatureUnlockJson {
     fn from(i: &SignatureUnlock) -> Self {
         match i {
             SignatureUnlock::Ed25519(a) => Self {
@@ -620,10 +638,10 @@ impl From<&SignatureUnlock> for SignatureJson {
     }
 }
 
-impl TryFrom<SignatureJson> for SignatureUnlock {
+impl TryFrom<SignatureUnlockJson> for SignatureUnlock {
     type Error = crate::Error;
 
-    fn try_from(value: SignatureJson) -> Result<Self> {
+    fn try_from(value: SignatureUnlockJson) -> Result<Self> {
         let mut public_key = [0u8; 32];
         hex::decode_to_slice(value.publickey, &mut public_key)?;
         let signature = hex::decode(value.signature)?.into_boxed_slice();

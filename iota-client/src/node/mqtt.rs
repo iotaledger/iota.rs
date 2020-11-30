@@ -87,7 +87,7 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
           .connect_timeout(client.broker_options.timeout)
           .finalize();
 
-        if let Ok(_) = mqtt_client.connect(conn_opts) {
+        if mqtt_client.connect(conn_opts).is_ok() {
           poll_mqtt(client.mqtt_topic_handlers.clone(), &mut mqtt_client);
           client.mqtt_client = Some(mqtt_client);
           break;
@@ -96,7 +96,7 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
       client
         .mqtt_client
         .as_ref()
-        .ok_or_else(|| crate::Error::MqttConnectionNotFound)
+        .ok_or(crate::Error::MqttConnectionNotFound)
     }
   }
 }
@@ -186,7 +186,7 @@ impl<'a> MqttTopicManager<'a> {
 
   /// Add a new topic to the list.
   pub fn topic(mut self, topic: Topic) -> Self {
-    self.topics.push(topic.into());
+    self.topics.push(topic);
     self
   }
 

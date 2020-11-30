@@ -430,7 +430,7 @@ impl Client {
             let balance = self.get_address().balance(address).await?;
             address_balance_pairs.push(AddressBalancePair {
                 address: address.clone(),
-                balance: balance,
+                balance,
             });
         }
         Ok(address_balance_pairs)
@@ -448,19 +448,6 @@ impl Client {
         } else {
             return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));
         }
-    }
-
-    /// Check if a transaction-message is confirmed.
-    /// Should GET `/transaction-messages/is-confirmed`
-    pub fn is_confirmed<'a>(
-        &self,
-        hashes: &'a [MessageId],
-    ) -> Result<HashMap<&'a MessageId, bool>> {
-        let mut map = HashMap::new();
-        for hash in hashes {
-            map.insert(hash, true);
-        }
-        Ok(map)
     }
 }
 
