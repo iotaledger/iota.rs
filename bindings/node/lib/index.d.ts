@@ -43,12 +43,20 @@ export declare class AddressFinder {
   get(): Address[]
 }
 
+export declare class BalanceGetter {
+  path(bip32path: string): BalanceGetter
+  index(index: number): BalanceGetter
+  get(): Promise<number>
+}
+
 export declare class Client {
   subscriber(): TopicSubscriber
   send(seed: string): ValueTransactionSender
   getUnspentAddress(seed: string): UnspentAddressGetter
   findAddresses(seed: string): AddressFinder
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message>
+  getBalance(seed: string): BalanceGetter
+
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: Message): Promise<string>

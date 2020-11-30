@@ -44,6 +44,11 @@ enum Api {
         indexation_keys: Vec<String>,
         message_ids: Vec<MessageId>,
     },
+    GetBalance {
+        seed: Seed,
+        path: Option<BIP32Path>,
+        index: Option<usize>,
+    },
     // Node APIs
     GetInfo,
     GetTips,
@@ -119,6 +124,17 @@ impl Task for ClientTask {
                         .find_messages(&indexation_keys[..], &message_ids[..])
                         .await?;
                     serde_json::to_string(&messages).unwrap()
+                }
+                Api::GetBalance { seed, path, index } => {
+                    let mut getter = client.get_balance(seed);
+                    if let Some(path) = path {
+                        getter = getter.path(path);
+                    }
+                    if let Some(index) = index {
+                        getter = getter.index(*index);
+                    }
+                    let balance = getter.get().await?;
+                    serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
                 Api::GetTips => {
@@ -288,6 +304,21 @@ declare_types! {
             }
 
             Ok(cx.undefined().upcast())
+        }
+
+        method getBalance(mut cx) {
+            let seed = cx.argument::<JsString>(0)?;
+            // validate the seed
+            Seed::from_ed25519_bytes(seed.value().as_bytes()).expect("invalid seed");
+            let client_id = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                id.to_string()
+            };
+            let client_id = cx.string(client_id);
+
+            Ok(JsBalanceGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -765,6 +796,75 @@ declare_types! {
                 Ok(addresses) => Ok(cx.string(addresses).upcast()),
                 Err(e) => cx.throw_error(e.to_string()),
             }
+        }
+    }
+}
+
+pub struct BalanceGetter {
+    client_id: String,
+    seed: String,
+    path: Arc<Mutex<Option<BIP32Path>>>,
+    index: Arc<Mutex<Option<usize>>>,
+}
+
+declare_types! {
+    pub class JsBalanceGetter for BalanceGetter {
+        init(mut cx) {
+            let client_id = cx.argument::<JsString>(0)?.value();
+            let seed = cx.argument::<JsString>(1)?.value();
+            Ok(BalanceGetter {
+                client_id,
+                seed,
+                path: Arc::new(Mutex::new(None)),
+                index: Arc::new(Mutex::new(None)),
+            })
+        }
+
+        method path(mut cx) {
+            let path = cx.argument::<JsString>(0)?.value();
+            let path = BIP32Path::from_str(path.as_str()).expect("invalid bip32 path");
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).path;
+                let mut get_path = ref_.lock().unwrap();
+                get_path.replace(path);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method index(mut cx) {
+            let index = cx.argument::<JsNumber>(0)?.value() as usize;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).index;
+                let mut get_index = ref_.lock().unwrap();
+                get_index.replace(index);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method get(mut cx) {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::GetBalance {
+                        seed: Seed::from_ed25519_bytes(ref_.seed.as_bytes()).expect("invalid seed"),
+                        path: (*ref_.path.lock().unwrap()).clone(),
+                        index: *ref_.index.lock().unwrap(),
+                    },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
         }
     }
 }

@@ -105,5 +105,6 @@ register_module!(mut cx, {
     cx.export_class::<JsValueTransactionSender>("ValueTransactionSender")?;
     cx.export_class::<JsUnspentAddressGetter>("UnspentAddressGetter")?;
     cx.export_class::<JsAddressFinder>("AddressFinder")?;
+    cx.export_class::<JsBalanceGetter>("JsBalanceGetter")?;
     Ok(())
 });

@@ -5,7 +5,8 @@ const {
   MessageGetter,
   ValueTransactionSender,
   UnspentAddressGetter,
-  AddressFinder
+  AddressFinder,
+  BalanceGetter
 } = require('../native')
 
 function promisify (fn, parse = true) {
@@ -76,6 +77,8 @@ const findAddressesGetter = AddressFinder.prototype.get
 AddressFinder.prototype.get = function () {
   return JSON.parse(findAddressesGetter.apply(this))
 }
+
+BalanceGetter.prototype.get = promisify(BalanceGetter.prototype.get)
 
 module.exports = {
   ClientBuilder
