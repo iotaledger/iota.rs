@@ -48,6 +48,7 @@ ClientBuilder.prototype.brokerOptions = function (options) {
 }
 
 Client.prototype.findMessages = promisify(Client.prototype.findMessages)
+Client.prototype.getAddressBalances = promisify(Client.prototype.getAddressBalances)
 Client.prototype.getInfo = promisify(Client.prototype.getInfo)
 Client.prototype.getTips = promisify(Client.prototype.getTips)
 const postMessage = Client.prototype.postMessage

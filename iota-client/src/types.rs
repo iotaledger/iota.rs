@@ -247,6 +247,7 @@ pub struct MilestoneMetadata {
 impl ResponseType for MilestoneMetadata {}
 
 /// Address and the coresponding balance returned by the get_address_balances() API.
+#[derive(Debug, Serialize)]
 pub struct AddressBalancePair {
     /// Address
     pub address: Address,
@@ -446,8 +447,11 @@ impl TryFrom<TransactionEssenceJson> for TransactionEssence {
         }
 
         builder = match value.payload {
-            Some(indexation) => builder.with_payload(Payload::try_from(*indexation).expect("Invalid indexation in TransactionEssenceJson")),
-            _ => builder
+            Some(indexation) => builder.with_payload(
+                Payload::try_from(*indexation)
+                    .expect("Invalid indexation in TransactionEssenceJson"),
+            ),
+            _ => builder,
         };
 
         Ok(builder.finish()?)

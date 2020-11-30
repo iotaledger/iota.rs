@@ -14,6 +14,11 @@ export declare interface Address {
   data: string
 }
 
+export declare interface AddressBalance {
+  address: Address,
+  balance: number
+}
+
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
@@ -56,6 +61,8 @@ export declare class Client {
   findAddresses(seed: string): AddressFinder
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message>
   getBalance(seed: string): BalanceGetter
+  getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
+  retry(messageId: string): Promise<Message>
 
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
@@ -66,7 +73,6 @@ export declare class Client {
   getAddressOutputs(address: string): Promise<string[]>
   getAddressBalance(address: string): Promise<number>
   getMilestone(index: number): Promise<MilestoneMetadata>
-  retry(messageId: string): Promise<Message>
   reattach(messageId: string): Promise<Message>
   promote(messageId: string): Promise<Message>
 }

@@ -28,6 +28,7 @@ pub(crate) enum Api {
     path: Option<BIP32Path>,
     index: Option<usize>,
   },
+  GetAddressBalances(Vec<Address>),
   // Node APIs
   GetInfo,
   GetTips,
@@ -65,6 +66,7 @@ impl Task for ClientTask {
       let client = crate::get_client(self.client_id.clone());
       let client = client.read().unwrap();
       let res = match &self.api {
+        // High level API
         Api::SendTransfer {
           seed,
           path,
@@ -115,6 +117,11 @@ impl Task for ClientTask {
           let balance = getter.get().await?;
           serde_json::to_string(&balance).unwrap()
         }
+        Api::GetAddressBalances(addresses) => {
+          let balances = client.get_address_balances(&addresses[..]).await?;
+          serde_json::to_string(&balances).unwrap()
+        }
+        // Node APIs
         Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
         Api::GetTips => {
           let tips = client.get_tips().await?;

@@ -148,6 +148,47 @@ declare_types! {
             Ok(JsBalanceGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
+        method getAddressBalances(mut cx) {
+            let js_addresses: Vec<Handle<JsValue>> = cx.argument::<JsArray>(0)?.to_vec(&mut cx)?;
+            let mut addresses = vec![];
+            for js_address in js_addresses {
+                let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
+                addresses.push(parse_address(address.value()).expect(&format!("invalid address: {}", address.value())));
+            }
+
+            let cb = cx.argument::<JsFunction>(1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetAddressBalances(addresses),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method retry(mut cx) {
+            let message_id = cx.argument::<JsString>(0)?.value();
+            let message_id = MessageId::from_str(message_id.as_str()).expect("invalid message id");
+            let cb = cx.argument::<JsFunction>(1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::Retry(message_id),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
         ///////////////////////////////////////////////////////////////////////
         // Node API
         ///////////////////////////////////////////////////////////////////////
@@ -329,24 +370,6 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: id.clone(),
                     api: Api::GetMilestone(milestone_index),
-                };
-                client_task.schedule(cb);
-            }
-
-            Ok(cx.undefined().upcast())
-        }
-
-        method retry(mut cx) {
-            let message_id = cx.argument::<JsString>(0)?.value();
-            let message_id = MessageId::from_str(message_id.as_str()).expect("invalid message id");
-            let cb = cx.argument::<JsFunction>(1)?;
-            {
-                let this = cx.this();
-                let guard = cx.lock();
-                let id = &this.borrow(&guard).0;
-                let client_task = ClientTask {
-                    client_id: id.clone(),
-                    api: Api::Retry(message_id),
                 };
                 client_task.schedule(cb);
             }
