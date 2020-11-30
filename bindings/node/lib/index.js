@@ -2,7 +2,7 @@ const {
   Client,
   ClientBuilder,
   TopicSubscriber,
-  MessageFinder,
+  MessageGetter,
   ValueTransactionSender,
   UnspentAddressGetter,
   AddressFinder
@@ -46,6 +46,7 @@ ClientBuilder.prototype.brokerOptions = function (options) {
   return brokerOptionsFn.apply(this, [JSON.stringify(opt)])
 }
 
+Client.prototype.findMessages = promisify(Client.prototype.findMessages)
 Client.prototype.getInfo = promisify(Client.prototype.getInfo)
 Client.prototype.getTips = promisify(Client.prototype.getTips)
 const postMessage = Client.prototype.postMessage
@@ -61,11 +62,11 @@ Client.prototype.retry = promisify(Client.prototype.retry)
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
 
-MessageFinder.prototype.index = promisify(MessageFinder.prototype.index)
-MessageFinder.prototype.data = promisify(MessageFinder.prototype.data)
-MessageFinder.prototype.raw = promisify(MessageFinder.prototype.raw, false)
-MessageFinder.prototype.children = promisify(MessageFinder.prototype.children)
-MessageFinder.prototype.metadata = promisify(MessageFinder.prototype.metadata)
+MessageGetter.prototype.index = promisify(MessageGetter.prototype.index)
+MessageGetter.prototype.data = promisify(MessageGetter.prototype.data)
+MessageGetter.prototype.raw = promisify(MessageGetter.prototype.raw, false)
+MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
+MessageGetter.prototype.metadata = promisify(MessageGetter.prototype.metadata)
 
 ValueTransactionSender.prototype.send = promisify(ValueTransactionSender.prototype.send, false)
 

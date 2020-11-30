@@ -40,6 +40,10 @@ enum Api {
         path: Option<BIP32Path>,
         index: Option<usize>,
     },
+    FindMessages {
+        indexation_keys: Vec<String>,
+        message_ids: Vec<MessageId>,
+    },
     // Node APIs
     GetInfo,
     GetTips,
@@ -106,6 +110,15 @@ impl Task for ClientTask {
                     }
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
+                }
+                Api::FindMessages {
+                    indexation_keys,
+                    message_ids,
+                } => {
+                    let messages = client
+                        .find_messages(&indexation_keys[..], &message_ids[..])
+                        .await?;
+                    serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
                 Api::GetTips => {
@@ -247,6 +260,36 @@ declare_types! {
             Ok(JsAddressFinder::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
+        method findMessages(mut cx) {
+            let js_indexation_keys: Vec<Handle<JsValue>> = cx.argument::<JsArray>(0)?.to_vec(&mut cx)?;
+            let mut indexation_keys = vec![];
+            for js_indexation_key in js_indexation_keys {
+                let indexation_key: Handle<JsString> = js_indexation_key.downcast_or_throw(&mut cx)?;
+                indexation_keys.push(indexation_key.value());
+            }
+
+            let js_message_ids: Vec<Handle<JsValue>> = cx.argument::<JsArray>(1)?.to_vec(&mut cx)?;
+            let mut message_ids = vec![];
+            for js_message_id in js_message_ids {
+                let message_id: Handle<JsString> = js_message_id.downcast_or_throw(&mut cx)?;
+                message_ids.push(MessageId::from_str(message_id.value().as_str()).expect(&format!("invalid message id: {}", message_id.value())));
+            }
+
+            let cb = cx.argument::<JsFunction>(2)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::FindMessages { indexation_keys, message_ids },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
         ///////////////////////////////////////////////////////////////////////
         // Node API
         ///////////////////////////////////////////////////////////////////////
@@ -321,7 +364,7 @@ declare_types! {
             };
             let id = cx.string(id);
 
-            Ok(JsMessageFinder::new(&mut cx, vec![id])?.upcast())
+            Ok(JsMessageGetter::new(&mut cx, vec![id])?.upcast())
         }
 
         method getOutput(mut cx) {
@@ -726,13 +769,13 @@ declare_types! {
     }
 }
 
-pub struct MessageFinder(String);
+pub struct MessageGetter(String);
 
 declare_types! {
-    pub class JsMessageFinder for MessageFinder {
+    pub class JsMessageGetter for MessageGetter {
         init(mut cx) {
             let client_id = cx.argument::<JsString>(0)?.value();
-            Ok(MessageFinder(client_id))
+            Ok(MessageGetter(client_id))
         }
 
         method index(mut cx) {

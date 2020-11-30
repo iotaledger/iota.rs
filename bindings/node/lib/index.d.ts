@@ -48,6 +48,7 @@ export declare class Client {
   send(seed: string): ValueTransactionSender
   getUnspentAddress(seed: string): UnspentAddressGetter
   findAddresses(seed: string): AddressFinder
+  findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message>
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: Message): Promise<string>
