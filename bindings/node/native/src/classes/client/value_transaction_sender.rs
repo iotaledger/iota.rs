@@ -2,18 +2,18 @@ use iota::{message::prelude::Address, BIP32Path, Seed};
 use neon::prelude::*;
 
 use std::{
-  num::NonZeroU64,
-  sync::{Arc, Mutex},
+    num::NonZeroU64,
+    sync::{Arc, Mutex},
 };
 
 use super::{parse_address, Api, ClientTask};
 
 pub struct ValueTransactionSender {
-  client_id: String,
-  seed: String,
-  path: Arc<Mutex<Option<BIP32Path>>>,
-  index: Arc<Mutex<Option<usize>>>,
-  outputs: Arc<Mutex<Vec<(Address, NonZeroU64)>>>,
+    client_id: String,
+    seed: String,
+    path: Arc<Mutex<Option<BIP32Path>>>,
+    index: Arc<Mutex<Option<usize>>>,
+    outputs: Arc<Mutex<Vec<(Address, NonZeroU64)>>>,
 }
 
 declare_types! {
@@ -72,7 +72,7 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
-        method send(mut cx) {
+        method submit(mut cx) {
             let cb = cx.argument::<JsFunction>(0)?;
             {
                 let this = cx.this();

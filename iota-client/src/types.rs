@@ -2,6 +2,7 @@
 use crate::{Error, Result};
 
 use bee_message::prelude::*;
+use serde::ser::Serializer;
 
 use std::convert::{From, TryFrom, TryInto};
 
@@ -204,16 +205,27 @@ pub(crate) struct SLSAddress {
     pub(crate) address: String,
 }
 
+fn serialize_as_hex<S>(x: &Vec<u8>, s: S) -> std::result::Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    s.serialize_str(hex::encode(x).as_str())
+}
+
 /// Output data
 #[derive(Debug, Serialize)]
 pub struct OutputMetadata {
     /// Message ID of the output
+    #[serde(rename = "messageId", serialize_with = "serialize_as_hex")]
     pub message_id: Vec<u8>,
     /// Transaction ID of the output
+    #[serde(rename = "transactionId", serialize_with = "serialize_as_hex")]
     pub transaction_id: Vec<u8>,
     /// Output index.
+    #[serde(rename = "outputIndex")]
     pub output_index: u16,
     /// Spend status of the output
+    #[serde(rename = "isSpent")]
     pub is_spent: bool,
     /// Corresponding address
     pub address: Address,

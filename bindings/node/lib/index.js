@@ -70,7 +70,7 @@ MessageGetter.prototype.raw = promisify(MessageGetter.prototype.raw, false)
 MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
 MessageGetter.prototype.metadata = promisify(MessageGetter.prototype.metadata)
 
-ValueTransactionSender.prototype.send = promisify(ValueTransactionSender.prototype.send, false)
+ValueTransactionSender.prototype.submit = promisify(ValueTransactionSender.prototype.submit)
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)
 

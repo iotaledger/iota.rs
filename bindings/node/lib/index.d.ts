@@ -1,16 +1,58 @@
-export declare interface NodeInfo { }
-export declare interface Message { }
-export declare interface MessageMetadata { }
-export declare interface OutputMetadata { }
-export declare interface MilestoneMetadata { }
+export declare interface NodeInfo {
+  name: string
+  version: string
+  isHealthy: boolean
+  coordinatorPublicKey: string
+  latestMilestoneMessageId: string
+  latestMilestoneIndex: number
+  solidMilestoneMessageId: string
+  solidMilestoneIndex: number
+  pruningIndex: number
+  features: string[]
+}
+
+export declare interface Message {
+  network_id: number
+  parent1: string
+  parent2: string
+  payload?: any
+  nonce: number
+}
+
+export declare interface MessageMetadata {
+  messageId: string
+  parent1MessageId: string
+  parent2MessageId: string
+  isSolid: boolean
+  shouldPromote?: boolean
+  shouldReattach?: boolean
+  referencedByMilestoneIndex?: number
+  ledgerInclusionState?: string
+}
+
+export declare interface OutputMetadata {
+  messageId: string
+  transactionId: string
+  outputIndex: number
+  isSpent: boolean
+  address: Address
+  amount: number
+}
+
+export declare interface MilestoneMetadata {
+  milestoneIndex: number
+  messageId: string
+  timestamp: number
+}
+
 export declare interface BrokerOptions {
-  automaticDisconnect: bool
+  automaticDisconnect: boolean
   // timeout in milliseconds
   timeout: number
 }
 
 export declare interface Address {
-  type: number
+  type: 'Wots' | 'Ed25519'
   data: string
 }
 
@@ -32,7 +74,7 @@ export declare class ValueTransactionSender {
   path(bip32path: string): ValueTransactionSender
   index(index: number): ValueTransactionSender
   output(address: string, value: number): ValueTransactionSender
-  send(): Promise<string>
+  submit(): Promise<string>
 }
 
 export declare class UnspentAddressGetter {
@@ -43,7 +85,6 @@ export declare class UnspentAddressGetter {
 
 export declare class AddressFinder {
   path(bip32path: string): AddressFinder
-  index(index: number): AddressFinder
   range(start: number, end: number): AddressFinder
   get(): Address[]
 }
@@ -59,7 +100,7 @@ export declare class Client {
   send(seed: string): ValueTransactionSender
   getUnspentAddress(seed: string): UnspentAddressGetter
   findAddresses(seed: string): AddressFinder
-  findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message>
+  findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
   retry(messageId: string): Promise<Message>
