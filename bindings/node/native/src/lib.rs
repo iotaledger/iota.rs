@@ -103,5 +103,6 @@ register_module!(mut cx, {
     cx.export_class::<JsTopicSubscriber>("TopicSubscriber")?;
     cx.export_class::<JsMessageFinder>("MessageFinder")?;
     cx.export_class::<JsValueTransactionSender>("ValueTransactionSender")?;
+    cx.export_class::<JsUnspentAddressGetter>("UnspentAddressGetter")?;
     Ok(())
 });

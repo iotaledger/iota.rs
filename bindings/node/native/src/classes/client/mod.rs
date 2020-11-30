@@ -34,6 +34,11 @@ enum Api {
         index: Option<usize>,
         outputs: Vec<(Address, NonZeroU64)>,
     },
+    GetUnspentAddress {
+        seed: Seed,
+        path: Option<BIP32Path>,
+        index: Option<usize>,
+    },
     // Node APIs
     GetInfo,
     GetTips,
@@ -89,6 +94,17 @@ impl Task for ClientTask {
                     }
                     let message_id = sender.post().await?;
                     serde_json::to_string(&message_id).unwrap()
+                }
+                Api::GetUnspentAddress { seed, path, index } => {
+                    let mut getter = client.get_unspent_address(seed);
+                    if let Some(path) = path {
+                        getter = getter.path(path);
+                    }
+                    if let Some(index) = index {
+                        getter = getter.index(*index);
+                    }
+                    let (address, index) = getter.get().await?;
+                    serde_json::to_string(&(address, index)).unwrap()
                 }
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
                 Api::GetTips => {
@@ -202,6 +218,21 @@ declare_types! {
             let client_id = cx.string(client_id);
 
             Ok(JsValueTransactionSender::new(&mut cx, vec![client_id, seed])?.upcast())
+        }
+
+        method getUnspentAddress(mut cx) {
+            let seed = cx.argument::<JsString>(0)?;
+            // validate the seed
+            Seed::from_ed25519_bytes(seed.value().as_bytes()).expect("invalid seed");
+            let client_id = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                id.to_string()
+            };
+            let client_id = cx.string(client_id);
+
+            Ok(JsUnspentAddressGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -525,6 +556,75 @@ declare_types! {
                         path: (*ref_.path.lock().unwrap()).clone(),
                         index: *ref_.index.lock().unwrap(),
                         outputs: (*ref_.outputs.lock().unwrap()).clone(),
+                    },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+    }
+}
+
+pub struct UnspentAddressGetter {
+    client_id: String,
+    seed: String,
+    path: Arc<Mutex<Option<BIP32Path>>>,
+    index: Arc<Mutex<Option<usize>>>,
+}
+
+declare_types! {
+    pub class JsUnspentAddressGetter for UnspentAddressGetter {
+        init(mut cx) {
+            let client_id = cx.argument::<JsString>(0)?.value();
+            let seed = cx.argument::<JsString>(1)?.value();
+            Ok(UnspentAddressGetter {
+                client_id,
+                seed,
+                path: Arc::new(Mutex::new(None)),
+                index: Arc::new(Mutex::new(None)),
+            })
+        }
+
+        method path(mut cx) {
+            let path = cx.argument::<JsString>(0)?.value();
+            let path = BIP32Path::from_str(path.as_str()).expect("invalid bip32 path");
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).path;
+                let mut send_path = ref_.lock().unwrap();
+                send_path.replace(path);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method index(mut cx) {
+            let index = cx.argument::<JsNumber>(0)?.value() as usize;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).index;
+                let mut send_index = ref_.lock().unwrap();
+                send_index.replace(index);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method get(mut cx) {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::GetUnspentAddress {
+                        seed: Seed::from_ed25519_bytes(ref_.seed.as_bytes()).expect("invalid seed"),
+                        path: (*ref_.path.lock().unwrap()).clone(),
+                        index: *ref_.index.lock().unwrap(),
                     },
                 };
                 client_task.schedule(cb);

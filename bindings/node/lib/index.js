@@ -1,4 +1,11 @@
-const { Client, ClientBuilder, TopicSubscriber, MessageFinder, ValueTransactionSender } = require('../native')
+const {
+  Client,
+  ClientBuilder,
+  TopicSubscriber,
+  MessageFinder,
+  ValueTransactionSender,
+  UnspentAddressGetter
+} = require('../native')
 
 function promisify (fn, parse = true) {
   return function () {
@@ -60,6 +67,8 @@ MessageFinder.prototype.children = promisify(MessageFinder.prototype.children)
 MessageFinder.prototype.metadata = promisify(MessageFinder.prototype.metadata)
 
 ValueTransactionSender.prototype.send = promisify(ValueTransactionSender.prototype.send, false)
+
+UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)
 
 module.exports = {
   ClientBuilder

@@ -25,9 +25,16 @@ export declare class ValueTransactionSender {
   send(): Promise<string>
 }
 
+export declare class UnspentAddressGetter {
+  path(bip32path: string): ValueTransactionSender
+  index(index: number): ValueTransactionSender
+  send(): Promise<[string, number]>
+}
+
 export declare class Client {
   subscriber(): TopicSubscriber
   send(seed: string): ValueTransactionSender
+  getUnspentAddress(seed: string): UnspentAddressGetter
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: Message): Promise<string>
