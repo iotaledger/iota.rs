@@ -1,8 +1,16 @@
 use bech32::FromBase32;
-use iota::message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
+use iota::{
+    message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput},
+    BIP32Path, Seed,
+};
 use neon::prelude::*;
 
-use std::{convert::TryInto, str::FromStr};
+use std::{
+    convert::TryInto,
+    num::NonZeroU64,
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
 
 mod builder;
 pub use builder::*;
@@ -19,6 +27,14 @@ fn parse_address(address: String) -> crate::Result<Address> {
 }
 
 enum Api {
+    // High level APIs
+    SendTransfer {
+        seed: Seed,
+        path: Option<BIP32Path>,
+        index: Option<usize>,
+        outputs: Vec<(Address, NonZeroU64)>,
+    },
+    // Node APIs
     GetInfo,
     GetTips,
     PostMessage(Message),
@@ -55,6 +71,25 @@ impl Task for ClientTask {
             let client = crate::get_client(self.client_id.clone());
             let client = client.read().unwrap();
             let res = match &self.api {
+                Api::SendTransfer {
+                    seed,
+                    path,
+                    index,
+                    outputs,
+                } => {
+                    let mut sender = client.send(seed);
+                    if let Some(path) = path {
+                        sender = sender.path(path);
+                    }
+                    if let Some(index) = index {
+                        sender = sender.index(*index);
+                    }
+                    for output in outputs {
+                        sender = sender.output(output.0.clone(), output.1);
+                    }
+                    let message_id = sender.post().await?;
+                    serde_json::to_string(&message_id).unwrap()
+                }
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;
@@ -149,6 +184,29 @@ declare_types! {
             let client_id = cx.argument::<JsString>(0)?.value();
             Ok(ClientWrapper(client_id))
         }
+
+        ///////////////////////////////////////////////////////////////////////
+        // High level API
+        ///////////////////////////////////////////////////////////////////////
+
+        method send(mut cx) {
+            let seed = cx.argument::<JsString>(0)?;
+            // validate the seed
+            Seed::from_ed25519_bytes(seed.value().as_bytes()).expect("invalid seed");
+            let client_id = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                id.to_string()
+            };
+            let client_id = cx.string(client_id);
+
+            Ok(JsValueTransactionSender::new(&mut cx, vec![client_id, seed])?.upcast())
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // Node API
+        ///////////////////////////////////////////////////////////////////////
 
         method subscriber(mut cx) {
             let client_id = {
@@ -381,6 +439,93 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: id.clone(),
                     api: Api::Promote(message_id),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+    }
+}
+
+pub struct ValueTransactionSender {
+    client_id: String,
+    seed: String,
+    path: Arc<Mutex<Option<BIP32Path>>>,
+    index: Arc<Mutex<Option<usize>>>,
+    outputs: Arc<Mutex<Vec<(Address, NonZeroU64)>>>,
+}
+
+declare_types! {
+    pub class JsValueTransactionSender for ValueTransactionSender {
+        init(mut cx) {
+            let client_id = cx.argument::<JsString>(0)?.value();
+            let seed = cx.argument::<JsString>(1)?.value();
+            Ok(ValueTransactionSender {
+                client_id,
+                seed,
+                path: Arc::new(Mutex::new(None)),
+                index: Arc::new(Mutex::new(None)),
+                outputs: Arc::new(Mutex::new(vec![]))
+            })
+        }
+
+        method path(mut cx) {
+            let path = cx.argument::<JsString>(0)?.value();
+            let path = BIP32Path::from_str(path.as_str()).expect("invalid bip32 path");
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).path;
+                let mut send_path = ref_.lock().unwrap();
+                send_path.replace(path);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method index(mut cx) {
+            let index = cx.argument::<JsNumber>(0)?.value() as usize;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).index;
+                let mut send_index = ref_.lock().unwrap();
+                send_index.replace(index);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method output(mut cx) {
+            let address = cx.argument::<JsString>(0)?.value();
+            let address = parse_address(address).expect("invalid address");
+            let value = cx.argument::<JsNumber>(1)?.value() as u64;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).outputs;
+                let mut outputs = ref_.lock().unwrap();
+                outputs.push((address, NonZeroU64::new(value).expect("value can't be zero")));
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method send(mut cx) {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::SendTransfer {
+                        seed: Seed::from_ed25519_bytes(ref_.seed.as_bytes()).expect("invalid seed"),
+                        path: (*ref_.path.lock().unwrap()).clone(),
+                        index: *ref_.index.lock().unwrap(),
+                        outputs: (*ref_.outputs.lock().unwrap()).clone(),
+                    },
                 };
                 client_task.schedule(cb);
             }

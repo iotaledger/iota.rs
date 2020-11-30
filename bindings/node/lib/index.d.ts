@@ -18,8 +18,16 @@ export declare class ClientBuilder {
   build(): Client
 }
 
+export declare class ValueTransactionSender {
+  path(bip32path: string): ValueTransactionSender
+  index(index: number): ValueTransactionSender
+  output(address: string, value: number): ValueTransactionSender
+  send(): Promise<string>
+}
+
 export declare class Client {
   subscriber(): TopicSubscriber
+  send(seed: string): ValueTransactionSender
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: Message): Promise<string>
