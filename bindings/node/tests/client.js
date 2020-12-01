@@ -2,7 +2,7 @@ const { ClientBuilder } = require('../lib')
 const { assertAddress, assertMessageId, assertMessage } = require('./assertions')
 const assert = require('assert')
 
-const seed = 'b3a9bf35521157aa9c4508ab3a926634'
+const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 
 const client = new ClientBuilder()
   .node('http://localhost:14265')

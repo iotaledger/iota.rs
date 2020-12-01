@@ -107,9 +107,9 @@ Gets a handle to the MQTT topic subscriber.
 
 Initiates the builder to send funds.
 
-| Param | Type                | Description                      |
-| ----- | ------------------- | -------------------------------- |
-| seed  | <code>string</code> | The seed of the account to spend |
+| Param | Type                | Description                                  |
+| ----- | ------------------- | -------------------------------------------- |
+| seed  | <code>string</code> | The hex-encoded seed of the account to spend |
 
 **Returns** a [ValueTransactionSender](#valuetransactionsender) instance.
 
@@ -117,9 +117,9 @@ Initiates the builder to send funds.
 
 Get a valid unspent address.
 
-| Param | Type                | Description        |
-| ----- | ------------------- | ------------------ |
-| seed  | <code>string</code> | The seed to search |
+| Param | Type                | Description                    |
+| ----- | ------------------- | ------------------------------ |
+| seed  | <code>string</code> | The hex-encoded seed to search |
 
 **Returns** a [UnspentAddressGetter](#unspentaddressgetter) instance.
 
@@ -127,9 +127,9 @@ Get a valid unspent address.
 
 Find addresses from the seed regardless of their validity.
 
-| Param | Type                | Description        |
-| ----- | ------------------- | ------------------ |
-| seed  | <code>string</code> | The seed to search |
+| Param | Type                | Description                    |
+| ----- | ------------------- | ------------------------------ |
+| seed  | <code>string</code> | The hex-encoded seed to search |
 
 **Returns** a [AddressFinder](#addressfinder) instance.
 
@@ -148,9 +148,9 @@ Finds all messages associated with the given indexation keys and message ids.
 
 Get balance on a given seed and its wallet chain BIP32 path.
 
-| Param | Type                | Description        |
-| ----- | ------------------- | ------------------ |
-| seed  | <code>string</code> | The seed to search |
+| Param | Type                | Description                    |
+| ----- | ------------------- | ------------------------------ |
+| seed  | <code>string</code> | The hex-encoded seed to search |
 
 **Returns** a [BalanceGetter](#balancegetter) instance.
 

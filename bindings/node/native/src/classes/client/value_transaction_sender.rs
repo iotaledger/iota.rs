@@ -81,7 +81,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::SendTransfer {
-                        seed: Seed::from_ed25519_bytes(ref_.seed.as_bytes()).expect("invalid seed"),
+                        seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
                         path: (*ref_.path.lock().unwrap()).clone(),
                         index: *ref_.index.lock().unwrap(),
                         outputs: (*ref_.outputs.lock().unwrap()).clone(),

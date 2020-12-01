@@ -6,10 +6,10 @@ use std::sync::{Arc, Mutex};
 use super::{Api, ClientTask};
 
 pub struct BalanceGetter {
-  client_id: String,
-  seed: String,
-  path: Arc<Mutex<Option<BIP32Path>>>,
-  index: Arc<Mutex<Option<usize>>>,
+    client_id: String,
+    seed: String,
+    path: Arc<Mutex<Option<BIP32Path>>>,
+    index: Arc<Mutex<Option<usize>>>,
 }
 
 declare_types! {
@@ -61,7 +61,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::GetBalance {
-                        seed: Seed::from_ed25519_bytes(ref_.seed.as_bytes()).expect("invalid seed"),
+                        seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
                         path: (*ref_.path.lock().unwrap()).clone(),
                         index: *ref_.index.lock().unwrap(),
                     },

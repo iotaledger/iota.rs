@@ -61,7 +61,7 @@ declare_types! {
                 let guard = cx.lock();
                 let ref_ = &(*this.borrow(&guard));
 
-                let seed = Seed::from_ed25519_bytes(ref_.seed.as_bytes()).expect("invalid seed");
+                let seed = Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed");
 
                 let client = crate::get_client(ref_.client_id.clone());
                 let client = client.read().unwrap();
