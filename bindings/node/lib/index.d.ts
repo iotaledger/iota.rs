@@ -2,10 +2,8 @@ export declare interface NodeInfo {
   name: string
   version: string
   isHealthy: boolean
-  coordinatorPublicKey: string
-  latestMilestoneMessageId: string
+  networkId: string
   latestMilestoneIndex: number
-  solidMilestoneMessageId: string
   solidMilestoneIndex: number
   pruningIndex: number
   features: string[]

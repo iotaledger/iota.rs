@@ -593,18 +593,16 @@ Gets the metadata of the given message.
 
 ### NodeInfo
 
-| Field                    | Type                  | Description                        |
-| ------------------------ | --------------------- | ---------------------------------- |
-| name                     | <code>string</code>   | Node name                          |
-| version                  | <code>string</code>   | Node version                       |
-| isHealthy                | <code>boolean</code>  | Node health status                 |
-| coordinatorPublicKey     | <code>string</code>   | Public key of the node coordinator |
-| latestMilestoneMessageId | <code>string</code>   | Message id of the latest milestone |
-| latestMilestoneIndex     | <code>number</code>   | Index of the latest milestone      |
-| solidMilestoneMessageId  | <code>string</code>   | Message id of the solid milestone  |
-| solidMilestoneIndex      | <code>number</code>   | Index of the solid milestone       |
-| pruningIndex             | <code>number</code>   | Pruning index                      |
-| features                 | <code>string[]</code> | List of node features              |
+| Field                | Type                  | Description                   |
+| -------------------- | --------------------- | ----------------------------- |
+| name                 | <code>string</code>   | Node name                     |
+| version              | <code>string</code>   | Node version                  |
+| isHealthy            | <code>boolean</code>  | Node health status            |
+| networkId            | <code>string</code>   | Node network identifier       |
+| latestMilestoneIndex | <code>number</code>   | Index of the latest milestone |
+| solidMilestoneIndex  | <code>number</code>   | Index of the solid milestone  |
+| pruningIndex         | <code>number</code>   | Pruning index                 |
+| features             | <code>string[]</code> | List of node features         |
 
 ### OutputMetadata
 
