@@ -2,7 +2,7 @@ use iota::{Client, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 fn main() {
-  let mut iota = Client::new() // Crate a client instance builder
+  let mut iota = Client::builder() // Crate a client instance builder
     .node("http://0.0.0.0:14265") // Insert the node here
     .unwrap()
     .build()

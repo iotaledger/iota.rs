@@ -1,12 +1,12 @@
 use hex;
 use iota::Indexation;
-use iota::{hex_to_message_id, Client, Message, Payload};
+use iota::{Client, Message, Payload};
 
 #[tokio::main]
 async fn main() {
     let index = Indexation::new(String::from("Hello"), String::from("Tangle").as_bytes()).unwrap();
 
-    let client = Client::new()
+    let client = Client::builder()
         .nodes(&vec!["http://localhost:14265"])
         .unwrap()
         .build()
@@ -32,7 +32,7 @@ async fn main() {
 
     let r = client
         .get_message()
-        .data(&hex_to_message_id(fetched_messages[0]).unwrap())
+        .data(&fetched_messages[0])
         .await
         .unwrap();
 

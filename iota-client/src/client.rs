@@ -95,7 +95,7 @@ impl std::fmt::Debug for Client {
 
 impl Client {
     /// Create the builder to instntiate the IOTA Client.
-    pub fn new() -> ClientBuilder {
+    pub fn builder() -> ClientBuilder {
         ClientBuilder::new()
     }
 
@@ -283,7 +283,7 @@ impl Client {
     }
 
     /// GET /api/v1/addresses/{address} endpoint
-    pub fn get_address<'a>(&'a self) -> GetAddressBuilder<'a> {
+    pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }
 
@@ -435,9 +435,3 @@ impl Client {
         }
     }
 }
-
-// pub(crate) fn hex_to_message_id(data: &str) -> Result<MessageId> {
-//     let mut m = [0; MESSAGE_ID_LENGTH];
-//     hex::decode_to_slice(data, &mut m)?;
-//     Ok(MessageId::new(m))
-// }
