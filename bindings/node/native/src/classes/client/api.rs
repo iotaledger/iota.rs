@@ -53,7 +53,7 @@ pub(crate) enum Api {
 }
 
 #[derive(Serialize)]
-struct OutputMetadataWrapper {
+struct OutputMetadataDto {
     /// Message ID of the output
     #[serde(rename = "messageId")]
     message_id: String,
@@ -72,7 +72,7 @@ struct OutputMetadataWrapper {
     amount: u64,
 }
 
-impl From<OutputMetadata> for OutputMetadataWrapper {
+impl From<OutputMetadata> for OutputMetadataDto {
     fn from(value: OutputMetadata) -> Self {
         Self {
             message_id: hex::encode(value.message_id),
@@ -86,12 +86,12 @@ impl From<OutputMetadata> for OutputMetadataWrapper {
 }
 
 #[derive(Serialize)]
-struct AddressBalanceWrapper {
+struct AddressBalanceDto {
     address: String,
     balance: u64,
 }
 
-impl From<AddressBalancePair> for AddressBalanceWrapper {
+impl From<AddressBalancePair> for AddressBalanceDto {
     fn from(value: AddressBalancePair) -> Self {
         Self {
             address: value.address.to_bech32(),
@@ -168,7 +168,7 @@ impl Task for ClientTask {
                 }
                 Api::GetAddressBalances(addresses) => {
                     let balances = client.get_address_balances(&addresses[..]).await?;
-                    let balances: Vec<AddressBalanceWrapper> =
+                    let balances: Vec<AddressBalanceDto> =
                         balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
                 }
@@ -202,12 +202,12 @@ impl Task for ClientTask {
                 }
                 Api::GetOutput(id) => {
                     let output = client.get_output(id).await?;
-                    let output: OutputMetadataWrapper = output.into();
+                    let output: OutputMetadataDto = output.into();
                     serde_json::to_string(&output).unwrap()
                 }
                 Api::FindOutputs { outputs, addresses } => {
                     let outputs = client.find_outputs(outputs, addresses).await?;
-                    let outputs: Vec<OutputMetadataWrapper> =
+                    let outputs: Vec<OutputMetadataDto> =
                         outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }
