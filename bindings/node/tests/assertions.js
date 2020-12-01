@@ -14,14 +14,9 @@ function assertMessageId(messageId) {
 }
 
 function assertAddress(address) {
-  assert.strictEqual(typeof address, 'object')
-  assert.strictEqual('type' in address, true)
-  assert.strictEqual(typeof address.type, 'string')
-  assert.strictEqual(address.type, 'Ed25519')
-
-  assert.strictEqual('data' in address, true)
-  assert.strictEqual(typeof address.data, 'string')
-  assert.strictEqual(address.data.length, 64)
+  assert.strictEqual(typeof address, 'string')
+  assert.strictEqual(address.length, 63)
+  assert.strictEqual(address.startsWith('iot1'), true)
 }
 
 module.exports = {

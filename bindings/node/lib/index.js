@@ -37,6 +37,10 @@ TopicSubscriber.prototype.subscribe = function (cb) {
   })
   poll(this, cb)
 }
+const unsubscribe = TopicSubscriber.prototype.unsubscribe
+TopicSubscriber.prototype.unsubscribe = function (cb) {
+  return unsubscribe.call(this, cb || function () {})
+}
 
 const brokerOptionsFn = ClientBuilder.prototype.brokerOptions
 ClientBuilder.prototype.brokerOptions = function (options) {

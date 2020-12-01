@@ -168,13 +168,13 @@ impl Client {
     }
 
     /// GET /api/v1/info endpoint
-    pub async fn get_info(&self) -> Result<Response<NodeInfo>> {
+    pub async fn get_info(&self) -> Result<NodeInfo> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/info");
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {
-            200 => Ok(resp.json().await?),
+            200 => Ok(resp.json::<Response<NodeInfo>>().await?.data),
             status => Err(Error::ResponseError(status)),
         }
     }
