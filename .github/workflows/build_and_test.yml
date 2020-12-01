@@ -12,9 +12,11 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -27,6 +29,11 @@ jobs:
 
     - name: Get current date
       run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+      if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
+
+    - name: Get current date
+      if: matrix.os == 'windows-latest'
+      run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Cache cargo registry
       uses: actions/cache@v2
@@ -55,6 +62,19 @@ jobs:
         # Restore from outdated cache for speed
         restore-keys: |
           cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
+
+    # paho.mqtt requires openssl and OPENSSL_ROOT_DIR on macOS
+    - name: Set OpenSSL location (macOS)
+      if: matrix.os == 'macos-latest'
+      run: echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@1.1)" >> $GITHUB_ENV
+
+    # paho.mqtt requires openssl and OPENSSL_ROOT_DIR on Windows
+    - name: Install OpenSSL (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install openssl --no-progress
+        echo "OPENSSL_ROOT_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
     - name: Build
       uses: actions-rs/cargo@v1
       with:
@@ -65,4 +85,4 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --all --release -- --test-threads=1
+        args: --all --release
