@@ -126,7 +126,7 @@ declare_types! {
             let mut message_ids = vec![];
             for js_message_id in js_message_ids {
                 let message_id: Handle<JsString> = js_message_id.downcast_or_throw(&mut cx)?;
-                message_ids.push(MessageId::from_str(message_id.value().as_str()).expect(&format!("invalid message id: {}", message_id.value())));
+                message_ids.push(MessageId::from_str(message_id.value().as_str()).unwrap_or_else(|_| panic!("invalid message id: {}", message_id.value())));
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
@@ -164,7 +164,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(parse_address(address.value()).expect(&format!("invalid address: {}", address.value())));
+                addresses.push(parse_address(address.value()).unwrap_or_else(|_| panic!("invalid address: {}", address.value())));
             }
 
             let cb = cx.argument::<JsFunction>(1)?;

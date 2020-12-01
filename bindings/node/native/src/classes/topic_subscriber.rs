@@ -117,7 +117,7 @@ declare_types! {
 
         method topic(mut cx) {
             let js_topic = cx.argument::<JsString>(0)?;
-            let topic = js_topic.value().as_str().try_into().expect(&format!("invalid topic: {}", js_topic.value()));
+            let topic = js_topic.value().as_str().try_into().unwrap_or_else(|_| panic!("invalid topic: {}", js_topic.value()));
 
             let this = cx.this();
             let topics = cx.borrow(&this, |subscriber| subscriber.topics.clone());
@@ -134,7 +134,7 @@ declare_types! {
             let js_topics: Vec<Handle<JsValue>> = topic_js_array.to_vec(&mut cx)?;
             for js_topic in js_topics {
                 let topic: Handle<JsString> = js_topic.downcast_or_throw(&mut cx)?;
-                topics.push(topic.value().as_str().try_into().expect(&format!("invalid topic: {}", topic.value())));
+                topics.push(topic.value().as_str().try_into().unwrap_or_else(|_| panic!("invalid topic: {}", topic.value())));
             }
 
             let this = cx.this();

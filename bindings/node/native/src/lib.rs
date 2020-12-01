@@ -23,13 +23,13 @@ pub(crate) type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum Error {
     #[error("`{0}`")]
-    AnyhowError(#[from] anyhow::Error),
+    Anyhow(#[from] anyhow::Error),
     #[error("`{0}`")]
-    ClientError(#[from] iota::client::Error),
+    Client(#[from] iota::client::Error),
     #[error("`{0}`")]
-    AddressError(#[from] bech32::Error),
+    Address(#[from] bech32::Error),
     #[error("`{0}`")]
-    HexError(#[from] hex::FromHexError),
+    Hex(#[from] hex::FromHexError),
     #[error("`{0}`")]
     Panic(String),
 }

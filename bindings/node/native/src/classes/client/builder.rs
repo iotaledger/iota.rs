@@ -98,7 +98,7 @@ declare_types! {
                 let mut builder = ClientBuilder::new();
 
                 for node in &*ref_.nodes.lock().unwrap() {
-                    builder = builder.node(node.as_str()).expect(&format!("invalid node url: {}", node));
+                    builder = builder.node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
                 }
                 if let Some(quorum_size) = &*ref_.quorum_size.lock().unwrap() {
                     builder = builder.quorum_size(*quorum_size);
