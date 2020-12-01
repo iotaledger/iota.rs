@@ -8,7 +8,7 @@ use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
 #[ignore]
 #[tokio::test]
 async fn test_get_info() {
-    iota_client::Client::get_info("http://0.0.0.0:14265")
+    iota_client::Client::get_node_info("http://0.0.0.0:14265")
         .await
         .unwrap();
 }
@@ -16,7 +16,7 @@ async fn test_get_info() {
 #[ignore]
 #[tokio::test]
 async fn test_get_health() {
-    iota_client::Client::get_health("http://0.0.0.0:14265")
+    iota_client::Client::get_node_health("http://0.0.0.0:14265")
         .await
         .unwrap();
 }

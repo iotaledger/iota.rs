@@ -10,7 +10,7 @@ use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInpu
 use bee_signing_ext::Seed;
 
 use paho_mqtt::Client as MqttClient;
-use reqwest::Url;
+use reqwest::{IntoUrl, Url};
 use serde::{Deserialize, Serialize};
 
 use std::collections::{HashMap, HashSet};
@@ -156,8 +156,8 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// GET /health endpoint
-    pub async fn get_health(&self) -> Result<bool> {
-        let mut url = self.get_node()?;
+    pub async fn get_node_health<T: IntoUrl>(url: T) -> Result<bool> {
+        let mut url = url.into_url()?;
         url.set_path("health");
         let resp = reqwest::get(url).await?;
 
@@ -167,11 +167,35 @@ impl Client {
         }
     }
 
+    /// GET /health endpoint
+    pub async fn get_health(&self) -> Result<bool> {
+        let mut url = self.get_node()?;
+        url.set_path("health");
+        let resp = self.client.get(url).send().await?;
+
+        match resp.status().as_u16() {
+            200 => Ok(true),
+            _ => Ok(false),
+        }
+    }
+
+    /// GET /api/v1/info endpoint
+    pub async fn get_node_info<T: IntoUrl>(url: T) -> Result<NodeInfo> {
+        let mut url = url.into_url()?;
+        url.set_path("api/v1/info");
+        let resp = reqwest::get(url).await?;
+
+        match resp.status().as_u16() {
+            200 => Ok(resp.json::<Response<NodeInfo>>().await?.data),
+            status => Err(Error::ResponseError(status)),
+        }
+    }
+
     /// GET /api/v1/info endpoint
     pub async fn get_info(&self) -> Result<NodeInfo> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/info");
-        let resp = reqwest::get(url).await?;
+        let resp = self.client.get(url).send().await?;
 
         match resp.status().as_u16() {
             200 => Ok(resp.json::<Response<NodeInfo>>().await?.data),
@@ -183,7 +207,7 @@ impl Client {
     pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
-        let resp = reqwest::get(url).await?;
+        let resp = self.client.get(url).send().await?;
 
         match resp.status().as_u16() {
             200 => {
