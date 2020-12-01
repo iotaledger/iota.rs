@@ -28,6 +28,33 @@ describe('Client', () => {
     addresses.forEach(assertAddress)
   })
 
+  it('sends a value transaction and checks output balance', async () => {
+    const depositAddress = 'iot1q9jyad2efwyq7ldg9u6eqg5krxdqawgcdxvhjlmxrveylrt4fgaqj30s9qj'
+    const messageId = await client
+      .send(seed)
+      .path("m/0'/0'")
+      .output(depositAddress, 2)
+      .submit()
+    assertMessageId(messageId)
+
+    const depositBalance = await client.getAddressBalance(depositAddress)
+    assert.strictEqual(depositBalance >= 2, true)
+  })
+
+  it('gets an unspent address', async () => {
+    const res = await client.getUnspentAddress(seed).index(5).path("m/0'/0'").get()
+    assert.strictEqual(Array.isArray(res), true)
+    assert.strictEqual(res.length, 2)
+    const [address, index] = res
+    assertAddress(address)
+    assert.strictEqual(index, 5)
+  })
+
+  it('gets seed balance', async () => {
+    const balance = await client.getBalance(seed).path("m/0'/0'").index(50000).get()
+    assert.strictEqual(balance, 0)
+  })
+
   it('get milestone and message', async () => {
     const milestone = await client.getMilestone(1)
     assert.strictEqual(typeof milestone, 'object')
@@ -93,5 +120,4 @@ describe('Client', () => {
     assert.strictEqual('name' in info, true)
     assert.strictEqual(info.name, 'HORNET')
   })
-
 })
