@@ -38,6 +38,8 @@ pub enum Error {
     InvalidMqttTopic(String),
     /// MQTT connection not found (all nodes MQTT's are disabled)
     MqttConnectionNotFound,
+    /// IO error
+    IoError(std::io::Error),
 }
 
 impl fmt::Display for Error {
@@ -67,6 +69,7 @@ impl fmt::Display for Error {
                 f,
                 "MQTT connection not found (all nodes have the MQTT plugin disabled)"
             ),
+            Error::IoError(e) => e.fmt(f),
         }
     }
 }
@@ -94,5 +97,11 @@ impl From<bee_message::Error> for Error {
 impl From<paho_mqtt::errors::Error> for Error {
     fn from(error: paho_mqtt::errors::Error) -> Self {
         Error::MqttClientError(error)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        Error::IoError(error)
     }
 }
