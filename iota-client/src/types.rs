@@ -1,5 +1,5 @@
 //! Types of several IOTA APIs related objects
-use crate::{Error, Result};
+use crate::Result;
 
 use bee_message::{
     payload::milestone::{MilestoneEssence, MILESTONE_MERKLE_PROOF_LENGTH},
@@ -15,45 +15,6 @@ use std::{
 pub trait ResponseType {}
 
 impl ResponseType for Message {}
-
-/// Try to convert a hex string to MessageID
-pub fn hex_to_message_id<T: ToString>(value: T) -> Result<MessageId> {
-    let string = value.to_string();
-    if string.len() != 64 {
-        return Err(Error::InvalidParameter("string length".to_string()));
-    }
-
-    let mut bytes = [0u8; 32];
-    hex::decode_to_slice(string, &mut bytes)?;
-
-    Ok(MessageId::new(bytes))
-}
-
-/// Try to convert a hex string to TransactionID
-pub fn hex_to_transaction_id<T: ToString>(value: T) -> Result<TransactionId> {
-    let string = value.to_string();
-    if string.len() != 64 {
-        return Err(Error::InvalidParameter("string length".to_string()));
-    }
-
-    let mut bytes = [0u8; 32];
-    hex::decode_to_slice(string, &mut bytes)?;
-
-    Ok(TransactionId::new(bytes))
-}
-
-/// Try to convert a hex string to Address
-pub fn hex_to_address<T: ToString>(value: T) -> Result<Address> {
-    let string = value.to_string();
-    if string.len() != 64 {
-        return Err(Error::InvalidParameter("string length".to_string()));
-    }
-
-    let mut bytes = [0u8; 32];
-    hex::decode_to_slice(string.as_bytes(), &mut bytes)?;
-
-    Ok(Ed25519Address::new(bytes).into())
-}
 
 /// Response from the Iota node.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -79,17 +40,11 @@ pub struct NodeInfo {
     #[serde(rename = "isHealthy")]
     pub is_healthy: bool,
     /// coordinator public key
-    #[serde(rename = "coordinatorPublicKey")]
-    pub coordinator_public_key: String,
-    /// latest milestone message id
-    #[serde(rename = "latestMilestoneMessageId")]
-    pub latest_milestone_message_id: String,
+    #[serde(rename = "networkId")]
+    pub network_id: String,
     /// latest milestone index
     #[serde(rename = "latestMilestoneIndex")]
     pub latest_milestone_index: usize,
-    /// latest milestone message id
-    #[serde(rename = "solidMilestoneMessageId")]
-    pub solid_milestone_message_id: String,
     /// solid milestone index
     #[serde(rename = "solidMilestoneIndex")]
     pub solid_milestone_index: usize,
@@ -391,7 +346,7 @@ impl From<&Payload> for PayloadJson {
                 type_: 1,
                 index: m.essence().index(),
                 inclusion_merkle_proof: hex::encode(m.essence().merkle_proof()),
-                signatures: m.signatures().iter().map(|s| hex::encode(s)).collect(),
+                signatures: m.signatures().iter().map(hex::encode).collect(),
                 timestamp: m.essence().timestamp(),
             }),
             _ => unimplemented!(),
