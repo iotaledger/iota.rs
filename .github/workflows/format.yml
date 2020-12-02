@@ -26,7 +26,13 @@ jobs:
           toolchain: nightly
           override: true
           components: rustfmt
-    - uses: actions-rs/cargo@v1
+    - name: crate fmt check
+      uses: actions-rs/cargo@v1
       with:
         command: fmt
         args: --all -- --check
+    - name: nodejs binding fmt check
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --manifest-path ./bindings/node/native/Cargo.toml --all -- --check

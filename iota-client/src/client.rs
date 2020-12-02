@@ -11,6 +11,7 @@ use bee_signing_ext::Seed;
 
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
+use serde::{Deserialize, Serialize};
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, RwLock};
@@ -22,7 +23,7 @@ type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
 pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
 
 /// An event from a MQTT topic.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TopicEvent {
     /// the MQTT topic.
     pub topic: String,
@@ -31,16 +32,30 @@ pub struct TopicEvent {
 }
 
 /// The MQTT broker options.
+#[derive(Debug, Clone, Deserialize)]
 pub struct BrokerOptions {
+    #[serde(
+        default = "default_broker_automatic_disconnect",
+        rename = "automaticDisconnect"
+    )]
     pub(crate) automatic_disconnect: bool,
+    #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
+}
+
+fn default_broker_automatic_disconnect() -> bool {
+    true
+}
+
+fn default_broker_timeout() -> Duration {
+    Duration::from_secs(30)
 }
 
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
-            automatic_disconnect: true,
-            timeout: Duration::from_secs(30),
+            automatic_disconnect: default_broker_automatic_disconnect(),
+            timeout: default_broker_timeout(),
         }
     }
 }
@@ -141,7 +156,7 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// GET /health endpoint
-    pub async fn get_health<T: IntoUrl>(url: T) -> Result<bool> {
+    pub async fn get_node_health<T: IntoUrl>(url: T) -> Result<bool> {
         let mut url = url.into_url()?;
         url.set_path("health");
         let resp = reqwest::get(url).await?;
@@ -152,14 +167,38 @@ impl Client {
         }
     }
 
+    /// GET /health endpoint
+    pub async fn get_health(&self) -> Result<bool> {
+        let mut url = self.get_node()?;
+        url.set_path("health");
+        let resp = self.client.get(url).send().await?;
+
+        match resp.status().as_u16() {
+            200 => Ok(true),
+            _ => Ok(false),
+        }
+    }
+
     /// GET /api/v1/info endpoint
-    pub async fn get_info<T: IntoUrl>(url: T) -> Result<Response<NodeInfo>> {
+    pub async fn get_node_info<T: IntoUrl>(url: T) -> Result<NodeInfo> {
         let mut url = url.into_url()?;
         url.set_path("api/v1/info");
         let resp = reqwest::get(url).await?;
 
         match resp.status().as_u16() {
-            200 => Ok(resp.json().await?),
+            200 => Ok(resp.json::<Response<NodeInfo>>().await?.data),
+            status => Err(Error::ResponseError(status)),
+        }
+    }
+
+    /// GET /api/v1/info endpoint
+    pub async fn get_info(&self) -> Result<NodeInfo> {
+        let mut url = self.get_node()?;
+        url.set_path("api/v1/info");
+        let resp = self.client.get(url).send().await?;
+
+        match resp.status().as_u16() {
+            200 => Ok(resp.json::<Response<NodeInfo>>().await?.data),
             status => Err(Error::ResponseError(status)),
         }
     }
@@ -168,7 +207,7 @@ impl Client {
     pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
-        let resp = reqwest::get(url).await?;
+        let resp = self.client.get(url).send().await?;
 
         match resp.status().as_u16() {
             200 => {

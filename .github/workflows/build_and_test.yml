@@ -62,6 +62,15 @@ jobs:
         # Restore from outdated cache for speed
         restore-keys: |
           cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
+    - name: Cache nodejs binding cargo target
+      uses: actions/cache@v2
+      with:
+        path: bindings/node/native/target
+        # Add date to the cache to keep it up to date
+        key: cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}
 
     # paho.mqtt requires openssl and OPENSSL_ROOT_DIR on macOS
     - name: Set OpenSSL location (macOS)
@@ -86,3 +95,7 @@ jobs:
       with:
         command: test
         args: --all --release
+
+    - name: Build nodejs binding
+      run: yarn
+      working-directory: bindings/node
