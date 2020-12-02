@@ -54,11 +54,11 @@ fn instances() -> &'static ClientInstanceMap {
     &INSTANCES
 }
 
-pub(crate) fn get_client(id: String) -> Arc<RwLock<Client>> {
+pub(crate) fn get_client(id: &String) -> Arc<RwLock<Client>> {
     let map = instances()
         .read()
         .expect("failed to lock client instances: get_client()");
-    map.get(&id)
+    map.get(id)
         .expect("client dropped or not initialised")
         .clone()
 }
@@ -66,17 +66,17 @@ pub(crate) fn get_client(id: String) -> Arc<RwLock<Client>> {
 pub(crate) fn store_client(client: Client) -> String {
     let mut map = instances()
         .write()
-        .expect("failed to lock client instances: get_client()");
+        .expect("failed to lock client instances: store_client()");
     let id: String = thread_rng().sample_iter(&Alphanumeric).take(10).collect();
     map.insert(id.clone(), Arc::new(RwLock::new(client)));
     id
 }
 
-pub(crate) fn remove_client(id: String) {
+pub(crate) fn remove_client(id: &String) {
     let mut map = instances()
         .write()
-        .expect("failed to lock client instances: get_client()");
-    map.remove(&id);
+        .expect("failed to lock client instances: remove_client()");
+    map.remove(id);
 }
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> String {

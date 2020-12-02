@@ -63,7 +63,7 @@ declare_types! {
 
                 let seed = Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed");
 
-                let client = crate::get_client(ref_.client_id.clone());
+                let client = crate::get_client(&ref_.client_id);
                 let client = client.read().unwrap();
                 let mut getter = client.find_addresses(&seed);
 

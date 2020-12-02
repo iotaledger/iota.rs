@@ -63,7 +63,7 @@ impl Task for ClientTask {
 
     fn perform(&self) -> Result<Self::Output, Self::Error> {
         crate::block_on(crate::convert_async_panics(|| async move {
-            let client = crate::get_client(self.client_id.clone());
+            let client = crate::get_client(&self.client_id);
             let client = client.read().unwrap();
             let res = match &self.api {
                 // High level API

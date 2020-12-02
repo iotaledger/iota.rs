@@ -57,7 +57,7 @@ impl Task for TopicTask {
     fn perform(&self) -> Result<Self::Output, Self::Error> {
         crate::convert_panics(|| {
             let sender = Arc::new(Mutex::new(self.sender.clone()));
-            let client = crate::get_client(self.client_id.clone());
+            let client = crate::get_client(&self.client_id);
             let mut client = client.write().unwrap();
             match self.action {
                 TopicAction::Subscribe => {

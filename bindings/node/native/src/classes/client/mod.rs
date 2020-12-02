@@ -56,7 +56,7 @@ pub struct ClientWrapper(String);
 
 impl Drop for ClientWrapper {
     fn drop(&mut self) {
-        crate::remove_client(self.0.clone());
+        crate::remove_client(&self.0);
     }
 }
 
