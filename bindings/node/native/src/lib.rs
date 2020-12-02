@@ -54,7 +54,7 @@ fn instances() -> &'static ClientInstanceMap {
     &INSTANCES
 }
 
-pub(crate) fn get_client(id: &String) -> Arc<RwLock<Client>> {
+pub(crate) fn get_client(id: &str) -> Arc<RwLock<Client>> {
     let map = instances()
         .read()
         .expect("failed to lock client instances: get_client()");
@@ -72,7 +72,7 @@ pub(crate) fn store_client(client: Client) -> String {
     id
 }
 
-pub(crate) fn remove_client(id: &String) {
+pub(crate) fn remove_client(id: &str) {
     let mut map = instances()
         .write()
         .expect("failed to lock client instances: remove_client()");
