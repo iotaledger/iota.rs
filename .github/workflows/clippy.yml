@@ -26,7 +26,15 @@ jobs:
           toolchain: stable
           override: true
           components: clippy
-    - uses: actions-rs/clippy-check@v1
+    - name: core clippy check
+      uses: actions-rs/clippy-check@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --all-targets --all-features -- -D warnings
+        name: core
+    - name: nodejs binding clippy check
+      uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --manifest-path ./bindings/node/native/Cargo.toml --all-targets --all-features -- -D warnings
+        name: nodejs-binding
