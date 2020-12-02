@@ -2,10 +2,9 @@ use std::num::NonZeroU64;
 
 use iota::{
     message::prelude::{Address, Message, MessageId, UTXOInput},
-    AddressBalancePair, BIP32Path, OutputMetadata, Seed,
+    BIP32Path, Seed,
 };
 use neon::prelude::*;
-use serde::Serialize;
 
 pub(crate) enum Api {
     // High level APIs
@@ -50,54 +49,6 @@ pub(crate) enum Api {
     Retry(MessageId),
     Reattach(MessageId),
     Promote(MessageId),
-}
-
-#[derive(Serialize)]
-struct OutputMetadataDto {
-    /// Message ID of the output
-    #[serde(rename = "messageId")]
-    message_id: String,
-    /// Transaction ID of the output
-    #[serde(rename = "transactionId")]
-    transaction_id: String,
-    /// Output index.
-    #[serde(rename = "outputIndex")]
-    output_index: u16,
-    /// Spend status of the output
-    #[serde(rename = "isSpent")]
-    is_spent: bool,
-    /// Corresponding address
-    address: String,
-    /// Balance amount
-    amount: u64,
-}
-
-impl From<OutputMetadata> for OutputMetadataDto {
-    fn from(value: OutputMetadata) -> Self {
-        Self {
-            message_id: hex::encode(value.message_id),
-            transaction_id: hex::encode(value.transaction_id),
-            output_index: value.output_index,
-            is_spent: value.is_spent,
-            address: value.address.to_bech32(),
-            amount: value.amount,
-        }
-    }
-}
-
-#[derive(Serialize)]
-struct AddressBalanceDto {
-    address: String,
-    balance: u64,
-}
-
-impl From<AddressBalancePair> for AddressBalanceDto {
-    fn from(value: AddressBalancePair) -> Self {
-        Self {
-            address: value.address.to_bech32(),
-            balance: value.balance,
-        }
-    }
 }
 
 pub(crate) struct ClientTask {
@@ -168,7 +119,7 @@ impl Task for ClientTask {
                 }
                 Api::GetAddressBalances(addresses) => {
                     let balances = client.get_address_balances(&addresses[..]).await?;
-                    let balances: Vec<AddressBalanceDto> =
+                    let balances: Vec<super::AddressBalanceDto> =
                         balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
                 }
@@ -202,12 +153,12 @@ impl Task for ClientTask {
                 }
                 Api::GetOutput(id) => {
                     let output = client.get_output(id).await?;
-                    let output: OutputMetadataDto = output.into();
+                    let output: super::OutputMetadataDto = output.into();
                     serde_json::to_string(&output).unwrap()
                 }
                 Api::FindOutputs { outputs, addresses } => {
                     let outputs = client.find_outputs(outputs, addresses).await?;
-                    let outputs: Vec<OutputMetadataDto> =
+                    let outputs: Vec<super::OutputMetadataDto> =
                         outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }

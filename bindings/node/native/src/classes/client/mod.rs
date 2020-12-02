@@ -1,24 +1,17 @@
 use bech32::FromBase32;
 use iota::{
-    message::prelude::{
-        Address, Ed25519Address, Ed25519Signature, Indexation, Input, Message, MessageId, Output,
-        Payload, ReferenceUnlock, SignatureLockedSingleOutput, SignatureUnlock, Transaction,
-        TransactionEssence, UTXOInput, UnlockBlock,
-    },
+    message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput},
     Seed,
 };
 use neon::prelude::*;
-use serde::{Deserialize, Serialize};
 
-use std::{
-    convert::{TryFrom, TryInto},
-    num::NonZeroU64,
-    str::FromStr,
-};
+use std::{convert::TryInto, str::FromStr};
 
 mod builder;
 pub use builder::*;
 
+mod dto;
+use dto::*;
 mod api;
 use api::{Api, ClientTask};
 
@@ -56,172 +49,6 @@ fn parse_address(address: String) -> crate::Result<Address> {
                 .try_into()
                 .expect("invalid address length"),
         ))),
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-struct OutputDto {
-    address: String,
-    amount: u64,
-}
-
-#[derive(Serialize, Deserialize)]
-struct MessageTransactionEssenceDto {
-    inputs: Box<[String]>,
-    outputs: Box<[OutputDto]>,
-    payload: Option<Box<MessagePayloadDto>>,
-}
-
-impl TryFrom<MessageTransactionEssenceDto> for TransactionEssence {
-    type Error = crate::Error;
-    fn try_from(value: MessageTransactionEssenceDto) -> crate::Result<Self> {
-        let mut builder = TransactionEssence::builder();
-
-        let inputs: Vec<Input> = value
-            .inputs
-            .into_vec()
-            .into_iter()
-            .map(|input| {
-                UTXOInput::from_str(&input)
-                    .unwrap_or_else(|_| panic!("invalid input: {}", input))
-                    .into()
-            })
-            .collect();
-        for input in inputs {
-            builder = builder.add_input(input);
-        }
-
-        let outputs: Vec<Output> = value
-            .outputs
-            .into_vec()
-            .into_iter()
-            .map(|output| {
-                SignatureLockedSingleOutput::new(
-                    parse_address(output.address.clone())
-                        .unwrap_or_else(|_| panic!("invalid output address: {}", output.address)),
-                    NonZeroU64::new(output.amount).expect("output amount can't be zero"),
-                )
-                .into()
-            })
-            .collect();
-        for output in outputs {
-            builder = builder.add_output(output);
-        }
-
-        builder = match value.payload {
-            Some(indexation) => builder.with_payload(
-                (*indexation)
-                    .try_into()
-                    .expect("Invalid indexation in TransactionEssenceJson"),
-            ),
-            _ => builder,
-        };
-
-        Ok(builder.finish()?)
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-struct MessageSignatureUnlockDto {
-    #[serde(rename = "publicKey")]
-    public_key: String,
-    signature: String,
-}
-
-impl TryFrom<MessageSignatureUnlockDto> for SignatureUnlock {
-    type Error = crate::Error;
-
-    fn try_from(value: MessageSignatureUnlockDto) -> crate::Result<Self> {
-        let mut public_key = [0u8; 32];
-        hex::decode_to_slice(value.public_key, &mut public_key)?;
-        let signature = hex::decode(value.signature)?.into_boxed_slice();
-        Ok(Ed25519Signature::new(public_key, signature).into())
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-struct MessageUnlockBlockJsonDto {
-    signature: Option<MessageSignatureUnlockDto>,
-    reference: Option<u16>,
-}
-
-impl TryFrom<MessageUnlockBlockJsonDto> for UnlockBlock {
-    type Error = crate::Error;
-
-    fn try_from(value: MessageUnlockBlockJsonDto) -> crate::Result<Self> {
-        let type_ = if value.signature.is_some() { 0 } else { 1 };
-        match type_ {
-            0 => {
-                let sig: SignatureUnlock = value
-                    .signature
-                    .expect("Must contain signature.")
-                    .try_into()?;
-                Ok(sig.into())
-            }
-            1 => {
-                let reference: ReferenceUnlock = value
-                    .reference
-                    .expect("Must contain reference.")
-                    .try_into()?;
-                Ok(reference.into())
-            }
-            _ => unreachable!(),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-struct MessageTransactionPayloadDto {
-    essence: MessageTransactionEssenceDto,
-    #[serde(rename = "unlockBlocks")]
-    unlock_blocks: Box<[MessageUnlockBlockJsonDto]>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct MessageIndexationPayloadDto {
-    index: String,
-    data: String,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(untagged)]
-enum MessagePayloadDto {
-    /// The transaction payload.
-    Transaction(MessageTransactionPayloadDto),
-    /// The indexation payload.
-    Indexation(MessageIndexationPayloadDto),
-}
-
-#[derive(Serialize, Deserialize)]
-struct MessageDto {
-    parent1: String,
-    parent2: String,
-    payload: MessagePayloadDto,
-    nonce: u64,
-}
-
-impl TryFrom<MessagePayloadDto> for Payload {
-    type Error = crate::Error;
-    fn try_from(payload: MessagePayloadDto) -> crate::Result<Self> {
-        match payload {
-            MessagePayloadDto::Transaction(transaction_payload) => {
-                let mut transaction = Transaction::builder();
-                transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
-
-                let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
-                for unlock_block in unlock_blocks {
-                    transaction = transaction.add_unlock_block(unlock_block.try_into()?);
-                }
-
-                Ok(Payload::Transaction(Box::new(transaction.finish()?)))
-            }
-            MessagePayloadDto::Indexation(indexation_payload) => {
-                let indexation =
-                    Indexation::new(indexation_payload.index, indexation_payload.data.as_bytes())
-                        .unwrap();
-                Ok(Payload::Indexation(Box::new(indexation)))
-            }
-        }
     }
 }
 
