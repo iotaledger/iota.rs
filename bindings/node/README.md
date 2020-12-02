@@ -190,9 +190,9 @@ Gets two non-lazy tips.
 
 Submits a message.
 
-| Param   | Type                             | Description           |
-| ------- | -------------------------------- | --------------------- |
-| message | <code>[Message](#message)</code> | The message to submit |
+| Param   | Type                                   | Description           |
+| ------- | -------------------------------------- | --------------------- |
+| message | <code>[MessageDto](#messagedto)</code> | The message to submit |
 
 **Returns** the message identifier.
 
@@ -525,17 +525,16 @@ Gets the metadata of the given message.
 
 #### Payload
 
-| Field | Type                                                                     | Description             |
-| ----- | ------------------------------------------------------------------------ | ----------------------- |
-| type  | <code>'Transaction' \| 'Indexation' \| 'Milestone'</code>                | Payload type identifier |
-| data  | <code>TransactionPayload \| IndexationPayload \| MilestonePayload</code> | Payload data            |
+| Field | Type                                                                                                                    | Description  |
+| ----- | ----------------------------------------------------------------------------------------------------------------------- | ------------ |
+| data  | <code>{ Transaction: TransactionPayload } \| { Indexation: IndexationPayload } \| { Milestone: MilestonePayload}</code> | Payload data |
 
 ##### TransactionPayload
 
-| Field         | Type                                   | Description         |
-| ------------- | -------------------------------------- | ------------------- |
-| essence       | <code>TransactionPayloadEssence</code> | Transaction essence |
-| unlock_blocks | <code>UnlockBlock[]</code>             | Unlock blocks       |
+| Field         | Type                            | Description         |
+| ------------- | ------------------------------- | ------------------- |
+| essence       | <code>TransactionEssence</code> | Transaction essence |
+| unlock_blocks | <code>UnlockBlock[]</code>      | Unlock blocks       |
 
 - TransactionEssence
 
@@ -576,7 +575,88 @@ Gets the metadata of the given message.
 | signature  | <code>number[]</code> | Ed25519 signature  |
 
 ##### IndexationPayload
+
+| Field | Type                  | Description                   |
+| ----- | --------------------- | ----------------------------- |
+| index | <code>string</code>   | Indexation key                |
+| data  | <code>number[]</code> | Indexation data as byte array |
+
 ##### MilestonePayload
+
+| Field      | Type                          | Description          |
+| ---------- | ----------------------------- | -------------------- |
+| essence    | <code>MilestoneEssence</code> | Milestone essence    |
+| signatures | <code>number[][]</code>       | Milestone signatures |
+
+- MilestoneEssence
+
+| Field        | Type                    | Description                                               |
+| ------------ | ----------------------- | --------------------------------------------------------- |
+| index        | <code>number</code>     | Milestone index                                           |
+| timestamp    | <code>number</code>     | Timestamp                                                 |
+| parent1      | <code>string</code>     | Message id of the first message the milestone references  |
+| parent2      | <code>string</code>     | Message id of the second message the milestone references |
+| merkle_proof | <code>number[]</code>   | Merkle proof                                              |
+| public_keys  | <code>number[][]</code> | public keys                                               |
+
+### MessageDto
+
+| Field   | Type                                                       | Description                                    |
+| ------- | ---------------------------------------------------------- | ---------------------------------------------- |
+| parent1 | <code>string</code>                                        | Message id of the first message it references  |
+| parent2 | <code>string</code>                                        | Message id of the second message it references |
+| payload | <code>[PayloadDto](#payloaddto)</code>                     | Message payload                                |
+| nonce   | <code>number                           \| undefined</code> | Message nonce                                  |
+
+#### PayloadDto
+
+| Field | Type                                                       | Description  |
+| ----- | ---------------------------------------------------------- | ------------ |
+| data  | <code>TransactionPayloadDto \| IndexationPayloadDto</code> | Payload data |
+
+##### TransactionPayloadDto
+
+| Field        | Type                               | Description         |
+| ------------ | ---------------------------------- | ------------------- |
+| essence      | <code>TransactionEssenceDto</code> | Transaction essence |
+| unlockBlocks | <code>UnlockBlockDto[]</code>      | Unlock blocks       |
+
+- TransactionEssenceDto
+
+| Field   | Type                                 | Description          |
+| ------- | ------------------------------------ | -------------------- |
+| inputs  | <code>string[]</code>                | Inputs               |
+| outputs | <code>Output[]</code>                | Outputs              |
+| payload | <code>PayloadDto \| undefined</code> | Payload for chaining |
+
+- OutputDto
+
+| Field   | Type                | Description    |
+| ------- | ------------------- | -------------- |
+| address | <code>string</code> | Output address |
+| amount  | <code>amount</code> | Output amount  |
+
+- UnlockBlockDto
+
+| Field | Type                                                                                 | Description                                           |
+| ----- | ------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| data  | <code>WotsSignatureUnlockBlockDto \| Ed25519SignatureUnlockBlockDto \| number</code> | Unlock block data (signature type or reference index) |
+
+- WotsSignatureUnlockBlockDto = number[] (WOTS signature)
+
+- Ed25519SignatureUnlockBlockDto
+
+| Field     | Type                  | Description        |
+| --------- | --------------------- | ------------------ |
+| publicKey | <code>number[]</code> | Ed25519 public key |
+| signature | <code>number[]</code> | Ed25519 signature  |
+
+##### IndexationPayloadDto
+
+| Field | Type                | Description     |
+| ----- | ------------------- | --------------- |
+| index | <code>string</code> | Indexation key  |
+| data  | <code>string</code> | Indexation data |
 
 ### MessageMetadata
 

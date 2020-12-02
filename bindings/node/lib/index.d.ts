@@ -29,44 +29,38 @@ export declare interface TransactionEssence {
 }
 
 export declare interface WotsSignatureUnlockBlock {
-  type: 'Wots',
+  type: 'Wots'
   data: number[]
 }
 
 export declare interface Ed25519SignatureUnlockBlock {
-  type: 'Ed25519',
+  type: 'Ed25519'
   data: {
-    public_key: number[],
+    public_key: number[]
     signature: number[]
   }
 }
 
 export declare interface SignatureUnlockBlock {
-  type: 'Signature',
+  type: 'Signature'
   data: WotsSignatureUnlockBlock | Ed25519SignatureUnlockBlock
 }
 
 export declare interface ReferenceUnlockBlock {
-  type: 'Reference',
+  type: 'Reference'
   data: number
 }
 
 export declare type UnlockBlock = SignatureUnlockBlock | ReferenceUnlockBlock
 
 export declare interface TransactionPayload {
-  type: 'Transaction'
-  data: {
-    essence: TransactionEssence,
-    unlock_blocks: UnlockBlock[]
-  }
+  essence: TransactionEssence
+  unlock_blocks: UnlockBlock[]
 }
 
 export declare interface IndexationPayload {
-  type: 'Indexation',
-  data: {
-    index: string
-    data: number[]
-  }
+  index: string
+  data: number[]
 }
 
 export declare interface MilestoneEssence {
@@ -79,14 +73,13 @@ export declare interface MilestoneEssence {
 }
 
 export declare interface MilestonePayload {
-  type: 'Milestone',
-  data: {
-    essence: MilestoneEssence
-    signatures: number[][]
-  }
+  essence: MilestoneEssence
+  signatures: number[][]
 }
 
-export declare type Payload = TransactionPayload | IndexationPayload | MilestonePayload
+export declare type Payload = { Indexation: IndexationPayload } |
+{ Milestone: MilestonePayload } |
+{ Transaction: TransactionPayload }
 
 export declare interface Message {
   network_id: number
@@ -94,6 +87,56 @@ export declare interface Message {
   parent2: string
   payload?: Payload
   nonce: number
+}
+
+export declare interface InputDto {
+  type: 'UTXO'
+  data: string
+}
+
+export declare interface OutputDto {
+  address: string
+  amount: number
+}
+
+export declare interface TransactionEssenceDto {
+  inputs: InputDto[]
+  outputs: OutputDto[]
+  payload?: IndexationPayload
+}
+
+export declare type WotsSignatureUnlockBlockDto = number[]
+
+export declare interface Ed25519SignatureUnlockBlockDto {
+  publicKey: number[]
+  signature: number[]
+}
+
+export declare interface SignatureUnlockBlockDto {
+  data: WotsSignatureUnlockBlockDto | Ed25519SignatureUnlockBlockDto
+}
+
+export declare type ReferenceUnlockBlockDto = number
+
+export declare type UnlockBlockDto = SignatureUnlockBlockDto | ReferenceUnlockBlockDto
+
+export declare interface TransactionPayloadDto {
+  essence: TransactionEssenceDto
+  unlockBlocks: UnlockBlockDto[]
+}
+
+export declare interface IndexationPayloadDto {
+  index: string
+  data: string
+}
+
+export declare type PayloadDto = TransactionPayloadDto | IndexationPayloadDto
+
+export declare interface MessageDto {
+  parent1: string
+  parent2: string
+  payload?: Payload
+  nonce?: number
 }
 
 export declare interface MessageMetadata {
@@ -131,7 +174,7 @@ export declare interface BrokerOptions {
 export declare type Address = 'string'
 
 export declare interface AddressBalance {
-  address: Address,
+  address: Address
   balance: number
 }
 
@@ -181,7 +224,7 @@ export declare class Client {
 
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
-  postMessage(message: Message): Promise<string>
+  postMessage(message: MessageDto): Promise<string>
   getMessage(): MessageFinder
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>

@@ -95,15 +95,12 @@ describe('Client', () => {
     const tips = await client.getTips()
     const indexation = {
       index: 'IOTA.RS BINDING - NODE.JS',
-      data: []
+      data: 'INDEXATION DATA'
     }
     const messageId = await client.postMessage({
-      network_id: 0,
       parent1: tips[0],
       parent2: tips[1],
-      payload: {
-        Indexation: indexation
-      },
+      payload: indexation,
       nonce: 0
     })
     assertMessageId(messageId)
@@ -111,7 +108,11 @@ describe('Client', () => {
     const message = await client.getMessage().data(messageId)
     assertMessage(message)
     assert.strictEqual(typeof message.payload.Indexation, 'object')
-    assert.deepStrictEqual(message.payload.Indexation, indexation)
+    const encoder = new TextEncoder()
+    assert.deepStrictEqual(message.payload.Indexation, {
+      index: indexation.index,
+      data: Array.from(encoder.encode(indexation.data))
+    })
   })
 
   it('gets info', async () => {

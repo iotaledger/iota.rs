@@ -32,6 +32,14 @@ pub(crate) enum Error {
     Hex(#[from] hex::FromHexError),
     #[error("`{0}`")]
     Panic(String),
+    #[error("`{0}`")]
+    Message(iota::message::Error),
+}
+
+impl From<iota::message::Error> for Error {
+    fn from(error: iota::message::Error) -> Self {
+        Self::Message(error)
+    }
 }
 
 pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
