@@ -1,4 +1,3 @@
-use hex;
 use iota::Indexation;
 use iota::{Client, Message, Payload};
 
@@ -7,7 +6,7 @@ async fn main() {
     let index = Indexation::new(String::from("Hello"), String::from("Tangle").as_bytes()).unwrap();
 
     let client = Client::builder()
-        .nodes(&vec!["http://localhost:14265"])
+        .nodes(&["http://localhost:14265"])
         .unwrap()
         .build()
         .unwrap();

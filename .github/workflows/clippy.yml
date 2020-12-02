@@ -1,0 +1,32 @@
+name: Clippy
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - dev
+    paths-ignore:
+      - 'specs/**'
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install clippy with stable toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all-targets --all-features -- -D warnings
