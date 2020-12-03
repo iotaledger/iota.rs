@@ -4,13 +4,13 @@ use bee_message::prelude::{Address, TransactionId, UTXOInput};
 
 use std::convert::TryInto;
 
-/// Builder of GET /api/v1/address/{messageId} endpoint
+/// Builder of GET /api/v1/address/{address} endpoint
 pub struct GetAddressBuilder<'a> {
     client: &'a Client,
 }
 
 impl<'a> GetAddressBuilder<'a> {
-    /// Create GET /api/v1/address/{messageId} endpoint builder
+    /// Create GET /api/v1/address/{address} endpoint builder
     pub fn new(client: &'a Client) -> Self {
         Self { client }
     }
@@ -19,10 +19,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance reasons.
     /// User should sweep the address to reduce the amount of outputs.
     pub async fn balance(self, address: &'a Address) -> Result<u64> {
-        let address = match address {
-            Address::Ed25519(a) => a.to_string(),
-            _ => return Err(Error::InvalidParameter("address".to_string())),
-        };
+        let address = address.to_bech32();
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/addresses/{}", address));
         let resp = reqwest::get(url).await?;
@@ -40,10 +37,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance reasons.
     /// User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, address: &'a Address) -> Result<Box<[UTXOInput]>> {
-        let address = match address {
-            Address::Ed25519(a) => a.to_string(),
-            _ => return Err(Error::InvalidParameter("address".to_string())),
-        };
+        let address = address.to_bech32();
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/addresses/{}/outputs", address));
         let resp = reqwest::get(url).await?;
