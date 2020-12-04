@@ -30,9 +30,8 @@ pub struct ClientBuilder {
     broker_options: BrokerOptions,
 }
 
-impl ClientBuilder {
-    /// Create an Iota client builder
-    pub fn new() -> Self {
+impl Default for ClientBuilder {
+    fn default() -> Self {
         Self {
             nodes: Vec::new(),
             node_sync_interval: NonZeroU64::new(60000).unwrap(),
@@ -41,6 +40,13 @@ impl ClientBuilder {
             quorum_threshold: 50,
             broker_options: Default::default(),
         }
+    }
+}
+
+impl ClientBuilder {
+    /// Create an Iota client builder
+    pub fn new() -> Self {
+        Default::default()
     }
 
     /// Add a Iota node

@@ -10,21 +10,61 @@ This is the **alpha** version of official Rust library, which allows you to do t
 
 This client library is still in the alpha stage but it should cover most usages. The main crate is under `iota-core` with library named as `iota` which re-exports fundamental crates from `bee` and also provide client features and utilities that users need. API calls like `post_message` and `get_outputs` are supported. But many modules are raw exported, so users might expect the interface is not that ergonomic yet. There may also be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
-|Table of contents|
-|:----|
-| [Prerequisites](#prerequisites)|
-| [Using the library](#installing-the-library)|
-| [API reference](#api-reference)
-| [Examples](#examples)|
-| [Supporting the project](#supporting-the-project)|
-| [Joining the discussion](#joining-the-discussion)|
-| [License](#license)|
+| Table of contents                                 |
+| :------------------------------------------------ |
+| [Prerequisites](#prerequisites)                   |
+| [Using the library](#installing-the-library)      |
+| [API reference](#api-reference)                   |
+| [Examples](#examples)                             |
+| [Supporting the project](#supporting-the-project) |
+| [Joining the discussion](#joining-the-discussion) |
+| [License](#license)                               |
 
-## Prerequisites
+## Requirements
 
-To use the library, we recommend update your Rust to latest stable version [`rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but you are expected some changes might not be compatable.
+To use the library, we recommend update your Rust to latest stable version [`$ rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but you are expected some changes might not be compatible.
 
 `no_std` is not supported currently, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once new library implementation is ready.
+
+### Dependencies
+
+`cmake` and `openssl` are required to compile the MQTT dependencies.
+
+### Windows
+
+`cmake` can be downloaded on the [official website](https://cmake.org/download/) and `openssl` can be installed with [vcpkg](https://github.com/microsoft/vcpkg) or [chocolatey](https://chocolatey.org/).
+
+- Installing `openssl` with `vcpkg`:
+
+```
+$ ./vcpkg.exe install openssl:x64-windows
+$ ./vcpkg.exe integrate install
+# you may want to add this to the system environment variables since you'll need it to compile the crate
+$ set VCPKGRS_DYNAMIC=1
+```
+
+- Installing `openssl` with `chocolatey`:
+
+```
+$ choco install openssl
+# you may need to set the OPENSSL_ROOT_DIR environment variable
+$ set OPENSSL_ROOT_DIR="C:\Program Files\OpenSSL-Win64"
+```
+
+### macOS
+
+`cmake` and `openssl` can be installed with `Homebrew`:
+
+```
+$ brew install cmake
+$ brew install openssl@1.1
+# you may want to add this to your .zshrc or .bashrc since you'll need it to compile the crate
+$ OPENSSL_ROOT_DIR=$(brew --prefix openssl@1.1)
+```
+
+### Linux
+
+Install `cmake` and `openssl` with your distro's package manager or download from their websites and you should be ready to compile the crate.
 
 ## Using the library
 

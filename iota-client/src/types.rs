@@ -1,53 +1,21 @@
 //! Types of several IOTA APIs related objects
-use crate::{Error, Result};
+use crate::Result;
 
-use bee_message::prelude::*;
+use bee_message::{
+    payload::milestone::{MilestoneEssence, MILESTONE_MERKLE_PROOF_LENGTH},
+    prelude::*,
+};
+use serde::ser::Serializer;
 
-use std::convert::{From, TryFrom, TryInto};
+use std::{
+    convert::{From, TryFrom, TryInto},
+    io::{BufReader, Read},
+};
 
 /// Marker trait for response
 pub trait ResponseType {}
 
 impl ResponseType for Message {}
-
-/// Try to convert a hex string to MessageID
-pub fn hex_to_message_id<T: ToString>(value: T) -> Result<MessageId> {
-    let string = value.to_string();
-    if string.len() != 64 {
-        return Err(Error::InvalidParameter("string length".to_string()));
-    }
-
-    let mut bytes = [0u8; 32];
-    hex::decode_to_slice(string, &mut bytes)?;
-
-    Ok(MessageId::new(bytes))
-}
-
-/// Try to convert a hex string to TransactionID
-pub fn hex_to_transaction_id<T: ToString>(value: T) -> Result<TransactionId> {
-    let string = value.to_string();
-    if string.len() != 64 {
-        return Err(Error::InvalidParameter("string length".to_string()));
-    }
-
-    let mut bytes = [0u8; 32];
-    hex::decode_to_slice(string, &mut bytes)?;
-
-    Ok(TransactionId::new(bytes))
-}
-
-/// Try to convert a hex string to Address
-pub fn hex_to_address<T: ToString>(value: T) -> Result<Address> {
-    let string = value.to_string();
-    if string.len() != 64 {
-        return Err(Error::InvalidParameter("string length".to_string()));
-    }
-
-    let mut bytes = [0u8; 32];
-    hex::decode_to_slice(string.as_bytes(), &mut bytes)?;
-
-    Ok(Ed25519Address::new(bytes).into())
-}
 
 /// Response from the Iota node.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -63,7 +31,7 @@ impl<T: ResponseType> Response<T> {
 }
 
 /// Response of GET /api/v1/info endpoint
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeInfo {
     /// Iota node Name
     pub name: String,
@@ -73,17 +41,11 @@ pub struct NodeInfo {
     #[serde(rename = "isHealthy")]
     pub is_healthy: bool,
     /// coordinator public key
-    #[serde(rename = "coordinatorPublicKey")]
-    pub coordinator_public_key: String,
-    /// latest milestone message id
-    #[serde(rename = "latestMilestoneMessageId")]
-    pub latest_milestone_message_id: String,
+    #[serde(rename = "networkId")]
+    pub network_id: String,
     /// latest milestone index
     #[serde(rename = "latestMilestoneIndex")]
     pub latest_milestone_index: usize,
-    /// latest milestone message id
-    #[serde(rename = "solidMilestoneMessageId")]
-    pub solid_milestone_message_id: String,
     /// solid milestone index
     #[serde(rename = "solidMilestoneIndex")]
     pub solid_milestone_index: usize,
@@ -97,7 +59,7 @@ pub struct NodeInfo {
 impl ResponseType for NodeInfo {}
 
 /// Response of GET /api/v1/tips endpoint
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Tips {
     /// Message ID of tip 1
     #[serde(rename = "tip1MessageId")]
@@ -109,7 +71,7 @@ pub(crate) struct Tips {
 
 impl ResponseType for Tips {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct PostMessageId {
     #[serde(rename = "messageId")]
     pub(crate) message_id: String,
@@ -118,7 +80,7 @@ pub(crate) struct PostMessageId {
 impl ResponseType for PostMessageId {}
 
 /// Collection of meesage ID
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct MessageIds {
     #[serde(rename = "messageIds")]
     pub(crate) inner: Box<[String]>,
@@ -127,7 +89,7 @@ pub(crate) struct MessageIds {
 impl ResponseType for MessageIds {}
 
 /// Response of GET /api/v1/messages/{messageId} endpoint
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MessageMetadata {
     /// Message ID
     #[serde(rename = "messageId")]
@@ -157,7 +119,7 @@ pub struct MessageMetadata {
 
 impl ResponseType for MessageMetadata {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct ChildrenMessageIds {
     #[serde(rename = "childrenMessageIds")]
     pub(crate) inner: Box<[String]>,
@@ -165,7 +127,7 @@ pub(crate) struct ChildrenMessageIds {
 
 impl ResponseType for ChildrenMessageIds {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct AddressBalance {
     pub(crate) count: usize,
     pub(crate) balance: u64,
@@ -174,7 +136,7 @@ pub(crate) struct AddressBalance {
 impl ResponseType for AddressBalance {}
 
 /// Output raw data
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct RawOutput {
     #[serde(rename = "messageId")]
     pub(crate) message_id: String,
@@ -189,7 +151,7 @@ pub(crate) struct RawOutput {
 
 impl ResponseType for RawOutput {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SLS {
     #[serde(rename = "type")]
     pub(crate) type_: u8,
@@ -197,23 +159,34 @@ pub(crate) struct SLS {
     pub(crate) amount: u64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SLSAddress {
     #[serde(rename = "type")]
     pub(crate) type_: u8,
     pub(crate) address: String,
 }
 
+fn serialize_as_hex<S>(x: &[u8], s: S) -> std::result::Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    s.serialize_str(hex::encode(x).as_str())
+}
+
 /// Output data
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct OutputMetadata {
     /// Message ID of the output
+    #[serde(rename = "messageId", serialize_with = "serialize_as_hex")]
     pub message_id: Vec<u8>,
     /// Transaction ID of the output
+    #[serde(rename = "transactionId", serialize_with = "serialize_as_hex")]
     pub transaction_id: Vec<u8>,
     /// Output index.
+    #[serde(rename = "outputIndex")]
     pub output_index: u16,
     /// Spend status of the output
+    #[serde(rename = "isSpent")]
     pub is_spent: bool,
     /// Corresponding address
     pub address: Address,
@@ -222,7 +195,7 @@ pub struct OutputMetadata {
 }
 
 /// Outputs that use a given address.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AddressOutputs {
     /// Outputs used by the address.
     #[serde(rename = "outputIds")]
@@ -232,14 +205,14 @@ pub struct AddressOutputs {
 impl ResponseType for AddressOutputs {}
 
 /// Milestone from Iota node
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MilestoneMetadata {
     /// Milestone index
     #[serde(rename = "milestoneIndex")]
     pub milestone_index: u64,
     /// Milestone ID
     #[serde(rename = "messageId")]
-    pub message_ids: String,
+    pub message_id: String,
     /// Timestamp
     pub timestamp: u64,
 }
@@ -247,6 +220,7 @@ pub struct MilestoneMetadata {
 impl ResponseType for MilestoneMetadata {}
 
 /// Address and the coresponding balance returned by the get_address_balances() API.
+#[derive(Debug, Serialize)]
 pub struct AddressBalancePair {
     /// Address
     pub address: Address,
@@ -272,8 +246,9 @@ impl Transfers {
     }
 }
 
+/// JSON struct for Message
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct MessageJson {
+pub struct MessageJson {
     #[serde(rename = "parent1MessageId")]
     parent1: String,
     #[serde(rename = "parent2MessageId")]
@@ -304,12 +279,17 @@ impl TryFrom<MessageJson> for Message {
         let mut parent2 = [0u8; 32];
         hex::decode_to_slice(value.parent2, &mut parent2)?;
         let nonce = value.nonce;
+        let parent1 = MessageId::new(parent1);
+        let parent2 = MessageId::new(parent2);
         Ok(Message::builder()
             // TODO: make the newtwork id configurable
             .with_network_id(0)
-            .with_parent1(MessageId::new(parent1))
-            .with_parent2(MessageId::new(parent2))
-            .with_payload(value.payload.try_into()?)
+            .with_parent1(parent1)
+            .with_parent2(parent2)
+            .with_payload(get_payload_from_json(
+                value.payload,
+                Some((parent1, parent2)),
+            )?)
             .with_nonce(
                 nonce
                     .parse()
@@ -319,92 +299,148 @@ impl TryFrom<MessageJson> for Message {
     }
 }
 
+/// The JSON representation of the transaction payload.
 #[derive(Debug, Serialize, Deserialize)]
-struct PayloadJson {
+pub struct TransactionPayloadJson {
     #[serde(rename = "type")]
     type_: u8,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    index: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    data: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    essence: Option<TransactionEssenceJson>,
+    essence: TransactionEssenceJson,
     #[serde(rename = "unlockBlocks")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    unlock_blocks: Option<Box<[UnlockBlockJson]>>,
+    unlock_blocks: Box<[UnlockBlockJson]>,
+}
+
+/// The JSON representation of the milestone payload.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MilestonePayloadJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    index: u32,
+    #[serde(rename = "inclusionMerkleProof")]
+    inclusion_merkle_proof: String,
+    signatures: Vec<String>,
+    timestamp: u64,
+}
+
+/// The JSON representation of the indexation payload.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct IndexationPayloadJson {
+    #[serde(rename = "type")]
+    type_: u8,
+    index: String,
+    data: String,
+}
+
+/// Each of the possible payload types.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PayloadJson {
+    /// The transaction payload.
+    Transaction(TransactionPayloadJson),
+    /// The indexation payload.
+    Indexation(IndexationPayloadJson),
+    /// The milestone payload.
+    Milestone(MilestonePayloadJson),
 }
 
 impl From<&Payload> for PayloadJson {
     fn from(i: &Payload) -> Self {
         match i {
-            Payload::Transaction(i) => Self {
+            Payload::Transaction(i) => Self::Transaction(TransactionPayloadJson {
                 type_: 0,
-                index: None,
-                data: None,
-                essence: Some((i.essence()).into()),
-                unlock_blocks: Some(i.unlock_blocks().iter().map(|input| input.into()).collect()),
-            },
-            Payload::Indexation(i) => Self {
+                essence: (i.essence()).into(),
+                unlock_blocks: i.unlock_blocks().iter().map(|input| input.into()).collect(),
+            }),
+            Payload::Indexation(i) => Self::Indexation(IndexationPayloadJson {
                 type_: 2,
-                index: Some(i.index().to_string()),
-                data: Some(hex::encode(i.data())),
-                essence: None,
-                unlock_blocks: None,
-            },
-            _ => todo!(),
+                index: i.index().to_string(),
+                data: hex::encode(i.data()),
+            }),
+            Payload::Milestone(m) => Self::Milestone(MilestonePayloadJson {
+                type_: 1,
+                index: m.essence().index(),
+                inclusion_merkle_proof: hex::encode(m.essence().merkle_proof()),
+                signatures: m.signatures().iter().map(hex::encode).collect(),
+                timestamp: m.essence().timestamp(),
+            }),
+            _ => unimplemented!(),
         }
     }
 }
 
-impl TryFrom<PayloadJson> for Payload {
-    type Error = crate::Error;
+fn get_payload_from_json(
+    payload: PayloadJson,
+    tips: Option<(MessageId, MessageId)>,
+) -> Result<Payload> {
+    match payload {
+        PayloadJson::Transaction(transaction_payload) => {
+            let mut transaction = Transaction::builder();
+            transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
 
-    fn try_from(value: PayloadJson) -> Result<Self> {
-        match value.type_ {
-            0 => {
-                let mut transaction = Transaction::builder();
-                transaction = transaction
-                    .with_essence(value.essence.expect("Must have essence.").try_into()?);
-
-                let unlock_blocks = value
-                    .unlock_blocks
-                    .expect("Must have unlcok blocks.")
-                    .into_vec();
-                for unlock_block in unlock_blocks {
-                    transaction = transaction.add_unlock_block(unlock_block.try_into()?);
-                }
-
-                Ok(Payload::Transaction(Box::new(transaction.finish()?)))
+            let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
+            for unlock_block in unlock_blocks {
+                transaction = transaction.add_unlock_block(unlock_block.try_into()?);
             }
-            2 => {
-                let indexation = Indexation::new(
-                    value.index.expect("Must have index."),
-                    value.data.expect("Must have data.").as_bytes(),
-                )
-                .unwrap();
-                Ok(Payload::Indexation(Box::new(indexation)))
+
+            Ok(Payload::Transaction(Box::new(transaction.finish()?)))
+        }
+        PayloadJson::Indexation(indexation_payload) => {
+            let indexation = Indexation::new(
+                indexation_payload.index,
+                &hex::decode(indexation_payload.data)?,
+            )
+            .unwrap();
+            Ok(Payload::Indexation(Box::new(indexation)))
+        }
+        PayloadJson::Milestone(milestone_payload) => {
+            let merkle_proof = hex::decode(milestone_payload.inclusion_merkle_proof)?;
+            let mut reader = BufReader::new(&merkle_proof[..]);
+            let mut merkle_proof = [0u8; MILESTONE_MERKLE_PROOF_LENGTH];
+            reader.read_exact(&mut merkle_proof)?;
+            let milestone_essence = MilestoneEssence::new(
+                milestone_payload.index,
+                milestone_payload.timestamp,
+                tips.unwrap().0,
+                tips.unwrap().1,
+                Box::new(merkle_proof),
+                vec![],
+            );
+
+            let mut signatures: Vec<Box<[u8]>> = vec![];
+            for signature in milestone_payload.signatures {
+                let signature = hex::decode(signature)?;
+                let mut reader = BufReader::new(&signature[..]);
+                let mut signature = [0; 64];
+                reader.read_exact(&mut signature)?;
+                signatures.push(Box::new(signature));
             }
-            _ => todo!(),
+            let milestone = Milestone::new(milestone_essence, signatures);
+            Ok(Payload::Milestone(Box::new(milestone)))
         }
     }
 }
 
+/// JSON struct for TransactionEssence
 #[derive(Debug, Serialize, Deserialize)]
-struct TransactionEssenceJson {
+pub struct TransactionEssenceJson {
     #[serde(rename = "type")]
     type_: u8,
     inputs: Box<[InputJson]>,
     outputs: Box<[OutputJson]>,
-    payload: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    payload: Option<Box<PayloadJson>>,
 }
 
 impl From<&TransactionEssence> for TransactionEssenceJson {
     fn from(i: &TransactionEssence) -> Self {
+        let indexation_payload = match i.payload().as_ref() {
+            Some(r) => Some(Box::new(PayloadJson::from(r))),
+            _ => None,
+        };
         Self {
             type_: 0,
             inputs: i.inputs().iter().map(|input| input.into()).collect(),
             outputs: i.outputs().iter().map(|input| input.into()).collect(),
-            payload: serde_json::Value::Null,
+            payload: indexation_payload,
         }
     }
 }
@@ -437,12 +473,21 @@ impl TryFrom<TransactionEssenceJson> for TransactionEssence {
             builder = builder.add_output(output);
         }
 
+        builder = match value.payload {
+            Some(indexation) => builder.with_payload(
+                get_payload_from_json(*indexation, None)
+                    .expect("Invalid indexation in TransactionEssenceJson"),
+            ),
+            _ => builder,
+        };
+
         Ok(builder.finish()?)
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct InputJson {
+/// JSON struct for Input
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct InputJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(rename = "transactionId")]
@@ -456,7 +501,7 @@ impl From<&Input> for InputJson {
         match i {
             Input::UTXO(i) => Self {
                 type_: 0,
-                transaction_id: i.output_id().to_string(),
+                transaction_id: i.output_id().to_string()[..64].to_string(),
                 transaction_output_index: i.output_id().index(),
             },
             _ => todo!(),
@@ -475,8 +520,9 @@ impl TryFrom<InputJson> for Input {
     }
 }
 
+/// JSON struct for Output
 #[derive(Debug, Serialize, Deserialize)]
-struct OutputJson {
+pub struct OutputJson {
     #[serde(rename = "type")]
     type_: u8,
     address: AddressJson,
@@ -511,8 +557,9 @@ impl TryFrom<OutputJson> for Output {
     }
 }
 
+/// JSON struct for Address
 #[derive(Debug, Serialize, Deserialize)]
-struct AddressJson {
+pub struct AddressJson {
     #[serde(rename = "type")]
     type_: u8,
     address: String,
@@ -546,12 +593,13 @@ impl TryFrom<AddressJson> for Address {
     }
 }
 
+/// JSON struct for UnlockBlock
 #[derive(Debug, Serialize, Deserialize)]
-struct UnlockBlockJson {
+pub struct UnlockBlockJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
-    signature: Option<SignatureJson>,
+    signature: Option<SignatureUnlockJson>,
     #[serde(skip_serializing_if = "Option::is_none")]
     reference: Option<u16>,
 }
@@ -598,8 +646,9 @@ impl TryFrom<UnlockBlockJson> for UnlockBlock {
     }
 }
 
+/// JSON struct for SignatureUnlock
 #[derive(Debug, Serialize, Deserialize)]
-struct SignatureJson {
+pub struct SignatureUnlockJson {
     #[serde(rename = "type")]
     type_: u8,
     #[serde(rename = "publicKey")]
@@ -607,7 +656,7 @@ struct SignatureJson {
     signature: String,
 }
 
-impl From<&SignatureUnlock> for SignatureJson {
+impl From<&SignatureUnlock> for SignatureUnlockJson {
     fn from(i: &SignatureUnlock) -> Self {
         match i {
             SignatureUnlock::Ed25519(a) => Self {
@@ -620,10 +669,10 @@ impl From<&SignatureUnlock> for SignatureJson {
     }
 }
 
-impl TryFrom<SignatureJson> for SignatureUnlock {
+impl TryFrom<SignatureUnlockJson> for SignatureUnlock {
     type Error = crate::Error;
 
-    fn try_from(value: SignatureJson) -> Result<Self> {
+    fn try_from(value: SignatureUnlockJson) -> Result<Self> {
         let mut public_key = [0u8; 32];
         hex::decode_to_slice(value.publickey, &mut public_key)?;
         let signature = hex::decode(value.signature)?.into_boxed_slice();
