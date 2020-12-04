@@ -254,7 +254,14 @@ pub struct MessageJson {
     #[serde(rename = "parent2MessageId")]
     parent2: String,
     payload: PayloadJson,
+    #[serde(skip_serializing_if = "String::is_empty")]
     nonce: String,
+}
+
+impl MessageJson {
+    pub(crate) fn clear_nonce(&mut self) {
+        self.nonce = "".to_string();
+    }
 }
 
 impl ResponseType for MessageJson {}

@@ -40,6 +40,8 @@ pub enum Error {
     MqttConnectionNotFound,
     /// IO error
     IoError(std::io::Error),
+    /// JSON error
+    Json(serde_json::Error),
 }
 
 impl fmt::Display for Error {
@@ -70,6 +72,7 @@ impl fmt::Display for Error {
                 "MQTT connection not found (all nodes have the MQTT plugin disabled)"
             ),
             Error::IoError(e) => e.fmt(f),
+            Error::Json(e) => e.fmt(f),
         }
     }
 }
@@ -103,5 +106,11 @@ impl From<paho_mqtt::errors::Error> for Error {
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
         Error::IoError(error)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Self {
+        Error::Json(error)
     }
 }

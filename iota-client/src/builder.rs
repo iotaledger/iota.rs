@@ -27,6 +27,7 @@ pub struct ClientBuilder {
     quorum_size: u8,
     quorum_threshold: u8,
     broker_options: BrokerOptions,
+    local_pow: bool,
 }
 
 impl Default for ClientBuilder {
@@ -37,6 +38,7 @@ impl Default for ClientBuilder {
             quorum_size: 3,
             quorum_threshold: 50,
             broker_options: Default::default(),
+            local_pow: true,
         }
     }
 }
@@ -91,6 +93,12 @@ impl ClientBuilder {
         self
     }
 
+    /// Whether the PoW should be local or remote
+    pub fn local_pow(mut self, local: bool) -> Self {
+        self.local_pow = local;
+        self
+    }
+
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
         if self.nodes.is_empty() {
@@ -123,6 +131,7 @@ impl ClientBuilder {
             mqtt_client: None,
             mqtt_topic_handlers: Default::default(),
             broker_options: self.broker_options,
+            local_pow: self.local_pow,
         };
 
         // let mut sync = client.clone();

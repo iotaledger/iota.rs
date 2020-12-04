@@ -93,6 +93,7 @@ pub struct Client {
     pub(crate) mqtt_client: Option<MqttClient>,
     pub(crate) mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>,
     pub(crate) broker_options: BrokerOptions,
+    pub(crate) local_pow: bool,
 }
 
 impl std::fmt::Debug for Client {
@@ -104,6 +105,8 @@ impl std::fmt::Debug for Client {
             .field("mwm", &self.mwm)
             .field("quorum_size", &self.quorum_size)
             .field("quorum_threshold", &self.quorum_threshold)
+            .field("broker_options", &self.broker_options)
+            .field("local_pow", &self.local_pow)
             .finish()
     }
 }
@@ -226,7 +229,28 @@ impl Client {
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
-        let message: MessageJson = message.into();
+
+        let message: MessageJson = if self.local_pow {
+            let mut message_json: MessageJson = message.into();
+            message_json.clear_nonce();
+            let message_json = serde_json::to_string(&message_json)?;
+            let message_bytes = message_json.as_bytes();
+            let nonce = bee_pow::compute_pow_score(&message_bytes);
+
+            let mut builder = Message::builder()
+                .with_network_id(message.network_id())
+                .with_parent1(*message.parent1())
+                .with_parent2(*message.parent2())
+                .with_nonce(nonce as u64);
+            if let Some(payload) = message.payload() {
+                builder = builder.with_payload(payload.clone());
+            }
+            let message = builder.finish()?;
+            (&message).into()
+        } else {
+            message.into()
+        };
+
         let resp = self
             .client
             .post(url)
