@@ -135,40 +135,45 @@ impl Client {
 
     /// Sync the node lists per node_sync_interval milliseconds
     pub(crate) fn start_sync_process(
+        mut runtime: Runtime,
         sync: Arc<RwLock<HashSet<Url>>>,
         nodes: Vec<Url>,
         node_sync_interval: NonZeroU64,
         stop_sync: Arc<AtomicBool>,
     ) -> thread::JoinHandle<()> {
         let node_sync_interval = Duration::from_millis(node_sync_interval.into());
-        let mut runtime = Runtime::new().unwrap();
 
         thread::spawn(move || {
             while !stop_sync.load(Ordering::Relaxed) {
-                // lock the sync pool while we're syncing
-                let mut sync_ = sync.write().unwrap();
-                let mut synced_nodes = HashSet::new();
-
-                runtime.block_on(async {
-                    for node_url in &nodes {
-                        // Put the healty node url into the synced_nodes
-                        if Client::get_node_health(node_url.clone())
-                            .await
-                            .unwrap_or(false)
-                        {
-                            synced_nodes.insert(node_url.clone());
-                        }
-                    }
-                });
-
-                // Update the sync list
-                *sync_ = synced_nodes;
-                // drop lock before sleeping
-                std::mem::drop(sync_);
-
+                // sleep first since the first `sync_nodes` call is made by the builder
+                // to ensure the node list is filled before the client is used
                 thread::sleep(node_sync_interval);
+                Client::sync_nodes(&mut runtime, &sync, &nodes);
             }
         })
+    }
+
+    pub(crate) fn sync_nodes(
+        runtime: &mut Runtime,
+        sync: &Arc<RwLock<HashSet<Url>>>,
+        nodes: &Vec<Url>,
+    ) {
+        let mut synced_nodes = HashSet::new();
+
+        runtime.block_on(async {
+            for node_url in nodes {
+                // Put the healty node url into the synced_nodes
+                if Client::get_node_health(node_url.clone())
+                    .await
+                    .unwrap_or(false)
+                {
+                    synced_nodes.insert(node_url.clone());
+                }
+            }
+        });
+
+        // Update the sync list
+        *sync.write().unwrap() = synced_nodes;
     }
 
     /// Get a node candidate from the synced node pool.

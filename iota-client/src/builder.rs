@@ -4,6 +4,7 @@ use crate::client::{BrokerOptions, Client};
 use crate::error::*;
 
 use reqwest::Url;
+use tokio::runtime::Runtime;
 
 use std::collections::HashSet;
 use std::num::NonZeroU64;
@@ -130,7 +131,13 @@ impl ClientBuilder {
         let stop_sync = Arc::new(AtomicBool::new(false));
         let stop_sync_ = stop_sync.clone();
 
-        let sync_handle = Client::start_sync_process(sync_, nodes, node_sync_interval, stop_sync_);
+        let sync_handle = std::thread::spawn(move || {
+            let mut runtime = Runtime::new().unwrap();
+            Client::sync_nodes(&mut runtime, &sync_, &nodes);
+            Client::start_sync_process(runtime, sync_, nodes, node_sync_interval, stop_sync_)
+        })
+        .join()
+        .expect("failed to init node syncing process");
 
         let client = Client {
             sync,
