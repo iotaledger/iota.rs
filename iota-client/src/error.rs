@@ -20,8 +20,8 @@ pub enum Error {
     SpentAddress,
     /// Error from RestAPI calls with status code other than 200
     ResponseError(u16),
-    /// No node available in the node pool
-    NodePoolEmpty,
+    /// No node available in the synced node pool
+    SyncedNodePoolEmpty,
     /// Error on Url type conversion
     UrlError,
     /// Errors from reqwest api call
@@ -49,7 +49,7 @@ impl fmt::Display for Error {
             Error::MissingParameter(s) => write!(f, "Must provide required parameter:{}", s),
             Error::InvalidParameter(s) => write!(f, "Parameter is invalid:{}", s),
             Error::SpentAddress => "Found Spent Address that still has balance.".fmt(f),
-            Error::NodePoolEmpty => "No node available".fmt(f),
+            Error::SyncedNodePoolEmpty => "No node available".fmt(f),
             Error::ReqwestError(e) => e.fmt(f),
             Error::UrlError => "Fail to parse url".fmt(f),
             Error::NotEnoughBalance(v) => write!(

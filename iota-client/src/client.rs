@@ -12,12 +12,13 @@ use bee_signing_ext::Seed;
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
 use serde::{Deserialize, Serialize};
+use tokio::runtime::Runtime;
 
 use std::collections::{HashMap, HashSet};
 use std::num::NonZeroU64;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
-    Arc, Mutex, RwLock,
+    Arc, RwLock,
 };
 use std::thread;
 use std::time::Duration;
@@ -87,13 +88,12 @@ impl BrokerOptions {
 
 /// An instance of the client using IRI URI
 pub struct Client {
-    /// Node pool of IOTA nodes
-    pub(crate) nodes: Vec<Url>,
-    pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
-    pub(crate) sync: Arc<Mutex<Vec<Url>>>,
+    /// Node pool of synced IOTA nodes
+    pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
+    /// Flag to stop the node syncing
     pub(crate) stop_sync: Arc<AtomicBool>,
+    /// Handle to the node sync process thread
     pub(crate) sync_handle: Option<thread::JoinHandle<()>>,
-    pub(crate) node_sync_interval: NonZeroU64,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     pub(crate) mwm: u8,
@@ -101,14 +101,13 @@ pub struct Client {
     pub(crate) quorum_threshold: u8,
     /// A MQTT client to subscribe/unsubscribe to topics.
     pub(crate) mqtt_client: Option<MqttClient>,
-    pub(crate) mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>,
+    pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
     pub(crate) broker_options: BrokerOptions,
 }
 
 impl std::fmt::Debug for Client {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Client")
-            .field("pool", &self.pool)
             .field("sync", &self.sync)
             .field("client", &self.client)
             .field("mwm", &self.mwm)
@@ -123,7 +122,7 @@ impl Drop for Client {
     fn drop(&mut self) {
         self.stop_sync.store(true, Ordering::Relaxed);
         if let Some(handle) = self.sync_handle.take() {
-            handle.join().expect("failed to join thread");
+            handle.join().expect("failed to join node sync thread");
         }
     }
 }
@@ -134,57 +133,51 @@ impl Client {
         ClientBuilder::new()
     }
 
-    // TODO Implement syncing process
-
-    // pub(crate) fn sync(&mut self) {
-    //     let mut sync_list: HashMap<usize, Vec<Url>> = HashMap::new();
-    //     for url in &*self.pool.read().unwrap() {
-    //         if let Ok(milestone) = self.get_info(url.clone()) {
-    //             let set = sync_list
-    //                 .entry(milestone.latest_milestone_index)
-    //                 .or_insert(Vec::new());
-    //             set.push(url.clone());
-    //         };
-    //     }
-
-    //     *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
-    // }
     /// Sync the node lists per node_sync_interval milliseconds
-    pub fn start_sync_process(&mut self) {
-        let sync = self.sync.clone();
-        let node_sync_interval = u64::from(self.node_sync_interval);
-        let stop_sync = self.stop_sync.clone();
-        let nodes = self.nodes.clone();
-        let mut runtime = tokio::runtime::Runtime::new().unwrap();
-        let handle: thread::JoinHandle<()> = thread::spawn(move || {
+    pub(crate) fn start_sync_process(
+        sync: Arc<RwLock<HashSet<Url>>>,
+        nodes: Vec<Url>,
+        node_sync_interval: NonZeroU64,
+        stop_sync: Arc<AtomicBool>,
+    ) -> thread::JoinHandle<()> {
+        let node_sync_interval = Duration::from_millis(node_sync_interval.into());
+        let mut runtime = Runtime::new().unwrap();
+
+        thread::spawn(move || {
             while !stop_sync.load(Ordering::Relaxed) {
-                thread::sleep(Duration::from_millis(node_sync_interval));
-                let mut synced_nodes = Vec::<Url>::new();
-                for node_url in &nodes {
-                    // Put the healty node url into the synced_nodes
-                    if runtime
-                        .block_on(async { Client::get_health(node_url.clone()).await })
-                        .unwrap_or(false)
-                    {
-                        synced_nodes.push(node_url.clone());
+                // lock the sync pool while we're syncing
+                let mut sync_ = sync.write().unwrap();
+                let mut synced_nodes = HashSet::new();
+
+                runtime.block_on(async {
+                    for node_url in &nodes {
+                        // Put the healty node url into the synced_nodes
+                        if Client::get_node_health(node_url.clone())
+                            .await
+                            .unwrap_or(false)
+                        {
+                            synced_nodes.insert(node_url.clone());
+                        }
                     }
-                }
+                });
+
                 // Update the sync list
-                *sync.lock().unwrap() = synced_nodes;
+                *sync_ = synced_nodes;
+                // drop lock before sleeping
+                std::mem::drop(sync_);
+
+                thread::sleep(node_sync_interval);
             }
-        });
-        self.sync_handle = Some(handle);
+        })
     }
 
-    /// Get a node candidate from the node pool.
+    /// Get a node candidate from the synced node pool.
     pub(crate) fn get_node(&self) -> Result<Url> {
-        Ok(self
-            .pool
-            .read()
-            .unwrap()
+        let pool = self.sync.read().unwrap();
+        Ok(pool
             .iter()
             .next()
-            .ok_or(Error::NodePoolEmpty)?
+            .ok_or(Error::SyncedNodePoolEmpty)?
             .clone())
     }
 
@@ -288,10 +281,7 @@ impl Client {
                 hex::decode_to_slice(m.message_id, &mut message_id)?;
                 Ok(MessageId::from(message_id))
             }
-            status => {
-                println!("resp: {:#?}", resp.json::<serde_json::Value>().await);
-                Err(Error::ResponseError(status))
-            }
+            status => Err(Error::ResponseError(status)),
         }
     }
 

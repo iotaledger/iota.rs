@@ -4,10 +4,10 @@ use crate::client::{BrokerOptions, Client};
 use crate::error::*;
 
 use reqwest::Url;
+
 use std::collections::HashSet;
-use std::iter::FromIterator;
 use std::num::NonZeroU64;
-use std::sync::{atomic::AtomicBool, Arc, Mutex, RwLock};
+use std::sync::{atomic::AtomicBool, Arc, RwLock};
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
@@ -121,13 +121,21 @@ impl ClientBuilder {
             x => x,
         };
 
-        let mut client = Client {
-            nodes: self.nodes.clone(),
-            pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
-            sync: Arc::new(Mutex::new(Vec::new())),
-            stop_sync: Arc::new(AtomicBool::new(false)),
-            sync_handle: None,
-            node_sync_interval: self.node_sync_interval,
+        let nodes = self.nodes;
+        let node_sync_interval = self.node_sync_interval;
+
+        let sync = Arc::new(RwLock::new(HashSet::new()));
+        let sync_ = sync.clone();
+
+        let stop_sync = Arc::new(AtomicBool::new(false));
+        let stop_sync_ = stop_sync.clone();
+
+        let sync_handle = Client::start_sync_process(sync_, nodes, node_sync_interval, stop_sync_);
+
+        let client = Client {
+            sync,
+            stop_sync,
+            sync_handle: Some(sync_handle),
             client: reqwest::Client::new(),
             mwm,
             quorum_size,
@@ -137,16 +145,6 @@ impl ClientBuilder {
             broker_options: self.broker_options,
         };
 
-        // let mut sync = client.clone();
-        // tokio::block_on(async { sync.sync() });
-
-        // tokio::spawn(async {
-        //     loop {
-        //         tokio::time::delay_for(std::time::Duration::from_secs(180)).await;
-        //         sync.sync();
-        //     }
-        // });
-        client.start_sync_process();
         Ok(client)
     }
 }
