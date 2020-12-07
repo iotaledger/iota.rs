@@ -12,15 +12,15 @@ use bee_signing_ext::Seed;
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
 use serde::{Deserialize, Serialize};
-use tokio::runtime::Runtime;
+use tokio::{
+    runtime::Runtime,
+    sync::broadcast::{Receiver, Sender},
+    time::{delay_for, Duration as TokioDuration},
+};
 
 use std::collections::{HashMap, HashSet};
 use std::num::NonZeroU64;
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc, RwLock,
-};
-use std::thread;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 const ADDRESS_LENGTH: usize = 32;
@@ -87,12 +87,12 @@ impl BrokerOptions {
 
 /// An instance of the client using IRI URI
 pub struct Client {
+    #[allow(dead_code)]
+    pub(crate) runtime: Option<Runtime>,
     /// Node pool of synced IOTA nodes
     pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
     /// Flag to stop the node syncing
-    pub(crate) stop_sync: Arc<AtomicBool>,
-    /// Handle to the node sync process thread
-    pub(crate) sync_handle: Option<thread::JoinHandle<()>>,
+    pub(crate) sync_kill_sender: Arc<Sender<()>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     pub(crate) mwm: u8,
@@ -119,9 +119,12 @@ impl std::fmt::Debug for Client {
 impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
-        self.stop_sync.store(true, Ordering::Relaxed);
-        if let Some(handle) = self.sync_handle.take() {
-            handle.join().expect("failed to join node sync thread");
+        self.sync_kill_sender
+            .clone()
+            .send(())
+            .expect("failed to stop syncing process");
+        if let Some(runtime) = self.runtime.take() {
+            runtime.shutdown_background();
         }
     }
 }
@@ -134,42 +137,45 @@ impl Client {
 
     /// Sync the node lists per node_sync_interval milliseconds
     pub(crate) fn start_sync_process(
-        mut runtime: Runtime,
+        runtime: &Runtime,
         sync: Arc<RwLock<HashSet<Url>>>,
         nodes: Vec<Url>,
         node_sync_interval: NonZeroU64,
-        stop_sync: Arc<AtomicBool>,
-    ) -> thread::JoinHandle<()> {
-        let node_sync_interval = Duration::from_millis(node_sync_interval.into());
+        mut kill: Receiver<()>,
+    ) {
+        let node_sync_interval = TokioDuration::from_millis(node_sync_interval.into());
 
-        thread::spawn(move || {
-            while !stop_sync.load(Ordering::Relaxed) {
-                // sleep first since the first `sync_nodes` call is made by the builder
-                // to ensure the node list is filled before the client is used
-                thread::sleep(node_sync_interval);
-                Client::sync_nodes(&mut runtime, &sync, &nodes);
-            }
-        })
+        runtime.enter(|| {
+            tokio::spawn(async move {
+                tokio::select! {
+                    _ = async {
+                        loop {
+                            // delay first since the first `sync_nodes` call is made by the builder
+                            // to ensure the node list is filled before the client is used
+                            delay_for(node_sync_interval).await;
+                            Client::sync_nodes(&sync, &nodes).await;
+                        }
+                    } => {}
+                    _ = kill.recv() => {}
+                }
+            });
+        });
     }
 
-    pub(crate) fn sync_nodes(
-        runtime: &mut Runtime,
-        sync: &Arc<RwLock<HashSet<Url>>>,
-        nodes: &[Url],
-    ) {
+    pub(crate) async fn sync_nodes(sync: &Arc<RwLock<HashSet<Url>>>, nodes: &[Url]) {
+        println!("syncing nodes");
         let mut synced_nodes = HashSet::new();
 
-        runtime.block_on(async {
-            for node_url in nodes {
-                // Put the healty node url into the synced_nodes
-                if Client::get_node_health(node_url.clone())
-                    .await
-                    .unwrap_or(false)
-                {
-                    synced_nodes.insert(node_url.clone());
-                }
+        for node_url in nodes {
+            // Put the healty node url into the synced_nodes
+            if Client::get_node_health(node_url.clone())
+                .await
+                .unwrap_or(false)
+            {
+                synced_nodes.insert(node_url.clone());
             }
-        });
+        }
+        println!("synced");
 
         // Update the sync list
         *sync.write().unwrap() = synced_nodes;

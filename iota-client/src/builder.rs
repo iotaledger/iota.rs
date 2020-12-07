@@ -4,11 +4,11 @@ use crate::client::{BrokerOptions, Client};
 use crate::error::*;
 
 use reqwest::Url;
-use tokio::runtime::Runtime;
+use tokio::{runtime::Runtime, sync::broadcast::channel};
 
 use std::collections::HashSet;
 use std::num::NonZeroU64;
-use std::sync::{atomic::AtomicBool, Arc, RwLock};
+use std::sync::{Arc, RwLock};
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
@@ -128,21 +128,27 @@ impl ClientBuilder {
         let sync = Arc::new(RwLock::new(HashSet::new()));
         let sync_ = sync.clone();
 
-        let stop_sync = Arc::new(AtomicBool::new(false));
-        let stop_sync_ = stop_sync.clone();
+        let (sync_kill_sender, sync_kill_receiver) = channel(1);
 
-        let sync_handle = std::thread::spawn(move || {
+        let runtime = std::thread::spawn(move || {
             let mut runtime = Runtime::new().unwrap();
-            Client::sync_nodes(&mut runtime, &sync_, &nodes);
-            Client::start_sync_process(runtime, sync_, nodes, node_sync_interval, stop_sync_)
+            runtime.block_on(Client::sync_nodes(&sync_, &nodes));
+            Client::start_sync_process(
+                &runtime,
+                sync_,
+                nodes,
+                node_sync_interval,
+                sync_kill_receiver,
+            );
+            runtime
         })
         .join()
         .expect("failed to init node syncing process");
 
         let client = Client {
+            runtime: Some(runtime),
             sync,
-            stop_sync,
-            sync_handle: Some(sync_handle),
+            sync_kill_sender: Arc::new(sync_kill_sender),
             client: reqwest::Client::new(),
             mwm,
             quorum_size,

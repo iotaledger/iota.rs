@@ -26,4 +26,4 @@ hex = "0.4.2"
 blake2 = "0.9"
 paho-mqtt = "0.8"
 regex = "1.4"
-tokio = { version = "0.2.22", features = ["macros"] }
+tokio = { version = "0.2.22", features = ["macros", "sync"] }
