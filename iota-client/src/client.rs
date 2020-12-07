@@ -147,23 +147,22 @@ impl Client {
 
         runtime.enter(|| {
             tokio::spawn(async move {
-                tokio::select! {
-                    _ = async {
-                        loop {
-                            // delay first since the first `sync_nodes` call is made by the builder
-                            // to ensure the node list is filled before the client is used
-                            delay_for(node_sync_interval).await;
-                            Client::sync_nodes(&sync, &nodes).await;
-                        }
-                    } => {}
-                    _ = kill.recv() => {}
+                loop {
+                    tokio::select! {
+                        _ = async {
+                                // delay first since the first `sync_nodes` call is made by the builder
+                                // to ensure the node list is filled before the client is used
+                                delay_for(node_sync_interval).await;
+                                Client::sync_nodes(&sync, &nodes).await;
+                        } => {}
+                        _ = kill.recv() => {}
+                    }
                 }
             });
         });
     }
 
     pub(crate) async fn sync_nodes(sync: &Arc<RwLock<HashSet<Url>>>, nodes: &[Url]) {
-        println!("syncing nodes");
         let mut synced_nodes = HashSet::new();
 
         for node_url in nodes {
@@ -175,7 +174,6 @@ impl Client {
                 synced_nodes.insert(node_url.clone());
             }
         }
-        println!("synced");
 
         // Update the sync list
         *sync.write().unwrap() = synced_nodes;
