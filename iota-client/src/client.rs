@@ -22,7 +22,6 @@ use std::sync::{
 };
 use std::thread;
 use std::time::Duration;
-use tokio;
 
 const ADDRESS_LENGTH: usize = 32;
 
@@ -156,7 +155,7 @@ impl Client {
     pub(crate) fn sync_nodes(
         runtime: &mut Runtime,
         sync: &Arc<RwLock<HashSet<Url>>>,
-        nodes: &Vec<Url>,
+        nodes: &[Url],
     ) {
         let mut synced_nodes = HashSet::new();
 
