@@ -401,7 +401,7 @@ fn get_payload_from_json(
                 milestone_payload.timestamp,
                 tips.unwrap().0,
                 tips.unwrap().1,
-                Box::new(merkle_proof),
+                merkle_proof,
                 vec![],
             );
 
