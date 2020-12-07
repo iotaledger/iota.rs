@@ -57,3 +57,10 @@ impl From<std::io::Error> for Error {
         Error::IoError(error)
     }
 }
+
+#[cfg(feature = "surf")]
+impl From<surf::Error> for Error {
+    fn from(error: surf::Error) -> Self {
+        error.downcast().unwrap()
+    }
+}
