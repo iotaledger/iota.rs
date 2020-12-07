@@ -18,6 +18,7 @@ pub struct SendBuilder<'a> {
     path: Option<&'a BIP32Path>,
     index: Option<usize>,
     outputs: Vec<Output>,
+    indexation: Option<Indexation>,
 }
 
 /// Structure for sorting of UnlockBlocks
@@ -37,6 +38,7 @@ impl<'a> SendBuilder<'a> {
             path: None,
             index: None,
             outputs: Vec::new(),
+            indexation: None,
         }
     }
 
@@ -56,6 +58,12 @@ impl<'a> SendBuilder<'a> {
     pub fn output(mut self, address: Address, amount: NonZeroU64) -> Self {
         let output = SignatureLockedSingleOutput::new(address, amount).into();
         self.outputs.push(output);
+        self
+    }
+
+    /// Set indexation payload to the builder
+    pub fn indexation(mut self, indexation_payload: Indexation) -> Self {
+        self.indexation = Some(indexation_payload);
         self
     }
 
@@ -180,6 +188,9 @@ impl<'a> SendBuilder<'a> {
         for output in outputs {
             essence = essence.add_output(output);
         }
+        if let Some(indexation_payload) = self.indexation {
+            essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
+        }
         let essence = essence.finish()?;
         let mut serialized_essence = Vec::new();
         essence
@@ -231,7 +242,7 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::TransactionError)?;
 
         // get tips
-        let tips = self.client.get_tips().await.unwrap();
+        let tips = self.client.get_tips().await?;
 
         // building message
         let payload = Payload::Transaction(Box::new(payload));
