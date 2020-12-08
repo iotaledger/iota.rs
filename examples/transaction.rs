@@ -1,6 +1,8 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use iota::{BIP32Path, Client, Ed25519Address, Seed};
-use std::time::Duration;
-use std::{convert::TryInto, num::NonZeroU64};
+use std::{convert::TryInto, num::NonZeroU64, time::Duration};
 use tokio::time::delay_for;
 
 /// In this example, we send 600 tokens to the following 6 locations, respectively

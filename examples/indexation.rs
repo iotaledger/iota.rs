@@ -1,5 +1,7 @@
-use iota::Indexation;
-use iota::{Client, Message, Payload};
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+use iota::{Client, Indexation, Message, Payload};
 
 #[tokio::main]
 async fn main() {
@@ -29,11 +31,7 @@ async fn main() {
 
     println!("{:#?}", fetched_messages);
 
-    let r = client
-        .get_message()
-        .data(&fetched_messages[0])
-        .await
-        .unwrap();
+    let r = client.get_message().data(&fetched_messages[0]).await.unwrap();
 
     println!("{:#?}", r);
     if let Payload::Indexation(i) = r.payload().as_ref().unwrap() {

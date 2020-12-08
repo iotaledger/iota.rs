@@ -1,10 +1,9 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! The Client module to connect through IRI with API usages
-use crate::api::*;
-use crate::builder::ClientBuilder;
-use crate::error::*;
 pub use crate::node::Topic;
-use crate::node::*;
-use crate::types::*;
+use crate::{api::*, builder::ClientBuilder, error::*, node::*, types::*};
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_signing_ext::Seed;
@@ -13,9 +12,11 @@ use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
 use serde::{Deserialize, Serialize};
 
-use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Mutex, RwLock};
-use std::time::Duration;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::{Arc, Mutex, RwLock},
+    time::Duration,
+};
 
 const ADDRESS_LENGTH: usize = 32;
 
@@ -34,10 +35,7 @@ pub struct TopicEvent {
 /// The MQTT broker options.
 #[derive(Debug, Clone, Deserialize)]
 pub struct BrokerOptions {
-    #[serde(
-        default = "default_broker_automatic_disconnect",
-        rename = "automaticDisconnect"
-    )]
+    #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
@@ -290,11 +288,7 @@ impl Client {
     }
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceed individual node limit.
-    pub async fn find_outputs(
-        &self,
-        outputs: &[UTXOInput],
-        addresses: &[Address],
-    ) -> Result<Vec<OutputMetadata>> {
+    pub async fn find_outputs(&self, outputs: &[UTXOInput], addresses: &[Address]) -> Result<Vec<OutputMetadata>> {
         let mut output_metadata = Vec::<OutputMetadata>::new();
         // Use a `HashSet` to prevent duplicate output.
         let mut output_to_query = HashSet::<UTXOInput>::new();
@@ -402,11 +396,7 @@ impl Client {
 
     /// Find all messages by provided message IDs. This method will try to query multiple nodes
     /// if the request amount exceed individual node limit.
-    pub async fn find_messages(
-        &self,
-        indexation_keys: &[String],
-        message_ids: &[MessageId],
-    ) -> Result<Vec<Message>> {
+    pub async fn find_messages(&self, indexation_keys: &[String], message_ids: &[MessageId]) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
         // Use a `HashSet` to prevent duplicate message_ids.
@@ -445,10 +435,7 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed or security level needed to do this
     /// since we are only checking and already know the addresses.
-    pub async fn get_address_balances(
-        &self,
-        addresses: &[Address],
-    ) -> Result<Vec<AddressBalancePair>> {
+    pub async fn get_address_balances(&self, addresses: &[Address]) -> Result<Vec<AddressBalancePair>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
             let balance = self.get_address().balance(address).await?;

@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
@@ -124,12 +127,7 @@ async fn test_get_message_data() {
         .build()
         .unwrap()
         .get_message()
-        .data(
-            &MessageId::from_str(
-                "1bf33857f8a3960b23d841fbf4a8b72b7bcb80e749d05abd95b85bcca816b600",
-            )
-            .unwrap(),
-        )
+        .data(&MessageId::from_str("1bf33857f8a3960b23d841fbf4a8b72b7bcb80e749d05abd95b85bcca816b600").unwrap())
         .await
         .unwrap();
 
@@ -145,12 +143,7 @@ async fn test_get_message_metadata() {
         .build()
         .unwrap()
         .get_message()
-        .metadata(
-            &MessageId::from_str(
-                "dc9492aaf06d12fd3927a3ce6e5e278edce930e0fa13ec3a09148ace6fe9448a",
-            )
-            .unwrap(),
-        )
+        .metadata(&MessageId::from_str("dc9492aaf06d12fd3927a3ce6e5e278edce930e0fa13ec3a09148ace6fe9448a").unwrap())
         .await
         .unwrap();
 
@@ -166,12 +159,7 @@ async fn test_get_message_raw() {
         .build()
         .unwrap()
         .get_message()
-        .raw(
-            &MessageId::from_str(
-                "a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3",
-            )
-            .unwrap(),
-        )
+        .raw(&MessageId::from_str("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
         .await
         .unwrap();
 }
@@ -185,12 +173,7 @@ async fn test_get_message_children() {
         .build()
         .unwrap()
         .get_message()
-        .children(
-            &MessageId::from_str(
-                "a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3",
-            )
-            .unwrap(),
-        )
+        .children(&MessageId::from_str("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
         .await
         .unwrap();
 }
@@ -253,10 +236,7 @@ async fn test_get_output() {
         .unwrap()
         .get_output(
             &UTXOInput::new(
-                TransactionId::from_str(
-                    "0000000000000000000000000000000000000000000000000000000000000000",
-                )
-                .unwrap(),
+                TransactionId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
                 0,
             )
             .unwrap(),
