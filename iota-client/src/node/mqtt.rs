@@ -49,7 +49,7 @@ impl Topic {
             Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").unwrap(),
             Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").unwrap(),
             // bech32 address
-            Regex::new("addresses/(iota|atoi)1[A-Za-z0-9]+/outputs").unwrap(),
+            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").unwrap(),
             // ED25519 address hex
             Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
             Regex::new(r"messages/indexation/(\.)").unwrap()
