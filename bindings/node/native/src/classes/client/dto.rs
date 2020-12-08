@@ -1,7 +1,9 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use iota::{
-    AddressBalancePair, Ed25519Signature, Indexation, Input, Output, OutputMetadata, Payload,
-    ReferenceUnlock, SignatureLockedSingleOutput, SignatureUnlock, Transaction, TransactionEssence,
-    UTXOInput, UnlockBlock,
+    AddressBalancePair, Ed25519Signature, Indexation, Input, Output, OutputMetadata, Payload, ReferenceUnlock,
+    SignatureLockedSingleOutput, SignatureUnlock, Transaction, TransactionEssence, UTXOInput, UnlockBlock,
 };
 use serde::{Deserialize, Serialize};
 
@@ -104,17 +106,11 @@ impl TryFrom<MessageUnlockBlockJsonDto> for UnlockBlock {
         let type_ = if value.signature.is_some() { 0 } else { 1 };
         match type_ {
             0 => {
-                let sig: SignatureUnlock = value
-                    .signature
-                    .expect("Must contain signature.")
-                    .try_into()?;
+                let sig: SignatureUnlock = value.signature.expect("Must contain signature.").try_into()?;
                 Ok(sig.into())
             }
             1 => {
-                let reference: ReferenceUnlock = value
-                    .reference
-                    .expect("Must contain reference.")
-                    .try_into()?;
+                let reference: ReferenceUnlock = value.reference.expect("Must contain reference.").try_into()?;
                 Ok(reference.into())
             }
             _ => unreachable!(),
@@ -168,9 +164,7 @@ impl TryFrom<MessagePayloadDto> for Payload {
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
             MessagePayloadDto::Indexation(indexation_payload) => {
-                let indexation =
-                    Indexation::new(indexation_payload.index, indexation_payload.data.as_bytes())
-                        .unwrap();
+                let indexation = Indexation::new(indexation_payload.index, indexation_payload.data.as_bytes()).unwrap();
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
         }

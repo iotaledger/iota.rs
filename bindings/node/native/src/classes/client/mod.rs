@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use bech32::FromBase32;
 use iota::{
     message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput},
@@ -45,9 +48,7 @@ fn parse_address(address: String) -> crate::Result<Address> {
     match parse_bech32_address(address.clone()) {
         Ok(address) => Ok(address),
         Err(_) => Ok(Address::Ed25519(Ed25519Address::new(
-            hex::decode(address)?
-                .try_into()
-                .expect("invalid address length"),
+            hex::decode(address)?.try_into().expect("invalid address length"),
         ))),
     }
 }

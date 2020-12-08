@@ -1,11 +1,18 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! Builder of the Clinet Instnace
 
-use crate::client::{BrokerOptions, Client};
-use crate::error::*;
+use crate::{
+    client::{BrokerOptions, Client},
+    error::*,
+};
 
-use std::collections::HashSet;
-use std::iter::FromIterator;
-use std::sync::{Arc, RwLock};
+use std::{
+    collections::HashSet,
+    iter::FromIterator,
+    sync::{Arc, RwLock},
+};
 
 use reqwest::Url;
 

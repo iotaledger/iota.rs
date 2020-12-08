@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::{Client, Error, Result};
 
 use bee_common::packable::Packable;
@@ -6,8 +9,7 @@ use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-use std::collections::HashMap;
-use std::{convert::TryInto, num::NonZeroU64};
+use std::{collections::HashMap, convert::TryInto, num::NonZeroU64};
 const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
 
@@ -142,17 +144,13 @@ impl<'a> SendBuilder<'a> {
                                 // Note that we need to sign the original address, i.e., `path/index`,
                                 // instead of `path/index/_offset` or `path/_offset`.
                                 address_path.push(address_index as u32 + HARDEND);
-                                let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output
-                                    .transaction_id[..]
+                                let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
                                     .try_into()
                                     .map_err(|_| Error::TransactionError)?;
                                 paths.push(address_path.clone());
                                 let input = Input::UTXO(
-                                    UTXOInput::new(
-                                        TransactionId::from(transaction_id),
-                                        output.output_index,
-                                    )
-                                    .map_err(|_| Error::TransactionError)?,
+                                    UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
+                                        .map_err(|_| Error::TransactionError)?,
                                 );
                                 essence = essence.add_input(input.clone());
                                 address_index_recorders.push(AddressIndexRecorder {
@@ -165,8 +163,7 @@ impl<'a> SendBuilder<'a> {
                                     essence = essence.add_output(
                                         SignatureLockedSingleOutput::new(
                                             address.clone(),
-                                            NonZeroU64::new(total_already_spent - total_to_spend)
-                                                .unwrap(),
+                                            NonZeroU64::new(total_already_spent - total_to_spend).unwrap(),
                                         )
                                         .into(),
                                     );
@@ -206,22 +203,19 @@ impl<'a> SendBuilder<'a> {
             // Check if current path is same as previous path
             // If so, add a reference unlock block
             if let Some(block_index) = signature_indexes.get(&recorder.address_index) {
-                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(
-                    *block_index as u16,
-                )?));
+                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we should create a signature unlock block
                 match &self.seed {
                     Seed::Ed25519(s) => {
-                        let private_key =
-                            Ed25519PrivateKey::generate_from_seed(s, &recorder.address_path)
-                                .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
+                        let private_key = Ed25519PrivateKey::generate_from_seed(s, &recorder.address_path)
+                            .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
                         let public_key = private_key.generate_public_key().to_bytes();
                         // The block should sign the entire transaction essence part of the transaction payload
                         let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
-                        unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(
-                            Ed25519Signature::new(public_key, signature),
-                        )));
+                        unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
+                            public_key, signature,
+                        ))));
                     }
                     Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
                 }
@@ -237,9 +231,7 @@ impl<'a> SendBuilder<'a> {
             payload_builder = payload_builder.add_unlock_block(unlock);
         }
 
-        let payload = payload_builder
-            .finish()
-            .map_err(|_| Error::TransactionError)?;
+        let payload = payload_builder.finish().map_err(|_| Error::TransactionError)?;
 
         // get tips
         let tips = self.client.get_tips().await?;

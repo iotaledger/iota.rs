@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use std::num::NonZeroU64;
 
 use iota::{
@@ -101,9 +104,7 @@ impl Task for ClientTask {
                     indexation_keys,
                     message_ids,
                 } => {
-                    let messages = client
-                        .find_messages(&indexation_keys[..], &message_ids[..])
-                        .await?;
+                    let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetBalance { seed, path, index } => {
@@ -119,8 +120,7 @@ impl Task for ClientTask {
                 }
                 Api::GetAddressBalances(addresses) => {
                     let balances = client.get_address_balances(&addresses[..]).await?;
-                    let balances: Vec<super::AddressBalanceDto> =
-                        balances.into_iter().map(|b| b.into()).collect();
+                    let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
                 }
                 // Node APIs
@@ -158,8 +158,7 @@ impl Task for ClientTask {
                 }
                 Api::FindOutputs { outputs, addresses } => {
                     let outputs = client.find_outputs(outputs, addresses).await?;
-                    let outputs: Vec<super::OutputMetadataDto> =
-                        outputs.into_iter().map(|o| o.into()).collect();
+                    let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }
                 Api::GetAddressBalance(address) => {
@@ -191,11 +190,7 @@ impl Task for ClientTask {
         }))
     }
 
-    fn complete(
-        self,
-        mut cx: TaskContext,
-        result: Result<Self::Output, Self::Error>,
-    ) -> JsResult<Self::JsEvent> {
+    fn complete(self, mut cx: TaskContext, result: Result<Self::Output, Self::Error>) -> JsResult<Self::JsEvent> {
         match result {
             Ok(s) => Ok(cx.string(s)),
             Err(e) => cx.throw_error(format!("ClientTask error: {:?}", e)),
