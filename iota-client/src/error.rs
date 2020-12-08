@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! Error handling in iota-client crate.
 
 use std::fmt;
@@ -52,11 +55,9 @@ impl fmt::Display for Error {
             Error::SyncedNodePoolEmpty => "No node available".fmt(f),
             Error::ReqwestError(e) => e.fmt(f),
             Error::UrlError => "Fail to parse url".fmt(f),
-            Error::NotEnoughBalance(v) => write!(
-                f,
-                "The wallet account doesn't have enough balance. It only has {:?}",
-                v
-            ),
+            Error::NotEnoughBalance(v) => {
+                write!(f, "The wallet account doesn't have enough balance. It only has {:?}", v)
+            }
             Error::FromHexError(e) => e.fmt(f),
             Error::ResponseError(s) => write!(f, "Response error with status code {}", s),
             Error::MessageError(e) => e.fmt(f),
@@ -65,10 +66,9 @@ impl fmt::Display for Error {
             }
             Error::MqttClientError(e) => e.fmt(f),
             Error::InvalidMqttTopic(topic) => write!(f, "The topic {} is invalid", topic),
-            Error::MqttConnectionNotFound => write!(
-                f,
-                "MQTT connection not found (all nodes have the MQTT plugin disabled)"
-            ),
+            Error::MqttConnectionNotFound => {
+                write!(f, "MQTT connection not found (all nodes have the MQTT plugin disabled)")
+            }
             Error::IoError(e) => e.fmt(f),
         }
     }

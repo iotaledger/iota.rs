@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use iota::{Client, Ed25519Address};
 
 use std::convert::TryInto;

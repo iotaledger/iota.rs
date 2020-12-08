@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::{Client, Error, Result};
 
 use bee_message::prelude::{Address, Ed25519Address};
@@ -66,9 +69,7 @@ impl<'a> GetAddressesBuilder<'a> {
         for i in range {
             path.push(i as u32 + HARDEND);
             let public_key = Ed25519PrivateKey::generate_from_seed(seed, &path)
-                .expect(
-                    "Invalid Seed & BIP32Path. Probably because the index of path is not hardened.",
-                )
+                .expect("Invalid Seed & BIP32Path. Probably because the index of path is not hardened.")
                 .generate_public_key()
                 .to_bytes();
             // Hash the public key to get the address

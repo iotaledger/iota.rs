@@ -1,14 +1,20 @@
-use crate::client::{Client, TopicEvent, TopicHandlerMap};
-use crate::Result;
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+use crate::{
+    client::{Client, TopicEvent, TopicHandlerMap},
+    Result,
+};
 use paho_mqtt::{
-    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder,
-    MQTT_VERSION_3_1_1,
+    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, MQTT_VERSION_3_1_1,
 };
 use regex::Regex;
 
-use std::convert::TryFrom;
-use std::sync::{Arc, RwLock};
-use std::time::Duration;
+use std::{
+    convert::TryFrom,
+    sync::{Arc, RwLock},
+    time::Duration,
+};
 
 macro_rules! lazy_static {
     ($init:expr => $type:ty) => {{
@@ -42,14 +48,15 @@ impl Topic {
           [
             Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").unwrap(),
             Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").unwrap(),
-            Regex::new("addresses/([A-Fa-f0-9]{64})/outputs").unwrap(),
+            // bech32 address
+            Regex::new("addresses/(iota|atoi)1[A-Za-z0-9]+/outputs").unwrap(),
+            // ED25519 address hex
+            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
             Regex::new(r"messages/indexation/(\.)").unwrap()
           ].to_vec() => Vec<Regex>
         );
         let name = name.into();
-        if valid_topics.iter().any(|valid| valid == &name)
-            || regexes.iter().any(|re| re.is_match(&name))
-        {
+        if valid_topics.iter().any(|valid| valid == &name) || regexes.iter().any(|re| re.is_match(&name)) {
             let topic = Self(name);
             Ok(topic)
         } else {
@@ -66,11 +73,7 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                 // node.set_path("mqtt");
                 let uri = &format!(
                     "{}://{}:{}/mqtt",
-                    if node.scheme() == "https" {
-                        "wss"
-                    } else {
-                        "ws"
-                    },
+                    if node.scheme() == "https" { "wss" } else { "ws" },
                     node.host_str().unwrap(),
                     node.port_or_known_default().unwrap()
                 );
@@ -93,10 +96,7 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                     break;
                 }
             }
-            client
-                .mqtt_client
-                .as_ref()
-                .ok_or(crate::Error::MqttConnectionNotFound)
+            client.mqtt_client.as_ref().ok_or(crate::Error::MqttConnectionNotFound)
         }
     }
 }
@@ -178,10 +178,7 @@ pub struct MqttTopicManager<'a> {
 impl<'a> MqttTopicManager<'a> {
     /// Initializes a new instance of the mqtt topic manager.
     fn new(client: &'a mut Client) -> Self {
-        Self {
-            client,
-            topics: vec![],
-        }
+        Self { client, topics: vec![] }
     }
 
     /// Add a new topic to the list.
@@ -197,22 +194,11 @@ impl<'a> MqttTopicManager<'a> {
     }
 
     /// Subscribe to the given topics with the callback.
-    pub fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(
-        mut self,
-        callback: C,
-    ) -> Result<()> {
+    pub fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(mut self, callback: C) -> Result<()> {
         let client = get_mqtt_client(&mut self.client)?;
-        let cb =
-            Arc::new(Box::new(callback)
-                as Box<
-                    dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static,
-                >);
+        let cb = Arc::new(Box::new(callback) as Box<dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static>);
         client.subscribe_many(
-            &self
-                .topics
-                .iter()
-                .map(|t| t.0.clone())
-                .collect::<Vec<String>>(),
+            &self.topics.iter().map(|t| t.0.clone()).collect::<Vec<String>>(),
             &vec![1; self.topics.len()],
         )?;
         {

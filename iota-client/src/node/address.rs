@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::{AddressBalance, AddressOutputs, Client, Error, Response, Result};
 
 use bee_message::prelude::{Address, TransactionId, UTXOInput};
@@ -16,8 +19,8 @@ impl<'a> GetAddressBuilder<'a> {
     }
 
     /// Consume the builder and get the balance of a given address.
-    /// If count equals maxResults, then there might be more outputs available but those were skipped for performance reasons.
-    /// User should sweep the address to reduce the amount of outputs.
+    /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
+    /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn balance(self, address: &'a Address) -> Result<u64> {
         let address = address.to_bech32();
         let mut url = self.client.get_node()?;
@@ -34,8 +37,8 @@ impl<'a> GetAddressBuilder<'a> {
     }
 
     /// Consume the builder and get all outputs that use a given address.
-    /// If count equals maxResults, then there might be more outputs available but those were skipped for performance reasons.
-    /// User should sweep the address to reduce the amount of outputs.
+    /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
+    /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, address: &'a Address) -> Result<Box<[UTXOInput]>> {
         let address = address.to_bech32();
         let mut url = self.client.get_node()?;
@@ -44,18 +47,13 @@ impl<'a> GetAddressBuilder<'a> {
 
         match resp.status().as_u16() {
             200 => {
-                let r = resp
-                    .json::<Response<AddressOutputs>>()
-                    .await?
-                    .data
-                    .output_ids;
+                let r = resp.json::<Response<AddressOutputs>>().await?.data.output_ids;
                 r.iter()
                     .map(|s| {
                         let mut transaction_id = [0u8; 32];
                         hex::decode_to_slice(&s[..64], &mut transaction_id)?;
                         let index = u16::from_le_bytes(
-                            hex::decode(&s[64..])
-                                .map_err(|_| Error::InvalidParameter("index".to_string()))?[..]
+                            hex::decode(&s[64..]).map_err(|_| Error::InvalidParameter("index".to_string()))?[..]
                                 .try_into()
                                 .map_err(|_| Error::InvalidParameter("index".to_string()))?,
                         );

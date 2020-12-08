@@ -1,7 +1,12 @@
-use std::convert::TryInto;
-use std::sync::{
-    mpsc::{channel, Receiver, Sender},
-    Arc, Mutex,
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+use std::{
+    convert::TryInto,
+    sync::{
+        mpsc::{channel, Receiver, Sender},
+        Arc, Mutex,
+    },
 };
 
 use iota::Topic;
@@ -25,11 +30,7 @@ impl Task for WaitForMessageTask {
         })
     }
 
-    fn complete(
-        self,
-        mut cx: TaskContext,
-        result: Result<Self::Output, Self::Error>,
-    ) -> JsResult<Self::JsEvent> {
+    fn complete(self, mut cx: TaskContext, result: Result<Self::Output, Self::Error>) -> JsResult<Self::JsEvent> {
         match result {
             Ok(s) => Ok(cx.string(s)),
             Err(e) => cx.throw_error(format!("WaitForMessageTask error: {:?}", e)),
@@ -82,11 +83,7 @@ impl Task for TopicTask {
         })
     }
 
-    fn complete(
-        self,
-        mut cx: TaskContext,
-        result: Result<Self::Output, Self::Error>,
-    ) -> JsResult<Self::JsEvent> {
+    fn complete(self, mut cx: TaskContext, result: Result<Self::Output, Self::Error>) -> JsResult<Self::JsEvent> {
         match result {
             Ok(_) => Ok(cx.undefined()),
             Err(e) => cx.throw_error(format!("SubUnsubTask error: {:?}", e)),

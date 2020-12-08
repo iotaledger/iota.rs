@@ -1,14 +1,21 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! Builder of the Clinet Instnace
 
-use crate::client::{BrokerOptions, Client};
-use crate::error::*;
+use crate::{
+    client::{BrokerOptions, Client},
+    error::*,
+};
 
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
-use std::collections::HashSet;
-use std::num::NonZeroU64;
-use std::sync::{Arc, RwLock};
+use std::{
+    collections::HashSet,
+    num::NonZeroU64,
+    sync::{Arc, RwLock},
+};
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
@@ -133,13 +140,7 @@ impl ClientBuilder {
         let runtime = std::thread::spawn(move || {
             let mut runtime = Runtime::new().unwrap();
             runtime.block_on(Client::sync_nodes(&sync_, &nodes));
-            Client::start_sync_process(
-                &runtime,
-                sync_,
-                nodes,
-                node_sync_interval,
-                sync_kill_receiver,
-            );
+            Client::start_sync_process(&runtime, sync_, nodes, node_sync_interval, sync_kill_receiver);
             runtime
         })
         .join()
