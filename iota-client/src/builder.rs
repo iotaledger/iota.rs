@@ -8,13 +8,14 @@ use crate::{
     error::*,
 };
 
+use reqwest::Url;
+use tokio::{runtime::Runtime, sync::broadcast::channel};
+
 use std::{
     collections::HashSet,
-    iter::FromIterator,
+    num::NonZeroU64,
     sync::{Arc, RwLock},
 };
-
-use reqwest::Url;
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
@@ -30,6 +31,7 @@ pub enum Network {
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
     nodes: Vec<Url>,
+    node_sync_interval: NonZeroU64,
     network: Network,
     quorum_size: u8,
     quorum_threshold: u8,
@@ -40,6 +42,7 @@ impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
             nodes: Vec::new(),
+            node_sync_interval: NonZeroU64::new(60000).unwrap(),
             network: Network::Mainnet,
             quorum_size: 3,
             quorum_threshold: 50,
@@ -58,6 +61,12 @@ impl ClientBuilder {
     pub fn node(mut self, url: &str) -> Result<Self> {
         let url = Url::parse(url).map_err(|_| Error::UrlError)?;
         self.nodes.push(url);
+        Ok(self)
+    }
+
+    /// Set the node sync interval
+    pub fn node_sync_interval(mut self, node_sync_interval: NonZeroU64) -> Result<Self> {
+        self.node_sync_interval = node_sync_interval;
         Ok(self)
     }
 
@@ -120,9 +129,27 @@ impl ClientBuilder {
             x => x,
         };
 
+        let nodes = self.nodes;
+        let node_sync_interval = self.node_sync_interval;
+
+        let sync = Arc::new(RwLock::new(HashSet::new()));
+        let sync_ = sync.clone();
+
+        let (sync_kill_sender, sync_kill_receiver) = channel(1);
+
+        let runtime = std::thread::spawn(move || {
+            let mut runtime = Runtime::new().unwrap();
+            runtime.block_on(Client::sync_nodes(&sync_, &nodes));
+            Client::start_sync_process(&runtime, sync_, nodes, node_sync_interval, sync_kill_receiver);
+            runtime
+        })
+        .join()
+        .expect("failed to init node syncing process");
+
         let client = Client {
-            pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
-            sync: Arc::new(RwLock::new(Vec::new())),
+            runtime: Some(runtime),
+            sync,
+            sync_kill_sender: Arc::new(sync_kill_sender),
             client: reqwest::Client::new(),
             mwm,
             quorum_size,
@@ -131,16 +158,6 @@ impl ClientBuilder {
             mqtt_topic_handlers: Default::default(),
             broker_options: self.broker_options,
         };
-
-        // let mut sync = client.clone();
-        // tokio::block_on(async { sync.sync() });
-
-        // tokio::spawn(async {
-        //     loop {
-        //         tokio::time::delay_for(std::time::Duration::from_secs(180)).await;
-        //         sync.sync();
-        //     }
-        // });
 
         Ok(client)
     }

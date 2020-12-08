@@ -1,7 +1,10 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::sync::{Arc, Mutex};
+use std::{
+    num::NonZeroU64,
+    sync::{Arc, Mutex},
+};
 
 use iota::client::{BrokerOptions, ClientBuilder};
 use neon::prelude::*;
@@ -11,16 +14,18 @@ pub struct ClientBuilderWrapper {
     quorum_size: Arc<Mutex<Option<u8>>>,
     quorum_threshold: Arc<Mutex<Option<u8>>>,
     broker_options: Arc<Mutex<Option<BrokerOptions>>>,
+    node_sync_interval: Arc<Mutex<Option<NonZeroU64>>>,
 }
 
 declare_types! {
     pub class JsClientBuilder for ClientBuilderWrapper {
         init(_) {
             Ok(ClientBuilderWrapper {
-                nodes: Arc::new(Mutex::new(vec![])),
-                quorum_size: Arc::new(Mutex::new(None)),
-                quorum_threshold: Arc::new(Mutex::new(None)),
-                broker_options: Arc::new(Mutex::new(None)),
+                nodes: Default::default(),
+                quorum_size: Default::default(),
+                quorum_threshold: Default::default(),
+                broker_options: Default::default(),
+                node_sync_interval: Default::default(),
             })
         }
 
@@ -89,6 +94,18 @@ declare_types! {
                 let ref_ = &(*this.borrow(&guard)).broker_options;
                 let mut broker_options_ref = ref_.lock().unwrap();
                 broker_options_ref.replace(options);
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method nodeSyncInterval(mut cx) {
+            let interval = cx.argument::<JsNumber>(0)?.value() as u64;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).node_sync_interval;
+                let mut interval_ref = ref_.lock().unwrap();
+                interval_ref.replace(NonZeroU64::new(interval).expect("interval can't be zero"));
             }
             Ok(cx.this().upcast())
         }
