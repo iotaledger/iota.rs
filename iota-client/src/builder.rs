@@ -121,12 +121,6 @@ impl ClientBuilder {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
 
-        let mwm = match self.network {
-            Network::Mainnet => 14,
-            Network::Comnet => 10,
-            Network::Devnet => 9,
-        };
-
         let quorum_size = match self.nodes.len() {
             1 => 1,
             _ => self.quorum_size,
@@ -159,7 +153,6 @@ impl ClientBuilder {
             sync,
             sync_kill_sender: Arc::new(sync_kill_sender),
             client: reqwest::Client::new(),
-            mwm,
             quorum_size,
             quorum_threshold,
             mqtt_client: None,

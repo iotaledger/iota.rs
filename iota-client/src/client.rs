@@ -93,7 +93,6 @@ pub struct Client {
     pub(crate) sync_kill_sender: Arc<Sender<()>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
-    pub(crate) mwm: u8,
     pub(crate) quorum_size: u8,
     pub(crate) quorum_threshold: u8,
     /// A MQTT client to subscribe/unsubscribe to topics.
@@ -108,7 +107,6 @@ impl std::fmt::Debug for Client {
         f.debug_struct("Client")
             .field("sync", &self.sync)
             .field("client", &self.client)
-            .field("mwm", &self.mwm)
             .field("quorum_size", &self.quorum_size)
             .field("quorum_threshold", &self.quorum_threshold)
             .field("broker_options", &self.broker_options)
@@ -268,26 +266,7 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
-        let message: MessageJson = if self.local_pow {
-            let mut message_json: MessageJson = message.into();
-            message_json.clear_nonce();
-            let message_json = serde_json::to_string(&message_json)?;
-            let message_bytes = message_json.as_bytes();
-            let nonce = bee_pow::compute_pow_score(&message_bytes);
-
-            let mut builder = Message::builder()
-                .with_network_id(message.network_id())
-                .with_parent1(*message.parent1())
-                .with_parent2(*message.parent2())
-                .with_nonce(nonce as u64);
-            if let Some(payload) = message.payload() {
-                builder = builder.with_payload(payload.clone());
-            }
-            let message = builder.finish()?;
-            (&message).into()
-        } else {
-            message.into()
-        };
+        let message: MessageJson = message.into();
 
         let resp = self
             .client
@@ -297,6 +276,9 @@ impl Client {
             .send()
             .await?;
 
+        /* println!("{:?}", message);
+        println!("{:?}", resp.status());
+        println!("{:?}", resp.text().await?); */
         match resp.status().as_u16() {
             201 => {
                 let m = resp.json::<Response<PostMessageId>>().await?.data;

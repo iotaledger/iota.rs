@@ -8,6 +8,9 @@ use bee_message::{
     payload::milestone::{MilestoneEssence, MILESTONE_MERKLE_PROOF_LENGTH},
     prelude::*,
 };
+use bee_pow::providers::{
+    ProviderBuilder as PowProviderBuilder, {Constant, ConstantBuilder},
+};
 use serde::ser::Serializer;
 
 use std::{
@@ -261,12 +264,6 @@ pub struct MessageJson {
     nonce: String,
 }
 
-impl MessageJson {
-    pub(crate) fn clear_nonce(&mut self) {
-        self.nonce = "".to_string();
-    }
-}
-
 impl ResponseType for MessageJson {}
 
 impl From<&Message> for MessageJson {
@@ -291,16 +288,21 @@ impl TryFrom<MessageJson> for Message {
         let nonce = value.nonce;
         let parent1 = MessageId::new(parent1);
         let parent2 = MessageId::new(parent2);
-        Ok(Message::builder()
+        Ok(MessageBuilder::<Constant>::new()
             // TODO: make the newtwork id configurable
             .with_network_id(0)
             .with_parent1(parent1)
             .with_parent2(parent2)
             .with_payload(get_payload_from_json(value.payload, Some((parent1, parent2)))?)
-            .with_nonce(
-                nonce
-                    .parse()
-                    .map_err(|_| crate::Error::InvalidParameter(format!("nonce {}", nonce)))?,
+            .with_nonce_provider(
+                ConstantBuilder::new()
+                    .with_value(
+                        nonce
+                            .parse()
+                            .map_err(|_| crate::Error::InvalidParameter(format!("nonce {}", nonce)))?,
+                    )
+                    .finish(),
+                4000f64,
             )
             .finish()?)
     }

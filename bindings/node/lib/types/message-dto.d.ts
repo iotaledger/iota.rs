@@ -44,6 +44,5 @@ export declare type PayloadDto = TransactionPayloadDto | IndexationPayloadDto
 export declare interface MessageDto {
   parent1: string
   parent2: string
-  payload?: Payload
-  nonce?: number
+  payload?: PayloadDto
 }

@@ -4,6 +4,7 @@
 use bech32::FromBase32;
 use iota::{
     message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput},
+    pow::providers::{MinerBuilder, ProviderBuilder},
     Seed,
 };
 use neon::prelude::*;
@@ -257,7 +258,7 @@ declare_types! {
                  .with_network_id(0)
                  .with_parent1(MessageId::from_str(&message.parent1).expect("invalid parent1 message id"))
                  .with_parent2(MessageId::from_str(&message.parent2).expect("invalid parent2 message id"))
-                 .with_nonce(message.nonce)
+                 .with_nonce_provider(MinerBuilder::new().with_num_workers(num_cpus::get()).finish(), 4000f64)
                  .with_payload(message.payload.try_into().expect("invalid payload"));
 
             let cb = cx.argument::<JsFunction>(1)?;

@@ -145,7 +145,6 @@ pub(super) struct MessageDto {
     pub parent1: String,
     pub parent2: String,
     pub payload: MessagePayloadDto,
-    pub nonce: u64,
 }
 
 impl TryFrom<MessagePayloadDto> for Payload {
