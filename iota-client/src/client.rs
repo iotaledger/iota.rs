@@ -3,7 +3,7 @@
 
 //! The Client module to connect through IRI with API usages
 pub use crate::node::Topic;
-use crate::{api::*, builder::ClientBuilder, error::*, node::*, types::*};
+use crate::{api::*, builder::ClientBuilder, error::*, node::*, parse_response, types::*};
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_signing_ext::Seed;
@@ -223,10 +223,9 @@ impl Client {
         url.set_path("api/v1/info");
         let resp = reqwest::get(url).await?;
 
-        match resp.status().as_u16() {
-            200 => Ok(resp.json::<Response<NodeInfo>>().await?.data),
-            status => Err(Error::ResponseError(status)),
-        }
+        parse_response!(resp, 200 => {
+            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+        })
     }
 
     /// GET /api/v1/info endpoint
@@ -235,10 +234,9 @@ impl Client {
         url.set_path("api/v1/info");
         let resp = self.client.get(url).send().await?;
 
-        match resp.status().as_u16() {
-            200 => Ok(resp.json::<Response<NodeInfo>>().await?.data),
-            status => Err(Error::ResponseError(status)),
-        }
+        parse_response!(resp, 200 => {
+            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+        })
     }
 
     /// GET /api/v1/tips endpoint
@@ -247,17 +245,14 @@ impl Client {
         url.set_path("api/v1/tips");
         let resp = self.client.get(url).send().await?;
 
-        match resp.status().as_u16() {
-            200 => {
-                let pair = resp.json::<Response<Tips>>().await?.data;
-                let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
-                hex::decode_to_slice(pair.tip1, &mut tip1)?;
-                hex::decode_to_slice(pair.tip2, &mut tip2)?;
+        parse_response!(resp, 200 => {
+            let pair = resp.json::<Response<Tips>>().await?.data;
+            let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
+            hex::decode_to_slice(pair.tip1, &mut tip1)?;
+            hex::decode_to_slice(pair.tip2, &mut tip2)?;
 
-                Ok((MessageId::from(tip1), MessageId::from(tip2)))
-            }
-            status => Err(Error::ResponseError(status)),
-        }
+            Ok((MessageId::from(tip1), MessageId::from(tip2)))
+        })
     }
 
     /// POST /api/v1/messages endpoint
@@ -273,15 +268,12 @@ impl Client {
             .send()
             .await?;
 
-        match resp.status().as_u16() {
-            201 => {
-                let m = resp.json::<Response<PostMessageId>>().await?.data;
-                let mut message_id = [0u8; 32];
-                hex::decode_to_slice(m.message_id, &mut message_id)?;
-                Ok(MessageId::from(message_id))
-            }
-            status => Err(Error::ResponseError(status)),
-        }
+        parse_response!(resp, 201 => {
+            let m = resp.json::<Response<PostMessageId>>().await?.data;
+            let mut message_id = [0u8; 32];
+            hex::decode_to_slice(m.message_id, &mut message_id)?;
+            Ok(MessageId::from(message_id))
+        })
     }
 
     /// GET /api/v1/messages/{messageId} endpoint
@@ -300,28 +292,25 @@ impl Client {
         ));
         let resp = reqwest::get(url).await?;
 
-        match resp.status().as_u16() {
-            200 => {
-                let raw = resp.json::<Response<RawOutput>>().await?.data;
-                Ok(OutputMetadata {
-                    message_id: hex::decode(raw.message_id)?,
-                    transaction_id: hex::decode(raw.transaction_id)?,
-                    output_index: raw.output_index,
-                    is_spent: raw.is_spent,
-                    amount: raw.output.amount,
-                    address: {
-                        if raw.output.type_ == 0 && raw.output.address.type_ == 1 {
-                            let mut address = [0u8; ADDRESS_LENGTH];
-                            hex::decode_to_slice(raw.output.address.address, &mut address)?;
-                            Address::from(Ed25519Address::from(address))
-                        } else {
-                            return Err(Error::InvalidParameter("address type".to_string()));
-                        }
-                    },
-                })
-            }
-            status => Err(Error::ResponseError(status)),
-        }
+        parse_response!(resp, 200 => {
+            let raw = resp.json::<Response<RawOutput>>().await?.data;
+            Ok(OutputMetadata {
+                message_id: hex::decode(raw.message_id)?,
+                transaction_id: hex::decode(raw.transaction_id)?,
+                output_index: raw.output_index,
+                is_spent: raw.is_spent,
+                amount: raw.output.amount,
+                address: {
+                    if raw.output.type_ == 0 && raw.output.address.type_ == 1 {
+                        let mut address = [0u8; ADDRESS_LENGTH];
+                        hex::decode_to_slice(raw.output.address.address, &mut address)?;
+                        Address::from(Ed25519Address::from(address))
+                    } else {
+                        return Err(Error::InvalidParameter("address type".to_string()));
+                    }
+                },
+            })
+        })
     }
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceed individual node limit.
@@ -364,13 +353,10 @@ impl Client {
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = reqwest::get(url).await?;
 
-        match resp.status().as_u16() {
-            200 => {
-                let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
-                Ok(milestone)
-            }
-            status => Err(Error::ResponseError(status)),
-        }
+        parse_response!(resp, 200 => {
+            let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
+            Ok(milestone)
+        })
     }
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
