@@ -21,8 +21,8 @@ pub enum Error {
     InvalidParameter(String),
     /// Found Spent Address that still has balance
     SpentAddress,
-    /// Error from RestAPI calls with status code other than 200
-    ResponseError(u16),
+    /// Error from RestAPI calls with unexpected status code response
+    ResponseError(u16, String),
     /// No node available in the synced node pool
     SyncedNodePoolEmpty,
     /// Error on Url type conversion
@@ -59,7 +59,7 @@ impl fmt::Display for Error {
                 write!(f, "The wallet account doesn't have enough balance. It only has {:?}", v)
             }
             Error::FromHexError(e) => e.fmt(f),
-            Error::ResponseError(s) => write!(f, "Response error with status code {}", s),
+            Error::ResponseError(s, message) => write!(f, "Response error with status code {}: {}", s, message),
             Error::MessageError(e) => e.fmt(f),
             Error::NoNeedPromoteOrReattach(s) => {
                 write!(f, "Message ID {} cannot be promoted or reattached", s)
