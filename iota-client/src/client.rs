@@ -223,7 +223,7 @@ impl Client {
         url.set_path("api/v1/info");
         let resp = reqwest::get(url).await?;
 
-        parse_response!(resp => 200, {
+        parse_response!(resp, 200 => {
             Ok(resp.json::<Response<NodeInfo>>().await?.data)
         })
     }
@@ -234,7 +234,7 @@ impl Client {
         url.set_path("api/v1/info");
         let resp = self.client.get(url).send().await?;
 
-        parse_response!(resp => 200, {
+        parse_response!(resp, 200 => {
             Ok(resp.json::<Response<NodeInfo>>().await?.data)
         })
     }
@@ -245,7 +245,7 @@ impl Client {
         url.set_path("api/v1/tips");
         let resp = self.client.get(url).send().await?;
 
-        parse_response!(resp => 200, {
+        parse_response!(resp, 200 => {
             let pair = resp.json::<Response<Tips>>().await?.data;
             let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
             hex::decode_to_slice(pair.tip1, &mut tip1)?;
@@ -268,7 +268,7 @@ impl Client {
             .send()
             .await?;
 
-        parse_response!(resp => 201, {
+        parse_response!(resp, 201 => {
             let m = resp.json::<Response<PostMessageId>>().await?.data;
             let mut message_id = [0u8; 32];
             hex::decode_to_slice(m.message_id, &mut message_id)?;
@@ -292,7 +292,7 @@ impl Client {
         ));
         let resp = reqwest::get(url).await?;
 
-        parse_response!(resp => 200, {
+        parse_response!(resp, 200 => {
             let raw = resp.json::<Response<RawOutput>>().await?.data;
             Ok(OutputMetadata {
                 message_id: hex::decode(raw.message_id)?,
@@ -353,7 +353,7 @@ impl Client {
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = reqwest::get(url).await?;
 
-        parse_response!(resp => 200, {
+        parse_response!(resp, 200 => {
             let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
             Ok(milestone)
         })

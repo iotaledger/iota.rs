@@ -27,7 +27,7 @@ impl<'a> GetAddressBuilder<'a> {
         url.set_path(&format!("api/v1/addresses/{}", address));
         let resp = reqwest::get(url).await?;
 
-        parse_response!(resp => 200, {
+        parse_response!(resp, 200 => {
             let r = resp.json::<Response<AddressBalance>>().await?.data;
             Ok(r.balance)
         })
@@ -42,7 +42,7 @@ impl<'a> GetAddressBuilder<'a> {
         url.set_path(&format!("api/v1/addresses/{}/outputs", address));
         let resp = reqwest::get(url).await?;
 
-        parse_response!(resp => 200, {
+        parse_response!(resp, 200 => {
             let r = resp.json::<Response<AddressOutputs>>().await?.data.output_ids;
             r.iter()
                 .map(|s| {

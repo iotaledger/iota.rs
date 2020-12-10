@@ -26,7 +26,7 @@ pub use types::*;
 /// match a response with an expected status code or return the default error variant.
 #[macro_export]
 macro_rules! parse_response {
-    ($response:ident => $expected_status:pat, $ok:block) => {{
+    ($response:ident, $expected_status:pat => $ok:block) => {{
         match $response.status().as_u16() {
             $expected_status => $ok,
             status => Err(Error::ResponseError(status, $response.text().await?)),
