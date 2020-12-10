@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use iota::{message::prelude::Address, BIP32Path, Seed};
 use neon::prelude::*;
 

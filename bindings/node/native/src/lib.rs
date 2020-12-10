@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use backtrace::Backtrace;
 use futures::{Future, FutureExt};
 use iota::Client;
@@ -58,9 +61,7 @@ pub(crate) fn get_client(id: &str) -> Arc<RwLock<Client>> {
     let map = instances()
         .read()
         .expect("failed to lock client instances: get_client()");
-    map.get(id)
-        .expect("client dropped or not initialised")
-        .clone()
+    map.get(id).expect("client dropped or not initialised").clone()
 }
 
 pub(crate) fn store_client(client: Client) -> String {
@@ -91,9 +92,7 @@ fn panic_to_response_message(panic: Box<dyn Any>) -> String {
     format!("{}\n\n{:?}", msg, current_backtrace)
 }
 
-pub(crate) async fn convert_async_panics<T, F: Future<Output = Result<T>>>(
-    f: impl FnOnce() -> F,
-) -> Result<T> {
+pub(crate) async fn convert_async_panics<T, F: Future<Output = Result<T>>>(f: impl FnOnce() -> F) -> Result<T> {
     match AssertUnwindSafe(f()).catch_unwind().await {
         Ok(result) => result,
         Err(panic) => Err(Error::Panic(panic_to_response_message(panic))),

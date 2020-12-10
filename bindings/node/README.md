@@ -89,6 +89,16 @@ Sets the options for the MQTT connection with the node.
 
 **Returns** the client builder instance for chained calls.
 
+#### nodeSyncInterval(interval): ClientBuilder
+
+Sets the node syncing interval.
+
+| Param    | Type                | Description                               |
+| -------- | ------------------- | ----------------------------------------- |
+| interval | <code>number</code> | The interval for the node syncing process |
+
+**Returns** the client builder instance for chained calls.
+
 #### build(): Client
 
 Builds the client instance.

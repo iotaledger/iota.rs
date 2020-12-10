@@ -1,14 +1,20 @@
-use crate::client::{Client, TopicEvent, TopicHandlerMap};
-use crate::Result;
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+use crate::{
+    client::{Client, TopicEvent, TopicHandlerMap},
+    Result,
+};
 use paho_mqtt::{
-    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder,
-    MQTT_VERSION_3_1_1,
+    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, MQTT_VERSION_3_1_1,
 };
 use regex::Regex;
 
-use std::convert::TryFrom;
-use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::{
+    convert::TryFrom,
+    sync::{Arc, RwLock},
+    time::Duration,
+};
 
 macro_rules! lazy_static {
     ($init:expr => $type:ty) => {{
@@ -42,14 +48,15 @@ impl Topic {
           [
             Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").unwrap(),
             Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").unwrap(),
-            Regex::new("addresses/([A-Fa-f0-9]{64})/outputs").unwrap(),
+            // bech32 address
+            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").unwrap(),
+            // ED25519 address hex
+            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
             Regex::new(r"messages/indexation/(\.)").unwrap()
           ].to_vec() => Vec<Regex>
         );
         let name = name.into();
-        if valid_topics.iter().any(|valid| valid == &name)
-            || regexes.iter().any(|re| re.is_match(&name))
-        {
+        if valid_topics.iter().any(|valid| valid == &name) || regexes.iter().any(|re| re.is_match(&name)) {
             let topic = Self(name);
             Ok(topic)
         } else {
@@ -62,15 +69,11 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
     match client.mqtt_client {
         Some(ref c) => Ok(c),
         None => {
-            for node in client.pool.read().unwrap().iter() {
+            for node in client.sync.read().unwrap().iter() {
                 // node.set_path("mqtt");
                 let uri = &format!(
                     "{}://{}:{}/mqtt",
-                    if node.scheme() == "https" {
-                        "wss"
-                    } else {
-                        "ws"
-                    },
+                    if node.scheme() == "https" { "wss" } else { "ws" },
                     node.host_str().unwrap(),
                     node.port_or_known_default().unwrap()
                 );
@@ -93,21 +96,18 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                     break;
                 }
             }
-            client
-                .mqtt_client
-                .as_ref()
-                .ok_or(crate::Error::MqttConnectionNotFound)
+            client.mqtt_client.as_ref().ok_or(crate::Error::MqttConnectionNotFound)
         }
     }
 }
 
-fn poll_mqtt(mqtt_topic_handlers: Arc<Mutex<TopicHandlerMap>>, client: &mut MqttClient) {
+fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, client: &mut MqttClient) {
     let receiver = client.start_consuming();
     std::thread::spawn(move || {
         while let Ok(message) = receiver.recv() {
             if let Some(message) = message {
                 let topic = message.topic().to_string();
-                let mqtt_topic_handlers_guard = mqtt_topic_handlers.lock().unwrap();
+                let mqtt_topic_handlers_guard = mqtt_topic_handlers.read().unwrap();
                 if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
                     let event = TopicEvent {
                         topic,
@@ -160,7 +160,7 @@ impl<'a> MqttManager<'a> {
 
         {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
             mqtt_topic_handlers.clear()
         }
 
@@ -178,10 +178,7 @@ pub struct MqttTopicManager<'a> {
 impl<'a> MqttTopicManager<'a> {
     /// Initializes a new instance of the mqtt topic manager.
     fn new(client: &'a mut Client) -> Self {
-        Self {
-            client,
-            topics: vec![],
-        }
+        Self { client, topics: vec![] }
     }
 
     /// Add a new topic to the list.
@@ -197,27 +194,16 @@ impl<'a> MqttTopicManager<'a> {
     }
 
     /// Subscribe to the given topics with the callback.
-    pub fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(
-        mut self,
-        callback: C,
-    ) -> Result<()> {
+    pub fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(mut self, callback: C) -> Result<()> {
         let client = get_mqtt_client(&mut self.client)?;
-        let cb =
-            Arc::new(Box::new(callback)
-                as Box<
-                    dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static,
-                >);
+        let cb = Arc::new(Box::new(callback) as Box<dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static>);
         client.subscribe_many(
-            &self
-                .topics
-                .iter()
-                .map(|t| t.0.clone())
-                .collect::<Vec<String>>(),
+            &self.topics.iter().map(|t| t.0.clone()).collect::<Vec<String>>(),
             &vec![1; self.topics.len()],
         )?;
         {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
             for topic in self.topics {
                 match mqtt_topic_handlers.get_mut(&topic) {
                     Some(handlers) => handlers.push(cb.clone()),
@@ -235,7 +221,7 @@ impl<'a> MqttTopicManager<'a> {
     pub fn unsubscribe(mut self) -> Result<()> {
         let topics = {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+            let mqtt_topic_handlers = mqtt_topic_handlers.read().unwrap();
             if self.topics.is_empty() {
                 mqtt_topic_handlers.keys().cloned().collect()
             } else {
@@ -248,7 +234,7 @@ impl<'a> MqttTopicManager<'a> {
 
         let empty_topic_handlers = {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mut mqtt_topic_handlers = mqtt_topic_handlers.lock().unwrap();
+            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
             for topic in topics {
                 mqtt_topic_handlers.remove(&topic);
             }

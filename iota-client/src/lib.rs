@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! Provides access to the Iota Client API
 
 #![deny(unused_extern_crates)]

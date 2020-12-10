@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! Types of several IOTA APIs related objects
 use crate::Result;
 
@@ -293,10 +296,7 @@ impl TryFrom<MessageJson> for Message {
             .with_network_id(0)
             .with_parent1(parent1)
             .with_parent2(parent2)
-            .with_payload(get_payload_from_json(
-                value.payload,
-                Some((parent1, parent2)),
-            )?)
+            .with_payload(get_payload_from_json(value.payload, Some((parent1, parent2)))?)
             .with_nonce(
                 nonce
                     .parse()
@@ -374,10 +374,7 @@ impl From<&Payload> for PayloadJson {
     }
 }
 
-fn get_payload_from_json(
-    payload: PayloadJson,
-    tips: Option<(MessageId, MessageId)>,
-) -> Result<Payload> {
+fn get_payload_from_json(payload: PayloadJson, tips: Option<(MessageId, MessageId)>) -> Result<Payload> {
     match payload {
         PayloadJson::Transaction(transaction_payload) => {
             let mut transaction = Transaction::builder();
@@ -391,11 +388,7 @@ fn get_payload_from_json(
             Ok(Payload::Transaction(Box::new(transaction.finish()?)))
         }
         PayloadJson::Indexation(indexation_payload) => {
-            let indexation = Indexation::new(
-                indexation_payload.index,
-                &hex::decode(indexation_payload.data)?,
-            )
-            .unwrap();
+            let indexation = Indexation::new(indexation_payload.index, &hex::decode(indexation_payload.data)?).unwrap();
             Ok(Payload::Indexation(Box::new(indexation)))
         }
         PayloadJson::Milestone(milestone_payload) => {
@@ -482,8 +475,7 @@ impl TryFrom<TransactionEssenceJson> for TransactionEssence {
 
         builder = match value.payload {
             Some(indexation) => builder.with_payload(
-                get_payload_from_json(*indexation, None)
-                    .expect("Invalid indexation in TransactionEssenceJson"),
+                get_payload_from_json(*indexation, None).expect("Invalid indexation in TransactionEssenceJson"),
             ),
             _ => builder,
         };
@@ -555,10 +547,7 @@ impl TryFrom<OutputJson> for Output {
     fn try_from(value: OutputJson) -> Result<Self> {
         let output = SignatureLockedSingleOutput::new(
             value.address.try_into()?,
-            value
-                .amount
-                .try_into()
-                .expect("Output amount cannot be zero."),
+            value.amount.try_into().expect("Output amount cannot be zero."),
         );
         Ok(output.into())
     }
@@ -635,17 +624,11 @@ impl TryFrom<UnlockBlockJson> for UnlockBlock {
     fn try_from(value: UnlockBlockJson) -> Result<Self> {
         match value.type_ {
             0 => {
-                let sig: SignatureUnlock = value
-                    .signature
-                    .expect("Must contain signature.")
-                    .try_into()?;
+                let sig: SignatureUnlock = value.signature.expect("Must contain signature.").try_into()?;
                 Ok(sig.into())
             }
             1 => {
-                let reference: ReferenceUnlock = value
-                    .reference
-                    .expect("Must contain reference.")
-                    .try_into()?;
+                let reference: ReferenceUnlock = value.reference.expect("Must contain reference.").try_into()?;
                 Ok(reference.into())
             }
             _ => unreachable!(),

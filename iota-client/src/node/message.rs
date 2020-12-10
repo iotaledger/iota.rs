@@ -1,6 +1,7 @@
-use crate::{
-    ChildrenMessageIds, Client, Error, MessageIds, MessageJson, MessageMetadata, Response, Result,
-};
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+use crate::{ChildrenMessageIds, Client, Error, MessageIds, MessageJson, MessageMetadata, Response, Result};
 
 use bee_message::{Message, MessageId};
 

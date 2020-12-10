@@ -16,6 +16,7 @@ export declare class ClientBuilder {
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
+  nodeSyncInterval(interval: number): ClientBuilder
   build(): Client
 }
 
