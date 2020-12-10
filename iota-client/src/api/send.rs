@@ -88,9 +88,11 @@ impl<'a> SendBuilder<'a> {
         // Calculate the total tokens to spend
         let mut total_to_spend = 0;
         let mut total_already_spent = 0;
+        let mut output_addresses = Vec::new();
         for output in &self.outputs {
             if let Output::SignatureLockedSingle(x) = &output {
                 total_to_spend += x.amount().get();
+                output_addresses.push(x.address());
             }
         }
 
@@ -112,6 +114,11 @@ impl<'a> SendBuilder<'a> {
                 .range(index..index + 20)
                 .get()?;
 
+            // Get only addresses, which aren't already used as output (if you want to send it to yourself)
+            let mut new_address_list: Vec<&Address> = addresses
+                .iter()
+                .filter(|address| !output_addresses.contains(&address))
+                .collect();
             // For each address, get the address outputs
             for (address_index, address) in addresses.iter().enumerate() {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
@@ -162,7 +169,7 @@ impl<'a> SendBuilder<'a> {
                                 if total_already_spent > total_to_spend {
                                     essence = essence.add_output(
                                         SignatureLockedSingleOutput::new(
-                                            address.clone(),
+                                            new_address_list.drain(0..1).collect::<Vec<&Address>>()[0].clone(),
                                             NonZeroU64::new(total_already_spent - total_to_spend).unwrap(),
                                         )
                                         .into(),
@@ -235,7 +242,6 @@ impl<'a> SendBuilder<'a> {
 
         // get tips
         let tips = self.client.get_tips().await?;
-
         // building message
         let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
