@@ -251,7 +251,7 @@ impl Client {
     }
 
     /// Gets the miner to use based on the PoW setting
-    pub fn get_miner(&self) -> ClientMiner {
+    pub fn get_pow_provider(&self) -> ClientMiner {
         ClientMinerBuilder::new().with_local_pow(self.local_pow).finish()
     }
 

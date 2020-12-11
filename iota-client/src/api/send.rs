@@ -244,7 +244,7 @@ impl<'a> SendBuilder<'a> {
             .with_parent1(tips.0)
             .with_parent2(tips.1)
             .with_payload(payload)
-            .with_nonce_provider(self.client.get_miner(), 4000f64)
+            .with_nonce_provider(self.client.get_pow_provider(), 4000f64)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
