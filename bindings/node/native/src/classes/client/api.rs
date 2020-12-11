@@ -1,11 +1,13 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::num::NonZeroU64;
+use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
+
+use super::MessageDto;
 
 use iota::{
-    message::prelude::{Address, Message, MessageId, UTXOInput},
-    BIP32Path, Seed,
+    message::prelude::{Address, MessageBuilder, MessageId, UTXOInput},
+    BIP32Path, ClientMiner, Seed,
 };
 use neon::prelude::*;
 
@@ -35,7 +37,7 @@ pub(crate) enum Api {
     // Node APIs
     GetInfo,
     GetTips,
-    PostMessage(Message),
+    PostMessage(MessageDto),
     GetMessagesByIndexation(String),
     GetMessage(MessageId),
     GetMessageMetadata(MessageId),
@@ -131,7 +133,31 @@ impl Task for ClientTask {
                     serde_json::to_string(&tips).unwrap()
                 }
                 Api::PostMessage(message) => {
-                    let message_id = client.post_message(message).await?;
+                    let (parent1, parent2) = if message.parent1.is_none() || message.parent2.is_none() {
+                        let tips = client.get_tips().await?;
+                        let parent1 = match &message.parent1 {
+                            Some(id) => MessageId::from_str(&id)?,
+                            None => tips.0,
+                        };
+                        let parent2 = match &message.parent2 {
+                            Some(id) => MessageId::from_str(&id)?,
+                            None => tips.1,
+                        };
+                        (parent1, parent2)
+                    } else {
+                        (
+                            MessageId::from_str(&message.parent1.as_ref().unwrap())?,
+                            MessageId::from_str(&message.parent1.as_ref().unwrap())?,
+                        )
+                    };
+                    let message = MessageBuilder::<ClientMiner>::new()
+                        .with_network_id(client.get_network_id().await?)
+                        .with_parent1(parent1)
+                        .with_parent2(parent2)
+                        .with_nonce_provider(client.get_pow_provider(), 4000f64)
+                        .with_payload(message.payload.clone().try_into()?)
+                        .finish()?;
+                    let message_id = client.post_message(&message).await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::GetMessagesByIndexation(index) => {

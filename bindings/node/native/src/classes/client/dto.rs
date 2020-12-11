@@ -13,14 +13,14 @@ use std::{
     str::FromStr,
 };
 
-#[derive(Serialize, Deserialize)]
-pub(super) struct OutputDto {
+#[derive(Clone, Serialize, Deserialize)]
+pub struct OutputDto {
     address: String,
     amount: u64,
 }
 
-#[derive(Serialize, Deserialize)]
-pub(super) struct MessageTransactionEssenceDto {
+#[derive(Clone, Serialize, Deserialize)]
+pub struct MessageTransactionEssenceDto {
     inputs: Box<[String]>,
     outputs: Box<[OutputDto]>,
     payload: Option<Box<MessagePayloadDto>>,
@@ -75,8 +75,8 @@ impl TryFrom<MessageTransactionEssenceDto> for TransactionEssence {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub(super) struct MessageSignatureUnlockDto {
+#[derive(Clone, Serialize, Deserialize)]
+pub struct MessageSignatureUnlockDto {
     #[serde(rename = "publicKey")]
     public_key: String,
     signature: String,
@@ -93,8 +93,8 @@ impl TryFrom<MessageSignatureUnlockDto> for SignatureUnlock {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub(super) struct MessageUnlockBlockJsonDto {
+#[derive(Clone, Serialize, Deserialize)]
+pub struct MessageUnlockBlockJsonDto {
     signature: Option<MessageSignatureUnlockDto>,
     reference: Option<u16>,
 }
@@ -118,22 +118,22 @@ impl TryFrom<MessageUnlockBlockJsonDto> for UnlockBlock {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub(super) struct MessageTransactionPayloadDto {
+#[derive(Clone, Serialize, Deserialize)]
+pub struct MessageTransactionPayloadDto {
     essence: MessageTransactionEssenceDto,
     #[serde(rename = "unlockBlocks")]
     unlock_blocks: Box<[MessageUnlockBlockJsonDto]>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub(super) struct MessageIndexationPayloadDto {
+#[derive(Clone, Serialize, Deserialize)]
+pub struct MessageIndexationPayloadDto {
     index: String,
     data: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub(super) enum MessagePayloadDto {
+pub enum MessagePayloadDto {
     /// The transaction payload.
     Transaction(MessageTransactionPayloadDto),
     /// The indexation payload.
@@ -141,11 +141,10 @@ pub(super) enum MessagePayloadDto {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(super) struct MessageDto {
-    pub parent1: String,
-    pub parent2: String,
+pub struct MessageDto {
+    pub parent1: Option<String>,
+    pub parent2: Option<String>,
     pub payload: MessagePayloadDto,
-    pub nonce: u64,
 }
 
 impl TryFrom<MessagePayloadDto> for Payload {
