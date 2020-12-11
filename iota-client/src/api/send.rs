@@ -1,11 +1,10 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
+use crate::{Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
-use bee_pow::providers::{MinerBuilder, ProviderBuilder};
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
@@ -240,12 +239,12 @@ impl<'a> SendBuilder<'a> {
 
         // building message
         let payload = Payload::Transaction(Box::new(payload));
-        let message = Message::builder()
+        let message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.client.get_network_id().await?)
             .with_parent1(tips.0)
             .with_parent2(tips.1)
             .with_payload(payload)
-            .with_nonce_provider(MinerBuilder::new().with_num_workers(num_cpus::get()).finish(), 4000f64)
+            .with_nonce_provider(self.client.get_miner(), 4000f64)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 

@@ -60,6 +60,9 @@ pub enum Error {
     /// JSON error
     #[error("{0}")]
     Json(#[from] serde_json::Error),
+    /// PoW error
+    #[error("{0}")]
+    Pow(String),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it
