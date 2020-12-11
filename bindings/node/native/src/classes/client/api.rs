@@ -6,9 +6,8 @@ use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
 use super::MessageDto;
 
 use iota::{
-    message::prelude::{Address, Message, MessageId, UTXOInput},
-    pow::providers::{MinerBuilder, ProviderBuilder},
-    BIP32Path, Seed,
+    message::prelude::{Address, MessageBuilder, MessageId, UTXOInput},
+    BIP32Path, ClientMiner, Seed,
 };
 use neon::prelude::*;
 
@@ -151,11 +150,11 @@ impl Task for ClientTask {
                             MessageId::from_str(&message.parent1.as_ref().unwrap())?,
                         )
                     };
-                    let message = Message::builder()
+                    let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(client.get_network_id().await?)
                         .with_parent1(parent1)
                         .with_parent2(parent2)
-                        .with_nonce_provider(MinerBuilder::new().with_num_workers(num_cpus::get()).finish(), 4000f64)
+                        .with_nonce_provider(client.get_miner(), 4000f64)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message_id = client.post_message(&message).await?;

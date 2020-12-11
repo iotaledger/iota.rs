@@ -6,6 +6,7 @@ pub use crate::node::Topic;
 use crate::{api::*, builder::ClientBuilder, error::*, node::*, parse_response, types::*};
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
+use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_signing_ext::Seed;
 
 use blake2::{
@@ -85,6 +86,56 @@ impl BrokerOptions {
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
+    }
+}
+
+/// The miner builder.
+#[derive(Default)]
+pub struct ClientMinerBuilder {
+    local_pow: bool,
+}
+
+impl ClientMinerBuilder {
+    /// Sets the local PoW config
+    pub fn with_local_pow(mut self, value: bool) -> Self {
+        self.local_pow = value;
+        self
+    }
+}
+
+impl PowProviderBuilder for ClientMinerBuilder {
+    type Provider = ClientMiner;
+
+    fn new() -> Self {
+        Self::default()
+    }
+
+    fn finish(self) -> ClientMiner {
+        ClientMiner {
+            local_pow: self.local_pow,
+        }
+    }
+}
+
+/// The miner used for PoW
+pub struct ClientMiner {
+    local_pow: bool,
+}
+
+impl PowProvider for ClientMiner {
+    type Builder = ClientMinerBuilder;
+    type Error = crate::Error;
+
+    fn nonce(&self, bytes: &[u8], target_score: f64) -> std::result::Result<u64, Self::Error> {
+        if self.local_pow {
+            MinerBuilder::new()
+                .with_num_workers(num_cpus::get())
+                .finish()
+                .nonce(bytes, target_score)
+                .map_err(|e| crate::Error::Pow(e.to_string()))
+        } else {
+            Ok(0)
+        }
     }
 }
 
@@ -197,6 +248,11 @@ impl Client {
         });
         let network_id = u64::from_le_bytes(result[0..8].try_into().unwrap());
         Ok(network_id)
+    }
+
+    /// Gets the miner to use based on the PoW setting
+    pub fn get_miner(&self) -> ClientMiner {
+        ClientMinerBuilder::new().with_local_pow(self.local_pow).finish()
     }
 
     ///////////////////////////////////////////////////////////////////////
