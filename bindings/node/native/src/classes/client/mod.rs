@@ -3,8 +3,7 @@
 
 use bech32::FromBase32;
 use iota::{
-    message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput},
-    pow::providers::{MinerBuilder, ProviderBuilder},
+    message::prelude::{Address, Ed25519Address, MessageId, UTXOInput},
     Seed,
 };
 use neon::prelude::*;
@@ -254,13 +253,6 @@ declare_types! {
         method postMessage(mut cx) {
             let message = cx.argument::<JsString>(0)?.value();
             let message: MessageDto = serde_json::from_str(&message).expect("invalid message argument");
-            let message_builder = Message::builder()
-                 .with_network_id(0)
-                 .with_parent1(MessageId::from_str(&message.parent1).expect("invalid parent1 message id"))
-                 .with_parent2(MessageId::from_str(&message.parent2).expect("invalid parent2 message id"))
-                 .with_nonce_provider(MinerBuilder::new().with_num_workers(num_cpus::get()).finish(), 4000f64)
-                 .with_payload(message.payload.try_into().expect("invalid payload"));
-
             let cb = cx.argument::<JsFunction>(1)?;
             {
                 let this = cx.this();
@@ -268,7 +260,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::PostMessage(message_builder.finish().expect("error building message")),
+                    api: Api::PostMessage(message),
                 };
                 client_task.schedule(cb);
             }

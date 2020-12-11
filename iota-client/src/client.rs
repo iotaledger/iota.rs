@@ -8,6 +8,10 @@ use crate::{api::*, builder::ClientBuilder, error::*, node::*, types::*};
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_signing_ext::Seed;
 
+use blake2::{
+    digest::{Update, VariableOutput},
+    VarBlake2b,
+};
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
 use serde::{Deserialize, Serialize};
@@ -19,6 +23,7 @@ use tokio::{
 
 use std::{
     collections::{HashMap, HashSet},
+    convert::TryInto,
     num::NonZeroU64,
     sync::{Arc, RwLock},
     time::Duration,
@@ -181,6 +186,19 @@ impl Client {
         Ok(pool.iter().next().ok_or(Error::SyncedNodePoolEmpty)?.clone())
     }
 
+    /// Gets the network id of the node we're connecting to.
+    pub async fn get_network_id(&self) -> Result<u64> {
+        let info = self.get_info().await?;
+        let mut hasher = VarBlake2b::new(32).unwrap();
+        hasher.update(info.network_id.as_bytes());
+        let mut result: [u8; 32] = [0; 32];
+        hasher.finalize_variable(|res| {
+            result = res.try_into().unwrap();
+        });
+        let network_id = u64::from_le_bytes(result[0..8].try_into().unwrap());
+        Ok(network_id)
+    }
+
     ///////////////////////////////////////////////////////////////////////
     // MQTT API
     //////////////////////////////////////////////////////////////////////
@@ -276,9 +294,6 @@ impl Client {
             .send()
             .await?;
 
-        /* println!("{:?}", message);
-        println!("{:?}", resp.status());
-        println!("{:?}", resp.text().await?); */
         match resp.status().as_u16() {
             201 => {
                 let m = resp.json::<Response<PostMessageId>>().await?.data;
@@ -388,8 +403,7 @@ impl Client {
         // Change the fields of parent1 and parent2.
         let tips = self.get_tips().await?;
         let reattach_message = Message::builder()
-            // TODO: make the newtwork id configurable
-            .with_network_id(0)
+            .with_network_id(self.get_network_id().await?)
             .with_parent1(tips.0)
             .with_parent2(tips.1)
             .with_payload(message.payload().to_owned().unwrap())
@@ -407,8 +421,7 @@ impl Client {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
         let promote_message = Message::builder()
-            // TODO: make the newtwork id configurable
-            .with_network_id(0)
+            .with_network_id(self.get_network_id().await?)
             .with_parent1(tips.0)
             .with_parent2(*message_id)
             .finish()

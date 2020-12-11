@@ -241,8 +241,7 @@ impl<'a> SendBuilder<'a> {
         // building message
         let payload = Payload::Transaction(Box::new(payload));
         let message = Message::builder()
-            // TODO: make the newtwork id configurable
-            .with_network_id(0)
+            .with_network_id(self.client.get_network_id().await?)
             .with_parent1(tips.0)
             .with_parent2(tips.1)
             .with_payload(payload)

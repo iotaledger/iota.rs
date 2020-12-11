@@ -611,11 +611,11 @@ Gets the metadata of the given message.
 
 ### MessageDto
 
-| Field   | Type                                   | Description                                    |
-| ------- | -------------------------------------- | ---------------------------------------------- |
-| parent1 | <code>string</code>                    | Message id of the first message it references  |
-| parent2 | <code>string</code>                    | Message id of the second message it references |
-| payload | <code>[PayloadDto](#payloaddto)</code> | Message payload                                |
+| Field   | Type                                   | Description                                                                 |
+| ------- | -------------------------------------- | --------------------------------------------------------------------------- |
+| parent1 | <code>string \| undefined</code>       | Message id of the first message it references. `getTips` is used by default |
+| parent2 | <code>string \| undefined</code>       | Message id of the second message it references `getTips` is used by default |
+| payload | <code>[PayloadDto](#payloaddto)</code> | Message payload                                                             |
 
 #### PayloadDto
 

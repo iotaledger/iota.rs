@@ -8,9 +8,7 @@ use bee_message::{
     payload::milestone::{MilestoneEssence, MILESTONE_MERKLE_PROOF_LENGTH},
     prelude::*,
 };
-use bee_pow::providers::{
-    ProviderBuilder as PowProviderBuilder, {Constant, ConstantBuilder},
-};
+use bee_pow::providers::{Constant, ConstantBuilder, ProviderBuilder as PowProviderBuilder};
 use serde::ser::Serializer;
 
 use std::{
@@ -255,6 +253,8 @@ impl Transfers {
 /// JSON struct for Message
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MessageJson {
+    #[serde(rename = "networkId")]
+    network_id: String,
     #[serde(rename = "parent1MessageId")]
     parent1: String,
     #[serde(rename = "parent2MessageId")]
@@ -269,6 +269,7 @@ impl ResponseType for MessageJson {}
 impl From<&Message> for MessageJson {
     fn from(i: &Message) -> Self {
         Self {
+            network_id: i.network_id().to_string(),
             parent1: i.parent1().to_string(),
             parent2: i.parent2().to_string(),
             payload: i.payload().as_ref().unwrap().into(),
@@ -286,11 +287,15 @@ impl TryFrom<MessageJson> for Message {
         let mut parent2 = [0u8; 32];
         hex::decode_to_slice(value.parent2, &mut parent2)?;
         let nonce = value.nonce;
+        let network_id = value.network_id;
         let parent1 = MessageId::new(parent1);
         let parent2 = MessageId::new(parent2);
         Ok(MessageBuilder::<Constant>::new()
-            // TODO: make the newtwork id configurable
-            .with_network_id(0)
+            .with_network_id(
+                network_id
+                    .parse()
+                    .map_err(|_| crate::Error::InvalidParameter(format!("network id {}", network_id)))?,
+            )
             .with_parent1(parent1)
             .with_parent2(parent2)
             .with_payload(get_payload_from_json(value.payload, Some((parent1, parent2)))?)
