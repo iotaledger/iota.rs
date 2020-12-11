@@ -154,7 +154,7 @@ impl Task for ClientTask {
                         .with_network_id(client.get_network_id().await?)
                         .with_parent1(parent1)
                         .with_parent2(parent2)
-                        .with_nonce_provider(client.get_miner(), 4000f64)
+                        .with_nonce_provider(client.get_pow_provider(), 4000f64)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message_id = client.post_message(&message).await?;
