@@ -28,4 +28,5 @@ blake2 = "0.9"
 paho-mqtt = "0.8"
 regex = "1.4"
 tokio = { version = "0.2.22", features = ["macros", "sync"] }
+thiserror = "1.0"
 num_cpus = "1.13"
