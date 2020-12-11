@@ -57,6 +57,9 @@ pub enum Error {
     /// IO error
     #[error("{0}")]
     IoError(#[from] std::io::Error),
+    /// JSON error
+    #[error("{0}")]
+    Json(#[from] serde_json::Error),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

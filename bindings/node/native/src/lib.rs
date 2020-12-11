@@ -21,10 +21,10 @@ use classes::*;
 
 type ClientInstanceMap = Arc<RwLock<HashMap<String, Arc<RwLock<Client>>>>>;
 
-pub(crate) type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
-pub(crate) enum Error {
+pub enum Error {
     #[error("`{0}`")]
     Anyhow(#[from] anyhow::Error),
     #[error("`{0}`")]

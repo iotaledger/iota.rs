@@ -53,7 +53,7 @@ async fn test_post_message_with_indexation() {
     let tips = client.get_tips().await.unwrap();
 
     let message = Message::builder()
-        .with_network_id(0)
+        .with_network_id(client.get_network_id().await.unwrap())
         .with_parent1(tips.0)
         .with_parent2(tips.1)
         .with_payload(Payload::Indexation(Box::new(index)))

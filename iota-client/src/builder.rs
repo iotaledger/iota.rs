@@ -36,6 +36,7 @@ pub struct ClientBuilder {
     quorum_size: u8,
     quorum_threshold: u8,
     broker_options: BrokerOptions,
+    local_pow: bool,
 }
 
 impl Default for ClientBuilder {
@@ -47,6 +48,7 @@ impl Default for ClientBuilder {
             quorum_size: 3,
             quorum_threshold: 50,
             broker_options: Default::default(),
+            local_pow: true,
         }
     }
 }
@@ -107,17 +109,17 @@ impl ClientBuilder {
         self
     }
 
+    /// Whether the PoW should be local or remote
+    pub fn local_pow(mut self, local: bool) -> Self {
+        self.local_pow = local;
+        self
+    }
+
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
         if self.nodes.is_empty() {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
-
-        let mwm = match self.network {
-            Network::Mainnet => 14,
-            Network::Comnet => 10,
-            Network::Devnet => 9,
-        };
 
         let quorum_size = match self.nodes.len() {
             1 => 1,
@@ -151,12 +153,12 @@ impl ClientBuilder {
             sync,
             sync_kill_sender: Arc::new(sync_kill_sender),
             client: reqwest::Client::new(),
-            mwm,
             quorum_size,
             quorum_threshold,
             mqtt_client: None,
             mqtt_topic_handlers: Default::default(),
             broker_options: self.broker_options,
+            local_pow: self.local_pow,
         };
 
         Ok(client)
