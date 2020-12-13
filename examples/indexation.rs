@@ -8,7 +8,7 @@ async fn main() {
     let index = Indexation::new(String::from("Hello"), String::from("Tangle").as_bytes()).unwrap();
 
     let client = Client::builder()
-        .nodes(&["http://localhost:14265"])
+        .nodes(&["http://0.0.0.0:14265"])
         .unwrap()
         .build()
         .unwrap();
@@ -37,7 +37,7 @@ async fn main() {
     if let Payload::Indexation(i) = r.payload().as_ref().unwrap() {
         println!(
             "Data: {}",
-            String::from_utf8(hex::decode(i.data()).unwrap()).expect("Found invalid UTF-8")
+            String::from_utf8(i.data().to_vec()).expect("Found invalid UTF-8")
         );
     }
 }

@@ -1,8 +1,8 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{BIP32Path, Client, Ed25519Address, Seed};
-use std::{convert::TryInto, num::NonZeroU64, time::Duration};
+use iota::{BIP32Path, Client, Ed25519Address,  Seed};
+use std::{num::NonZeroU64, time::Duration};
 use tokio::time::delay_for;
 
 /// In this example, we send 600 tokens to the following 6 locations, respectively
@@ -44,13 +44,7 @@ async fn main() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            Ed25519Address::new(
-                hex::decode("5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8") // Insert the address to search for
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )
-            .into(),
+            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8".parse::<Ed25519Address>().unwrap().into(), // Insert the address to search for
             NonZeroU64::new(100).unwrap(),
         )
         .post()
@@ -63,13 +57,7 @@ async fn main() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            Ed25519Address::new(
-                hex::decode("bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230") // Insert the address to search for
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )
-            .into(),
+            "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230".parse::<Ed25519Address>().unwrap().into(),
             NonZeroU64::new(100).unwrap(),
         )
         .post()
@@ -85,13 +73,7 @@ async fn main() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            Ed25519Address::new(
-                hex::decode("5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8") // Insert the address to search for
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )
-            .into(),
+            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8".parse::<Ed25519Address>().unwrap().into(),
             NonZeroU64::new(100).unwrap(),
         )
         .post()
@@ -104,13 +86,7 @@ async fn main() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            Ed25519Address::new(
-                hex::decode("bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230") // Insert the address to search for
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )
-            .into(),
+            "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230".parse::<Ed25519Address>().unwrap().into(),
             NonZeroU64::new(100).unwrap(),
         )
         .post()
@@ -126,13 +102,7 @@ async fn main() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            Ed25519Address::new(
-                hex::decode("5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8") // Insert the address to search for
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )
-            .into(),
+            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8".parse::<Ed25519Address>().unwrap().into(),
             NonZeroU64::new(100).unwrap(),
         )
         .post()
@@ -145,13 +115,7 @@ async fn main() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            Ed25519Address::new(
-                hex::decode("bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230") // Insert the address to search for
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )
-            .into(),
+            "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230".parse::<Ed25519Address>().unwrap().into(),
             NonZeroU64::new(100).unwrap(),
         )
         .post()
@@ -172,13 +136,7 @@ async fn main() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            Ed25519Address::new(
-                hex::decode("6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1fff") // Insert the address to search for
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )
-            .into(),
+            "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1fff".parse::<Ed25519Address>().unwrap().into(),
             NonZeroU64::new(550).unwrap(),
         )
         .post()
