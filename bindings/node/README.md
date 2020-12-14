@@ -2,6 +2,10 @@
 
 Node.js binding to the IOTA client library.
 
+## Requirements
+
+`Rust` and `Cargo` are required. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+
 ## Installation
 
 Currently the package isn't published so you'd need to link it to your project using `npm` or `yarn`.
