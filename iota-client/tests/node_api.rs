@@ -11,18 +11,21 @@ use std::{num::NonZeroU64, str::FromStr};
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
 
 #[tokio::test]
+#[ignore]
 async fn test_get_info() {
     let r = iota_client::Client::get_node_info(DEFAULT_NODE_URL).await.unwrap();
     println!("{:#?}", r);
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_health() {
     let r = iota_client::Client::get_node_health(DEFAULT_NODE_URL).await.unwrap();
     println!("{:#?}", r);
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_tips() {
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -36,6 +39,7 @@ async fn test_get_tips() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_post_message_with_indexation() {
     let client = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -55,6 +59,7 @@ async fn test_post_message_with_indexation() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_post_message_with_transaction() {
     let iota = iota_client::Client::builder() // Crate a client instance builder
         .node(DEFAULT_NODE_URL) // Insert the node here
@@ -88,6 +93,7 @@ async fn test_post_message_with_transaction() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_message_by_index() {
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -103,6 +109,7 @@ async fn test_get_message_by_index() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_message_data() {
     let client = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -124,6 +131,7 @@ async fn test_get_message_data() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_message_metadata() {
     let client = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -153,6 +161,7 @@ async fn test_get_message_metadata() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_message_raw() {
     iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -166,6 +175,7 @@ async fn test_get_message_raw() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_message_children() {
     iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -179,6 +189,7 @@ async fn test_get_message_children() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_address_balance() {
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -199,6 +210,7 @@ async fn test_get_address_balance() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_address_outputs() {
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -219,6 +231,7 @@ async fn test_get_address_outputs() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_output() {
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -239,6 +252,7 @@ async fn test_get_output() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_get_milestone() {
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
