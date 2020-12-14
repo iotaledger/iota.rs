@@ -86,7 +86,6 @@ impl Task for ClientTask {
                         sender = sender.index(*index);
                     }
                     for output in outputs {
-
                         sender = sender.output(output.0.clone(), output.1);
                     }
                     let message_id = sender.post().await?;

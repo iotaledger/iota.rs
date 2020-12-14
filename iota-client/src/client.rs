@@ -474,11 +474,11 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// A generic send function for easily sending transaction or indexation messages.
-    pub fn send<'a>(&'a self) -> SendBuilder<'a> {
+    pub fn send(&self) -> SendBuilder<'_> {
         SendBuilder::new(self)
     }
 
-    /// Return a valid unuspent address.
+    /// Return a valid unspent address.
     pub fn get_unspent_address<'a>(&'a self, seed: &'a Seed) -> GetUnspentAddressBuilder<'a> {
         GetUnspentAddressBuilder::new(self, seed)
     }
