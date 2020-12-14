@@ -12,7 +12,8 @@ async fn main() {
         .unwrap();
 
     let r = iota
-        .send_indexation_message()
+        .send()
+        .indexation()
         .index("Hello".to_string())
         .data("Tangle".to_string().as_bytes().to_vec())
         .post()

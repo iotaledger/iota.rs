@@ -78,7 +78,7 @@ impl Task for ClientTask {
                     index,
                     outputs,
                 } => {
-                    let mut sender = client.send_transaction_message(seed);
+                    let mut sender = client.send().transaction(seed);
                     if let Some(path) = path {
                         sender = sender.path(path);
                     }
@@ -86,6 +86,7 @@ impl Task for ClientTask {
                         sender = sender.index(*index);
                     }
                     for output in outputs {
+
                         sender = sender.output(output.0.clone(), output.1);
                     }
                     let message_id = sender.post().await?;

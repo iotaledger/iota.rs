@@ -11,10 +11,30 @@ use bee_signing_ext::{
 };
 use std::{collections::HashMap, convert::TryInto, num::NonZeroU64};
 
+/// Builder of send API
+pub struct SendBuilder<'a> {
+    client: &'a Client,
+}
+
+impl<'a> SendBuilder<'a> {
+    /// Create send builder
+    pub fn new(client: &'a Client) -> Self {
+        Self { client }
+    }
+    /// Build a transaction message
+    pub fn transaction(self, seed: &'a Seed) -> SendTransactionBuilder<'_> {
+        SendTransactionBuilder::new(self.client, seed)
+    }
+    /// Build an indexation message
+    pub fn indexation(self) -> SendIndexationBuilder<'a> {
+        SendIndexationBuilder::new(self.client)
+    }
+}
+
 const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
 
-/// Builder of send API
+/// Builder for transaction messages
 pub struct SendTransactionBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
@@ -33,7 +53,7 @@ struct AddressIndexRecorder {
 }
 
 impl<'a> SendTransactionBuilder<'a> {
-    /// Create sned builder
+    /// Create send builder
     pub fn new(client: &'a Client, seed: &'a Seed) -> Self {
         Self {
             client,
@@ -252,7 +272,7 @@ impl<'a> SendTransactionBuilder<'a> {
     }
 }
 
-/// Builder of send API
+/// Builder for indexation messages
 pub struct SendIndexationBuilder<'a> {
     client: &'a Client,
     index: Option<String>,

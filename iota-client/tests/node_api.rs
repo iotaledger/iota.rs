@@ -6,9 +6,33 @@
 use bee_message::prelude::*;
 use bee_signing_ext::{binary::BIP32Path, Seed};
 
-use std::{num::NonZeroU64, str::FromStr};
+use iota_client::MessageJson;
+use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
 
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
+
+// Sends a full message object to the node with already computed nonce. Serves as a test object.
+async fn setup_indexation_message() -> MessageId {
+    let client = iota_client::Client::builder()
+        .node(DEFAULT_NODE_URL)
+        .unwrap()
+        .build()
+        .unwrap();
+    let data = r#"
+    {
+	    "networkId": "6530425480034647824",
+	    "parent1MessageId": "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c",
+	    "parent2MessageId": "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664",
+	    "payload": {
+		    "type": 2,
+		    "index": "HORNET Spammer",
+		    "data": "42696e61727920697320746865206675747572652e0a436f756e743a203030373730370a54696d657374616d703a20323032302d31322d31345431343a33363a33342b30313a30300a54697073656c656374696f6e3a2035c2b573"
+	    },
+	    "nonce": "36952"
+    }"#;
+    let message: Message = serde_json::from_str::<MessageJson>(data).unwrap().try_into().unwrap();
+    client.post_message(&message).await.unwrap()
+}
 
 #[tokio::test]
 #[ignore]
@@ -48,7 +72,8 @@ async fn test_post_message_with_indexation() {
         .unwrap();
 
     let r = client
-        .send_indexation_message()
+        .send()
+        .indexation()
         .index("Hello".to_string())
         .data("Tangle".to_string().as_bytes().to_vec())
         .post()
@@ -76,7 +101,8 @@ async fn test_post_message_with_transaction() {
     // Insert your account path. Note that index must be hardened(like 0', 123').
     let path = BIP32Path::from_str("m/").unwrap();
     let message_id = iota
-        .send_transaction_message(&seed)
+        .send()
+        .transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
@@ -95,6 +121,7 @@ async fn test_post_message_with_transaction() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_by_index() {
+    setup_indexation_message().await;
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
         .unwrap()
@@ -116,17 +143,8 @@ async fn test_get_message_data() {
         .unwrap()
         .build()
         .unwrap();
-
-    let message_id = client
-        .send_indexation_message()
-        .index("Hello".to_string())
-        .data("Tangle".to_string().as_bytes().to_vec())
-        .post()
-        .await
-        .unwrap();
-
+    let message_id = setup_indexation_message().await;
     let r = client.get_message().data(&message_id).await.unwrap();
-
     println!("{:#?}", r);
 }
 
@@ -139,13 +157,7 @@ async fn test_get_message_metadata() {
         .build()
         .unwrap();
 
-    let message_id = client
-        .send_indexation_message()
-        .index("Hello".to_string())
-        .data("Tangle".to_string().as_bytes().to_vec())
-        .post()
-        .await
-        .unwrap();
+    let message_id = setup_indexation_message().await;
 
     let r = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
@@ -163,13 +175,14 @@ async fn test_get_message_metadata() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_raw() {
+    let message_id = setup_indexation_message().await;
     iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
         .unwrap()
         .build()
         .unwrap()
         .get_message()
-        .raw(&MessageId::from_str("637c93cc8c32400d157473a3db9db9c7f463f46374483b9dcc4ee35ce6957211").unwrap())
+        .raw(&message_id)
         .await
         .unwrap();
 }
@@ -177,13 +190,14 @@ async fn test_get_message_raw() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_children() {
+    let message_id = setup_indexation_message().await;
     iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
         .unwrap()
         .build()
         .unwrap()
         .get_message()
-        .children(&MessageId::from_str("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3").unwrap())
+        .children(&message_id)
         .await
         .unwrap();
 }

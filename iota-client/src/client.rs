@@ -473,14 +473,9 @@ impl Client {
     // High level API
     //////////////////////////////////////////////////////////////////////
 
-    /// A generic send function for easily sending value transaction messages.
-    pub fn send_transaction_message<'a>(&'a self, seed: &'a Seed) -> SendTransactionBuilder<'a> {
-        SendTransactionBuilder::new(self, seed)
-    }
-
-    /// A generic send function for easily sending value transaction messages.
-    pub fn send_indexation_message(&self) -> SendIndexationBuilder<'_> {
-        SendIndexationBuilder::new(self)
+    /// A generic send function for easily sending transaction or indexation messages.
+    pub fn send<'a>(&'a self) -> SendBuilder<'a> {
+        SendBuilder::new(self)
     }
 
     /// Return a valid unuspent address.
