@@ -151,12 +151,6 @@ async fn test_get_message_data() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_metadata() {
-    let client = iota_client::Client::builder()
-        .node(DEFAULT_NODE_URL)
-        .unwrap()
-        .build()
-        .unwrap();
-
     let message_id = setup_indexation_message().await;
 
     let r = iota_client::Client::builder()
