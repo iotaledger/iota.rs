@@ -78,7 +78,7 @@ impl Task for ClientTask {
                     index,
                     outputs,
                 } => {
-                    let mut sender = client.send(seed);
+                    let mut sender = client.send().transaction(seed);
                     if let Some(path) = path {
                         sender = sender.path(path);
                     }
