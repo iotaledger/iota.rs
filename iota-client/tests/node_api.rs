@@ -4,7 +4,7 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use bee_signing_ext::{binary::BIP32Path, Seed};
+use bee_signing_ext::Seed;
 
 use iota_client::MessageJson;
 use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
@@ -98,12 +98,10 @@ async fn test_post_message_with_transaction() {
     )
     .unwrap();
 
-    // Insert your account path. Note that index must be hardened(like 0', 123').
-    let path = BIP32Path::from_str("m/").unwrap();
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"

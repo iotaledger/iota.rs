@@ -519,8 +519,7 @@ impl Client {
         Ok(messages)
     }
 
-    /// Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path
-    /// of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`.
+    /// Return the balance for a provided seed and its wallet chain account index.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
     /// balance address.
     pub fn get_balance<'a>(&'a self, seed: &'a Seed) -> GetBalanceBuilder<'a> {

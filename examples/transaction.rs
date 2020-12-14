@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{BIP32Path, Client, Ed25519Address, Seed};
+use iota::{Client, Ed25519Address, Seed};
 use std::{num::NonZeroU64, time::Duration};
 use tokio::time::delay_for;
 
@@ -37,12 +37,10 @@ async fn main() {
     )
     .unwrap();
 
-    // Insert your account path. Note that index must be hardened(like 0', 123').
-    let path = BIP32Path::from_str("m/").unwrap();
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
@@ -59,7 +57,7 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
@@ -74,12 +72,11 @@ async fn main() {
     println!("{:#?}", message_id);
 
     delay_for(Duration::from_millis(15000)).await;
-    // Insert your account path. Note that index must be hardened(like 0', 123').
-    let path = BIP32Path::from_str("m/").unwrap();
+
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
@@ -96,7 +93,7 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
@@ -111,12 +108,11 @@ async fn main() {
     println!("{:#?}", message_id);
 
     delay_for(Duration::from_millis(15000)).await;
-    // Insert your account path. Note that index must be hardened(like 0', 123').
-    let path = BIP32Path::from_str("m/").unwrap();
+
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
@@ -130,10 +126,11 @@ async fn main() {
 
     println!("{:#?}", message_id);
     delay_for(Duration::from_millis(15000)).await;
+
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
@@ -153,12 +150,11 @@ async fn main() {
     .unwrap(); // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
 
     delay_for(Duration::from_millis(15000)).await;
-    // Insert your account path. Note that index must be hardened(like 0', 123').
-    let path = BIP32Path::from_str("m/").unwrap();
+
     let message_id = iota
         .send()
         .transaction(&seed)
-        .path(&path)
+        .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
             "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1fff"

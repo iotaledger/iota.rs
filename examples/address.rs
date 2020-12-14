@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{BIP32Path, Client, Seed};
+use iota::{Client, Seed};
 
 #[tokio::main]
 async fn main() {
@@ -11,14 +11,15 @@ async fn main() {
         .build()
         .unwrap();
 
-    let seed = Seed::from_ed25519_bytes(&[0u8; 32]).unwrap(); // Insert your seed
-    let path = BIP32Path::from_str("m/0'/0'").unwrap(); // Insert your account path. Note that index must be hardened(like 0', 123').
+    let seed = Seed::from_ed25519_bytes(
+        &hex::decode("3ff69866a124d8cf168e5b928eb603bacc2d241f1a9d70af5c10f2dd34137896").unwrap(),
+    )
+    .unwrap(); // Insert your seed
 
-    let address = iota.get_unspent_address(&seed).path(&path).get().await.unwrap();
+    let addresses = iota.find_addresses(&seed).account_index(0).range(0..4).get().unwrap();
 
-    println!("Get an unspent address: {:#?}", address);
-
-    let addresses = iota.find_addresses(&seed).path(&path).range(0..3).get().unwrap();
-
-    println!("List of generated address: {:#?}", addresses);
+    println!(
+        "List of generated address: {:#?}",
+        addresses.iter().map(|(a, _)| a.to_bech32()).collect::<Vec<String>>()
+    );
 }

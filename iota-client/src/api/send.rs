@@ -38,8 +38,8 @@ const TRANSACTION_ID_LENGTH: usize = 32;
 pub struct SendTransactionBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
-    path: Option<&'a BIP32Path>,
-    index: Option<usize>,
+    account_index: Option<usize>,
+    initial_address_index: Option<usize>,
     outputs: Vec<Output>,
     indexation: Option<Indexation>,
 }
@@ -58,22 +58,22 @@ impl<'a> SendTransactionBuilder<'a> {
         Self {
             client,
             seed,
-            path: None,
-            index: None,
+            account_index: None,
+            initial_address_index: None,
             outputs: Vec::new(),
             indexation: None,
         }
     }
 
-    /// Set path to the builder
-    pub fn path(mut self, path: &'a BIP32Path) -> Self {
-        self.path = Some(path);
+    /// Sets the account index.
+    pub fn account_index(mut self, account_index: usize) -> Self {
+        self.account_index = Some(account_index);
         self
     }
 
-    /// Set index to the builder
-    pub fn index(mut self, index: usize) -> Self {
-        self.index = Some(index);
+    /// Sets the index of the address to start looking for balance.
+    pub fn initial_address_index(mut self, initial_address_index: usize) -> Self {
+        self.initial_address_index = Some(initial_address_index);
         self
     }
 
@@ -92,15 +92,12 @@ impl<'a> SendTransactionBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn post(self) -> Result<MessageId> {
-        let path = match self.path {
-            Some(p) => p,
-            None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
-        };
+        let account_index = self
+            .account_index
+            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let path = BIP32Path::from_str(&crate::account_path!(account_index)).expect("invalid account index");
 
-        let mut index = match self.index {
-            Some(r) => r,
-            None => 0,
-        };
+        let mut index = self.initial_address_index.unwrap_or(0);
 
         if self.outputs.is_empty() {
             return Err(Error::MissingParameter(String::from("Outputs")));
@@ -129,12 +126,12 @@ impl<'a> SendTransactionBuilder<'a> {
             let addresses = self
                 .client
                 .find_addresses(self.seed)
-                .path(path)
+                .account_index(account_index)
                 .range(index..index + 20)
                 .get()?;
 
             // For each address, get the address outputs
-            for (address_index, address) in addresses.iter().enumerate() {
+            for (address_index, (address, _)) in addresses.iter().enumerate() {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
                 for output_id in address_outputs.iter() {
