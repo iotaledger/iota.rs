@@ -283,7 +283,6 @@ impl<'a> SendIndexationBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn post(self) -> Result<MessageId> {
-
         // filter input
         let index = self.index.ok_or(Error::MissingParameter(String::from("index")))?;
         let data = self.data.ok_or(Error::MissingParameter(String::from("data")))?;
@@ -307,5 +306,4 @@ impl<'a> SendIndexationBuilder<'a> {
 
         self.client.post_message(&message).await
     }
-
 }

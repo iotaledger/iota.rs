@@ -40,7 +40,7 @@ async fn main() {
     // Insert your account path. Note that index must be hardened(like 0', 123').
     let path = BIP32Path::from_str("m/").unwrap();
     let message_id = iota
-        .send(&seed)
+        .send_transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
@@ -53,7 +53,7 @@ async fn main() {
     println!("{:#?}", message_id);
     delay_for(Duration::from_millis(15000)).await;
     let message_id = iota
-        .send(&seed)
+        .send_transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
@@ -69,7 +69,7 @@ async fn main() {
     // Insert your account path. Note that index must be hardened(like 0', 123').
     let path = BIP32Path::from_str("m/").unwrap();
     let message_id = iota
-        .send(&seed)
+        .send_transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
@@ -82,7 +82,7 @@ async fn main() {
     println!("{:#?}", message_id);
     delay_for(Duration::from_millis(15000)).await;
     let message_id = iota
-        .send(&seed)
+        .send_transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
@@ -98,7 +98,7 @@ async fn main() {
     // Insert your account path. Note that index must be hardened(like 0', 123').
     let path = BIP32Path::from_str("m/").unwrap();
     let message_id = iota
-        .send(&seed)
+        .send_transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
@@ -111,7 +111,7 @@ async fn main() {
     println!("{:#?}", message_id);
     delay_for(Duration::from_millis(15000)).await;
     let message_id = iota
-        .send(&seed)
+        .send_transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
@@ -132,7 +132,7 @@ async fn main() {
     // Insert your account path. Note that index must be hardened(like 0', 123').
     let path = BIP32Path::from_str("m/").unwrap();
     let message_id = iota
-        .send(&seed)
+        .send_transaction(&seed)
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(

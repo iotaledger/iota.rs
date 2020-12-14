@@ -11,7 +11,10 @@ async fn main() {
         .build()
         .unwrap();
 
-    let address = "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92".parse::<Ed25519Address>().unwrap().into();
+    let address = "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92"
+        .parse::<Ed25519Address>()
+        .unwrap()
+        .into();
 
     let balance = iota.get_address().balance(&address).await.unwrap();
     println!("The balance of {:?} is {:?}", address, balance);

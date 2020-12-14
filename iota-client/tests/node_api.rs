@@ -4,9 +4,8 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
+use bee_pow::providers::{MinerBuilder, ProviderBuilder};
 use bee_signing_ext::{binary::BIP32Path, Seed};
-use bee_pow::providers::MinerBuilder;
-use bee_pow::providers::ProviderBuilder;
 
 use std::{num::NonZeroU64, str::FromStr};
 
@@ -14,17 +13,13 @@ const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
 
 #[tokio::test]
 async fn test_get_info() {
-    let r = iota_client::Client::get_node_info(DEFAULT_NODE_URL)
-        .await
-        .unwrap();
+    let r = iota_client::Client::get_node_info(DEFAULT_NODE_URL).await.unwrap();
     println!("{:#?}", r);
 }
 
 #[tokio::test]
 async fn test_get_health() {
-    let r = iota_client::Client::get_node_health(DEFAULT_NODE_URL)
-        .await
-        .unwrap();
+    let r = iota_client::Client::get_node_health(DEFAULT_NODE_URL).await.unwrap();
     println!("{:#?}", r);
 }
 
@@ -43,7 +38,6 @@ async fn test_get_tips() {
 
 #[tokio::test]
 async fn test_post_message_with_indexation() {
-
     let client = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
         .unwrap()
@@ -82,7 +76,10 @@ async fn test_post_message_with_transaction() {
         .path(&path)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .output(
-            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8".parse::<Ed25519Address>().unwrap().into(), // Insert the address to search for
+            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
+                .parse::<Ed25519Address>()
+                .unwrap()
+                .into(), // Insert the address to search for
             NonZeroU64::new(100).unwrap(),
         )
         .post()
@@ -108,7 +105,6 @@ async fn test_get_message_by_index() {
 
 #[tokio::test]
 async fn test_get_message_data() {
-
     let client = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
         .unwrap()
@@ -123,18 +119,13 @@ async fn test_get_message_data() {
         .await
         .unwrap();
 
-    let r = client
-        .get_message()
-        .data(&message_id)
-        .await
-        .unwrap();
+    let r = client.get_message().data(&message_id).await.unwrap();
 
     println!("{:#?}", r);
 }
 
 #[tokio::test]
 async fn test_get_message_metadata() {
-
     let client = iota_client::Client::builder()
         .node(DEFAULT_NODE_URL)
         .unwrap()
@@ -197,7 +188,10 @@ async fn test_get_address_balance() {
         .unwrap()
         .get_address()
         .balance(
-            &("6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92".parse::<Ed25519Address>().unwrap()).into(),
+            &("6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92"
+                .parse::<Ed25519Address>()
+                .unwrap())
+            .into(),
         )
         .await
         .unwrap();
@@ -214,7 +208,10 @@ async fn test_get_address_outputs() {
         .unwrap()
         .get_address()
         .outputs(
-            &("d2adf03c21269b25a0bb4319471213161f2a4fb57b16cc2e505b87b2ca52d37d".parse::<Ed25519Address>().unwrap()).into(), // Insert the address to search for
+            &("d2adf03c21269b25a0bb4319471213161f2a4fb57b16cc2e505b87b2ca52d37d"
+                .parse::<Ed25519Address>()
+                .unwrap())
+            .into(), // Insert the address to search for
         )
         .await
         .unwrap();
@@ -255,4 +252,3 @@ async fn test_get_milestone() {
 
     println!("{:#?}", r);
 }
-
