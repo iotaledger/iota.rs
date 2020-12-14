@@ -479,7 +479,7 @@ impl Client {
     }
 
     /// A generic send function for easily sending value transaction messages.
-    pub fn send_indexation_message<'a>(&'a self) -> SendIndexationBuilder<'a> {
+    pub fn send_indexation_message(&self) -> SendIndexationBuilder<'_> {
         SendIndexationBuilder::new(self)
     }
 

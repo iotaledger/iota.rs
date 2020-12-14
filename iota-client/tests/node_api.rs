@@ -4,7 +4,6 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use bee_pow::providers::{MinerBuilder, ProviderBuilder};
 use bee_signing_ext::{binary::BIP32Path, Seed};
 
 use std::{num::NonZeroU64, str::FromStr};
