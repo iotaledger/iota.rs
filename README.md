@@ -8,7 +8,7 @@ This is the **alpha** version of official Rust library, which allows you to do t
 * Generate addresses
 * Interact with an IOTA node
 
-This client library is still in the alpha stage but it should cover most use cases. The main crate is under `iota-core`. The librarnamed `iota` re-exports fundamental crates from `bee` and also provides client features and utilities. API calls like `post_message` and `get_outputs` are supported. There may be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
+This client library is still in the alpha stage but it should cover most use cases. The main crate is under `iota-core`. The library named `iota` re-exports fundamental crates from `bee` and also provides client features and utilities. API calls like `post_message` and `get_outputs` are supported. There may be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
 | Table of contents                                 |
 | :------------------------------------------------ |
@@ -24,7 +24,7 @@ This client library is still in the alpha stage but it should cover most use cas
 
 To use the library, we recommend you update Rust to latest stable version [`$ rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but some changes might not be compatible.
 
-`no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once new library implementation is ready.
+`no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
 
 ### Dependencies
 
@@ -68,7 +68,7 @@ Install `cmake` and `openssl` with your distro's package manager or download fro
 
 ## Using the library
 
-Using the library is fairly easy, just add it as dependancy in `Cargo.toml`:
+Using the library is easy, just add it as dependancy in `Cargo.toml`:
 
 ```
 [dependencies]
