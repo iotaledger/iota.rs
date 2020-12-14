@@ -478,8 +478,13 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// A generic send function for easily sending value transaction messages.
-    pub fn send<'a>(&'a self, seed: &'a Seed) -> SendBuilder<'a> {
-        SendBuilder::new(self, seed)
+    pub fn send_transaction_message<'a>(&'a self, seed: &'a Seed) -> SendTransactionBuilder<'a> {
+        SendTransactionBuilder::new(self, seed)
+    }
+
+    /// A generic send function for easily sending value transaction messages.
+    pub fn send_indexation_message<'a>(&'a self) -> SendIndexationBuilder<'a> {
+        SendIndexationBuilder::new(self)
     }
 
     /// Return a valid unuspent address.

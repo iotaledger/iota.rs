@@ -15,7 +15,7 @@ const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
 
 /// Builder of send API
-pub struct SendBuilder<'a> {
+pub struct SendTransactionBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
     path: Option<&'a BIP32Path>,
@@ -32,7 +32,7 @@ struct AddressIndexRecorder {
     address_path: BIP32Path,
 }
 
-impl<'a> SendBuilder<'a> {
+impl<'a> SendTransactionBuilder<'a> {
     /// Create sned builder
     pub fn new(client: &'a Client, seed: &'a Seed) -> Self {
         Self {
@@ -250,4 +250,62 @@ impl<'a> SendBuilder<'a> {
 
         self.client.post_message(&message).await
     }
+}
+
+/// Builder of send API
+pub struct SendIndexationBuilder<'a> {
+    client: &'a Client,
+    index: Option<String>,
+    data: Option<Vec<u8>>,
+}
+
+impl<'a> SendIndexationBuilder<'a> {
+    /// Create send builder
+    pub fn new(client: &'a Client) -> Self {
+        Self {
+            client,
+            index: None,
+            data: None,
+        }
+    }
+
+    /// Set index to the builder
+    pub fn index(mut self, index: String) -> Self {
+        self.index = Some(index);
+        self
+    }
+
+    /// Set data to the builder
+    pub fn data(mut self, data: Vec<u8>) -> Self {
+        self.data = Some(data);
+        self
+    }
+
+    /// Consume the builder and get the API result
+    pub async fn post(self) -> Result<MessageId> {
+
+        // filter input
+        let index = self.index.ok_or(Error::MissingParameter(String::from("index")))?;
+        let data = self.data.ok_or(Error::MissingParameter(String::from("data")))?;
+
+        // build indexation
+        let index = Indexation::new(index, &data).map_err(|e| Error::IndexationError(e.to_string()))?;
+
+        // get tips
+        let tips = self.client.get_tips().await?;
+
+        // building message
+        let payload = Payload::Indexation(Box::new(index));
+        let message = MessageBuilder::<ClientMiner>::new()
+            .with_network_id(self.client.get_network_id().await?)
+            .with_parent1(tips.0)
+            .with_parent2(tips.1)
+            .with_payload(payload)
+            .with_nonce_provider(self.client.get_pow_provider(), 4000f64)
+            .finish()
+            .map_err(|e| Error::IndexationError(e.to_string()))?;
+
+        self.client.post_message(&message).await
+    }
+
 }
