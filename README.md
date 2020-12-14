@@ -28,7 +28,7 @@ To use the library, we recommend you update Rust to latest stable version [`$ ru
 
 ### Dependencies
 
-`cmake` and `openssl` are required to compile the MQTT dependencies.
+`cmake` and `openssl` are required. In order to run the build process succesfully using Cargo you might need install additional build tools on your system. 
 
 ### Windows
 
@@ -64,7 +64,7 @@ $ OPENSSL_ROOT_DIR=$(brew --prefix openssl@1.1)
 
 ### Linux
 
-Install `cmake` and `openssl` with your distro's package manager or download from their websites.
+Install `cmake` and `openssl` with your distro's package manager or download from their websites. On Debian and Ubuntu you will also need `build-essential`.
 
 ## Using the library
 
