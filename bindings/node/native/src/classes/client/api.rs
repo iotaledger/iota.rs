@@ -7,7 +7,7 @@ use super::MessageDto;
 
 use iota::{
     message::prelude::{Address, MessageBuilder, MessageId, UTXOInput},
-    BIP32Path, ClientMiner, Seed,
+    ClientMiner, Seed,
 };
 use neon::prelude::*;
 
@@ -15,14 +15,14 @@ pub(crate) enum Api {
     // High level APIs
     SendTransfer {
         seed: Seed,
-        path: Option<BIP32Path>,
-        index: Option<usize>,
+        account_index: Option<usize>,
+        initial_address_index: Option<usize>,
         outputs: Vec<(Address, NonZeroU64)>,
     },
     GetUnspentAddress {
         seed: Seed,
-        path: Option<BIP32Path>,
-        index: Option<usize>,
+        account_index: Option<usize>,
+        initial_address_index: Option<usize>,
     },
     FindMessages {
         indexation_keys: Vec<String>,
@@ -30,8 +30,8 @@ pub(crate) enum Api {
     },
     GetBalance {
         seed: Seed,
-        path: Option<BIP32Path>,
-        index: Option<usize>,
+        account_index: Option<usize>,
+        initial_address_index: Option<usize>,
     },
     GetAddressBalances(Vec<Address>),
     // Node APIs
@@ -74,16 +74,16 @@ impl Task for ClientTask {
                 // High level API
                 Api::SendTransfer {
                     seed,
-                    path,
-                    index,
+                    account_index,
+                    initial_address_index,
                     outputs,
                 } => {
                     let mut sender = client.send().transaction(seed);
-                    if let Some(path) = path {
-                        sender = sender.path(path);
+                    if let Some(account_index) = account_index {
+                        sender = sender.account_index(*account_index);
                     }
-                    if let Some(index) = index {
-                        sender = sender.index(*index);
+                    if let Some(initial_address_index) = initial_address_index {
+                        sender = sender.initial_address_index(*initial_address_index);
                     }
                     for output in outputs {
                         sender = sender.output(output.0.clone(), output.1);
@@ -91,13 +91,17 @@ impl Task for ClientTask {
                     let message_id = sender.post().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
-                Api::GetUnspentAddress { seed, path, index } => {
+                Api::GetUnspentAddress {
+                    seed,
+                    account_index,
+                    initial_address_index,
+                } => {
                     let mut getter = client.get_unspent_address(seed);
-                    if let Some(path) = path {
-                        getter = getter.path(path);
+                    if let Some(account_index) = account_index {
+                        getter = getter.account_index(*account_index);
                     }
-                    if let Some(index) = index {
-                        getter = getter.index(*index);
+                    if let Some(initial_address_index) = initial_address_index {
+                        getter = getter.initial_address_index(*initial_address_index);
                     }
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address.to_bech32(), index)).unwrap()
@@ -109,13 +113,17 @@ impl Task for ClientTask {
                     let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
-                Api::GetBalance { seed, path, index } => {
+                Api::GetBalance {
+                    seed,
+                    account_index,
+                    initial_address_index,
+                } => {
                     let mut getter = client.get_balance(seed);
-                    if let Some(path) = path {
-                        getter = getter.path(path);
+                    if let Some(account_index) = account_index {
+                        getter = getter.account_index(*account_index);
                     }
-                    if let Some(index) = index {
-                        getter = getter.index(*index);
+                    if let Some(initial_address_index) = initial_address_index {
+                        getter = getter.initial_address_index(*initial_address_index);
                     }
                     let balance = getter.get().await?;
                     serde_json::to_string(&balance).unwrap()

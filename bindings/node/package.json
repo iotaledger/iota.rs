@@ -14,7 +14,7 @@
   },
   "scripts": {
     "install": "neon build",
-    "test": "mocha ./tests --exclude assertions.js"
+    "test": "mocha ./tests --exclude assertions.js --timeout 0"
   },
   "devDependencies": {
     "mocha": "^8.2.1"

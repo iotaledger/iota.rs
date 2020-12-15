@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{BIP32Path, Seed};
+use iota::Seed;
 use neon::prelude::*;
 
 use std::sync::{Arc, Mutex};
@@ -11,8 +11,8 @@ use super::{Api, ClientTask};
 pub struct UnspentAddressGetter {
     client_id: String,
     seed: String,
-    path: Arc<Mutex<Option<BIP32Path>>>,
-    index: Arc<Mutex<Option<usize>>>,
+    account_index: Arc<Mutex<Option<usize>>>,
+    initial_address_index: Arc<Mutex<Option<usize>>>,
 }
 
 declare_types! {
@@ -23,33 +23,32 @@ declare_types! {
             Ok(UnspentAddressGetter {
                 client_id,
                 seed,
-                path: Arc::new(Mutex::new(None)),
-                index: Arc::new(Mutex::new(None)),
+                account_index: Arc::new(Mutex::new(None)),
+                initial_address_index: Arc::new(Mutex::new(None)),
             })
         }
 
-        method path(mut cx) {
-            let path = cx.argument::<JsString>(0)?.value();
-            let path = BIP32Path::from_str(path.as_str()).expect("invalid bip32 path");
+        method accountIndex(mut cx) {
+            let account_index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
                 let this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).path;
-                let mut get_path = ref_.lock().unwrap();
-                get_path.replace(path);
+                let ref_ = &(*this.borrow(&guard)).account_index;
+                let mut get_account_index = ref_.lock().unwrap();
+                get_account_index.replace(account_index);
             }
 
             Ok(cx.this().upcast())
         }
 
-        method index(mut cx) {
+        method initialAddressIndex(mut cx) {
             let index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
                 let this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).index;
-                let mut get_index = ref_.lock().unwrap();
-                get_index.replace(index);
+                let ref_ = &(*this.borrow(&guard)).initial_address_index;
+                let mut get_address_index = ref_.lock().unwrap();
+                get_address_index.replace(index);
             }
 
             Ok(cx.this().upcast())
@@ -65,8 +64,8 @@ declare_types! {
                     client_id: ref_.client_id.clone(),
                     api: Api::GetUnspentAddress {
                         seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
-                        path: (*ref_.path.lock().unwrap()).clone(),
-                        index: *ref_.index.lock().unwrap(),
+                        account_index: (*ref_.account_index.lock().unwrap()).clone(),
+                        initial_address_index: *ref_.initial_address_index.lock().unwrap(),
                     },
                 };
                 client_task.schedule(cb);
