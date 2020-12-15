@@ -26,6 +26,7 @@ use std::{
     convert::TryInto,
     hash::Hash,
     num::NonZeroU64,
+    str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
 };
@@ -154,6 +155,23 @@ pub enum Api {
     GetOutput,
     /// `get_milestone` API
     GetMilestone,
+}
+
+impl FromStr for Api {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        let t = match s {
+            "GetHealth" => Self::GetHealth,
+            "GetInfo" => Self::GetInfo,
+            "GetTips" => Self::GetTips,
+            "PostMessage" => Self::PostMessage,
+            "GetOutput" => Self::GetOutput,
+            "GetMilestone" => Self::GetMilestone,
+            _ => return Err(format!("unknown api kind `{}`", s)),
+        };
+        Ok(t)
+    }
 }
 
 /// An instance of the client using IRI URI

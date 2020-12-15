@@ -10,6 +10,8 @@ import {
   MessageDto
 } from './types'
 
+export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'GetOutput' | 'GetMilestone'
+
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
@@ -17,6 +19,8 @@ export declare class ClientBuilder {
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
   nodeSyncInterval(interval: number): ClientBuilder
+  requestTimeout(timeoutMs: number): ClientBuilder
+  apiTimeout(api: Api, timeoutMs: number): ClientBuilder
   build(): Client
 }
 
