@@ -3,7 +3,10 @@
 
 use std::{
     num::NonZeroU64,
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
 };
 
 use iota::client::{BrokerOptions, ClientBuilder};
@@ -13,7 +16,7 @@ pub struct ClientBuilderWrapper {
     nodes: Arc<Mutex<Vec<String>>>,
     broker_options: Arc<Mutex<Option<BrokerOptions>>>,
     node_sync_interval: Arc<Mutex<Option<NonZeroU64>>>,
-    local_pow: Arc<Mutex<bool>>,
+    local_pow: Arc<AtomicBool>,
 }
 
 declare_types! {
@@ -23,7 +26,7 @@ declare_types! {
                 nodes: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
-                local_pow: Arc::new(Mutex::new(true)),
+                local_pow: Arc::new(AtomicBool::new(true)),
             })
         }
 
@@ -90,8 +93,7 @@ declare_types! {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &(*this.borrow(&guard)).local_pow;
-                let mut pow = ref_.lock().unwrap();
-                *pow = local_pow;
+                ref_.swap(local_pow, Ordering::Relaxed);
             }
             Ok(cx.this().upcast())
         }
@@ -101,7 +103,7 @@ declare_types! {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &*this.borrow(&guard);
-                let mut builder = ClientBuilder::new().local_pow(*ref_.local_pow.lock().unwrap());
+                let mut builder = ClientBuilder::new().local_pow(ref_.local_pow.clone().load(Ordering::Relaxed));
 
                 for node in &*ref_.nodes.lock().unwrap() {
                     builder = builder.node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));

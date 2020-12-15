@@ -84,7 +84,7 @@ declare_types! {
                     client_id: ref_.client_id.clone(),
                     api: Api::SendTransfer {
                         seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
-                        account_index: (*ref_.account_index.lock().unwrap()).clone(),
+                        account_index: *ref_.account_index.lock().unwrap(),
                         initial_address_index: *ref_.initial_address_index.lock().unwrap(),
                         outputs: (*ref_.outputs.lock().unwrap()).clone(),
                     },
