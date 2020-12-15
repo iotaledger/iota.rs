@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{message::prelude::Address, BIP32Path, Seed};
+use iota::{message::prelude::Address, Seed};
 use neon::prelude::*;
 
 use std::{
@@ -14,8 +14,8 @@ use super::{parse_address, Api, ClientTask};
 pub struct ValueTransactionSender {
     client_id: String,
     seed: String,
-    path: Arc<Mutex<Option<BIP32Path>>>,
-    index: Arc<Mutex<Option<usize>>>,
+    account_index: Arc<Mutex<Option<usize>>>,
+    initial_address_index: Arc<Mutex<Option<usize>>>,
     outputs: Arc<Mutex<Vec<(Address, NonZeroU64)>>>,
 }
 
@@ -27,34 +27,33 @@ declare_types! {
             Ok(ValueTransactionSender {
                 client_id,
                 seed,
-                path: Arc::new(Mutex::new(None)),
-                index: Arc::new(Mutex::new(None)),
+                account_index: Arc::new(Mutex::new(None)),
+                initial_address_index: Arc::new(Mutex::new(None)),
                 outputs: Arc::new(Mutex::new(vec![]))
             })
         }
 
-        method path(mut cx) {
-            let path = cx.argument::<JsString>(0)?.value();
-            let path = BIP32Path::from_str(path.as_str()).expect("invalid bip32 path");
+        method accountIndex(mut cx) {
+            let account_index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
                 let this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).path;
-                let mut send_path = ref_.lock().unwrap();
-                send_path.replace(path);
+                let ref_ = &(*this.borrow(&guard)).account_index;
+                let mut send_account_index = ref_.lock().unwrap();
+                send_account_index.replace(account_index);
             }
 
             Ok(cx.this().upcast())
         }
 
-        method index(mut cx) {
+        method initialAddressIndex(mut cx) {
             let index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
                 let this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).index;
-                let mut send_index = ref_.lock().unwrap();
-                send_index.replace(index);
+                let ref_ = &(*this.borrow(&guard)).initial_address_index;
+                let mut send_address_index = ref_.lock().unwrap();
+                send_address_index.replace(index);
             }
 
             Ok(cx.this().upcast())
@@ -85,8 +84,8 @@ declare_types! {
                     client_id: ref_.client_id.clone(),
                     api: Api::SendTransfer {
                         seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
-                        path: (*ref_.path.lock().unwrap()).clone(),
-                        index: *ref_.index.lock().unwrap(),
+                        account_index: *ref_.account_index.lock().unwrap(),
+                        initial_address_index: *ref_.initial_address_index.lock().unwrap(),
                         outputs: (*ref_.outputs.lock().unwrap()).clone(),
                     },
                 };

@@ -66,9 +66,9 @@ export declare interface MilestonePayload {
   signatures: number[][]
 }
 
-export declare type Payload = { Indexation: IndexationPayload } |
-{ Milestone: MilestonePayload } |
-{ Transaction: TransactionPayload }
+export declare type Payload = { type: 'Indexation', data: IndexationPayload } |
+{ type: 'Milestone', data: MilestonePayload } |
+{ type: 'Transaction', data: TransactionPayload }
 
 export declare interface Message {
   network_id: number

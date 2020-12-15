@@ -34,3 +34,11 @@ macro_rules! parse_response {
         }
     }};
 }
+
+/// gets the BIP32 account path from a given account_index/address_internal/address_index
+#[macro_export]
+macro_rules! account_path {
+    ($account_index:expr) => {
+        format!("m/44'/4218'/{}'", $account_index)
+    };
+}

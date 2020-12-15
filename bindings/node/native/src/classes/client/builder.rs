@@ -5,7 +5,10 @@ use std::{
     collections::HashMap,
     num::NonZeroU64,
     str::FromStr,
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
     time::Duration,
 };
 
@@ -18,6 +21,7 @@ pub struct ClientBuilderWrapper {
     node_sync_interval: Arc<Mutex<Option<NonZeroU64>>>,
     request_timeout: Arc<Mutex<Option<Duration>>>,
     api_timeout: Arc<Mutex<HashMap<Api, Duration>>>,
+    local_pow: Arc<AtomicBool>,
 }
 
 declare_types! {
@@ -29,6 +33,7 @@ declare_types! {
                 node_sync_interval: Default::default(),
                 request_timeout: Default::default(),
                 api_timeout: Default::default(),
+                local_pow: Arc::new(AtomicBool::new(true)),
             })
         }
 
@@ -115,12 +120,23 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method localPow(mut cx) {
+            let local_pow = cx.argument::<JsBoolean>(0)?.value();
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).local_pow;
+                ref_.swap(local_pow, Ordering::Relaxed);
+            }
+            Ok(cx.this().upcast())
+        }
+
         method build(mut cx) {
             let client = {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &*this.borrow(&guard);
-                let mut builder = ClientBuilder::new();
+                let mut builder = ClientBuilder::new().local_pow(ref_.local_pow.clone().load(Ordering::Relaxed));
 
                 for node in &*ref_.nodes.lock().unwrap() {
                     builder = builder.node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));

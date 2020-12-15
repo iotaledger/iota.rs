@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{BIP32Path, Seed};
+use iota::Seed;
 use neon::prelude::*;
 
 use std::{
@@ -12,7 +12,7 @@ use std::{
 pub struct AddressFinder {
     client_id: String,
     seed: String,
-    path: Arc<Mutex<Option<BIP32Path>>>,
+    account_index: Arc<Mutex<Option<usize>>>,
     range: Arc<Mutex<Option<Range<usize>>>>,
 }
 
@@ -24,20 +24,19 @@ declare_types! {
             Ok(AddressFinder {
                 client_id,
                 seed,
-                path: Arc::new(Mutex::new(None)),
+                account_index: Arc::new(Mutex::new(None)),
                 range: Arc::new(Mutex::new(None)),
             })
         }
 
-        method path(mut cx) {
-            let path = cx.argument::<JsString>(0)?.value();
-            let path = BIP32Path::from_str(path.as_str()).expect("invalid bip32 path");
+        method accountIndex(mut cx) {
+            let account_index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
                 let this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).path;
-                let mut find_path = ref_.lock().unwrap();
-                find_path.replace(path);
+                let ref_ = &(*this.borrow(&guard)).account_index;
+                let mut find_account_index = ref_.lock().unwrap();
+                find_account_index.replace(account_index);
             }
 
             Ok(cx.this().upcast())
@@ -70,15 +69,15 @@ declare_types! {
                 let client = client.read().unwrap();
                 let mut getter = client.find_addresses(&seed);
 
-                let path = &*ref_.path.lock().unwrap();
-                if let Some(path) = path {
-                    getter = getter.path(&path);
+                let account_index = &*ref_.account_index.lock().unwrap();
+                if let Some(account_index) = account_index {
+                    getter = getter.account_index(*account_index);
                 }
                 if let Some(range) = &*ref_.range.lock().unwrap() {
                     getter = getter.range(range.clone());
                 }
                 getter.get().map(|addresses| {
-                    let addresses: Vec<String> = addresses.iter().map(|a| a.to_bech32()).collect();
+                    let addresses: Vec<(String, bool)> = addresses.iter().map(|(a, i)| (a.to_bech32(), *i)).collect();
                     serde_json::to_string(&addresses).unwrap()
                 })
             };

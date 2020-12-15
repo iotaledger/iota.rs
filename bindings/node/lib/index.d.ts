@@ -21,31 +21,32 @@ export declare class ClientBuilder {
   nodeSyncInterval(interval: number): ClientBuilder
   requestTimeout(timeoutMs: number): ClientBuilder
   apiTimeout(api: Api, timeoutMs: number): ClientBuilder
+  localPow(local: bool): ClientBuilder
   build(): Client
 }
 
 export declare class ValueTransactionSender {
-  path(bip32path: string): ValueTransactionSender
-  index(index: number): ValueTransactionSender
+  accountIndex(index: number): ValueTransactionSender
+  initialAddressIndex(index: number): ValueTransactionSender
   output(address: string, value: number): ValueTransactionSender
   submit(): Promise<string>
 }
 
 export declare class UnspentAddressGetter {
-  path(bip32path: string): UnspentAddressGetter
-  index(index: number): UnspentAddressGetter
+  accountIndex(index: number): UnspentAddressGetter
+  initialAddressIndex(index: number): UnspentAddressGetter
   get(): Promise<[Address, number]>
 }
 
 export declare class AddressFinder {
-  path(bip32path: string): AddressFinder
+  accountIndex(index: number): AddressFinder
   range(start: number, end: number): AddressFinder
-  get(): Address[]
+  get(): [Address, boolean][]
 }
 
 export declare class BalanceGetter {
-  path(bip32path: string): BalanceGetter
-  index(index: number): BalanceGetter
+  accountIndex(index: number): BalanceGetter
+  initialAddressIndex(index: number): BalanceGetter
   get(): Promise<number>
 }
 

@@ -120,6 +120,16 @@ Sets the HTTP request timeout for the specified API.
 
 **Returns** the client builder instance for chained calls.
 
+#### localPow(local): ClientBuilder
+
+Sets the PoW type.
+
+| Param | Type                 | Description                                                |
+| ----- | -------------------- | ---------------------------------------------------------- |
+| local | <code>boolean</code> | Flag determining if PoW should be done locally or remotely |
+
+**Returns** the client builder instance for chained calls.
+
 #### build(): Client
 
 Builds the client instance.
@@ -177,7 +187,7 @@ Finds all messages associated with the given indexation keys and message ids.
 
 #### getBalance(seed: string): BalanceGetter
 
-Get balance on a given seed and its wallet chain BIP32 path.
+Get balance on a given seed and its wallet account index.
 
 | Param | Type                | Description                    |
 | ----- | ------------------- | ------------------------------ |
@@ -348,13 +358,13 @@ Unsubscribes from the provided topics.
 
 Submits a value transaction message.
 
-#### path(path): ValueTransactionSender
+#### accountIndex(index): ValueTransactionSender
 
-Sets the account BIP32 path. This field is required.
+Sets the account index. This field is required.
 
-| Param | Type                | Description            |
-| ----- | ------------------- | ---------------------- |
-| path  | <code>string</code> | The account BIP32 path |
+| Param | Type                | Description       |
+| ----- | ------------------- | ----------------- |
+| index | <code>number</code> | The account index |
 
 **Returns** the message submit instance for chained calls.
 
@@ -369,7 +379,7 @@ Adds an output to the transaction.
 
 **Returns** the message submit instance for chained calls.
 
-#### index(index): ValueTransactionSender
+#### initialAddressIndex(index): ValueTransactionSender
 
 Sets the initial address index to search for balance. Defaults to 0 if the function isn't called.
 
@@ -389,17 +399,17 @@ Submits the message.
 
 Gets a valid unspent address associated with the seed.
 
-#### path(path): UnspentAddressGetter
+#### accountIndex(index): UnspentAddressGetter
 
-Sets the account BIP32 path. This field is required.
+Sets the account index. This field is required.
 
-| Param | Type                | Description            |
-| ----- | ------------------- | ---------------------- |
-| path  | <code>string</code> | The account BIP32 path |
+| Param | Type                | Description       |
+| ----- | ------------------- | ----------------- |
+| index | <code>number</code> | The account index |
 
 **Returns** the address getter instance for chained calls.
 
-#### index(index): UnspentAddressGetter
+#### initialAddressIndex(index): UnspentAddressGetter
 
 Sets the initial address index. Defaults to 0 if the function isn't called.
 
@@ -419,13 +429,13 @@ Performs the operation.
 
 Finds addresses on a given seed.
 
-#### path(path): AddressFinder
+#### accountIndex(index): AddressFinder
 
-Sets the account BIP32 path. This field is required.
+Sets the account index. This field is required.
 
-| Param | Type                | Description            |
-| ----- | ------------------- | ---------------------- |
-| path  | <code>string</code> | The account BIP32 path |
+| Param | Type                | Description       |
+| ----- | ------------------- | ----------------- |
+| index | <code>number</code> | The account index |
 
 **Returns** the address finder instance for chained calls.
 
@@ -450,17 +460,17 @@ Performs the operation.
 
 Gets balance on a given seed.
 
-#### path(path): BalanceGetter
+#### accountIndex(index): BalanceGetter
 
-Sets the account BIP32 path. This field is required.
+Sets the account index. This field is required.
 
-| Param | Type                | Description            |
-| ----- | ------------------- | ---------------------- |
-| path  | <code>string</code> | The account BIP32 path |
+| Param | Type                | Description       |
+| ----- | ------------------- | ----------------- |
+| index | <code>number</code> | The account index |
 
 **Returns** the balance getter instance for chained calls.
 
-#### index(index): BalanceGetter
+#### initialAddressIndex(index): BalanceGetter
 
 Sets the initial address index. Defaults to 0 if the function isn't called.
 
@@ -480,7 +490,7 @@ Performs the operation.
 
 Gets a message by indexation key or identifier.
 
-#### index(index): Promise<string[]>
+#### initialAddressIndex(index): Promise<string[]>
 
 | Param | Type                | Description        |
 | ----- | ------------------- | ------------------ |
@@ -556,9 +566,9 @@ Gets the metadata of the given message.
 
 #### Payload
 
-| Field | Type                                                                                                                    | Description  |
-| ----- | ----------------------------------------------------------------------------------------------------------------------- | ------------ |
-| data  | <code>{ Transaction: TransactionPayload } \| { Indexation: IndexationPayload } \| { Milestone: MilestonePayload}</code> | Payload data |
+| Field | Type                                                                                                                                                              | Description  |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| data  | <code>{ type: 'Transaction', data: TransactionPayload } \| { type: 'Indexation', data: IndexationPayload } \| { type: 'Milestone', data: MilestonePayload}</code> | Payload data |
 
 ##### TransactionPayload
 
