@@ -11,8 +11,6 @@ use neon::prelude::*;
 
 pub struct ClientBuilderWrapper {
     nodes: Arc<Mutex<Vec<String>>>,
-    quorum_size: Arc<Mutex<Option<u8>>>,
-    quorum_threshold: Arc<Mutex<Option<u8>>>,
     broker_options: Arc<Mutex<Option<BrokerOptions>>>,
     node_sync_interval: Arc<Mutex<Option<NonZeroU64>>>,
 }
@@ -22,8 +20,6 @@ declare_types! {
         init(_) {
             Ok(ClientBuilderWrapper {
                 nodes: Default::default(),
-                quorum_size: Default::default(),
-                quorum_threshold: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
             })
@@ -57,30 +53,6 @@ declare_types! {
                 for node_url in node_urls {
                     nodes.push(node_url);
                 }
-            }
-            Ok(cx.this().upcast())
-        }
-
-        method quorumThreshold(mut cx) {
-            let threshold = cx.argument::<JsNumber>(0)?.value() as u8;
-            {
-                let this = cx.this();
-                let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).quorum_threshold;
-                let mut quorum_threshold_ref = ref_.lock().unwrap();
-                quorum_threshold_ref.replace(threshold);
-            }
-            Ok(cx.this().upcast())
-        }
-
-        method quorumSize(mut cx) {
-            let quorum_size = cx.argument::<JsNumber>(0)?.value() as u8;
-            {
-                let this = cx.this();
-                let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).quorum_size;
-                let mut quorum_size_ref = ref_.lock().unwrap();
-                quorum_size_ref.replace(quorum_size);
             }
             Ok(cx.this().upcast())
         }
@@ -119,12 +91,6 @@ declare_types! {
 
                 for node in &*ref_.nodes.lock().unwrap() {
                     builder = builder.node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
-                }
-                if let Some(quorum_size) = &*ref_.quorum_size.lock().unwrap() {
-                    builder = builder.quorum_size(*quorum_size);
-                }
-                if let Some(quorum_threshold) = &*ref_.quorum_threshold.lock().unwrap() {
-                    builder = builder.quorum_threshold(*quorum_threshold);
                 }
                 if let Some(broker_options) = &*ref_.broker_options.lock().unwrap() {
                     builder = builder.broker_options(broker_options.clone());

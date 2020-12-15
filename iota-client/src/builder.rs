@@ -33,8 +33,6 @@ pub struct ClientBuilder {
     nodes: Vec<Url>,
     node_sync_interval: NonZeroU64,
     network: Network,
-    quorum_size: u8,
-    quorum_threshold: u8,
     broker_options: BrokerOptions,
     local_pow: bool,
 }
@@ -45,8 +43,6 @@ impl Default for ClientBuilder {
             nodes: Vec::new(),
             node_sync_interval: NonZeroU64::new(60000).unwrap(),
             network: Network::Mainnet,
-            quorum_size: 3,
-            quorum_threshold: 50,
             broker_options: Default::default(),
             local_pow: true,
         }
@@ -89,20 +85,6 @@ impl ClientBuilder {
         self
     }
 
-    /// Quorum size defines how many of nodes will be queried at the same time to check for quorum
-    pub fn quorum_size(mut self, size: u8) -> Self {
-        self.quorum_size = size;
-        self
-    }
-
-    /// The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to
-    /// consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out
-    /// of 3 nodes when the quorum size is 3).
-    pub fn quorum_threshold(mut self, threshold: u8) -> Self {
-        self.quorum_threshold = threshold;
-        self
-    }
-
     /// Sets the MQTT broker options.
     pub fn broker_options(mut self, options: BrokerOptions) -> Self {
         self.broker_options = options;
@@ -120,16 +102,6 @@ impl ClientBuilder {
         if self.nodes.is_empty() {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
-
-        let quorum_size = match self.nodes.len() {
-            1 => 1,
-            _ => self.quorum_size,
-        };
-
-        let quorum_threshold = match self.quorum_threshold {
-            100..=255 => 100,
-            x => x,
-        };
 
         let nodes = self.nodes;
         let node_sync_interval = self.node_sync_interval;
@@ -153,8 +125,6 @@ impl ClientBuilder {
             sync,
             sync_kill_sender: Arc::new(sync_kill_sender),
             client: reqwest::Client::new(),
-            quorum_size,
-            quorum_threshold,
             mqtt_client: None,
             mqtt_topic_handlers: Default::default(),
             broker_options: self.broker_options,

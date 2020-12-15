@@ -149,8 +149,6 @@ pub struct Client {
     pub(crate) sync_kill_sender: Arc<Sender<()>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
-    pub(crate) quorum_size: u8,
-    pub(crate) quorum_threshold: u8,
     /// A MQTT client to subscribe/unsubscribe to topics.
     pub(crate) mqtt_client: Option<MqttClient>,
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
@@ -163,8 +161,6 @@ impl std::fmt::Debug for Client {
         f.debug_struct("Client")
             .field("sync", &self.sync)
             .field("client", &self.client)
-            .field("quorum_size", &self.quorum_size)
-            .field("quorum_threshold", &self.quorum_threshold)
             .field("broker_options", &self.broker_options)
             .field("local_pow", &self.local_pow)
             .finish()
@@ -477,12 +473,12 @@ impl Client {
     // High level API
     //////////////////////////////////////////////////////////////////////
 
-    /// A generic send function for easily sending value transaction messages.
-    pub fn send<'a>(&'a self, seed: &'a Seed) -> SendBuilder<'a> {
-        SendBuilder::new(self, seed)
+    /// A generic send function for easily sending transaction or indexation messages.
+    pub fn send(&self) -> SendBuilder<'_> {
+        SendBuilder::new(self)
     }
 
-    /// Return a valid unuspent address.
+    /// Return a valid unspent address.
     pub fn get_unspent_address<'a>(&'a self, seed: &'a Seed) -> GetUnspentAddressBuilder<'a> {
         GetUnspentAddressBuilder::new(self, seed)
     }

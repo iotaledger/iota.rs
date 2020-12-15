@@ -9,6 +9,9 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, thiserror::Error)]
 /// Error type of the iota client crate.
 pub enum Error {
+    /// Error when building indexation messages
+    #[error("Error when building indexation message: {0}")]
+    IndexationError(String),
     /// Error when building transaction messages
     #[error("Error when building transaction message")]
     TransactionError,
