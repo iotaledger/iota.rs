@@ -221,7 +221,7 @@ impl Drop for Client {
 
 impl Client {
     /// Create the builder to instntiate the IOTA Client.
-    pub fn builder() -> ClientBuilder {
+    pub fn build() -> ClientBuilder {
         ClientBuilder::new()
     }
 

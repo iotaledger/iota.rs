@@ -57,26 +57,20 @@ impl Default for ClientBuilder {
 }
 
 impl ClientBuilder {
-    /// Create an Iota client builder
+    /// Creates an IOTA client builder.
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Add a Iota node
-    pub fn node(mut self, url: &str) -> Result<Self> {
+    /// Adds an IOTA node by its URL.
+    pub fn with_node(mut self, url: &str) -> Result<Self> {
         let url = Url::parse(url).map_err(|_| Error::UrlError)?;
         self.nodes.push(url);
         Ok(self)
     }
 
-    /// Set the node sync interval
-    pub fn node_sync_interval(mut self, node_sync_interval: NonZeroU64) -> Result<Self> {
-        self.node_sync_interval = node_sync_interval;
-        Ok(self)
-    }
-
-    /// Add a list of Iota nodes
-    pub fn nodes(mut self, urls: &[&str]) -> Result<Self> {
+    /// Adds a list of IOTAl nodes by their URLs.
+    pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
             let url = Url::parse(url).map_err(|_| Error::UrlError)?;
             self.nodes.push(url);
@@ -84,40 +78,46 @@ impl ClientBuilder {
         Ok(self)
     }
 
+    /// Sets the node sync interval.
+    pub fn with_node_sync_interval(mut self, node_sync_interval: NonZeroU64) -> Result<Self> {
+        self.node_sync_interval = node_sync_interval;
+        Ok(self)
+    }
+
     // TODO node pool
 
-    /// Network of the Iota nodes belong to
-    pub fn network(mut self, network: Network) -> Self {
+    /// Selects the network the added nodes belong to.
+    pub fn with_network(mut self, network: Network) -> Self {
         self.network = network;
         self
     }
 
     /// Sets the MQTT broker options.
-    pub fn broker_options(mut self, options: BrokerOptions) -> Self {
+    pub fn with_mqtt_broker_options(mut self, options: BrokerOptions) -> Self {
         self.broker_options = options;
         self
     }
 
-    /// Whether the PoW should be local or remote
-    pub fn local_pow(mut self, local: bool) -> Self {
+    /// Sets whether the PoW should be done locally or remotely.
+    pub fn with_local_pow(mut self, local: bool) -> Self {
         self.local_pow = local;
         self
     }
 
     /// Sets the request timeout.
-    pub fn request_timeout(mut self, timeout: Duration) -> Self {
+    pub fn with_request_timeout(mut self, timeout: Duration) -> Self {
         self.request_timeout = timeout;
         self
     }
 
     /// Sets the request timeout for a specific API usage.
-    pub fn api_timeout(mut self, api: Api, timeout: Duration) -> Self {
+    pub fn with_api_timeout(mut self, api: Api, timeout: Duration) -> Self {
         self.api_timeout.insert(api, timeout);
         self
     }
 
     /// Build the Client instance.
-    pub fn build(self) -> Result<Client> {
+    pub fn finish(self) -> Result<Client> {
         if self.nodes.is_empty() {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
