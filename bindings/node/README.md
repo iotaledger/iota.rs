@@ -28,7 +28,7 @@ $ yarn link iota-client
 After you linked the library, you can create a `Client` instance and interface with it.
 
 ```javascript
-const { ClientBuilder } = require('iota-wallet')
+const { ClientBuilder } = require('iota-client')
 const client = new ClientBuilder()
   .node('http://localhost:14265')
   .build()
