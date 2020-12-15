@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install stable toolchain
+    - name: Install toolchain
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
@@ -40,37 +40,37 @@ jobs:
       with:
         path: ~/.cargo/registry
         # Add date to the cache to keep it up to date
-        key: cargo-registry-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        key: ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
         # Restore from outdated cache for speed
         restore-keys: |
-          cargo-registry-${{ hashFiles('**/Cargo.toml') }}
+          ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.toml') }}
     - name: Cache cargo index
       uses: actions/cache@v2
       with:
         path: ~/.cargo/git
         # Add date to the cache to keep it up to date
-        key: cargo-index-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        key: ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
         # Restore from outdated cache for speed
         restore-keys: |
-          cargo-index-${{ hashFiles('**/Cargo.toml') }}
+          ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.toml') }}
     - name: Cache cargo target
       uses: actions/cache@v2
       with:
         path: target
         # Add date to the cache to keep it up to date
-        key: cargo-build-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        key: ${{ matrix.os }}-stable-cargo-build-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
         # Restore from outdated cache for speed
         restore-keys: |
-          cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
+          ${{ matrix.os }}-stable-cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
     - name: Cache nodejs binding cargo target
       uses: actions/cache@v2
       with:
         path: bindings/node/native/target
         # Add date to the cache to keep it up to date
-        key: cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        key: ${{ matrix.os }}-stable-cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
         # Restore from outdated cache for speed
         restore-keys: |
-          cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}
+          ${{ matrix.os }}-stable-cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}
 
     # paho.mqtt requires openssl and OPENSSL_ROOT_DIR on macOS
     - name: Set OpenSSL location (macOS)
