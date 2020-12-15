@@ -38,7 +38,13 @@ jobs:
       uses: actions/cache@v2
       with:
         path: target
-        key: ubuntu-latest-nightly-cargo-target-${{ hashFiles('**/Cargo.toml') }}
+        key: ubuntu-latest-nightly-cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
+
+    - name: Cache nodejs binding cargo target
+      uses: actions/cache@v2
+      with:
+        path: bindings/node/native/target
+        key: ubuntu-latest-nightly-cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}
 
     - uses: actions-rs/cargo@v1
       with:
@@ -49,3 +55,8 @@ jobs:
       with:
         command: udeps
         args: --all-targets
+
+    - uses: actions-rs/cargo@v1
+      with:
+        command: udeps
+        args: --manifest-path ./bindings/node/native/Cargo.toml --all-targets
