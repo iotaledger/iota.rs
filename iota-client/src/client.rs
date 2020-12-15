@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! The Client module to connect through IRI with API usages
-pub use crate::node::Topic;
 use crate::{api::*, builder::ClientBuilder, error::*, node::*, parse_response, types::*};
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
@@ -25,6 +24,7 @@ use tokio::{
 use std::{
     collections::{HashMap, HashSet},
     convert::TryInto,
+    hash::Hash,
     num::NonZeroU64,
     sync::{Arc, RwLock},
     time::Duration,
@@ -139,6 +139,23 @@ impl PowProvider for ClientMiner {
     }
 }
 
+/// Each of the node APIs the client uses.
+#[derive(Eq, PartialEq, Hash)]
+pub enum Api {
+    /// `get_health` API
+    GetHealth,
+    /// `get_info`API
+    GetInfo,
+    /// `get_tips` API
+    GetTips,
+    /// `post_message` API
+    PostMessage,
+    /// `get_output` API
+    GetOutput,
+    /// `get_milestone` API
+    GetMilestone,
+}
+
 /// An instance of the client using IRI URI
 pub struct Client {
     #[allow(dead_code)]
@@ -154,6 +171,10 @@ pub struct Client {
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
     pub(crate) broker_options: BrokerOptions,
     pub(crate) local_pow: bool,
+    /// HTTP request timeout.
+    pub(crate) request_timeout: Duration,
+    /// HTTP request timeout for each API call.
+    pub(crate) api_timeout: HashMap<Api, Duration>,
 }
 
 impl std::fmt::Debug for Client {
@@ -264,6 +285,10 @@ impl Client {
     // Node API
     //////////////////////////////////////////////////////////////////////
 
+    fn get_timeout(&self, api: Api) -> Duration {
+        *self.api_timeout.get(&api).unwrap_or(&self.request_timeout)
+    }
+
     /// GET /health endpoint
     pub async fn get_node_health<T: IntoUrl>(url: T) -> Result<bool> {
         let mut url = url.into_url()?;
@@ -280,7 +305,12 @@ impl Client {
     pub async fn get_health(&self) -> Result<bool> {
         let mut url = self.get_node()?;
         url.set_path("health");
-        let resp = self.client.get(url).send().await?;
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetHealth))
+            .send()
+            .await?;
 
         match resp.status().as_u16() {
             200 => Ok(true),
@@ -303,7 +333,12 @@ impl Client {
     pub async fn get_info(&self) -> Result<NodeInfo> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/info");
-        let resp = self.client.get(url).send().await?;
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetInfo))
+            .send()
+            .await?;
 
         parse_response!(resp, 200 => {
             Ok(resp.json::<Response<NodeInfo>>().await?.data)
@@ -314,7 +349,12 @@ impl Client {
     pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
-        let resp = self.client.get(url).send().await?;
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetTips))
+            .send()
+            .await?;
 
         parse_response!(resp, 200 => {
             let pair = resp.json::<Response<Tips>>().await?.data;
@@ -336,6 +376,7 @@ impl Client {
         let resp = self
             .client
             .post(url)
+            .timeout(self.get_timeout(Api::PostMessage))
             .header("content-type", "application/json; charset=UTF-8")
             .json(&message)
             .send()
@@ -363,7 +404,12 @@ impl Client {
             output.output_id().transaction_id().to_string(),
             hex::encode(output.output_id().index().to_le_bytes())
         ));
-        let resp = reqwest::get(url).await?;
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetOutput))
+            .send()
+            .await?;
 
         parse_response!(resp, 200 => {
             let raw = resp.json::<Response<RawOutput>>().await?.data;
@@ -424,7 +470,12 @@ impl Client {
     pub async fn get_milestone(&self, index: u64) -> Result<MilestoneMetadata> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}", index));
-        let resp = reqwest::get(url).await?;
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetMilestone))
+            .send()
+            .await?;
 
         parse_response!(resp, 200 => {
             let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
