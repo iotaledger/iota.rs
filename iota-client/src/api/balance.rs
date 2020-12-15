@@ -50,10 +50,7 @@ impl<'a> GetBalanceBuilder<'a> {
             None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
         };
 
-        let mut index = match self.index {
-            Some(r) => r,
-            None => 0,
-        };
+        let mut index = self.index.unwrap_or(0);
 
         // get account balance and check with value
         let mut balance = 0;
