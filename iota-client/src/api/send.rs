@@ -114,13 +114,11 @@ impl<'a> SendTransactionBuilder<'a> {
 
         let mut paths = Vec::new();
         let mut essence = TransactionEssence::builder();
-        let mut empty_address_count: u32 = 0;
         let mut address_index_recorders = Vec::new();
 
-        // The gap limit is 20
-        while empty_address_count != 20 {
+        'input_selection: loop {
             // Reset the empty_address_count for each run of output address searching
-            empty_address_count = 0;
+            let mut empty_address_count = 0;
 
             // Get the addresses in the BIP path/index ~ path/index+20
             let addresses = self
@@ -131,7 +129,8 @@ impl<'a> SendTransactionBuilder<'a> {
                 .get()?;
 
             // For each address, get the address outputs
-            for (address_index, (address, _)) in addresses.iter().enumerate() {
+            let mut address_index = 0;
+            for (index, (address, internal)) in addresses.iter().enumerate() {
                 let address_outputs = self.client.get_address().outputs(&address).await?;
                 let mut outputs = vec![];
                 for output_id in address_outputs.iter() {
@@ -161,11 +160,12 @@ impl<'a> SendTransactionBuilder<'a> {
                                 let mut address_path = path.clone();
                                 // Note that we need to sign the original address, i.e., `path/index`,
                                 // instead of `path/index/_offset` or `path/_offset`.
+                                address_path.push(*internal as u32 + HARDEND);
                                 address_path.push(address_index as u32 + HARDEND);
+                                paths.push(address_path.clone());
                                 let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
                                     .try_into()
                                     .map_err(|_| Error::TransactionError)?;
-                                paths.push(address_path.clone());
                                 let input = Input::UTXO(
                                     UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
                                         .map_err(|_| Error::TransactionError)?,
@@ -190,8 +190,24 @@ impl<'a> SendTransactionBuilder<'a> {
                         }
                     }
                 }
+
+                if total_already_spent > total_to_spend {
+                    break 'input_selection;
+                }
+
+                // if we just processed an even index, increase the address index
+                // (because the list has public and internal addresses)
+                if index % 2 == 1 {
+                    address_index += 1;
+                }
             }
+
             index += 20;
+
+            // The gap limit is 20 and use reference 40 here because there's public and internal addresses
+            if empty_address_count == 40 {
+                break;
+            }
         }
 
         if total_already_spent < total_to_spend {
