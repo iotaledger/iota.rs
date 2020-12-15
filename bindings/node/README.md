@@ -28,7 +28,7 @@ $ yarn link iota-client
 After you linked the library, you can create a `Client` instance and interface with it.
 
 ```javascript
-const { ClientBuilder } = require('iota-wallet')
+const { ClientBuilder } = require('iota-client')
 const client = new ClientBuilder()
   .node('http://localhost:14265')
   .build()
@@ -96,6 +96,27 @@ Sets the node syncing interval.
 | Param    | Type                | Description                               |
 | -------- | ------------------- | ----------------------------------------- |
 | interval | <code>number</code> | The interval for the node syncing process |
+
+**Returns** the client builder instance for chained calls.
+
+#### defaultTimeout(timeoutMs): ClientBuilder
+
+Sets the default HTTP request timeout.
+
+| Param   | Type                | Description                 |
+| ------- | ------------------- | --------------------------- |
+| timeout | <code>number</code> | The timeout in milliseconds |
+
+**Returns** the client builder instance for chained calls.
+
+#### apiTimeout(api, timeoutMs): ClientBuilder
+
+Sets the HTTP request timeout for the specified API.
+
+| Param   | Type                                                                                                 | Description                        |
+| ------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| api     | <code>'GetHealth' \| 'GetInfo' \| 'GetTips' \| 'PostMessage' \| 'GetOutput' \| 'GetMilestone'</code> | The API to set the request timeout |
+| timeout | <code>number</code>                                                                                  | The timeout in milliseconds        |
 
 **Returns** the client builder instance for chained calls.
 

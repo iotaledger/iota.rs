@@ -18,8 +18,9 @@ pub mod types;
 
 pub use bee_signing_ext::{binary::BIP32Path, Seed};
 pub use builder::ClientBuilder;
-pub use client::{BrokerOptions, Client, ClientMiner, Topic, TopicEvent};
+pub use client::*;
 pub use error::*;
+pub use node::Topic;
 pub use reqwest::Url;
 pub use types::*;
 
