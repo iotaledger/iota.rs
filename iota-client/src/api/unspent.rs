@@ -44,10 +44,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
         };
 
-        let mut index = match self.index {
-            Some(r) => r,
-            None => 0,
-        };
+        let mut index = self.index.unwrap_or(0);
 
         let result = loop {
             let addresses = self

@@ -97,10 +97,7 @@ impl<'a> SendTransactionBuilder<'a> {
             None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
         };
 
-        let mut index = match self.index {
-            Some(r) => r,
-            None => 0,
-        };
+        let mut index = self.index.unwrap_or(0);
 
         if self.outputs.is_empty() {
             return Err(Error::MissingParameter(String::from("Outputs")));

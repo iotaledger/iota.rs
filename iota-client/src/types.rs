@@ -259,7 +259,8 @@ pub struct MessageJson {
     parent1: String,
     #[serde(rename = "parent2MessageId")]
     parent2: String,
-    payload: PayloadJson,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    payload: Option<PayloadJson>,
     #[serde(skip_serializing_if = "String::is_empty")]
     nonce: String,
 }
@@ -268,11 +269,15 @@ impl ResponseType for MessageJson {}
 
 impl From<&Message> for MessageJson {
     fn from(i: &Message) -> Self {
+        let payload = match i.payload().as_ref() {
+            Some(r) => Some(r.into()),
+            _ => None,
+        };
         Self {
             network_id: i.network_id().to_string(),
             parent1: i.parent1().to_string(),
             parent2: i.parent2().to_string(),
-            payload: i.payload().as_ref().unwrap().into(),
+            payload,
             nonce: i.nonce().to_string(),
         }
     }
@@ -290,15 +295,18 @@ impl TryFrom<MessageJson> for Message {
         let network_id = value.network_id;
         let parent1 = MessageId::new(parent1);
         let parent2 = MessageId::new(parent2);
-        Ok(MessageBuilder::<Constant>::new()
+        let mut msg_builder = MessageBuilder::<Constant>::new()
             .with_network_id(
                 network_id
                     .parse()
                     .map_err(|_| crate::Error::InvalidParameter(format!("network id {}", network_id)))?,
             )
             .with_parent1(parent1)
-            .with_parent2(parent2)
-            .with_payload(get_payload_from_json(value.payload, Some((parent1, parent2)))?)
+            .with_parent2(parent2);
+        if let Some(payload) = get_payload_from_json(value.payload, Some((parent1, parent2)))? {
+            msg_builder = msg_builder.with_payload(payload);
+        }
+        Ok(msg_builder
             .with_nonce_provider(
                 ConstantBuilder::new()
                     .with_value(
@@ -381,48 +389,56 @@ impl From<&Payload> for PayloadJson {
     }
 }
 
-fn get_payload_from_json(payload: PayloadJson, tips: Option<(MessageId, MessageId)>) -> Result<Payload> {
-    match payload {
-        PayloadJson::Transaction(transaction_payload) => {
-            let mut transaction = Transaction::builder();
-            transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
+fn get_payload_from_json(
+    payload: Option<PayloadJson>,
+    tips: Option<(MessageId, MessageId)>,
+) -> Result<Option<Payload>> {
+    if let Some(payload) = payload {
+        match payload {
+            PayloadJson::Transaction(transaction_payload) => {
+                let mut transaction = Transaction::builder();
+                transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
 
-            let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
-            for unlock_block in unlock_blocks {
-                transaction = transaction.add_unlock_block(unlock_block.try_into()?);
+                let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
+                for unlock_block in unlock_blocks {
+                    transaction = transaction.add_unlock_block(unlock_block.try_into()?);
+                }
+
+                Ok(Some(Payload::Transaction(Box::new(transaction.finish()?))))
             }
-
-            Ok(Payload::Transaction(Box::new(transaction.finish()?)))
-        }
-        PayloadJson::Indexation(indexation_payload) => {
-            let indexation = Indexation::new(indexation_payload.index, &hex::decode(indexation_payload.data)?).unwrap();
-            Ok(Payload::Indexation(Box::new(indexation)))
-        }
-        PayloadJson::Milestone(milestone_payload) => {
-            let merkle_proof = hex::decode(milestone_payload.inclusion_merkle_proof)?;
-            let mut reader = BufReader::new(&merkle_proof[..]);
-            let mut merkle_proof = [0u8; MILESTONE_MERKLE_PROOF_LENGTH];
-            reader.read_exact(&mut merkle_proof)?;
-            let milestone_essence = MilestoneEssence::new(
-                milestone_payload.index,
-                milestone_payload.timestamp,
-                tips.unwrap().0,
-                tips.unwrap().1,
-                merkle_proof,
-                vec![],
-            );
-
-            let mut signatures: Vec<Box<[u8]>> = vec![];
-            for signature in milestone_payload.signatures {
-                let signature = hex::decode(signature)?;
-                let mut reader = BufReader::new(&signature[..]);
-                let mut signature = [0; 64];
-                reader.read_exact(&mut signature)?;
-                signatures.push(Box::new(signature));
+            PayloadJson::Indexation(indexation_payload) => {
+                let indexation =
+                    Indexation::new(indexation_payload.index, &hex::decode(indexation_payload.data)?).unwrap();
+                Ok(Some(Payload::Indexation(Box::new(indexation))))
             }
-            let milestone = Milestone::new(milestone_essence, signatures);
-            Ok(Payload::Milestone(Box::new(milestone)))
+            PayloadJson::Milestone(milestone_payload) => {
+                let merkle_proof = hex::decode(milestone_payload.inclusion_merkle_proof)?;
+                let mut reader = BufReader::new(&merkle_proof[..]);
+                let mut merkle_proof = [0u8; MILESTONE_MERKLE_PROOF_LENGTH];
+                reader.read_exact(&mut merkle_proof)?;
+                let milestone_essence = MilestoneEssence::new(
+                    milestone_payload.index,
+                    milestone_payload.timestamp,
+                    tips.unwrap().0,
+                    tips.unwrap().1,
+                    merkle_proof,
+                    vec![],
+                );
+
+                let mut signatures: Vec<Box<[u8]>> = vec![];
+                for signature in milestone_payload.signatures {
+                    let signature = hex::decode(signature)?;
+                    let mut reader = BufReader::new(&signature[..]);
+                    let mut signature = [0; 64];
+                    reader.read_exact(&mut signature)?;
+                    signatures.push(Box::new(signature));
+                }
+                let milestone = Milestone::new(milestone_essence, signatures);
+                Ok(Some(Payload::Milestone(Box::new(milestone))))
+            }
         }
+    } else {
+        Ok(None)
     }
 }
 
@@ -481,9 +497,14 @@ impl TryFrom<TransactionEssenceJson> for TransactionEssence {
         }
 
         builder = match value.payload {
-            Some(indexation) => builder.with_payload(
-                get_payload_from_json(*indexation, None).expect("Invalid indexation in TransactionEssenceJson"),
-            ),
+            Some(indexation) => {
+                match get_payload_from_json(Some(*indexation), None)
+                    .expect("Invalid indexation in TransactionEssenceJson")
+                {
+                    Some(indexation) => builder.with_payload(indexation),
+                    _ => builder,
+                }
+            }
             _ => builder,
         };
 
