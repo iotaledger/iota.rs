@@ -4,7 +4,7 @@
 name = "iota-client"
 version = "0.1.0"
 authors = ["Lucas Nogueira <lucas.nogueira@iota.org>"]
-license = "MIT"
+license = "Apache-2.0"
 build = "build.rs"
 edition = "2018"
 exclude = ["artifacts.json", "index.node"]
