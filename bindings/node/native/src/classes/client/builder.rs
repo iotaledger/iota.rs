@@ -2,17 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::{
+    collections::HashMap,
     num::NonZeroU64,
+    str::FromStr,
     sync::{Arc, Mutex},
+    time::Duration,
 };
 
-use iota::client::{BrokerOptions, ClientBuilder};
+use iota::client::{Api, BrokerOptions, ClientBuilder};
 use neon::prelude::*;
 
 pub struct ClientBuilderWrapper {
     nodes: Arc<Mutex<Vec<String>>>,
     broker_options: Arc<Mutex<Option<BrokerOptions>>>,
     node_sync_interval: Arc<Mutex<Option<NonZeroU64>>>,
+    request_timeout: Arc<Mutex<Option<Duration>>>,
+    api_timeout: Arc<Mutex<HashMap<Api, Duration>>>,
 }
 
 declare_types! {
@@ -22,6 +27,8 @@ declare_types! {
                 nodes: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
+                request_timeout: Default::default(),
+                api_timeout: Default::default(),
             })
         }
 
@@ -78,6 +85,32 @@ declare_types! {
                 let ref_ = &(*this.borrow(&guard)).node_sync_interval;
                 let mut interval_ref = ref_.lock().unwrap();
                 interval_ref.replace(NonZeroU64::new(interval).expect("interval can't be zero"));
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method requestTimeout(mut cx) {
+            let timeout = cx.argument::<JsNumber>(0)?.value() as u64;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).request_timeout;
+                let mut request_timeout_ref = ref_.lock().unwrap();
+                request_timeout_ref.replace(Duration::from_millis(timeout));
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method apiTimeout(mut cx) {
+            let api = cx.argument::<JsString>(0)?.value();
+            let api = Api::from_str(&api).expect("unknown api kind");
+            let timeout = cx.argument::<JsNumber>(1)?.value() as u64;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).api_timeout;
+                let mut api_timeout_map = ref_.lock().unwrap();
+                api_timeout_map.insert(api, Duration::from_millis(timeout));
             }
             Ok(cx.this().upcast())
         }

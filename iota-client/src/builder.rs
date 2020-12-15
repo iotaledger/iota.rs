@@ -4,7 +4,7 @@
 //! Builder of the Clinet Instnace
 
 use crate::{
-    client::{BrokerOptions, Client},
+    client::{Api, BrokerOptions, Client},
     error::*,
 };
 
@@ -12,10 +12,13 @@ use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     num::NonZeroU64,
     sync::{Arc, RwLock},
+    time::Duration,
 };
+
+const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
@@ -35,6 +38,8 @@ pub struct ClientBuilder {
     network: Network,
     broker_options: BrokerOptions,
     local_pow: bool,
+    request_timeout: Duration,
+    api_timeout: HashMap<Api, Duration>,
 }
 
 impl Default for ClientBuilder {
@@ -45,6 +50,8 @@ impl Default for ClientBuilder {
             network: Network::Mainnet,
             broker_options: Default::default(),
             local_pow: true,
+            request_timeout: DEFAULT_REQUEST_TIMEOUT,
+            api_timeout: Default::default(),
         }
     }
 }
@@ -97,6 +104,18 @@ impl ClientBuilder {
         self
     }
 
+    /// Sets the request timeout.
+    pub fn request_timeout(mut self, timeout: Duration) -> Self {
+        self.request_timeout = timeout;
+        self
+    }
+
+    /// Sets the request timeout for a specific API usage.
+    pub fn api_timeout(mut self, api: Api, timeout: Duration) -> Self {
+        self.api_timeout.insert(api, timeout);
+        self
+    }
+
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
         if self.nodes.is_empty() {
@@ -129,6 +148,8 @@ impl ClientBuilder {
             mqtt_topic_handlers: Default::default(),
             broker_options: self.broker_options,
             local_pow: self.local_pow,
+            request_timeout: self.request_timeout,
+            api_timeout: self.api_timeout,
         };
 
         Ok(client)
