@@ -7,6 +7,7 @@ const {
   TopicSubscriber,
   MessageGetter,
   ValueTransactionSender,
+  IndexationSender,
   UnspentAddressGetter,
   AddressFinder,
   BalanceGetter
@@ -78,6 +79,7 @@ MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
 MessageGetter.prototype.metadata = promisify(MessageGetter.prototype.metadata)
 
 ValueTransactionSender.prototype.submit = promisify(ValueTransactionSender.prototype.submit)
+IndexationSender.prototype.submit = promisify(IndexationSender.prototype.submit)
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)
 

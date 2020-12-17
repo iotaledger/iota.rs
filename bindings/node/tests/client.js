@@ -29,10 +29,21 @@ describe('Client', () => {
     addresses.forEach(([address, _internal]) => assertAddress(address))
   })
 
+  it('sends an indexation message with the high level API', async () => {
+    const messageId = await client
+      .send()
+      .indexation()
+      .index('IOTA.RS TEST')
+      .data('MESSAGE')
+      .submit()
+    assertMessageId(messageId)
+  })
+
   it('sends a value transaction and checks output balance', async () => {
     const depositAddress = 'iot1q9jyad2efwyq7ldg9u6eqg5krxdqawgcdxvhjlmxrveylrt4fgaqj30s9qj'
     const messageId = await client
-      .send(seed)
+      .send()
+      .transaction(seed)
       .accountIndex(0)
       .output(depositAddress, 2)
       .submit()

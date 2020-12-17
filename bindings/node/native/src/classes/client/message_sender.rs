@@ -11,6 +11,14 @@ use std::{
 
 use super::{parse_address, Api, ClientTask};
 
+pub struct MessageSender(String);
+
+pub struct IndexationSender {
+    client_id: String,
+    index: Arc<Mutex<Option<String>>>,
+    data: Arc<Mutex<Option<Vec<u8>>>>,
+}
+
 pub struct ValueTransactionSender {
     client_id: String,
     seed: String,
@@ -20,10 +28,103 @@ pub struct ValueTransactionSender {
 }
 
 declare_types! {
+    pub class JsMessageSender for MessageSender {
+        init(mut cx) {
+            let client_id = cx.argument::<JsString>(0)?.value();
+            Ok(MessageSender(client_id))
+        }
+
+        method transaction(mut cx) {
+            let seed = cx.argument::<JsString>(0)?;
+
+            let client_id = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                id.to_string()
+            };
+            let client_id = cx.string(client_id);
+
+            Ok(JsValueTransactionSender::new(&mut cx, vec![client_id, seed])?.upcast())
+        }
+
+        method indexation(mut cx) {
+            let client_id = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                id.to_string()
+            };
+            let client_id = cx.string(client_id);
+
+            Ok(JsIndexationSender::new(&mut cx, vec![client_id])?.upcast())
+        }
+    }
+
+    pub class JsIndexationSender for IndexationSender {
+        init(mut cx) {
+            let client_id = cx.argument::<JsString>(0)?.value();
+            Ok(IndexationSender {
+                client_id,
+                index: Default::default(),
+                data: Default::default(),
+            })
+        }
+
+        method index(mut cx) {
+            let index = cx.argument::<JsString>(0)?.value();
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).index;
+                let mut indexation = ref_.lock().unwrap();
+                indexation.replace(index);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method data(mut cx) {
+            let data = cx.argument::<JsString>(0)?.value();
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).data;
+                let mut data_ = ref_.lock().unwrap();
+                data_.replace(data.as_bytes().to_vec());
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method submit(mut cx) {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::SendIndexation {
+                        index: ref_.index.lock().unwrap().clone(),
+                        data: ref_.data.lock().unwrap().clone(),
+                    },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+    }
+
     pub class JsValueTransactionSender for ValueTransactionSender {
         init(mut cx) {
             let client_id = cx.argument::<JsString>(0)?.value();
             let seed = cx.argument::<JsString>(1)?.value();
+
+            // validate the seed
+            Seed::from_ed25519_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed");
+
             Ok(ValueTransactionSender {
                 client_id,
                 seed,

@@ -144,15 +144,11 @@ Gets a handle to the MQTT topic subscriber.
 
 **Returns** a [TopicSubscriber](#topicsubscriber) instance.
 
-#### send(seed): ValueTransactionSender
+#### send(): MessageSender
 
-Initiates the builder to send funds.
+Initiates the builder to send messages.
 
-| Param | Type                | Description                                  |
-| ----- | ------------------- | -------------------------------------------- |
-| seed  | <code>string</code> | The hex-encoded seed of the account to spend |
-
-**Returns** a [ValueTransactionSender](#valuetransactionsender) instance.
+**Returns** a [MessageSender](#messagesender) instance.
 
 #### getUnspentAddress(seed): UnspentAddressGetter
 
@@ -353,6 +349,56 @@ Unsubscribes from the provided topics.
 | cb    | <code>function</code> | A callback executed when the unsubscribe is finished in the form of `(err, message) => {}` |
 
 **Returns** the topic subscriber instance for chained calls.
+
+### MessageSender
+
+Builder to create transactions or indexation messages.
+
+#### indexation()
+
+Initiates the builder to send indexation messages.
+
+**Returns** a [IndexationSender](#indexationsender) instance.
+
+#### transaction(seed)
+
+Initiates the builder to send funds.
+
+| Param | Type                | Description                                  |
+| ----- | ------------------- | -------------------------------------------- |
+| seed  | <code>string</code> | The hex-encoded seed of the account to spend |
+
+**Returns** a [ValueTransactionSender](#valuetransactionsender) instance.
+
+### IndexationSender
+
+Submits an indexation message.
+
+#### index(index): IndexationSender
+
+Sets the indexation. This field is required.
+
+| Param | Type                | Description    |
+| ----- | ------------------- | -------------- |
+| index | <code>string</code> | The indexation |
+
+**Returns** the indexation message submit instance for chained calls.
+
+#### data(data): IndexationSender
+
+Sets the indexation data. This field is required.
+
+| Param | Type                | Description        |
+| ----- | ------------------- | ------------------ |
+| index | <code>string</code> | The message's data |
+
+**Returns** the indexation message submit instance for chained calls.
+
+#### submit(): Promise<string>
+
+Submits the indexation message.
+
+**Returns** a promise resolving to the message identifier.
 
 ### ValueTransactionSender
 

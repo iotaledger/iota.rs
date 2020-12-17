@@ -320,9 +320,7 @@ impl<'a> SendIndexationBuilder<'a> {
         let index = self
             .index
             .ok_or_else(|| Error::MissingParameter(String::from("index")))?;
-        let data = self
-            .data
-            .ok_or_else(|| Error::MissingParameter(String::from("index")))?;
+        let data = self.data.ok_or_else(|| Error::MissingParameter(String::from("data")))?;
 
         // build indexation
         let index = Indexation::new(index, &data).map_err(|e| Error::IndexationError(e.to_string()))?;
