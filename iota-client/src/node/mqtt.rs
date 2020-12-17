@@ -6,7 +6,7 @@ use crate::{
     Result,
 };
 use paho_mqtt::{
-    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, MQTT_VERSION_3_1_1,
+    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, MQTT_VERSION_3_1_1, SslOptions
 };
 use regex::Regex;
 
@@ -65,7 +65,7 @@ impl Topic {
     }
 }
 
-pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
+fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
     match client.mqtt_client {
         Some(ref c) => Ok(c),
         None => {
@@ -88,6 +88,7 @@ pub(crate) fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                     .mqtt_version(MQTT_VERSION_3_1_1)
                     .clean_session(true)
                     .connect_timeout(client.broker_options.timeout)
+                    .ssl_options(SslOptions::new())
                     .finalize();
 
                 if mqtt_client.connect(conn_opts).is_ok() {
@@ -150,18 +151,18 @@ impl<'a> MqttManager<'a> {
 
     /// Disconnects the broker.
     /// This will clear the stored topic handlers and close the MQTT connection.
-    pub fn disconnect(mut self) -> Result<()> {
+    pub fn disconnect(self) -> Result<()> {
         let timeout = self.client.broker_options.timeout;
-        let client = get_mqtt_client(&mut self.client)?;
+        if let Some(client) = &self.client.mqtt_client {
+            let disconnect_options = DisconnectOptionsBuilder::new().timeout(timeout).finalize();
+            client.disconnect(disconnect_options)?;
+            self.client.mqtt_client = None;
 
-        let disconnect_options = DisconnectOptionsBuilder::new().timeout(timeout).finalize();
-        client.disconnect(disconnect_options)?;
-        self.client.mqtt_client = None;
-
-        {
-            let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
-            mqtt_topic_handlers.clear()
+            {
+                let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
+                let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
+                mqtt_topic_handlers.clear()
+            }
         }
 
         Ok(())
@@ -218,7 +219,7 @@ impl<'a> MqttTopicManager<'a> {
 
     /// Unsubscribe from the given topics.
     /// If no topics were provided, the function will unsubscribe from every subscribed topic.
-    pub fn unsubscribe(mut self) -> Result<()> {
+    pub fn unsubscribe(self) -> Result<()> {
         let topics = {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
             let mqtt_topic_handlers = mqtt_topic_handlers.read().unwrap();
@@ -229,8 +230,9 @@ impl<'a> MqttTopicManager<'a> {
             }
         };
 
-        let client = get_mqtt_client(&mut self.client)?;
-        client.unsubscribe_many(&topics.iter().map(|t| t.0.clone()).collect::<Vec<String>>())?;
+        if let Some(client) = &self.client.mqtt_client {
+            client.unsubscribe_many(&topics.iter().map(|t| t.0.clone()).collect::<Vec<String>>())?;
+        }
 
         let empty_topic_handlers = {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
