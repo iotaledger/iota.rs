@@ -21,8 +21,19 @@ export declare class ClientBuilder {
   nodeSyncInterval(interval: number): ClientBuilder
   requestTimeout(timeoutMs: number): ClientBuilder
   apiTimeout(api: Api, timeoutMs: number): ClientBuilder
-  localPow(local: bool): ClientBuilder
+  localPow(local: boolean): ClientBuilder
   build(): Client
+}
+
+export declare class MessageSender {
+  transaction(seed: string): ValueTransactionSender
+  indexation(): IndexationSender
+}
+
+export declare class IndexationSender {
+  index(index: string): IndexationSender
+  data(data: string): IndexationSender
+  submit(): Promise<string>
 }
 
 export declare class ValueTransactionSender {
@@ -52,7 +63,7 @@ export declare class BalanceGetter {
 
 export declare class Client {
   subscriber(): TopicSubscriber
-  send(seed: string): ValueTransactionSender
+  send(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
   findAddresses(seed: string): AddressFinder
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message[]>
