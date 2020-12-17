@@ -6,7 +6,8 @@ use crate::{
     Result,
 };
 use paho_mqtt::{
-    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, MQTT_VERSION_3_1_1, SslOptions
+    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, SslOptions,
+    MQTT_VERSION_3_1_1,
 };
 use regex::Regex;
 

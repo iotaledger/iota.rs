@@ -217,7 +217,9 @@ impl Drop for Client {
             runtime.shutdown_background();
         }
         if self.mqtt_client.is_some() {
-            self.subscriber().disconnect().expect("failed to disconnect MQTT client");
+            self.subscriber()
+                .disconnect()
+                .expect("failed to disconnect MQTT client");
         }
     }
 }
