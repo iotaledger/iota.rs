@@ -13,7 +13,7 @@
     "neon-cli": "^0.5.0"
   },
   "scripts": {
-    "install": "neon build",
+    "install": "neon build --release",
     "test": "mocha ./tests --exclude assertions.js --timeout 0"
   },
   "devDependencies": {
