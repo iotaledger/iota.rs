@@ -354,9 +354,13 @@ Unsubscribes from the provided topics.
 
 Builder to create transactions or indexation messages.
 
-#### indexation()
+#### indexation(index)
 
 Initiates the builder to send indexation messages.
+
+| Param | Type                | Description    |
+| ----- | ------------------- | -------------- |
+| index | <code>string</code> | The indexation |
 
 **Returns** a [IndexationSender](#indexationsender) instance.
 
@@ -373,16 +377,6 @@ Initiates the builder to send funds.
 ### IndexationSender
 
 Submits an indexation message.
-
-#### index(index): IndexationSender
-
-Sets the indexation. This field is required.
-
-| Param | Type                | Description    |
-| ----- | ------------------- | -------------- |
-| index | <code>string</code> | The indexation |
-
-**Returns** the indexation message submit instance for chained calls.
 
 #### data(data): IndexationSender
 

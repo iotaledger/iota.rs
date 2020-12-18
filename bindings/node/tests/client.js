@@ -32,8 +32,7 @@ describe('Client', () => {
   it('sends an indexation message with the high level API', async () => {
     const messageId = await client
       .send()
-      .indexation()
-      .index('IOTA.RS TEST')
+      .indexation('IOTA.RS TEST')
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
     assertMessageId(messageId)
