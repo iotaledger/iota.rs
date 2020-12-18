@@ -4,15 +4,13 @@
 use iota::Seed;
 use neon::prelude::*;
 
-use std::sync::{Arc, Mutex};
-
 use super::{Api, ClientTask};
 
 pub struct BalanceGetter {
     client_id: String,
     seed: String,
-    account_index: Arc<Mutex<Option<usize>>>,
-    initial_address_index: Arc<Mutex<Option<usize>>>,
+    account_index: Option<usize>,
+    initial_address_index: Option<usize>,
 }
 
 declare_types! {
@@ -23,18 +21,17 @@ declare_types! {
             Ok(BalanceGetter {
                 client_id,
                 seed,
-                account_index: Arc::new(Mutex::new(None)),
-                initial_address_index: Arc::new(Mutex::new(None)),
+                account_index: None,
+                initial_address_index: None,
             })
         }
 
         method accountIndex(mut cx) {
             let account_index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
-                let this = cx.this();
+                let mut this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).account_index;
-                let mut get_account_index = ref_.lock().unwrap();
+                let get_account_index = &mut this.borrow_mut(&guard).account_index;
                 get_account_index.replace(account_index);
             }
 
@@ -44,10 +41,9 @@ declare_types! {
         method initialAddressIndex(mut cx) {
             let index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
-                let this = cx.this();
+                let mut this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).initial_address_index;
-                let mut get_address_index = ref_.lock().unwrap();
+                let get_address_index = &mut this.borrow_mut(&guard).initial_address_index;
                 get_address_index.replace(index);
             }
 
@@ -64,8 +60,8 @@ declare_types! {
                     client_id: ref_.client_id.clone(),
                     api: Api::GetBalance {
                         seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
-                        account_index: *ref_.account_index.lock().unwrap(),
-                        initial_address_index: *ref_.initial_address_index.lock().unwrap(),
+                        account_index: ref_.account_index,
+                        initial_address_index: ref_.initial_address_index,
                     },
                 };
                 client_task.schedule(cb);
