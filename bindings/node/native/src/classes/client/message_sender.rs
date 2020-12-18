@@ -15,7 +15,7 @@ pub struct MessageSender(String);
 
 pub struct IndexationSender {
     client_id: String,
-    index: Arc<Mutex<Option<String>>>,
+    index: String,
     data: Arc<Mutex<Option<Vec<u8>>>>,
 }
 
@@ -49,6 +49,7 @@ declare_types! {
         }
 
         method indexation(mut cx) {
+            let index = cx.argument::<JsString>(0)?;
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -57,41 +58,36 @@ declare_types! {
             };
             let client_id = cx.string(client_id);
 
-            Ok(JsIndexationSender::new(&mut cx, vec![client_id])?.upcast())
+            Ok(JsIndexationSender::new(&mut cx, vec![client_id, index])?.upcast())
         }
     }
 
     pub class JsIndexationSender for IndexationSender {
         init(mut cx) {
             let client_id = cx.argument::<JsString>(0)?.value();
+            let index = cx.argument::<JsString>(1)?.value();
             Ok(IndexationSender {
                 client_id,
-                index: Default::default(),
+                index,
                 data: Default::default(),
             })
         }
 
-        method index(mut cx) {
-            let index = cx.argument::<JsString>(0)?.value();
-            {
-                let this = cx.this();
-                let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).index;
-                let mut indexation = ref_.lock().unwrap();
-                indexation.replace(index);
+        method data(mut cx) {
+            let mut data: Vec<u8> = vec![];
+            let data_js_array = cx.argument::<JsArray>(0)?;
+            let js_data: Vec<Handle<JsValue>> = data_js_array.to_vec(&mut cx)?;
+            for value in js_data {
+                let value: Handle<JsNumber> = value.downcast_or_throw(&mut cx)?;
+                data.push(value.value() as u8);
             }
 
-            Ok(cx.this().upcast())
-        }
-
-        method data(mut cx) {
-            let data = cx.argument::<JsString>(0)?.value();
             {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &(*this.borrow(&guard)).data;
                 let mut data_ = ref_.lock().unwrap();
-                data_.replace(data.as_bytes().to_vec());
+                data_.replace(data);
             }
 
             Ok(cx.this().upcast())
@@ -106,7 +102,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::SendIndexation {
-                        index: ref_.index.lock().unwrap().clone(),
+                        index: ref_.index.clone(),
                         data: ref_.data.lock().unwrap().clone(),
                     },
                 };

@@ -27,12 +27,11 @@ export declare class ClientBuilder {
 
 export declare class MessageSender {
   transaction(seed: string): ValueTransactionSender
-  indexation(): IndexationSender
+  indexation(index: string): IndexationSender
 }
 
 export declare class IndexationSender {
-  index(index: string): IndexationSender
-  data(data: string): IndexationSender
+  data(data: Uint8Array): IndexationSender
   submit(): Promise<string>
 }
 

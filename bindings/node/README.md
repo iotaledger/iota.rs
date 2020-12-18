@@ -354,9 +354,13 @@ Unsubscribes from the provided topics.
 
 Builder to create transactions or indexation messages.
 
-#### indexation()
+#### indexation(index)
 
 Initiates the builder to send indexation messages.
+
+| Param | Type                | Description    |
+| ----- | ------------------- | -------------- |
+| index | <code>string</code> | The indexation |
 
 **Returns** a [IndexationSender](#indexationsender) instance.
 
@@ -374,23 +378,13 @@ Initiates the builder to send funds.
 
 Submits an indexation message.
 
-#### index(index): IndexationSender
-
-Sets the indexation. This field is required.
-
-| Param | Type                | Description    |
-| ----- | ------------------- | -------------- |
-| index | <code>string</code> | The indexation |
-
-**Returns** the indexation message submit instance for chained calls.
-
 #### data(data): IndexationSender
 
-Sets the indexation data. This field is required.
+Sets the indexation data.
 
-| Param | Type                | Description        |
-| ----- | ------------------- | ------------------ |
-| index | <code>string</code> | The message's data |
+| Param | Type                    | Description        |
+| ----- | ----------------------- | ------------------ |
+| data  | <code>Uint8Array</code> | The message's data |
 
 **Returns** the indexation message submit instance for chained calls.
 
@@ -739,10 +733,10 @@ Gets the metadata of the given message.
 
 ##### IndexationPayloadDto
 
-| Field | Type                | Description     |
-| ----- | ------------------- | --------------- |
-| index | <code>string</code> | Indexation key  |
-| data  | <code>string</code> | Indexation data |
+| Field | Type                    | Description     |
+| ----- | ----------------------- | --------------- |
+| index | <code>string</code>     | Indexation key  |
+| data  | <code>Uint8Array</code> | Indexation data |
 
 ### MessageMetadata
 
