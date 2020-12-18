@@ -9,8 +9,8 @@ Official Rust library.
 The goal of this library is to have `one source code of truth`, which means there is one implementation in Rust and [bindings](#bindings) to other programming languages.
 
 This **alpha** version allows you to do the following:
-* Create messages
-* Sign messages
+* Create messages and transactions
+* Sign transactions
 * Generate addresses
 * Interact with an IOTA node
 
