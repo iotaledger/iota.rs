@@ -25,8 +25,12 @@ serde_json = "1.0.58"
 chrono = "0.4.12"
 hex = "0.4.2"
 blake2 = "0.9"
-paho-mqtt = "0.8"
+paho-mqtt = { version = "0.8", optional = true }
 regex = "1.4"
 tokio = { version = "0.2.22", features = ["macros", "sync"] }
 thiserror = "1.0"
 num_cpus = "1.13"
+
+[features]
+default = ["mqtt"]
+mqtt = ["paho-mqtt"]

@@ -4,7 +4,7 @@
 //! Builder of the Clinet Instnace
 
 use crate::{
-    client::{Api, BrokerOptions, Client},
+    client::*,
     error::*,
 };
 
@@ -36,6 +36,7 @@ pub struct ClientBuilder {
     nodes: Vec<Url>,
     node_sync_interval: NonZeroU64,
     network: Network,
+    #[cfg(feature = "mqtt")]
     broker_options: BrokerOptions,
     local_pow: bool,
     request_timeout: Duration,
@@ -48,6 +49,7 @@ impl Default for ClientBuilder {
             nodes: Vec::new(),
             node_sync_interval: NonZeroU64::new(60000).unwrap(),
             network: Network::Mainnet,
+            #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             local_pow: true,
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
@@ -93,6 +95,7 @@ impl ClientBuilder {
     }
 
     /// Sets the MQTT broker options.
+    #[cfg(feature = "mqtt")]
     pub fn broker_options(mut self, options: BrokerOptions) -> Self {
         self.broker_options = options;
         self
@@ -144,8 +147,11 @@ impl ClientBuilder {
             sync,
             sync_kill_sender: Arc::new(sync_kill_sender),
             client: reqwest::Client::new(),
+            #[cfg(feature = "mqtt")]
             mqtt_client: None,
+            #[cfg(feature = "mqtt")]
             mqtt_topic_handlers: Default::default(),
+            #[cfg(feature = "mqtt")]
             broker_options: self.broker_options,
             local_pow: self.local_pow,
             request_timeout: self.request_timeout,
