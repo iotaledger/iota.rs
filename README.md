@@ -1,14 +1,20 @@
 # iota.rs
 
-🚧 This repository now targets Chrysalis part 2! It will have many breaking change along the way. Please use with caution! 🚧
+Official Rust library.  
 
-This is the **alpha** version of official Rust library, which allows you to do the following:
-* Create transactions
-* Sign transactions
+> **🚧 Alpha Version 🚧**
+>
+> This repository now targets [Chrysalis part 2](https://roadmap.iota.org/chrysalis) It will have many breaking change along the way. Please use with caution! 🚧
+
+The goal of this library is to have `one source code of truth`, which means there is one implementation in Rust and [bindings](#bindings) to other programming languages.
+
+This **alpha** version allows you to do the following:
+* Create messages
+* Sign messages
 * Generate addresses
 * Interact with an IOTA node
 
-This client library is still in the alpha stage but it should cover most use cases. The main crate is under `iota-core`. The library named `iota` re-exports fundamental crates from `bee` and also provides client features and utilities. API calls like `post_message` and `get_outputs` are supported. There may be some performance and stability issues. Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
+Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
 
 | Table of contents                                 |
 | :------------------------------------------------ |
@@ -16,6 +22,7 @@ This client library is still in the alpha stage but it should cover most use cas
 | [Using the library](#installing-the-library)      |
 | [API reference](#api-reference)                   |
 | [Examples](#examples)                             |
+| [Bindings](#bindings)                             |
 | [Supporting the project](#supporting-the-project) |
 | [Joining the discussion](#joining-the-discussion) |
 | [License](#license)                               |
@@ -94,6 +101,12 @@ You can see the examples in the [examples](examples/) directory and try them wit
 ```
 cargo run --example balance
 ```
+
+## Bindings
+
+Bindings to other programming languages.
+
+- [Node.js binding](bindings/node/)
 
 ## Supporting the project
 
