@@ -3,10 +3,7 @@
 
 //! Builder of the Clinet Instnace
 
-use crate::{
-    client::*,
-    error::*,
-};
+use crate::{client::*, error::*};
 
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
