@@ -99,6 +99,12 @@ Sets the node syncing interval.
 
 **Returns** the client builder instance for chained calls.
 
+#### disableNodeSync(): ClientBuilder
+
+Disables the node syncing process. Every node will be considered healthy and ready to use.
+
+**Returns** the client builder instance for chained calls.
+
 #### defaultTimeout(timeoutMs): ClientBuilder
 
 Sets the default HTTP request timeout.

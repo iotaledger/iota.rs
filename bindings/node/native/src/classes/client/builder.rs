@@ -22,6 +22,7 @@ pub struct ClientBuilderWrapper {
     request_timeout: Arc<Mutex<Option<Duration>>>,
     api_timeout: Arc<Mutex<HashMap<Api, Duration>>>,
     local_pow: Arc<AtomicBool>,
+    node_sync_enabled: Arc<AtomicBool>,
 }
 
 declare_types! {
@@ -34,6 +35,7 @@ declare_types! {
                 request_timeout: Default::default(),
                 api_timeout: Default::default(),
                 local_pow: Arc::new(AtomicBool::new(true)),
+                node_sync_enabled: Arc::new(AtomicBool::new(true)),
             })
         }
 
@@ -94,6 +96,16 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method disableNodeSync(mut cx) {
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard)).node_sync_enabled;
+                ref_.swap(false, Ordering::Relaxed);
+            }
+            Ok(cx.this().upcast())
+        }
+
         method requestTimeout(mut cx) {
             let timeout = cx.argument::<JsNumber>(0)?.value() as u64;
             {
@@ -136,7 +148,7 @@ declare_types! {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &*this.borrow(&guard);
-                let mut builder = ClientBuilder::new().local_pow(ref_.local_pow.clone().load(Ordering::Relaxed));
+                let mut builder = ClientBuilder::new().local_pow(ref_.local_pow.load(Ordering::Relaxed));
 
                 for node in &*ref_.nodes.lock().unwrap() {
                     builder = builder.node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
@@ -144,6 +156,10 @@ declare_types! {
                 if let Some(broker_options) = &*ref_.broker_options.lock().unwrap() {
                     builder = builder.broker_options(broker_options.clone());
                 }
+                if ref_.node_sync_enabled.load(Ordering::Relaxed) {
+                    builder = builder.disable_node_sync();
+                }
+
                 builder.build().expect("failed to build client instance")
             };
             let id = crate::store_client(client);

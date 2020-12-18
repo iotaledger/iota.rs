@@ -19,6 +19,7 @@ export declare class ClientBuilder {
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
   nodeSyncInterval(interval: number): ClientBuilder
+  disableNodeSync(): ClientBuilder
   requestTimeout(timeoutMs: number): ClientBuilder
   apiTimeout(api: Api, timeoutMs: number): ClientBuilder
   localPow(local: boolean): ClientBuilder
