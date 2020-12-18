@@ -128,7 +128,7 @@ pub struct MessageTransactionPayloadDto {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MessageIndexationPayloadDto {
     index: String,
-    data: String,
+    data: Vec<u8>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -163,7 +163,7 @@ impl TryFrom<MessagePayloadDto> for Payload {
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
             MessagePayloadDto::Indexation(indexation_payload) => {
-                let indexation = Indexation::new(indexation_payload.index, indexation_payload.data.as_bytes()).unwrap();
+                let indexation = Indexation::new(indexation_payload.index, &indexation_payload.data).unwrap();
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
         }

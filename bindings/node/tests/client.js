@@ -34,7 +34,7 @@ describe('Client', () => {
       .send()
       .indexation()
       .index('IOTA.RS TEST')
-      .data('MESSAGE')
+      .data(new TextEncoder().encode('MESSAGE'))
       .submit()
     assertMessageId(messageId)
   })
@@ -116,7 +116,7 @@ describe('Client', () => {
   it('submits an indexation message and reads it', async () => {
     const indexation = {
       index: 'IOTA.RS BINDING - NODE.JS',
-      data: 'INDEXATION DATA'
+      data: new TextEncoder().encode('INDEXATION DATA')
     }
     const messageId = await client.postMessage({
       payload: indexation
@@ -127,11 +127,7 @@ describe('Client', () => {
     assertMessage(message)
     assert.strictEqual(message.payload.type, 'Indexation')
     assert.strictEqual(typeof message.payload.data, 'object')
-    const encoder = new TextEncoder()
-    assert.deepStrictEqual(message.payload.data, {
-      index: indexation.index,
-      data: Array.from(encoder.encode(indexation.data))
-    })
+    assert.deepStrictEqual(message.payload.data, indexation)
   })
 
   it('gets info', async () => {

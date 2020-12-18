@@ -85,13 +85,20 @@ declare_types! {
         }
 
         method data(mut cx) {
-            let data = cx.argument::<JsString>(0)?.value();
+            let mut data: Vec<u8> = vec![];
+            let data_js_array = cx.argument::<JsArray>(0)?;
+            let js_data: Vec<Handle<JsValue>> = data_js_array.to_vec(&mut cx)?;
+            for value in js_data {
+                let value: Handle<JsNumber> = value.downcast_or_throw(&mut cx)?;
+                data.push(value.value() as u8);
+            }
+
             {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &(*this.borrow(&guard)).data;
                 let mut data_ = ref_.lock().unwrap();
-                data_.replace(data.as_bytes().to_vec());
+                data_.replace(data);
             }
 
             Ok(cx.this().upcast())

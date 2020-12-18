@@ -32,7 +32,7 @@ export declare class MessageSender {
 
 export declare class IndexationSender {
   index(index: string): IndexationSender
-  data(data: string): IndexationSender
+  data(data: Uint8Array): IndexationSender
   submit(): Promise<string>
 }
 
