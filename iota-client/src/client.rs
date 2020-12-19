@@ -509,6 +509,15 @@ impl Client {
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
     pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        let metadata = self.get_message().metadata(message_id).await?;
+        if metadata.should_reattach.unwrap_or(false) {
+            self.reattach_unchecked(message_id).await
+        } else {
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+        }
+    }
+
+    async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
@@ -530,6 +539,15 @@ impl Client {
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
     /// method should error out and should not allow unnecessary promotions.
     pub async fn promote(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        let metadata = self.get_message().metadata(message_id).await?;
+        if metadata.should_promote.unwrap_or(false) {
+            self.promote_unchecked(message_id).await
+        } else {
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+        }
+    }
+
+    async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
         let promote_message = Message::builder()
@@ -620,11 +638,11 @@ impl Client {
         // Get the metadata to check if it needs to promote or reattach
         let message_metadata = self.get_message().metadata(message_id).await?;
         if message_metadata.should_promote.unwrap_or(false) {
-            return self.promote(message_id).await;
+            self.promote_unchecked(message_id).await
         } else if message_metadata.should_reattach.unwrap_or(false) {
-            return self.reattach(message_id).await;
+            self.reattach_unchecked(message_id).await
         } else {
-            return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
         }
     }
 }
