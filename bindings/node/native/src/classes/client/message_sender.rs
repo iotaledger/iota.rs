@@ -4,10 +4,7 @@
 use iota::{message::prelude::Address, Seed};
 use neon::prelude::*;
 
-use std::{
-    num::NonZeroU64,
-    sync::{Arc, Mutex},
-};
+use std::num::NonZeroU64;
 
 use super::{parse_address, Api, ClientTask};
 
@@ -16,15 +13,15 @@ pub struct MessageSender(String);
 pub struct IndexationSender {
     client_id: String,
     index: String,
-    data: Arc<Mutex<Option<Vec<u8>>>>,
+    data: Option<Vec<u8>>,
 }
 
 pub struct ValueTransactionSender {
     client_id: String,
     seed: String,
-    account_index: Arc<Mutex<Option<usize>>>,
-    initial_address_index: Arc<Mutex<Option<usize>>>,
-    outputs: Arc<Mutex<Vec<(Address, NonZeroU64)>>>,
+    account_index: Option<usize>,
+    initial_address_index: Option<usize>,
+    outputs: Vec<(Address, NonZeroU64)>,
 }
 
 declare_types! {
@@ -83,10 +80,9 @@ declare_types! {
             }
 
             {
-                let this = cx.this();
+                let mut this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).data;
-                let mut data_ = ref_.lock().unwrap();
+                let data_ = &mut this.borrow_mut(&guard).data;
                 data_.replace(data);
             }
 
@@ -103,7 +99,7 @@ declare_types! {
                     client_id: ref_.client_id.clone(),
                     api: Api::SendIndexation {
                         index: ref_.index.clone(),
-                        data: ref_.data.lock().unwrap().clone(),
+                        data: ref_.data.clone(),
                     },
                 };
                 client_task.schedule(cb);
@@ -124,19 +120,18 @@ declare_types! {
             Ok(ValueTransactionSender {
                 client_id,
                 seed,
-                account_index: Arc::new(Mutex::new(None)),
-                initial_address_index: Arc::new(Mutex::new(None)),
-                outputs: Arc::new(Mutex::new(vec![]))
+                account_index: None,
+                initial_address_index: None,
+                outputs: Vec::new(),
             })
         }
 
         method accountIndex(mut cx) {
             let account_index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
-                let this = cx.this();
+                let mut this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).account_index;
-                let mut send_account_index = ref_.lock().unwrap();
+                let send_account_index = &mut this.borrow_mut(&guard).account_index;
                 send_account_index.replace(account_index);
             }
 
@@ -146,10 +141,9 @@ declare_types! {
         method initialAddressIndex(mut cx) {
             let index = cx.argument::<JsNumber>(0)?.value() as usize;
             {
-                let this = cx.this();
+                let mut this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).initial_address_index;
-                let mut send_address_index = ref_.lock().unwrap();
+                let send_address_index = &mut this.borrow_mut(&guard).initial_address_index;
                 send_address_index.replace(index);
             }
 
@@ -161,10 +155,9 @@ declare_types! {
             let address = parse_address(address).expect("invalid address");
             let value = cx.argument::<JsNumber>(1)?.value() as u64;
             {
-                let this = cx.this();
+                let mut this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &(*this.borrow(&guard)).outputs;
-                let mut outputs = ref_.lock().unwrap();
+                let outputs = &mut this.borrow_mut(&guard).outputs;
                 outputs.push((address, NonZeroU64::new(value).expect("value can't be zero")));
             }
 
@@ -181,9 +174,9 @@ declare_types! {
                     client_id: ref_.client_id.clone(),
                     api: Api::SendTransfer {
                         seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
-                        account_index: *ref_.account_index.lock().unwrap(),
-                        initial_address_index: *ref_.initial_address_index.lock().unwrap(),
-                        outputs: (*ref_.outputs.lock().unwrap()).clone(),
+                        account_index: ref_.account_index,
+                        initial_address_index: ref_.initial_address_index,
+                        outputs: ref_.outputs.clone(),
                     },
                 };
                 client_task.schedule(cb);
