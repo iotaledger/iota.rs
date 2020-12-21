@@ -25,7 +25,6 @@ use std::{
     collections::{HashMap, HashSet},
     convert::TryInto,
     hash::Hash,
-    num::NonZeroU64,
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
@@ -189,7 +188,7 @@ pub struct Client {
     /// Node pool of synced IOTA nodes
     pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
     /// Flag to stop the node syncing
-    pub(crate) sync_kill_sender: Arc<Sender<()>>,
+    pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     /// A MQTT client to subscribe/unsubscribe to topics.
@@ -219,10 +218,10 @@ impl std::fmt::Debug for Client {
 impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
-        self.sync_kill_sender
-            .clone()
-            .send(())
-            .expect("failed to stop syncing process");
+        if let Some(sender) = self.sync_kill_sender.take() {
+            sender.send(()).expect("failed to stop syncing process");
+        }
+
         if let Some(runtime) = self.runtime.take() {
             runtime.shutdown_background();
         }
@@ -246,11 +245,11 @@ impl Client {
     pub(crate) fn start_sync_process(
         runtime: &Runtime,
         sync: Arc<RwLock<HashSet<Url>>>,
-        nodes: Vec<Url>,
-        node_sync_interval: NonZeroU64,
+        nodes: HashSet<Url>,
+        node_sync_interval: Duration,
         mut kill: Receiver<()>,
     ) {
-        let node_sync_interval = TokioDuration::from_millis(node_sync_interval.into());
+        let node_sync_interval = TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap());
 
         runtime.enter(|| {
             tokio::spawn(async move {
@@ -269,7 +268,7 @@ impl Client {
         });
     }
 
-    pub(crate) async fn sync_nodes(sync: &Arc<RwLock<HashSet<Url>>>, nodes: &[Url]) {
+    pub(crate) async fn sync_nodes(sync: &Arc<RwLock<HashSet<Url>>>, nodes: &HashSet<Url>) {
         let mut synced_nodes = HashSet::new();
 
         for node_url in nodes {

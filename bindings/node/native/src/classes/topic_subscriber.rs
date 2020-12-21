@@ -95,7 +95,7 @@ pub struct TopicSubscriber {
     tx: Sender<String>,
     rx: Arc<Mutex<Receiver<String>>>,
     client_id: String,
-    topics: Arc<Mutex<Vec<Topic>>>,
+    topics: Vec<Topic>,
 }
 
 declare_types! {
@@ -108,7 +108,7 @@ declare_types! {
                 tx,
                 rx: Arc::new(Mutex::new(rx)),
                 client_id,
-                topics: Arc::new(Mutex::new(vec![])),
+                topics: Vec::new(),
             })
         }
 
@@ -116,10 +116,12 @@ declare_types! {
             let js_topic = cx.argument::<JsString>(0)?;
             let topic = js_topic.value().as_str().try_into().unwrap_or_else(|_| panic!("invalid topic: {}", js_topic.value()));
 
-            let this = cx.this();
-            let topics = cx.borrow(&this, |subscriber| subscriber.topics.clone());
-            let mut topics = topics.lock().unwrap();
-            topics.push(topic);
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let topics = &mut this.borrow_mut(&guard).topics;
+                topics.push(topic);
+            }
 
             Ok(cx.this().upcast())
         }
@@ -134,10 +136,12 @@ declare_types! {
                 topics.push(topic.value().as_str().try_into().unwrap_or_else(|_| panic!("invalid topic: {}", topic.value())));
             }
 
-            let this = cx.this();
-            let stored_topics = cx.borrow(&this, |subscriber| subscriber.topics.clone());
-            let mut stored_topics = stored_topics.lock().unwrap();
-            stored_topics.extend(topics.into_iter());
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let stored_topics = &mut this.borrow_mut(&guard).topics;
+                stored_topics.extend(topics.into_iter());
+            }
 
             Ok(cx.this().upcast())
         }
@@ -150,7 +154,7 @@ declare_types! {
                 let instance = &this.borrow(&guard);
                 let topic_task = TopicTask {
                     client_id: instance.client_id.clone(),
-                    topics: instance.topics.lock().unwrap().to_vec(),
+                    topics: instance.topics.clone(),
                     action: TopicAction::Subscribe,
                     sender: instance.tx.clone(),
                 };
@@ -168,7 +172,7 @@ declare_types! {
                 let instance = &this.borrow(&guard);
                 let topic_task = TopicTask {
                     client_id: instance.client_id.clone(),
-                    topics: instance.topics.lock().unwrap().to_vec(),
+                    topics: instance.topics.clone(),
                     action: TopicAction::Unsubscribe,
                     sender: instance.tx.clone(),
                 };
