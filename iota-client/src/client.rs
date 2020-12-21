@@ -12,9 +12,9 @@ use blake2::{
     digest::{Update, VariableOutput},
     VarBlake2b,
 };
+#[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
-use serde::{Deserialize, Serialize};
 use tokio::{
     runtime::Runtime,
     sync::broadcast::{Receiver, Sender},
@@ -32,11 +32,14 @@ use std::{
 
 const ADDRESS_LENGTH: usize = 32;
 
+#[cfg(feature = "mqtt")]
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
+#[cfg(feature = "mqtt")]
 pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
 
 /// An event from a MQTT topic.
-#[derive(Debug, Clone, Serialize)]
+#[cfg(feature = "mqtt")]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct TopicEvent {
     /// the MQTT topic.
     pub topic: String,
@@ -45,7 +48,8 @@ pub struct TopicEvent {
 }
 
 /// The MQTT broker options.
-#[derive(Debug, Clone, Deserialize)]
+#[cfg(feature = "mqtt")]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct BrokerOptions {
     #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
     pub(crate) automatic_disconnect: bool,
@@ -53,14 +57,17 @@ pub struct BrokerOptions {
     pub(crate) timeout: Duration,
 }
 
+#[cfg(feature = "mqtt")]
 fn default_broker_automatic_disconnect() -> bool {
     true
 }
 
+#[cfg(feature = "mqtt")]
 fn default_broker_timeout() -> Duration {
     Duration::from_secs(30)
 }
 
+#[cfg(feature = "mqtt")]
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
@@ -70,6 +77,7 @@ impl Default for BrokerOptions {
     }
 }
 
+#[cfg(feature = "mqtt")]
 impl BrokerOptions {
     /// Creates the default broker options.
     pub fn new() -> Self {
@@ -184,8 +192,11 @@ pub struct Client {
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     /// A MQTT client to subscribe/unsubscribe to topics.
+    #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
+    #[cfg(feature = "mqtt")]
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
+    #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
     pub(crate) local_pow: bool,
     /// HTTP request timeout.
@@ -196,12 +207,11 @@ pub struct Client {
 
 impl std::fmt::Debug for Client {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Client")
-            .field("sync", &self.sync)
-            .field("client", &self.client)
-            .field("broker_options", &self.broker_options)
-            .field("local_pow", &self.local_pow)
-            .finish()
+        let mut d = f.debug_struct("Client");
+        d.field("sync", &self.sync).field("client", &self.client);
+        #[cfg(feature = "mqtt")]
+        d.field("broker_options", &self.broker_options);
+        d.field("local_pow", &self.local_pow).finish()
     }
 }
 
@@ -216,6 +226,7 @@ impl Drop for Client {
             runtime.shutdown_background();
         }
 
+        #[cfg(feature = "mqtt")]
         if self.mqtt_client.is_some() {
             self.subscriber()
                 .disconnect()
@@ -300,6 +311,7 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// Returns a handle to the MQTT topics manager.
+    #[cfg(feature = "mqtt")]
     pub fn subscriber(&mut self) -> MqttManager<'_> {
         MqttManager::new(self)
     }

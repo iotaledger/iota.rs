@@ -5,8 +5,10 @@
 
 mod address;
 mod message;
+#[cfg(feature = "mqtt")]
 mod mqtt;
 
 pub use address::*;
 pub use message::*;
+#[cfg(feature = "mqtt")]
 pub use mqtt::*;

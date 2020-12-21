@@ -3,10 +3,7 @@
 
 //! Builder of the Clinet Instnace
 
-use crate::{
-    client::{Api, BrokerOptions, Client},
-    error::*,
-};
+use crate::{client::*, error::*};
 
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
@@ -36,6 +33,7 @@ pub struct ClientBuilder {
     node_sync_interval: Duration,
     node_sync_enabled: bool,
     network: Network,
+    #[cfg(feature = "mqtt")]
     broker_options: BrokerOptions,
     local_pow: bool,
     request_timeout: Duration,
@@ -49,6 +47,7 @@ impl Default for ClientBuilder {
             node_sync_interval: Duration::from_millis(60000),
             node_sync_enabled: true,
             network: Network::Mainnet,
+            #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             local_pow: true,
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
@@ -101,6 +100,7 @@ impl ClientBuilder {
     }
 
     /// Sets the MQTT broker options.
+    #[cfg(feature = "mqtt")]
     pub fn broker_options(mut self, options: BrokerOptions) -> Self {
         self.broker_options = options;
         self
@@ -155,8 +155,11 @@ impl ClientBuilder {
             sync,
             sync_kill_sender: sync_kill_sender.map(Arc::new),
             client: reqwest::Client::new(),
+            #[cfg(feature = "mqtt")]
             mqtt_client: None,
+            #[cfg(feature = "mqtt")]
             mqtt_topic_handlers: Default::default(),
+            #[cfg(feature = "mqtt")]
             broker_options: self.broker_options,
             local_pow: self.local_pow,
             request_timeout: self.request_timeout,
