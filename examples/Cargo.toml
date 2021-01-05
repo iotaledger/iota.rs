@@ -28,3 +28,7 @@ path = "transaction.rs"
 [[example]]
 name = "mqtt"
 path = "mqtt.rs"
+
+[[example]]
+name = "multiple_outputs"
+path = "multiple_outputs.rs"

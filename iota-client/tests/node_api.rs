@@ -102,13 +102,11 @@ async fn test_post_message_with_transaction() {
         .transaction(&seed)
         .account_index(0)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
-        .output(
-            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
-                .parse::<Ed25519Address>()
-                .unwrap()
-                .into(), // Insert the address to search for
+        .output_hex(
+            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8", // Insert the address to search for
             NonZeroU64::new(100).unwrap(),
         )
+        .unwrap()
         .post()
         .await
         .unwrap();
