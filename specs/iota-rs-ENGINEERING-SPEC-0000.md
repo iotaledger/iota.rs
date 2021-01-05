@@ -1,14 +1,9 @@
 
 
-# High Level Abstraction API Spec
+# High Level API Specification
 
-Specification of High Level Abstraction API
+## Table of Contents
 
-## Table of Content
-
-
-* [High Level Abstraction API Spec](#High-Level-Abstraction-API-Spec)
-  * [Table of Content](#Table-of-Content)
 * [Introduction](#Introduction)
 * [Builder](#Builder)
 * [General API](#General-API)
@@ -45,7 +40,7 @@ Specification of High Level Abstraction API
 
 # Introduction
 
-This document specifies a user friendly API to be used in the client libraries. The main implementation will be in Rust which will receive automatically compiled client libraries in other languages via C or Webassembly bindings. There are also many crates to support developers creating foreign function interfaces with native bindings. 
+This document specifies a user friendly API to be used in the client libraries. The main implementation will be in Rust which will receive automatically compiled client libraries in other languages via C or Webassembly bindings. There are also many crates to support developers creating foreign function interfaces with native bindings.
 
 # Builder
 
@@ -99,7 +94,7 @@ for node in node_pool_urls{
    }
 }
 ```
-  
+
 # General High level API
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
@@ -107,7 +102,7 @@ Here is the high level abstraction API collection with sensible default values f
 
 ## `send()`
 
-A generic send function for easily sending a value transaction or data message. 
+A generic send function for easily sending a value transaction message.
 
 ### Parameters
 
@@ -136,7 +131,7 @@ There could be two different scenarios in which this method can be used:
 * Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
 * Build and Validate the Message with signed transaction payloads accordingly;
 * Get tips using [`get_tips()`](#get_tips);
-* Perform proof-of-work locally; 
+* Perform proof-of-work locally;
 * Send the message using [`post_messages()`](#post_messages);
 
 ## `get_message()`
@@ -162,7 +157,7 @@ Depend on the final calling method, users could get different results they need:
 
 ## `find_messages()`
 
-Find all messages by provided message IDs. This method will try to query multiple nodes if the request amount exceed individual node limit. 
+Find all messages by provided message IDs. This method will try to query multiple nodes if the request amount exceed individual node limit.
 
 ### Parameters
 
@@ -245,7 +240,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 ### Return
 
-A list of tuples with value of  (Address, usize). The usize is the balance of the address accordingly. 
+A list of tuples with value of  (Address, usize). The usize is the balance of the address accordingly.
 
 ### Implementation details:
 
@@ -302,9 +297,9 @@ Nothing apart from a Ok() result if succesful
 
 ### Implementation Details
 
-Following are the steps for implementing this method: 
+Following are the steps for implementing this method:
 
-* Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;    
+* Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;
 * The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
 
@@ -424,7 +419,7 @@ Depend on the final calling method, users could get different outputs they need:
 
 ## `find_outputs()`
 
-Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit. 
+Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit.
 
 ### Parameters
 
@@ -473,7 +468,7 @@ An [Milestone] object.
 
 Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
 
-Reattaches a message. The method should validate if a reattachment is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary reattachments. 
+Reattaches a message. The method should validate if a reattachment is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary reattachments.
 
 ### Parameters
 
@@ -490,7 +485,7 @@ A tuple with the newly reattached `(MessageId,  Message)`.
 Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
 
 Promotes a message. The method should validate if a promotion is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary promotions.
- 
+
 ### Parameters
 
 | Field | Required | Type | Definition |
@@ -669,4 +664,3 @@ messages
 messages/indexation/{index}
 messages/referenced
 ```
-
