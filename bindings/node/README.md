@@ -99,6 +99,12 @@ Sets the node syncing interval.
 
 **Returns** the client builder instance for chained calls.
 
+#### disableNodeSync(): ClientBuilder
+
+Disables the node syncing process. Every node will be considered healthy and ready to use.
+
+**Returns** the client builder instance for chained calls.
+
 #### defaultTimeout(timeoutMs): ClientBuilder
 
 Sets the default HTTP request timeout.
@@ -144,15 +150,11 @@ Gets a handle to the MQTT topic subscriber.
 
 **Returns** a [TopicSubscriber](#topicsubscriber) instance.
 
-#### send(seed): ValueTransactionSender
+#### send(): MessageSender
 
-Initiates the builder to send funds.
+Initiates the builder to send messages.
 
-| Param | Type                | Description                                  |
-| ----- | ------------------- | -------------------------------------------- |
-| seed  | <code>string</code> | The hex-encoded seed of the account to spend |
-
-**Returns** a [ValueTransactionSender](#valuetransactionsender) instance.
+**Returns** a [MessageSender](#messagesender) instance.
 
 #### getUnspentAddress(seed): UnspentAddressGetter
 
@@ -353,6 +355,50 @@ Unsubscribes from the provided topics.
 | cb    | <code>function</code> | A callback executed when the unsubscribe is finished in the form of `(err, message) => {}` |
 
 **Returns** the topic subscriber instance for chained calls.
+
+### MessageSender
+
+Builder to create transactions or indexation messages.
+
+#### indexation(index)
+
+Initiates the builder to send indexation messages.
+
+| Param | Type                | Description    |
+| ----- | ------------------- | -------------- |
+| index | <code>string</code> | The indexation |
+
+**Returns** a [IndexationSender](#indexationsender) instance.
+
+#### transaction(seed)
+
+Initiates the builder to send funds.
+
+| Param | Type                | Description                                  |
+| ----- | ------------------- | -------------------------------------------- |
+| seed  | <code>string</code> | The hex-encoded seed of the account to spend |
+
+**Returns** a [ValueTransactionSender](#valuetransactionsender) instance.
+
+### IndexationSender
+
+Submits an indexation message.
+
+#### data(data): IndexationSender
+
+Sets the indexation data.
+
+| Param | Type                    | Description        |
+| ----- | ----------------------- | ------------------ |
+| data  | <code>Uint8Array</code> | The message's data |
+
+**Returns** the indexation message submit instance for chained calls.
+
+#### submit(): Promise<string>
+
+Submits the indexation message.
+
+**Returns** a promise resolving to the message identifier.
 
 ### ValueTransactionSender
 
@@ -693,10 +739,10 @@ Gets the metadata of the given message.
 
 ##### IndexationPayloadDto
 
-| Field | Type                | Description     |
-| ----- | ------------------- | --------------- |
-| index | <code>string</code> | Indexation key  |
-| data  | <code>string</code> | Indexation data |
+| Field | Type                    | Description     |
+| ----- | ----------------------- | --------------- |
+| index | <code>string</code>     | Indexation key  |
+| data  | <code>Uint8Array</code> | Indexation data |
 
 ### MessageMetadata
 

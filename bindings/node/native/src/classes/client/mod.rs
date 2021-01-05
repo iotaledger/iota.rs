@@ -21,8 +21,8 @@ use api::{Api, ClientTask};
 mod message_getter;
 pub use message_getter::JsMessageGetter;
 
-mod value_transaction_sender;
-pub use value_transaction_sender::JsValueTransactionSender;
+mod message_sender;
+pub use message_sender::{JsIndexationSender, JsMessageSender, JsValueTransactionSender};
 
 mod unspent_address_getter;
 pub use unspent_address_getter::JsUnspentAddressGetter;
@@ -73,9 +73,6 @@ declare_types! {
         ///////////////////////////////////////////////////////////////////////
 
         method send(mut cx) {
-            let seed = cx.argument::<JsString>(0)?;
-            // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -84,7 +81,7 @@ declare_types! {
             };
             let client_id = cx.string(client_id);
 
-            Ok(JsValueTransactionSender::new(&mut cx, vec![client_id, seed])?.upcast())
+            Ok(JsMessageSender::new(&mut cx, vec![client_id])?.upcast())
         }
 
         method getUnspentAddress(mut cx) {

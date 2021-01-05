@@ -41,7 +41,7 @@ async fn main() {
         .send()
         .transaction(&seed)
         .account_index(0)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
                 .parse::<Ed25519Address>()
@@ -58,7 +58,7 @@ async fn main() {
         .send()
         .transaction(&seed)
         .account_index(0)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
             "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
                 .parse::<Ed25519Address>()
@@ -77,7 +77,7 @@ async fn main() {
         .send()
         .transaction(&seed)
         .account_index(0)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
                 .parse::<Ed25519Address>()
@@ -94,7 +94,7 @@ async fn main() {
         .send()
         .transaction(&seed)
         .account_index(0)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
             "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
                 .parse::<Ed25519Address>()
@@ -113,7 +113,7 @@ async fn main() {
         .send()
         .transaction(&seed)
         .account_index(0)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
                 .parse::<Ed25519Address>()
@@ -131,7 +131,7 @@ async fn main() {
         .send()
         .transaction(&seed)
         .account_index(0)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
             "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
                 .parse::<Ed25519Address>()
@@ -155,7 +155,7 @@ async fn main() {
         .send()
         .transaction(&seed)
         .account_index(0)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
             "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1fff"
                 .parse::<Ed25519Address>()

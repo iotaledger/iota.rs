@@ -49,6 +49,7 @@ pub enum Error {
     #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
     /// Mqtt client error
+    #[cfg(feature = "mqtt")]
     #[error("{0}")]
     MqttClientError(#[from] paho_mqtt::errors::Error),
     /// Invalid MQTT topic.

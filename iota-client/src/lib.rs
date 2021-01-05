@@ -20,6 +20,7 @@ pub use bee_signing_ext::{binary::BIP32Path, Seed};
 pub use builder::ClientBuilder;
 pub use client::*;
 pub use error::*;
+#[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use reqwest::Url;
 pub use types::*;

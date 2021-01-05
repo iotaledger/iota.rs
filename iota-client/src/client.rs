@@ -12,9 +12,9 @@ use blake2::{
     digest::{Update, VariableOutput},
     VarBlake2b,
 };
+#[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
-use serde::{Deserialize, Serialize};
 use tokio::{
     runtime::Runtime,
     sync::broadcast::{Receiver, Sender},
@@ -25,7 +25,6 @@ use std::{
     collections::{HashMap, HashSet},
     convert::TryInto,
     hash::Hash,
-    num::NonZeroU64,
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
@@ -33,11 +32,14 @@ use std::{
 
 const ADDRESS_LENGTH: usize = 32;
 
+#[cfg(feature = "mqtt")]
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
+#[cfg(feature = "mqtt")]
 pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
 
 /// An event from a MQTT topic.
-#[derive(Debug, Clone, Serialize)]
+#[cfg(feature = "mqtt")]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct TopicEvent {
     /// the MQTT topic.
     pub topic: String,
@@ -46,7 +48,8 @@ pub struct TopicEvent {
 }
 
 /// The MQTT broker options.
-#[derive(Debug, Clone, Deserialize)]
+#[cfg(feature = "mqtt")]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct BrokerOptions {
     #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
     pub(crate) automatic_disconnect: bool,
@@ -54,14 +57,17 @@ pub struct BrokerOptions {
     pub(crate) timeout: Duration,
 }
 
+#[cfg(feature = "mqtt")]
 fn default_broker_automatic_disconnect() -> bool {
     true
 }
 
+#[cfg(feature = "mqtt")]
 fn default_broker_timeout() -> Duration {
     Duration::from_secs(30)
 }
 
+#[cfg(feature = "mqtt")]
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
@@ -71,6 +77,7 @@ impl Default for BrokerOptions {
     }
 }
 
+#[cfg(feature = "mqtt")]
 impl BrokerOptions {
     /// Creates the default broker options.
     pub fn new() -> Self {
@@ -181,12 +188,15 @@ pub struct Client {
     /// Node pool of synced IOTA nodes
     pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
     /// Flag to stop the node syncing
-    pub(crate) sync_kill_sender: Arc<Sender<()>>,
+    pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
     /// A reqwest Client to make Requests with
     pub(crate) client: reqwest::Client,
     /// A MQTT client to subscribe/unsubscribe to topics.
+    #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
+    #[cfg(feature = "mqtt")]
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
+    #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
     pub(crate) local_pow: bool,
     /// HTTP request timeout.
@@ -197,24 +207,30 @@ pub struct Client {
 
 impl std::fmt::Debug for Client {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Client")
-            .field("sync", &self.sync)
-            .field("client", &self.client)
-            .field("broker_options", &self.broker_options)
-            .field("local_pow", &self.local_pow)
-            .finish()
+        let mut d = f.debug_struct("Client");
+        d.field("sync", &self.sync).field("client", &self.client);
+        #[cfg(feature = "mqtt")]
+        d.field("broker_options", &self.broker_options);
+        d.field("local_pow", &self.local_pow).finish()
     }
 }
 
 impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
-        self.sync_kill_sender
-            .clone()
-            .send(())
-            .expect("failed to stop syncing process");
+        if let Some(sender) = self.sync_kill_sender.take() {
+            sender.send(()).expect("failed to stop syncing process");
+        }
+
         if let Some(runtime) = self.runtime.take() {
             runtime.shutdown_background();
+        }
+
+        #[cfg(feature = "mqtt")]
+        if self.mqtt_client.is_some() {
+            self.subscriber()
+                .disconnect()
+                .expect("failed to disconnect MQTT client");
         }
     }
 }
@@ -229,11 +245,11 @@ impl Client {
     pub(crate) fn start_sync_process(
         runtime: &Runtime,
         sync: Arc<RwLock<HashSet<Url>>>,
-        nodes: Vec<Url>,
-        node_sync_interval: NonZeroU64,
+        nodes: HashSet<Url>,
+        node_sync_interval: Duration,
         mut kill: Receiver<()>,
     ) {
-        let node_sync_interval = TokioDuration::from_millis(node_sync_interval.into());
+        let node_sync_interval = TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap());
 
         runtime.enter(|| {
             tokio::spawn(async move {
@@ -252,7 +268,7 @@ impl Client {
         });
     }
 
-    pub(crate) async fn sync_nodes(sync: &Arc<RwLock<HashSet<Url>>>, nodes: &[Url]) {
+    pub(crate) async fn sync_nodes(sync: &Arc<RwLock<HashSet<Url>>>, nodes: &HashSet<Url>) {
         let mut synced_nodes = HashSet::new();
 
         for node_url in nodes {
@@ -295,6 +311,7 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// Returns a handle to the MQTT topics manager.
+    #[cfg(feature = "mqtt")]
     pub fn subscriber(&mut self) -> MqttManager<'_> {
         MqttManager::new(self)
     }
@@ -504,6 +521,15 @@ impl Client {
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
     pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        let metadata = self.get_message().metadata(message_id).await?;
+        if metadata.should_reattach.unwrap_or(false) {
+            self.reattach_unchecked(message_id).await
+        } else {
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+        }
+    }
+
+    async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
@@ -525,6 +551,15 @@ impl Client {
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
     /// method should error out and should not allow unnecessary promotions.
     pub async fn promote(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        let metadata = self.get_message().metadata(message_id).await?;
+        if metadata.should_promote.unwrap_or(false) {
+            self.promote_unchecked(message_id).await
+        } else {
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+        }
+    }
+
+    async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
         let promote_message = Message::builder()
@@ -615,11 +650,11 @@ impl Client {
         // Get the metadata to check if it needs to promote or reattach
         let message_metadata = self.get_message().metadata(message_id).await?;
         if message_metadata.should_promote.unwrap_or(false) {
-            return self.promote(message_id).await;
+            self.promote_unchecked(message_id).await
         } else if message_metadata.should_reattach.unwrap_or(false) {
-            return self.reattach(message_id).await;
+            self.reattach_unchecked(message_id).await
         } else {
-            return Err(Error::NoNeedPromoteOrReattach(message_id.to_string()));
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
         }
     }
 }

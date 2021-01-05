@@ -19,6 +19,10 @@ pub(crate) enum Api {
         initial_address_index: Option<usize>,
         outputs: Vec<(Address, NonZeroU64)>,
     },
+    SendIndexation {
+        index: String,
+        data: Option<Vec<u8>>,
+    },
     GetUnspentAddress {
         seed: Seed,
         account_index: Option<usize>,
@@ -87,6 +91,14 @@ impl Task for ClientTask {
                     }
                     for output in outputs {
                         sender = sender.output(output.0.clone(), output.1);
+                    }
+                    let message_id = sender.post().await?;
+                    serde_json::to_string(&message_id).unwrap()
+                }
+                Api::SendIndexation { index, data } => {
+                    let mut sender = client.send().indexation(index);
+                    if let Some(data) = data {
+                        sender = sender.data(data.clone());
                     }
                     let message_id = sender.post().await?;
                     serde_json::to_string(&message_id).unwrap()

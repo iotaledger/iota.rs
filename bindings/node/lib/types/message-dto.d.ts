@@ -36,7 +36,7 @@ export declare interface TransactionPayloadDto {
 
 export declare interface IndexationPayloadDto {
   index: string
-  data: string
+  data: Uint8Array
 }
 
 export declare type PayloadDto = TransactionPayloadDto | IndexationPayloadDto

@@ -29,10 +29,20 @@ describe('Client', () => {
     addresses.forEach(([address, _internal]) => assertAddress(address))
   })
 
+  it('sends an indexation message with the high level API', async () => {
+    const messageId = await client
+      .send()
+      .indexation('IOTA.RS TEST')
+      .data(new TextEncoder().encode('MESSAGE'))
+      .submit()
+    assertMessageId(messageId)
+  })
+
   it('sends a value transaction and checks output balance', async () => {
     const depositAddress = 'iot1q9jyad2efwyq7ldg9u6eqg5krxdqawgcdxvhjlmxrveylrt4fgaqj30s9qj'
     const messageId = await client
-      .send(seed)
+      .send()
+      .transaction(seed)
       .accountIndex(0)
       .output(depositAddress, 2)
       .submit()
@@ -105,7 +115,7 @@ describe('Client', () => {
   it('submits an indexation message and reads it', async () => {
     const indexation = {
       index: 'IOTA.RS BINDING - NODE.JS',
-      data: 'INDEXATION DATA'
+      data: new TextEncoder().encode('INDEXATION DATA')
     }
     const messageId = await client.postMessage({
       payload: indexation
@@ -116,11 +126,7 @@ describe('Client', () => {
     assertMessage(message)
     assert.strictEqual(message.payload.type, 'Indexation')
     assert.strictEqual(typeof message.payload.data, 'object')
-    const encoder = new TextEncoder()
-    assert.deepStrictEqual(message.payload.data, {
-      index: indexation.index,
-      data: Array.from(encoder.encode(indexation.data))
-    })
+    assert.deepStrictEqual(message.payload.data, indexation)
   })
 
   it('gets info', async () => {

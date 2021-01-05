@@ -26,8 +26,8 @@ impl<'a> SendBuilder<'a> {
         SendTransactionBuilder::new(self.client, seed)
     }
     /// Build an indexation message
-    pub fn indexation(self) -> SendIndexationBuilder<'a> {
-        SendIndexationBuilder::new(self.client)
+    pub fn indexation<S: Into<String>>(self, index: S) -> SendIndexationBuilder<'a> {
+        SendIndexationBuilder::new(self.client, index.into())
     }
 }
 
@@ -288,24 +288,18 @@ impl<'a> SendTransactionBuilder<'a> {
 /// Builder for indexation messages
 pub struct SendIndexationBuilder<'a> {
     client: &'a Client,
-    index: Option<String>,
+    index: String,
     data: Option<Vec<u8>>,
 }
 
 impl<'a> SendIndexationBuilder<'a> {
     /// Create send builder
-    pub fn new(client: &'a Client) -> Self {
+    pub fn new(client: &'a Client, index: String) -> Self {
         Self {
             client,
-            index: None,
+            index,
             data: None,
         }
-    }
-
-    /// Set index to the builder
-    pub fn index(mut self, index: String) -> Self {
-        self.index = Some(index);
-        self
     }
 
     /// Set data to the builder
@@ -316,13 +310,8 @@ impl<'a> SendIndexationBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn post(self) -> Result<MessageId> {
-        // filter input
-        let index = self
-            .index
-            .ok_or_else(|| Error::MissingParameter(String::from("index")))?;
-        let data = self
-            .data
-            .ok_or_else(|| Error::MissingParameter(String::from("index")))?;
+        let index = self.index;
+        let data = self.data.unwrap_or_default();
 
         // build indexation
         let index = Indexation::new(index, &data).map_err(|e| Error::IndexationError(e.to_string()))?;

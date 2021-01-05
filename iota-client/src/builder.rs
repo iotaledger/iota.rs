@@ -3,17 +3,13 @@
 
 //! Builder of the Clinet Instnace
 
-use crate::{
-    client::{Api, BrokerOptions, Client},
-    error::*,
-};
+use crate::{client::*, error::*};
 
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
 use std::{
     collections::{HashMap, HashSet},
-    num::NonZeroU64,
     sync::{Arc, RwLock},
     time::Duration,
 };
@@ -33,9 +29,11 @@ pub enum Network {
 
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
-    nodes: Vec<Url>,
-    node_sync_interval: NonZeroU64,
+    nodes: HashSet<Url>,
+    node_sync_interval: Duration,
+    node_sync_enabled: bool,
     network: Network,
+    #[cfg(feature = "mqtt")]
     broker_options: BrokerOptions,
     local_pow: bool,
     request_timeout: Duration,
@@ -45,9 +43,11 @@ pub struct ClientBuilder {
 impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
-            nodes: Vec::new(),
-            node_sync_interval: NonZeroU64::new(60000).unwrap(),
+            nodes: HashSet::new(),
+            node_sync_interval: Duration::from_millis(60000),
+            node_sync_enabled: true,
             network: Network::Mainnet,
+            #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             local_pow: true,
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
@@ -65,7 +65,7 @@ impl ClientBuilder {
     /// Adds an IOTA node by its URL.
     pub fn with_node(mut self, url: &str) -> Result<Self> {
         let url = Url::parse(url).map_err(|_| Error::UrlError)?;
-        self.nodes.push(url);
+        self.nodes.insert(url);
         Ok(self)
     }
 
@@ -73,9 +73,22 @@ impl ClientBuilder {
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
             let url = Url::parse(url).map_err(|_| Error::UrlError)?;
-            self.nodes.push(url);
+            self.nodes.insert(url);
         }
         Ok(self)
+    }
+  
+    /// Set the node sync interval
+    pub fn node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
+        self.node_sync_interval = node_sync_interval;
+        self
+    }
+
+    /// Disables the node syncing process.
+    /// Every node will be considered healthy and ready to use.
+    pub fn disable_node_sync(mut self) -> Self {
+        self.node_sync_enabled = false;
+        self
     }
 
     /// Sets the node sync interval.
@@ -93,7 +106,9 @@ impl ClientBuilder {
     }
 
     /// Sets the MQTT broker options.
+    #[cfg(feature = "mqtt")]
     pub fn with_mqtt_broker_options(mut self, options: BrokerOptions) -> Self {
+
         self.broker_options = options;
         self
     }
@@ -125,27 +140,33 @@ impl ClientBuilder {
         let nodes = self.nodes;
         let node_sync_interval = self.node_sync_interval;
 
-        let sync = Arc::new(RwLock::new(HashSet::new()));
-        let sync_ = sync.clone();
-
-        let (sync_kill_sender, sync_kill_receiver) = channel(1);
-
-        let runtime = std::thread::spawn(move || {
-            let mut runtime = Runtime::new().unwrap();
-            runtime.block_on(Client::sync_nodes(&sync_, &nodes));
-            Client::start_sync_process(&runtime, sync_, nodes, node_sync_interval, sync_kill_receiver);
-            runtime
-        })
-        .join()
-        .expect("failed to init node syncing process");
+        let (runtime, sync, sync_kill_sender) = if self.node_sync_enabled {
+            let sync = Arc::new(RwLock::new(HashSet::new()));
+            let sync_ = sync.clone();
+            let (sync_kill_sender, sync_kill_receiver) = channel(1);
+            let runtime = std::thread::spawn(move || {
+                let mut runtime = Runtime::new().unwrap();
+                runtime.block_on(Client::sync_nodes(&sync_, &nodes));
+                Client::start_sync_process(&runtime, sync_, nodes, node_sync_interval, sync_kill_receiver);
+                runtime
+            })
+            .join()
+            .expect("failed to init node syncing process");
+            (Some(runtime), sync, Some(sync_kill_sender))
+        } else {
+            (None, Arc::new(RwLock::new(nodes)), None)
+        };
 
         let client = Client {
-            runtime: Some(runtime),
+            runtime,
             sync,
-            sync_kill_sender: Arc::new(sync_kill_sender),
+            sync_kill_sender: sync_kill_sender.map(Arc::new),
             client: reqwest::Client::new(),
+            #[cfg(feature = "mqtt")]
             mqtt_client: None,
+            #[cfg(feature = "mqtt")]
             mqtt_topic_handlers: Default::default(),
+            #[cfg(feature = "mqtt")]
             broker_options: self.broker_options,
             local_pow: self.local_pow,
             request_timeout: self.request_timeout,
