@@ -77,7 +77,7 @@ impl ClientBuilder {
         }
         Ok(self)
     }
-  
+
     /// Set the node sync interval
     pub fn node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
         self.node_sync_interval = node_sync_interval;
@@ -92,7 +92,7 @@ impl ClientBuilder {
     }
 
     /// Sets the node sync interval.
-    pub fn with_node_sync_interval(mut self, node_sync_interval: NonZeroU64) -> Result<Self> {
+    pub fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Result<Self> {
         self.node_sync_interval = node_sync_interval;
         Ok(self)
     }
@@ -108,7 +108,6 @@ impl ClientBuilder {
     /// Sets the MQTT broker options.
     #[cfg(feature = "mqtt")]
     pub fn with_mqtt_broker_options(mut self, options: BrokerOptions) -> Self {
-
         self.broker_options = options;
         self
     }

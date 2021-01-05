@@ -5,10 +5,10 @@ use iota::{Client, Payload};
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .node("http://0.0.0.0:14265") // Insert the node here
+    let iota = Client::build() // Crate a client instance builder
+        .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
-        .build()
+        .finish()
         .unwrap();
 
     let r = iota
