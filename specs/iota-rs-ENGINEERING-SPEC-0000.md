@@ -40,7 +40,6 @@ Specification of High Level Abstraction API
   * [Message]
   * [Payload]
   * [Output]
-  * [BIP32Path]
   * [Address]
 
 
@@ -108,7 +107,7 @@ Here is the high level abstraction API collection with sensible default values f
 
 ## `send()`
 
-A generic send function for easily sending a value transaction message. 
+A generic send function for easily sending a value transaction or data message. 
 
 ### Parameters
 
@@ -117,7 +116,7 @@ A generic send function for easily sending a value transaction message.
 | **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
 | **address** | ✘ | None | \[[Address]\] | The address(es) to send to, applies to value transactions only. |
 | **value** | ✘ | 0 | u64 | The amount of IOTA to send. If the value is zero the message object will have a IndexationPayload instead of a SignedTransactionPayload with an embedded IndexationPayload |
-| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **account_index** | ✘ | 0 | usize | The account index. |
 | **output** | ✘ | None | \[Output\] | Users can manually pick their own output instead of having node decide on which output should be used. |
 | **indexation_key** | ✘ | None | String | An optional indexation key of the indexation payload. |
 | **data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
@@ -185,7 +184,7 @@ Return a valid unspent address.
 | Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **account_index** | ✘ | 0 | usize | The account index. |
 | **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
@@ -210,14 +209,14 @@ Following are the steps for implementing this method:
 
 ## `get_balance()`
 
-Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 derivation path of the address should be in form of `m/0'/0'/k'`. So the wallet chain is expected to be `m/0'/0'`. Addresses with balance must be consecutive, so this method will return once it encounters a zero balance address.
+Return the balance for a provided seed and its wallet account index. 
 
 ### Parameters
 
 | Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **account index** | ✘ | 0 | usize | The account index. |
 | **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
 
 ### Return
@@ -447,7 +446,7 @@ Return a list of addresses from the seed regardless of their validity.
 | Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
-| **path** | ✘ |`m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **account index** | ✘ | 0 | usize | The account index. |
 | **range** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
 
 ### Return
@@ -545,7 +544,7 @@ The message object returned by various functions; based on the RFC for the Messa
 struct Message {
     parent1: MessageId,
     parent2: MessageId,
-    payload: Payload,
+    payload: Option<Payload>,
     nonce: u64,
 }
 
@@ -602,7 +601,6 @@ enum UnlockBlock {
 }
 
 enum SignatureUnlock {
-    Wots(WotsSignature),
     Ed25519(Ed25519Signature),
 }
 
@@ -610,8 +608,6 @@ struct Ed25519Signature {
     public_key: [u8; 32],
     signature: Box<[u8]>,
 }
-
-struct WotsSignature(Vec<u8>);
 
 struct ReferenceUnlock(u16);
 ```
@@ -638,15 +634,10 @@ pub struct OutputMetadata {
 }
 ```
 
-## `BIP32Path`
-[BIP32Path]: #BIP32Path
-
-A valid BIP32 path. The field is omitted. Users can create from a String like `m/0'/0'/1'` for example.
-
 ## `Address`
 [Address]: #Address
 
-An address is an enum which could be either Ed25519 format or the legacy WOTS. Users can create from a correct fixed length bytes.
+An Ed25519 address is encoded in Bech32 or hex. Users can create from a correct fixed length bytes.
 
 ## `Milestone`
 [Milestone]: #Milestone
