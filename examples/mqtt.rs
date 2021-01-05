@@ -8,7 +8,7 @@ fn main() {
     let mut iota = Client::builder() // Crate a client instance builder
         .node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
-        .broker_options(BrokerOptions::new().use_websockets(false)) //use tcp instead
+        .broker_options(BrokerOptions::new().use_websockets(false)) // use tcp instead
         .build()
         .unwrap();
     let (tx, rx) = channel();
