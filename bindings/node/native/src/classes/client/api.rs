@@ -90,7 +90,7 @@ impl Task for ClientTask {
                         sender = sender.initial_address_index(*initial_address_index);
                     }
                     for output in outputs {
-                        sender = sender.output(output.0.clone(), output.1);
+                        sender = sender.output(&output.0.clone().to_bech32(), output.1).unwrap();
                     }
                     let message_id = sender.post().await?;
                     serde_json::to_string(&message_id).unwrap()
