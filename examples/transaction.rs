@@ -5,17 +5,12 @@ use iota::{Client, Ed25519Address, Seed};
 use std::{num::NonZeroU64, time::Duration};
 use tokio::time::delay_for;
 
-/// In this example, we send 600 tokens to the following 6 locations, respectively
+/// In this example, we send 900 tokens to the following 3 locations, respectively
 ///
-/// Address m/0 (5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8)
-///   output 0: 100 tokens
-///   output 1: 100 tokens
-///   output 2: 100 tokens
-///
-/// Address m/1 (bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230)
-///   output 0: 100 tokens
-///   output 1: 100 tokens
-///   output 2: 100 tokens
+/// Address Index 0
+///   output 0: 300 tokens d25a0fb1d36b9760e6a893877a5bd0c316aba4d2504264dceb79287421b6448c
+///   output 1: 300 tokens b41dc1fec07761335d66dc5e810bb3191cfa940f6756bb69ec8451e3c061b449
+///   output 2: 300 tokens 3726ee414e23d398477bfdfa885815615e1a57b9a7e29a884335cb54a2bbb764
 ///
 ///
 /// These two addresses belong to seed "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b1"
@@ -43,11 +38,11 @@ async fn main() {
         .account_index(0)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
-            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
+            "d25a0fb1d36b9760e6a893877a5bd0c316aba4d2504264dceb79287421b6448c"
                 .parse::<Ed25519Address>()
                 .unwrap()
                 .into(), // Insert the address to search for
-            NonZeroU64::new(100).unwrap(),
+            NonZeroU64::new(300).unwrap(),
         )
         .post()
         .await;
@@ -60,47 +55,11 @@ async fn main() {
         .account_index(0)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
-            "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
+            "b41dc1fec07761335d66dc5e810bb3191cfa940f6756bb69ec8451e3c061b449"
                 .parse::<Ed25519Address>()
                 .unwrap()
                 .into(),
-            NonZeroU64::new(100).unwrap(),
-        )
-        .post()
-        .await;
-
-    println!("{:#?}", message_id);
-
-    delay_for(Duration::from_millis(15000)).await;
-
-    let message_id = iota
-        .send()
-        .transaction(&seed)
-        .account_index(0)
-        // Insert the output address and amount to spent. The amount cannot be zero.
-        .output(
-            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
-                .parse::<Ed25519Address>()
-                .unwrap()
-                .into(),
-            NonZeroU64::new(100).unwrap(),
-        )
-        .post()
-        .await;
-
-    println!("{:#?}", message_id);
-    delay_for(Duration::from_millis(15000)).await;
-    let message_id = iota
-        .send()
-        .transaction(&seed)
-        .account_index(0)
-        // Insert the output address and amount to spent. The amount cannot be zero.
-        .output(
-            "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
-                .parse::<Ed25519Address>()
-                .unwrap()
-                .into(),
-            NonZeroU64::new(100).unwrap(),
+            NonZeroU64::new(300).unwrap(),
         )
         .post()
         .await;
@@ -115,34 +74,17 @@ async fn main() {
         .account_index(0)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .output(
-            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8"
+            "3726ee414e23d398477bfdfa885815615e1a57b9a7e29a884335cb54a2bbb764"
                 .parse::<Ed25519Address>()
                 .unwrap()
                 .into(),
-            NonZeroU64::new(100).unwrap(),
+            NonZeroU64::new(300).unwrap(),
         )
         .post()
         .await;
 
     println!("{:#?}", message_id);
     delay_for(Duration::from_millis(15000)).await;
-
-    let message_id = iota
-        .send()
-        .transaction(&seed)
-        .account_index(0)
-        // Insert the output address and amount to spent. The amount cannot be zero.
-        .output(
-            "bcbe5e2ccd4ce942407a0fd8ccad1df33c68c9cb1078c043e95e486d8c6e0230"
-                .parse::<Ed25519Address>()
-                .unwrap()
-                .into(),
-            NonZeroU64::new(100).unwrap(),
-        )
-        .post()
-        .await;
-
-    println!("{:#?}", message_id);
 
     let seed = Seed::from_ed25519_bytes(
         &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b1").unwrap(),
