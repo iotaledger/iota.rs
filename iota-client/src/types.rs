@@ -14,6 +14,7 @@ use serde::ser::Serializer;
 use std::{
     convert::{From, TryFrom, TryInto},
     io::{BufReader, Read},
+    num::NonZeroU64,
 };
 
 /// Marker trait for response
@@ -236,17 +237,20 @@ pub struct AddressBalancePair {
 ///
 /// Users could use this to construct output address with amount of iota they want to get.
 #[derive(Debug)]
-pub struct Transfers(pub Vec<(Address, u64)>);
+pub struct Transfers(pub Vec<(Address, NonZeroU64)>);
 
 impl Transfers {
     /// Create Transfers starting with one address
-    pub fn new(address: Address, amount: u64) -> Self {
-        Self(vec![(address, amount)])
+    pub fn new(address: &str, amount: NonZeroU64) -> Result<Self> {
+        let address = Address::try_from_bech32(address)?;
+        Ok(Self(vec![(address, amount)]))
     }
 
     /// Add more address to the Transfers
-    pub fn add(&mut self, address: Address, amount: u64) {
+    pub fn add(&mut self, address: &str, amount: NonZeroU64) -> Result<()> {
+        let address = Address::try_from_bech32(address)?;
         self.0.push((address, amount));
+        Ok(())
     }
 }
 
