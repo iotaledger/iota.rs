@@ -136,19 +136,19 @@ declare_types! {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &*this.borrow(&guard);
-                let mut builder = ClientBuilder::new().local_pow(ref_.local_pow);
+                let mut builder = ClientBuilder::new().with_local_pow(ref_.local_pow);
 
                 for node in &ref_.nodes {
-                    builder = builder.node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
+                    builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
                 }
                 if let Some(broker_options) = &ref_.broker_options {
-                    builder = builder.broker_options(broker_options.clone());
+                    builder = builder.with_mqtt_broker_options(broker_options.clone());
                 }
                 if ref_.node_sync_enabled {
-                    builder = builder.disable_node_sync();
+                    builder = builder.with_node_sync_disabled();
                 }
 
-                builder.build().expect("failed to build client instance")
+                builder.finish().expect("failed to build client instance")
             };
             let id = crate::store_client(client);
             let id = cx.string(id);

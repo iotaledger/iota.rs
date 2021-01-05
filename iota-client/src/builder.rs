@@ -79,22 +79,16 @@ impl ClientBuilder {
     }
 
     /// Set the node sync interval
-    pub fn node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
+    pub fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
         self.node_sync_interval = node_sync_interval;
         self
     }
 
     /// Disables the node syncing process.
     /// Every node will be considered healthy and ready to use.
-    pub fn disable_node_sync(mut self) -> Self {
+    pub fn with_node_sync_disabled(mut self) -> Self {
         self.node_sync_enabled = false;
         self
-    }
-
-    /// Sets the node sync interval.
-    pub fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Result<Self> {
-        self.node_sync_interval = node_sync_interval;
-        Ok(self)
     }
 
     // TODO node pool

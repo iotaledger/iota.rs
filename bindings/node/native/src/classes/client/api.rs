@@ -69,7 +69,8 @@ impl Task for ClientTask {
     type Output = String;
     type Error = crate::Error;
     type JsEvent = JsString;
-
+    // TODO: Try async-mutex
+    #[allow(clippy::await_holding_lock)]
     fn perform(&self) -> Result<Self::Output, Self::Error> {
         crate::block_on(crate::convert_async_panics(|| async move {
             let client = crate::get_client(&self.client_id);
