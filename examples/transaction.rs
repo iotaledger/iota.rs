@@ -21,10 +21,10 @@ use tokio::time::delay_for;
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .node("http://0.0.0.0:14265") // Insert the node here
+    let iota = Client::build() // Crate a client instance builder
+        .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
-        .build()
+        .finish()
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
