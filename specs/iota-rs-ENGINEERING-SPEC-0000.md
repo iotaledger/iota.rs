@@ -126,8 +126,7 @@ The [Message] object we build.
 
 There could be two different scenarios in which this method can be used:
 
-* Validate inputs, such as address, seed, and path to check if they are correct. For example, the provided path must be
-  wallet chain which should have depth of 2;
+* Validate inputs, such as address and seed to check if they are correct.
 * Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
 * Build and Validate the Message with signed transaction payloads accordingly;
 * Get tips using [`get_tips()`](#get_tips);
@@ -190,7 +189,7 @@ Return a tuple with type of `(Address, usize)` as the address and corresponding 
 
 Following are the steps for implementing this method:
 
-* Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
+* Start generating addresses with given account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
@@ -222,7 +221,7 @@ Total Account balance.
 
 Following are the steps for implementing this method:
 
-* Start generating addresses with given wallet chain path and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
+* Start generating addresses with given wallet account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
 * Repeat the above step till an address of zero balance is found;
 * Accumulate the positive balances and return the result.
