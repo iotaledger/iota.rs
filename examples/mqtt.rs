@@ -8,10 +8,9 @@ fn main() {
     let mut iota = Client::build() // Crate a client instance builder
         .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
-        .broker_options(BrokerOptions::new().use_websockets(false)) // use tcp instead
+        .with_mqtt_broker_options(BrokerOptions::new().use_websockets(false)) // use tcp instead
         .finish()
         .unwrap();
-  
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
 
