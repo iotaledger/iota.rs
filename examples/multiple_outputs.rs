@@ -48,7 +48,7 @@ async fn main() {
             NonZeroU64::new(300).unwrap(),
         )
         .unwrap()
-        .post()
+        .finish()
         .await
         .unwrap();
 

@@ -16,7 +16,7 @@ async fn main() {
         .send()
         .indexation("Hello".to_string())
         .with_data("Tangle".to_string().as_bytes().to_vec())
-        .post()
+        .finish()
         .await
         .unwrap();
 

@@ -93,7 +93,7 @@ impl Task for ClientTask {
                     for output in outputs {
                         sender = sender.with_output(&output.0.clone().to_bech32(), output.1).unwrap();
                     }
-                    let message_id = sender.post().await?;
+                    let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::SendIndexation { index, data } => {
@@ -101,7 +101,7 @@ impl Task for ClientTask {
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }
-                    let message_id = sender.post().await?;
+                    let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::GetUnspentAddress {

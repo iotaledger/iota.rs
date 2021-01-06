@@ -43,7 +43,7 @@ async fn main() {
             NonZeroU64::new(300).unwrap(),
         )
         .unwrap()
-        .post()
+        .finish()
         .await
         .unwrap();
 
@@ -62,7 +62,7 @@ async fn main() {
             NonZeroU64::new(300).unwrap(),
         )
         .unwrap()
-        .post()
+        .finish()
         .await
         .unwrap();
 
@@ -81,7 +81,7 @@ async fn main() {
             NonZeroU64::new(300).unwrap(),
         )
         .unwrap()
-        .post()
+        .finish()
         .await
         .unwrap();
     println!(
@@ -110,7 +110,7 @@ async fn main() {
             NonZeroU64::new(280).unwrap(),
         )
         .unwrap()
-        .post()
+        .finish()
         .await
         .unwrap();
 

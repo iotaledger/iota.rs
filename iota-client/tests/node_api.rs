@@ -75,7 +75,7 @@ async fn test_post_message_with_indexation() {
         .send()
         .indexation("Hello".to_string())
         .with_data("Tangle".to_string().as_bytes().to_vec())
-        .post()
+        .finish()
         .await
         .unwrap();
 
@@ -106,7 +106,7 @@ async fn test_post_message_with_transaction() {
             NonZeroU64::new(100).unwrap(),
         )
         .unwrap()
-        .post()
+        .finish()
         .await
         .unwrap();
     println!("Message ID: {:?}", message_id);
