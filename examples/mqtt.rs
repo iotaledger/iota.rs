@@ -1,28 +1,32 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{Client, Topic};
+use iota::{BrokerOptions, Client, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 fn main() {
     let mut iota = Client::builder() // Crate a client instance builder
-        .node("http://0.0.0.0:14265") // Insert the node here
+        .node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
+        .broker_options(BrokerOptions::new().use_websockets(false)) // use tcp instead
         .build()
         .unwrap();
-
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
 
     iota.subscriber()
-        .topic(Topic::new("milestones/latest").unwrap())
+        .topics(vec![
+            Topic::new("milestones/latest").unwrap(),
+            Topic::new("messages").unwrap(),
+        ])
         .subscribe(move |event| {
             println!("{:?}", event);
             tx.lock().unwrap().send(()).unwrap();
         })
         .unwrap();
-
-    rx.recv().unwrap();
+    for _ in 0..10 {
+        rx.recv().unwrap();
+    }
     iota.subscriber().disconnect().unwrap();
     // alternatively
     // iota.subscriber().unsubscribe().unwrap();
