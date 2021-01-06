@@ -37,9 +37,9 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .account_index(0)
+        .with_account_index(0)
         // Insert the output address and amount to spent. The amount cannot be zero.
-        .output(
+        .with_output(
             "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", // Insert the address to search for
             NonZeroU64::new(300).unwrap(),
         )
@@ -57,9 +57,9 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .account_index(0)
+        .with_account_index(0)
         // Insert the output address and amount to spent. The amount cannot be zero.
-        .output(
+        .with_output(
             "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc",
             NonZeroU64::new(300).unwrap(),
         )
@@ -77,9 +77,9 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .account_index(0)
+        .with_account_index(0)
         // Insert the output address and amount to spent. The amount cannot be zero.
-        .output(
+        .with_output(
             "iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r",
             NonZeroU64::new(300).unwrap(),
         )
@@ -101,15 +101,15 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .account_index(0)
+        .with_account_index(0)
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
-        .output(
+        .with_output(
             "iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr",
             NonZeroU64::new(270).unwrap(),
         )
         .unwrap()
-        .output(
+        .with_output(
             "iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m",
             NonZeroU64::new(280).unwrap(),
         )

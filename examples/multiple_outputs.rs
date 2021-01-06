@@ -17,10 +17,10 @@ use tokio::time::delay_for;
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .node("https://api.lb-0.testnet.chrysalis2.com") // Insert the node here
+    let iota = Client::build() // Crate a client instance builder
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
-        .build()
+        .finish()
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
@@ -33,18 +33,18 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .account_index(0)
-        .output(
+        .with_account_index(0)
+        .with_output(
             "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6",
             NonZeroU64::new(300).unwrap(),
         )
         .unwrap()
-        .output(
+        .with_output(
             "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc",
             NonZeroU64::new(280).unwrap(),
         )
         .unwrap()
-        .output(
+        .with_output(
             "iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r",
             NonZeroU64::new(300).unwrap(),
         )

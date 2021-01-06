@@ -67,19 +67,19 @@ impl<'a> SendTransactionBuilder<'a> {
     }
 
     /// Sets the account index.
-    pub fn account_index(mut self, account_index: usize) -> Self {
+    pub fn with_account_index(mut self, account_index: usize) -> Self {
         self.account_index = Some(account_index);
         self
     }
 
     /// Sets the index of the address to start looking for balance.
-    pub fn initial_address_index(mut self, initial_address_index: usize) -> Self {
+    pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
         self.initial_address_index = Some(initial_address_index);
         self
     }
 
     /// Set a transfer to the builder, address needs to be Bech32 encoded
-    pub fn output(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
+    pub fn with_output(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
         let address = Address::try_from_bech32(address)?;
         let output = SignatureLockedSingleOutput::new(address, amount).into();
         self.outputs.push(output);
@@ -87,14 +87,14 @@ impl<'a> SendTransactionBuilder<'a> {
     }
 
     /// Set a transfer to the builder, address needs to be hex encoded
-    pub fn output_hex(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
+    pub fn with_output_hex(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
         let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount).into();
         self.outputs.push(output);
         Ok(self)
     }
 
     /// Set indexation payload to the builder
-    pub fn indexation(mut self, indexation_payload: Indexation) -> Self {
+    pub fn with_indexation(mut self, indexation_payload: Indexation) -> Self {
         self.indexation = Some(indexation_payload);
         self
     }
@@ -316,7 +316,7 @@ impl<'a> SendIndexationBuilder<'a> {
     }
 
     /// Set data to the builder
-    pub fn data(mut self, data: Vec<u8>) -> Self {
+    pub fn with_data(mut self, data: Vec<u8>) -> Self {
         self.data = Some(data);
         self
     }
