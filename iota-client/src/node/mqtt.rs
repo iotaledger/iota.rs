@@ -72,18 +72,20 @@ fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
         None => {
             for node in client.sync.read().unwrap().iter() {
                 // node.set_path("mqtt");
-                let uri = &format!(
-                    "{}://{}:{}/mqtt",
-                    if node.scheme() == "https" { "wss" } else { "ws" },
-                    node.host_str().unwrap(),
-                    node.port_or_known_default().unwrap()
-                );
+                let uri = match client.broker_options.use_ws {
+                    true => format!(
+                        "{}://{}:{}/mqtt",
+                        if node.scheme() == "https" { "wss" } else { "ws" },
+                        node.host_str().unwrap(),
+                        node.port_or_known_default().unwrap()
+                    ),
+                    false => format!("tcp://{}", node.host_str().unwrap(),),
+                };
                 let mqtt_options = CreateOptionsBuilder::new()
                     .server_uri(uri)
-                    .client_id(format!("iota.rs-mqtt-client-{}", uri))
+                    .client_id("iota.rs")
                     .finalize();
                 let mut mqtt_client = MqttClient::new(mqtt_options)?;
-
                 let conn_opts = ConnectOptionsBuilder::new()
                     .keep_alive_interval(Duration::from_secs(20))
                     .mqtt_version(MQTT_VERSION_3_1_1)

@@ -12,7 +12,7 @@ async fn main() {
         .unwrap();
 
     let seed = Seed::from_ed25519_bytes(
-        &hex::decode("3ff69866a124d8cf168e5b928eb603bacc2d241f1a9d70af5c10f2dd34137896").unwrap(),
+        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b3").unwrap(),
     )
     .unwrap(); // Insert your seed
 
