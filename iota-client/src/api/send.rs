@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, ClientMiner, Error, Result, Transfers};
+use crate::{Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
@@ -90,15 +90,6 @@ impl<'a> SendTransactionBuilder<'a> {
         let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount).into();
         self.outputs.push(output);
         Ok(self)
-    }
-
-    /// Set transfers to the builder, addresses need to be Bech32 encoded
-    pub fn outputs(mut self, transfers: Transfers) -> Self {
-        for transfer in transfers.0 {
-            let output = SignatureLockedSingleOutput::new(transfer.0, transfer.1).into();
-            self.outputs.push(output);
-        }
-        self
     }
 
     /// Set indexation payload to the builder
