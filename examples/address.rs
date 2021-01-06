@@ -1,6 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+//! cargo run --example address --release
 use iota::{Client, Seed};
 
 #[tokio::main]

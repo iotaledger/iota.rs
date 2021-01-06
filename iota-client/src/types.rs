@@ -232,24 +232,6 @@ pub struct AddressBalancePair {
     pub balance: u64,
 }
 
-/// Transfers structure
-///
-/// Users could use this to construct output address with amount of iota they want to get.
-#[derive(Debug)]
-pub struct Transfers(pub Vec<(Address, u64)>);
-
-impl Transfers {
-    /// Create Transfers starting with one address
-    pub fn new(address: Address, amount: u64) -> Self {
-        Self(vec![(address, amount)])
-    }
-
-    /// Add more address to the Transfers
-    pub fn add(&mut self, address: Address, amount: u64) {
-        self.0.push((address, amount));
-    }
-}
-
 /// JSON struct for Message
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MessageJson {

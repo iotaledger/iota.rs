@@ -1,6 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+//! cargo run --example indexation --release
 use iota::{Client, Payload};
 
 #[tokio::main]

@@ -50,6 +50,7 @@ struct AddressIndexRecorder {
     input: Input,
     address_index: usize,
     address_path: BIP32Path,
+    internal: bool,
 }
 
 impl<'a> SendTransactionBuilder<'a> {
@@ -77,11 +78,19 @@ impl<'a> SendTransactionBuilder<'a> {
         self
     }
 
-    /// Set transfers to the builder
-    pub fn output(mut self, address: Address, amount: NonZeroU64) -> Self {
+    /// Set a transfer to the builder, address needs to be Bech32 encoded
+    pub fn output(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
+        let address = Address::try_from_bech32(address)?;
         let output = SignatureLockedSingleOutput::new(address, amount).into();
         self.outputs.push(output);
-        self
+        Ok(self)
+    }
+
+    /// Set a transfer to the builder, address needs to be hex encoded
+    pub fn output_hex(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
+        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount).into();
+        self.outputs.push(output);
+        Ok(self)
     }
 
     /// Set indexation payload to the builder
@@ -175,6 +184,7 @@ impl<'a> SendTransactionBuilder<'a> {
                                     input,
                                     address_index,
                                     address_path,
+                                    internal: *internal,
                                 });
                                 // Output the remaining tokens back to the original address
                                 if total_already_spent > total_to_spend {
@@ -230,13 +240,16 @@ impl<'a> SendTransactionBuilder<'a> {
 
         let mut unlock_blocks = Vec::new();
         let mut current_block_index: usize = 0;
-        let mut signature_indexes = HashMap::<usize, usize>::new();
+        let mut signature_indexes = HashMap::<String, usize>::new();
         address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
 
         for recorder in address_index_recorders.iter() {
             // Check if current path is same as previous path
             // If so, add a reference unlock block
-            if let Some(block_index) = signature_indexes.get(&recorder.address_index) {
+
+            // Format to differentiate between public and private addresses
+            let index = format!("{}{}", recorder.address_index, recorder.internal);
+            if let Some(block_index) = signature_indexes.get(&index) {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we should create a signature unlock block
@@ -253,7 +266,7 @@ impl<'a> SendTransactionBuilder<'a> {
                     }
                     Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
                 }
-                signature_indexes.insert(recorder.address_index, current_block_index);
+                signature_indexes.insert(index, current_block_index);
 
                 // Update current block index
                 current_block_index += 1;
