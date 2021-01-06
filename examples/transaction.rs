@@ -9,8 +9,8 @@ use tokio::time::delay_for;
 ///
 /// Address Index 0. Note that we can use the `address` example codes to know the addresses belong to the seed.
 ///   output 0: 300 tokens iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6
-///   output 1: 300 tokens iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r
-///   output 2: 300 tokens iot1q84egwx5gu4nme5cn6q3fxwe2j7qex6h66d2g6m5grshaxq07fntxufm9td
+///   output 1: 300 tokens iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc
+///   output 2: 300 tokens iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r
 ///
 ///
 /// These two addresses belong to seed "256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0"
@@ -22,7 +22,7 @@ use tokio::time::delay_for;
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
-        .node("https://api.lb-0.testnet.chrysalis2.com") // Insert the node here
+        .node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .build()
         .unwrap();
@@ -49,7 +49,27 @@ async fn main() {
         .unwrap();
 
     println!(
-        "First transaction sent: https://explorer.iota.org/chrysalis/message/{}",
+        "First transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
+        message_id
+    );
+    reattach_promote_until_confirmed(message_id, &iota).await;
+
+    let message_id = iota
+        .send()
+        .transaction(&seed)
+        .account_index(0)
+        // Insert the output address and amount to spent. The amount cannot be zero.
+        .output(
+            "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc",
+            NonZeroU64::new(300).unwrap(),
+        )
+        .unwrap()
+        .post()
+        .await
+        .unwrap();
+
+    println!(
+        "Second transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
         message_id
     );
     reattach_promote_until_confirmed(message_id, &iota).await;
@@ -67,28 +87,8 @@ async fn main() {
         .post()
         .await
         .unwrap();
-
     println!(
-        "Second transaction sent: https://explorer.iota.org/chrysalis/message/{}",
-        message_id
-    );
-    reattach_promote_until_confirmed(message_id, &iota).await;
-
-    let message_id = iota
-        .send()
-        .transaction(&seed)
-        .account_index(0)
-        // Insert the output address and amount to spent. The amount cannot be zero.
-        .output(
-            "iot1q84egwx5gu4nme5cn6q3fxwe2j7qex6h66d2g6m5grshaxq07fntxufm9td",
-            NonZeroU64::new(300).unwrap(),
-        )
-        .unwrap()
-        .post()
-        .await
-        .unwrap();
-    println!(
-        "Third transaction sent: https://explorer.iota.org/chrysalis/message/{}",
+        "Third transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
         message_id
     );
     reattach_promote_until_confirmed(message_id, &iota).await;
@@ -119,7 +119,7 @@ async fn main() {
         .unwrap();
 
     println!(
-        "Last transaction sent: https://explorer.iota.org/chrysalis/message/{}",
+        "Last transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
         message_id
     );
     reattach_promote_until_confirmed(message_id, &iota).await;
