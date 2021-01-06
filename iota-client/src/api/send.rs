@@ -101,9 +101,7 @@ impl<'a> SendTransactionBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn post(self) -> Result<MessageId> {
-        let account_index = self
-            .account_index
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let account_index = self.account_index.unwrap_or(0);
         let path = BIP32Path::from_str(&crate::account_path!(account_index)).expect("invalid account index");
 
         let mut index = self.initial_address_index.unwrap_or(0);

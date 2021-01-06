@@ -33,7 +33,6 @@ async fn main() {
     let message_id = iota
         .send()
         .transaction(&seed)
-        .with_account_index(0)
         .with_output(
             "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6",
             NonZeroU64::new(300).unwrap(),
