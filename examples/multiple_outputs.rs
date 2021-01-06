@@ -65,10 +65,8 @@ async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) 
         if let Some(state) = metadata.ledger_inclusion_state {
             println!("Leder inclusion state: {}", state);
             break;
-        } else {
-            if let Ok(msg_id) = iota.reattach(&message_id).await {
-                println!("Reattached or promoted {}", msg_id.0);
-            }
+        } else if let Ok(msg_id) = iota.reattach(&message_id).await {
+            println!("Reattached or promoted {}", msg_id.0);
         }
         delay_for(Duration::from_secs(5)).await;
     }
