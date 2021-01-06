@@ -262,7 +262,7 @@ async fn test_get_milestone() {
         .unwrap()
         .build()
         .unwrap()
-        .get_milestone(50265)
+        .get_milestone(3)
         .await
         .unwrap();
 
