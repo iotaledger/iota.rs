@@ -25,19 +25,19 @@ impl<'a> GetBalanceBuilder<'a> {
     }
 
     /// Sets the account index.
-    pub fn account_index(mut self, account_index: usize) -> Self {
+    pub fn with_account_index(mut self, account_index: usize) -> Self {
         self.account_index = Some(account_index);
         self
     }
 
     /// Sets the index of the address to start looking for balance.
-    pub fn initial_address_index(mut self, initial_address_index: usize) -> Self {
+    pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
         self.initial_address_index = Some(initial_address_index);
         self
     }
 
     /// Consume the builder and get the API result
-    pub async fn get(self) -> Result<u64> {
+    pub async fn finish(self) -> Result<u64> {
         let account_index = self
             .account_index
             .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;

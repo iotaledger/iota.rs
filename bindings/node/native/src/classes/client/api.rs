@@ -133,12 +133,12 @@ impl Task for ClientTask {
                 } => {
                     let mut getter = client.get_balance(seed);
                     if let Some(account_index) = account_index {
-                        getter = getter.account_index(*account_index);
+                        getter = getter.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
-                        getter = getter.initial_address_index(*initial_address_index);
+                        getter = getter.with_initial_address_index(*initial_address_index);
                     }
-                    let balance = getter.get().await?;
+                    let balance = getter.finish().await?;
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressBalances(addresses) => {
