@@ -98,3 +98,28 @@ fn generate_address(seed: &Ed25519Seed, path: &mut BIP32Path, index: usize, inte
 
     Address::Ed25519(Ed25519Address::new(result))
 }
+
+/// Function to find the index and public or internal type of an address
+pub fn search_address(
+    seed: &Seed,
+    account_index: usize,
+    range: Range<usize>,
+    address: &Address,
+) -> Result<(usize, bool)> {
+    let iota = Client::build().with_node("http://0.0.0.0:14265")?.finish()?;
+    let addresses = iota
+        .find_addresses(&seed)
+        .account_index(account_index)
+        .range(range)
+        .get()?;
+    let mut index_counter = 0;
+    for address_internal in addresses {
+        if &address_internal.0 == address {
+            return Ok((index_counter, address_internal.1));
+        }
+        if !address_internal.1 {
+            index_counter += 1;
+        }
+    }
+    Err(crate::error::Error::AddressNotFound)
+}

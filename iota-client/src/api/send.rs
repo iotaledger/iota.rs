@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, ClientMiner, Error, Result};
+use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
@@ -10,7 +10,6 @@ use bee_signing_ext::{
     Seed, Signer,
 };
 use std::{collections::HashMap, convert::TryInto, num::NonZeroU64};
-
 /// Builder of send API
 pub struct SendBuilder<'a> {
     client: &'a Client,
@@ -40,6 +39,7 @@ pub struct SendTransactionBuilder<'a> {
     seed: &'a Seed,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
+    inputs: Option<Vec<UTXOInput>>,
     outputs: Vec<Output>,
     indexation: Option<Indexation>,
 }
@@ -61,6 +61,7 @@ impl<'a> SendTransactionBuilder<'a> {
             seed,
             account_index: None,
             initial_address_index: None,
+            inputs: None,
             outputs: Vec::new(),
             indexation: None,
         }
@@ -75,6 +76,18 @@ impl<'a> SendTransactionBuilder<'a> {
     /// Sets the index of the address to start looking for balance.
     pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
         self.initial_address_index = Some(initial_address_index);
+        self
+    }
+
+    /// Set a custom input(transaction output)
+    pub fn with_input(mut self, input: UTXOInput) -> Self {
+        self.inputs = match self.inputs {
+            Some(mut inputs) => {
+                inputs.push(input);
+                Some(inputs)
+            }
+            None => Some(vec![input]),
+        };
         self
     }
 
@@ -123,98 +136,137 @@ impl<'a> SendTransactionBuilder<'a> {
         let mut essence = TransactionEssence::builder();
         let mut address_index_recorders = Vec::new();
 
-        'input_selection: loop {
-            // Reset the empty_address_count for each run of output address searching
-            let mut empty_address_count = 0;
-
-            // Get the addresses in the BIP path/index ~ path/index+20
-            let addresses = self
-                .client
-                .find_addresses(self.seed)
-                .account_index(account_index)
-                .range(index..index + 20)
-                .get()?;
-
-            // For each address, get the address outputs
-            let mut address_index = 0;
-            for (index, (address, internal)) in addresses.iter().enumerate() {
-                let address_outputs = self.client.get_address().outputs(&address).await?;
-                let mut outputs = vec![];
-                for output_id in address_outputs.iter() {
-                    let curr_outputs = self.client.get_output(output_id).await?;
-                    outputs.push(curr_outputs);
-                }
-
-                // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
-                // up the addresses belonging to the seed. Note that we don't really count the exact 20
-                // consecutive empty addresses, which is uncessary. We just need to check the address range,
-                // [k*20, k*20 + 20), where k is natural number, and to see if the outpus are all empty.
-                if outputs.is_empty() {
-                    // Accumulate the empty_address_count for each run of output address searching
-                    empty_address_count += 1;
-                }
-
-                for (_offset, output) in outputs.into_iter().enumerate() {
-                    match output.is_spent {
-                        true => {
-                            if output.amount != 0 {
-                                return Err(Error::SpentAddress);
-                            }
-                        }
-                        false => {
-                            if output.amount != 0 && total_already_spent < total_to_spend {
-                                total_already_spent += output.amount;
-                                let mut address_path = path.clone();
-                                // Note that we need to sign the original address, i.e., `path/index`,
-                                // instead of `path/index/_offset` or `path/_offset`.
-                                address_path.push(*internal as u32 + HARDEND);
-                                address_path.push(address_index as u32 + HARDEND);
-                                paths.push(address_path.clone());
-                                let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
-                                    .try_into()
-                                    .map_err(|_| Error::TransactionError)?;
-                                let input = Input::UTXO(
-                                    UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
-                                        .map_err(|_| Error::TransactionError)?,
+        match self.inputs {
+            Some(inputs) => {
+                for input in inputs {
+                    // Only add unspent outputs
+                    if let Ok(output) = self.client.get_output(&input).await {
+                        if !output.is_spent {
+                            total_already_spent += output.amount;
+                            let mut address_path = path.clone();
+                            // Note that we need to sign the original address, i.e., `path/index`,
+                            // instead of `path/index/_offset` or `path/_offset`.
+                            // Todo: Make the range 0..100 configurable
+                            let (address_index, internal) =
+                                search_address(&self.seed, account_index, 0..100, &output.address)?;
+                            address_path.push(internal as u32 + HARDEND);
+                            address_path.push(address_index as u32 + HARDEND);
+                            paths.push(address_path.clone());
+                            let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
+                                .try_into()
+                                .map_err(|_| Error::TransactionError)?;
+                            let input = Input::UTXO(
+                                UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
+                                    .map_err(|_| Error::TransactionError)?,
+                            );
+                            essence = essence.add_input(input.clone());
+                            address_index_recorders.push(AddressIndexRecorder {
+                                input,
+                                address_index,
+                                address_path,
+                                internal,
+                            });
+                            // Output the remaining tokens back to the original address
+                            if total_already_spent > total_to_spend {
+                                essence = essence.add_output(
+                                    SignatureLockedSingleOutput::new(
+                                        output.address.clone(),
+                                        NonZeroU64::new(total_already_spent - total_to_spend).unwrap(),
+                                    )
+                                    .into(),
                                 );
-                                essence = essence.add_input(input.clone());
-                                address_index_recorders.push(AddressIndexRecorder {
-                                    input,
-                                    address_index,
-                                    address_path,
-                                    internal: *internal,
-                                });
-                                // Output the remaining tokens back to the original address
-                                if total_already_spent > total_to_spend {
-                                    essence = essence.add_output(
-                                        SignatureLockedSingleOutput::new(
-                                            address.clone(),
-                                            NonZeroU64::new(total_already_spent - total_to_spend).unwrap(),
-                                        )
-                                        .into(),
-                                    );
-                                }
                             }
                         }
                     }
                 }
-
-                if total_already_spent > total_to_spend {
-                    break 'input_selection;
-                }
-
-                // if we just processed an even index, increase the address index
-                // (because the list has public and internal addresses)
-                if index % 2 == 1 {
-                    address_index += 1;
-                }
             }
-
-            index += 20;
-
-            // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-            if empty_address_count == 40 {
-                break;
+            None => {
+                'input_selection: loop {
+                    // Reset the empty_address_count for each run of output address searching
+                    let mut empty_address_count = 0;
+                    // Get the addresses in the BIP path/index ~ path/index+20
+                    let addresses = self
+                        .client
+                        .find_addresses(self.seed)
+                        .account_index(account_index)
+                        .range(index..index + 20)
+                        .get()?;
+                    // For each address, get the address outputs
+                    let mut address_index = 0;
+                    for (index, (address, internal)) in addresses.iter().enumerate() {
+                        let address_outputs = self.client.get_address().outputs(&address).await?;
+                        let mut outputs = vec![];
+                        for output_id in address_outputs.iter() {
+                            let curr_outputs = self.client.get_output(output_id).await?;
+                            outputs.push(curr_outputs);
+                        }
+                        // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
+                        // up the addresses belonging to the seed. Note that we don't really count the exact 20
+                        // consecutive empty addresses, which is uncessary. We just need to check the address range,
+                        // [k*20, k*20 + 20), where k is natural number, and to see if the outpus are all empty.
+                        if outputs.is_empty() {
+                            // Accumulate the empty_address_count for each run of output address searching
+                            empty_address_count += 1;
+                        }
+                        for (_offset, output) in outputs.into_iter().enumerate() {
+                            match output.is_spent {
+                                true => {
+                                    if output.amount != 0 {
+                                        return Err(Error::SpentAddress);
+                                    }
+                                }
+                                false => {
+                                    if output.amount != 0 && total_already_spent < total_to_spend {
+                                        total_already_spent += output.amount;
+                                        let mut address_path = path.clone();
+                                        // Note that we need to sign the original address, i.e., `path/index`,
+                                        // instead of `path/index/_offset` or `path/_offset`.
+                                        address_path.push(*internal as u32 + HARDEND);
+                                        address_path.push(address_index as u32 + HARDEND);
+                                        paths.push(address_path.clone());
+                                        let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
+                                            .try_into()
+                                            .map_err(|_| Error::TransactionError)?;
+                                        let input = Input::UTXO(
+                                            UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
+                                                .map_err(|_| Error::TransactionError)?,
+                                        );
+                                        essence = essence.add_input(input.clone());
+                                        address_index_recorders.push(AddressIndexRecorder {
+                                            input,
+                                            address_index,
+                                            address_path,
+                                            internal: *internal,
+                                        });
+                                        // Output the remaining tokens back to the original address
+                                        if total_already_spent > total_to_spend {
+                                            essence = essence.add_output(
+                                                SignatureLockedSingleOutput::new(
+                                                    address.clone(),
+                                                    NonZeroU64::new(total_already_spent - total_to_spend).unwrap(),
+                                                )
+                                                .into(),
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if total_already_spent > total_to_spend {
+                            break 'input_selection;
+                        }
+                        // if we just processed an even index, increase the address index
+                        // (because the list has public and internal addresses)
+                        if index % 2 == 1 {
+                            address_index += 1;
+                        }
+                    }
+                    index += 20;
+                    // The gap limit is 20 and use reference 40 here because there's public and internal addresses
+                    if empty_address_count == 40 {
+                        break;
+                    }
+                }
             }
         }
 
