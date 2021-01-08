@@ -85,23 +85,23 @@ impl Task for ClientTask {
                 } => {
                     let mut sender = client.send().transaction(seed);
                     if let Some(account_index) = account_index {
-                        sender = sender.account_index(*account_index);
+                        sender = sender.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
-                        sender = sender.initial_address_index(*initial_address_index);
+                        sender = sender.with_initial_address_index(*initial_address_index);
                     }
                     for output in outputs {
-                        sender = sender.output(&output.0.clone().to_bech32(), output.1).unwrap();
+                        sender = sender.with_output(&output.0.clone().to_bech32(), output.1).unwrap();
                     }
-                    let message_id = sender.post().await?;
+                    let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::SendIndexation { index, data } => {
                     let mut sender = client.send().indexation(index);
                     if let Some(data) = data {
-                        sender = sender.data(data.clone());
+                        sender = sender.with_data(data.clone());
                     }
-                    let message_id = sender.post().await?;
+                    let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::GetUnspentAddress {
