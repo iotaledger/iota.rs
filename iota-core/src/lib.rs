@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! IOTA core
 
 #![deny(unused_extern_crates)]
@@ -8,7 +11,9 @@
     unreachable_pub
 )]
 
+pub use bee_common as common;
 pub use bee_message as message;
+pub use bee_pow as pow;
 pub use bee_signing_ext as signing;
 pub use iota_client as client;
 

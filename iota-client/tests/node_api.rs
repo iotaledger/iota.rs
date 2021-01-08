@@ -1,160 +1,125 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 // These are E2E test samples, so they are ignored by default.
 
-use bee_common::packable::Packable;
-use bee_message::payload::transaction::TransactionEssenceBuilder;
 use bee_message::prelude::*;
-use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey},
-    Seed, Signer,
-};
-use iota_client::{hex_to_address, hex_to_message_id, hex_to_transaction_id};
+use bee_signing_ext::Seed;
 
-use std::num::NonZeroU64;
+use iota_client::MessageJson;
+use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
 
-#[ignore]
-#[tokio::test]
-async fn test_get_info() {
-    iota_client::Client::get_info("http://0.0.0.0:14265")
-        .await
-        .unwrap();
-}
+const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
 
-#[ignore]
-#[tokio::test]
-async fn test_get_health() {
-    iota_client::Client::get_health("http://0.0.0.0:14265")
-        .await
-        .unwrap();
-}
-
-#[ignore]
-#[tokio::test]
-async fn test_get_tips() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+// Sends a full message object to the node with already computed nonce. Serves as a test object.
+async fn setup_indexation_message() -> MessageId {
+    let client = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
+        .unwrap();
+    let data = r#"
+    {
+	    "networkId": "6530425480034647824",
+	    "parent1MessageId": "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c",
+	    "parent2MessageId": "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664",
+	    "payload": {
+		    "type": 2,
+		    "index": "HORNET Spammer",
+		    "data": "42696e61727920697320746865206675747572652e0a436f756e743a203030373730370a54696d657374616d703a20323032302d31322d31345431343a33363a33342b30313a30300a54697073656c656374696f6e3a2035c2b573"
+	    },
+	    "nonce": "36952"
+    }"#;
+    let message: Message = serde_json::from_str::<MessageJson>(data).unwrap().try_into().unwrap();
+    client.post_message(&message).await.unwrap()
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_info() {
+    let r = iota_client::Client::get_node_info(DEFAULT_NODE_URL).await.unwrap();
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_health() {
+    let r = iota_client::Client::get_node_health(DEFAULT_NODE_URL).await.unwrap();
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_tips() {
+    let r = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
         .unwrap()
         .get_tips()
         .await
         .unwrap();
-
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_post_message_with_indexation() {
-    let index = Indexation::new(String::from("Hello"), &[]).unwrap();
-
-    let client = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let client = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
-        .unwrap();
-
-    let tips = client.get_tips().await.unwrap();
-
-    let message = Message::builder()
-        // TODO temporarily removed .with_network_id(0)
-        .with_parent1(tips.0)
-        .with_parent2(tips.1)
-        .with_payload(Payload::Indexation(Box::new(index)))
         .finish()
         .unwrap();
 
-    let r = client.post_message(&message).await.unwrap();
+    let r = client
+        .send()
+        .indexation("Hello".to_string())
+        .with_data("Tangle".to_string().as_bytes().to_vec())
+        .finish()
+        .await
+        .unwrap();
 
     println!("{}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_post_message_with_transaction() {
-    let client = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let iota = iota_client::Client::build() // Crate a client instance builder
+        .with_node(DEFAULT_NODE_URL) // Insert the node here
         .unwrap()
-        .build()
+        .finish()
         .unwrap();
 
-    // let seed = Ed25519Seed::from_bytes(
-    //     &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
-    // )
-    // .unwrap();
-
-    // let pri =
-    //     Ed25519PrivateKey::generate_from_seed(&seed, &BIP32Path::from_str("m").unwrap()).unwrap();
-    let private_key = Ed25519PrivateKey::from_bytes(
+    // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    let seed = Seed::from_ed25519_bytes(
         &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
     )
     .unwrap();
-    let public_key = private_key.generate_public_key().to_bytes();
-    //println!("{}", hex::encode(public_key));
 
-    let mut output_address = [0u8; 32];
-    hex::decode_to_slice(
-        "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92",
-        &mut output_address,
-    )
-    .unwrap();
-    let output_address = Ed25519Address::new(output_address);
-    let inputs = client
-        .get_address()
-        .outputs(&output_address.into())
+    let message_id = iota
+        .send()
+        .transaction(&seed)
+        // Insert the output address and ampunt to spent. The amount cannot be zero.
+        .with_output_hex(
+            "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8", // Insert the address to search for
+            NonZeroU64::new(100).unwrap(),
+        )
+        .unwrap()
+        .finish()
         .await
         .unwrap();
-
-    let address = client
-        .get_unspent_address(&Seed::from_ed25519_bytes(&[0u8; 32]).unwrap())
-        .path(&BIP32Path::from_str("m").unwrap())
-        .get()
-        .await
-        .unwrap();
-    let output = Output::from(SignatureLockedSingleOutput::new(
-        address.0,
-        NonZeroU64::new(100).unwrap(),
-    ));
-    let essence = TransactionEssenceBuilder::new()
-        .add_input(inputs[0].clone().into())
-        .add_output(output)
-        .finish()
-        .unwrap();
-    let mut serialized_essence = vec![];
-    essence.pack(&mut serialized_essence).unwrap();
-
-    let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
-    let unlock = UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
-        public_key, signature,
-    )));
-
-    let transaction = TransactionBuilder::new()
-        .with_essence(essence)
-        .add_unlock_block(unlock)
-        .finish()
-        .unwrap();
-
-    //println!("{:#?}", transaction);
-    let tips = client.get_tips().await.unwrap();
-    let message = Message::builder()
-        // TODO temporarily removed .with_network_id(0)
-        .with_parent1(tips.0)
-        .with_parent2(tips.1)
-        .with_payload(Payload::Transaction(Box::new(transaction)))
-        .finish()
-        .unwrap();
-
-    let r = client.post_message(&message).await.unwrap();
-
-    println!("{}", r);
+    println!("Message ID: {:?}", message_id);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_message_by_index() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    setup_indexation_message().await;
+    let r = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
         .get_message()
         .index("HORNET Spammer")
@@ -164,90 +129,81 @@ async fn test_get_message_by_index() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_message_data() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let client = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
-        .unwrap()
-        .get_message()
-        .data(
-            &hex_to_message_id("abf677332011485dfd741df6900f92b615a26721e4e6adfa074dccacad471f1b")
-                .unwrap(),
-        )
-        .await
+        .finish()
         .unwrap();
-
+    let message_id = setup_indexation_message().await;
+    let r = client.get_message().data(&message_id).await.unwrap();
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_message_metadata() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let message_id = setup_indexation_message().await;
+
+    let r = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
         .get_message()
-        .metadata(
-            &hex_to_message_id("dc9492aaf06d12fd3927a3ce6e5e278edce930e0fa13ec3a09148ace6fe9448a")
-                .unwrap(),
-        )
+        .metadata(&message_id)
         .await
         .unwrap();
 
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_message_raw() {
-    iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let message_id = setup_indexation_message().await;
+    iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
         .get_message()
-        .raw(
-            &hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")
-                .unwrap(),
-        )
+        .raw(&message_id)
         .await
         .unwrap();
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_message_children() {
-    iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let message_id = setup_indexation_message().await;
+    iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
         .get_message()
-        .children(
-            &hex_to_message_id("a008ce3354591950232c0dacdfcb17c4f6457c5bf407eff1befaab5fa7b3b7b3")
-                .unwrap(),
-        )
+        .children(&message_id)
         .await
         .unwrap();
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_address_balance() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let r = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
         .get_address()
         .balance(
-            &hex_to_address("6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92")
-                .unwrap(),
+            &("6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92"
+                .parse::<Ed25519Address>()
+                .unwrap())
+            .into(),
         )
         .await
         .unwrap();
@@ -255,18 +211,20 @@ async fn test_get_address_balance() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_address_outputs() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let r = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
         .get_address()
         .outputs(
-            &hex_to_address("d2adf03c21269b25a0bb4319471213161f2a4fb57b16cc2e505b87b2ca52d37d")
-                .unwrap(),
+            &("d2adf03c21269b25a0bb4319471213161f2a4fb57b16cc2e505b87b2ca52d37d"
+                .parse::<Ed25519Address>()
+                .unwrap())
+            .into(), // Insert the address to search for
         )
         .await
         .unwrap();
@@ -274,20 +232,17 @@ async fn test_get_address_outputs() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_output() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let r = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
         .get_output(
             &UTXOInput::new(
-                hex_to_transaction_id(
-                    "0000000000000000000000000000000000000000000000000000000000000000",
-                )
-                .unwrap(),
+                TransactionId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
                 0,
             )
             .unwrap(),
@@ -298,15 +253,15 @@ async fn test_get_output() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
+#[ignore]
 async fn test_get_milestone() {
-    let r = iota_client::Client::new()
-        .node("http://0.0.0.0:14265")
+    let r = iota_client::Client::build()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .build()
+        .finish()
         .unwrap()
-        .get_milestone(2)
+        .get_milestone(3)
         .await
         .unwrap();
 

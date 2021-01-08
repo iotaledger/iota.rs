@@ -24,3 +24,19 @@ path = "indexation.rs"
 [[example]]
 name = "transaction"
 path = "transaction.rs"
+
+[[example]]
+name = "mqtt"
+path = "mqtt.rs"
+
+[[example]]
+name = "multiple_outputs"
+path = "multiple_outputs.rs"
+
+[[example]]
+name = "custom_inputs"
+path = "custom_inputs.rs"
+
+[[example]]
+name = "search_address"
+path = "search_address.rs"

@@ -1,13 +1,20 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 //! Builder of the Clinet Instnace
 
-use crate::client::Client;
-use crate::error::*;
-
-use std::collections::HashSet;
-use std::iter::FromIterator;
-use std::sync::{Arc, RwLock};
+use crate::{client::*, error::*};
 
 use reqwest::Url;
+use tokio::{runtime::Runtime, sync::broadcast::channel};
+
+use std::{
+    collections::{HashMap, HashSet},
+    sync::{Arc, RwLock},
+    time::Duration,
+};
+
+const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
@@ -22,101 +29,142 @@ pub enum Network {
 
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
-    nodes: Vec<Url>,
+    nodes: HashSet<Url>,
+    node_sync_interval: Duration,
+    node_sync_enabled: bool,
     network: Network,
-    quorum_size: u8,
-    quorum_threshold: u8,
+    #[cfg(feature = "mqtt")]
+    broker_options: BrokerOptions,
+    local_pow: bool,
+    request_timeout: Duration,
+    api_timeout: HashMap<Api, Duration>,
+}
+
+impl Default for ClientBuilder {
+    fn default() -> Self {
+        Self {
+            nodes: HashSet::new(),
+            node_sync_interval: Duration::from_millis(60000),
+            node_sync_enabled: true,
+            network: Network::Mainnet,
+            #[cfg(feature = "mqtt")]
+            broker_options: Default::default(),
+            local_pow: true,
+            request_timeout: DEFAULT_REQUEST_TIMEOUT,
+            api_timeout: Default::default(),
+        }
+    }
 }
 
 impl ClientBuilder {
-    /// Create an Iota client builder
+    /// Creates an IOTA client builder.
     pub fn new() -> Self {
-        Self {
-            nodes: Vec::new(),
-            network: Network::Mainnet,
-            quorum_size: 3,
-            quorum_threshold: 50,
-        }
+        Default::default()
     }
 
-    /// Add a Iota node
-    pub fn node(mut self, url: &str) -> Result<Self> {
+    /// Adds an IOTA node by its URL.
+    pub fn with_node(mut self, url: &str) -> Result<Self> {
         let url = Url::parse(url).map_err(|_| Error::UrlError)?;
-        self.nodes.push(url);
+        self.nodes.insert(url);
         Ok(self)
     }
 
-    /// Add a list of Iota nodes
-    pub fn nodes(mut self, urls: &[&str]) -> Result<Self> {
+    /// Adds a list of IOTAl nodes by their URLs.
+    pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
             let url = Url::parse(url).map_err(|_| Error::UrlError)?;
-            self.nodes.push(url);
+            self.nodes.insert(url);
         }
         Ok(self)
+    }
+
+    /// Set the node sync interval
+    pub fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
+        self.node_sync_interval = node_sync_interval;
+        self
+    }
+
+    /// Disables the node syncing process.
+    /// Every node will be considered healthy and ready to use.
+    pub fn with_node_sync_disabled(mut self) -> Self {
+        self.node_sync_enabled = false;
+        self
     }
 
     // TODO node pool
 
-    /// Network of the Iota nodes belong to
-    pub fn network(mut self, network: Network) -> Self {
+    /// Selects the network the added nodes belong to.
+    pub fn with_network(mut self, network: Network) -> Self {
         self.network = network;
         self
     }
 
-    /// Quorum size defines how many of nodes will be queried at the same time to check for quorum
-    pub fn quorum_size(mut self, size: u8) -> Self {
-        self.quorum_size = size;
+    /// Sets the MQTT broker options.
+    #[cfg(feature = "mqtt")]
+    pub fn with_mqtt_broker_options(mut self, options: BrokerOptions) -> Self {
+        self.broker_options = options;
         self
     }
 
-    /// The quorum threshold defines the minimum amount of nodes from the quorum pool that need to agree if we want to
-    /// consider the result true. The default is 50 meaning at least 50% of the nodes need to agree. (so at least 2 out
-    /// of 3 nodes when the quorum size is 3).
-    pub fn quorum_threshold(mut self, threshold: u8) -> Self {
-        self.quorum_threshold = threshold;
+    /// Sets whether the PoW should be done locally or remotely.
+    pub fn with_local_pow(mut self, local: bool) -> Self {
+        self.local_pow = local;
+        self
+    }
+
+    /// Sets the request timeout.
+    pub fn with_request_timeout(mut self, timeout: Duration) -> Self {
+        self.request_timeout = timeout;
+        self
+    }
+
+    /// Sets the request timeout for a specific API usage.
+    pub fn with_api_timeout(mut self, api: Api, timeout: Duration) -> Self {
+        self.api_timeout.insert(api, timeout);
         self
     }
 
     /// Build the Client instance.
-    pub fn build(self) -> Result<Client> {
+    pub fn finish(self) -> Result<Client> {
         if self.nodes.is_empty() {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
 
-        let mwm = match self.network {
-            Network::Mainnet => 14,
-            Network::Comnet => 10,
-            Network::Devnet => 9,
-        };
+        let nodes = self.nodes;
+        let node_sync_interval = self.node_sync_interval;
 
-        let quorum_size = match self.nodes.len() {
-            1 => 1,
-            _ => self.quorum_size,
-        };
-
-        let quorum_threshold = match self.quorum_threshold {
-            100..=255 => 100,
-            x => x,
+        let (runtime, sync, sync_kill_sender) = if self.node_sync_enabled {
+            let sync = Arc::new(RwLock::new(HashSet::new()));
+            let sync_ = sync.clone();
+            let (sync_kill_sender, sync_kill_receiver) = channel(1);
+            let runtime = std::thread::spawn(move || {
+                let mut runtime = Runtime::new().unwrap();
+                runtime.block_on(Client::sync_nodes(&sync_, &nodes));
+                Client::start_sync_process(&runtime, sync_, nodes, node_sync_interval, sync_kill_receiver);
+                runtime
+            })
+            .join()
+            .expect("failed to init node syncing process");
+            (Some(runtime), sync, Some(sync_kill_sender))
+        } else {
+            (None, Arc::new(RwLock::new(nodes)), None)
         };
 
         let client = Client {
-            pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
-            sync: Arc::new(RwLock::new(Vec::new())),
+            runtime,
+            sync,
+            sync_kill_sender: sync_kill_sender.map(Arc::new),
             client: reqwest::Client::new(),
-            mwm,
-            quorum_size,
-            quorum_threshold,
+            #[cfg(feature = "mqtt")]
+            mqtt_client: None,
+            #[cfg(feature = "mqtt")]
+            mqtt_topic_handlers: Default::default(),
+            #[cfg(feature = "mqtt")]
+            broker_options: self.broker_options,
+            local_pow: self.local_pow,
+            request_timeout: self.request_timeout,
+            api_timeout: self.api_timeout,
         };
-
-        // let mut sync = client.clone();
-        // tokio::block_on(async { sync.sync() });
-
-        // tokio::spawn(async {
-        //     loop {
-        //         tokio::time::delay_for(std::time::Duration::from_secs(180)).await;
-        //         sync.sync();
-        //     }
-        // });
 
         Ok(client)
     }

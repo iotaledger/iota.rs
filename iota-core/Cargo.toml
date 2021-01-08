@@ -12,9 +12,15 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-message = { git = "https://github.com/Alex6323/bee-p.git", branch = "chrysalis-pt-2" }
+bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
-iota-client = { version = "0.5.0-alpha", path = "../iota-client" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "0.2.22", features = ["macros"] }
+
+[features]
+default = ["mqtt"]
+mqtt = ["iota-client/mqtt"]

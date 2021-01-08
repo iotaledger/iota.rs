@@ -1,13 +1,16 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::{Client, Error, Result};
 
-use bee_signing_ext::{binary::BIP32Path, Seed};
+use bee_signing_ext::Seed;
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
     client: &'a Client,
     seed: &'a Seed,
-    path: Option<&'a BIP32Path>,
-    index: Option<usize>,
+    account_index: Option<usize>,
+    initial_address_index: Option<usize>,
 }
 
 impl<'a> GetBalanceBuilder<'a> {
@@ -16,41 +19,30 @@ impl<'a> GetBalanceBuilder<'a> {
         Self {
             client,
             seed,
-            path: None,
-            index: None,
+            account_index: None,
+            initial_address_index: None,
         }
     }
 
-    /// Set path to the builder
-    pub fn path(mut self, path: &'a BIP32Path) -> Self {
-        self.path = Some(path);
+    /// Sets the account index.
+    pub fn with_account_index(mut self, account_index: usize) -> Self {
+        self.account_index = Some(account_index);
         self
     }
 
-    /// Set index to the builder
-    pub fn index(mut self, index: usize) -> Self {
-        self.index = Some(index);
+    /// Sets the index of the address to start looking for balance.
+    pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
+        self.initial_address_index = Some(initial_address_index);
         self
     }
 
     /// Consume the builder and get the API result
-    pub async fn get(self) -> Result<u64> {
-        let path = match self.path {
-            Some(p) => {
-                if p.depth() != 2 {
-                    return Err(Error::InvalidParameter(String::from(
-                        "Must provide BIP32Path with depth of 2",
-                    )));
-                }
-                p
-            }
-            None => return Err(Error::MissingParameter(String::from("BIP32 path"))),
-        };
+    pub async fn finish(self) -> Result<u64> {
+        let account_index = self
+            .account_index
+            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
 
-        let mut index = match self.index {
-            Some(r) => r,
-            None => 0,
-        };
+        let mut index = self.initial_address_index.unwrap_or(0);
 
         // get account balance and check with value
         let mut balance = 0;
@@ -58,24 +50,24 @@ impl<'a> GetBalanceBuilder<'a> {
             let addresses = self
                 .client
                 .find_addresses(self.seed)
-                .path(path)
+                .account_index(account_index)
                 .range(index..index + 20)
                 .get()?;
 
-            // TODO we assume all addressees are unspent and valid if balance > 0
-            let mut end = false;
-            for address in addresses {
+            // TODO we assume all addresses are unspent and valid if balance > 0
+            let mut found_zero_balance = false;
+            for (address, _) in addresses {
                 let address_balance = self.client.get_address().balance(&address).await?;
                 match address_balance {
                     0 => {
-                        end = true;
+                        found_zero_balance = true;
                         break;
                     }
                     _ => balance += address_balance,
                 }
             }
 
-            match end {
+            match found_zero_balance {
                 true => break,
                 false => index += 20,
             }

@@ -14,8 +14,8 @@ name = "iota_client"
 
 [dependencies]
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-common-ext = { git = "https://github.com/Alex6323/bee-p.git", branch = "chrysalis-pt-2"}
-bee-message = { git = "https://github.com/Alex6323/bee-p.git", branch = "chrysalis-pt-2"}
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
@@ -25,6 +25,15 @@ serde_json = "1.0.58"
 chrono = "0.4.12"
 hex = "0.4.2"
 blake2 = "0.9"
+paho-mqtt = { version = "0.9", optional = true }
+regex = "1.4"
+tokio = { version = "0.2.22", features = ["macros", "sync"] }
+thiserror = "1.0"
+num_cpus = "1.13"
+
+[features]
+default = ["mqtt"]
+mqtt = ["paho-mqtt"]
 
 [dev-dependencies]
 tokio = { version = "0.2.22", features = ["macros"] }
