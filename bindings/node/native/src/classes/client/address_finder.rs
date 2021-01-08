@@ -70,7 +70,7 @@ declare_types! {
                 if let Some(range) = &ref_.range {
                     getter = getter.range(range.clone());
                 }
-                getter.get().map(|addresses| {
+                getter.get_all().map(|addresses| {
                     let addresses: Vec<(String, bool)> = addresses.iter().map(|(a, i)| (a.to_bech32(), *i)).collect();
                     serde_json::to_string(&addresses).unwrap()
                 })

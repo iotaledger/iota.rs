@@ -48,8 +48,18 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
-    /// Consume the builder and get the vector of Address
-    pub fn get(self) -> Result<Vec<(Address, bool)>> {
+    /// Consume the builder and get a vector of Bech32 encoded public addresses
+    pub fn get(self) -> Result<Vec<String>> {
+        Ok(self
+            .get_all()?
+            .iter()
+            .filter(|(_, internal)| !*internal)
+            .map(|(a, _)| a.to_bech32())
+            .collect::<Vec<String>>())
+    }
+
+    /// Consume the builder and get the vector of Address with a bool stating whether it's an internal address
+    pub fn get_all(self) -> Result<Vec<(Address, bool)>> {
         let mut path = self
             .account_index
             .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
@@ -99,22 +109,17 @@ fn generate_address(seed: &Ed25519Seed, path: &mut BIP32Path, index: usize, inte
     Address::Ed25519(Ed25519Address::new(result))
 }
 
-/// Function to find the index and public or internal type of an address
-pub fn search_address(
-    seed: &Seed,
-    account_index: usize,
-    range: Range<usize>,
-    address: &Address,
-) -> Result<(usize, bool)> {
+/// Function to find the index and public or internal type of an Bech32 encoded address
+pub fn search_address(seed: &Seed, account_index: usize, range: Range<usize>, address: &str) -> Result<(usize, bool)> {
     let iota = Client::build().with_node("http://0.0.0.0:14265")?.finish()?;
     let addresses = iota
         .find_addresses(&seed)
         .account_index(account_index)
         .range(range)
-        .get()?;
+        .get_all()?;
     let mut index_counter = 0;
     for address_internal in addresses {
-        if &address_internal.0 == address {
+        if address_internal.0.to_bech32() == address {
             return Ok((index_counter, address_internal.1));
         }
         if !address_internal.1 {

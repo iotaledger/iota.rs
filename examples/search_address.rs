@@ -19,7 +19,7 @@ async fn main() {
 
     let address = iota.find_addresses(&seed).account_index(0).range(9..10).get().unwrap();
     println!("{:?}", address);
-    let res = search_address(&seed, 0, 0..10, &address[0].0).unwrap();
+    let res = search_address(&seed, 0, 0..10, &address[0]).unwrap();
     println!(
         "Found address with address_index: {}, internal address: {}",
         res.0, res.1

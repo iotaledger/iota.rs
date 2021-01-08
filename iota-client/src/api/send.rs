@@ -148,7 +148,7 @@ impl<'a> SendTransactionBuilder<'a> {
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
                             let (address_index, internal) =
-                                search_address(&self.seed, account_index, 0..100, &output.address)?;
+                                search_address(&self.seed, account_index, 0..100, &output.address.to_bech32())?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());
@@ -190,11 +190,11 @@ impl<'a> SendTransactionBuilder<'a> {
                         .find_addresses(self.seed)
                         .account_index(account_index)
                         .range(index..index + 20)
-                        .get()?;
+                        .get_all()?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
-                        let address_outputs = self.client.get_address().outputs(&address).await?;
+                        let address_outputs = self.client.get_address().outputs(&address.to_bech32()).await?;
                         let mut outputs = vec![];
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;

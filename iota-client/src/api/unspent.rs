@@ -51,13 +51,13 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .find_addresses(self.seed)
                 .account_index(account_index)
                 .range(index..index + 20)
-                .get()?;
+                .get_all()?;
 
             // TODO we assume all addressees are unspent and valid if balance > 0
             let mut address = None;
             for (a, internal) in addresses {
                 if !internal {
-                    let address_balance = self.client.get_address().balance(&a).await?;
+                    let address_balance = self.client.get_address().balance(&a.to_bech32()).await?;
                     match address_balance {
                         0 => {
                             address = Some(a);

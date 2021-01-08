@@ -23,8 +23,8 @@ async fn main() {
     .unwrap();
 
     let address = iota.find_addresses(&seed).account_index(0).range(0..1).get().unwrap();
-    println!("{:?}", address[0].0.to_bech32());
-    let outputs = iota.get_address().outputs(&address[0].0).await.unwrap();
+    println!("{:?}", address[0]);
+    let outputs = iota.get_address().outputs(&address[0]).await.unwrap();
     println!("{:?}", outputs);
 
     let message_id = iota

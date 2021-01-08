@@ -52,12 +52,12 @@ impl<'a> GetBalanceBuilder<'a> {
                 .find_addresses(self.seed)
                 .account_index(account_index)
                 .range(index..index + 20)
-                .get()?;
+                .get_all()?;
 
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut found_zero_balance = false;
             for (address, _) in addresses {
-                let address_balance = self.client.get_address().balance(&address).await?;
+                let address_balance = self.client.get_address().balance(&address.to_bech32()).await?;
                 match address_balance {
                     0 => {
                         found_zero_balance = true;

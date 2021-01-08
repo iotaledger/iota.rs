@@ -142,7 +142,8 @@ impl Task for ClientTask {
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressBalances(addresses) => {
-                    let balances = client.get_address_balances(&addresses[..]).await?;
+                    let bech32_addresses: Vec<String> = addresses.iter().map(|a| a.to_bech32()).collect();
+                    let balances = client.get_address_balances(&bech32_addresses[..]).await?;
                     let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
                 }
@@ -209,11 +210,11 @@ impl Task for ClientTask {
                     serde_json::to_string(&outputs).unwrap()
                 }
                 Api::GetAddressBalance(address) => {
-                    let balance = client.get_address().balance(address).await?;
+                    let balance = client.get_address().balance(&address.to_bech32()).await?;
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressOutputs(address) => {
-                    let output_ids = client.get_address().outputs(address).await?;
+                    let output_ids = client.get_address().outputs(&address.to_bech32()).await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {

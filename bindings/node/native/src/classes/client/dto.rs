@@ -212,7 +212,7 @@ pub(super) struct AddressBalanceDto {
 impl From<AddressBalancePair> for AddressBalanceDto {
     fn from(value: AddressBalancePair) -> Self {
         Self {
-            address: value.address.to_bech32(),
+            address: value.address,
             balance: value.balance,
         }
     }

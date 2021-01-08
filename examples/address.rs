@@ -18,9 +18,19 @@ async fn main() {
     .unwrap(); // Insert your seed
 
     let addresses = iota.find_addresses(&seed).account_index(0).range(0..4).get().unwrap();
-
+    println!("List of generated public addresses: {:#?}", addresses);
+    let all_addresses = iota
+        .find_addresses(&seed)
+        .account_index(0)
+        .range(0..4)
+        .get_all()
+        .unwrap();
+    // bool for public addresses is false and for internal addresses true
     println!(
-        "List of generated address: {:#?}",
-        addresses.iter().map(|(a, _)| a.to_bech32()).collect::<Vec<String>>()
+        "List of generated public and internal addresses: {:#?}",
+        all_addresses
+            .iter()
+            .map(|(address, internal)| (address.to_bech32(), *internal))
+            .collect::<Vec<(String, bool)>>()
     );
 }

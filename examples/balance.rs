@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example balance --release
-use iota::{Client, Ed25519Address};
+use iota::Client;
 
 #[tokio::main]
 async fn main() {
@@ -12,10 +12,7 @@ async fn main() {
         .finish()
         .unwrap();
 
-    let address = "6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92"
-        .parse::<Ed25519Address>()
-        .unwrap()
-        .into();
+    let address = "iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4";
 
     let balance = iota.get_address().balance(&address).await.unwrap();
     println!("The balance of {:?} is {:?}", address, balance);
