@@ -339,10 +339,9 @@ pub struct NodeInfo {
     pub name: String,
     pub version: String,
     pub is_healthy: bool,
-    pub coordinator_public_key: String,
-    pub latest_milestone_message_id: String,
+    pub network_id: String,
     pub latest_milestone_index: usize,
-    pub solid_milestone_message_id: String,
+    pub min_pow_score: usize,
     pub solid_milestone_index: usize,
     pub pruning_index: usize,
     pub features: Vec<String>,
@@ -501,6 +500,7 @@ Here are the objects used in the API above. They aim to provide a secure way to 
 
 
 ## `Network`
+
 [Network]: #Network
 
 Network is an enumeration with elements of **[mainnet|comnet|devnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
@@ -514,6 +514,7 @@ enum Network {
 ```
 
 ## `MessageId`
+
 [MessageId]: #MessageId
 
 MessageId is a 32 bytes array which can represent as hex string.
@@ -523,6 +524,7 @@ struct MessageId([u8; MESSAGE_ID_LENGTH]);
 ```
 
 ## `Seed`
+
 [Seed]: #Seed
 
 | Field | Required | Type | Definition |
@@ -530,6 +532,7 @@ struct MessageId([u8; MESSAGE_ID_LENGTH]);
 | **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
 ## `Message`
+
 [Message]: #Message
 
 The message object returned by various functions; based on the RFC for the Message object. Here's the brief overview of each components in Message type would look like:
@@ -554,9 +557,7 @@ struct Transaction {
 }
 
 struct Milestone {
-    index: u32,
-    timestamp: u64,
-    merkle_proof: Box<[u8]>,
+    essence: MilestoneEssence,
     signatures: Vec<Box<[u8]>>,
 }
 
@@ -572,11 +573,11 @@ struct TransactionEssence {
 }
 
 enum Input {
-    UTXO(UTXOInput),
+    UTXO(UTXOInput(OutputId)),
 }
 
-struct UTXOInput {
-    id: TransactionId,
+struct OutputId {
+    transaction_id: TransactionId,
     index: u16,
 }
 
@@ -607,6 +608,7 @@ struct ReferenceUnlock(u16);
 ```
 
 ## `OutputMetadata`
+
 [`OutputMetadata`]: #OutputMetadata
 
 The metadata of an output:
@@ -614,9 +616,9 @@ The metadata of an output:
 ```rust
 pub struct OutputMetadata {
     /// Message ID of the output
-    pub message_id: String,
+    pub message_id: Vec<u8>,
     /// Transaction ID of the output
-    pub transaction_id: String,
+    pub transaction_id: Vec<u8>,
     /// Output index.
     pub output_index: u16,
     /// Spend status of the output
@@ -629,19 +631,21 @@ pub struct OutputMetadata {
 ```
 
 ## `Address`
+
 [Address]: #Address
 
 An Ed25519 address is encoded in Bech32 or hex. Users can create from a correct fixed length bytes.
 
 ## `Milestone`
+
 [Milestone]: #Milestone
 
 A milestone metadata.
 
 ```rust
-struct Milestone {
+struct MilestoneMetadata {
     /// Milestone index
-    pub milestone_index: u64,
+    pub index: u64,
     /// Milestone ID
     pub message_ids: String,
     /// Timestamp
@@ -650,16 +654,22 @@ struct Milestone {
 ```
 
 ## `Topic`
+
 [Topic]: #Topic
 
 A string with the exact MQTT topic to monitor, can have one of the following variations:
 
-```milestones/latest
+```
+milestones/latest
 milestones/solid
-messages/{messageId}/metadata
-outputs/{outputId}
-addresses/{address}/outputs
+
 messages
-messages/indexation/{index}
 messages/referenced
+messages/indexation/{index}
+messages/{messageId}/metadata
+
+outputs/{outputId}
+
+addresses/{address}/outputs
+addresses/ed25519/{address}/outputs
 ```
