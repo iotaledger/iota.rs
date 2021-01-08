@@ -55,14 +55,8 @@ $ set VCPKGRS_DYNAMIC=1
 
 ```bash
 $ choco install openssl
-# you may need to set the OPENSSL_ROOT_DIR environment variable
-$ set OPENSSL_ROOT_DIR="C:\Program Files\OpenSSL-Win64"
-```
-
-If you are using a pre-built OpenSSL library, you may now need to set the specific location of the library with an environment variable. Like this:
-
-```bash
-set OPENSSL_DIR=C:\Program Files\OpenSSL-Win64
+# you may need to set the OPENSSL_DIR environment variable
+$ set OPENSSL_DIR="C:\Program Files\OpenSSL-Win64"
 ```
 
 ### macOS
