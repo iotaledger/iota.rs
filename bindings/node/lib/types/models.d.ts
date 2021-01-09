@@ -30,7 +30,7 @@ export declare interface OutputMetadata {
 }
 
 export declare interface MilestoneMetadata {
-  milestoneIndex: number
+  index: number
   messageId: string
   timestamp: number
 }
