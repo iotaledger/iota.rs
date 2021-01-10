@@ -121,6 +121,9 @@ impl<'a> SendBuilder<'a> {
         if self.data.is_some() && self.index.is_none() {
             return Err(Error::MissingParameter(String::from("index")));
         }
+        if self.inputs.is_some() && self.outputs.is_empty() {
+            return Err(Error::MissingParameter(String::from("output")));
+        }
         if !self.outputs.is_empty() {
             if self.seed.is_none() {
                 return Err(Error::MissingParameter(String::from("Seed")));
