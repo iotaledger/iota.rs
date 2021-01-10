@@ -10,39 +10,9 @@ use bee_signing_ext::{
     Seed, Signer,
 };
 use std::{collections::HashMap, convert::TryInto, num::NonZeroU64};
-/// Builder of send API
-pub struct SendBuilder<'a> {
-    client: &'a Client,
-}
-
-impl<'a> SendBuilder<'a> {
-    /// Create send builder
-    pub fn new(client: &'a Client) -> Self {
-        Self { client }
-    }
-    /// Build a transaction message
-    pub fn transaction(self, seed: &'a Seed) -> SendTransactionBuilder<'_> {
-        SendTransactionBuilder::new(self.client, seed)
-    }
-    /// Build an indexation message
-    pub fn indexation<S: Into<String>>(self, index: S) -> SendIndexationBuilder<'a> {
-        SendIndexationBuilder::new(self.client, index.into())
-    }
-}
 
 const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
-
-/// Builder for transaction messages
-pub struct SendTransactionBuilder<'a> {
-    client: &'a Client,
-    seed: &'a Seed,
-    account_index: Option<usize>,
-    initial_address_index: Option<usize>,
-    inputs: Option<Vec<UTXOInput>>,
-    outputs: Vec<Output>,
-    indexation: Option<Indexation>,
-}
 
 /// Structure for sorting of UnlockBlocks
 // TODO: move the sorting process to the `Message` crate
@@ -53,18 +23,41 @@ struct AddressIndexRecorder {
     internal: bool,
 }
 
-impl<'a> SendTransactionBuilder<'a> {
+/// Builder of send API
+pub struct SendBuilder<'a> {
+    client: &'a Client,
+    seed: Option<&'a Seed>,
+    account_index: Option<usize>,
+    initial_address_index: Option<usize>,
+    inputs: Option<Vec<UTXOInput>>,
+    outputs: Vec<Output>,
+    index: Option<String>,
+    data: Option<Vec<u8>>,
+    parent: Option<MessageId>,
+    network_id: Option<u64>,
+}
+
+impl<'a> SendBuilder<'a> {
     /// Create send builder
-    pub fn new(client: &'a Client, seed: &'a Seed) -> Self {
+    pub fn new(client: &'a Client) -> Self {
         Self {
             client,
-            seed,
+            seed: None,
             account_index: None,
             initial_address_index: None,
             inputs: None,
             outputs: Vec::new(),
-            indexation: None,
+            index: None,
+            data: None,
+            parent: None,
+            network_id: None,
         }
+    }
+
+    /// Sets the seed.
+    pub fn with_seed(mut self, seed: &'a Seed) -> Self {
+        self.seed = Some(seed);
+        self
     }
 
     /// Sets the account index.
@@ -106,14 +99,56 @@ impl<'a> SendTransactionBuilder<'a> {
         Ok(self)
     }
 
-    /// Set indexation payload to the builder
-    pub fn with_indexation(mut self, indexation_payload: Indexation) -> Self {
-        self.indexation = Some(indexation_payload);
+    /// Set indexation string to the builder
+    pub fn with_index(mut self, index: &str) -> Self {
+        self.index = Some(index.to_string());
+        self
+    }
+
+    /// Set data to the builder
+    pub fn with_data(mut self, data: Vec<u8>) -> Self {
+        self.data = Some(data);
+        self
+    }
+
+    /// Set a custom parent
+    pub fn with_parent(mut self, parent_id: MessageId) -> Self {
+        self.parent = Some(parent_id);
+        self
+    }
+
+    /// Set the network id
+    pub fn with_network_id(mut self, network_id: u64) -> Self {
+        self.network_id = Some(network_id);
         self
     }
 
     /// Consume the builder and get the API result
     pub async fn finish(self) -> Result<MessageId> {
+        // Indexation payload requires an indexation tag
+        if self.data.is_some() && self.index.is_none() {
+            return Err(Error::MissingParameter(String::from("index")));
+        }
+        if self.inputs.is_some() && self.outputs.is_empty() {
+            return Err(Error::MissingParameter(String::from("output")));
+        }
+        if !self.outputs.is_empty() {
+            if self.seed.is_none() {
+                return Err(Error::MissingParameter(String::from("Seed")));
+            }
+            // Send message with transaction
+            self.finish_transaction().await
+        } else if self.index.is_some() {
+            // Send message with indexation payload
+            self.finish_indexation().await
+        } else {
+            // Send message without payload
+            self.finish_message(None).await
+        }
+    }
+
+    /// Consume the builder and get the API result
+    pub async fn finish_transaction(self) -> Result<MessageId> {
         let account_index = self.account_index.unwrap_or(0);
         let path = BIP32Path::from_str(&crate::account_path!(account_index)).expect("invalid account index");
 
@@ -136,7 +171,7 @@ impl<'a> SendTransactionBuilder<'a> {
         let mut essence = TransactionEssence::builder();
         let mut address_index_recorders = Vec::new();
 
-        match self.inputs {
+        match self.inputs.clone() {
             Some(inputs) => {
                 for input in inputs {
                     // Only add unspent outputs
@@ -148,7 +183,7 @@ impl<'a> SendTransactionBuilder<'a> {
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
                             let (address_index, internal) =
-                                search_address(&self.seed, account_index, 0..100, &output.address)?;
+                                search_address(&self.seed.expect("No seed"), account_index, 0..100, &output.address)?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());
@@ -187,7 +222,7 @@ impl<'a> SendTransactionBuilder<'a> {
                     // Get the addresses in the BIP path/index ~ path/index+20
                     let addresses = self
                         .client
-                        .find_addresses(self.seed)
+                        .find_addresses(self.seed.expect("No seed"))
                         .account_index(account_index)
                         .range(index..index + 20)
                         .get()?;
@@ -275,11 +310,12 @@ impl<'a> SendTransactionBuilder<'a> {
         }
 
         // Build signed transaction payload
-        let outputs = self.outputs;
-        for output in outputs {
+        for output in self.outputs.clone() {
             essence = essence.add_output(output);
         }
-        if let Some(indexation_payload) = self.indexation {
+        // Add indexation_payload if index set
+        if let Some(index) = self.index.clone() {
+            let indexation_payload = Indexation::new(index, &self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
         }
         let essence = essence.finish()?;
@@ -303,7 +339,7 @@ impl<'a> SendTransactionBuilder<'a> {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we should create a signature unlock block
-                match &self.seed {
+                match &self.seed.expect("No seed") {
                     Seed::Ed25519(s) => {
                         let private_key = Ed25519PrivateKey::generate_from_seed(s, &recorder.address_path)
                             .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
@@ -330,69 +366,56 @@ impl<'a> SendTransactionBuilder<'a> {
 
         let payload = payload_builder.finish().map_err(|_| Error::TransactionError)?;
 
-        // get tips
-        let tips = self.client.get_tips().await?;
-
         // building message
         let payload = Payload::Transaction(Box::new(payload));
-        let message = MessageBuilder::<ClientMiner>::new()
-            .with_network_id(self.client.get_network_id().await?)
-            .with_parent1(tips.0)
-            .with_parent2(tips.1)
-            .with_payload(payload)
-            .with_nonce_provider(self.client.get_pow_provider(), 4000f64)
-            .finish()
-            .map_err(|_| Error::TransactionError)?;
 
-        self.client.post_message(&message).await
-    }
-}
-
-/// Builder for indexation messages
-pub struct SendIndexationBuilder<'a> {
-    client: &'a Client,
-    index: String,
-    data: Option<Vec<u8>>,
-}
-
-impl<'a> SendIndexationBuilder<'a> {
-    /// Create send builder
-    pub fn new(client: &'a Client, index: String) -> Self {
-        Self {
-            client,
-            index,
-            data: None,
-        }
-    }
-
-    /// Set data to the builder
-    pub fn with_data(mut self, data: Vec<u8>) -> Self {
-        self.data = Some(data);
-        self
+        self.finish_message(Some(payload)).await
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish(self) -> Result<MessageId> {
-        let index = self.index;
-        let data = self.data.unwrap_or_default();
+    pub async fn finish_indexation(self) -> Result<MessageId> {
+        let payload: Payload;
+        {
+            let index = &self.index.as_ref();
+            let empty_slice = &vec![];
+            let data = &self.data.as_ref().unwrap_or(empty_slice);
 
-        // build indexation
-        let index = Indexation::new(index, &data).map_err(|e| Error::IndexationError(e.to_string()))?;
+            // build indexation
+            let index = Indexation::new(index.expect("No indexation tag").to_string(), data)
+                .map_err(|e| Error::IndexationError(e.to_string()))?;
+            payload = Payload::Indexation(Box::new(index));
+        }
 
+        // building message
+        self.finish_message(Some(payload)).await
+    }
+
+    /// Builds the final message and posts it to the node
+    pub async fn finish_message(self, payload: Option<Payload>) -> Result<MessageId> {
         // get tips
         let tips = self.client.get_tips().await?;
 
         // building message
-        let payload = Payload::Indexation(Box::new(index));
-        let message = MessageBuilder::<ClientMiner>::new()
-            .with_network_id(self.client.get_network_id().await?)
-            .with_parent1(tips.0)
+        let mut message = MessageBuilder::<ClientMiner>::new();
+
+        match self.network_id {
+            Some(id) => message = message.with_network_id(id),
+            _ => message = message.with_network_id(self.client.get_network_id().await?),
+        }
+
+        match self.parent {
+            Some(p) => message = message.with_parent1(p),
+            _ => message = message.with_parent1(tips.0),
+        }
+        if let Some(p) = payload {
+            message = message.with_payload(p);
+        }
+        let final_message = message
             .with_parent2(tips.1)
-            .with_payload(payload)
             .with_nonce_provider(self.client.get_pow_provider(), 4000f64)
             .finish()
-            .map_err(|e| Error::IndexationError(e.to_string()))?;
+            .map_err(Error::MessageError)?;
 
-        self.client.post_message(&message).await
+        self.client.post_message(&final_message).await
     }
 }
