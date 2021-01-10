@@ -83,7 +83,7 @@ impl Task for ClientTask {
                     initial_address_index,
                     outputs,
                 } => {
-                    let mut sender = client.send().transaction(seed);
+                    let mut sender = client.send().with_seed(seed);
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
                     }
@@ -97,7 +97,7 @@ impl Task for ClientTask {
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::SendIndexation { index, data } => {
-                    let mut sender = client.send().indexation(index);
+                    let mut sender = client.send().with_index(index);
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }

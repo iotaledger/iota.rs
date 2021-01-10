@@ -14,7 +14,7 @@ async fn main() {
 
     let r = iota
         .send()
-        .indexation("Hello".to_string())
+        .with_index("Hello")
         .with_data("Tangle".to_string().as_bytes().to_vec())
         .finish()
         .await

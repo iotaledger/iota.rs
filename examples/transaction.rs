@@ -36,7 +36,7 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
             "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", // Insert the address to search for
@@ -55,7 +55,7 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
             "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc",
@@ -74,7 +74,7 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
             "iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r",
@@ -97,7 +97,7 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
