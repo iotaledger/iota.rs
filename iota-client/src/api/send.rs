@@ -374,15 +374,19 @@ impl<'a> SendBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn finish_indexation(self) -> Result<MessageId> {
-        let index = self.index.clone();
-        let data = self.data.clone().unwrap_or_default();
+        let payload: Payload;
+        {
+            let index = &self.index.as_ref();
+            let empty_slice = &vec![];
+            let data = &self.data.as_ref().unwrap_or(empty_slice);
 
-        // build indexation
-        let index = Indexation::new(index.expect("No indexation tag"), &data)
-            .map_err(|e| Error::IndexationError(e.to_string()))?;
+            // build indexation
+            let index = Indexation::new(index.expect("No indexation tag").to_string(), data)
+                .map_err(|e| Error::IndexationError(e.to_string()))?;
+            payload = Payload::Indexation(Box::new(index));
+        }
 
         // building message
-        let payload = Payload::Indexation(Box::new(index));
         self.finish_message(Some(payload)).await
     }
 
