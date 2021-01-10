@@ -6,17 +6,18 @@
 
 * [Introduction](#Introduction)
 * [Builder](#Builder)
-* [General API](#General-API)
+* [General high level API](#General-high-level-API)
   * [`send`](#send)
   * [`get_message`](#get_message)
   * [`find_messages`](#find_messages)
   * [`get_unspent_address`](#get_unspent_address)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
+  * [`subscriber`](#subscriber)
   * [`retry`](#retry)
-  * [`subscribe`](#subscribe)
-  * [`unsubscribe`](#unsubscribe)
-* [Full Node API](#Full-Node-API)
+  * [`reattach`](#reattach)
+  * [`promote`](#promote)
+* [Full node API](#Full-node-API)
   * [`get_health`](#get_health)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
@@ -26,11 +27,8 @@
   * [`find_outputs`](#find_outputs)
   * [`find_addresses`](#find_addresses)
   * [`get_milestone`](#get_milestone)
-  * [`reattach`](#reattach)
-  * [`promote`](#promote)
 * [Objects](#Objects)
   * [Network]
-  * [Hash]
   * [Seed]
   * [Message]
   * [Payload]
@@ -50,19 +48,14 @@ The data structure to initialize the instance of the Higher level client library
 
 | Field | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
-| **node** | ✘ | None | String | The URL of a node to connect to; format: `https://node:port` |
-| **nodes** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **node_sync_interval** | ✘ | 60000 | std::num::NonZeroU64 | The interval in milliseconds to check for node health and sync |
-| **get_info_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **get_health_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **get_milestone_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **get_tips_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **post_message_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **post_message_remote_pow_timeout** | ✘ | 30000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **node_pool_urls** | None | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
-| **state_adapter** | ✘ | None | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
+| **with_network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **with_node** | ✘ | None | String | The URL of a node to connect to; format: `https://node:port` |
+| **with_nodes** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **with_node_sync_interval** | ✘ | 60000 | std::num::NonZeroU64 | The interval in milliseconds to check for node health and sync |
+| **with_request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
+| **with_api_timeout** | ✘ | self.request_timeout | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out |
+| **node_pool_urls** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **with_local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -78,7 +71,7 @@ On initialisation, call getNodeInfo API. Check the health of each node in the no
 | - | - |
 | network | If this parameter does not match the global builder parameter, add node to blacklist and return error. |
 | mqtt_port | Used in establishing MQTT subscriptions. If failure to connect to MQTT, place node in blacklist. |
-| pow | If the global local_pow parameter is set to false, then put any nodes with pow true in the blacklist. |
+| pow | If the global local_pow parameter is set to false, then put any nodes without pow support in the blacklist. |
 
 
 ## Sync Process
@@ -95,26 +88,26 @@ for node in node_pool_urls{
 }
 ```
 
-# General High level API
+# `General high level API`
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
 
 ## `send()`
 
-A generic send function for easily sending a value transaction message.
+A generic send function for easily sending a message.
 
-### Parameters
+### Methods
 
-| Field | Required | Default | Type | Definition |
+| Method | Required | Default | Type | Definition |
 | - | - | - | - | - |
-| **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
-| **address** | ✘ | None | \[[Address]\] | The address(es) to send to, applies to value transactions only. |
-| **value** | ✘ | 0 | u64 | The amount of IOTA to send. If the value is zero the message object will have a IndexationPayload instead of a SignedTransactionPayload with an embedded IndexationPayload |
-| **account_index** | ✘ | 0 | usize | The account index. |
-| **output** | ✘ | None | \[Output\] | Users can manually pick their own output instead of having node decide on which output should be used. |
-| **indexation_key** | ✘ | None | String | An optional indexation key of the indexation payload. |
-| **data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
+| **with_seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
+| **with_account_index** | ✘ | 0 | usize | The account index |
+| **with_initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
+| **with_output** | ✘ | None | address: &str, amount: NonZeroU64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
+| **with_input** | ✘ | None | \[UTXOInput\] | Users can manually pick their own UTXOInput instead of having node decide on which output should be used. |
+| **with_index** | ✘ | None | String | An optional indexation key of the indexation payload. |
+| **with_data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
 
 * If only `indexation_key` and `data` are provided. This method will create a message with only indexation payload instead.
 
@@ -128,9 +121,9 @@ There could be two different scenarios in which this method can be used:
 
 * Validate inputs, such as address and seed to check if they are correct.
 * Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
-* Build and Validate the Message with signed transaction payloads accordingly;
+* Build and validate the Message with signed transaction payload accordingly;
 * Get tips using [`get_tips()`](#get_tips);
-* Perform proof-of-work locally;
+* Perform proof-of-work locally (if not set to remote);
 * Send the message using [`post_messages()`](#post_messages);
 
 ## `get_message()`
@@ -171,15 +164,15 @@ A vector of [Message] Object.
 
 ## `get_unspent_address()`
 
-Return a valid unspent address.
+Return a valid unspent public address.
 
 ### Parameters
 
 | Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
-| **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **account_index** | ✘ | 0 | usize | The account index. |
-| **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
+| **with_seed** | ✔ | - | [Seed] | The seed we want to search for. |
+| **with_account_index** | ✘ | 0 | usize | The account index. |
+| **with_initial_address_index** | ✘ | 0 | usize | Start index of the addresses to search. |
 
 ### Return
 
@@ -210,12 +203,12 @@ Return the balance for a provided seed and its wallet account index.
 | Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **account index** | ✘ | 0 | usize | The account index. |
-| **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
+| **with_account_index** | ✘ | 0 | usize | The account index. |
+| **with_initial_address_index** | ✘ | 0 | usize | Start index of the address. **Default is 0.** |
 
 ### Return
 
-Total Account balance.
+Total account balance.
 
 ### Implementation Details
 
@@ -235,7 +228,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **addresses** | ✔ | [[Address]] | List of addresses with checksum. |
+| **addresses** | ✔ | [String] | List of Bech32 encoded addresses. |
 
 ### Return
 
@@ -250,9 +243,26 @@ Following are the steps for implementing this method:
     parameter;
 *   Return the list of Output which contains corresponding pairs of address and balance.
 
+## `subscriber()`
+
+Subscribe to a node event topic (MQTT)
+
+Required: one of
+
+* `with_topic()`: Add a new [Topic] to the list.
+* `with_topics()`: Add a vector of [Topic] to the list.
+
+* `subscribe()`: Subscribe to the given topics with the callback, which will be called every time when the topic is detected.
+* `unsubscribe()`: Unsubscribes from all subscriptions.
+* `disconnect()`: Disconnects the broker. This will clear the stored topic handlers and close the MQTT connection.
+
+### Returns
+
+Nothing apart from a Ok(()) result if successful
+
 ## `retry()`
 
-Retries (promotes or reattaches) a message for provided message id. Messages should only be retried only if they are valid and haven't been confirmed for a while. Note that a user needs to maintain a monitoring list of the newly reattached `MessageId`, e.g., if message M1 is reattached by using a new message M2, then the user needs to monitor both M1 and M2. Only if both M1 and M2 are valid and haven't been confirmed for a while, then the user can use retry() again. The possibility of using this function is quite low, because the confirmation throughput of the node is expected to be quite high.
+Retries (promotes or reattaches) a message for provided [MessageId] if the node suggests it. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high when there is no attack.
 
 ### Parameters
 
@@ -264,36 +274,6 @@ Retries (promotes or reattaches) a message for provided message id. Messages sho
 
 A tuple with the newly promoted or reattached `(MessageId,  Message)`.
 
-## `subscribe()`
-
-Subscribe to a node event topic (MQTT); Every time a event is detected the given callback function will be executed.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **topic** | ✔ | [Topic] | Topic | The topic to monitor for events |
-| **callback** | ✘ | [CallbackFunction(topic, result)]| A callback function to call every time the event with the given topic is detected. |
-
-### Returns
-
-Nothing apart from a Ok() result if succesful
-
-## `unsubscribe()`
-
-Unsubscribe from a node event topic or topics (MQTT) cancelling the earlier set callback functions being executed.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **topic** | ✘ | [Topic] | Topic | The topic(s) to cancel monitoring for, if none given cancel all event monitoring |
-
-### Returns
-
-Nothing apart from a Ok() result if succesful
-
-
 ### Implementation Details
 
 Following are the steps for implementing this method:
@@ -302,9 +282,41 @@ Following are the steps for implementing this method:
 * The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
 
-# Low level Node API
+## `reattach()`
 
-Low level API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
+Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
+
+Reattaches a message. The method should validate if a reattachment is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary reattachments.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
+
+### Returns
+
+A tuple with the newly reattached `(MessageId,  Message)`.
+
+## `promote()`
+
+Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
+
+Promotes a message. The method should validate if a promotion is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary promotions.
+
+### Parameters
+
+| Field | Required | Type | Definition |
+| - | - | - | - |
+| **message_id** | ✔ | [MessageId] | The identifier of message. |
+
+### Returns
+
+A tuple with the newly promoted `(MessageId,  Message)`.
+
+# Full node API
+
+Full node API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
 
 ## `get_health()`
 
@@ -413,7 +425,7 @@ An OutputMetadata that contains various information about the output.
 Depend on the final calling method, users could get different outputs they need:
 
 - `balance()`: Return confirmed balance of the address.
-- `outputs()`: Return transaction IDs with corresponding output index of the address it has.
+- `outputs()`: Return UTXOInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 
@@ -456,43 +468,11 @@ Get the milestone by the given index.
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **index** | ✔ | u32 | Index of the milestone. |
+| **index** | ✔ | u64 | Index of the milestone. |
 
 ### Returns
 
 An [Milestone] object.
-
-## `reattach()`
-
-Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
-
-Reattaches a message. The method should validate if a reattachment is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary reattachments.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message_id** | ✔ | [MessageId] | The identifier of message. |
-
-### Returns
-
-A tuple with the newly reattached `(MessageId,  Message)`.
-
-## `promote()`
-
-Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
-
-Promotes a message. The method should validate if a promotion is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary promotions.
-
-### Parameters
-
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message_id** | ✔ | [MessageId] | The identifier of message. |
-
-### Returns
-
-A tuple with the newly promoted `(MessageId,  Message)`.
 
 # Objects
 
@@ -672,4 +652,23 @@ outputs/{outputId}
 
 addresses/{address}/outputs
 addresses/ed25519/{address}/outputs
+```
+
+## `Api`
+
+```Rust
+pub enum Api {
+    /// `get_health` API
+    GetHealth,
+    /// `get_info`API
+    GetInfo,
+    /// `get_tips` API
+    GetTips,
+    /// `post_message` API
+    PostMessage,
+    /// `get_output` API
+    GetOutput,
+    /// `get_milestone` API
+    GetMilestone,
+}
 ```
