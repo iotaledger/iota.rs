@@ -34,6 +34,7 @@ pub struct SendBuilder<'a> {
     index: Option<String>,
     data: Option<Vec<u8>>,
     parent: Option<MessageId>,
+    network_id: Option<u64>,
 }
 
 impl<'a> SendBuilder<'a> {
@@ -49,6 +50,7 @@ impl<'a> SendBuilder<'a> {
             index: None,
             data: None,
             parent: None,
+            network_id: None,
         }
     }
 
@@ -112,6 +114,12 @@ impl<'a> SendBuilder<'a> {
     /// Set a custom parent
     pub fn with_parent(mut self, parent_id: MessageId) -> Self {
         self.parent = Some(parent_id);
+        self
+    }
+
+    /// Set the network id
+    pub fn with_network_id(mut self, network_id: u64) -> Self {
+        self.network_id = Some(network_id);
         self
     }
 
@@ -384,7 +392,12 @@ impl<'a> SendBuilder<'a> {
         let tips = self.client.get_tips().await?;
 
         // building message
-        let mut message = MessageBuilder::<ClientMiner>::new().with_network_id(self.client.get_network_id().await?);
+        let mut message = MessageBuilder::<ClientMiner>::new();
+
+        match self.network_id {
+            Some(id) => message = message.with_network_id(id),
+            _ => message = message.with_network_id(self.client.get_network_id().await?),
+        }
 
         match self.parent {
             Some(p) => message = message.with_parent1(p),
