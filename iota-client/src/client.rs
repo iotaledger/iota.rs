@@ -446,12 +446,12 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output: &UTXOInput) -> Result<OutputMetadata> {
+    pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputMetadata> {
         let mut url = self.get_node()?;
         url.set_path(&format!(
             "api/v1/outputs/{}{}",
-            output.output_id().transaction_id().to_string(),
-            hex::encode(output.output_id().index().to_le_bytes())
+            output_id.output_id().transaction_id().to_string(),
+            hex::encode(output_id.output_id().index().to_le_bytes())
         ));
         let resp = self
             .client
