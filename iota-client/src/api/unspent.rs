@@ -56,7 +56,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             let mut address = None;
             for (a, internal) in addresses {
                 if !internal {
-                    let address_balance = self.client.get_address().balance(&a.to_bech32()).await?;
+                    let address_balance = self.client.get_address().balance(&a).await?;
                     match address_balance {
                         0 => {
                             address = Some(a);
@@ -68,7 +68,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             }
 
             if let Some(a) = address {
-                break (a.to_bech32(), index);
+                break (a, index);
             }
         };
 

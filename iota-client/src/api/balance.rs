@@ -57,7 +57,7 @@ impl<'a> GetBalanceBuilder<'a> {
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut found_zero_balance = false;
             for (address, _) in addresses {
-                let address_balance = self.client.get_address().balance(&address.to_bech32()).await?;
+                let address_balance = self.client.get_address().balance(&address).await?;
                 match address_balance {
                     0 => {
                         found_zero_balance = true;

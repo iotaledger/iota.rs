@@ -236,7 +236,7 @@ impl<'a> SendBuilder<'a> {
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
-                        let address_outputs = self.client.get_address().outputs(&address.to_bech32()).await?;
+                        let address_outputs = self.client.get_address().outputs(&address).await?;
                         let mut outputs = vec![];
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;
@@ -284,7 +284,7 @@ impl<'a> SendBuilder<'a> {
                                         if total_already_spent > total_to_spend {
                                             essence = essence.add_output(
                                                 SignatureLockedSingleOutput::new(
-                                                    address.clone(),
+                                                    Address::try_from_bech32(address)?,
                                                     total_already_spent - total_to_spend,
                                                 )
                                                 .unwrap()

@@ -26,11 +26,5 @@ async fn main() {
         .get_all()
         .unwrap();
     // bool for public addresses is false and for internal addresses true
-    println!(
-        "List of generated public and internal addresses: {:#?}",
-        all_addresses
-            .iter()
-            .map(|(address, internal)| (address.to_bech32(), *internal))
-            .collect::<Vec<(String, bool)>>()
-    );
+    println!("List of generated public and internal addresses: {:#?}", all_addresses);
 }

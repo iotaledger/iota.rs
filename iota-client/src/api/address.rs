@@ -52,14 +52,15 @@ impl<'a> GetAddressesBuilder<'a> {
     pub fn get(self) -> Result<Vec<String>> {
         Ok(self
             .get_all()?
-            .iter()
-            .filter(|(_, internal)| !*internal)
-            .map(|(a, _)| a.to_bech32())
+            .into_iter()
+            .filter(|(_, internal)| !internal)
+            .map(|(a, _)| a)
             .collect::<Vec<String>>())
     }
 
-    /// Consume the builder and get the vector of Address with a bool stating whether it's an internal address
-    pub fn get_all(self) -> Result<Vec<(Address, bool)>> {
+    /// Consume the builder and get the vector of String (Bech32 encoded address) with a bool stating whether it's an
+    /// internal address
+    pub fn get_all(self) -> Result<Vec<(String, bool)>> {
         let mut path = self
             .account_index
             .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
@@ -79,8 +80,8 @@ impl<'a> GetAddressesBuilder<'a> {
         for i in range {
             let address = generate_address(&seed, &mut path, i, false);
             let internal_address = generate_address(&seed, &mut path, i, true);
-            addresses.push((address, false));
-            addresses.push((internal_address, true));
+            addresses.push((address.to_bech32(), false));
+            addresses.push((internal_address.to_bech32(), true));
         }
 
         Ok(addresses)
@@ -119,7 +120,7 @@ pub fn search_address(seed: &Seed, account_index: usize, range: Range<usize>, ad
         .get_all()?;
     let mut index_counter = 0;
     for address_internal in addresses {
-        if address_internal.0.to_bech32() == address {
+        if address_internal.0 == address {
             return Ok((index_counter, address_internal.1));
         }
         if !address_internal.1 {
