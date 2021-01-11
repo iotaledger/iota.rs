@@ -51,7 +51,7 @@ The data structure to initialize the instance of the Higher level client library
 | **with_network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
 | **with_node** | ✘ | None | String | The URL of a node to connect to; format: `https://node:port` |
 | **with_nodes** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **with_node_sync_interval** | ✘ | 60000 | std::num::NonZeroU64 | The interval in milliseconds to check for node health and sync |
+| **with_node_sync_interval** | ✘ | 60000 | std::num::u64 | The interval in milliseconds to check for node health and sync |
 | **with_request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
 | **with_api_timeout** | ✘ | self.request_timeout | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out |
 | **node_pool_urls** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
@@ -104,7 +104,7 @@ A generic send function for easily sending a message.
 | **with_seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
 | **with_account_index** | ✘ | 0 | usize | The account index |
 | **with_initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
-| **with_output** | ✘ | None | address: &str, amount: NonZeroU64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
+| **with_output** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **with_input** | ✘ | None | \[UTXOInput\] | Users can manually pick their own UTXOInput instead of having node decide on which output should be used. |
 | **with_index** | ✘ | None | String | An optional indexation key of the indexation payload. |
 | **with_data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
@@ -567,7 +567,7 @@ enum Output {
 
 struct SignatureLockedSingleOutput {
     address: Address,
-    amount: NonZeroU64,
+    amount: u64,
 }
 
 enum UnlockBlock {
