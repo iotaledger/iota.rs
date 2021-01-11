@@ -3,7 +3,6 @@
 
 //! cargo run --example custom_inputs --release
 use iota::{Client, Seed};
-use std::num::NonZeroU64;
 /// In this example, we send 100 tokens to iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6
 /// This address belongs to the seed "256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0"
 
@@ -31,10 +30,7 @@ async fn main() {
         .send()
         .with_seed(&seed)
         .with_input(outputs[1].clone())
-        .with_output(
-            "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6",
-            NonZeroU64::new(100).unwrap(),
-        )
+        .with_output("iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", 100)
         .unwrap()
         .finish()
         .await

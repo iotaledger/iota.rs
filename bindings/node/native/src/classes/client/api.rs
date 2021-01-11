@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
+use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
@@ -17,7 +17,7 @@ pub(crate) enum Api {
         seed: Seed,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
-        outputs: Vec<(Address, NonZeroU64)>,
+        outputs: Vec<(Address, u64)>,
     },
     SendIndexation {
         index: String,
