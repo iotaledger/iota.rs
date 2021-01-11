@@ -547,7 +547,7 @@ impl From<&Output> for OutputJson {
             Output::SignatureLockedSingle(s) => Self {
                 type_: 0,
                 address: s.address().into(),
-                amount: s.amount().get(),
+                amount: s.amount(),
             },
             _ => todo!(),
         }
@@ -558,10 +558,7 @@ impl TryFrom<OutputJson> for Output {
     type Error = crate::Error;
 
     fn try_from(value: OutputJson) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(
-            value.address.try_into()?,
-            value.amount.try_into().expect("Output amount cannot be zero."),
-        );
+        let output = SignatureLockedSingleOutput::new(value.address.try_into()?, value.amount).unwrap();
         Ok(output.into())
     }
 }
