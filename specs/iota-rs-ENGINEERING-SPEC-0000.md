@@ -11,6 +11,7 @@
   * [`get_message`](#get_message)
   * [`find_messages`](#find_messages)
   * [`get_unspent_address`](#get_unspent_address)
+  * [`find_addresses`](#find_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
   * [`subscriber`](#subscriber)
@@ -25,7 +26,6 @@
   * [`get_output`](#get_output)
   * [`get_address`](#get_address)
   * [`find_outputs`](#find_outputs)
-  * [`find_addresses`](#find_addresses)
   * [`get_milestone`](#get_milestone)
 * [Objects](#Objects)
   * [Network]
@@ -168,19 +168,19 @@ A vector of [Message] Object.
 
 ## `get_unspent_address()`
 
-Return a valid unspent public address.
+Return a valid unspent public Bech32 encoded address.
 
 ### Parameters
 
 | Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
-| **with_seed** | ✔ | - | [Seed] | The seed we want to search for. |
+| **with_seed** | ✔ | - | [Seed] | The seed we want to use. |
 | **with_account_index** | ✘ | 0 | usize | The account index. |
 | **with_initial_address_index** | ✘ | 0 | usize | Start index of the addresses to search. |
 
 ### Return
 
-Return a tuple with type of `(Address, usize)` as the address and corresponding index in the account.
+Return a tuple with type of `(String, usize)` as the address and corresponding index in the account.
 
 ### Implementation Details
 
@@ -191,12 +191,22 @@ Following are the steps for implementing this method:
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
 
-### Implementation Details
+## `find_addresses()`
 
-Following are the steps for implementing this method:
+Return a list of addresses from the seed regardless of their validity.
 
-*   Start generating address at index 0 with a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20;
-*   Return the addresses.
+### Parameters/Methods
+
+| Field | Required | Default | Type | Definition |
+| - | - | - | - | - |
+| **seed** | ✔ | None | [Seed] | The seed we want to search for. |
+| **with_account_index()** | ✘ | 0 | usize | The account index. |
+| **with_range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
+
+### Return
+
+A list of [Address]es
+
 
 ## `get_balance()`
 
@@ -446,22 +456,6 @@ Find all outputs based on the requests criteria. This method will try to query m
 
 A vector of [OutputMetadata] Object.
 
-## `find_addresses()`
-
-Return a list of addresses from the seed regardless of their validity.
-
-### Parameters
-
-| Field | Required | Default | Type | Definition |
-| - | - | - | - | - |
-| **seed** | ✔ | None | [Seed] | The seed we want to search for. |
-| **account index** | ✘ | 0 | usize | The account index. |
-| **range** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
-
-### Return
-
-A list of [Address]es
-
 ## `get_milestone()`
 
 (`GET /milestones`)
@@ -641,7 +635,13 @@ pub struct OutputMetadata {
 
 [Address]: #Address
 
-An Ed25519 address is encoded in Bech32 or hex. Users can create from a correct fixed length bytes.
+An Ed25519 address can be encoded in Bech32 or Hex, with Bech32 being preferred and also used in most functions.
+
+```Rust
+pub enum Address {
+    Wots(WotsAddress),
+    Ed25519(Ed25519Address),
+}```
 
 ## `Milestone`
 
