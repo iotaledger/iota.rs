@@ -47,9 +47,6 @@ pub struct NodeInfo {
     /// coordinator public key
     #[serde(rename = "networkId")]
     pub network_id: String,
-    /// minimum proof of work score
-    #[serde(rename = "minPowScore")]
-    pub min_pow_score: usize,
     /// latest milestone index
     #[serde(rename = "latestMilestoneIndex")]
     pub latest_milestone_index: usize,

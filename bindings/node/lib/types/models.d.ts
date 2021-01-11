@@ -3,7 +3,6 @@ export declare interface NodeInfo {
   version: string
   isHealthy: boolean
   networkId: string
-  minPoWScore: number
   latestMilestoneIndex: number
   solidMilestoneIndex: number
   pruningIndex: number
