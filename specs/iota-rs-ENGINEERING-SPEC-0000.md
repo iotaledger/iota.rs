@@ -405,7 +405,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **outputId** | ✔ | UTXOInput | Identifier of the output. |
+| **output_id** | ✔ | UTXOInput | Identifier of the output. |
 
 ### Returns
 
