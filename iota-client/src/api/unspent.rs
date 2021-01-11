@@ -49,9 +49,9 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             let addresses = self
                 .client
                 .find_addresses(self.seed)
-                .account_index(account_index)
-                .range(index..index + 20)
-                .get()?;
+                .with_account_index(account_index)
+                .with_range(index..index + 20)
+                .finish()?;
 
             // TODO we assume all addressees are unspent and valid if balance > 0
             let mut address = None;

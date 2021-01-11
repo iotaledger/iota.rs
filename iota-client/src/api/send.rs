@@ -226,9 +226,9 @@ impl<'a> SendBuilder<'a> {
                     let addresses = self
                         .client
                         .find_addresses(self.seed.expect("No seed"))
-                        .account_index(account_index)
-                        .range(index..index + 20)
-                        .get()?;
+                        .with_account_index(account_index)
+                        .with_range(index..index + 20)
+                        .finish()?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {

@@ -17,7 +17,12 @@ async fn main() {
     )
     .unwrap(); // Insert your seed
 
-    let addresses = iota.find_addresses(&seed).account_index(0).range(0..4).get().unwrap();
+    let addresses = iota
+        .find_addresses(&seed)
+        .with_account_index(0)
+        .with_range(0..4)
+        .finish()
+        .unwrap();
 
     println!(
         "List of generated address: {:#?}",
