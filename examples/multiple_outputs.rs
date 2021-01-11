@@ -3,7 +3,7 @@
 
 //! cargo run --example multiple_outputs --release
 use iota::{Client, MessageId, Seed};
-use std::{num::NonZeroU64, time::Duration};
+use std::time::Duration;
 use tokio::time::delay_for;
 /// In this example, we send 900 tokens to the following 3 locations, respectively
 ///
@@ -18,7 +18,7 @@ use tokio::time::delay_for;
 #[tokio::main]
 async fn main() {
     let iota = Client::build() // Crate a client instance builder
-        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();
@@ -32,21 +32,12 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
-        .with_output(
-            "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6",
-            NonZeroU64::new(300).unwrap(),
-        )
+        .with_seed(&seed)
+        .with_output("iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", 300)
         .unwrap()
-        .with_output(
-            "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc",
-            NonZeroU64::new(280).unwrap(),
-        )
+        .with_output("iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc", 280)
         .unwrap()
-        .with_output(
-            "iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r",
-            NonZeroU64::new(300).unwrap(),
-        )
+        .with_output("iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r", 300)
         .unwrap()
         .finish()
         .await

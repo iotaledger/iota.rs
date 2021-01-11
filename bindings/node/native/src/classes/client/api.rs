@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
+use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
@@ -17,7 +17,7 @@ pub(crate) enum Api {
         seed: Seed,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
-        outputs: Vec<(Address, NonZeroU64)>,
+        outputs: Vec<(Address, u64)>,
     },
     SendIndexation {
         index: String,
@@ -83,7 +83,7 @@ impl Task for ClientTask {
                     initial_address_index,
                     outputs,
                 } => {
-                    let mut sender = client.send().transaction(seed);
+                    let mut sender = client.send().with_seed(seed);
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
                     }
@@ -97,7 +97,7 @@ impl Task for ClientTask {
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::SendIndexation { index, data } => {
-                    let mut sender = client.send().indexation(index);
+                    let mut sender = client.send().with_index(index);
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }

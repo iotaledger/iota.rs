@@ -7,7 +7,7 @@ use bee_message::prelude::*;
 use bee_signing_ext::Seed;
 
 use iota_client::MessageJson;
-use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
+use std::{convert::TryInto, str::FromStr};
 
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
 
@@ -73,7 +73,7 @@ async fn test_post_message_with_indexation() {
 
     let r = client
         .send()
-        .indexation("Hello".to_string())
+        .with_index("Hello")
         .with_data("Tangle".to_string().as_bytes().to_vec())
         .finish()
         .await
@@ -99,11 +99,11 @@ async fn test_post_message_with_transaction() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .with_output_hex(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8", // Insert the address to search for
-            NonZeroU64::new(100).unwrap(),
+            100,
         )
         .unwrap()
         .finish()

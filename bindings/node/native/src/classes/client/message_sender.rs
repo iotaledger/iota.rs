@@ -4,8 +4,6 @@
 use iota::{message::prelude::Address, Seed};
 use neon::prelude::*;
 
-use std::num::NonZeroU64;
-
 use super::{parse_address, Api, ClientTask};
 
 pub struct MessageSender(String);
@@ -21,7 +19,7 @@ pub struct ValueTransactionSender {
     seed: String,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
-    outputs: Vec<(Address, NonZeroU64)>,
+    outputs: Vec<(Address, u64)>,
 }
 
 declare_types! {
@@ -158,7 +156,7 @@ declare_types! {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let outputs = &mut this.borrow_mut(&guard).outputs;
-                outputs.push((address, NonZeroU64::new(value).expect("value can't be zero")));
+                outputs.push((address, value));
             }
 
             Ok(cx.this().upcast())

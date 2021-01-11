@@ -287,9 +287,9 @@ impl Client {
 
         for node_url in nodes {
             // Put the healty node url into the synced_nodes
-            if Client::get_node_health(node_url.clone()).await.unwrap_or(false) {
-                synced_nodes.insert(node_url.clone());
-            }
+            // if Client::get_node_health(node_url.clone()).await.unwrap_or(false) {
+            synced_nodes.insert(node_url.clone());
+            // }
         }
 
         // Update the sync list
