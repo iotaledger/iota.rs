@@ -105,9 +105,10 @@ A generic send function for easily sending a message.
 | **with_account_index** | ✘ | 0 | usize | The account index |
 | **with_initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
 | **with_output** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
-| **with_input** | ✘ | None | \[UTXOInput\] | Users can manually pick their own UTXOInput instead of having node decide on which output should be used. |
+| **with_input** | ✘ | None | UTXOInput | Users can manually pick their own UTXOInput instead of having node decide on which output should be used. |
 | **with_index** | ✘ | None | String | An optional indexation key of the indexation payload. |
 | **with_data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
+| **with_parent** | ✘ | None | MessageId | An optional parent message to be used as one parent. |
 
 * If only `indexation_key` and `data` are provided. This method will create a message with only indexation payload instead.
 
