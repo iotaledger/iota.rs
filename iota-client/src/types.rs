@@ -576,7 +576,7 @@ impl From<&Address> for AddressJson {
         match i {
             Address::Ed25519(a) => Self {
                 type_: 1,
-                address: a.to_string(),
+                address: a.to_bech32(),
             },
             _ => panic!("This library doesn't support WOTS."),
         }
@@ -588,12 +588,7 @@ impl TryFrom<AddressJson> for Address {
 
     fn try_from(value: AddressJson) -> Result<Self> {
         match value.type_ {
-            1 => {
-                let mut address = [0u8; 32];
-                hex::decode_to_slice(value.address, &mut address)?;
-                let address = Ed25519Address::from(address);
-                Ok(address.into())
-            }
+            1 => Ok(Address::try_from_bech32(&value.address)?),
             _ => unreachable!(),
         }
     }

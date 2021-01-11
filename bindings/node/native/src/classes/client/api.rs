@@ -117,7 +117,7 @@ impl Task for ClientTask {
                         getter = getter.initial_address_index(*initial_address_index);
                     }
                     let (address, index) = getter.get().await?;
-                    serde_json::to_string(&(address.to_bech32(), index)).unwrap()
+                    serde_json::to_string(&(address, index)).unwrap()
                 }
                 Api::FindMessages {
                     indexation_keys,

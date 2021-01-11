@@ -184,8 +184,12 @@ impl<'a> SendBuilder<'a> {
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
-                            let (address_index, internal) =
-                                search_address(&self.seed.expect("No seed"), account_index, 0..100, &output.address)?;
+                            let (address_index, internal) = search_address(
+                                &self.seed.expect("No seed"),
+                                account_index,
+                                0..100,
+                                &output.address.to_bech32(),
+                            )?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());

@@ -3,7 +3,6 @@
 
 use crate::{Client, Error, Result};
 
-use bee_message::prelude::Address;
 use bee_signing_ext::Seed;
 
 /// Builder of get_unspent_address API
@@ -38,7 +37,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn get(self) -> Result<(Address, usize)> {
+    pub async fn get(self) -> Result<(String, usize)> {
         let account_index = self
             .account_index
             .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
@@ -69,7 +68,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             }
 
             if let Some(a) = address {
-                break (a, index);
+                break (a.to_bech32(), index);
             }
         };
 
