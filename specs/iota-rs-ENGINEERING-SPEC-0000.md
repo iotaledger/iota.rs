@@ -104,13 +104,15 @@ A generic send function for easily sending a message.
 | **with_seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
 | **with_account_index** | ✘ | 0 | usize | The account index |
 | **with_initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
-| **with_output** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **with_input** | ✘ | None | UTXOInput | Users can manually pick their own UTXOInput instead of having node decide on which output should be used. |
-| **with_index** | ✘ | None | String | An optional indexation key of the indexation payload. |
-| **with_data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
+| **with_output** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
+| **with_output_hex** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
+| **with_index** | ✘ | None | &str | An optional indexation key for an indexation payload. |
+| **with_data** | ✘ | None | Vec<u8> | An optional indexation data of the indexation payload. |
 | **with_parent** | ✘ | None | MessageId | An optional parent message to be used as one parent. |
+| **with_network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
 
-* If only `indexation_key` and `data` are provided. This method will create a message with only indexation payload instead.
+* Depending on the provided values this function will create a message without a payload, with an indexation payload or with a transaction payload, conatining an indexation payload.
 
 ### Return
 
@@ -138,15 +140,17 @@ Endpoint collection all about GET messages.
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
+| **&str** | ✔ | [MessageId] | An indexation key. |
 
 ### Returns
 
 Depend on the final calling method, users could get different results they need:
 
-- `metadata()`: Return metadata of the message.
-- `data()`: Return a [Message] object.
-- `raw()`: Return the raw data of given message.
-- `children()`: Return the list of [messageId]s that reference a message by its identifier.
+- `metadata(&MessageId)`: Return MessageMetadata of the message.
+- `data(&MessageId)`: Return a [Message] object.
+- `raw(&MessageId)`: Return the raw data of given message.
+- `children(&MessageId)`: Return the list of [messageId]s that reference a message by its identifier.
+- `index(&str)` : Return the list of [messageId]s that have this string as indexation key
 
 ## `find_messages()`
 
@@ -156,7 +160,6 @@ Find all messages by provided message IDs. This method will try to query multipl
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
 | **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
 
 ### Returns
@@ -586,6 +589,29 @@ struct Ed25519Signature {
 }
 
 struct ReferenceUnlock(u16);
+```
+
+[`MessageMetadata`]: #MessageMetadata
+
+```rust
+pub struct MessageMetadata {
+    /// Message ID
+    pub message_id: String,
+    /// Message ID of parent1
+    pub parent1: String,
+    /// Message ID of parent2
+    pub parent2: String,
+    /// Solid status
+    pub is_solid: bool,
+    /// Should promote
+    pub should_promote: Option<bool>,
+    /// Should reattach
+    pub should_reattach: Option<bool>,
+    /// Referenced by milestone index
+    pub referenced_by_milestone_index: Option<u64>,
+    /// Ledger inclusion state
+    pub ledger_inclusion_state: Option<String>,
+}
 ```
 
 ## `OutputMetadata`
