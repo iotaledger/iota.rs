@@ -130,6 +130,7 @@ impl ClientBuilder {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
 
+        let local_pow = self.local_pow;
         let nodes = self.nodes;
         let node_sync_interval = self.node_sync_interval;
 
@@ -139,8 +140,15 @@ impl ClientBuilder {
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
             let runtime = std::thread::spawn(move || {
                 let mut runtime = Runtime::new().unwrap();
-                runtime.block_on(Client::sync_nodes(&sync_, &nodes));
-                Client::start_sync_process(&runtime, sync_, nodes, node_sync_interval, sync_kill_receiver);
+                runtime.block_on(Client::sync_nodes(&sync_, &nodes, local_pow));
+                Client::start_sync_process(
+                    &runtime,
+                    sync_,
+                    nodes,
+                    node_sync_interval,
+                    local_pow,
+                    sync_kill_receiver,
+                );
                 runtime
             })
             .join()
