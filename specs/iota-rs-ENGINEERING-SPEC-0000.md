@@ -49,13 +49,14 @@ The data structure to initialize the instance of the Higher level client library
 | Field | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
 | **with_network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
-| **with_node** | ✘ | None | String | The URL of a node to connect to; format: `https://node:port` |
-| **with_nodes** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **with_node_sync_interval** | ✘ | 60000 | std::num::u64 | The interval in milliseconds to check for node health and sync |
+| **with_node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
+| **with_nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **with_node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **with_request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
 | **with_api_timeout** | ✘ | self.request_timeout | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out |
-| **node_pool_urls** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **with_local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
+| **with_mqtt_broker_options** | ✘ | automatic_disconnect: True, timeout: Duration::from_secs(30), use_ws: True | BrokerOptions | If not defined it defaults to local PoW to offload node load times |
+
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -697,5 +698,18 @@ pub enum Api {
     GetOutput,
     /// `get_milestone` API
     GetMilestone,
+}
+```
+
+## `BrokerOptions`
+
+```Rust
+pub struct BrokerOptions {
+    #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
+    pub(crate) automatic_disconnect: bool,
+    #[serde(default = "default_broker_timeout")]
+    pub(crate) timeout: Duration,
+    #[serde(default = "default_use_ws")]
+    pub(crate) use_ws: bool,
 }
 ```
