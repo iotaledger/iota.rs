@@ -106,7 +106,7 @@ A generic send function for easily sending a message.
 | **with_account_index** | ✘ | 0 | usize | The account index |
 | **with_initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
 | **with_input** | ✘ | None | UTXOInput | Users can manually pick their own UTXOInput instead of having node decide on which output should be used. |
-| **with_output** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
+| **with_output** | ✘ | None | address: &[Bech32Address], amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **with_output_hex** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **with_index** | ✘ | None | &str | An optional indexation key for an indexation payload. |
 | **with_data** | ✘ | None | Vec<u8> | An optional indexation data of the indexation payload. |
@@ -181,7 +181,7 @@ Return a valid unspent public Bech32 encoded address.
 
 ### Return
 
-Return a tuple with type of `(String, usize)` as the address and corresponding index in the account.
+Return a tuple with type of `(Bech32Address, usize)` as the address and corresponding index in the account.
 
 ### Implementation Details
 
@@ -202,11 +202,13 @@ Return a list of addresses from the seed regardless of their validity.
 | - | - | - | - | - |
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
 | **with_account_index()** | ✘ | 0 | usize | The account index. |
-| **with_range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
+| **with_range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
+| **get_all()** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<(Bech32Address, bool)> |
+
 
 ### Return
 
-A list of [Address]es
+Vec<[Bech32Address]>, with the public addresses
 
 
 ## `get_balance()`
@@ -243,11 +245,11 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **addresses** | ✔ | [String] | List of Bech32 encoded addresses. |
+| **addresses** | ✔ | [Bech32Address] | List of Bech32 encoded addresses. |
 
 ### Return
 
-A list of tuples with value of  (Address, usize). The usize is the balance of the address accordingly.
+A list of tuples with value of [AddressBalancePair]. The usize is the balance of the address accordingly.
 
 ### Implementation details:
 
@@ -423,7 +425,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 ### Returns
 
-An OutputMetadata that contains various information about the output.
+An [OutputMetadata](#outputmetadata) that contains various information about the output.
 
 ## `get_address()`
 
@@ -433,7 +435,7 @@ An OutputMetadata that contains various information about the output.
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
-| **address** | ✔ | [Address] | The address to search for. |
+| **address** | ✔ | [Bech32Address] | The address to search for. |
 
 ### Returns
 
@@ -451,11 +453,11 @@ Find all outputs based on the requests criteria. This method will try to query m
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **output_id** | ✘ | [UTXOInput] | The identifier of output. |
-| **addresses** | ✘ | [[Address]] | The identifier of address. |
+| **addresses** | ✘ | [[Bech32Address]] | The identifier of address. |
 
 ### Returns
 
-A vector of [OutputMetadata] Object.
+A vector of [OutputMetadata](#outputmetadata).
 
 ## `get_milestone()`
 
@@ -632,6 +634,16 @@ pub struct OutputMetadata {
 }
 ```
 
+## `Bech32Address`
+
+[Bech32Address]: #Bech32Address
+
+Wrapper type to be used in most cases where an address is involved.
+
+```Rust
+pub struct Bech32Address(pub String);
+```
+
 ## `Address`
 
 [Address]: #Address
@@ -642,7 +654,21 @@ An Ed25519 address can be encoded in Bech32 or Hex, with Bech32 being preferred 
 pub enum Address {
     Wots(WotsAddress),
     Ed25519(Ed25519Address),
-}```
+}
+```
+
+## `AddressBalancePair`
+
+[AddressBalancePair]: #AddressBalancePair
+
+```Rust
+pub struct AddressBalancePair {
+    /// Address
+    pub address: Bech32Address,
+    /// Balance in the address
+    pub balance: u64,
+}
+```
 
 ## `Milestone`
 
