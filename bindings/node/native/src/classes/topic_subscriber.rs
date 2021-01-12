@@ -64,7 +64,7 @@ impl Task for TopicTask {
                 TopicAction::Subscribe => {
                     client
                         .subscriber()
-                        .topics(self.topics.clone())
+                        .with_topics(self.topics.clone())
                         .subscribe(move |event| {
                             let s = sender.lock().unwrap();
                             let _ = s.send(serde_json::to_string(&event).unwrap());
@@ -74,7 +74,7 @@ impl Task for TopicTask {
                 TopicAction::Unsubscribe => {
                     client
                         .subscriber()
-                        .topics(self.topics.clone())
+                        .with_topics(self.topics.clone())
                         .unsubscribe()
                         .expect("failed to unsbuscribe from topics");
                 }
