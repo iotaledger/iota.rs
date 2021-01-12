@@ -39,7 +39,7 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", // Insert the address to search for
+            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
             300,
         )
         .unwrap()
@@ -57,7 +57,10 @@ async fn main() {
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
-        .with_output("iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc", 300)
+        .with_output(
+            &"iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".into(),
+            300,
+        )
         .unwrap()
         .finish()
         .await
@@ -73,7 +76,10 @@ async fn main() {
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
-        .with_output("iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r", 300)
+        .with_output(
+            &"iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".into(),
+            300,
+        )
         .unwrap()
         .finish()
         .await
@@ -94,9 +100,15 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
-        .with_output("iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr", 270)
+        .with_output(
+            &"iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr".into(),
+            270,
+        )
         .unwrap()
-        .with_output("iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m", 280)
+        .with_output(
+            &"iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m".into(),
+            280,
+        )
         .unwrap()
         .finish()
         .await

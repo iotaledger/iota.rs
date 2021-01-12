@@ -33,11 +33,20 @@ async fn main() {
     let message_id = iota
         .send()
         .with_seed(&seed)
-        .with_output("iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", 300)
+        .with_output(
+            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
+            300,
+        )
         .unwrap()
-        .with_output("iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc", 280)
+        .with_output(
+            &"iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".into(),
+            280,
+        )
         .unwrap()
-        .with_output("iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r", 300)
+        .with_output(
+            &"iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".into(),
+            300,
+        )
         .unwrap()
         .finish()
         .await

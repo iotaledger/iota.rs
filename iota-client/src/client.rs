@@ -495,7 +495,7 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UTXOInput` in the HashSet.
         for address in addresses {
-            let address_outputs = self.get_address().outputs(&address.to_bech32()).await?;
+            let address_outputs = self.get_address().outputs(&address.to_bech32().into()).await?;
             for output in address_outputs.iter() {
                 output_to_query.insert(output.to_owned());
             }
@@ -646,10 +646,10 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed or security level needed to do this
     /// since we are only checking and already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<AddressBalancePair>> {
+    pub async fn get_address_balances(&self, addresses: &[Bech32Address]) -> Result<Vec<AddressBalancePair>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
-            let balance = self.get_address().balance(address).await?;
+            let balance = self.get_address().balance(&address).await?;
             address_balance_pairs.push(AddressBalancePair {
                 address: address.clone(),
                 balance,

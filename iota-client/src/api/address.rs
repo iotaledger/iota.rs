@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
+use crate::{types::Bech32Address, Client, Error, Result};
 
 use bee_message::prelude::{Address, Ed25519Address};
 use bee_signing_ext::{
@@ -49,18 +49,18 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Consume the builder and get a vector of Bech32 encoded public addresses
-    pub fn get(self) -> Result<Vec<String>> {
+    pub fn get(self) -> Result<Vec<Bech32Address>> {
         Ok(self
             .get_all()?
             .into_iter()
             .filter(|(_, internal)| !internal)
             .map(|(a, _)| a)
-            .collect::<Vec<String>>())
+            .collect::<Vec<Bech32Address>>())
     }
 
-    /// Consume the builder and get the vector of String (Bech32 encoded address) with a bool stating whether it's an
+    /// Consume the builder and get the vector of Bech32Address with a bool stating whether it's an
     /// internal address
-    pub fn get_all(self) -> Result<Vec<(String, bool)>> {
+    pub fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
         let mut path = self
             .account_index
             .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
@@ -80,8 +80,8 @@ impl<'a> GetAddressesBuilder<'a> {
         for i in range {
             let address = generate_address(&seed, &mut path, i, false);
             let internal_address = generate_address(&seed, &mut path, i, true);
-            addresses.push((address.to_bech32(), false));
-            addresses.push((internal_address.to_bech32(), true));
+            addresses.push((Bech32Address(address.to_bech32()), false));
+            addresses.push((Bech32Address(internal_address.to_bech32()), true));
         }
 
         Ok(addresses)
@@ -111,7 +111,12 @@ fn generate_address(seed: &Ed25519Seed, path: &mut BIP32Path, index: usize, inte
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
-pub fn search_address(seed: &Seed, account_index: usize, range: Range<usize>, address: &str) -> Result<(usize, bool)> {
+pub fn search_address(
+    seed: &Seed,
+    account_index: usize,
+    range: Range<usize>,
+    address: &Bech32Address,
+) -> Result<(usize, bool)> {
     let iota = Client::build().with_node("http://0.0.0.0:14265")?.finish()?;
     let addresses = iota
         .find_addresses(&seed)
@@ -120,7 +125,7 @@ pub fn search_address(seed: &Seed, account_index: usize, range: Range<usize>, ad
         .get_all()?;
     let mut index_counter = 0;
     for address_internal in addresses {
-        if address_internal.0 == address {
+        if address_internal.0 == *address {
             return Ok((index_counter, address_internal.1));
         }
         if !address_internal.1 {

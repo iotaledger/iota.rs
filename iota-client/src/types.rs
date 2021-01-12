@@ -13,8 +13,40 @@ use serde::ser::Serializer;
 
 use std::{
     convert::{From, TryFrom, TryInto},
+    fmt,
     io::{BufReader, Read},
+    ops::Deref,
 };
+
+/// Bech32 encoded address struct
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct Bech32Address(pub String);
+
+impl Deref for Bech32Address {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Display for Bech32Address {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl From<String> for Bech32Address {
+    fn from(address: String) -> Self {
+        Bech32Address(address)
+    }
+}
+
+impl From<&str> for Bech32Address {
+    fn from(address: &str) -> Self {
+        Bech32Address(address.to_string())
+    }
+}
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -230,7 +262,7 @@ impl ResponseType for MilestoneMetadata {}
 #[derive(Debug, Serialize)]
 pub struct AddressBalancePair {
     /// Address
-    pub address: String,
+    pub address: Bech32Address,
     /// Balance in the address
     pub balance: u64,
 }
@@ -563,7 +595,7 @@ impl TryFrom<OutputJson> for Output {
     }
 }
 
-/// JSON struct for Address
+/// JSON struct for Address, hex encoded
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AddressJson {
     #[serde(rename = "type")]
