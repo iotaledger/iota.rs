@@ -17,12 +17,17 @@ async fn main() {
     )
     .unwrap(); // Insert your seed
 
-    let addresses = iota.find_addresses(&seed).account_index(0).range(0..4).get().unwrap();
+    let addresses = iota
+        .find_addresses(&seed)
+        .with_account_index(0)
+        .with_range(0..4)
+        .finish()
+        .unwrap();
     println!("List of generated public addresses: {:#?}", addresses);
     let all_addresses = iota
         .find_addresses(&seed)
-        .account_index(0)
-        .range(0..4)
+        .with_account_index(0)
+        .with_range(0..4)
         .get_all()
         .unwrap();
     // bool for public addresses is false and for internal addresses true

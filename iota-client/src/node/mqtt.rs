@@ -138,13 +138,13 @@ impl<'a> MqttManager<'a> {
     }
 
     /// Add a new topic to the list.
-    pub fn topic(self, topic: Topic) -> MqttTopicManager<'a> {
-        MqttTopicManager::new(self.client).topic(topic)
+    pub fn with_topic(self, topic: Topic) -> MqttTopicManager<'a> {
+        MqttTopicManager::new(self.client).with_topic(topic)
     }
 
     /// Add a collection of topics to the list.
-    pub fn topics(self, topics: Vec<Topic>) -> MqttTopicManager<'a> {
-        MqttTopicManager::new(self.client).topics(topics)
+    pub fn with_topics(self, topics: Vec<Topic>) -> MqttTopicManager<'a> {
+        MqttTopicManager::new(self.client).with_topics(topics)
     }
 
     /// Unsubscribes from all subscriptions.
@@ -186,13 +186,13 @@ impl<'a> MqttTopicManager<'a> {
     }
 
     /// Add a new topic to the list.
-    pub fn topic(mut self, topic: Topic) -> Self {
+    pub fn with_topic(mut self, topic: Topic) -> Self {
         self.topics.push(topic);
         self
     }
 
     /// Add a collection of topics to the list.
-    pub fn topics(mut self, topics: Vec<Topic>) -> Self {
+    pub fn with_topics(mut self, topics: Vec<Topic>) -> Self {
         self.topics.extend(topics.into_iter());
         self
     }

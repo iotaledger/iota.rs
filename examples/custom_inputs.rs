@@ -21,7 +21,12 @@ async fn main() {
     )
     .unwrap();
 
-    let address = iota.find_addresses(&seed).account_index(0).range(0..1).get().unwrap();
+    let address = iota
+        .find_addresses(&seed)
+        .with_account_index(0)
+        .with_range(0..1)
+        .finish()
+        .unwrap();
     println!("{:?}", address[0]);
     let outputs = iota.get_address().outputs(&address[0]).await.unwrap();
     println!("{:?}", outputs);

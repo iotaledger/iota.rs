@@ -30,7 +30,6 @@ pub(crate) enum Api {
         initial_address_index: Option<usize>,
     },
     FindMessages {
-        indexation_keys: Vec<String>,
         message_ids: Vec<MessageId>,
     },
     GetBalance {
@@ -114,19 +113,16 @@ impl Task for ClientTask {
                 } => {
                     let mut getter = client.get_unspent_address(seed);
                     if let Some(account_index) = account_index {
-                        getter = getter.account_index(*account_index);
+                        getter = getter.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
-                        getter = getter.initial_address_index(*initial_address_index);
+                        getter = getter.with_initial_address_index(*initial_address_index);
                     }
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
                 }
-                Api::FindMessages {
-                    indexation_keys,
-                    message_ids,
-                } => {
-                    let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
+                Api::FindMessages { message_ids } => {
+                    let messages = client.find_messages(&message_ids[..]).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetBalance {

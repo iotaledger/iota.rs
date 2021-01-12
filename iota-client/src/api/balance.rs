@@ -50,8 +50,8 @@ impl<'a> GetBalanceBuilder<'a> {
             let addresses = self
                 .client
                 .find_addresses(self.seed)
-                .account_index(account_index)
-                .range(index..index + 20)
+                .with_account_index(account_index)
+                .with_range(index..index + 20)
                 .get_all()?;
 
             // TODO we assume all addresses are unspent and valid if balance > 0

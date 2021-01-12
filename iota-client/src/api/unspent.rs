@@ -25,13 +25,13 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     }
 
     /// Sets the account index.
-    pub fn account_index(mut self, account_index: usize) -> Self {
+    pub fn with_account_index(mut self, account_index: usize) -> Self {
         self.account_index = Some(account_index);
         self
     }
 
     /// Sets the index of the address to start looking for balance.
-    pub fn initial_address_index(mut self, initial_address_index: usize) -> Self {
+    pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
         self.initial_address_index = Some(initial_address_index);
         self
     }
@@ -48,22 +48,20 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             let addresses = self
                 .client
                 .find_addresses(self.seed)
-                .account_index(account_index)
-                .range(index..index + 20)
-                .get_all()?;
+                .with_account_index(account_index)
+                .with_range(index..index + 20)
+                .finish()?;
 
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut address = None;
-            for (a, internal) in addresses {
-                if !internal {
-                    let address_balance = self.client.get_address().balance(&a).await?;
-                    match address_balance {
-                        0 => {
-                            address = Some(a);
-                            break;
-                        }
-                        _ => index += 1,
+            for a in addresses {
+                let address_balance = self.client.get_address().balance(&a).await?;
+                match address_balance {
+                    0 => {
+                        address = Some(a);
+                        break;
                     }
+                    _ => index += 1,
                 }
             }
 
