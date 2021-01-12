@@ -482,7 +482,11 @@ impl Client {
     }
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceed individual node limit.
-    pub async fn find_outputs(&self, outputs: &[UTXOInput], addresses: &[Address]) -> Result<Vec<OutputMetadata>> {
+    pub async fn find_outputs(
+        &self,
+        outputs: &[UTXOInput],
+        addresses: &[Bech32Address],
+    ) -> Result<Vec<OutputMetadata>> {
         let mut output_metadata = Vec::<OutputMetadata>::new();
         // Use a `HashSet` to prevent duplicate output.
         let mut output_to_query = HashSet::<UTXOInput>::new();
@@ -495,7 +499,7 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UTXOInput` in the HashSet.
         for address in addresses {
-            let address_outputs = self.get_address().outputs(&address.to_bech32().into()).await?;
+            let address_outputs = self.get_address().outputs(&address).await?;
             for output in address_outputs.iter() {
                 output_to_query.insert(output.to_owned());
             }

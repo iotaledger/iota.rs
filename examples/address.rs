@@ -23,7 +23,7 @@ async fn main() {
         .with_range(0..4)
         .finish()
         .unwrap();
-    println!("List of generated public addresses: {:#?}", addresses);
+    println!("List of generated public addresses: {:?}", addresses);
     let all_addresses = iota
         .find_addresses(&seed)
         .with_account_index(0)
@@ -31,5 +31,5 @@ async fn main() {
         .get_all()
         .unwrap();
     // bool for public addresses is false and for internal addresses true
-    println!("List of generated public and internal addresses: {:#?}", all_addresses);
+    println!("List of generated public and internal addresses: {:?}", all_addresses);
 }

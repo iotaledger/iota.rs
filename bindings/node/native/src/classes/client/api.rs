@@ -204,7 +204,9 @@ impl Task for ClientTask {
                     serde_json::to_string(&output).unwrap()
                 }
                 Api::FindOutputs { outputs, addresses } => {
-                    let outputs = client.find_outputs(outputs, addresses).await?;
+                    let bech32_addresses: Vec<Bech32Address> =
+                        addresses.iter().map(|a| Bech32Address(a.to_bech32())).collect();
+                    let outputs = client.find_outputs(outputs, &bech32_addresses[..]).await?;
                     let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }
