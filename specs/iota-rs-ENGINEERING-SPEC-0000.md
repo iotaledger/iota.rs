@@ -48,43 +48,41 @@ The data structure to initialize the instance of the Higher level client library
 
 | Field | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **with_network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
+| **with_network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to define the network. |
 | **with_node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
 | **with_nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **with_node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
+| **with_node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **with_request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
 | **with_api_timeout** | ✘ | self.request_timeout | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out |
 | **with_local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
-| **with_mqtt_broker_options** | ✘ | automatic_disconnect: True, timeout: Duration::from_secs(30), use_ws: True | BrokerOptions | If not defined it defaults to local PoW to offload node load times |
-
+| **with_mqtt_broker_options** | ✘ | automatic_disconnect: True, timeout: Duration::from_secs(30), use_ws: true | BrokerOptions | If not defined the default values will be used, use_ws: false will try to connect over tcp|
 
 * Note that there must be at least one node to build the instance successfully.
 
 ### Return
 
-Finalize the builder will run the instance in the background. Users don’t need to worry about the return object handling.
-
+Finalize the builder with `finish()` will run the instance in the background. Users don’t need to worry about the return object handling.
 
 ## On initialization
+
 On initialisation, call getNodeInfo API. Check the health of each node in the node list, place any nodes that are unresponsive or with isHealthy = false on a temporary blacklist. Store important metadata including MQTT port, network, remote proof of work for each node.
 
 | Node metadata | Description |
 | - | - |
 | network | If this parameter does not match the global builder parameter, add node to blacklist and return error. |
-| mqtt_port | Used in establishing MQTT subscriptions. If failure to connect to MQTT, place node in blacklist. |
 | pow | If the global local_pow parameter is set to false, then put any nodes without pow support in the blacklist. |
-
 
 ## Sync Process
 
-When a `Client` instance (The instance which is used for calling the client APIs) is built, the status of each node listed in the `node_pool_urls` should be checked first. If the returned status of the node information is healthy, which means the node is synced, then this node will be pushed back into a `synced_node_list`. The rust-like pseudo code of `synced_node_list` construction process follows. The process of syncing a node is repeated every 60 seconds or at the interval specified in the `node_sync_interval` argument of the initializer if set.
+When a `Client` instance (The instance which is used for calling the client APIs) is built, the status of each node listed is checked. If the returned status of the node information is healthy, which means the node is synced, then this node will be pushed into a `synced_nodes` list. The rust-like pseudo code of `synced_nodes` construction process follows. The process of syncing a node is repeated every 60 seconds or at the interval specified in the `node_sync_interval` argument of the initializer if set.
 
 ```rust
-synced_node_list = Vec::new()
+synced_nodes = Vec::new()
 for node in node_pool_urls{
    status = Client.get_info(node).await?;
    if status == healthy{
-      synced_node_list.push(node)
+      synced_nodes.push(node)
    }
 }
 ```
@@ -92,7 +90,6 @@ for node in node_pool_urls{
 # `General high level API`
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
-
 
 ## `send()`
 
@@ -102,18 +99,23 @@ A generic send function for easily sending a message.
 
 | Method | Required | Default | Type | Definition |
 | - | - | - | - | - |
-| **with_seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
+| **with_seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for transactions |
 | **with_account_index** | ✘ | 0 | usize | The account index |
 | **with_initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
-| **with_input** | ✘ | None | UTXOInput | Users can manually pick their own UTXOInput instead of having node decide on which output should be used. |
+| **with_input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
 | **with_output** | ✘ | None | address: &[Bech32Address], amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **with_output_hex** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **with_index** | ✘ | None | &str | An optional indexation key for an indexation payload. |
-| **with_data** | ✘ | None | Vec<u8> | An optional indexation data of the indexation payload. |
-| **with_parent** | ✘ | None | MessageId | An optional parent message to be used as one parent. |
+| **with_data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
+| **with_parent** | ✘ | None | [MessageId] | An optional parent [MessageId] to be used as one parent. |
 | **with_network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
 
-* Depending on the provided values this function will create a message without a payload, with an indexation payload or with a transaction payload, conatining an indexation payload.
+Depending on the provided values this function will create a message with:
+
+* no payload
+* an indexation payload
+* a transaction payload
+* a transaction payload containing an indexation payload
 
 ### Return
 
@@ -121,11 +123,9 @@ The [Message] object we build.
 
 ### Implementation Details
 
-There could be two different scenarios in which this method can be used:
-
 * Validate inputs, such as address and seed to check if they are correct.
 * Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
-* Build and validate the Message with signed transaction payload accordingly;
+* Build and validate the message with signed transaction payload accordingly;
 * Get tips using [`get_tips()`](#get_tips);
 * Perform proof-of-work locally (if not set to remote);
 * Send the message using [`post_messages()`](#post_messages);
@@ -141,21 +141,21 @@ Endpoint collection all about GET messages.
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
-| **&str** | ✔ | [MessageId] | An indexation key. |
+| **&str** | ✔ | str | An indexation key. |
 
 ### Returns
 
 Depend on the final calling method, users could get different results they need:
 
-- `metadata(&MessageId)`: Return MessageMetadata of the message.
+- `metadata(&MessageId)`: Return [MessageMetadata](#MessageMetadata) of the message.
 - `data(&MessageId)`: Return a [Message] object.
 - `raw(&MessageId)`: Return the raw data of given message.
-- `children(&MessageId)`: Return the list of [messageId]s that reference a message by its identifier.
-- `index(&str)` : Return the list of [messageId]s that have this string as indexation key
+- `children(&MessageId)`: Return the list of [MessageId]s that reference a message by its identifier.
+- `index(&str)` : Return the list of [MessageId]s that have this str as indexation key
 
 ## `find_messages()`
 
-Find all messages by provided message IDs. This method will try to query multiple nodes if the request amount exceed individual node limit.
+Find all messages by provided message IDs.
 
 ### Parameters
 
@@ -203,17 +203,15 @@ Return a list of addresses from the seed regardless of their validity.
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
 | **with_account_index()** | ✘ | 0 | usize | The account index. |
 | **with_range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
-| **get_all()** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<(Bech32Address, bool)> |
-
+| **get_all()** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
 
 ### Return
 
 Vec<[Bech32Address]>, with the public addresses
 
-
 ## `get_balance()`
 
-Return the balance for a provided seed and its wallet account index. 
+Return the balance for a provided seed and its wallet account index.
 
 ### Parameters
 
@@ -221,7 +219,7 @@ Return the balance for a provided seed and its wallet account index.
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
 | **with_account_index** | ✘ | 0 | usize | The account index. |
-| **with_initial_address_index** | ✘ | 0 | usize | Start index of the address. **Default is 0.** |
+| **with_initial_address_index** | ✘ | 0 | usize | Start index from which to generate addresses. Default is 0. |
 
 ### Return
 
@@ -235,7 +233,6 @@ Following are the steps for implementing this method:
 * Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
 * Repeat the above step till an address of zero balance is found;
 * Accumulate the positive balances and return the result.
-
 
 ## `get_address_balances()`
 
@@ -255,10 +252,9 @@ A list of tuples with value of [AddressBalancePair]. The usize is the balance of
 
 Following are the steps for implementing this method:
 
-*   Validate _address_ semantics;
-*   Get latest balance for the provided address using [`get_outputs()`](#get_outputs-get-outputs) with addresses as
-    parameter;
-*   Return the list of Output which contains corresponding pairs of address and balance.
+* Validate _address_ semantics;
+* Get latest balance for the provided address using [`get_outputs()`](#get_outputs-get-outputs) with addresses as parameter;
+* Return the list of Output which contains corresponding pairs of address and balance.
 
 ## `subscriber()`
 
@@ -279,7 +275,7 @@ Nothing apart from a Ok(()) result if successful
 
 ## `retry()`
 
-Retries (promotes or reattaches) a message for provided [MessageId] if the node suggests it. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high when there is no attack.
+Retries (promotes or reattaches) a message for provided [MessageId] if the node suggests it. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
 
 ### Parameters
 
@@ -415,7 +411,7 @@ The [MessageId] of the message object.
 
 (`GET /outputs`)
 
-Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction. It will have additional methods such as reattach to perform extra functionality.
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
 
 ### Parameters
 
@@ -425,7 +421,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 ### Returns
 
-An [OutputMetadata](#outputmetadata) that contains various information about the output.
+An [OutputMetadata](#OutputMetadata) that contains various information about the output.
 
 ## `get_address()`
 
@@ -441,23 +437,23 @@ An [OutputMetadata](#outputmetadata) that contains various information about the
 
 Depend on the final calling method, users could get different outputs they need:
 
-- `balance()`: Return confirmed balance of the address.
-- `outputs()`: Return UTXOInput array (transaction IDs with corresponding output index).
+* `balance()`: Return confirmed balance of the address.
+* `outputs()`: Return UTXOInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 
-Find all outputs based on the requests criteria. This method will try to query multiple nodes if the request amount exceed individual node limit.
+Find all outputs based on the requests criteria.
 
 ### Parameters
 
 | Field | Required | Type | Definition |
 | - | - | - | - |
 | **output_id** | ✘ | [UTXOInput] | The identifier of output. |
-| **addresses** | ✘ | [[Bech32Address]] | The identifier of address. |
+| **addresses** | ✘ | [[Bech32Address]] | The Bech32 encoded address. |
 
 ### Returns
 
-A vector of [OutputMetadata](#outputmetadata).
+A vector of [OutputMetadata](#OutputMetadata).
 
 ## `get_milestone()`
 
@@ -478,7 +474,6 @@ An [Milestone] object.
 # Objects
 
 Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
-
 
 ## `Network`
 
@@ -516,7 +511,7 @@ struct MessageId([u8; MESSAGE_ID_LENGTH]);
 
 [Message]: #Message
 
-The message object returned by various functions; based on the RFC for the Message object. Here's the brief overview of each components in Message type would look like:
+The message object returned by various functions; based on the [RFC](https://github.com/GalRogozinski/protocol-rfcs/blob/message/text/0017-message/0017-message.md) for the Message object. Here's the brief overview of each components in Message type would look like:
 
 ```rust
 struct Message {
@@ -587,6 +582,8 @@ struct Ed25519Signature {
 
 struct ReferenceUnlock(u16);
 ```
+
+## `MessageMetadata`
 
 [`MessageMetadata`]: #MessageMetadata
 
