@@ -1,6 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+//! cargo run --example mqtt --release
 use iota::{BrokerOptions, Client, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
@@ -15,7 +16,7 @@ fn main() {
     let tx = Arc::new(Mutex::new(tx));
 
     iota.subscriber()
-        .topics(vec![
+        .with_topics(vec![
             Topic::new("milestones/latest").unwrap(),
             Topic::new("messages").unwrap(),
         ])

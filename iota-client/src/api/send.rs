@@ -9,7 +9,7 @@ use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-use std::{collections::HashMap, convert::TryInto, num::NonZeroU64};
+use std::{collections::HashMap, convert::TryInto};
 
 const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
@@ -85,16 +85,18 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Set a transfer to the builder, address needs to be Bech32 encoded
-    pub fn with_output(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
+    pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
         let address = Address::try_from_bech32(address)?;
-        let output = SignatureLockedSingleOutput::new(address, amount).into();
+        let output = SignatureLockedSingleOutput::new(address, amount).unwrap().into();
         self.outputs.push(output);
         Ok(self)
     }
 
     /// Set a transfer to the builder, address needs to be hex encoded
-    pub fn with_output_hex(mut self, address: &str, amount: NonZeroU64) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount).into();
+    pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
+        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount)
+            .unwrap()
+            .into();
         self.outputs.push(output);
         Ok(self)
     }
@@ -163,7 +165,7 @@ impl<'a> SendBuilder<'a> {
         let mut total_already_spent = 0;
         for output in &self.outputs {
             if let Output::SignatureLockedSingle(x) = &output {
-                total_to_spend += x.amount().get();
+                total_to_spend += x.amount();
             }
         }
 
@@ -206,8 +208,9 @@ impl<'a> SendBuilder<'a> {
                                 essence = essence.add_output(
                                     SignatureLockedSingleOutput::new(
                                         output.address.clone(),
-                                        NonZeroU64::new(total_already_spent - total_to_spend).unwrap(),
+                                        total_already_spent - total_to_spend,
                                     )
+                                    .unwrap()
                                     .into(),
                                 );
                             }
@@ -223,9 +226,9 @@ impl<'a> SendBuilder<'a> {
                     let addresses = self
                         .client
                         .find_addresses(self.seed.expect("No seed"))
-                        .account_index(account_index)
-                        .range(index..index + 20)
-                        .get()?;
+                        .with_account_index(account_index)
+                        .with_range(index..index + 20)
+                        .finish()?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
@@ -278,8 +281,9 @@ impl<'a> SendBuilder<'a> {
                                             essence = essence.add_output(
                                                 SignatureLockedSingleOutput::new(
                                                     address.clone(),
-                                                    NonZeroU64::new(total_already_spent - total_to_spend).unwrap(),
+                                                    total_already_spent - total_to_spend,
                                                 )
+                                                .unwrap()
                                                 .into(),
                                             );
                                         }
