@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
+use crate::{api::address::search_address, types::Bech32Address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
@@ -85,8 +85,8 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Set a transfer to the builder, address needs to be Bech32 encoded
-    pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
-        let address = Address::try_from_bech32(address)?;
+    pub fn with_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
+        let address = Address::try_from_bech32(&address.to_string())?;
         let output = SignatureLockedSingleOutput::new(address, amount).unwrap().into();
         self.outputs.push(output);
         Ok(self)
@@ -184,8 +184,12 @@ impl<'a> SendBuilder<'a> {
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
-                            let (address_index, internal) =
-                                search_address(&self.seed.expect("No seed"), account_index, 0..100, &output.address)?;
+                            let (address_index, internal) = search_address(
+                                &self.seed.expect("No seed"),
+                                account_index,
+                                0..100,
+                                &output.address.to_bech32().into(),
+                            )?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());
@@ -228,7 +232,7 @@ impl<'a> SendBuilder<'a> {
                         .find_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
                         .with_range(index..index + 20)
-                        .finish()?;
+                        .get_all()?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
@@ -280,7 +284,7 @@ impl<'a> SendBuilder<'a> {
                                         if total_already_spent > total_to_spend {
                                             essence = essence.add_output(
                                                 SignatureLockedSingleOutput::new(
-                                                    address.clone(),
+                                                    Address::try_from_bech32(address)?,
                                                     total_already_spent - total_to_spend,
                                                 )
                                                 .unwrap()

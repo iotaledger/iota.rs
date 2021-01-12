@@ -1,9 +1,8 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
+use crate::{types::Bech32Address, Client, Error, Result};
 
-use bee_message::prelude::Address;
 use bee_signing_ext::Seed;
 
 /// Builder of get_unspent_address API
@@ -38,7 +37,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn get(self) -> Result<(Address, usize)> {
+    pub async fn get(self) -> Result<(Bech32Address, usize)> {
         let account_index = self
             .account_index
             .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
@@ -53,18 +52,16 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .with_range(index..index + 20)
                 .finish()?;
 
-            // TODO we assume all addressees are unspent and valid if balance > 0
+            // TODO we assume all addresses are unspent and valid if balance > 0
             let mut address = None;
-            for (a, internal) in addresses {
-                if !internal {
-                    let address_balance = self.client.get_address().balance(&a).await?;
-                    match address_balance {
-                        0 => {
-                            address = Some(a);
-                            break;
-                        }
-                        _ => index += 1,
+            for a in addresses {
+                let address_balance = self.client.get_address().balance(&a).await?;
+                match address_balance {
+                    0 => {
+                        address = Some(a);
+                        break;
                     }
+                    _ => index += 1,
                 }
             }
 

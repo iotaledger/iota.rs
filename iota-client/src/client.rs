@@ -482,7 +482,11 @@ impl Client {
     }
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceed individual node limit.
-    pub async fn find_outputs(&self, outputs: &[UTXOInput], addresses: &[Address]) -> Result<Vec<OutputMetadata>> {
+    pub async fn find_outputs(
+        &self,
+        outputs: &[UTXOInput],
+        addresses: &[Bech32Address],
+    ) -> Result<Vec<OutputMetadata>> {
         let mut output_metadata = Vec::<OutputMetadata>::new();
         // Use a `HashSet` to prevent duplicate output.
         let mut output_to_query = HashSet::<UTXOInput>::new();
@@ -636,10 +640,10 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed or security level needed to do this
     /// since we are only checking and already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[Address]) -> Result<Vec<AddressBalancePair>> {
+    pub async fn get_address_balances(&self, addresses: &[Bech32Address]) -> Result<Vec<AddressBalancePair>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
-            let balance = self.get_address().balance(address).await?;
+            let balance = self.get_address().balance(&address).await?;
             address_balance_pairs.push(AddressBalancePair {
                 address: address.clone(),
                 balance,

@@ -100,7 +100,7 @@ describe('Client', () => {
   })
 
   it('get address outputs', async () => {
-    const outputs = await client.getAddressOutputs('6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92')
+    const outputs = await client.getAddressOutputs('iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0eyf5eyz5')
     assert.strictEqual(Array.isArray(outputs), true)
     assert.strictEqual(outputs.length > 0, true)
     assert.strictEqual(typeof outputs[0], 'string')

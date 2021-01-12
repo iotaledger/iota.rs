@@ -27,15 +27,18 @@ async fn main() {
         .with_range(0..1)
         .finish()
         .unwrap();
-    println!("{:?}", address[0].0.to_bech32());
-    let outputs = iota.get_address().outputs(&address[0].0).await.unwrap();
+    println!("{:?}", address[0]);
+    let outputs = iota.get_address().outputs(&address[0]).await.unwrap();
     println!("{:?}", outputs);
 
     let message_id = iota
         .send()
         .with_seed(&seed)
         .with_input(outputs[1].clone())
-        .with_output("iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", 100)
+        .with_output(
+            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
+            100,
+        )
         .unwrap()
         .finish()
         .await

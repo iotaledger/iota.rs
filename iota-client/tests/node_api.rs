@@ -199,12 +199,7 @@ async fn test_get_address_balance() {
         .finish()
         .unwrap()
         .get_address()
-        .balance(
-            &("6920b176f613ec7be59e68fc68f597eb3393af80f74c7c3db78198147d5f1f92"
-                .parse::<Ed25519Address>()
-                .unwrap())
-            .into(),
-        )
+        .balance(&"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into())
         .await
         .unwrap();
 
@@ -221,10 +216,8 @@ async fn test_get_address_outputs() {
         .unwrap()
         .get_address()
         .outputs(
-            &("d2adf03c21269b25a0bb4319471213161f2a4fb57b16cc2e505b87b2ca52d37d"
-                .parse::<Ed25519Address>()
-                .unwrap())
-            .into(), // Insert the address to search for
+            &"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into(), /* Insert the address to
+                                                                                        * search for */
         )
         .await
         .unwrap();
