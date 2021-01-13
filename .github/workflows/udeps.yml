@@ -21,9 +21,9 @@ jobs:
         profile: minimal
         toolchain: nightly
         override: true
-        
+
     - name: Set seeds in .env
-       run: mv .env.example .env
+      run: mv .env.example .env
 
     - name: Cache cargo registry
       uses: actions/cache@v2
