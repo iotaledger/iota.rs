@@ -50,17 +50,17 @@ The data structure to initialize the instance of the Higher level client library
 
 ### Parameters
 
-| Method | Required | Default Value | Type | Definition |
+| Parameter | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **with_network** | ✘ | Testnet | [Network] | Pass an enumeration with elements of **Mainnet/Testnet** to define the network. |
-| **with_node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
-| **with_nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **with_node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
-| **with_node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
-| **with_request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **with_api_timeout** | ✘ | self.request_timeout | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out |
-| **with_local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
-| **with_mqtt_broker_options** | ✘ | automatic_disconnect: True, timeout: Duration::from_secs(30), use_ws: true | BrokerOptions | If not defined the default values will be used, use_ws: false will try to connect over tcp|
+| **network** | ✘ | Testnet | [Network] | Pass an enumeration with elements of **Mainnet/Testnet** to define the network. |
+| **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
+| **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
+| **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
+| **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
+| **api_timeout** | ✘ | self.request_timeout | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out |
+| **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
+| **mqtt_broker_options** | ✘ | automatic_disconnect: True, timeout: Duration::from_secs(30), use_ws: true | BrokerOptions | If not defined the default values will be used, use_ws: false will try to connect over tcp|
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -99,20 +99,20 @@ Here is the high level abstraction API collection with sensible default values f
 
 A generic send function for easily sending a message.
 
-### Methods
+### Parameters
 
-| Method | Required | Default | Type | Definition |
+| Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
-| **with_seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for transactions |
-| **with_account_index** | ✘ | 0 | usize | The account index |
-| **with_initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
-| **with_input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
-| **with_output** | ✘ | None | address: &[Bech32Address], amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
-| **with_output_hex** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
-| **with_index** | ✘ | None | &str | An optional indexation key for an indexation payload. |
-| **with_data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
-| **with_parent** | ✘ | None | [MessageId] | An optional parent [MessageId] to be used as one parent. |
-| **with_network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
+| **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for transactions |
+| **account_index** | ✘ | 0 | usize | The account index |
+| **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
+| **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
+| **output** | ✘ | None | address: &[Bech32Address], amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
+| **output_hex** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
+| **index** | ✘ | None | &str | An optional indexation key for an indexation payload. |
+| **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
+| **parent** | ✘ | None | [MessageId] | An optional parent [MessageId] to be used as one parent. |
+| **network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
 
 Depending on the provided values this function will create a message with:
 
@@ -142,7 +142,7 @@ Endpoint collection all about GET messages.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
 | **&str** | ✔ | str | An indexation key. |
@@ -163,7 +163,7 @@ Find all messages by provided message IDs.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
 
@@ -177,11 +177,11 @@ Return a valid unspent public Bech32 encoded address.
 
 ### Parameters
 
-| Method | Required | Default | Type | Definition |
+| Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to use. |
-| **with_account_index** | ✘ | 0 | usize | The account index. |
-| **with_initial_address_index** | ✘ | 0 | usize | Start index of the addresses to search. |
+| **account_index** | ✘ | 0 | usize | The account index. |
+| **initial_address_index** | ✘ | 0 | usize | Start index of the addresses to search. |
 
 ### Return
 
@@ -200,13 +200,13 @@ Following are the steps for implementing this method:
 
 Return a list of addresses from the seed regardless of their validity.
 
-### Parameters/Methods
+### Parameters
 
-| Method | Required | Default | Type | Definition |
+| Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
-| **with_account_index()** | ✘ | 0 | usize | The account index. |
-| **with_range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
+| **account_index()** | ✘ | 0 | usize | The account index. |
+| **range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
 | **get_all()** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
 
 ### Return
@@ -219,11 +219,11 @@ Return the balance for a provided seed and its wallet account index.
 
 ### Parameters
 
-| Method | Required | Default | Type | Definition |
+| Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **with_account_index** | ✘ | 0 | usize | The account index. |
-| **with_initial_address_index** | ✘ | 0 | usize | Start index from which to generate addresses. Default is 0. |
+| **account_index** | ✘ | 0 | usize | The account index. |
+| **initial_address_index** | ✘ | 0 | usize | Start index from which to generate addresses. Default is 0. |
 
 ### Return
 
@@ -244,7 +244,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **addresses** | ✔ | [Bech32Address] | List of Bech32 encoded addresses. |
 
@@ -266,8 +266,8 @@ Subscribe to a node event [Topic] (MQTT)
 
 Required: one of
 
-* `with_topic()`: Add a new [Topic] to the list.
-* `with_topics()`: Add a vector of [Topic] to the list.
+* `topic()`: Add a new [Topic] to the list.
+* `topics()`: Add a vector of [Topic] to the list.
 
 * `subscribe()`: Subscribe to the given topics with the callback, which will be called every time when the topic is detected.
 * `unsubscribe()`: Unsubscribes from all subscriptions.
@@ -283,7 +283,7 @@ Retries (promotes or reattaches) a message for provided [MessageId] if the node 
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
 
@@ -307,7 +307,7 @@ Reattaches a message. The method should validate if a reattachment is necessary 
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
 
@@ -323,7 +323,7 @@ Promotes a message. The method should validate if a promotion is necessary throu
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
 
@@ -403,7 +403,7 @@ Submit a message. The node takes care of missing fields and tries to build the m
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message** | ✔ | [Message] | The message object. |
 
@@ -419,7 +419,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **output_id** | ✔ | UTXOInput | Identifier of the output. |
 
@@ -433,7 +433,7 @@ An [OutputMetadata](#OutputMetadata) that contains various information about the
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **address** | ✔ | [Bech32Address] | The address to search for. |
 
@@ -450,7 +450,7 @@ Find all outputs based on the requests criteria.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **output_id** | ✘ | [UTXOInput] | The identifier of output. |
 | **addresses** | ✘ | [[Bech32Address]] | The Bech32 encoded address. |
@@ -467,7 +467,7 @@ Get the milestone by the given index.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
+| Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **index** | ✔ | u64 | Index of the milestone. |
 
@@ -508,9 +508,14 @@ struct MessageId([u8; MESSAGE_ID_LENGTH]);
 
 [Seed]: #Seed
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
+```Rust
+pub enum Seed {
+    /// Ed25519 variant
+    Ed25519(Ed25519Seed)
+}
+```
+
+An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
 ## `Message`
 
@@ -654,7 +659,6 @@ An Ed25519 address can be encoded in Bech32 or Hex, with Bech32 being preferred 
 
 ```Rust
 pub enum Address {
-    Wots(WotsAddress),
     Ed25519(Ed25519Address),
 }
 ```
