@@ -24,7 +24,7 @@ extern crate dotenv_codegen;
 #[tokio::main]
 async fn main() {
     let iota = Client::build() // Crate a client instance builder
-        .with_node("http://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();
