@@ -75,7 +75,8 @@ jobs:
     # paho.mqtt requires openssl and OPENSSL_DIR on Windows
     - name: Install OpenSSL (Windows)
       if: matrix.os == 'windows-latest'
-      run: choco install openssl --no-progress
+      run: |
+        choco install openssl --no-progress
         echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Set seeds in .env
