@@ -3,7 +3,7 @@
 
 //! cargo run --example transaction --release
 use iota::{Client, MessageId, Seed};
-use std::{num::NonZeroU64, time::Duration};
+use std::time::Duration;
 use tokio::time::delay_for;
 /// In this example, we send 900 tokens to the following 3 locations, respectively
 ///
@@ -36,11 +36,11 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6", // Insert the address to search for
-            NonZeroU64::new(300).unwrap(),
+            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
+            300,
         )
         .unwrap()
         .finish()
@@ -55,11 +55,11 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc",
-            NonZeroU64::new(300).unwrap(),
+            &"iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".into(),
+            300,
         )
         .unwrap()
         .finish()
@@ -74,11 +74,11 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            "iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r",
-            NonZeroU64::new(300).unwrap(),
+            &"iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".into(),
+            300,
         )
         .unwrap()
         .finish()
@@ -97,17 +97,17 @@ async fn main() {
 
     let message_id = iota
         .send()
-        .transaction(&seed)
+        .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            "iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr",
-            NonZeroU64::new(270).unwrap(),
+            &"iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr".into(),
+            270,
         )
         .unwrap()
         .with_output(
-            "iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m",
-            NonZeroU64::new(280).unwrap(),
+            &"iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m".into(),
+            280,
         )
         .unwrap()
         .finish()

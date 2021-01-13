@@ -65,13 +65,12 @@ declare_types! {
                 let mut getter = client.find_addresses(&seed);
 
                 if let Some(account_index) = &ref_.account_index {
-                    getter = getter.account_index(*account_index);
+                    getter = getter.with_account_index(*account_index);
                 }
                 if let Some(range) = &ref_.range {
-                    getter = getter.range(range.clone());
+                    getter = getter.with_range(range.clone());
                 }
-                getter.get().map(|addresses| {
-                    let addresses: Vec<(String, bool)> = addresses.iter().map(|(a, i)| (a.to_bech32(), *i)).collect();
+                getter.get_all().map(|addresses| {
                     serde_json::to_string(&addresses).unwrap()
                 })
             };

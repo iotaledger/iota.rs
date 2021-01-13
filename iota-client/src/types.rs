@@ -13,8 +13,40 @@ use serde::ser::Serializer;
 
 use std::{
     convert::{From, TryFrom, TryInto},
+    fmt,
     io::{BufReader, Read},
+    ops::Deref,
 };
+
+/// Bech32 encoded address struct
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct Bech32Address(pub String);
+
+impl Deref for Bech32Address {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Display for Bech32Address {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl From<String> for Bech32Address {
+    fn from(address: String) -> Self {
+        Bech32Address(address)
+    }
+}
+
+impl From<&str> for Bech32Address {
+    fn from(address: &str) -> Self {
+        Bech32Address(address.to_string())
+    }
+}
 
 /// Marker trait for response
 pub trait ResponseType {}
@@ -47,6 +79,9 @@ pub struct NodeInfo {
     /// coordinator public key
     #[serde(rename = "networkId")]
     pub network_id: String,
+    /// minimum proof of work score
+    #[serde(rename = "minPowScore")]
+    pub min_pow_score: usize,
     /// latest milestone index
     #[serde(rename = "latestMilestoneIndex")]
     pub latest_milestone_index: usize,
@@ -212,8 +247,8 @@ impl ResponseType for AddressOutputs {}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MilestoneMetadata {
     /// Milestone index
-    #[serde(rename = "milestoneIndex")]
-    pub milestone_index: u64,
+    #[serde(rename = "index")]
+    pub index: u64,
     /// Milestone ID
     #[serde(rename = "messageId")]
     pub message_id: String,
@@ -227,7 +262,7 @@ impl ResponseType for MilestoneMetadata {}
 #[derive(Debug, Serialize)]
 pub struct AddressBalancePair {
     /// Address
-    pub address: Address,
+    pub address: Bech32Address,
     /// Balance in the address
     pub balance: u64,
 }
@@ -544,7 +579,7 @@ impl From<&Output> for OutputJson {
             Output::SignatureLockedSingle(s) => Self {
                 type_: 0,
                 address: s.address().into(),
-                amount: s.amount().get(),
+                amount: s.amount(),
             },
             _ => todo!(),
         }
@@ -555,15 +590,12 @@ impl TryFrom<OutputJson> for Output {
     type Error = crate::Error;
 
     fn try_from(value: OutputJson) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(
-            value.address.try_into()?,
-            value.amount.try_into().expect("Output amount cannot be zero."),
-        );
+        let output = SignatureLockedSingleOutput::new(value.address.try_into()?, value.amount).unwrap();
         Ok(output.into())
     }
 }
 
-/// JSON struct for Address
+/// JSON struct for Address, hex encoded
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AddressJson {
     #[serde(rename = "type")]

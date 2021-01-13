@@ -69,7 +69,7 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Adds a list of IOTAl nodes by their URLs.
+    /// Adds a list of IOTA nodes by their URLs.
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
             let url = Url::parse(url).map_err(|_| Error::UrlError)?;

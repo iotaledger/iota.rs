@@ -1,12 +1,13 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
+use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
 use iota::{
     message::prelude::{Address, MessageBuilder, MessageId, UTXOInput},
+    types::Bech32Address,
     ClientMiner, Seed,
 };
 use neon::prelude::*;
@@ -17,7 +18,7 @@ pub(crate) enum Api {
         seed: Seed,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
-        outputs: Vec<(Address, NonZeroU64)>,
+        outputs: Vec<(Address, u64)>,
     },
     SendIndexation {
         index: String,
@@ -29,7 +30,6 @@ pub(crate) enum Api {
         initial_address_index: Option<usize>,
     },
     FindMessages {
-        indexation_keys: Vec<String>,
         message_ids: Vec<MessageId>,
     },
     GetBalance {
@@ -83,7 +83,7 @@ impl Task for ClientTask {
                     initial_address_index,
                     outputs,
                 } => {
-                    let mut sender = client.send().transaction(seed);
+                    let mut sender = client.send().with_seed(seed);
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
                     }
@@ -91,13 +91,15 @@ impl Task for ClientTask {
                         sender = sender.with_initial_address_index(*initial_address_index);
                     }
                     for output in outputs {
-                        sender = sender.with_output(&output.0.clone().to_bech32(), output.1).unwrap();
+                        sender = sender
+                            .with_output(&output.0.clone().to_bech32().into(), output.1)
+                            .unwrap();
                     }
                     let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::SendIndexation { index, data } => {
-                    let mut sender = client.send().indexation(index);
+                    let mut sender = client.send().with_index(index);
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }
@@ -111,19 +113,16 @@ impl Task for ClientTask {
                 } => {
                     let mut getter = client.get_unspent_address(seed);
                     if let Some(account_index) = account_index {
-                        getter = getter.account_index(*account_index);
+                        getter = getter.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
-                        getter = getter.initial_address_index(*initial_address_index);
+                        getter = getter.with_initial_address_index(*initial_address_index);
                     }
                     let (address, index) = getter.get().await?;
-                    serde_json::to_string(&(address.to_bech32(), index)).unwrap()
+                    serde_json::to_string(&(address, index)).unwrap()
                 }
-                Api::FindMessages {
-                    indexation_keys,
-                    message_ids,
-                } => {
-                    let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
+                Api::FindMessages { message_ids } => {
+                    let messages = client.find_messages(&message_ids[..]).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetBalance {
@@ -142,7 +141,8 @@ impl Task for ClientTask {
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressBalances(addresses) => {
-                    let balances = client.get_address_balances(&addresses[..]).await?;
+                    let bech32_addresses: Vec<Bech32Address> = addresses.iter().map(|a| a.to_bech32().into()).collect();
+                    let balances = client.get_address_balances(&bech32_addresses[..]).await?;
                     let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
                 }
@@ -204,16 +204,18 @@ impl Task for ClientTask {
                     serde_json::to_string(&output).unwrap()
                 }
                 Api::FindOutputs { outputs, addresses } => {
-                    let outputs = client.find_outputs(outputs, addresses).await?;
+                    let bech32_addresses: Vec<Bech32Address> =
+                        addresses.iter().map(|a| Bech32Address(a.to_bech32())).collect();
+                    let outputs = client.find_outputs(outputs, &bech32_addresses[..]).await?;
                     let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }
                 Api::GetAddressBalance(address) => {
-                    let balance = client.get_address().balance(address).await?;
+                    let balance = client.get_address().balance(&address.to_bech32().into()).await?;
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressOutputs(address) => {
-                    let output_ids = client.get_address().outputs(address).await?;
+                    let output_ids = client.get_address().outputs(&address.to_bech32().into()).await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {

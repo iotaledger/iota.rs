@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 
 use std::{
     convert::{TryFrom, TryInto},
-    num::NonZeroU64,
     str::FromStr,
 };
 
@@ -53,8 +52,9 @@ impl TryFrom<MessageTransactionEssenceDto> for TransactionEssence {
                 SignatureLockedSingleOutput::new(
                     super::parse_address(output.address.clone())
                         .unwrap_or_else(|_| panic!("invalid output address: {}", output.address)),
-                    NonZeroU64::new(output.amount).expect("output amount can't be zero"),
+                    output.amount,
                 )
+                .unwrap()
                 .into()
             })
             .collect();
@@ -212,7 +212,7 @@ pub(super) struct AddressBalanceDto {
 impl From<AddressBalancePair> for AddressBalanceDto {
     fn from(value: AddressBalancePair) -> Self {
         Self {
-            address: value.address.to_bech32(),
+            address: value.address.to_string(),
             balance: value.balance,
         }
     }
