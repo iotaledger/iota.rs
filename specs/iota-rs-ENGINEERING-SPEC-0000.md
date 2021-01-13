@@ -179,7 +179,7 @@ Return a valid unspent public Bech32 encoded address.
 
 | Field | Required | Default | Type | Definition |
 | - | - | - | - | - |
-| **with_seed** | ✔ | - | [Seed] | The seed we want to use. |
+| **seed** | ✔ | - | [Seed] | The seed we want to use. |
 | **with_account_index** | ✘ | 0 | usize | The account index. |
 | **with_initial_address_index** | ✘ | 0 | usize | Start index of the addresses to search. |
 
