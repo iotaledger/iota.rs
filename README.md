@@ -97,7 +97,7 @@ cargo doc --document-private-items --no-deps --open
 You can see the examples in the [examples](examples/) directory and try them with:
 
 ```bash
-cargo run --example balance
+cargo run --example balance --release
 ```
 
 For the examples where a seed is required you have to rename `.env.example` to `.env`.
