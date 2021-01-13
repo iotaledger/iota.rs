@@ -64,10 +64,7 @@ $ set OPENSSL_DIR="C:\Program Files\OpenSSL-Win64"
 `cmake` and `openssl` can be installed with `Homebrew`:
 
 ```bash
-$ brew install cmake
-$ brew install openssl@1.1
-# you may want to add this to your .zshrc or .bashrc since you'll need it to compile the crate
-$ OPENSSL_ROOT_DIR=$(brew --prefix openssl@1.1)
+$ brew install cmake openssl@1.1
 ```
 
 ### Linux
