@@ -81,7 +81,7 @@ pub struct NodeInfo {
     pub network_id: String,
     /// minimum proof of work score
     #[serde(rename = "minPowScore")]
-    pub min_pow_score: usize,
+    pub min_pow_score: f64,
     /// latest milestone index
     #[serde(rename = "latestMilestoneIndex")]
     pub latest_milestone_index: usize,
