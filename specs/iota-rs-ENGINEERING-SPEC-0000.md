@@ -246,7 +246,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **addresses** | ✔ | [Bech32Address] | List of Bech32 encoded addresses. |
+| **addresses** | ✔ | [[Bech32Address]] | List of Bech32 encoded addresses. |
 
 ### Return
 
