@@ -34,7 +34,11 @@
   * [Payload]
   * [Output]
   * [Address]
-
+  * [AddressBalancePair]
+  * [Milestone]
+  * [API]
+  * [BrokerOptions]
+  * [Topic]
 
 # Introduction
 
@@ -48,7 +52,7 @@ The data structure to initialize the instance of the Higher level client library
 
 | Field | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **with_network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to define the network. |
+| **with_network** | ✘ | Testnet | [Network] | Pass an enumeration with elements of **Mainnet/Testnet** to define the network. |
 | **with_node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
 | **with_nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **with_node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
@@ -66,12 +70,12 @@ Finalize the builder with `finish()` will run the instance in the background. Us
 
 ## On initialization
 
-On initialisation, call getNodeInfo API. Check the health of each node in the node list, place any nodes that are unresponsive or with isHealthy = false on a temporary blacklist. Store important metadata including MQTT port, network, remote proof of work for each node.
+On initialisation, call getNodeInfo API. Check the health of each node in the node list, and put healty nodes, matching the PoW settings and network in a synced nodelist.
 
 | Node metadata | Description |
 | - | - |
-| network | If this parameter does not match the global builder parameter, add node to blacklist and return error. |
-| pow | If the global local_pow parameter is set to false, then put any nodes without pow support in the blacklist. |
+| network | If this parameter does not match the global builder parameter, don't add it to the synced nodelist. |
+| pow | If the global local_pow parameter is set to false, then put only nodes with the PoW feature in the synced nodelist. |
 
 ## Sync Process
 
@@ -258,7 +262,7 @@ Following are the steps for implementing this method:
 
 ## `subscriber()`
 
-Subscribe to a node event topic (MQTT)
+Subscribe to a node event [Topic] (MQTT)
 
 Required: one of
 
@@ -329,7 +333,7 @@ A tuple with the newly promoted `(MessageId,  Message)`.
 
 # Full node API
 
-Full node API of Bee and Hornet will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and hornet haven't finalized their APIs either. Following items and signatures might change later.
+Full node API of Bee and HORNET will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and HORNET haven't finalized their APIs either. Following items and signatures might change later.
 
 ## `get_health()`
 
@@ -479,13 +483,14 @@ Here are the objects used in the API above. They aim to provide a secure way to 
 
 [Network]: #Network
 
-Network is an enumeration with elements of **[mainnet|comnet|devnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
+Network is an enumeration with elements of **[Mainnet|Testnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
 
 ```rust
-enum Network {
-  Mainnet,
-  Comnet,
-  Devnet,
+pub enum Network {
+    /// Mainnet
+    Mainnet,
+    /// Any network that is not the mainnet
+    Testnet,
 }
 ```
 
@@ -684,28 +689,9 @@ struct MilestoneMetadata {
 }
 ```
 
-## `Topic`
-
-[Topic]: #Topic
-
-A string with the exact MQTT topic to monitor, can have one of the following variations:
-
-```
-milestones/latest
-milestones/solid
-
-messages
-messages/referenced
-messages/indexation/{index}
-messages/{messageId}/metadata
-
-outputs/{outputId}
-
-addresses/{address}/outputs
-addresses/ed25519/{address}/outputs
-```
-
 ## `Api`
+
+[Api]: #Api
 
 ```Rust
 pub enum Api {
@@ -726,6 +712,8 @@ pub enum Api {
 
 ## `BrokerOptions`
 
+[BrokerOptions]: #BrokerOptions
+
 ```Rust
 pub struct BrokerOptions {
     #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
@@ -735,4 +723,25 @@ pub struct BrokerOptions {
     #[serde(default = "default_use_ws")]
     pub(crate) use_ws: bool,
 }
+```
+
+## `Topic`
+
+[Topic]: #Topic
+
+A string with the exact MQTT topic to monitor, can have one of the following variations:
+
+```
+milestones/latest
+milestones/solid
+
+messages
+messages/referenced
+messages/indexation/{index}
+messages/{messageId}/metadata
+
+outputs/{outputId}
+
+addresses/{address}/outputs
+addresses/ed25519/{address}/outputs
 ```
