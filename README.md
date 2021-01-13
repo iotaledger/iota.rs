@@ -100,6 +100,8 @@ You can see the examples in the [examples](examples/) directory and try them wit
 cargo run --example balance
 ```
 
+You have to rename `example.env` to `.env` first for examples where a seed is required.
+
 ## Bindings
 
 Bindings to other programming languages.

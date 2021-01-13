@@ -5,6 +5,8 @@
 use iota::{Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::delay_for;
+#[macro_use]
+extern crate dotenv_codegen;
 /// In this example, we send 900 tokens to the following 3 locations, respectively
 ///
 /// Address Index 0. Note that we can use the `address` example codes to know the addresses belong to the seed.
@@ -22,17 +24,14 @@ use tokio::time::delay_for;
 #[tokio::main]
 async fn main() {
     let iota = Client::build() // Crate a client instance builder
-        .with_node("http://0.0.0.0:14265") // Insert the node here
+        .with_node("http://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();
 
-    // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    // First address from the seed below is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
-    )
-    .unwrap();
+    // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    // First address from the seed in the .env is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
+    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("seed")).unwrap()).unwrap();
 
     let message_id = iota
         .send()
@@ -90,10 +89,7 @@ async fn main() {
     );
     reattach_promote_until_confirmed(message_id, &iota).await;
 
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0").unwrap(),
-    )
-    .unwrap(); // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("second_seed")).unwrap()).unwrap();
 
     let message_id = iota
         .send()

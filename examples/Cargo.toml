@@ -8,6 +8,7 @@ edition = "2018"
 tokio = { version = "0.2.22", features = ["full"] }
 iota-core = { path = "../iota-core"}
 hex = "0.4.2"
+dotenv_codegen = "0.15.0"
 
 [[example]]
 name = "address"
