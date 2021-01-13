@@ -370,7 +370,7 @@ pub struct NodeInfo {
     pub is_healthy: bool,
     pub network_id: String,
     pub latest_milestone_index: usize,
-    pub min_pow_score: usize,
+    pub min_pow_score: f64,
     pub solid_milestone_index: usize,
     pub pruning_index: usize,
     pub features: Vec<String>,
