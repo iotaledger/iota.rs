@@ -50,7 +50,7 @@ The data structure to initialize the instance of the Higher level client library
 
 ### Parameters
 
-| Field | Required | Default Value | Type | Definition |
+| Method | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
 | **with_network** | ✘ | Testnet | [Network] | Pass an enumeration with elements of **Mainnet/Testnet** to define the network. |
 | **with_node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
@@ -177,7 +177,7 @@ Return a valid unspent public Bech32 encoded address.
 
 ### Parameters
 
-| Field | Required | Default | Type | Definition |
+| Method | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to use. |
 | **with_account_index** | ✘ | 0 | usize | The account index. |
@@ -202,7 +202,7 @@ Return a list of addresses from the seed regardless of their validity.
 
 ### Parameters/Methods
 
-| Field | Required | Default | Type | Definition |
+| Method | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
 | **with_account_index()** | ✘ | 0 | usize | The account index. |
@@ -219,7 +219,7 @@ Return the balance for a provided seed and its wallet account index.
 
 ### Parameters
 
-| Field | Required | Default | Type | Definition |
+| Method | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
 | **with_account_index** | ✘ | 0 | usize | The account index. |
