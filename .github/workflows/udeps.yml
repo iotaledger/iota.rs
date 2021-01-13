@@ -14,6 +14,7 @@ jobs:
   udeps:
     runs-on: ubuntu-latest
     steps:
+      run: sed '.env.example' .env
     - uses: actions/checkout@v2
 
     - uses: actions-rs/toolchain@v1

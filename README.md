@@ -100,7 +100,7 @@ You can see the examples in the [examples](examples/) directory and try them wit
 cargo run --example balance
 ```
 
-For the examples where a seed is required you can change it in the `.env` file.
+For the examples where a seed is required you have to rename `.env.example` to `.env`.
 
 ## Bindings
 
