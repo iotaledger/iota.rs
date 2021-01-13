@@ -14,7 +14,6 @@ jobs:
   udeps:
     runs-on: ubuntu-latest
     steps:
-      run: sed '.env.example' .env
     - uses: actions/checkout@v2
 
     - uses: actions-rs/toolchain@v1
@@ -22,6 +21,9 @@ jobs:
         profile: minimal
         toolchain: nightly
         override: true
+        
+    - name: Set seeds in .env
+       run: mv .env.example .env
 
     - name: Cache cargo registry
       uses: actions/cache@v2

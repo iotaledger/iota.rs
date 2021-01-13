@@ -86,10 +86,12 @@ jobs:
         command: build
         args: --all --release
 
+    - name: Set seeds in .env
+       run: mv .env.example .env
+
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
-            run: sed '.env.example' .env
         command: test
         args: --all --release
 

@@ -18,7 +18,6 @@ jobs:
       fail-fast: false
 
     steps:
-      run: sed '.env.example' .env
     - uses: actions/checkout@v2
     - name: Install clippy with stable toolchain
       uses: actions-rs/toolchain@v1
