@@ -3,8 +3,9 @@
 
 use std::{collections::HashMap, num::NonZeroU64, str::FromStr, time::Duration};
 
-use iota::client::{Api, BrokerOptions, ClientBuilder};
+use iota::client::{Api, BrokerOptions, ClientBuilder, NodeDetail};
 use neon::prelude::*;
+use reqwest::Url;
 
 pub struct ClientBuilderWrapper {
     nodes: Vec<String>,
@@ -51,6 +52,37 @@ declare_types! {
                 node_urls.push(node_url.value());
             }
 
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let nodes = &mut this.borrow_mut(&guard).nodes;
+                for node_url in node_urls {
+                    nodes.push(node_url);
+                }
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method node_pool_urls(mut cx) {
+            let js_node_urls = cx.argument::<JsArray>(0)?;
+            let js_node_urls: Vec<Handle<JsValue>> = js_node_urls.to_vec(&mut cx)?;
+
+
+            let mut node_pool_urls = vec![];
+            for js_node_url in js_node_urls {
+                let node_url: Handle<JsString> = js_node_url.downcast_or_throw(&mut cx)?;
+                node_pool_urls.push(node_url.value());
+            }
+            let mut node_urls = vec![];
+            for node_pool_url in node_pool_urls {
+                let text: String = reqwest::blocking::get(&node_pool_url).unwrap().text().unwrap();
+                let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
+                for node_detail in nodes_details {
+                    let url = Url::parse(&node_detail.node).unwrap();
+                    node_urls.push(url.to_string());
+                }
+            }
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
