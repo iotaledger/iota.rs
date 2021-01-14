@@ -4,9 +4,10 @@
 //! cargo run --example transaction --release
 use iota::{Client, MessageId, Seed};
 use std::time::Duration;
-use tokio::time::delay_for;
+use tokio::time::sleep;
 #[macro_use]
 extern crate dotenv_codegen;
+
 /// In this example, we send 900 tokens to the following 3 locations, respectively
 ///
 /// Address Index 0. Note that we can use the `address` example codes to know the addresses belong to the seed.
@@ -130,6 +131,6 @@ async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) 
         } else if let Ok(msg_id) = iota.reattach(&message_id).await {
             println!("Reattached or promoted {}", msg_id.0);
         }
-        delay_for(Duration::from_secs(5)).await;
+        sleep(Duration::from_secs(5)).await;
     }
 }
