@@ -52,7 +52,7 @@ impl<'a> GetBalanceBuilder<'a> {
                 .find_addresses(self.seed)
                 .with_account_index(account_index)
                 .with_range(index..index + 20)
-                .finish()?;
+                .get_all()?;
 
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut found_zero_balance = false;

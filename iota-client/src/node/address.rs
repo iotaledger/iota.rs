@@ -1,9 +1,9 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{parse_response, AddressBalance, AddressOutputs, Client, Error, Response, Result};
+use crate::{parse_response, types::Bech32Address, AddressBalance, AddressOutputs, Client, Error, Response, Result};
 
-use bee_message::prelude::{Address, TransactionId, UTXOInput};
+use bee_message::prelude::{TransactionId, UTXOInput};
 
 use std::convert::TryInto;
 
@@ -18,11 +18,10 @@ impl<'a> GetAddressBuilder<'a> {
         Self { client }
     }
 
-    /// Consume the builder and get the balance of a given address.
+    /// Consume the builder and get the balance of a given Bech32 encoded address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn balance(self, address: &'a Address) -> Result<u64> {
-        let address = address.to_bech32();
+    pub async fn balance(self, address: &Bech32Address) -> Result<u64> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/addresses/{}", address));
         let resp = reqwest::get(url).await?;
@@ -36,8 +35,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get all outputs that use a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &'a Address) -> Result<Box<[UTXOInput]>> {
-        let address = address.to_bech32();
+    pub async fn outputs(self, address: &Bech32Address) -> Result<Box<[UTXOInput]>> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/addresses/{}/outputs", address));
         let resp = reqwest::get(url).await?;

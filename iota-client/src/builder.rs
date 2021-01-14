@@ -1,6 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+
 //! Builder of the Clinet Instnace
 use crate::{client::*, error::*, types::*};
 use reqwest::Url;
@@ -19,10 +20,8 @@ const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 pub enum Network {
     /// Mainnet
     Mainnet,
-    /// Devnet
-    Devnet,
-    /// Comnet
-    Comnet,
+    /// Any network that is not the mainnet
+    Testnet,
 }
 
 /// Builder to construct client instance with sensible default values
@@ -44,7 +43,7 @@ impl Default for ClientBuilder {
             nodes: HashSet::new(),
             node_sync_interval: Duration::from_millis(60000),
             node_sync_enabled: true,
-            network: Network::Mainnet,
+            network: Network::Testnet,
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             local_pow: true,
@@ -77,7 +76,7 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Adds a list of IOTAl nodes by their URLs.
+    /// Adds a list of IOTA nodes by their URLs.
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
             let url = Url::parse(url).map_err(|_| Error::UrlError)?;
@@ -110,7 +109,7 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Selects the network the added nodes belong to.
+    /// Selects the type of network the added nodes belong to.
     pub fn with_network(mut self, network: Network) -> Self {
         self.network = network;
         self
@@ -147,6 +146,8 @@ impl ClientBuilder {
             return Err(Error::MissingParameter(String::from("Iota node")));
         }
 
+        let local_pow = self.local_pow;
+        let network = self.network;
         let nodes = self.nodes;
         let node_sync_interval = self.node_sync_interval;
 
@@ -155,9 +156,17 @@ impl ClientBuilder {
             let sync_ = sync.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
             let runtime = std::thread::spawn(move || {
-                let mut runtime = Runtime::new().unwrap();
-                runtime.block_on(Client::sync_nodes(&sync_, &nodes));
-                Client::start_sync_process(&runtime, sync_, nodes, node_sync_interval, sync_kill_receiver);
+                let runtime = Runtime::new().unwrap();
+                runtime.block_on(Client::sync_nodes(&sync_, &nodes, local_pow, network.clone()));
+                Client::start_sync_process(
+                    &runtime,
+                    sync_,
+                    nodes,
+                    node_sync_interval,
+                    local_pow,
+                    network,
+                    sync_kill_receiver,
+                );
                 runtime
             })
             .join()

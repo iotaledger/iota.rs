@@ -55,14 +55,8 @@ $ set VCPKGRS_DYNAMIC=1
 
 ```bash
 $ choco install openssl
-# you may need to set the OPENSSL_ROOT_DIR environment variable
-$ set OPENSSL_ROOT_DIR="C:\Program Files\OpenSSL-Win64"
-```
-
-If you are using a pre-built OpenSSL library, you may now need to set the specific location of the library with an environment variable. Like this:
-
-```bash
-set OPENSSL_DIR=C:\Program Files\OpenSSL-Win64
+# you may need to set the OPENSSL_DIR environment variable
+$ set OPENSSL_DIR="C:\Program Files\OpenSSL-Win64"
 ```
 
 ### macOS
@@ -70,10 +64,7 @@ set OPENSSL_DIR=C:\Program Files\OpenSSL-Win64
 `cmake` and `openssl` can be installed with `Homebrew`:
 
 ```bash
-$ brew install cmake
-$ brew install openssl@1.1
-# you may want to add this to your .zshrc or .bashrc since you'll need it to compile the crate
-$ OPENSSL_ROOT_DIR=$(brew --prefix openssl@1.1)
+$ brew install cmake openssl@1.1
 ```
 
 ### Linux
