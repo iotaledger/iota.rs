@@ -1,7 +1,6 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-
 //! Builder of the Clinet Instnace
 use crate::{client::*, error::*, types::*};
 use reqwest::Url;
