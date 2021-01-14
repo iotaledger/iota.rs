@@ -624,12 +624,12 @@ Gets the metadata of the given message.
 
 ##### TransactionPayload
 
-| Field         | Type                            | Description         |
-| ------------- | ------------------------------- | ------------------- |
-| essence       | <code>TransactionEssence</code> | Transaction essence |
-| unlock_blocks | <code>UnlockBlock[]</code>      | Unlock blocks       |
+| Field         | Type                                   | Description         |
+| ------------- | -------------------------------------- | ------------------- |
+| essence       | <code>TransactionPayloadEssence</code> | Transaction essence |
+| unlock_blocks | <code>UnlockBlock[]</code>             | Unlock blocks       |
 
-- TransactionEssence
+- TransactionPayloadEssence
 
 | Field   | Type                              | Description          |
 | ------- | --------------------------------- | -------------------- |
@@ -708,12 +708,12 @@ Gets the metadata of the given message.
 
 ##### TransactionPayloadDto
 
-| Field        | Type                               | Description         |
-| ------------ | ---------------------------------- | ------------------- |
-| essence      | <code>TransactionEssenceDto</code> | Transaction essence |
-| unlockBlocks | <code>UnlockBlockDto[]</code>      | Unlock blocks       |
+| Field        | Type                                      | Description         |
+| ------------ | ----------------------------------------- | ------------------- |
+| essence      | <code>TransactionPayloadEssenceDto</code> | Transaction essence |
+| unlockBlocks | <code>UnlockBlockDto[]</code>             | Unlock blocks       |
 
-- TransactionEssenceDto
+- TransactionPayloadEssenceDto
 
 | Field   | Type                                 | Description          |
 | ------- | ------------------------------------ | -------------------- |

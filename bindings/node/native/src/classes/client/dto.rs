@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    AddressBalancePair, Ed25519Signature, Indexation, Input, Output, OutputMetadata, Payload, ReferenceUnlock,
-    SignatureLockedSingleOutput, SignatureUnlock, Transaction, TransactionEssence, UTXOInput, UnlockBlock,
+    AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Output, OutputMetadata, Payload, ReferenceUnlock,
+    SignatureLockedSingleOutput, SignatureUnlock, TransactionPayload, TransactionPayloadEssence, UTXOInput,
+    UnlockBlock,
 };
 use serde::{Deserialize, Serialize};
 
@@ -19,16 +20,16 @@ pub struct OutputDto {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct MessageTransactionEssenceDto {
+pub struct MessageTransactionPayloadEssenceDto {
     inputs: Box<[String]>,
     outputs: Box<[OutputDto]>,
     payload: Option<Box<MessagePayloadDto>>,
 }
 
-impl TryFrom<MessageTransactionEssenceDto> for TransactionEssence {
+impl TryFrom<MessageTransactionPayloadEssenceDto> for TransactionPayloadEssence {
     type Error = crate::Error;
-    fn try_from(value: MessageTransactionEssenceDto) -> crate::Result<Self> {
-        let mut builder = TransactionEssence::builder();
+    fn try_from(value: MessageTransactionPayloadEssenceDto) -> crate::Result<Self> {
+        let mut builder = TransactionPayloadEssence::builder();
 
         let inputs: Vec<Input> = value
             .inputs
@@ -66,7 +67,7 @@ impl TryFrom<MessageTransactionEssenceDto> for TransactionEssence {
             Some(indexation) => builder.with_payload(
                 (*indexation)
                     .try_into()
-                    .expect("Invalid indexation in TransactionEssenceJson"),
+                    .expect("Invalid indexation in TransactionPayloadEssenceJson"),
             ),
             _ => builder,
         };
@@ -120,7 +121,7 @@ impl TryFrom<MessageUnlockBlockJsonDto> for UnlockBlock {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MessageTransactionPayloadDto {
-    essence: MessageTransactionEssenceDto,
+    essence: MessageTransactionPayloadEssenceDto,
     #[serde(rename = "unlockBlocks")]
     unlock_blocks: Box<[MessageUnlockBlockJsonDto]>,
 }
@@ -152,7 +153,7 @@ impl TryFrom<MessagePayloadDto> for Payload {
     fn try_from(payload: MessagePayloadDto) -> crate::Result<Self> {
         match payload {
             MessagePayloadDto::Transaction(transaction_payload) => {
-                let mut transaction = Transaction::builder();
+                let mut transaction = TransactionPayload::builder();
                 transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
 
                 let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
@@ -163,7 +164,7 @@ impl TryFrom<MessagePayloadDto> for Payload {
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
             MessagePayloadDto::Indexation(indexation_payload) => {
-                let indexation = Indexation::new(indexation_payload.index, &indexation_payload.data).unwrap();
+                let indexation = IndexationPayload::new(indexation_payload.index, &indexation_payload.data).unwrap();
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
         }

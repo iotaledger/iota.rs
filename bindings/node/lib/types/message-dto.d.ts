@@ -8,10 +8,10 @@ export declare interface OutputDto {
   amount: number
 }
 
-export declare interface TransactionEssenceDto {
+export declare interface TransactionPayloadEssenceDto {
   inputs: InputDto[]
   outputs: OutputDto[]
-  payload?: IndexationPayload
+  payload?: IndexationPayloadDto
 }
 
 export declare type WotsSignatureUnlockBlockDto = number[]
@@ -30,13 +30,13 @@ export declare type ReferenceUnlockBlockDto = number
 export declare type UnlockBlockDto = SignatureUnlockBlockDto | ReferenceUnlockBlockDto
 
 export declare interface TransactionPayloadDto {
-  essence: TransactionEssenceDto
+  essence: TransactionPayloadEssenceDto
   unlockBlocks: UnlockBlockDto[]
 }
 
 export declare interface IndexationPayloadDto {
   index: string
-  data: Uint8Array
+  data?: Uint8Array
 }
 
 export declare type PayloadDto = TransactionPayloadDto | IndexationPayloadDto
