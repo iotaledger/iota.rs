@@ -145,7 +145,7 @@ Endpoint collection all about GET messages.
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
-| **&str** | ✔ | str | An indexation key. |
+| **index** | ✔ | str | An indexation key. |
 
 ### Returns
 
