@@ -58,9 +58,9 @@ The data structure to initialize the instance of the Higher level client library
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **api_timeout** | ✘ | The default value of `request_timeout` | [Api], std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
+| **api_timeout** | ✘ | The default value of `request_timeout` | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
-| **mqtt_broker_options** | ✘ | automatic_disconnect: True, timeout: Duration::from_secs(30), use_ws: true | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
+| **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -107,8 +107,8 @@ A generic send function for easily sending a message.
 | **account_index** | ✘ | 0 | usize | The account index |
 | **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
 | **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
-| **output** | ✘ | None | address: &[Bech32Address], amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
-| **output_hex** | ✘ | None | address: &str, amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
+| **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
+| **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **index** | ✘ | None | &str | An optional indexation key for an indexation payload. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
 | **parent** | ✘ | None | [MessageId] | An optional parent [MessageId] to be used as one parent. |
