@@ -58,7 +58,7 @@ impl Default for ClientBuilder {
                 api_default_timeout.insert(Api::PostMessageWithRemotePow, Duration::from_millis(30000));
                 api_default_timeout.insert(Api::GetOutput, Duration::from_millis(2000));
                 api_default_timeout
-            }
+            },
         }
     }
 }
@@ -100,7 +100,10 @@ impl ClientBuilder {
 
     /// Get node list from the node_pool_urls
     pub fn with_node_pool_urls(mut self, node_pool_urls: &str) -> Result<Self> {
-        let text: String = reqwest::blocking::get(node_pool_urls).unwrap().text().map_err(|_| Error::NodePoolUrlsError)?;
+        let text: String = reqwest::blocking::get(node_pool_urls)
+            .unwrap()
+            .text()
+            .map_err(|_| Error::NodePoolUrlsError)?;
         let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
         for node_detail in nodes_details {
             let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;

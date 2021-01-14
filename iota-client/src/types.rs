@@ -712,22 +712,21 @@ impl TryFrom<SignatureUnlockJson> for SignatureUnlock {
     }
 }
 
-
 /// JSON struct for NodeDetail from the node_pool_urls
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeDetail {
-   /// Iota node url
-   pub node: String,
-   /// value of health
-   pub health: usize,
-   /// number of neighbors
-   pub neighbors: usize,
-   /// implementation name
-   pub implementation: String,
+    /// Iota node url
+    pub node: String,
+    /// value of health
+    pub health: usize,
+    /// number of neighbors
+    pub neighbors: usize,
+    /// implementation name
+    pub implementation: String,
     /// Iota node version
-   pub version: String,
-   /// enabled PoW
-   pub pow: bool,
-   /// spent or not
-   pub spent: bool,
+    pub version: String,
+    /// enabled PoW
+    pub pow: bool,
+    /// spent or not
+    pub spent: bool,
 }
