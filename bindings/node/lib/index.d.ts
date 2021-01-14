@@ -10,7 +10,7 @@ import {
   MessageDto
 } from './types'
 
-export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'GetOutput' | 'GetMilestone'
+export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'PostMessageWithRemotePoW' | 'GetOutput' | 'GetMilestone'
 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
@@ -74,6 +74,7 @@ export declare class Client {
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: MessageDto): Promise<string>
+  postMessageWithRemotePow(message: MessageDto): Promise<string>
   getMessage(): MessageFinder
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
