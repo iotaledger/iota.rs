@@ -138,7 +138,7 @@ impl ClientBuilder {
             let sync_ = sync.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
             let runtime = std::thread::spawn(move || {
-                let mut runtime = Runtime::new().unwrap();
+                let runtime = Runtime::new().unwrap();
                 runtime.block_on(Client::sync_nodes(&sync_, &nodes, local_pow, network.clone()));
                 Client::start_sync_process(
                     &runtime,
