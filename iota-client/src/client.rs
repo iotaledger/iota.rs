@@ -219,7 +219,7 @@ pub struct Client {
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
-    pub(crate) network_info: NetworkInfo,
+    pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for each API call.
@@ -232,7 +232,7 @@ impl std::fmt::Debug for Client {
         d.field("sync", &self.sync).field("client", &self.client);
         #[cfg(feature = "mqtt")]
         d.field("broker_options", &self.broker_options);
-        d.field("local_pow", &self.network_info.local_pow).finish()
+        d.field("network_info", &self.network_info).finish()
     }
 }
 
@@ -343,13 +343,13 @@ impl Client {
     /// Gets the miner to use based on the PoW setting
     pub fn get_pow_provider(&self) -> ClientMiner {
         ClientMinerBuilder::new()
-            .with_local_pow(self.network_info.local_pow)
+            .with_local_pow(self.network_info.read().unwrap().local_pow)
             .finish()
     }
 
     /// Gets the network related information such as network_id and min_pow_score
     pub fn get_network_info(&self) -> NetworkInfo {
-        self.network_info.clone()
+        self.network_info.read().unwrap().clone()
     }
 
     ///////////////////////////////////////////////////////////////////////

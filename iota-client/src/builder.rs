@@ -184,7 +184,7 @@ impl ClientBuilder {
             mqtt_topic_handlers: Default::default(),
             #[cfg(feature = "mqtt")]
             broker_options: self.broker_options,
-            network_info: network_info.read().unwrap().clone(),
+            network_info,
             request_timeout: self.request_timeout,
             api_timeout: self.api_timeout,
         };
