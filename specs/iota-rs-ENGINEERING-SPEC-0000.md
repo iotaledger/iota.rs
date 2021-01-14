@@ -105,8 +105,8 @@ A generic send function for easily sending a message.
 | Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for transactions |
-| **account_index** | ✘ | 0 | usize | The account index |
-| **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance |
+| **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+| **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
 | **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
 | **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
@@ -182,8 +182,8 @@ Return a valid unspent public Bech32 encoded address.
 | Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to use. |
-| **account_index** | ✘ | 0 | usize | The account index. |
-| **initial_address_index** | ✘ | 0 | usize | Start index of the addresses to search. |
+| **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+| **initial_address_index** | ✘ | 0 | usize | Start index of the addresses to search. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
 
 ### Return
 
@@ -207,7 +207,7 @@ Return a list of addresses from the seed regardless of their validity.
 | Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
-| **account_index()** | ✘ | 0 | usize | The account index. |
+| **account_index()** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 | **range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
 | **get_all()** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
 
@@ -224,8 +224,8 @@ Return the balance for a provided seed and its wallet account index.
 | Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **account_index** | ✘ | 0 | usize | The account index. |
-| **initial_address_index** | ✘ | 0 | usize | Start index from which to generate addresses. Default is 0. |
+| **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+| **initial_address_index** | ✘ | 0 | usize | Start index from which to generate addresses. Default is 0. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
 
 ### Return
 
