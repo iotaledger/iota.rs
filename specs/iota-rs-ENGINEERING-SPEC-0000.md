@@ -58,13 +58,7 @@ The data structure to initialize the instance of the Higher level client library
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> 
-                Api::GetHealth: Duration::from_secs(2),<br /> 
-                Api::GetMilestone: Duration::from_secs(2),<br /> 
-                Api::GetTips: Duration::from_secs(2),<br /> 
-                Api::PostMessage: Duration::from_secs(2),<br /> 
-                Api::PostMessageWithRemotePow: Duration::from_secs(30),<br /> 
-                Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
+| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
 | **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
 
