@@ -125,7 +125,7 @@ declare_types! {
             }
             for js_indexation_key in js_indexation_keys {
                 let indexation_key: Handle<JsString> = js_indexation_key.downcast_or_throw(&mut cx)?;
-                indexation_keys.push(MessageId::from_str(indexation_key.value().as_str()).unwrap_or_else(|_| panic!("invalid indexation key: {}", indexation_key.value())));
+                indexation_keys.push(indexation_key.value());
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
