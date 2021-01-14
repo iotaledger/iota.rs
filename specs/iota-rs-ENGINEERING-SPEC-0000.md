@@ -58,7 +58,7 @@ The data structure to initialize the instance of the Higher level client library
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **api_timeout** | ✘ | The default value of `request_timeout` | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
+| **api_timeout** | ✘ | Assign the default value of `request_timeout` to the timeout of all APIs if none of them are explicitly specified. | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
 | **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
 
@@ -723,7 +723,7 @@ pub struct BrokerOptions {
     #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
-    pub(crate) timeout: Duration,
+    pub(crate) timeout: std::time::Duration,
     #[serde(default = "default_use_ws")]
     pub(crate) use_ws: bool,
 }
