@@ -36,6 +36,9 @@ pub enum Error {
     /// Error on Url type conversion
     #[error("Failed to parse url")]
     UrlError,
+    /// Error on Url type conversion
+    #[error("Failed to parse node_pool_urls")]
+    NodePoolUrlsError,
     /// Errors from reqwest api call
     #[error("{0}")]
     ReqwestError(#[from] reqwest::Error),

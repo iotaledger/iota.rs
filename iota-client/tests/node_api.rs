@@ -10,6 +10,7 @@ use iota_client::MessageJson;
 use std::{convert::TryInto, str::FromStr};
 
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
+const DEFAULT_NODE_POOL_URLS: &str = "https://nodes.iota.works/api/ssl/live";
 
 // Sends a full message object to the node with already computed nonce. Serves as a test object.
 async fn setup_indexation_message() -> MessageId {
@@ -32,6 +33,15 @@ async fn setup_indexation_message() -> MessageId {
     }"#;
     let message: Message = serde_json::from_str::<MessageJson>(data).unwrap().try_into().unwrap();
     client.post_message(&message).await.unwrap()
+}
+
+#[test]
+fn test_with_node_pool_urls() {
+    let r = iota_client::Client::build()
+        .with_node_pool_urls(DEFAULT_NODE_POOL_URLS)
+        .unwrap()
+        .finish();
+    println!("{:#?}", r);
 }
 
 #[tokio::test]

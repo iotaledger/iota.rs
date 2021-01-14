@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Clinet Instnace
-
-use crate::{client::*, error::*};
-
+use crate::{client::*, error::*, types::*};
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
@@ -101,7 +99,16 @@ impl ClientBuilder {
         self
     }
 
-    // TODO node pool
+    /// Get node list from the node_pool_urls
+    pub fn with_node_pool_urls(mut self, node_pool_urls: &str) -> Result<Self> {
+        let text: String = reqwest::blocking::get(node_pool_urls).unwrap().text().map_err(|_| Error::NodePoolUrlsError)?;
+        let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
+        for node_detail in nodes_details {
+            let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
+            self.nodes.insert(url);
+        }
+        Ok(self)
+    }
 
     /// Selects the network the added nodes belong to.
     pub fn with_network(mut self, network: Network) -> Self {
