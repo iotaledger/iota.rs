@@ -25,7 +25,7 @@ use reqwest::{IntoUrl, Url};
 use tokio::{
     runtime::Runtime,
     sync::broadcast::{Receiver, Sender},
-    time::{delay_for, Duration as TokioDuration},
+    time::{sleep, Duration as TokioDuration},
 };
 
 use std::{
@@ -274,20 +274,18 @@ impl Client {
     ) {
         let node_sync_interval = TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap());
 
-        runtime.enter(|| {
-            tokio::spawn(async move {
-                loop {
-                    tokio::select! {
-                        _ = async {
-                                // delay first since the first `sync_nodes` call is made by the builder
-                                // to ensure the node list is filled before the client is used
-                                delay_for(node_sync_interval).await;
-                                Client::sync_nodes(&sync, &nodes, local_pow, network.clone()).await;
-                        } => {}
-                        _ = kill.recv() => {}
-                    }
+        runtime.spawn(async move {
+            loop {
+                tokio::select! {
+                    _ = async {
+                            // delay first since the first `sync_nodes` call is made by the builder
+                            // to ensure the node list is filled before the client is used
+                            sleep(node_sync_interval).await;
+                            Client::sync_nodes(&sync, &nodes, local_pow, network.clone()).await;
+                    } => {}
+                    _ = kill.recv() => {}
                 }
-            });
+            }
         });
     }
 
