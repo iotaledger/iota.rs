@@ -5,7 +5,7 @@
 use crate::Result;
 
 use bee_message::{
-    payload::milestone::{MilestoneEssence, MILESTONE_MERKLE_PROOF_LENGTH},
+    payload::milestone::{MilestonePayloadEssence, MILESTONE_MERKLE_PROOF_LENGTH},
     prelude::*,
 };
 use bee_pow::providers::{Constant, ConstantBuilder, ProviderBuilder as PowProviderBuilder};
@@ -343,7 +343,7 @@ impl TryFrom<MessageJson> for Message {
 pub struct TransactionPayloadJson {
     #[serde(rename = "type")]
     type_: u8,
-    essence: TransactionEssenceJson,
+    essence: TransactionPayloadEssenceJson,
     #[serde(rename = "unlockBlocks")]
     unlock_blocks: Box<[UnlockBlockJson]>,
 }
@@ -413,7 +413,7 @@ fn get_payload_from_json(
     if let Some(payload) = payload {
         match payload {
             PayloadJson::Transaction(transaction_payload) => {
-                let mut transaction = Transaction::builder();
+                let mut transaction = TransactionPayload::builder();
                 transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
 
                 let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
@@ -425,7 +425,7 @@ fn get_payload_from_json(
             }
             PayloadJson::Indexation(indexation_payload) => {
                 let indexation =
-                    Indexation::new(indexation_payload.index, &hex::decode(indexation_payload.data)?).unwrap();
+                    IndexationPayload::new(indexation_payload.index, &hex::decode(indexation_payload.data)?).unwrap();
                 Ok(Some(Payload::Indexation(Box::new(indexation))))
             }
             PayloadJson::Milestone(milestone_payload) => {
@@ -433,7 +433,7 @@ fn get_payload_from_json(
                 let mut reader = BufReader::new(&merkle_proof[..]);
                 let mut merkle_proof = [0u8; MILESTONE_MERKLE_PROOF_LENGTH];
                 reader.read_exact(&mut merkle_proof)?;
-                let milestone_essence = MilestoneEssence::new(
+                let milestone_essence = MilestonePayloadEssence::new(
                     milestone_payload.index,
                     milestone_payload.timestamp,
                     tips.unwrap().0,
@@ -450,7 +450,7 @@ fn get_payload_from_json(
                     reader.read_exact(&mut signature)?;
                     signatures.push(Box::new(signature));
                 }
-                let milestone = Milestone::new(milestone_essence, signatures);
+                let milestone = MilestonePayload::new(milestone_essence, signatures);
                 Ok(Some(Payload::Milestone(Box::new(milestone))))
             }
         }
@@ -459,9 +459,9 @@ fn get_payload_from_json(
     }
 }
 
-/// JSON struct for TransactionEssence
+/// JSON struct for TransactionPayloadEssence
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TransactionEssenceJson {
+pub struct TransactionPayloadEssenceJson {
     #[serde(rename = "type")]
     type_: u8,
     inputs: Box<[InputJson]>,
@@ -470,8 +470,8 @@ pub struct TransactionEssenceJson {
     payload: Option<Box<PayloadJson>>,
 }
 
-impl From<&TransactionEssence> for TransactionEssenceJson {
-    fn from(i: &TransactionEssence) -> Self {
+impl From<&TransactionPayloadEssence> for TransactionPayloadEssenceJson {
+    fn from(i: &TransactionPayloadEssence) -> Self {
         let indexation_payload = match i.payload().as_ref() {
             Some(r) => Some(Box::new(PayloadJson::from(r))),
             _ => None,
@@ -485,11 +485,11 @@ impl From<&TransactionEssence> for TransactionEssenceJson {
     }
 }
 
-impl TryFrom<TransactionEssenceJson> for TransactionEssence {
+impl TryFrom<TransactionPayloadEssenceJson> for TransactionPayloadEssence {
     type Error = crate::Error;
 
-    fn try_from(value: TransactionEssenceJson) -> Result<Self> {
-        let mut builder = TransactionEssence::builder();
+    fn try_from(value: TransactionPayloadEssenceJson) -> Result<Self> {
+        let mut builder = TransactionPayloadEssence::builder();
 
         let inputs: Vec<Input> = value
             .inputs
@@ -516,7 +516,7 @@ impl TryFrom<TransactionEssenceJson> for TransactionEssence {
         builder = match value.payload {
             Some(indexation) => {
                 match get_payload_from_json(Some(*indexation), None)
-                    .expect("Invalid indexation in TransactionEssenceJson")
+                    .expect("Invalid indexation in TransactionPayloadEssenceJson")
                 {
                     Some(indexation) => builder.with_payload(indexation),
                     _ => builder,
