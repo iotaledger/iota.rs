@@ -165,6 +165,7 @@ Find all messages by provided message IDs.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
+| **indexation_keys** | ✘ | [String] | The index key of the indexation payload. |
 | **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
 
 ### Returns
