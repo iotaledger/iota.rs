@@ -58,7 +58,7 @@ The data structure to initialize the instance of the Higher level client library
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **api_timeout** | ✘ | self.request_timeout | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out |
+| **api_timeout** | ✘ | The default value of `request_timeout` | Api, std::time::Duration | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
 | **mqtt_broker_options** | ✘ | automatic_disconnect: True, timeout: Duration::from_secs(30), use_ws: true | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
 
