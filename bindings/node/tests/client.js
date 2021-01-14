@@ -85,7 +85,7 @@ describe('Client', () => {
     const message = await client.getMessage().data(milestone.messageId)
     assertMessage(message)
 
-    
+
     const children = await client.getMessage().children(milestone.messageId)
     assert.strictEqual(Array.isArray(children), true)
 

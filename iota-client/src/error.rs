@@ -67,6 +67,9 @@ pub enum Error {
     /// PoW error
     #[error("{0}")]
     Pow(String),
+    /// Address not found
+    #[error("Address not found in range")]
+    AddressNotFound,
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

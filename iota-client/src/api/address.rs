@@ -37,19 +37,19 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Sets the account index.
-    pub fn account_index(mut self, account_index: usize) -> Self {
+    pub fn with_account_index(mut self, account_index: usize) -> Self {
         self.account_index = Some(account_index);
         self
     }
 
     /// Set range to the builder
-    pub fn range(mut self, range: Range<usize>) -> Self {
+    pub fn with_range(mut self, range: Range<usize>) -> Self {
         self.range = Some(range);
         self
     }
 
     /// Consume the builder and get the vector of Address
-    pub fn get(self) -> Result<Vec<(Address, bool)>> {
+    pub fn finish(self) -> Result<Vec<(Address, bool)>> {
         let mut path = self
             .account_index
             .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
@@ -97,4 +97,29 @@ fn generate_address(seed: &Ed25519Seed, path: &mut BIP32Path, index: usize, inte
     path.pop();
 
     Address::Ed25519(Ed25519Address::new(result))
+}
+
+/// Function to find the index and public or internal type of an address
+pub fn search_address(
+    seed: &Seed,
+    account_index: usize,
+    range: Range<usize>,
+    address: &Address,
+) -> Result<(usize, bool)> {
+    let iota = Client::build().with_node("http://0.0.0.0:14265")?.finish()?;
+    let addresses = iota
+        .find_addresses(&seed)
+        .with_account_index(account_index)
+        .with_range(range)
+        .finish()?;
+    let mut index_counter = 0;
+    for address_internal in addresses {
+        if &address_internal.0 == address {
+            return Ok((index_counter, address_internal.1));
+        }
+        if !address_internal.1 {
+            index_counter += 1;
+        }
+    }
+    Err(crate::error::Error::AddressNotFound)
 }

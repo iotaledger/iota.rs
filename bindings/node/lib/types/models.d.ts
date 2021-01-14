@@ -3,6 +3,7 @@ export declare interface NodeInfo {
   version: string
   isHealthy: boolean
   networkId: string
+  minPoWScore: number
   latestMilestoneIndex: number
   solidMilestoneIndex: number
   pruningIndex: number
@@ -30,7 +31,7 @@ export declare interface OutputMetadata {
 }
 
 export declare interface MilestoneMetadata {
-  milestoneIndex: number
+  index: number
   messageId: string
   timestamp: number
 }

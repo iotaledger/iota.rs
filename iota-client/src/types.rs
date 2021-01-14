@@ -47,6 +47,9 @@ pub struct NodeInfo {
     /// coordinator public key
     #[serde(rename = "networkId")]
     pub network_id: String,
+    /// minimum proof of work score
+    #[serde(rename = "minPowScore")]
+    pub min_pow_score: usize,
     /// latest milestone index
     #[serde(rename = "latestMilestoneIndex")]
     pub latest_milestone_index: usize,
@@ -212,8 +215,8 @@ impl ResponseType for AddressOutputs {}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MilestoneMetadata {
     /// Milestone index
-    #[serde(rename = "milestoneIndex")]
-    pub milestone_index: u64,
+    #[serde(rename = "index")]
+    pub index: u64,
     /// Milestone ID
     #[serde(rename = "messageId")]
     pub message_id: String,
@@ -230,24 +233,6 @@ pub struct AddressBalancePair {
     pub address: Address,
     /// Balance in the address
     pub balance: u64,
-}
-
-/// Transfers structure
-///
-/// Users could use this to construct output address with amount of iota they want to get.
-#[derive(Debug)]
-pub struct Transfers(pub Vec<(Address, u64)>);
-
-impl Transfers {
-    /// Create Transfers starting with one address
-    pub fn new(address: Address, amount: u64) -> Self {
-        Self(vec![(address, amount)])
-    }
-
-    /// Add more address to the Transfers
-    pub fn add(&mut self, address: Address, amount: u64) {
-        self.0.push((address, amount));
-    }
 }
 
 /// JSON struct for Message
@@ -562,7 +547,7 @@ impl From<&Output> for OutputJson {
             Output::SignatureLockedSingle(s) => Self {
                 type_: 0,
                 address: s.address().into(),
-                amount: s.amount().get(),
+                amount: s.amount(),
             },
             _ => todo!(),
         }
@@ -573,10 +558,7 @@ impl TryFrom<OutputJson> for Output {
     type Error = crate::Error;
 
     fn try_from(value: OutputJson) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(
-            value.address.try_into()?,
-            value.amount.try_into().expect("Output amount cannot be zero."),
-        );
+        let output = SignatureLockedSingleOutput::new(value.address.try_into()?, value.amount).unwrap();
         Ok(output.into())
     }
 }

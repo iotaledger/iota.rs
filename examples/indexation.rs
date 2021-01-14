@@ -1,21 +1,22 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+//! cargo run --example indexation --release
 use iota::{Client, Payload};
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .node("http://0.0.0.0:14265") // Insert the node here
+    let iota = Client::build() // Crate a client instance builder
+        .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
-        .build()
+        .finish()
         .unwrap();
 
     let r = iota
         .send()
-        .indexation("Hello".to_string())
-        .data("Tangle".to_string().as_bytes().to_vec())
-        .post()
+        .with_index("Hello")
+        .with_data("Tangle".to_string().as_bytes().to_vec())
+        .finish()
         .await
         .unwrap();
 

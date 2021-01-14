@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, num::NonZeroU64, str::FromStr};
+use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
@@ -17,7 +17,7 @@ pub(crate) enum Api {
         seed: Seed,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
-        outputs: Vec<(Address, NonZeroU64)>,
+        outputs: Vec<(Address, u64)>,
     },
     SendIndexation {
         index: String,
@@ -29,7 +29,6 @@ pub(crate) enum Api {
         initial_address_index: Option<usize>,
     },
     FindMessages {
-        indexation_keys: Vec<String>,
         message_ids: Vec<MessageId>,
     },
     GetBalance {
@@ -69,7 +68,8 @@ impl Task for ClientTask {
     type Output = String;
     type Error = crate::Error;
     type JsEvent = JsString;
-
+    // TODO: Try async-mutex
+    #[allow(clippy::await_holding_lock)]
     fn perform(&self) -> Result<Self::Output, Self::Error> {
         crate::block_on(crate::convert_async_panics(|| async move {
             let client = crate::get_client(&self.client_id);
@@ -82,25 +82,25 @@ impl Task for ClientTask {
                     initial_address_index,
                     outputs,
                 } => {
-                    let mut sender = client.send().transaction(seed);
+                    let mut sender = client.send().with_seed(seed);
                     if let Some(account_index) = account_index {
-                        sender = sender.account_index(*account_index);
+                        sender = sender.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
-                        sender = sender.initial_address_index(*initial_address_index);
+                        sender = sender.with_initial_address_index(*initial_address_index);
                     }
                     for output in outputs {
-                        sender = sender.output(output.0.clone(), output.1);
+                        sender = sender.with_output(&output.0.clone().to_bech32(), output.1).unwrap();
                     }
-                    let message_id = sender.post().await?;
+                    let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::SendIndexation { index, data } => {
-                    let mut sender = client.send().indexation(index);
+                    let mut sender = client.send().with_index(index);
                     if let Some(data) = data {
-                        sender = sender.data(data.clone());
+                        sender = sender.with_data(data.clone());
                     }
-                    let message_id = sender.post().await?;
+                    let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
                 }
                 Api::GetUnspentAddress {
@@ -110,19 +110,16 @@ impl Task for ClientTask {
                 } => {
                     let mut getter = client.get_unspent_address(seed);
                     if let Some(account_index) = account_index {
-                        getter = getter.account_index(*account_index);
+                        getter = getter.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
-                        getter = getter.initial_address_index(*initial_address_index);
+                        getter = getter.with_initial_address_index(*initial_address_index);
                     }
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address.to_bech32(), index)).unwrap()
                 }
-                Api::FindMessages {
-                    indexation_keys,
-                    message_ids,
-                } => {
-                    let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
+                Api::FindMessages { message_ids } => {
+                    let messages = client.find_messages(&message_ids[..]).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetBalance {
@@ -132,12 +129,12 @@ impl Task for ClientTask {
                 } => {
                     let mut getter = client.get_balance(seed);
                     if let Some(account_index) = account_index {
-                        getter = getter.account_index(*account_index);
+                        getter = getter.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
-                        getter = getter.initial_address_index(*initial_address_index);
+                        getter = getter.with_initial_address_index(*initial_address_index);
                     }
-                    let balance = getter.get().await?;
+                    let balance = getter.finish().await?;
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressBalances(addresses) => {

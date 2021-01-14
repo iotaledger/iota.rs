@@ -72,18 +72,20 @@ fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
         None => {
             for node in client.sync.read().unwrap().iter() {
                 // node.set_path("mqtt");
-                let uri = &format!(
-                    "{}://{}:{}/mqtt",
-                    if node.scheme() == "https" { "wss" } else { "ws" },
-                    node.host_str().unwrap(),
-                    node.port_or_known_default().unwrap()
-                );
+                let uri = match client.broker_options.use_ws {
+                    true => format!(
+                        "{}://{}:{}/mqtt",
+                        if node.scheme() == "https" { "wss" } else { "ws" },
+                        node.host_str().unwrap(),
+                        node.port_or_known_default().unwrap()
+                    ),
+                    false => format!("tcp://{}", node.host_str().unwrap(),),
+                };
                 let mqtt_options = CreateOptionsBuilder::new()
                     .server_uri(uri)
-                    .client_id(format!("iota.rs-mqtt-client-{}", uri))
+                    .client_id("iota.rs")
                     .finalize();
                 let mut mqtt_client = MqttClient::new(mqtt_options)?;
-
                 let conn_opts = ConnectOptionsBuilder::new()
                     .keep_alive_interval(Duration::from_secs(20))
                     .mqtt_version(MQTT_VERSION_3_1_1)
@@ -136,13 +138,13 @@ impl<'a> MqttManager<'a> {
     }
 
     /// Add a new topic to the list.
-    pub fn topic(self, topic: Topic) -> MqttTopicManager<'a> {
-        MqttTopicManager::new(self.client).topic(topic)
+    pub fn with_topic(self, topic: Topic) -> MqttTopicManager<'a> {
+        MqttTopicManager::new(self.client).with_topic(topic)
     }
 
     /// Add a collection of topics to the list.
-    pub fn topics(self, topics: Vec<Topic>) -> MqttTopicManager<'a> {
-        MqttTopicManager::new(self.client).topics(topics)
+    pub fn with_topics(self, topics: Vec<Topic>) -> MqttTopicManager<'a> {
+        MqttTopicManager::new(self.client).with_topics(topics)
     }
 
     /// Unsubscribes from all subscriptions.
@@ -184,13 +186,13 @@ impl<'a> MqttTopicManager<'a> {
     }
 
     /// Add a new topic to the list.
-    pub fn topic(mut self, topic: Topic) -> Self {
+    pub fn with_topic(mut self, topic: Topic) -> Self {
         self.topics.push(topic);
         self
     }
 
     /// Add a collection of topics to the list.
-    pub fn topics(mut self, topics: Vec<Topic>) -> Self {
+    pub fn with_topics(mut self, topics: Vec<Topic>) -> Self {
         self.topics.extend(topics.into_iter());
         self
     }
