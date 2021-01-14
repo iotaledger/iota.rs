@@ -51,7 +51,17 @@ impl Default for ClientBuilder {
             broker_options: Default::default(),
             local_pow: true,
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
-            api_timeout: Default::default(),
+            api_timeout: {
+                let mut api_default_timeout: HashMap<Api, Duration> = HashMap::new();
+                api_default_timeout.insert(Api::GetInfo, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::GetHealth, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::GetMilestone, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::GetTips, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::PostMessage, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::PostMessageWithRemotePow, Duration::from_millis(30000));
+                api_default_timeout.insert(Api::GetOutput, Duration::from_millis(2000));
+                api_default_timeout
+            }
         }
     }
 }
