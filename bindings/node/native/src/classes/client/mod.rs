@@ -115,11 +115,17 @@ declare_types! {
         }
 
         method findMessages(mut cx) {
-            let js_message_ids: Vec<Handle<JsValue>> = cx.argument::<JsArray>(0)?.to_vec(&mut cx)?;
+            let js_indexation_keys: Vec<Handle<JsValue>> = cx.argument::<JsArray>(0)?.to_vec(&mut cx)?;
+            let js_message_ids: Vec<Handle<JsValue>> = cx.argument::<JsArray>(1)?.to_vec(&mut cx)?;
+            let mut indexation_keys = vec![];
             let mut message_ids = vec![];
             for js_message_id in js_message_ids {
                 let message_id: Handle<JsString> = js_message_id.downcast_or_throw(&mut cx)?;
                 message_ids.push(MessageId::from_str(message_id.value().as_str()).unwrap_or_else(|_| panic!("invalid message id: {}", message_id.value())));
+            }
+            for js_indexation_key in js_indexation_keys {
+                let indexation_key: Handle<JsString> = js_indexation_key.downcast_or_throw(&mut cx)?;
+                indexation_keys.push(MessageId::from_str(message_id.value().as_str()).unwrap_or_else(|_| panic!("invalid indexation key: {}", indexation_key.value())));
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
@@ -129,7 +135,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::FindMessages { message_ids },
+                    api: Api::FindMessages { indexation_keys, message_ids },
                 };
                 client_task.schedule(cb);
             }
