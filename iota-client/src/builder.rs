@@ -16,6 +16,7 @@ const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Network of the Iota nodes belong to
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
+#[serde(tag = "type")]
 pub enum Network {
     /// Mainnet
     Mainnet,
@@ -29,10 +30,13 @@ pub struct NetworkInfo {
     /// Network of the Iota nodes belong to
     pub network: Network,
     /// Network ID
+    #[serde(rename = "networkId")]
     pub network_id: String,
     /// Mininum proof of work score
+    #[serde(rename = "minPowScore")]
     pub min_pow_score: f64,
     /// Local proof of work
+    #[serde(rename = "localPow")]
     pub local_pow: bool,
 }
 
