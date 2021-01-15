@@ -5,24 +5,20 @@ use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
-use iota::{
-    message::prelude::{Address, MessageBuilder, MessageId, UTXOInput},
-    types::Bech32Address,
-    ClientMiner, Seed,
-};
+use iota::{types::Bech32Address, Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
 use neon::prelude::*;
 
 pub(crate) enum Api {
     // High level APIs
-    SendTransfer {
-        seed: Seed,
+    Send {
+        seed: Option<Seed>,
+        index: Option<String>,
+        data: Option<Vec<u8>>,
+        parent: Option<MessageId>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
+        inputs: Vec<UTXOInput>,
         outputs: Vec<(Address, u64)>,
-    },
-    SendIndexation {
-        index: String,
-        data: Option<Vec<u8>>,
     },
     GetUnspentAddress {
         seed: Seed,
@@ -77,31 +73,42 @@ impl Task for ClientTask {
             let client = client.read().unwrap();
             let res = match &self.api {
                 // High level API
-                Api::SendTransfer {
+                Api::Send {
                     seed,
+                    index,
+                    data,
+                    parent,
                     account_index,
                     initial_address_index,
+                    inputs,
                     outputs,
                 } => {
-                    let mut sender = client.send().with_seed(seed);
+                    let mut sender = client.send();
+                    if let Some(seed) = seed {
+                        sender = sender.with_seed(seed);
+                    }
+                    if let Some(index) = index {
+                        sender = sender.with_index(index);
+                    }
+                    if let Some(data) = data {
+                        sender = sender.with_data(data.clone());
+                    }
+                    if let Some(parent) = parent {
+                        sender = sender.with_parent(*parent);
+                    }
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
                     }
                     if let Some(initial_address_index) = initial_address_index {
                         sender = sender.with_initial_address_index(*initial_address_index);
                     }
+                    for input in inputs {
+                        sender = sender.with_input(input.clone());
+                    }
                     for output in outputs {
                         sender = sender
                             .with_output(&output.0.clone().to_bech32().into(), output.1)
                             .unwrap();
-                    }
-                    let message_id = sender.finish().await?;
-                    serde_json::to_string(&message_id).unwrap()
-                }
-                Api::SendIndexation { index, data } => {
-                    let mut sender = client.send().with_index(index);
-                    if let Some(data) = data {
-                        sender = sender.with_data(data.clone());
                     }
                     let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
