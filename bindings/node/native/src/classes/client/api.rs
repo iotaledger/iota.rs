@@ -14,15 +14,13 @@ use neon::prelude::*;
 
 pub(crate) enum Api {
     // High level APIs
-    SendTransfer {
-        seed: Seed,
+    Send {
+        seed: Option<Seed>,
+        index: Option<String>,
+        data: Option<Vec<u8>>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
         outputs: Vec<(Address, u64)>,
-    },
-    SendIndexation {
-        index: String,
-        data: Option<Vec<u8>>,
     },
     GetUnspentAddress {
         seed: Seed,
@@ -77,13 +75,24 @@ impl Task for ClientTask {
             let client = client.read().unwrap();
             let res = match &self.api {
                 // High level API
-                Api::SendTransfer {
+                Api::Send {
                     seed,
+                    index,
+                    data,
                     account_index,
                     initial_address_index,
                     outputs,
                 } => {
-                    let mut sender = client.send().with_seed(seed);
+                    let mut sender = client.send();
+                    if let Some(seed) = seed {
+                        sender = sender.with_seed(seed);
+                    }
+                    if let Some(index) = index {
+                        sender = sender.with_index(index);
+                    }
+                    if let Some(data) = data {
+                        sender = sender.with_data(data.clone());
+                    }
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
                     }
@@ -94,14 +103,6 @@ impl Task for ClientTask {
                         sender = sender
                             .with_output(&output.0.clone().to_bech32().into(), output.1)
                             .unwrap();
-                    }
-                    let message_id = sender.finish().await?;
-                    serde_json::to_string(&message_id).unwrap()
-                }
-                Api::SendIndexation { index, data } => {
-                    let mut sender = client.send().with_index(index);
-                    if let Some(data) = data {
-                        sender = sender.with_data(data.clone());
                     }
                     let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()

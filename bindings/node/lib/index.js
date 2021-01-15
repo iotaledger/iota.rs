@@ -6,8 +6,7 @@ const {
   ClientBuilder,
   TopicSubscriber,
   MessageGetter,
-  ValueTransactionSender,
-  IndexationSender,
+  MessageSender,
   UnspentAddressGetter,
   AddressFinder,
   BalanceGetter
@@ -81,14 +80,13 @@ MessageGetter.prototype.raw = promisify(MessageGetter.prototype.raw, false)
 MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
 MessageGetter.prototype.metadata = promisify(MessageGetter.prototype.metadata)
 
-ValueTransactionSender.prototype.submit = promisify(ValueTransactionSender.prototype.submit)
-IndexationSender.prototype.submit = promisify(IndexationSender.prototype.submit)
-const indexationDataSetter = IndexationSender.prototype.data
-IndexationSender.prototype.data = function (data) {
+MessageSender.prototype.submit = promisify(MessageSender.prototype.submit)
+const messageSenderDataSetter = MessageSender.prototype.data
+MessageSender.prototype.data = function (data) {
   if (data instanceof Uint8Array) {
-    return indexationDataSetter.apply(this, [Array.from(data)])
+    return messageSenderDataSetter.apply(this, [Array.from(data)])
   }
-  return indexationDataSetter.apply(this, [data])
+  return messageSenderDataSetter.apply(this, [data])
 }
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)

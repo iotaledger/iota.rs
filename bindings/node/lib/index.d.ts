@@ -27,19 +27,12 @@ export declare class ClientBuilder {
 }
 
 export declare class MessageSender {
-  transaction(seed: string): ValueTransactionSender
-  indexation(index: string): IndexationSender
-}
-
-export declare class IndexationSender {
-  data(data: Uint8Array): IndexationSender
-  submit(): Promise<string>
-}
-
-export declare class ValueTransactionSender {
-  accountIndex(index: number): ValueTransactionSender
-  initialAddressIndex(index: number): ValueTransactionSender
-  output(address: string, value: number): ValueTransactionSender
+  seed(seed: string): MessageSender
+  index(index: string): MessageSender
+  data(data: Uint8Array): MessageSender
+  accountIndex(index: number): MessageSender
+  initialAddressIndex(index: number): MessageSender
+  output(address: string, value: number): MessageSender
   submit(): Promise<string>
 }
 

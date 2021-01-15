@@ -22,7 +22,7 @@ mod message_getter;
 pub use message_getter::JsMessageGetter;
 
 mod message_sender;
-pub use message_sender::{JsIndexationSender, JsMessageSender, JsValueTransactionSender};
+pub use message_sender::JsMessageSender;
 
 mod unspent_address_getter;
 pub use unspent_address_getter::JsUnspentAddressGetter;
