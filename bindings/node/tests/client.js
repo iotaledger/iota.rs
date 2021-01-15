@@ -11,6 +11,15 @@ const client = new ClientBuilder()
   .build()
 
 describe('Client', () => {
+  it('gets network info', () => {
+    const info = client.networkInfo()
+    assert.strictEqual(typeof info, 'object')
+    assert.strictEqual(info.localPow, false)
+    assert.deepStrictEqual(info.network, { type: 'Testnet' })
+    assert.strictEqual(info.networkId, 'alphanet1')
+    assert.strictEqual(info.minPowScore, 4000)
+  })
+
   it('gets tips', async () => {
     const tips = await client.getTips()
     assert.strictEqual(Array.isArray(tips), true)

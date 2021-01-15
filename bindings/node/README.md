@@ -150,6 +150,12 @@ Builds the client instance.
 
 ### Client
 
+#### networkInfo(): NetworkInfo
+
+Gets the cached network info.
+
+**Returns** a [NetworkInfo](#networkinfo) instance.
+
 #### subscriber(): TopicSubscriber
 
 Gets a handle to the MQTT topic subscriber.
@@ -319,6 +325,15 @@ Promotes the message associated with the given id.
 | messageId | <code>string</code> | The id of the message to promote |
 
 **Returns** A promise resolving to the new [Message](#message) instance.
+
+### NetworkInfo
+
+| Field       | Type                                          | Description                           |
+| ----------- | --------------------------------------------- | ------------------------------------- |
+| network     | <code>{ type: 'Mainnet' \| 'Testnet' }</code> | The network type                      |
+| networkId   | <code>string</code>                           | The network id                        |
+| minPowScore | <code>number</code>                           | The network's minimum score for PoW   |
+| localPow    | <code>boolean</code>                          | Whether we are using local PoW or not |
 
 ### TopicSubscriber
 

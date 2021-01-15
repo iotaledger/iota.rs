@@ -56,7 +56,15 @@ export declare class BalanceGetter {
   get(): Promise<number>
 }
 
+export declare interface NetworkInfo {
+  network: { type: 'Mainnet' | 'Testnet' }
+  networkId: string
+  minPowScore: number
+  localPow: boolean
+}
+
 export declare class Client {
+  networkInfo(): NetworkInfo
   subscriber(): TopicSubscriber
   send(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter

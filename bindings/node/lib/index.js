@@ -54,6 +54,11 @@ ClientBuilder.prototype.brokerOptions = function (options) {
   return brokerOptionsFn.apply(this, [JSON.stringify(opt)])
 }
 
+const getNetworkInfo = Client.prototype.networkInfo
+Client.prototype.networkInfo = function () {
+  return JSON.parse(getNetworkInfo.apply(this, []))
+}
+
 Client.prototype.findMessages = promisify(Client.prototype.findMessages)
 Client.prototype.getAddressBalances = promisify(Client.prototype.getAddressBalances)
 Client.prototype.getInfo = promisify(Client.prototype.getInfo)

@@ -193,6 +193,19 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
+        method networkInfo(mut cx) {
+            let network_info = {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client = crate::get_client(&id);
+                let client = client.read().unwrap();
+                let info = client.get_network_info();
+                serde_json::to_string(&info).unwrap()
+            };
+            Ok(cx.string(network_info).upcast())
+        }
+
         ///////////////////////////////////////////////////////////////////////
         // Node API
         ///////////////////////////////////////////////////////////////////////
