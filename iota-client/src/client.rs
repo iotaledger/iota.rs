@@ -4,7 +4,7 @@
 //! The Client module to connect through HORNET or Bee with API usages
 use crate::{
     api::*,
-    builder::{ClientBuilder, Network},
+    builder::{ClientBuilder, Network, NetworkInfo},
     error::*,
     node::*,
     parse_response,
@@ -222,7 +222,7 @@ pub struct Client {
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
-    pub(crate) local_pow: bool,
+    pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for each API call.
@@ -235,7 +235,7 @@ impl std::fmt::Debug for Client {
         d.field("sync", &self.sync).field("client", &self.client);
         #[cfg(feature = "mqtt")]
         d.field("broker_options", &self.broker_options);
-        d.field("local_pow", &self.local_pow).finish()
+        d.field("network_info", &self.network_info).finish()
     }
 }
 
@@ -271,8 +271,7 @@ impl Client {
         sync: Arc<RwLock<HashSet<Url>>>,
         nodes: HashSet<Url>,
         node_sync_interval: Duration,
-        local_pow: bool,
-        network: Network,
+        network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
         let node_sync_interval = TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap());
@@ -284,7 +283,7 @@ impl Client {
                             // delay first since the first `sync_nodes` call is made by the builder
                             // to ensure the node list is filled before the client is used
                             sleep(node_sync_interval).await;
-                            Client::sync_nodes(&sync, &nodes, local_pow, network.clone()).await;
+                            Client::sync_nodes(&sync, &nodes, &network_info).await;
                     } => {}
                     _ = kill.recv() => {}
                 }
@@ -295,8 +294,7 @@ impl Client {
     pub(crate) async fn sync_nodes(
         sync: &Arc<RwLock<HashSet<Url>>>,
         nodes: &HashSet<Url>,
-        local_pow: bool,
-        network: Network,
+        network_info: &Arc<RwLock<NetworkInfo>>,
     ) {
         let mut synced_nodes = HashSet::new();
 
@@ -304,12 +302,14 @@ impl Client {
             // Put the healty node url into the synced_nodes
             if let Ok(info) = Client::get_node_info(node_url.clone()).await {
                 if info.is_healthy {
-                    if network == Network::Testnet && info.network_id == "mainnet"
-                        || network == Network::Mainnet && info.network_id != "mainnet"
+                    if network_info.read().unwrap().network == Network::Testnet && info.network_id == "mainnet"
+                        || network_info.read().unwrap().network == Network::Mainnet && info.network_id != "mainnet"
                     {
                         continue;
                     }
-                    if !local_pow {
+                    let mut client_network_info = network_info.write().unwrap();
+                    client_network_info.min_pow_score = info.min_pow_score;
+                    if !network_info.read().unwrap().local_pow {
                         if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
                         }
@@ -345,7 +345,14 @@ impl Client {
 
     /// Gets the miner to use based on the PoW setting
     pub fn get_pow_provider(&self) -> ClientMiner {
-        ClientMinerBuilder::new().with_local_pow(self.local_pow).finish()
+        ClientMinerBuilder::new()
+            .with_local_pow(self.network_info.read().unwrap().local_pow)
+            .finish()
+    }
+
+    /// Gets the network related information such as network_id and min_pow_score
+    pub fn get_network_info(&self) -> NetworkInfo {
+        self.network_info.read().unwrap().clone()
     }
 
     ///////////////////////////////////////////////////////////////////////
