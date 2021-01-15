@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{Address, Seed, TransactionId, UTXOInput};
+use iota::{Address, MessageId, Seed, TransactionId, UTXOInput};
 use neon::prelude::*;
 
 use super::{parse_address, Api, ClientTask};
@@ -12,6 +12,7 @@ pub struct MessageSender {
     client_id: String,
     index: Option<String>,
     data: Option<Vec<u8>>,
+    parent: Option<MessageId>,
     seed: Option<String>,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
@@ -27,6 +28,7 @@ declare_types! {
                 client_id,
                 index: None,
                 data: None,
+                parent: None,
                 seed: None,
                 account_index: None,
                 initial_address_index:None,
@@ -77,6 +79,19 @@ declare_types! {
                 let guard = cx.lock();
                 let data_ = &mut this.borrow_mut(&guard).data;
                 data_.replace(data);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method parent(mut cx) {
+            let parent = cx.argument::<JsString>(0)?.value();
+            let parent = MessageId::from_str(&parent).expect("invalid parent message id");
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let send_parent = &mut this.borrow_mut(&guard).parent;
+                send_parent.replace(parent);
             }
 
             Ok(cx.this().upcast())
@@ -146,6 +161,7 @@ declare_types! {
                         seed: ref_.seed.as_ref().map(|seed| Seed::from_ed25519_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed")),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
+                        parent: ref_.parent.clone(),
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
                         inputs: ref_.inputs.clone(),

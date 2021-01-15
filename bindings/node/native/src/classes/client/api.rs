@@ -18,6 +18,7 @@ pub(crate) enum Api {
         seed: Option<Seed>,
         index: Option<String>,
         data: Option<Vec<u8>>,
+        parent: Option<MessageId>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
         inputs: Vec<UTXOInput>,
@@ -80,6 +81,7 @@ impl Task for ClientTask {
                     seed,
                     index,
                     data,
+                    parent,
                     account_index,
                     initial_address_index,
                     inputs,
@@ -94,6 +96,9 @@ impl Task for ClientTask {
                     }
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
+                    }
+                     if let Some(parent) = parent {
+                        sender = sender.with_parent(parent.clone());
                     }
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);

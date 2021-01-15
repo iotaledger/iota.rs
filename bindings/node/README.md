@@ -396,6 +396,16 @@ Sets the indexation data.
 
 **Returns** the message submit instance for chained calls.
 
+#### parent(messageId): MessageSender
+
+Sets the message's parent.
+
+| Param     | Type                | Description           |
+| --------- | ------------------- | --------------------- |
+| messageId | <code>string</code> | The parent message id |
+
+**Returns** the message submit instance for chained calls.
+
 #### accountIndex(index): MessageSender
 
 Sets the account index. This field is required for transactions.
@@ -410,10 +420,10 @@ Sets the account index. This field is required for transactions.
 
 Adds an output to the transaction.
 
-| Param         | Type                | Description            |
-| ------------- | ------------------- | ---------------------- |
-| transactionId | <code>string</code> | The hex transaction id |
-| index         | <code>number</code> | The input index        |
+| Param         | Type                | Description        |
+| ------------- | ------------------- | ------------------ |
+| transactionId | <code>string</code> | The transaction id |
+| index         | <code>number</code> | The input index    |
 
 **Returns** the message submit instance for chained calls.
 
