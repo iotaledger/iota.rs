@@ -66,58 +66,6 @@ impl<T: ResponseType> Response<T> {
     }
 }
 
-/// Response of GET /api/v1/info endpoint
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct NodeInfo {
-    /// Iota node Name
-    pub name: String,
-    /// Iota node version
-    pub version: String,
-    /// Connection status
-    #[serde(rename = "isHealthy")]
-    pub is_healthy: bool,
-    /// coordinator public key
-    #[serde(rename = "networkId")]
-    pub network_id: String,
-    /// minimum proof of work score
-    #[serde(rename = "minPowScore")]
-    pub min_pow_score: f64,
-    /// latest milestone index
-    #[serde(rename = "latestMilestoneIndex")]
-    pub latest_milestone_index: usize,
-    /// solid milestone index
-    #[serde(rename = "solidMilestoneIndex")]
-    pub solid_milestone_index: usize,
-    /// pruning index
-    #[serde(rename = "pruningIndex")]
-    pub pruning_index: usize,
-    /// features
-    pub features: Vec<String>,
-}
-
-impl ResponseType for NodeInfo {}
-
-/// Response of GET /api/v1/tips endpoint
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct Tips {
-    /// Message ID of tip 1
-    #[serde(rename = "tip1MessageId")]
-    pub(crate) tip1: String,
-    /// Message ID of tip 2
-    #[serde(rename = "tip2MessageId")]
-    pub(crate) tip2: String,
-}
-
-impl ResponseType for Tips {}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct PostMessageId {
-    #[serde(rename = "messageId")]
-    pub(crate) message_id: String,
-}
-
-impl ResponseType for PostMessageId {}
-
 /// Collection of meesage ID
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct MessageIds {
@@ -126,45 +74,6 @@ pub(crate) struct MessageIds {
 }
 
 impl ResponseType for MessageIds {}
-
-/// Response of GET /api/v1/messages/{messageId} endpoint
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MessageMetadata {
-    /// Message ID
-    #[serde(rename = "messageId")]
-    pub message_id: String,
-    /// Message ID of parent1
-    #[serde(rename = "parent1MessageId")]
-    pub parent1: String,
-    /// Message ID of parent2
-    #[serde(rename = "parent2MessageId")]
-    pub parent2: String,
-    /// Solid status
-    #[serde(rename = "isSolid")]
-    pub is_solid: bool,
-    /// Should promote
-    #[serde(rename = "shouldPromote")]
-    pub should_promote: Option<bool>,
-    /// Should reattach
-    #[serde(rename = "shouldReattach")]
-    pub should_reattach: Option<bool>,
-    /// Referenced by milestone index
-    #[serde(rename = "referencedByMilestoneIndex")]
-    pub referenced_by_milestone_index: Option<u64>,
-    /// Ledger inclusion state
-    #[serde(rename = "ledgerInclusionState")]
-    pub ledger_inclusion_state: Option<String>,
-}
-
-impl ResponseType for MessageMetadata {}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct ChildrenMessageIds {
-    #[serde(rename = "childrenMessageIds")]
-    pub(crate) inner: Box<[String]>,
-}
-
-impl ResponseType for ChildrenMessageIds {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct AddressBalance {
@@ -242,21 +151,6 @@ pub struct AddressOutputs {
 }
 
 impl ResponseType for AddressOutputs {}
-
-/// Milestone from Iota node
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MilestoneMetadata {
-    /// Milestone index
-    #[serde(rename = "index")]
-    pub index: u64,
-    /// Milestone ID
-    #[serde(rename = "messageId")]
-    pub message_id: String,
-    /// Timestamp
-    pub timestamp: u64,
-}
-
-impl ResponseType for MilestoneMetadata {}
 
 /// Address and the coresponding balance returned by the get_address_balances() API.
 #[derive(Debug, Serialize)]

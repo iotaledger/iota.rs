@@ -13,6 +13,9 @@ use crate::{
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
+use bee_rest_api::handlers::info::InfoResponse as NodeInfo;
+use bee_rest_api::handlers::tips::TipsResponse;
+use bee_rest_api::types::MilestoneDto as MilestoneMetadata;
 use bee_signing_ext::Seed;
 
 use blake2::{
@@ -406,7 +409,7 @@ impl Client {
         let resp = reqwest::get(url).await?;
 
         parse_response!(resp, 200 => {
-            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+            Ok(resp.json::<NodeInfo>().await?)
         })
     }
 
@@ -422,7 +425,7 @@ impl Client {
             .await?;
 
         parse_response!(resp, 200 => {
-            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+            Ok(resp.json::<NodeInfo>().await?)
         })
     }
 
@@ -438,10 +441,10 @@ impl Client {
             .await?;
 
         parse_response!(resp, 200 => {
-            let pair = resp.json::<Response<Tips>>().await?.data;
+            let pair = resp.json::<TipsResponse>().await?;
             let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
-            hex::decode_to_slice(pair.tip1, &mut tip1)?;
-            hex::decode_to_slice(pair.tip2, &mut tip2)?;
+            hex::decode_to_slice(pair.tip_1_message_id, &mut tip1)?;
+            hex::decode_to_slice(pair.tip_2_message_id, &mut tip2)?;
 
             Ok((MessageId::from(tip1), MessageId::from(tip2)))
         })
@@ -464,9 +467,9 @@ impl Client {
             .await?;
 
         parse_response!(resp, 201 => {
-            let m = resp.json::<Response<PostMessageId>>().await?.data;
+            let m = resp.json::<MessageId>().await?;
             let mut message_id = [0u8; 32];
-            hex::decode_to_slice(m.message_id, &mut message_id)?;
+            hex::decode_to_slice(m, &mut message_id)?;
             Ok(MessageId::from(message_id))
         })
     }
@@ -563,7 +566,7 @@ impl Client {
             .await?;
 
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
+            let milestone = resp.json::<MilestoneMetadata>().await?;
             Ok(milestone)
         })
     }

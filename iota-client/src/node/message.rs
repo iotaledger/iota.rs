@@ -1,11 +1,10 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    parse_response, ChildrenMessageIds, Client, Error, MessageIds, MessageJson, MessageMetadata, Response, Result,
-};
-
+use crate::{parse_response, Client, Error, MessageIds, MessageJson, Response, Result};
 use bee_message::{Message, MessageId};
+use bee_rest_api::handlers::message_children::MessageChildrenResponse;
+use bee_rest_api::handlers::message_metadata::MessageMetadataResponse as MessageMetadata;
 
 use std::convert::TryInto;
 
@@ -62,8 +61,8 @@ impl<'a> GetMessageBuilder<'a> {
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id));
         let resp = reqwest::get(url).await?;
         parse_response!(resp, 200 => {
-            let meta = resp.json::<Response<MessageMetadata>>().await?;
-            Ok(meta.data)
+            let meta = resp.json::<MessageMetadata>().await?;
+            Ok(meta)
         })
     }
 
@@ -86,9 +85,8 @@ impl<'a> GetMessageBuilder<'a> {
         let resp = reqwest::get(url).await?;
 
         crate::parse_response!(resp, 200 => {
-            let meta = resp.json::<Response<ChildrenMessageIds>>().await?;
-            meta.data
-                .inner
+            let meta = resp.json::<MessageChildrenResponse>().await?;
+            meta.children_message_ids
                 .iter()
                 .map(|s| {
                     let mut message_id = [0u8; 32];
