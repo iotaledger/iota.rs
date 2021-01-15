@@ -6,7 +6,7 @@ use std::{convert::TryInto, str::FromStr};
 use super::MessageDto;
 
 use iota::{
-    message::prelude::{Address, MessageBuilder, MessageId, UTXOInput},
+    Address, MessageBuilder, MessageId, UTXOInput,
     types::Bech32Address,
     ClientMiner, Seed,
 };
@@ -20,6 +20,7 @@ pub(crate) enum Api {
         data: Option<Vec<u8>>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
+        inputs: Vec<UTXOInput>,
         outputs: Vec<(Address, u64)>,
     },
     GetUnspentAddress {
@@ -81,6 +82,7 @@ impl Task for ClientTask {
                     data,
                     account_index,
                     initial_address_index,
+                    inputs,
                     outputs,
                 } => {
                     let mut sender = client.send();
@@ -98,6 +100,9 @@ impl Task for ClientTask {
                     }
                     if let Some(initial_address_index) = initial_address_index {
                         sender = sender.with_initial_address_index(*initial_address_index);
+                    }
+                    for input in inputs {
+                        sender = sender.with_input(input.clone());
                     }
                     for output in outputs {
                         sender = sender

@@ -406,6 +406,17 @@ Sets the account index. This field is required for transactions.
 
 **Returns** the message submit instance for chained calls.
 
+#### input(transactionId, index): MessageSender
+
+Adds an output to the transaction.
+
+| Param         | Type                | Description            |
+| ------------- | ------------------- | ---------------------- |
+| transactionId | <code>string</code> | The hex transaction id |
+| index         | <code>number</code> | The input index        |
+
+**Returns** the message submit instance for chained calls.
+
 #### output(address, amount): MessageSender
 
 Adds an output to the transaction.

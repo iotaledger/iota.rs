@@ -32,6 +32,7 @@ export declare class MessageSender {
   data(data: Uint8Array): MessageSender
   accountIndex(index: number): MessageSender
   initialAddressIndex(index: number): MessageSender
+  input(transactionId: string, index: number): MessageSender
   output(address: string, value: number): MessageSender
   submit(): Promise<string>
 }

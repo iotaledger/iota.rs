@@ -1,10 +1,12 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{message::prelude::Address, Seed};
+use iota::{Address, Seed, TransactionId, UTXOInput};
 use neon::prelude::*;
 
 use super::{parse_address, Api, ClientTask};
+
+use std::str::FromStr;
 
 pub struct MessageSender {
     client_id: String,
@@ -13,6 +15,7 @@ pub struct MessageSender {
     seed: Option<String>,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
+    inputs: Vec<UTXOInput>,
     outputs: Vec<(Address, u64)>,
 }
 
@@ -27,6 +30,7 @@ declare_types! {
                 seed: None,
                 account_index: None,
                 initial_address_index:None,
+                inputs: Vec::new(),
                 outputs: Vec::new(),
             })
         }
@@ -116,6 +120,20 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+         method input(mut cx) {
+            let transaction_id = cx.argument::<JsString>(0)?.value();
+            let transaction_id = TransactionId::from_str(&transaction_id).expect("invalid transaction id");
+            let index = cx.argument::<JsNumber>(1)?.value() as u16;
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let inputs = &mut this.borrow_mut(&guard).inputs;
+                inputs.push(UTXOInput::new(transaction_id, index).expect("invalid UTXO input"));
+            }
+
+            Ok(cx.this().upcast())
+        }
+
         method submit(mut cx) {
             let cb = cx.argument::<JsFunction>(0)?;
             {
@@ -130,6 +148,7 @@ declare_types! {
                         data: ref_.data.clone(),
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
+                        inputs: ref_.inputs.clone(),
                         outputs: ref_.outputs.clone(),
                     },
                 };
