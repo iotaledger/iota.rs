@@ -306,7 +306,7 @@ impl Client {
                     }
                     let mut client_network_info = network_info.write().unwrap();
                     client_network_info.min_pow_score = info.min_pow_score;
-                    if !network_info.read().unwrap().local_pow {
+                    if !client_network_info.local_pow {
                         if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
                         }
