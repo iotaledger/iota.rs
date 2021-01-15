@@ -5,11 +5,7 @@ use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
-use iota::{
-    Address, MessageBuilder, MessageId, UTXOInput,
-    types::Bech32Address,
-    ClientMiner, Seed,
-};
+use iota::{types::Bech32Address, Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
 use neon::prelude::*;
 
 pub(crate) enum Api {
@@ -97,8 +93,8 @@ impl Task for ClientTask {
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }
-                     if let Some(parent) = parent {
-                        sender = sender.with_parent(parent.clone());
+                    if let Some(parent) = parent {
+                        sender = sender.with_parent(*parent);
                     }
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);

@@ -161,7 +161,7 @@ declare_types! {
                         seed: ref_.seed.as_ref().map(|seed| Seed::from_ed25519_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed")),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
-                        parent: ref_.parent.clone(),
+                        parent: ref_.parent,
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
                         inputs: ref_.inputs.clone(),
