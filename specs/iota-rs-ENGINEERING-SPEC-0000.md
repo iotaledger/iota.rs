@@ -685,11 +685,11 @@ pub struct AddressBalancePair {
 A milestone metadata.
 
 ```rust
-struct MilestoneMetadata {
+pub struct MilestoneMetadata {
     /// Milestone index
-    pub index: u64,
+    pub milestone_index: u64,
     /// Milestone ID
-    pub message_ids: String,
+    pub message_id: String,
     /// Timestamp
     pub timestamp: u64,
 }

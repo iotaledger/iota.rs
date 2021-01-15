@@ -247,8 +247,8 @@ impl ResponseType for AddressOutputs {}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MilestoneMetadata {
     /// Milestone index
-    #[serde(rename = "index")]
-    pub index: u64,
+    #[serde(rename = "milestoneIndex")]
+    pub milestone_index: u64,
     /// Milestone ID
     #[serde(rename = "messageId")]
     pub message_id: String,
