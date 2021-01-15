@@ -457,7 +457,7 @@ impl Client {
 
         let message: MessageJson = message.into();
         let mut timeout = self.get_timeout(Api::PostMessage);
-        if self.local_pow {
+        if self.network_info.read().unwrap().local_pow {
             timeout = self.get_timeout(Api::PostMessageWithRemotePow);
         }
         let resp = self
