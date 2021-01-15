@@ -165,9 +165,23 @@ impl ClientBuilder {
     }
 
     /// Build the Client instance.
-    pub fn finish(self) -> Result<Client> {
+    pub fn finish(mut self) -> Result<Client> {
         if self.nodes.is_empty() {
-            return Err(Error::MissingParameter(String::from("Iota node")));
+            match self.network_info.network {
+                Network::Testnet => {
+                    let default_nodes = vec![
+                        "https://api.lb-0.testnet.chrysalis2.com",
+                        "https://api.hornet-0.testnet.chrysalis2.com",
+                    ];
+                    for node in default_nodes.iter() {
+                        let url = Url::parse(node).map_err(|_| Error::UrlError)?;
+                        self.nodes.insert(url);
+                    }
+                }
+                Network::Mainnet => {
+                    return Err(Error::MissingParameter(String::from("Iota node")));
+                }
+            }
         }
 
         let network_info = Arc::new(RwLock::new(self.network_info));
