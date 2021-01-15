@@ -118,15 +118,17 @@ impl ClientBuilder {
     }
 
     /// Get node list from the node_pool_urls
-    pub fn with_node_pool_urls(mut self, node_pool_urls: &str) -> Result<Self> {
-        let text: String = reqwest::blocking::get(node_pool_urls)
-            .unwrap()
-            .text()
-            .map_err(|_| Error::NodePoolUrlsError)?;
-        let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
-        for node_detail in nodes_details {
-            let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
-            self.nodes.insert(url);
+    pub fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
+        for pool_url in node_pool_urls {
+            let text: String = reqwest::blocking::get(pool_url)
+                .unwrap()
+                .text()
+                .map_err(|_| Error::NodePoolUrlsError)?;
+            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
+            for node_detail in nodes_details {
+                let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
+                self.nodes.insert(url);
+            }
         }
         Ok(self)
     }

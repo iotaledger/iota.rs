@@ -38,7 +38,7 @@ async fn setup_indexation_message() -> MessageId {
 #[test]
 fn test_with_node_pool_urls() {
     let r = iota_client::Client::build()
-        .with_node_pool_urls(DEFAULT_NODE_POOL_URLS)
+        .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
         .unwrap()
         .finish();
     println!("{:#?}", r);
