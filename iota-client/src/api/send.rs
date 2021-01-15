@@ -170,7 +170,7 @@ impl<'a> SendBuilder<'a> {
         }
 
         let mut paths = Vec::new();
-        let mut essence = TransactionEssence::builder();
+        let mut essence = TransactionPayloadEssence::builder();
         let mut address_index_recorders = Vec::new();
 
         match self.inputs.clone() {
@@ -323,7 +323,7 @@ impl<'a> SendBuilder<'a> {
         }
         // Add indexation_payload if index set
         if let Some(index) = self.index.clone() {
-            let indexation_payload = Indexation::new(index, &self.data.clone().unwrap_or_default())?;
+            let indexation_payload = IndexationPayload::new(index, &self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
         }
         let essence = essence.finish()?;
@@ -367,7 +367,7 @@ impl<'a> SendBuilder<'a> {
             }
         }
         // TODO overflow check
-        let mut payload_builder = TransactionBuilder::new().with_essence(essence);
+        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(essence);
         for unlock in unlock_blocks {
             payload_builder = payload_builder.add_unlock_block(unlock);
         }
@@ -389,7 +389,7 @@ impl<'a> SendBuilder<'a> {
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
             // build indexation
-            let index = Indexation::new(index.expect("No indexation tag").to_string(), data)
+            let index = IndexationPayload::new(index.expect("No indexation tag").to_string(), data)
                 .map_err(|e| Error::IndexationError(e.to_string()))?;
             payload = Payload::Indexation(Box::new(index));
         }

@@ -540,7 +540,7 @@ enum Payload {
 }
 
 struct Transaction {
-    pub essence: TransactionEssence,
+    pub essence: TransactionPayloadEssence,
     pub unlock_blocks: Vec<UnlockBlock>,
 }
 
@@ -554,7 +554,7 @@ struct Indexation {
     data: Box<[u8]>,
 }
 
-struct TransactionEssence {
+struct TransactionPayloadEssence {
     pub(crate) inputs: Box<[Input]>,
     pub(crate) outputs: Box<[Output]>,
     pub(crate) payload: Option<Payload>,
