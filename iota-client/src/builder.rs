@@ -3,8 +3,6 @@
 use crate::client::Client;
 use crate::error::*;
 
-use std::collections::HashSet;
-use std::iter::FromIterator;
 use std::sync::{Arc, RwLock};
 
 /// Network of the Iota nodes belong to
@@ -75,7 +73,7 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub fn build(self) -> Result<Client> {
-        if self.nodes.len() == 0 {
+        if self.nodes.is_empty() {
             return Err(Error::MissingNode);
         }
 
@@ -96,7 +94,7 @@ impl ClientBuilder {
         };
 
         let client = Client {
-            pool: Arc::new(RwLock::new(HashSet::from_iter(self.nodes.into_iter()))),
+            pool: Arc::new(RwLock::new(self.nodes.into_iter().collect())),
             mwm,
             quorum_size,
             quorum_threshold,

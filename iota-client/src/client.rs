@@ -5,7 +5,7 @@ use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
 use bee_crypto::ternary::Hash;
@@ -40,15 +40,19 @@ macro_rules! response {
         surf::post(&$self.get_node()?)
             .content_type(surf::http::mime::JSON)
             .header("X-IOTA-API-Version", "1")
-            .body($body).await?
-            .body_json().await?
+            .body($body)
+            .await?
+            .body_json()
+            .await?
     };
     ($self:ident, $body:ident, $node:ident) => {
         surf::post($node)
             .content_type(surf::http::mime::JSON)
             .header("X-IOTA-API-Version", "1")
-            .body($body).await?
-            .body_json().await?
+            .body($body)
+            .await?
+            .body_json()
+            .await?
     };
 }
 
@@ -497,7 +501,7 @@ impl Client {
                 tail = false;
             }
 
-            hash = res.trunk().clone();
+            hash = *res.trunk();
             if res.index() == res.last_index() {
                 bundle.push(res);
                 break Ok(bundle);

@@ -101,7 +101,7 @@ impl ConsistencyResponseBuilder {
         }
 
         Ok(ConsistencyResponse {
-            state: state,
+            state,
             info: self.info,
         })
     }

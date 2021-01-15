@@ -94,7 +94,7 @@ impl<'a> SendBuilder<'a> {
             transfer = transfer.remainder(remainder);
         }
 
-        let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().map(|x| x).collect();
+        let mut trytes: Vec<Transaction> = transfer.build().await?.into_iter().collect();
         trytes.reverse();
         let mut send_trytes = self
             .client
