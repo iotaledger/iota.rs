@@ -1,8 +1,15 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The Client module to connect through IRI with API usages
-use crate::{api::*, builder::ClientBuilder, error::*, node::*, parse_response, types::*};
+//! The Client module to connect through HORNET or Bee with API usages
+use crate::{
+    api::*,
+    builder::{ClientBuilder, Network, NetworkInfo},
+    error::*,
+    node::*,
+    parse_response,
+    types::*,
+};
 
 use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
@@ -18,7 +25,7 @@ use reqwest::{IntoUrl, Url};
 use tokio::{
     runtime::Runtime,
     sync::broadcast::{Receiver, Sender},
-    time::{delay_for, Duration as TokioDuration},
+    time::{sleep, Duration as TokioDuration},
 };
 
 use std::{
@@ -195,7 +202,7 @@ impl FromStr for Api {
     }
 }
 
-/// An instance of the client using IRI URI
+/// An instance of the client using HORNET or Bee URI
 pub struct Client {
     #[allow(dead_code)]
     pub(crate) runtime: Option<Runtime>,
@@ -212,7 +219,7 @@ pub struct Client {
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
-    pub(crate) local_pow: bool,
+    pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for each API call.
@@ -225,7 +232,7 @@ impl std::fmt::Debug for Client {
         d.field("sync", &self.sync).field("client", &self.client);
         #[cfg(feature = "mqtt")]
         d.field("broker_options", &self.broker_options);
-        d.field("local_pow", &self.local_pow).finish()
+        d.field("network_info", &self.network_info).finish()
     }
 }
 
@@ -261,35 +268,53 @@ impl Client {
         sync: Arc<RwLock<HashSet<Url>>>,
         nodes: HashSet<Url>,
         node_sync_interval: Duration,
+        network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
         let node_sync_interval = TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap());
 
-        runtime.enter(|| {
-            tokio::spawn(async move {
-                loop {
-                    tokio::select! {
-                        _ = async {
-                                // delay first since the first `sync_nodes` call is made by the builder
-                                // to ensure the node list is filled before the client is used
-                                delay_for(node_sync_interval).await;
-                                Client::sync_nodes(&sync, &nodes).await;
-                        } => {}
-                        _ = kill.recv() => {}
-                    }
+        runtime.spawn(async move {
+            loop {
+                tokio::select! {
+                    _ = async {
+                            // delay first since the first `sync_nodes` call is made by the builder
+                            // to ensure the node list is filled before the client is used
+                            sleep(node_sync_interval).await;
+                            Client::sync_nodes(&sync, &nodes, &network_info).await;
+                    } => {}
+                    _ = kill.recv() => {}
                 }
-            });
+            }
         });
     }
 
-    pub(crate) async fn sync_nodes(sync: &Arc<RwLock<HashSet<Url>>>, nodes: &HashSet<Url>) {
+    pub(crate) async fn sync_nodes(
+        sync: &Arc<RwLock<HashSet<Url>>>,
+        nodes: &HashSet<Url>,
+        network_info: &Arc<RwLock<NetworkInfo>>,
+    ) {
         let mut synced_nodes = HashSet::new();
 
         for node_url in nodes {
             // Put the healty node url into the synced_nodes
-            // if Client::get_node_health(node_url.clone()).await.unwrap_or(false) {
-            synced_nodes.insert(node_url.clone());
-            // }
+            if let Ok(info) = Client::get_node_info(node_url.clone()).await {
+                if info.is_healthy {
+                    if network_info.read().unwrap().network == Network::Testnet && info.network_id == "mainnet"
+                        || network_info.read().unwrap().network == Network::Mainnet && info.network_id != "mainnet"
+                    {
+                        continue;
+                    }
+                    let mut client_network_info = network_info.write().unwrap();
+                    client_network_info.min_pow_score = info.min_pow_score;
+                    if !client_network_info.local_pow {
+                        if info.features.contains(&"PoW".to_string()) {
+                            synced_nodes.insert(node_url.clone());
+                        }
+                    } else {
+                        synced_nodes.insert(node_url.clone());
+                    }
+                }
+            }
         }
 
         // Update the sync list
@@ -317,7 +342,14 @@ impl Client {
 
     /// Gets the miner to use based on the PoW setting
     pub fn get_pow_provider(&self) -> ClientMiner {
-        ClientMinerBuilder::new().with_local_pow(self.local_pow).finish()
+        ClientMinerBuilder::new()
+            .with_local_pow(self.network_info.read().unwrap().local_pow)
+            .finish()
+    }
+
+    /// Gets the network related information such as network_id and min_pow_score
+    pub fn get_network_info(&self) -> NetworkInfo {
+        self.network_info.read().unwrap().clone()
     }
 
     ///////////////////////////////////////////////////////////////////////

@@ -49,21 +49,21 @@ The data structure to initialize the instance of the Higher level client library
 
 ### Parameters
 
-| Field | Required | Default Value | Type | Definition |
-| - | - | - | - | - |
-| **network** | ✘ | 'mainnet' | [Network] | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];`|
-| **node** | ✘ | None | String | The URL of a node to connect to; format: `https://node:port` |
-| **nodes** | ✘ | None | [String] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **node_sync_interval** | ✘ | 60000 | std::num::NonZeroU64 | The interval in milliseconds to check for node health and sync |
-| **get_info_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **get_health_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **get_milestone_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **get_tips_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **post_message_timeout** | ✘ | 2000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **post_message_remote_pow_timeout** | ✘ | 30000 | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out |
-| **node_pool_urls** | None | ✘ | String | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
-| **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
-| **state_adapter** | ✘ | None | enum | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have. |
+| Field                               | Required | Default Value | Type                 | Definition                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------- | -------- | ------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **network**                         | ✘        | 'mainnet'     | [Network]            | Pass an enumeration with elements of **mainnet/comnet/devnet** to determine the network. If none of the below are given node_pool_urls will default to node pool lists for mainnet, devnet or comnet based on the network parameter (defaulting to ‘mainnet’, so with no parameters at all it will randomly pick some nodes for mainnet) provided by the IOTA Foundation. Similar to Trinity: `export const NODELIST_ENDPOINTS = [	'https://nodes.iota.works/api/ssl/live', 'https://iota-node-api.now.sh/api/ssl/live', 'https://iota.dance/api/ssl/live',];` |
+| **node**                            | ✘        | None          | String               | The URL of a node to connect to; format: `https://node:port`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **nodes**                           | ✘        | None          | [String]             | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked.                                                                                                                                                                                                                                                                   |
+| **node_sync_interval**              | ✘        | 60000         | std::num::NonZeroU64 | The interval in milliseconds to check for node health and sync                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **get_info_timeout**                | ✘        | 2000          | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **get_health_timeout**              | ✘        | 2000          | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **get_milestone_timeout**           | ✘        | 2000          | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **get_tips_timeout**                | ✘        | 2000          | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **post_message_timeout**            | ✘        | 2000          | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **post_message_remote_pow_timeout** | ✘        | 30000         | std::num::NonZeroU64 | The amount of milliseconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **node_pool_urls**                  | None     | ✘             | String               | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked.                                                                                                                                                                                                                                                                   |
+| **local_pow**                       | ✘        | True          | bool                 | If not defined it defaults to local PoW to offload node load times                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **state_adapter**                   | ✘        | None          | enum                 | A overwritable adapter class allowing you to implement a different way to store state over the default way. This feature is not strictly needed but would be great to have.                                                                                                                                                                                                                                                                                                                                                                                    |
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -75,11 +75,11 @@ Finalize the builder will run the instance in the background. Users don’t need
 ## On initialization
 On initialisation, call getNodeInfo API. Check the health of each node in the node list, place any nodes that are unresponsive or with isHealthy = false on a temporary blacklist. Store important metadata including MQTT port, network, remote proof of work for each node.
 
-| Node metadata | Description |
-| - | - |
-| network | If this parameter does not match the global builder parameter, add node to blacklist and return error. |
-| mqtt_port | Used in establishing MQTT subscriptions. If failure to connect to MQTT, place node in blacklist. |
-| pow | If the global local_pow parameter is set to false, then put any nodes with pow true in the blacklist. |
+| Node metadata | Description                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| network       | If this parameter does not match the global builder parameter, add node to blacklist and return error. |
+| mqtt_port     | Used in establishing MQTT subscriptions. If failure to connect to MQTT, place node in blacklist.       |
+| pow           | If the global local_pow parameter is set to false, then put any nodes with pow true in the blacklist.  |
 
 
 ## Sync Process
@@ -107,15 +107,15 @@ A generic send function for easily sending a value transaction message.
 
 ### Parameters
 
-| Field | Required | Default | Type | Definition |
-| - | - | - | - | - |
-| **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for SignedTransactions (value) |
-| **address** | ✘ | None | \[[Address]\] | The address(es) to send to, applies to value transactions only. |
-| **value** | ✘ | 0 | u64 | The amount of IOTA to send. If the value is zero the message object will have a IndexationPayload instead of a SignedTransactionPayload with an embedded IndexationPayload |
-| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **output** | ✘ | None | \[Output\] | Users can manually pick their own output instead of having node decide on which output should be used. |
-| **indexation_key** | ✘ | None | String | An optional indexation key of the indexation payload. |
-| **data** | ✘ | None | [u8] | An optional indexation data of the indexation payload. |
+| Field              | Required | Default   | Type          | Definition                                                                                                                                                                 |
+| ------------------ | -------- | --------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **seed**           | ✘        | None      | [Seed]        | The seed of the account we are going to spend, only needed for SignedTransactions (value)                                                                                  |
+| **address**        | ✘        | None      | \[[Address]\] | The address(es) to send to, applies to value transactions only.                                                                                                            |
+| **value**          | ✘        | 0         | u64           | The amount of IOTA to send. If the value is zero the message object will have a IndexationPayload instead of a SignedTransactionPayload with an embedded IndexationPayload |
+| **path**           | ✘        | `m/0'/0'` | [BIP32Path]   | The wallet chain BIP32 path we want to search for.                                                                                                                         |
+| **output**         | ✘        | None      | \[Output\]    | Users can manually pick their own output instead of having node decide on which output should be used.                                                                     |
+| **indexation_key** | ✘        | None      | String        | An optional indexation key of the indexation payload.                                                                                                                      |
+| **data**           | ✘        | None      | [u8]          | An optional indexation data of the indexation payload.                                                                                                                     |
 
 * If only `indexation_key` and `data` are provided. This method will create a message with only indexation payload instead.
 
@@ -143,9 +143,9 @@ Endpoint collection all about GET messages.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message_id** | ✔ | [MessageId] | The identifier of message. |
+| Field          | Required | Type        | Definition                 |
+| -------------- | -------- | ----------- | -------------------------- |
+| **message_id** | ✔        | [MessageId] | The identifier of message. |
 
 ### Returns
 
@@ -162,10 +162,10 @@ Find all messages by provided message IDs. This method will try to query multipl
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **indexation_key** | ✘ | [String] | The index key of the indexation payload. |
-| **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
+| Field              | Required | Type          | Definition                               |
+| ------------------ | -------- | ------------- | ---------------------------------------- |
+| **indexation_key** | ✘        | [String]      | The index key of the indexation payload. |
+| **message_ids**    | ✘        | [[MessageId]] | The identifier of message.               |
 
 ### Returns
 
@@ -177,11 +177,11 @@ Return a valid unspent address.
 
 ### Parameters
 
-| Field | Required | Default | Type | Definition |
-| - | - | - | - | - |
-| **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
+| Field     | Required | Default   | Type        | Definition                                         |
+| --------- | -------- | --------- | ----------- | -------------------------------------------------- |
+| **seed**  | ✔        | -         | [Seed]      | The seed we want to search for.                    |
+| **path**  | ✘        | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘        | 0         | u32         | Start index of the address. **Default is 0.**      |
 
 ### Return
 
@@ -209,11 +209,11 @@ Return the balance for a provided seed and its wallet chain BIP32 path. BIP32 de
 
 ### Parameters
 
-| Field | Required | Default | Type | Definition |
-| - | - | - | - | - |
-| **seed** | ✔ | - | [Seed] | The seed we want to search for. |
-| **path** | ✘ | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **index** | ✘ | 0 | u32 | Start index of the address. **Default is 0.** |
+| Field     | Required | Default   | Type        | Definition                                         |
+| --------- | -------- | --------- | ----------- | -------------------------------------------------- |
+| **seed**  | ✔        | -         | [Seed]      | The seed we want to search for.                    |
+| **path**  | ✘        | `m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
+| **index** | ✘        | 0         | u32         | Start index of the address. **Default is 0.**      |
 
 ### Return
 
@@ -235,9 +235,9 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **addresses** | ✔ | [[Address]] | List of addresses with checksum. |
+| Field         | Required | Type        | Definition                       |
+| ------------- | -------- | ----------- | -------------------------------- |
+| **addresses** | ✔        | [[Address]] | List of addresses with checksum. |
 
 ### Return
 
@@ -258,9 +258,9 @@ Retries (promotes or reattaches) a message for provided message id. Messages sho
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message_id** | ✔ | [MessageId] | The identifier of message. |
+| Field          | Required | Type        | Definition                 |
+| -------------- | -------- | ----------- | -------------------------- |
+| **message_id** | ✔        | [MessageId] | The identifier of message. |
 
 ### Returns:
 
@@ -272,10 +272,10 @@ Subscribe to a node event topic (MQTT); Every time a event is detected the given
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **topic** | ✔ | [Topic] | Topic | The topic to monitor for events |
-| **callback** | ✘ | [CallbackFunction(topic, result)]| A callback function to call every time the event with the given topic is detected. |
+| Field        | Required | Type                              | Definition                                                                         |
+| ------------ | -------- | --------------------------------- | ---------------------------------------------------------------------------------- |
+| **topic**    | ✔        | [Topic]                           | Topic                                                                              | The topic to monitor for events |
+| **callback** | ✘        | [CallbackFunction(topic, result)] | A callback function to call every time the event with the given topic is detected. |
 
 ### Returns
 
@@ -287,9 +287,9 @@ Unsubscribe from a node event topic or topics (MQTT) cancelling the earlier set 
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **topic** | ✘ | [Topic] | Topic | The topic(s) to cancel monitoring for, if none given cancel all event monitoring |
+| Field     | Required | Type    | Definition |
+| --------- | -------- | ------- | ---------- |
+| **topic** | ✘        | [Topic] | Topic      | The topic(s) to cancel monitoring for, if none given cancel all event monitoring |
 
 ### Returns
 
@@ -377,9 +377,9 @@ Submit a message. The node takes care of missing fields and tries to build the m
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message** | ✔ | [Message] | The message object. |
+| Field       | Required | Type      | Definition          |
+| ----------- | -------- | --------- | ------------------- |
+| **message** | ✔        | [Message] | The message object. |
 
 ### Returns
 
@@ -393,9 +393,9 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **outputId** | ✔ | UTXOInput | Identifier of the output. |
+| Field        | Required | Type      | Definition                |
+| ------------ | -------- | --------- | ------------------------- |
+| **outputId** | ✔        | UTXOInput | Identifier of the output. |
 
 ### Returns
 
@@ -407,9 +407,9 @@ An OutputMetadata that contains various information about the output.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **address** | ✔ | [Address] | The address to search for. |
+| Field       | Required | Type      | Definition                 |
+| ----------- | -------- | --------- | -------------------------- |
+| **address** | ✔        | [Address] | The address to search for. |
 
 ### Returns
 
@@ -424,10 +424,10 @@ Find all outputs based on the requests criteria. This method will try to query m
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
-| **addresses** | ✘ | [[Address]] | The identifier of address. |
+| Field         | Required | Type        | Definition                 |
+| ------------- | -------- | ----------- | -------------------------- |
+| **output_id** | ✘        | [UTXOInput] | The identifier of output.  |
+| **addresses** | ✘        | [[Address]] | The identifier of address. |
 
 ### Returns
 
@@ -439,11 +439,11 @@ Return a list of addresses from the seed regardless of their validity.
 
 ### Parameters
 
-| Field | Required | Default | Type | Definition |
-| - | - | - | - | - |
-| **seed** | ✔ | None | [Seed] | The seed we want to search for. |
-| **path** | ✘ |`m/0'/0'` | [BIP32Path] | The wallet chain BIP32 path we want to search for. |
-| **range** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
+| Field     | Required | Default   | Type            | Definition                                                                  |
+| --------- | -------- | --------- | --------------- | --------------------------------------------------------------------------- |
+| **seed**  | ✔        | None      | [Seed]          | The seed we want to search for.                                             |
+| **path**  | ✘        | `m/0'/0'` | [BIP32Path]     | The wallet chain BIP32 path we want to search for.                          |
+| **range** | ✘        | None      | std::ops::Range | Range indices of the addresses we want to search for **Default is (0..20)** |
 
 ### Return
 
@@ -457,9 +457,9 @@ Get the milestone by the given index.
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **index** | ✔ | u32 | Index of the milestone. |
+| Field     | Required | Type | Definition              |
+| --------- | -------- | ---- | ----------------------- |
+| **index** | ✔        | u32  | Index of the milestone. |
 
 ### Returns
 
@@ -473,9 +473,9 @@ Reattaches a message. The method should validate if a reattachment is necessary 
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message_id** | ✔ | [MessageId] | The identifier of message. |
+| Field          | Required | Type        | Definition                 |
+| -------------- | -------- | ----------- | -------------------------- |
+| **message_id** | ✔        | [MessageId] | The identifier of message. |
 
 ### Returns
 
@@ -489,9 +489,9 @@ Promotes a message. The method should validate if a promotion is necessary throu
 
 ### Parameters
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **message_id** | ✔ | [MessageId] | The identifier of message. |
+| Field          | Required | Type        | Definition                 |
+| -------------- | -------- | ----------- | -------------------------- |
+| **message_id** | ✔        | [MessageId] | The identifier of message. |
 
 ### Returns
 
@@ -527,9 +527,9 @@ struct MessageId([u8; MESSAGE_ID_LENGTH]);
 ## `Seed`
 [Seed]: #Seed
 
-| Field | Required | Type | Definition |
-| - | - | - | - |
-| **seed** | ✔ | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
+| Field    | Required | Type       | Definition                                                                                                                                          |
+| -------- | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **seed** | ✔        | `[u8; 32]` | An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
 ## `Message`
 [Message]: #Message
@@ -551,7 +551,7 @@ enum Payload {
 }
 
 struct Transaction {
-    pub essence: TransactionEssence,
+    pub essence: TransactionPayloadEssence,
     pub unlock_blocks: Vec<UnlockBlock>,
 }
 
@@ -567,7 +567,7 @@ struct Indexation {
     data: Box<[u8]>,
 }
 
-struct TransactionEssence {
+struct TransactionPayloadEssence {
     pub(crate) inputs: Box<[Input]>,
     pub(crate) outputs: Box<[Output]>,
     pub(crate) payload: Option<Payload>,
