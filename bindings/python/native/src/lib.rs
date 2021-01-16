@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use iota::{
     builder::Network, Address as RustAddress, AddressBalancePair as RustAddressBalancePair, Api,
     Bech32Address as RustBech32Address, BrokerOptions as RustBrokerOptions, Client as RustClient, ClientMiner,
