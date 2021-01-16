@@ -110,7 +110,7 @@ A generic send function for easily sending a message.
 | **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
 | **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
-| **index** | ✘ | None | &str | An optional indexation key for an indexation payload. |
+| **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
 | **parent** | ✘ | None | [MessageId] | An optional parent [MessageId] to be used as one parent. |
 | **network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
