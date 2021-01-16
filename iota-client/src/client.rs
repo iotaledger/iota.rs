@@ -11,7 +11,7 @@ use crate::{
     types::*,
 };
 
-use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
+use bee_message::prelude::{Address, Bech32Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_signing_ext::Seed;
 

@@ -5,7 +5,7 @@ use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
-use iota::{types::Bech32Address, Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
+use iota::{Address, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
 use neon::prelude::*;
 
 pub(crate) enum Api {

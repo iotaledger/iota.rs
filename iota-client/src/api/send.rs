@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, types::Bech32Address, Client, ClientMiner, Error, Result};
+use crate::{api::address::search_address, builder::Network, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
@@ -184,11 +184,15 @@ impl<'a> SendBuilder<'a> {
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
+                            let bech32_addresses = match self.client.get_network_info().network {
+                                Network::Mainnet => output.address.to_bech32(),
+                                _ => output.address.to_bech32_testnet(),
+                            };
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 account_index,
                                 0..100,
-                                &output.address.to_bech32().into(),
+                                &bech32_addresses.into(),
                             )?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
