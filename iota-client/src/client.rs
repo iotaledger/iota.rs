@@ -642,8 +642,8 @@ impl Client {
         GetAddressesBuilder::new(self, seed)
     }
 
-    /// Find all messages by provided message IDs.
-    pub async fn find_messages(&self, message_ids: &[MessageId]) -> Result<Vec<Message>> {
+    /// Find all messages by provided message IDs or indexation_keys.
+    pub async fn find_messages(&self, indexation_keys: &[String], message_ids: &[MessageId]) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
         // Use a `HashSet` to prevent duplicate message_ids.
@@ -652,6 +652,15 @@ impl Client {
         // Collect the `MessageId` in the HashSet.
         for message_id in message_ids {
             message_ids_to_query.insert(message_id.to_owned());
+        }
+
+        // Use `get_message().index()` API to get the message ID first,
+        // then collect the `MessageId` in the HashSet.
+        for index in indexation_keys {
+            let message_ids = self.get_message().index(&index).await?;
+            for message_id in message_ids.iter() {
+                message_ids_to_query.insert(message_id.to_owned());
+            }
         }
 
         // Use `get_message().data()` API to get the `Message`.

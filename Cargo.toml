@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "iota-core",
-    # "binding/python/iota-core-python",
+    "bindings/python/native",
     "iota-client",
 
     "examples",

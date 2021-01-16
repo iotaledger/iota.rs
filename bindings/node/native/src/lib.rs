@@ -24,7 +24,7 @@ type ClientInstanceMap = Arc<RwLock<HashMap<String, Arc<RwLock<Client>>>>>;
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
+pub Error {
     #[error("`{0}`")]
     Anyhow(#[from] anyhow::Error),
     #[error("`{0}`")]
