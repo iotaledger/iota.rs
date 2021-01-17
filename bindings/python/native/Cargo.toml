@@ -13,15 +13,11 @@ name = "iota_client"
 crate-type = ["cdylib"]
 
 [dependencies]
-# bee-message = { git = "https://github.com/Alex6323/bee-p.git", branch = "chrysalis-pt-2" }
-# bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
-# iota-client = { version = "0.5.0-alpha", path = "../../../iota-client" }
 tokio = { version = "1.0", features = ["macros"] }
 hex = "0.4"
 iota-core = { path = "../../../iota-core" }
 syn = "=1.0.57"
 dict_derive = "0.3.0"
-
 
 [dependencies.pyo3]
 version = "0.12.3"

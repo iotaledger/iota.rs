@@ -34,10 +34,3 @@ num_cpus = "1.13"
 [features]
 default = ["mqtt"]
 mqtt = ["paho-mqtt"]
-
-[dev-dependencies]
-tokio = { version = "0.2.22", features = ["macros"] }
-
-[dependencies.pyo3]
-version = "0.12.3"
-features = ["extension-module"]
