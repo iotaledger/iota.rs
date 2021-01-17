@@ -9,6 +9,7 @@ use iota::{Client, Seed};
 #[tokio::main]
 async fn main() {
     let iota = Client::build() // Crate a client instance builder
+        .with_node_sync_disabled()
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
@@ -34,7 +35,7 @@ async fn main() {
     let message_id = iota
         .send()
         .with_seed(&seed)
-        .with_input(outputs[1].clone())
+        .with_input(outputs[0].clone())
         .with_output(
             &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
             100,
