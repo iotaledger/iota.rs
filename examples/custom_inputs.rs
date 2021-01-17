@@ -3,8 +3,10 @@
 
 //! cargo run --example custom_inputs --release
 use iota::{Client, Seed};
+#[macro_use]
+extern crate dotenv_codegen;
 /// In this example, we send 100 tokens to iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6
-/// This address belongs to the seed "256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0"
+/// This address belongs to the seed "256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0", defined in .env
 
 #[tokio::main]
 async fn main() {
@@ -16,10 +18,7 @@ async fn main() {
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
     // First address from the seed below is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
-    )
-    .unwrap();
+    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("seed")).unwrap()).unwrap();
 
     let address = iota
         .find_addresses(&seed)

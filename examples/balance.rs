@@ -4,6 +4,7 @@
 //! cargo run --example balance --release
 use iota::Client;
 
+/// In this example we will get the balance of a known address
 #[tokio::main]
 async fn main() {
     let iota = Client::build() // Crate a client instance builder
