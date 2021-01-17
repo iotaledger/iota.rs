@@ -2,29 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    builder::Network, Address as RustAddress, AddressBalancePair as RustAddressBalancePair, Api,
-    Bech32Address as RustBech32Address, BrokerOptions as RustBrokerOptions, Client as RustClient, ClientMiner,
-    Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
-    IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
-    MessageBuilder as RustMessageBuilder, MessageId as RustMessageId, NodeInfo as RustNodeInfo, Output as RustOutput,
-    OutputMetadata as RustOutputMetadata, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
-    Seed as RustSeed, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
-    TransactionPayload as RustTransactionPayload, TransactionPayloadEssence as RustTransactionPayloadEssence,
-    UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
+    builder::Network, Address as RustAddress, Api, Bech32Address as RustBech32Address,
+    BrokerOptions as RustBrokerOptions, Client as RustClient, ClientMiner, Ed25519Address as RustEd25519Address,
+    Ed25519Signature as RustEd25519Signature, IndexationPayload as RustIndexationPayload, Input as RustInput,
+    Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId as RustMessageId, Output as RustOutput,
+    Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock, Seed as RustSeed,
+    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
+    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload,
+    TransactionPayloadEssence as RustTransactionPayloadEssence, UTXOInput as RustUTXOInput,
+    UnlockBlock as RustUnlockBlock,
 };
 
 // use pyo3::conversion::IntoPy;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
-use pyo3::callback::IntoPyCallbackOutput;
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3::types::*;
-use pyo3::wrap_pyfunction;
-use pyo3::{AsPyPointer, PyNativeType};
 use std::collections::HashMap;
-use std::convert::{From, Into, TryFrom, TryInto};
-use std::ops::Range;
+use std::convert::{From, Into, TryInto};
 use std::str::FromStr;
 use std::time::Duration;
 pub const MILESTONE_MERKLE_PROOF_LENGTH: usize = 32;
@@ -33,6 +26,26 @@ pub const MILESTONE_SIGNATURE_LENGTH: usize = 64;
 #[pyclass]
 struct Client {
     client: RustClient,
+}
+
+#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct MessageMetadata {
+    /// Message ID
+    pub message_id: String,
+    /// Message ID of parent1
+    pub parent1: String,
+    /// Message ID of parent2
+    pub parent2: String,
+    /// Solid status
+    pub is_solid: bool,
+    /// Should promote
+    pub should_promote: Option<bool>,
+    /// Should reattach
+    pub should_reattach: Option<bool>,
+    /// Referenced by milestone index
+    pub referenced_by_milestone_index: Option<u64>,
+    /// Ledger inclusion state
+    pub ledger_inclusion_state: Option<String>,
 }
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -488,8 +501,134 @@ impl Client {
 /// General high level APIs
 #[pymethods]
 impl Client {
-    fn send(&self) {}
-    fn get_message(&self) {}
+    fn send(
+        &self,
+        seed: Option<String>,
+        account_index: Option<usize>,
+        initial_address_index: Option<usize>,
+        inputs: Option<Vec<Input>>,
+        outputs: Option<Vec<Output>>,
+        index: Option<&str>,
+        data: Option<Vec<u8>>,
+        parent: Option<&str>,
+        network_id: Option<u64>,
+    ) -> String {
+        let mut send_builder = self.client.send();
+        if let Some(account_index) = account_index {
+            send_builder = send_builder.with_account_index(account_index);
+        }
+        if let Some(initial_address_index) = initial_address_index {
+            send_builder = send_builder.with_initial_address_index(initial_address_index);
+        }
+        if let Some(inputs) = inputs {
+            for input in inputs {
+                send_builder = send_builder.with_input(
+                    RustUTXOInput::new(
+                        RustTransationId::from_str(&input.transaction_id[..]).unwrap(),
+                        input.index,
+                    )
+                    .unwrap(),
+                );
+            }
+        }
+        if let Some(outputs) = outputs {
+            for output in outputs {
+                send_builder = send_builder
+                    .with_output_hex(&output.address[..], output.amount)
+                    .unwrap();
+            }
+        }
+        if let Some(index) = index {
+            send_builder = send_builder.with_index(index);
+        }
+        if let Some(data) = data {
+            send_builder = send_builder.with_data(data);
+        }
+        if let Some(parent) = parent {
+            send_builder = send_builder.with_parent(RustMessageId::from_str(parent).unwrap());
+        }
+        if let Some(network_id) = network_id {
+            send_builder = send_builder.with_network_id(network_id);
+        }
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        if let Some(seed) = seed {
+            return rt
+                .block_on(async {
+                    send_builder
+                        .with_seed(&RustSeed::from_ed25519_bytes(seed.as_bytes()).unwrap())
+                        .finish()
+                        .await
+                        .unwrap()
+                })
+                .to_string();
+        } else {
+            return rt.block_on(async { send_builder.finish().await.unwrap() }).to_string();
+        }
+    }
+    fn get_message_metadata(&self, message_id: &str) -> MessageMetadata {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let message_metadata = rt.block_on(async {
+            self.client
+                .get_message()
+                .metadata(&RustMessageId::from_str(message_id).unwrap())
+                .await
+                .unwrap()
+        });
+        MessageMetadata {
+            message_id: message_metadata.message_id,
+            parent1: message_metadata.parent1,
+            parent2: message_metadata.parent2,
+            is_solid: message_metadata.is_solid,
+            should_promote: message_metadata.should_promote,
+            should_reattach: message_metadata.should_reattach,
+            referenced_by_milestone_index: message_metadata.referenced_by_milestone_index,
+            ledger_inclusion_state: message_metadata.ledger_inclusion_state,
+        }
+    }
+    fn get_message_data(&self, message_id: &str) -> Message {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let message = rt.block_on(async {
+            self.client
+                .get_message()
+                .data(&RustMessageId::from_str(message_id).unwrap())
+                .await
+                .unwrap()
+        });
+        message.into()
+    }
+    fn get_message_raw(&self, message_id: &str) -> String {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let raw_data = rt.block_on(async {
+            self.client
+                .get_message()
+                .raw(&RustMessageId::from_str(message_id).unwrap())
+                .await
+                .unwrap()
+        });
+        raw_data
+    }
+    fn get_message_children(&self, message_id: &str) -> Vec<String> {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let children = rt.block_on(async {
+            self.client
+                .get_message()
+                .children(&RustMessageId::from_str(message_id).unwrap())
+                .await
+                .unwrap()
+        });
+        children
+            .into_iter()
+            .map(|child| String::from_utf8(child.as_ref().to_vec()).unwrap())
+            .collect()
+    }
+    fn get_message_index(&self, index: &str) -> Vec<String> {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let indices = rt.block_on(async { self.client.get_message().index(index).await.unwrap() });
+        indices
+            .into_iter()
+            .map(|index| String::from_utf8(index.as_ref().to_vec()).unwrap())
+            .collect()
+    }
     fn find_messages(&self, indexation_keys: Option<Vec<String>>, message_ids: Option<Vec<String>>) -> Vec<Message> {
         let message_ids: Vec<RustMessageId> = message_ids
             .unwrap_or(vec![])
@@ -503,7 +642,7 @@ impl Client {
                 .await
                 .unwrap()
         });
-        vec![] // TODO: RustMessage to Message
+        messages.into_iter().map(|message| message.into()).collect()
     }
     fn get_unspent_address(
         &self,
@@ -599,7 +738,6 @@ impl Client {
         (message_id_message.0.to_string(), message_id_message.1.into())
     }
     fn reattach(&self, message_id: String) -> (String, Message) {
-        // (String, Message) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_id_message = rt.block_on(async {
             self.client
@@ -610,7 +748,6 @@ impl Client {
         (message_id_message.0.to_string(), message_id_message.1.into())
     }
     fn promote(&self, message_id: String) -> (String, Message) {
-        // (String, Message) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_id_message = rt.block_on(async {
             self.client
@@ -747,7 +884,7 @@ impl Client {
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn iota_client(py: Python, m: &PyModule) -> PyResult<()> {
+fn iota_client(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<Client>()?;
     Ok(())
 }
