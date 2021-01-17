@@ -31,3 +31,4 @@ print(f'send() to {ADDRESS_TEST[1]}\nmessage_id = {message_id}')
 print(f'Check http://127.0.0.1:14265/api/v1/messages/{message_id}')
 print(
     f'get_address_balance(): {client.get_address_balance(ADDRESS_TEST[1])}')
+print(client.get_message_data.__doc__)

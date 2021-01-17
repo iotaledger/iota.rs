@@ -13,7 +13,6 @@ use iota::{
     UnlockBlock as RustUnlockBlock,
 };
 
-// use pyo3::conversion::IntoPy;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use pyo3::prelude::*;
 use std::collections::HashMap;
@@ -23,6 +22,8 @@ use std::time::Duration;
 pub const MILESTONE_MERKLE_PROOF_LENGTH: usize = 32;
 pub const MILESTONE_PUBLIC_KEY_LENGTH: usize = 32;
 pub const MILESTONE_SIGNATURE_LENGTH: usize = 64;
+
+/// Client builder
 #[pyclass]
 struct Client {
     client: RustClient,
@@ -580,6 +581,17 @@ impl Client {
             ledger_inclusion_state: message_metadata.ledger_inclusion_state,
         }
     }
+    /// Get the message data from the message_id.
+    ///
+    /// Parameters
+    /// ----------
+    /// message_id : &str
+    ///     The identifier of message.
+    ///
+    /// Returns
+    /// ----------
+    /// message : Message
+    ///     Return a Message object.
     fn get_message_data(&self, message_id: &str) -> Message {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message = rt.block_on(async {
