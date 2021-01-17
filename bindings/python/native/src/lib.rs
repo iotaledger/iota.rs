@@ -15,22 +15,30 @@ use iota::{
 };
 
 // use pyo3::conversion::IntoPy;
-use pyo3::prelude::*;
-use pyo3::types::*;
-use pyo3::wrap_pyfunction;
-use std::collections::HashMap;
-use std::time::Duration;
-// extern crate dict_derive;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use pyo3::callback::IntoPyCallbackOutput;
+use pyo3::prelude::*;
 use pyo3::types::PyDict;
+use pyo3::types::*;
+use pyo3::wrap_pyfunction;
 use pyo3::{AsPyPointer, PyNativeType};
+use std::collections::HashMap;
 use std::convert::{From, Into, TryFrom, TryInto};
+use std::ops::Range;
 use std::str::FromStr;
+use std::time::Duration;
 
 #[pyclass]
 struct Client {
     client: RustClient,
+}
+
+#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct AddressBalancePair {
+    /// Address
+    pub address: String,
+    /// Balance in the address
+    pub balance: u64,
 }
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -332,15 +340,143 @@ impl Client {
 impl Client {
     fn send(&self) {}
     fn get_message(&self) {}
-    fn find_messages(&self) {}
-    fn get_unspent_address(&self) {}
-    fn find_addresses(&self) {}
-    fn get_balance(&self) {}
-    fn get_address_balances(&self) {}
+    fn find_messages(&self, indexation_keys: Option<Vec<String>>, message_ids: Option<Vec<String>>) -> Vec<Message> {
+        let message_ids: Vec<RustMessageId> = message_ids
+            .unwrap_or(vec![])
+            .iter()
+            .map(|id| RustMessageId::from_str(&id[..]).unwrap())
+            .collect();
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let messages = rt.block_on(async {
+            self.client
+                .find_messages(&indexation_keys.unwrap_or(vec![])[..], &message_ids[..])
+                .await
+                .unwrap()
+        });
+        vec![] // TODO: RustMessage to Message
+    }
+    fn get_unspent_address(
+        &self,
+        seed: String,
+        account_index: Option<usize>,
+        initial_address_index: Option<usize>,
+    ) -> (String, usize) {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let address_index = rt.block_on(async {
+            self.client
+                .get_unspent_address(&RustSeed::from_ed25519_bytes(seed.as_bytes()).unwrap())
+                .with_account_index(account_index.unwrap_or(0))
+                .with_initial_address_index(initial_address_index.unwrap_or(0))
+                .get()
+                .await
+                .unwrap()
+        });
+        (address_index.0 .0, address_index.1)
+    }
+    fn find_addresses(
+        &self,
+        seed: String,
+        account_index: Option<usize>,
+        begin: Option<usize>,
+        end: Option<usize>,
+        get_all: Option<bool>,
+    ) -> Vec<(String, Option<bool>)> {
+        if get_all.unwrap_or(false) {
+            let addresses = self
+                .client
+                .find_addresses(&&RustSeed::from_ed25519_bytes(seed.as_bytes()).unwrap())
+                .with_account_index(account_index.unwrap_or(0))
+                .with_range(begin.unwrap_or(0)..end.unwrap_or(20))
+                .get_all()
+                .unwrap();
+            return addresses
+                .iter()
+                .map(|address_changed| (address_changed.0.to_string(), Some(address_changed.1)))
+                .collect();
+        } else {
+            let addresses = self
+                .client
+                .find_addresses(&&RustSeed::from_ed25519_bytes(seed.as_bytes()).unwrap())
+                .with_account_index(account_index.unwrap_or(0))
+                .with_range(begin.unwrap_or(0)..end.unwrap_or(20))
+                .finish()
+                .unwrap();
+            return addresses
+                .iter()
+                .map(|addresses| (addresses.to_string(), None))
+                .collect();
+        }
+    }
+    fn get_balance(&self, seed: String, account_index: Option<usize>, initial_address_index: Option<usize>) -> u64 {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async {
+            self.client
+                .get_balance(&RustSeed::from_ed25519_bytes(seed.as_bytes()).unwrap())
+                .with_account_index(account_index.unwrap_or(0))
+                .with_initial_address_index(initial_address_index.unwrap_or(0))
+                .finish()
+                .await
+                .unwrap()
+        })
+    }
+    fn get_address_balances(&self, addresses: Vec<String>) -> Vec<AddressBalancePair> {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let bench32_addresses: Vec<RustBech32Address> = addresses
+            .iter()
+            .map(|address| RustBech32Address::from(&address[..]))
+            .collect();
+
+        let address_balances =
+            rt.block_on(async { self.client.get_address_balances(&bench32_addresses[..]).await.unwrap() });
+
+        address_balances
+            .iter()
+            .map(|address_balance| AddressBalancePair {
+                address: address_balance.address.0.clone(),
+                balance: address_balance.balance,
+            })
+            .collect()
+    }
     fn subscriber(&self) {}
-    fn retry(&self) {}
-    fn reattach(&self) {}
-    fn promote(&self) {}
+    fn retry(&self, message_id: String) -> String {
+        // (String, Message) {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let message_id_message = rt.block_on(async {
+            self.client
+                .retry(&RustMessageId::from_str(&message_id).unwrap())
+                .await
+                .unwrap()
+        });
+        let message_id = message_id_message.0.to_string();
+        // TODO: RustMessage to Message
+        message_id
+    }
+    fn reattach(&self, message_id: String) -> String {
+        // (String, Message) {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let message_id_message = rt.block_on(async {
+            self.client
+                .reattach(&RustMessageId::from_str(&message_id).unwrap())
+                .await
+                .unwrap()
+        });
+        let message_id = message_id_message.0.to_string();
+        // TODO: RustMessage to Message
+        message_id
+    }
+    fn promote(&self, message_id: String) -> String {
+        // (String, Message) {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let message_id_message = rt.block_on(async {
+            self.client
+                .promote(&RustMessageId::from_str(&message_id).unwrap())
+                .await
+                .unwrap()
+        });
+        let message_id = message_id_message.0.to_string();
+        // TODO: RustMessage to Message
+        message_id
+    }
 }
 
 /// Full node API
