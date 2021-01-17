@@ -247,8 +247,8 @@ impl ResponseType for AddressOutputs {}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MilestoneMetadata {
     /// Milestone index
-    #[serde(rename = "index")]
-    pub index: u64,
+    #[serde(rename = "milestoneIndex")]
+    pub milestone_index: u64,
     /// Milestone ID
     #[serde(rename = "messageId")]
     pub message_id: String,
@@ -710,4 +710,23 @@ impl TryFrom<SignatureUnlockJson> for SignatureUnlock {
         let signature = hex::decode(value.signature)?.into_boxed_slice();
         Ok(Ed25519Signature::new(public_key, signature).into())
     }
+}
+
+/// JSON struct for NodeDetail from the node_pool_urls
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeDetail {
+    /// Iota node url
+    pub node: String,
+    /// value of health
+    pub health: usize,
+    /// number of neighbors
+    pub neighbors: usize,
+    /// implementation name
+    pub implementation: String,
+    /// Iota node version
+    pub version: String,
+    /// enabled PoW
+    pub pow: bool,
+    /// spent or not
+    pub spent: bool,
 }

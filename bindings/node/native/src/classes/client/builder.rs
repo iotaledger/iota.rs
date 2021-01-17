@@ -8,6 +8,7 @@ use neon::prelude::*;
 
 pub struct ClientBuilderWrapper {
     nodes: Vec<String>,
+    node_pool_urls: Vec<String>,
     broker_options: Option<BrokerOptions>,
     node_sync_interval: Option<NonZeroU64>,
     request_timeout: Option<Duration>,
@@ -21,6 +22,7 @@ declare_types! {
         init(_) {
             Ok(ClientBuilderWrapper {
                 nodes: Default::default(),
+                node_pool_urls: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
                 request_timeout: Default::default(),
@@ -57,6 +59,28 @@ declare_types! {
                 let nodes = &mut this.borrow_mut(&guard).nodes;
                 for node_url in node_urls {
                     nodes.push(node_url);
+                }
+            }
+
+            Ok(cx.this().upcast())
+        }
+
+        method node_pool_urls(mut cx) {
+            let js_node_urls = cx.argument::<JsArray>(0)?;
+            let js_node_urls: Vec<Handle<JsValue>> = js_node_urls.to_vec(&mut cx)?;
+
+            let mut node_pool_urls = vec![];
+            for js_node_url in js_node_urls {
+                let node_url: Handle<JsString> = js_node_url.downcast_or_throw(&mut cx)?;
+                node_pool_urls.push(node_url.value());
+            }
+
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let pool_urls = &mut this.borrow_mut(&guard).node_pool_urls;
+                for node_pool_url in node_pool_urls {
+                    pool_urls.push(node_pool_url);
                 }
             }
 
@@ -140,6 +164,9 @@ declare_types! {
 
                 for node in &ref_.nodes {
                     builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
+                }
+                if !&ref_.node_pool_urls.is_empty() {
+                    builder = builder.with_node_pool_urls(&ref_.node_pool_urls).expect("Problem with node pool url");
                 }
                 if let Some(broker_options) = &ref_.broker_options {
                     builder = builder.with_mqtt_broker_options(broker_options.clone());

@@ -129,7 +129,10 @@ impl Task for ClientTask {
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
                 }
-                Api::FindMessages { indexation_keys, message_ids } => {
+                Api::FindMessages {
+                    indexation_keys,
+                    message_ids,
+                } => {
                     let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
                     serde_json::to_string(&messages).unwrap()
                 }

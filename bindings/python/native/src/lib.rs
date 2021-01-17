@@ -59,7 +59,7 @@ pub struct AddressBalancePair {
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MilestoneMetadata {
     /// Milestone index
-    pub index: u64,
+    pub milestone_index: u64,
     /// Milestone ID
     pub message_id: String,
     /// Timestamp
@@ -875,7 +875,7 @@ impl Client {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let milestone_metadata = rt.block_on(async { self.client.get_milestone(index).await.unwrap() });
         MilestoneMetadata {
-            index: milestone_metadata.index,
+            milestone_index: milestone_metadata.milestone_index,
             message_id: milestone_metadata.message_id,
             timestamp: milestone_metadata.timestamp,
         }

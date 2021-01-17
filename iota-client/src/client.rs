@@ -179,6 +179,8 @@ pub enum Api {
     GetTips,
     /// `post_message` API
     PostMessage,
+    /// `post_message` API with remote pow
+    PostMessageWithRemotePow,
     /// `get_output` API
     GetOutput,
     /// `get_milestone` API
@@ -194,6 +196,7 @@ impl FromStr for Api {
             "GetInfo" => Self::GetInfo,
             "GetTips" => Self::GetTips,
             "PostMessage" => Self::PostMessage,
+            "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
             "GetOutput" => Self::GetOutput,
             "GetMilestone" => Self::GetMilestone,
             _ => return Err(format!("unknown api kind `{}`", s)),
@@ -453,11 +456,14 @@ impl Client {
         url.set_path("api/v1/messages");
 
         let message: MessageJson = message.into();
-
+        let mut timeout = self.get_timeout(Api::PostMessage);
+        if self.network_info.read().unwrap().local_pow {
+            timeout = self.get_timeout(Api::PostMessageWithRemotePow);
+        }
         let resp = self
             .client
             .post(url)
-            .timeout(self.get_timeout(Api::PostMessage))
+            .timeout(timeout)
             .header("content-type", "application/json; charset=UTF-8")
             .json(&message)
             .send()
@@ -642,7 +648,7 @@ impl Client {
         GetAddressesBuilder::new(self, seed)
     }
 
-    /// Find all messages by provided message IDs or indexation_keys.
+    /// Find all messages by provided message IDs and/or indexation_keys.
     pub async fn find_messages(&self, indexation_keys: &[String], message_ids: &[MessageId]) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
