@@ -45,3 +45,7 @@ path = "search_address.rs"
 [[example]]
 name = "custom_parent"
 path = "custom_parent.rs"
+
+[[example]]
+name = "dust"
+path = "dust.rs"

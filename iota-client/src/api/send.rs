@@ -92,6 +92,19 @@ impl<'a> SendBuilder<'a> {
         Ok(self)
     }
 
+    /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+    pub fn with_dust_allowance_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
+        if amount < 1_000_000 {
+            return Err(Error::DustError(
+                "Amount for SignatureLockedDustAllowanceOutput needs to be >= 1_000_000".into(),
+            ));
+        }
+        let address = Address::try_from_bech32(&address.to_string())?;
+        let output = SignatureLockedDustAllowanceOutput::new(address, amount).unwrap().into();
+        self.outputs.push(output);
+        Ok(self)
+    }
+
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
         let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount)
@@ -156,9 +169,41 @@ impl<'a> SendBuilder<'a> {
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
-        if self.outputs.is_empty() {
-            return Err(Error::MissingParameter(String::from("Outputs")));
-        }
+        // Check balance on address if amount is < 1_000_000 and no dust allowance output is created
+        let dust_allowance_addresses: Vec<Bech32Address> = self
+            .outputs
+            .iter()
+            .filter_map(|output| match output {
+                Output::SignatureLockedDustAllowance(dust_allowance_output) => {
+                    Some(dust_allowance_output.address().to_bech32().into())
+                }
+                _ => None,
+            })
+            .collect();
+
+        // for output in &self.outputs {
+        //     if let Output::SignatureLockedSingle(single_output) = output {
+        //         if single_output.amount() < 1_000_000 {
+        //             let address_outputs_metadata = self
+        //                 .client
+        //                 .find_outputs(&[], &[single_output.address().to_bech32().into()])
+        //                 .await?;
+        //             let dust_allowance_outputs = address_outputs_metadata
+        //                 .iter()
+        //                 .filter_map(|output_metadata| match output_metadata.output {
+        //                     Output::SignatureLockedDustAllowance(dust_allowance_output) => Some(dust_allowance_output),
+        //                     _ => None,
+        //                 })
+        //                 .collect();
+        //             if dust_allowance_outputs.is_empty() {
+        //                 return Err(Error::DustError(format!(
+        //                     "No DustAllowanceOutput on address {}",
+        //                     single_output.address().to_bech32()
+        //                 )));
+        //             }
+        //         }
+        //     }
+        // }
 
         // Calculate the total tokens to spend
         let mut total_to_spend = 0;

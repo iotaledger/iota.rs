@@ -18,6 +18,9 @@ pub enum Error {
     /// The wallet account doesn't have enough balance
     #[error("The wallet account doesn't have enough balance. It only has {0}")]
     NotEnoughBalance(u64),
+    /// Dust error, for example not enough balance on an address
+    #[error("Dust error: {0}")]
+    DustError(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(String),
