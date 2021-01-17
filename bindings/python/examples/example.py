@@ -1,9 +1,15 @@
 import iota_client
-
+import os
 LOCAL_NODE_URL = "http://0.0.0.0:14265"
 # Warning!! Load the seed from your env path instead
 # NEVER assign the seed directly in your codes!
-SEED = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2"
+
+# DO NOT USE THIS!!:
+# SEED = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2"
+
+# USE THIS INSTEAD
+SEED = os.getenv('MY_IOTA_SEED')
+
 ADDRESS_TEST = ["iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4",
                 "iot1qxgamuxntdxq06q4zpmvmdnrerj2f94058ge3flfyx567unw25amvr978uw"]
 client = iota_client.Client(
