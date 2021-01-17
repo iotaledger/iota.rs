@@ -774,7 +774,7 @@ impl Client {
             version: node_info.version,
             is_healthy: node_info.is_healthy,
             network_id: node_info.network_id,
-            min_pow_score: 0.0, //TODO: Change this
+            min_pow_score: node_info.min_pow_score,
             latest_milestone_index: node_info.latest_milestone_index,
             solid_milestone_index: node_info.solid_milestone_index,
             pruning_index: node_info.pruning_index,
