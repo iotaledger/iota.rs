@@ -27,7 +27,9 @@ use std::convert::{From, Into, TryFrom, TryInto};
 use std::ops::Range;
 use std::str::FromStr;
 use std::time::Duration;
-
+pub const MILESTONE_MERKLE_PROOF_LENGTH: usize = 32;
+pub const MILESTONE_PUBLIC_KEY_LENGTH: usize = 32;
+pub const MILESTONE_SIGNATURE_LENGTH: usize = 64;
 #[pyclass]
 struct Client {
     client: RustClient,
@@ -97,8 +99,18 @@ struct Transaction {
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 struct Milestone {
-    essence: String,
+    essence: MilestonePayloadEssence,
     signatures: Vec<Vec<u8>>,
+}
+
+#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct MilestonePayloadEssence {
+    index: u32,
+    timestamp: u64,
+    parent1: String,
+    parent2: String,
+    merkle_proof: [u8; MILESTONE_MERKLE_PROOF_LENGTH],
+    public_keys: Vec<[u8; MILESTONE_PUBLIC_KEY_LENGTH]>,
 }
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -109,7 +121,7 @@ struct Indexation {
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 struct TransactionPayloadEssence {
-    pub(crate) inputs: Vec<String>,
+    pub(crate) inputs: Vec<Input>,
     pub(crate) outputs: Vec<Output>,
     pub(crate) payload: Option<Payload>,
 }
@@ -121,6 +133,12 @@ struct Output {
 }
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+struct Input {
+    transaction_id: String,
+    index: u16,
+}
+
+#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 struct UnlockBlock {
     signature: Option<Ed25519Signature>,
     reference: Option<u16>,
@@ -129,7 +147,136 @@ struct UnlockBlock {
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 struct Ed25519Signature {
     public_key: [u8; 32],
-    signature: String,
+    signature: Vec<u8>,
+}
+
+// TODO: Error Handling and split functions
+impl From<RustMessage> for Message {
+    fn from(msg: RustMessage) -> Self {
+        let payload = msg.payload().as_ref();
+        let payload = match payload {
+            Some(RustPayload::Transaction(payload)) => Some(Payload {
+                transaction: Some(vec![Transaction {
+                    essence: TransactionPayloadEssence {
+                        inputs: payload
+                            .essence()
+                            .inputs()
+                            .iter()
+                            .cloned()
+                            .map(|input| {
+                                if let RustInput::UTXO(input) = input {
+                                    Input {
+                                        transaction_id: input.output_id().transaction_id().to_string(),
+                                        index: input.output_id().index(),
+                                    }
+                                } else {
+                                    unreachable!()
+                                }
+                            })
+                            .collect(),
+                        outputs: payload
+                            .essence()
+                            .outputs()
+                            .iter()
+                            .cloned()
+                            .map(|output| {
+                                if let RustOutput::SignatureLockedSingle(output) = output {
+                                    Output {
+                                        address: output.address().to_bech32(),
+                                        amount: output.amount(),
+                                    }
+                                } else {
+                                    unreachable!()
+                                }
+                            })
+                            .collect(),
+                        payload: if payload.essence().payload().is_some() {
+                            if let Some(RustPayload::Indexation(payload)) = payload.essence().payload() {
+                                Some(Payload {
+                                    transaction: None,
+                                    milestone: None,
+                                    indexation: Some(vec![Indexation {
+                                        index: payload.index().to_string(),
+                                        data: payload.data().try_into().unwrap(),
+                                    }]),
+                                })
+                            } else {
+                                unreachable!()
+                            }
+                        } else {
+                            None
+                        },
+                    },
+                    unlock_blocks: payload
+                        .unlock_blocks()
+                        .iter()
+                        .cloned()
+                        .map(|unlock_block| {
+                            if let RustUnlockBlock::Signature(RustSignatureUnlock::Ed25519(signature)) = unlock_block {
+                                UnlockBlock {
+                                    signature: Some(Ed25519Signature {
+                                        public_key: signature.public_key().to_vec().try_into().unwrap(),
+                                        signature: signature.signature().to_vec(),
+                                    }),
+                                    reference: None,
+                                }
+                            } else if let RustUnlockBlock::Reference(signature) = unlock_block {
+                                UnlockBlock {
+                                    signature: None,
+                                    reference: Some(signature.index()),
+                                }
+                            } else {
+                                unreachable!()
+                            }
+                        })
+                        .collect(),
+                }]),
+                milestone: None,
+                indexation: None,
+            }),
+            Some(RustPayload::Indexation(payload)) => Some(Payload {
+                transaction: None,
+                milestone: None,
+                indexation: Some(vec![Indexation {
+                    index: payload.index().to_string(),
+                    data: payload.data().try_into().unwrap(),
+                }]),
+            }),
+            Some(RustPayload::Milestone(payload)) => Some(Payload {
+                transaction: None,
+                milestone: Some(vec![Milestone {
+                    essence: MilestonePayloadEssence {
+                        index: payload.essence().index(),
+                        timestamp: payload.essence().timestamp(),
+                        parent1: payload.essence().parent1().to_string(),
+                        parent2: payload.essence().parent2().to_string(),
+                        merkle_proof: payload.essence().merkle_proof().try_into().unwrap(),
+                        public_keys: payload
+                            .essence()
+                            .public_keys()
+                            .iter()
+                            .map(|public_key| public_key.to_vec().try_into().unwrap())
+                            .collect(),
+                    },
+                    signatures: payload
+                        .signatures()
+                        .iter()
+                        .map(|signature| (*signature).to_vec())
+                        .collect(),
+                }]),
+                indexation: None,
+            }),
+            _ => None,
+        };
+
+        Message {
+            network_id: msg.network_id(),
+            parent1: msg.parent1().to_string(),
+            parent2: msg.parent2().to_string(),
+            payload: payload,
+            nonce: msg.nonce(),
+        }
+    }
 }
 
 // TODO: Error Handling
@@ -140,9 +287,12 @@ impl From<TransactionPayloadEssence> for RustTransactionPayloadEssence {
             .inputs
             .iter()
             .map(|input| {
-                RustUTXOInput::from_str(&input[..])
-                    .unwrap_or_else(|_| panic!("invalid input: {}", input))
-                    .into()
+                RustUTXOInput::new(
+                    RustTransationId::from_str(&input.transaction_id[..]).unwrap(),
+                    input.index,
+                )
+                .unwrap()
+                .into()
             })
             .collect();
         for input in inputs {
@@ -438,8 +588,7 @@ impl Client {
             .collect()
     }
     fn subscriber(&self) {}
-    fn retry(&self, message_id: String) -> String {
-        // (String, Message) {
+    fn retry(&self, message_id: String) -> (String, Message) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_id_message = rt.block_on(async {
             self.client
@@ -447,11 +596,9 @@ impl Client {
                 .await
                 .unwrap()
         });
-        let message_id = message_id_message.0.to_string();
-        // TODO: RustMessage to Message
-        message_id
+        (message_id_message.0.to_string(), message_id_message.1.into())
     }
-    fn reattach(&self, message_id: String) -> String {
+    fn reattach(&self, message_id: String) -> (String, Message) {
         // (String, Message) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_id_message = rt.block_on(async {
@@ -460,11 +607,9 @@ impl Client {
                 .await
                 .unwrap()
         });
-        let message_id = message_id_message.0.to_string();
-        // TODO: RustMessage to Message
-        message_id
+        (message_id_message.0.to_string(), message_id_message.1.into())
     }
-    fn promote(&self, message_id: String) -> String {
+    fn promote(&self, message_id: String) -> (String, Message) {
         // (String, Message) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_id_message = rt.block_on(async {
@@ -473,9 +618,7 @@ impl Client {
                 .await
                 .unwrap()
         });
-        let message_id = message_id_message.0.to_string();
-        // TODO: RustMessage to Message
-        message_id
+        (message_id_message.0.to_string(), message_id_message.1.into())
     }
 }
 
