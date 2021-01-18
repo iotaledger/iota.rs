@@ -9,7 +9,6 @@ Official Rust library.
 The goal of this library is to have `one source code of truth`, which means there is one implementation in Rust and [bindings](#bindings) to other programming languages.
 
 This **alpha** version allows you to do the following:
-
 * Create messages and transactions
 * Sign transactions
 * Generate addresses
@@ -42,29 +41,32 @@ To use the library, we recommend you update Rust to latest stable version [`$ ru
 
 `cmake` can be downloaded on the [official website](https://cmake.org/download/) and `openssl` can be installed with [vcpkg](https://github.com/microsoft/vcpkg) or [chocolatey](https://chocolatey.org/).
 
-* Installing `openssl` with `vcpkg`:
+- Installing `openssl` with `vcpkg`:
 
-```bash
+```
 $ ./vcpkg.exe install openssl:x64-windows
 $ ./vcpkg.exe integrate install
 # you may want to add this to the system environment variables since you'll need it to compile the crate
 $ set VCPKGRS_DYNAMIC=1
 ```
 
-* Installing `openssl` with `chocolatey`:
+- Installing `openssl` with `chocolatey`:
 
-```bash
+```
 $ choco install openssl
-# you may need to set the OPENSSL_DIR environment variable
-$ set OPENSSL_DIR="C:\Program Files\OpenSSL-Win64"
+# you may need to set the OPENSSL_ROOT_DIR environment variable
+$ set OPENSSL_ROOT_DIR="C:\Program Files\OpenSSL-Win64"
 ```
 
 ### macOS
 
 `cmake` and `openssl` can be installed with `Homebrew`:
 
-```bash
-$ brew install cmake openssl@1.1
+```
+$ brew install cmake
+$ brew install openssl@1.1
+# you may want to add this to your .zshrc or .bashrc since you'll need it to compile the crate
+$ OPENSSL_ROOT_DIR=$(brew --prefix openssl@1.1)
 ```
 
 ### Linux
@@ -75,7 +77,7 @@ Install `cmake` and `openssl` with your distro's package manager or download fro
 
 Using the library is easy, just add it as dependancy in `Cargo.toml`:
 
-```bash
+```
 [dependencies]
 iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 ```
@@ -88,7 +90,7 @@ You can read the [API reference](https://docs.rs/iota-core) here, or generate it
 
 If you'd like to explore the implementation in more depth, the following command generates docs for the whole crate, including private modules:
 
-```bash
+```
 cargo doc --document-private-items --no-deps --open
 ```
 
@@ -96,7 +98,7 @@ cargo doc --document-private-items --no-deps --open
 
 You can see the examples in the [examples](examples/) directory and try them with:
 
-```bash
+```
 cargo run --example balance
 ```
 
@@ -106,7 +108,7 @@ For the examples where a seed is required you have to rename `.env.example` to `
 
 Bindings to other programming languages.
 
-* [Node.js binding](bindings/node/)
+- [Node.js binding](bindings/node/)
 
 ## Supporting the project
 

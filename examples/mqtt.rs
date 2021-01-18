@@ -13,6 +13,7 @@ fn main() {
         .with_mqtt_broker_options(BrokerOptions::new().use_websockets(false))
         .finish()
         .unwrap();
+
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
 
@@ -26,9 +27,8 @@ fn main() {
             tx.lock().unwrap().send(()).unwrap();
         })
         .unwrap();
-    for _ in 0..10 {
-        rx.recv().unwrap();
-    }
+
+    rx.recv().unwrap();
     iota.subscriber().disconnect().unwrap();
     // alternatively
     // iota.subscriber().unsubscribe().unwrap();

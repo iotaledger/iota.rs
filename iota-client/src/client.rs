@@ -62,8 +62,6 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
-    #[serde(default = "default_use_ws")]
-    pub(crate) use_ws: bool,
 }
 
 #[cfg(feature = "mqtt")]
@@ -77,17 +75,11 @@ fn default_broker_timeout() -> Duration {
 }
 
 #[cfg(feature = "mqtt")]
-fn default_use_ws() -> bool {
-    true
-}
-
-#[cfg(feature = "mqtt")]
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
             automatic_disconnect: default_broker_automatic_disconnect(),
             timeout: default_broker_timeout(),
-            use_ws: default_use_ws(),
         }
     }
 }
@@ -108,12 +100,6 @@ impl BrokerOptions {
     /// Sets the timeout used for the MQTT operations.
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
-        self
-    }
-
-    /// Decid if websockets or tcp will be used for the connection
-    pub fn use_websockets(mut self, use_ws: bool) -> Self {
-        self.use_ws = use_ws;
         self
     }
 }
