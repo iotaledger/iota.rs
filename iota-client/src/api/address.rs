@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{builder::Network, Client, Error, Result};
+use crate::{Client, Error, Result};
 
 use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
 use bee_signing_ext::{
