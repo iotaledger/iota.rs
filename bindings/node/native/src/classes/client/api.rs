@@ -105,9 +105,10 @@ impl Task for ClientTask {
                     for input in inputs {
                         sender = sender.with_input(input.clone());
                     }
+                    let bech32_hrp = client.get_network_info().bech32_hrp;
                     for output in outputs {
                         sender = sender
-                            .with_output(&output.0.clone().to_bech32().into(), output.1)
+                            .with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
                             .unwrap();
                     }
                     let message_id = sender.finish().await?;
@@ -148,7 +149,10 @@ impl Task for ClientTask {
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressBalances(addresses) => {
-                    let bech32_addresses: Vec<Bech32Address> = addresses.iter().map(|a| a.to_bech32().into()).collect();
+                    let bech32_addresses: Vec<Bech32Address> = addresses
+                        .iter()
+                        .map(|a| a.to_bech32(&client.get_network_info().bech32_hrp).into())
+                        .collect();
                     let balances = client.get_address_balances(&bech32_addresses[..]).await?;
                     let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
@@ -211,18 +215,27 @@ impl Task for ClientTask {
                     serde_json::to_string(&output).unwrap()
                 }
                 Api::FindOutputs { outputs, addresses } => {
-                    let bech32_addresses: Vec<Bech32Address> =
-                        addresses.iter().map(|a| Bech32Address(a.to_bech32())).collect();
+                    let bech32_hrp = client.get_network_info().bech32_hrp;
+                    let bech32_addresses: Vec<Bech32Address> = addresses
+                        .iter()
+                        .map(|a| Bech32Address(a.to_bech32(&bech32_hrp)))
+                        .collect();
                     let outputs = client.find_outputs(outputs, &bech32_addresses[..]).await?;
                     let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }
                 Api::GetAddressBalance(address) => {
-                    let balance = client.get_address().balance(&address.to_bech32().into()).await?;
+                    let balance = client
+                        .get_address()
+                        .balance(&address.to_bech32(&client.get_network_info().bech32_hrp).into())
+                        .await?;
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressOutputs(address) => {
-                    let output_ids = client.get_address().outputs(&address.to_bech32().into()).await?;
+                    let output_ids = client
+                        .get_address()
+                        .outputs(&address.to_bech32(&client.get_network_info().bech32_hrp).into())
+                        .await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {
