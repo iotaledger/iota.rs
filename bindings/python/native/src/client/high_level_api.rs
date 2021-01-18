@@ -90,7 +90,7 @@ impl Client {
     ///
     /// Parameters
     /// ----------
-    /// message_id : &str
+    /// message_id : str
     ///     The identifier of message.
     ///
     /// Returns
