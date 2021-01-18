@@ -75,6 +75,14 @@ impl Client {
             return rt.block_on(async { send_builder.finish().await.unwrap() }).to_string();
         }
     }
+    /// Get the message data from the message_id.
+    ///
+    /// Args:
+    ///     message_id (str): The identifier of message.
+    ///
+    /// Returns:
+    ///     message_metadata (dict): The returned MessageMetadata dict.
+    ///
     fn get_message_metadata(&self, message_id: &str) -> MessageMetadata {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_metadata = rt.block_on(async {
@@ -92,7 +100,7 @@ impl Client {
     ///     message_id (str): The identifier of message.
     ///
     /// Returns:
-    ///     message (Message): The returned message object.
+    ///     message (dict): The returned message dict.
     ///
     fn get_message_data(&self, message_id: &str) -> Message {
         let rt = tokio::runtime::Runtime::new().unwrap();
@@ -111,7 +119,7 @@ impl Client {
     ///     message_id (str): The identifier of message.
     ///
     /// Returns:
-    ///     message (str): The returned message str.
+    ///     raw (str): The returned message string.
     ///
     fn get_message_raw(&self, message_id: &str) -> String {
         let rt = tokio::runtime::Runtime::new().unwrap();
@@ -124,6 +132,14 @@ impl Client {
         });
         raw_data
     }
+    /// Get the message children from the message_id.
+    ///
+    /// Args:
+    ///     message_id (str): The identifier of message.
+    ///
+    /// Returns:
+    ///     children ([str]): The returned list of children string.
+    ///
     fn get_message_children(&self, message_id: &str) -> Vec<String> {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let children = rt.block_on(async {
@@ -138,6 +154,14 @@ impl Client {
             .map(|child| String::from_utf8(child.as_ref().to_vec()).unwrap())
             .collect()
     }
+    /// Get the list of message indices from the message_id.
+    ///
+    /// Args:
+    ///     message_id (str): The identifier of message.
+    ///
+    /// Returns:
+    ///     message_indices ([str]): The returned list of message indices.
+    ///
     fn get_message_index(&self, index: &str) -> Vec<String> {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let indices = rt.block_on(async { self.client.get_message().index(index).await.unwrap() });
@@ -146,6 +170,15 @@ impl Client {
             .map(|index| String::from_utf8(index.as_ref().to_vec()).unwrap())
             .collect()
     }
+    /// Find all messages by provided message IDs.
+    ///
+    /// Args:
+    ///     indexation_keys ([str]): The identifier of message.
+    ///     message_ids ([str]): The identifier of message.
+    ///
+    /// Returns:
+    ///     messages ([str]): The returned list of message dict.
+    ///
     fn find_messages(&self, indexation_keys: Option<Vec<String>>, message_ids: Option<Vec<String>>) -> Vec<Message> {
         let message_ids: Vec<RustMessageId> = message_ids
             .unwrap_or(vec![])
