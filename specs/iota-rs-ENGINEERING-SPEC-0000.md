@@ -194,7 +194,7 @@ Return a tuple with type of `(Bech32Address, usize)` as the address and correspo
 Following are the steps for implementing this method:
 
 * Start generating addresses with given account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
-* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Check for balances on the generated addresses using [`find_outputs()`](#find_outputs) and keep track of the positive balances;
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
 
@@ -236,7 +236,7 @@ Total account balance.
 Following are the steps for implementing this method:
 
 * Start generating addresses with given wallet account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
-* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Check for balances on the generated addresses using [`find_outputs()`](#find_outputs) and keep track of the positive balances;
 * Repeat the above step till an address of zero balance is found;
 * Accumulate the positive balances and return the result.
 
@@ -259,7 +259,7 @@ A list of tuples with value of [AddressBalancePair]. The usize is the balance of
 Following are the steps for implementing this method:
 
 * Validate _address_ semantics;
-* Get latest balance for the provided address using [`get_outputs()`](#get_outputs-get-outputs) with addresses as parameter;
+* Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
 * Return the list of Output which contains corresponding pairs of address and balance.
 
 ## `subscriber()`
