@@ -9,7 +9,10 @@ use pyo3::prelude::*;
 use std::collections::HashMap;
 
 use std::time::Duration;
-use types::*;
+use types::{
+    AddressBalancePair, BrokerOptions, Input, Message, MessageMetadata, MilestoneMetadata, NodeInfo, Output,
+    OutputMetadata, UTXOInput,
+};
 
 /// Client builder
 #[pyclass]
