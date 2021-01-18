@@ -16,7 +16,8 @@ describe('Client', () => {
     assert.strictEqual(typeof info, 'object')
     assert.strictEqual(info.localPow, false)
     assert.deepStrictEqual(info.network, { type: 'Testnet' })
-    assert.strictEqual(info.networkId, 'alphanet1')
+    assert.strictEqual(info.networkId, 'alphanet2')
+    assert.strictEqual(info.bech32HRP, 'atoi')
     assert.strictEqual(info.minPowScore, 4000)
   })
 
