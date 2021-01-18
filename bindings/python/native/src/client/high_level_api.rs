@@ -11,8 +11,6 @@ use pyo3::prelude::*;
 use std::convert::{From, Into};
 use std::str::FromStr;
 
-// use types::*;
-
 /// General high level APIs
 #[pymethods]
 impl Client {
