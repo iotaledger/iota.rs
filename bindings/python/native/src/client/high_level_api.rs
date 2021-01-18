@@ -93,7 +93,6 @@ impl Client {
     ///
     /// Returns:
     ///     message (Message): The returned message object.
-    ///     Return a Message object.
     ///
     fn get_message_data(&self, message_id: &str) -> Message {
         let rt = tokio::runtime::Runtime::new().unwrap();
@@ -106,6 +105,14 @@ impl Client {
         });
         message.into()
     }
+    /// Get the message raw string from the message_id.
+    ///
+    /// Args:
+    ///     message_id (str): The identifier of message.
+    ///
+    /// Returns:
+    ///     message (str): The returned message str.
+    ///
     fn get_message_raw(&self, message_id: &str) -> String {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let raw_data = rt.block_on(async {
