@@ -4,11 +4,11 @@
 use iota::{
     Address as RustAddress, Client as RustClient, Ed25519Address as RustEd25519Address,
     Ed25519Signature as RustEd25519Signature, IndexationPayload as RustIndexationPayload, Input as RustInput,
-    Message as RustMessage, Output as RustOutput, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
-    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
-    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload,
-    TransactionPayloadEssence as RustTransactionPayloadEssence, UTXOInput as RustUTXOInput,
-    UnlockBlock as RustUnlockBlock,
+    Message as RustMessage, NodeInfo as RustNodeInfo, Output as RustOutput, Payload as RustPayload,
+    ReferenceUnlock as RustReferenceUnlock, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
+    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
+    TransactionPayload as RustTransactionPayload, TransactionPayloadEssence as RustTransactionPayloadEssence,
+    UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
 };
 
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
@@ -190,6 +190,23 @@ pub struct NodeInfo {
     pub pruning_index: usize,
     /// features
     pub features: Vec<String>,
+}
+
+// TODO: Error Handling
+impl From<RustNodeInfo> for NodeInfo {
+    fn from(node_info: RustNodeInfo) -> Self {
+        NodeInfo {
+            name: node_info.name,
+            version: node_info.version,
+            is_healthy: node_info.is_healthy,
+            network_id: node_info.network_id,
+            min_pow_score: node_info.min_pow_score,
+            latest_milestone_index: node_info.latest_milestone_index,
+            solid_milestone_index: node_info.solid_milestone_index,
+            pruning_index: node_info.pruning_index,
+            features: node_info.features,
+        }
+    }
 }
 
 // TODO: Error Handling and split functions

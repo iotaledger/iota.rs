@@ -369,17 +369,7 @@ impl Client {
     fn get_info(&self) -> NodeInfo {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let node_info = rt.block_on(async { self.client.get_info().await.unwrap() });
-        NodeInfo {
-            name: node_info.name,
-            version: node_info.version,
-            is_healthy: node_info.is_healthy,
-            network_id: node_info.network_id,
-            min_pow_score: node_info.min_pow_score,
-            latest_milestone_index: node_info.latest_milestone_index,
-            solid_milestone_index: node_info.solid_milestone_index,
-            pruning_index: node_info.pruning_index,
-            features: node_info.features,
-        }
+        node_info.into()
     }
     fn get_tips(&self) -> (String, String) {
         let rt = tokio::runtime::Runtime::new().unwrap();
