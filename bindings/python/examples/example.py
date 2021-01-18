@@ -26,12 +26,12 @@ def main():
     print(f'tips: client.get_tips()')
 
     print('find_addresses')
-    addresses = client.find_addresses(
+    address_changed_list = client.find_addresses(
         seed=SEED, account_index=0, begin=0, end=10, get_all=True)
-    print(f'addresses: {addresses}')
+    print(f'address_changed list: {address_changed_list}')
 
     # Get the (address, changed ) for the first found address
-    address, changed = addresses[0]
+    address, changed = address_changed_list[0]
     print(f'get_address_balance() for address {address}')
     print(f'balance: {client.get_address_balance(address)}')
 
@@ -73,6 +73,25 @@ def main():
     print(f"get_message_index() for index 'Hello'")
     message_id_indexation_queried = client.get_message_index("Hello")
     print(f'Indexation: {message_id_indexation_queried}')
+
+    print(f"find_messages() for indexation_keys = ['Hello']")
+    messages = client.find_messages(indexation_keys=["Hello"])
+    print(f'Messages: {messages}')
+
+    print(f"get_unspent_address()")
+    unspent_addresses = client.get_unspent_address(seed=SEED)
+    print(f'(unspent_address, index): {unspent_addresses}')
+
+    print(f"get_balance()")
+    balance = client.get_balance(seed=SEED)
+    print(f'balance: {balance}')
+
+    addresses = []
+    for address, _changed in address_changed_list:
+        addresses.append(address)
+    print(f"get_address_balances() for {addresses}")
+    balances = client.get_address_balances(addresses)
+    print(f'balances: {balance}')
 
 
 if __name__ == "__main__":
