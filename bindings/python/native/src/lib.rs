@@ -160,16 +160,7 @@ impl Client {
                 .await
                 .unwrap()
         });
-        MessageMetadata {
-            message_id: message_metadata.message_id,
-            parent1: message_metadata.parent1,
-            parent2: message_metadata.parent2,
-            is_solid: message_metadata.is_solid,
-            should_promote: message_metadata.should_promote,
-            should_reattach: message_metadata.should_reattach,
-            referenced_by_milestone_index: message_metadata.referenced_by_milestone_index,
-            ledger_inclusion_state: message_metadata.ledger_inclusion_state,
-        }
+        message_metadata.into()
     }
     /// Get the message data from the message_id.
     ///
@@ -450,15 +441,8 @@ impl Client {
         let output_metadata_vec =
             rt.block_on(async { self.client.find_outputs(&output_ids[..], &addresses[..]).await.unwrap() });
         output_metadata_vec
-            .iter()
-            .map(|metadata| OutputMetadata {
-                message_id: metadata.message_id.clone(),
-                transaction_id: metadata.transaction_id.clone(),
-                output_index: metadata.output_index,
-                is_spent: metadata.is_spent,
-                address: metadata.address.to_bech32(),
-                amount: metadata.amount,
-            })
+            .into_iter()
+            .map(|metadata| metadata.into())
             .collect()
     }
     fn get_milestone(&self, index: u64) -> MilestoneMetadata {

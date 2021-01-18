@@ -4,11 +4,12 @@
 use iota::{
     Address as RustAddress, Client as RustClient, Ed25519Address as RustEd25519Address,
     Ed25519Signature as RustEd25519Signature, IndexationPayload as RustIndexationPayload, Input as RustInput,
-    Message as RustMessage, NodeInfo as RustNodeInfo, Output as RustOutput, Payload as RustPayload,
-    ReferenceUnlock as RustReferenceUnlock, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
-    TransactionPayload as RustTransactionPayload, TransactionPayloadEssence as RustTransactionPayloadEssence,
-    UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
+    Message as RustMessage, MessageMetadata as RustMessageMetadata, NodeInfo as RustNodeInfo, Output as RustOutput,
+    OutputMetadata as RustOutputMetadata, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
+    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
+    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload,
+    TransactionPayloadEssence as RustTransactionPayloadEssence, UTXOInput as RustUTXOInput,
+    UnlockBlock as RustUnlockBlock,
 };
 
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
@@ -205,6 +206,36 @@ impl From<RustNodeInfo> for NodeInfo {
             solid_milestone_index: node_info.solid_milestone_index,
             pruning_index: node_info.pruning_index,
             features: node_info.features,
+        }
+    }
+}
+
+// TODO: Error Handling
+impl From<RustMessageMetadata> for MessageMetadata {
+    fn from(message_metadata: RustMessageMetadata) -> Self {
+        MessageMetadata {
+            message_id: message_metadata.message_id,
+            parent1: message_metadata.parent1,
+            parent2: message_metadata.parent2,
+            is_solid: message_metadata.is_solid,
+            should_promote: message_metadata.should_promote,
+            should_reattach: message_metadata.should_reattach,
+            referenced_by_milestone_index: message_metadata.referenced_by_milestone_index,
+            ledger_inclusion_state: message_metadata.ledger_inclusion_state,
+        }
+    }
+}
+
+// TODO: Error Handling
+impl From<RustOutputMetadata> for OutputMetadata {
+    fn from(output_metadata: RustOutputMetadata) -> Self {
+        OutputMetadata {
+            message_id: output_metadata.message_id.clone(),
+            transaction_id: output_metadata.transaction_id.clone(),
+            output_index: output_metadata.output_index,
+            is_spent: output_metadata.is_spent,
+            address: output_metadata.address.to_bech32(),
+            amount: output_metadata.amount,
         }
     }
 }
