@@ -70,6 +70,10 @@ def main():
     print(
         f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id_indexation}')
 
+    print(f"get_message_index() for index 'Hello'")
+    message_id_indexation_queried = client.get_message_index("Hello")
+    print(f'Indexation: {message_id_indexation_queried}')
+
 
 if __name__ == "__main__":
     main()

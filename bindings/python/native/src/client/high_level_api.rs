@@ -8,6 +8,7 @@ use iota::{
 };
 use pyo3::prelude::*;
 
+use hex;
 use std::convert::{From, Into};
 use std::str::FromStr;
 
@@ -147,10 +148,7 @@ impl Client {
                 .await
                 .unwrap()
         });
-        children
-            .into_iter()
-            .map(|child| String::from_utf8(child.as_ref().to_vec()).unwrap())
-            .collect()
+        children.into_iter().map(|child| hex::encode(child.as_ref())).collect()
     }
     /// Get the list of message indices from the message_id.
     ///
@@ -163,10 +161,7 @@ impl Client {
     fn get_message_index(&self, index: &str) -> Vec<String> {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let indices = rt.block_on(async { self.client.get_message().index(index).await.unwrap() });
-        indices
-            .into_iter()
-            .map(|index| String::from_utf8(index.as_ref().to_vec()).unwrap())
-            .collect()
+        indices.into_iter().map(|index| hex::encode(index.as_ref())).collect()
     }
     /// Find all messages by provided message IDs.
     ///
