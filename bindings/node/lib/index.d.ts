@@ -59,6 +59,7 @@ export declare class BalanceGetter {
 export declare interface NetworkInfo {
   network: { type: 'Mainnet' | 'Testnet' }
   networkId: string
+  bech32HRP: string
   minPowScore: number
   localPow: boolean
 }

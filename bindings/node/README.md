@@ -332,6 +332,7 @@ Promotes the message associated with the given id.
 | ----------- | --------------------------------------------- | ------------------------------------- |
 | network     | <code>{ type: 'Mainnet' \| 'Testnet' }</code> | The network type                      |
 | networkId   | <code>string</code>                           | The network id                        |
+| bech32HRP   | <code>string</code>                           | Bech32 HRP for this network           |
 | minPowScore | <code>number</code>                           | The network's minimum score for PoW   |
 | localPow    | <code>boolean</code>                          | Whether we are using local PoW or not |
 
@@ -793,6 +794,7 @@ Gets the metadata of the given message.
 | version              | <code>string</code>   | Node version                  |
 | isHealthy            | <code>boolean</code>  | Node health status            |
 | networkId            | <code>string</code>   | Node network identifier       |
+| bech32HRP            | <code>string</code>   | Bech32 HRP for this network   |
 | latestMilestoneIndex | <code>number</code>   | Index of the latest milestone |
 | solidMilestoneIndex  | <code>number</code>   | Index of the solid milestone  |
 | pruningIndex         | <code>number</code>   | Pruning index                 |

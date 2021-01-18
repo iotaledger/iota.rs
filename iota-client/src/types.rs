@@ -47,6 +47,9 @@ pub struct NodeInfo {
     /// coordinator public key
     #[serde(rename = "networkId")]
     pub network_id: String,
+    /// Bech32 HRP
+    #[serde(rename = "bech32HRP")]
+    pub bech32_hrp: String,
     /// minimum proof of work score
     #[serde(rename = "minPowScore")]
     pub min_pow_score: f64,

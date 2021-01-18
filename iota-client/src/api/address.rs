@@ -79,16 +79,9 @@ impl<'a> GetAddressesBuilder<'a> {
         for i in range {
             let address = generate_address(&seed, &mut path, i, false);
             let internal_address = generate_address(&seed, &mut path, i, true);
-            match self._client.get_network_info().network {
-                Network::Mainnet => {
-                    addresses.push((Bech32Address(address.to_bech32()), false));
-                    addresses.push((Bech32Address(internal_address.to_bech32()), true));
-                }
-                _ => {
-                    addresses.push((Bech32Address(address.to_bech32_testnet()), false));
-                    addresses.push((Bech32Address(internal_address.to_bech32_testnet()), true));
-                }
-            }
+            let bech32_hrp = self._client.get_network_info().bech32_hrp;
+            addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
+            addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
         }
 
         Ok(addresses)
