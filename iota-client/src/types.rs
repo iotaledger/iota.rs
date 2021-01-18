@@ -139,7 +139,6 @@ impl ResponseType for ChildrenMessageIds {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct AddressBalance {
-    pub(crate) count: usize,
     pub(crate) balance: u64,
 }
 
