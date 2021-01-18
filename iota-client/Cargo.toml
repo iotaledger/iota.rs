@@ -25,7 +25,7 @@ serde_json = "1.0.58"
 chrono = "0.4.12"
 hex = "0.4.2"
 blake2 = "0.9"
-paho-mqtt = { version = "0.9", optional = true }
+paho-mqtt = { version = "0.8", optional = true }
 regex = "1.4"
 tokio = { version = "1.0.0", features = ["macros", "sync", "rt-multi-thread"] }
 thiserror = "1.0"
