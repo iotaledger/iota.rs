@@ -389,14 +389,7 @@ impl Client {
                 .await
                 .unwrap()
         });
-        OutputMetadata {
-            message_id: output_metadata.message_id,
-            transaction_id: output_metadata.transaction_id,
-            output_index: output_metadata.output_index,
-            is_spent: output_metadata.is_spent,
-            address: output_metadata.address.to_bech32(),
-            amount: output_metadata.amount,
-        }
+        output_metadata.into()
     }
     fn get_address_balance(&self, address: &str) -> u64 {
         let rt = tokio::runtime::Runtime::new().unwrap();
@@ -448,11 +441,7 @@ impl Client {
     fn get_milestone(&self, index: u64) -> MilestoneMetadata {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let milestone_metadata = rt.block_on(async { self.client.get_milestone(index).await.unwrap() });
-        MilestoneMetadata {
-            milestone_index: milestone_metadata.milestone_index,
-            message_id: milestone_metadata.message_id,
-            timestamp: milestone_metadata.timestamp,
-        }
+        milestone_metadata.into()
     }
 }
 
