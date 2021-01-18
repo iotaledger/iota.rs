@@ -88,15 +88,13 @@ impl Client {
     }
     /// Get the message data from the message_id.
     ///
-    /// Parameters
-    /// ----------
-    /// message_id : str
-    ///     The identifier of message.
+    /// Args:
+    ///     message_id (str): The identifier of message.
     ///
-    /// Returns
-    /// ----------
-    /// message : Message
+    /// Returns:
+    ///     message (Message): The returned message object.
     ///     Return a Message object.
+    ///
     fn get_message_data(&self, message_id: &str) -> Message {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message = rt.block_on(async {
