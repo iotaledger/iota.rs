@@ -3,7 +3,7 @@
 
 use crate::{Client, Error, Result};
 
-use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
+use bee_message::prelude::{Address, Ed25519Address};
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed},
     Seed,
@@ -49,17 +49,17 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Consume the builder and get a vector of public Bech32Addresses
-    pub fn finish(self) -> Result<Vec<Bech32Address>> {
+    pub fn finish(self) -> Result<Vec<String>> {
         Ok(self
             .get_all()?
             .into_iter()
             .filter(|(_, internal)| !internal)
             .map(|(a, _)| a)
-            .collect::<Vec<Bech32Address>>())
+            .collect::<Vec<String>>())
     }
 
     /// Consume the builder and get the vector of Bech32Address
-    pub fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
+    pub fn get_all(self) -> Result<Vec<(String, bool)>> {
         let mut path = self
             .account_index
             .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
@@ -80,8 +80,8 @@ impl<'a> GetAddressesBuilder<'a> {
             let address = generate_address(&seed, &mut path, i, false);
             let internal_address = generate_address(&seed, &mut path, i, true);
             let bech32_hrp = self._client.get_network_info().bech32_hrp;
-            addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
-            addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
+            addresses.push((address.to_bech32(&bech32_hrp), false));
+            addresses.push((internal_address.to_bech32(&bech32_hrp), true));
         }
 
         Ok(addresses)
@@ -115,7 +115,7 @@ pub fn search_address(
     seed: &Seed,
     account_index: usize,
     range: Range<usize>,
-    address: &Bech32Address,
+    address: &String,
 ) -> Result<(usize, bool)> {
     let iota = Client::build().with_node("http://0.0.0.0:14265")?.finish()?;
     let addresses = iota

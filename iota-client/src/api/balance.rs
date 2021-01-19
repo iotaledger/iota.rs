@@ -4,6 +4,7 @@
 use crate::{Client, Error, Result};
 
 use bee_signing_ext::Seed;
+use core::convert::TryInto;
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
@@ -57,7 +58,7 @@ impl<'a> GetBalanceBuilder<'a> {
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut found_zero_balance = false;
             for (address, _) in addresses {
-                let address_balance = self.client.get_address().balance(&address).await?;
+                let address_balance = self.client.get_address().balance(&address.try_into()?).await?;
                 match address_balance {
                     0 => {
                         found_zero_balance = true;

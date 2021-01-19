@@ -85,8 +85,8 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Set a transfer to the builder, address needs to be Bech32 encoded
-    pub fn with_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
-        let address = Address::try_from_bech32(&address.to_string())?;
+    pub fn with_output(mut self, address: Address, amount: u64) -> Result<Self> {
+        // let address = Address::try_from_bech32(&address.to_string())?;
         let output = SignatureLockedSingleOutput::new(address, amount).unwrap().into();
         self.outputs.push(output);
         Ok(self)
@@ -184,13 +184,13 @@ impl<'a> SendBuilder<'a> {
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
-                            let bech32_hrp = self.client.get_network_info().bech32_hrp;
-                            let bech32_addresses = output.address.to_bech32(&bech32_hrp);
+                            // let bech32_hrp = self.client.get_network_info().bech32_hrp;
+                            // let bech32_addresses = .to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 account_index,
                                 0..100,
-                                &bech32_addresses.into(),
+                                &output.address.to_bech32(&self.client.get_network_info().bech32_hrp),
                             )?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
@@ -238,7 +238,7 @@ impl<'a> SendBuilder<'a> {
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
-                        let address_outputs = self.client.get_address().outputs(&address).await?;
+                        let address_outputs = self.client.get_address().outputs(&address.clone().try_into()?).await?;
                         let mut outputs = vec![];
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;

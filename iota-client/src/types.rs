@@ -232,7 +232,7 @@ impl ResponseType for MilestoneMetadata {}
 #[derive(Debug, Serialize)]
 pub struct AddressBalancePair {
     /// Address
-    pub address: Bech32Address,
+    pub address: Address,
     /// Balance in the address
     pub balance: u64,
 }

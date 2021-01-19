@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{Client, Error, Result};
-use bee_message::prelude::Bech32Address;
 use bee_signing_ext::Seed;
+use std::convert::TryInto;
 
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {
@@ -37,7 +37,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn get(self) -> Result<(Bech32Address, usize)> {
+    pub async fn get(self) -> Result<(String, usize)> {
         let account_index = self
             .account_index
             .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
@@ -55,7 +55,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut address = None;
             for a in addresses {
-                let address_balance = self.client.get_address().balance(&a).await?;
+                let address_balance = self.client.get_address().balance(&a.clone().try_into()?).await?;
                 match address_balance {
                     0 => {
                         address = Some(a);

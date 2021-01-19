@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example transaction --release
-use iota::{Client, MessageId, Seed};
+use core::convert::TryInto;
+use iota::{error::Error, Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::sleep;
 #[macro_use]
@@ -23,9 +24,9 @@ extern crate dotenv_codegen;
 /// inclusion state, which should be "included".
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Error> {
     let iota = Client::build() // Crate a client instance builder
-        .with_node("http://0.0.0.0:14265") // Insert the node here
+        .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();
@@ -39,8 +40,8 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
-            300,
+            "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".try_into()?,
+            3_000_000,
         )
         .unwrap()
         .finish()
@@ -58,8 +59,8 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".into(),
-            300,
+            "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".try_into()?,
+            3_000_000,
         )
         .unwrap()
         .finish()
@@ -77,8 +78,8 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".into(),
-            300,
+            "iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".try_into()?,
+            3_000_000,
         )
         .unwrap()
         .finish()
@@ -98,13 +99,13 @@ async fn main() {
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            &"iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr".into(),
-            270,
+            "iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr".try_into()?,
+            2_700_000,
         )
         .unwrap()
         .with_output(
-            &"iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m".into(),
-            280,
+            "iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m".try_into()?,
+            2_800_000,
         )
         .unwrap()
         .finish()
@@ -121,6 +122,7 @@ async fn main() {
         "The ledgerInclusionState: {:?}",
         message_metadata.unwrap().ledger_inclusion_state
     );
+    Ok(())
 }
 
 async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
