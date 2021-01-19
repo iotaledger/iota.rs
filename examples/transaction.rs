@@ -34,7 +34,7 @@ async fn main() {
     // First address from the seed in the .env is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
     let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("seed")).unwrap()).unwrap();
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -49,11 +49,11 @@ async fn main() {
 
     println!(
         "First transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id.id().0
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -68,11 +68,11 @@ async fn main() {
 
     println!(
         "Second transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id.id().0
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -86,13 +86,13 @@ async fn main() {
         .unwrap();
     println!(
         "Third transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id.id().0
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("second_seed")).unwrap()).unwrap();
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -113,10 +113,10 @@ async fn main() {
 
     println!(
         "Last transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id.id().0
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
-    let message_metadata = iota.get_message().metadata(&message_id.id().0).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
+    let message_metadata = iota.get_message().metadata(&message.id().0).await;
     println!(
         "The ledgerInclusionState: {:?}",
         message_metadata.unwrap().ledger_inclusion_state
