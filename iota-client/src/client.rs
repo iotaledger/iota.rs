@@ -11,7 +11,7 @@ use crate::{
     types::*,
 };
 
-use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
+use bee_message::prelude::{Address, Bech32Address, Ed25519Address, Message, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_signing_ext::Seed;
 
@@ -309,6 +309,7 @@ impl Client {
                     }
                     let mut client_network_info = network_info.write().unwrap();
                     client_network_info.min_pow_score = info.min_pow_score;
+                    client_network_info.bech32_hrp = info.bech32_hrp;
                     if !client_network_info.local_pow {
                         if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());

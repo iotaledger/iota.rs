@@ -3,6 +3,7 @@ export declare interface NodeInfo {
   version: string
   isHealthy: boolean
   networkId: string
+  bech32HRP: string
   minPoWScore: number
   latestMilestoneIndex: number
   solidMilestoneIndex: number

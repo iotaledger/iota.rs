@@ -1,9 +1,9 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{types::Bech32Address, Client, Error, Result};
+use crate::{Client, Error, Result};
 
-use bee_message::prelude::{Address, Ed25519Address};
+use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed},
     Seed,
@@ -79,8 +79,9 @@ impl<'a> GetAddressesBuilder<'a> {
         for i in range {
             let address = generate_address(&seed, &mut path, i, false);
             let internal_address = generate_address(&seed, &mut path, i, true);
-            addresses.push((Bech32Address(address.to_bech32()), false));
-            addresses.push((Bech32Address(internal_address.to_bech32()), true));
+            let bech32_hrp = self._client.get_network_info().bech32_hrp;
+            addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
+            addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
         }
 
         Ok(addresses)
