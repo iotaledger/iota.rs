@@ -207,9 +207,9 @@ Return a list of addresses from the seed regardless of their validity.
 | Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
-| **account_index()** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
-| **range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
-| **get_all()** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
+| **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+| **range** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
+| **get_all** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
 
 ### Return
 
