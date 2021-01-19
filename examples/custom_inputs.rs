@@ -10,7 +10,7 @@ extern crate dotenv_codegen;
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::build() // Crate a client instance builder
+    let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()

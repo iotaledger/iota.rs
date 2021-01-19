@@ -117,7 +117,7 @@ pub fn search_address(
     range: Range<usize>,
     address: &Bech32Address,
 ) -> Result<(usize, bool)> {
-    let iota = Client::build().with_node("http://0.0.0.0:14265")?.finish()?;
+    let iota = Client::builder().with_node("http://0.0.0.0:14265")?.finish()?;
     let addresses = iota
         .find_addresses(&seed)
         .with_account_index(account_index)
