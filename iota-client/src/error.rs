@@ -30,6 +30,8 @@ pub enum Error {
     UrlError,
     /// Error on IO
     IoError(std::io::Error),
+    /// ChrysalisAddressError
+    ChrysalisAddressError(String),
 }
 
 impl fmt::Display for Error {
@@ -46,6 +48,7 @@ impl fmt::Display for Error {
             Error::ThresholdNotEnough => "Cannot find enough inputs to satisify threshold".fmt(f),
             Error::TernaryError => "Fail to convert message to trytes".fmt(f),
             Error::UrlError => "Fail to parse url".fmt(f),
+            Error::ChrysalisAddressError(s) => s.fmt(f),
         }
     }
 }

@@ -51,7 +51,7 @@ impl From<&Transaction> for TransactionDef {
     }
 }
 
-fn transaction_serializer<S>(x: &Vec<Transaction>, s: S) -> std::result::Result<S::Ok, S::Error>
+fn transaction_serializer<S>(x: &[Transaction], s: S) -> std::result::Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -101,7 +101,7 @@ impl ConsistencyResponseBuilder {
         }
 
         Ok(ConsistencyResponse {
-            state: state,
+            state,
             info: self.info,
         })
     }

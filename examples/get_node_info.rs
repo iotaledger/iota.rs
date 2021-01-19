@@ -6,7 +6,6 @@
 //! cargo run --example get_node_info
 //! ```
 use anyhow::Result;
-use iota::client::Url;
 
 #[smol_potat::main]
 async fn main() -> Result<()> {
@@ -14,7 +13,7 @@ async fn main() -> Result<()> {
         .node("https://nodes.comnet.thetangle.org")?
         .build()?;
     let node_info = iota
-        .get_node_info(Url::parse("https://nodes.comnet.thetangle.org").unwrap())
+        .get_node_info("https://nodes.comnet.thetangle.org")
         .await?;
     println!("{:#?}", node_info);
     Ok(())

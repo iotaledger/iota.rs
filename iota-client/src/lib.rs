@@ -11,6 +11,7 @@ extern crate serde_json;
 pub mod builder;
 #[macro_use]
 pub mod client;
+pub mod chrysalis2;
 pub mod core;
 pub mod error;
 pub mod extended;
@@ -20,6 +21,7 @@ pub mod response;
 mod util;
 
 pub use builder::ClientBuilder;
+pub use chrysalis2::*;
 pub use client::Client;
 pub use error::*;
 pub use response::*;

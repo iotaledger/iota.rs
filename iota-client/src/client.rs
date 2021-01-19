@@ -5,7 +5,7 @@ use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
 use bee_crypto::ternary::Hash;
@@ -478,7 +478,7 @@ impl Client {
                 tail = false;
             }
 
-            hash = res.trunk().clone();
+            hash = *res.trunk();
             if res.index() == res.last_index() {
                 bundle.push(res);
                 break Ok(bundle);
