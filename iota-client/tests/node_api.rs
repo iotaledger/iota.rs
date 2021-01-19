@@ -79,7 +79,7 @@ async fn test_post_message_with_indexation() {
         .await
         .unwrap();
 
-    println!("{}", r);
+    println!("{}", r.id().0);
 }
 
 #[tokio::test]

@@ -54,9 +54,9 @@ async fn main() {
 
     println!(
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
-        message_id
+        message_id.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
 }
 
 async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {

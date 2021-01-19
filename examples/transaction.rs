@@ -49,9 +49,9 @@ async fn main() {
 
     println!(
         "First transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message_id.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
 
     let message_id = iota
         .send()
@@ -68,9 +68,9 @@ async fn main() {
 
     println!(
         "Second transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message_id.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
 
     let message_id = iota
         .send()
@@ -86,9 +86,9 @@ async fn main() {
         .unwrap();
     println!(
         "Third transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message_id.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
 
     let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("second_seed")).unwrap()).unwrap();
 
@@ -113,10 +113,10 @@ async fn main() {
 
     println!(
         "Last transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message_id.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
-    let message_metadata = iota.get_message().metadata(&message_id).await;
+    reattach_promote_until_confirmed(message_id.id().0, &iota).await;
+    let message_metadata = iota.get_message().metadata(&message_id.id().0).await;
     println!(
         "The ledgerInclusionState: {:?}",
         message_metadata.unwrap().ledger_inclusion_state

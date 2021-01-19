@@ -20,7 +20,7 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("MessageId {}", r);
+    println!("MessageId {}", r.id().0);
 
     let fetched_messages = iota.get_message().index(&"Hello").await.unwrap();
 

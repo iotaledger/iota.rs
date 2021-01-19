@@ -45,6 +45,6 @@ async fn main() {
 
     println!(
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
-        message_id
+        message_id.id().0
     );
 }
