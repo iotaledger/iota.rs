@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 use types::{
     AddressBalancePair, BrokerOptions, Input, Message, MessageMetadata, MilestoneMetadata, NodeInfo, Output,
-    OutputMetadata, UTXOInput,
+    OutputMetadata, UTXOInput, BECH32_HRP,
 };
 
 /// Client builder
@@ -90,8 +90,14 @@ impl Client {
                 .use_websockets(broker_options.use_ws);
             client = client.with_mqtt_broker_options(rust_broker_options);
         }
-        Client {
-            client: client.finish().unwrap(),
+        let client = client.finish().unwrap();
+
+        // Update the BECH32_HRP
+        // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
+        //       create the client object.
+        unsafe {
+            BECH32_HRP = Box::leak(client.get_network_info().bech32_hrp.into_boxed_str());
         }
+        Client { client: client }
     }
 }

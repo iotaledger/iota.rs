@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
+    builder::{Network as RustNetwork, NetworkInfo as RustNetworkInfo},
     Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
     IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
     MessageMetadata as RustMessageMetadata, MilestoneMetadata as RustMilestoneMetadata, NodeInfo as RustNodeInfo,
@@ -18,6 +19,7 @@ use std::convert::{From, Into, TryInto};
 use std::str::FromStr;
 pub const MILESTONE_MERKLE_PROOF_LENGTH: usize = 32;
 pub const MILESTONE_PUBLIC_KEY_LENGTH: usize = 32;
+pub static mut BECH32_HRP: &str = "atoi1";
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MessageMetadata {
@@ -187,6 +189,19 @@ pub struct NodeInfo {
     pub features: Vec<String>,
 }
 
+pub struct NetworkInfo {
+    /// Network of the Iota nodes belong to
+    pub network: String,
+    /// Network ID
+    pub network_id: String,
+    /// Bech32 HRP
+    pub bech32_hrp: String,
+    /// Mininum proof of work score
+    pub min_pow_score: f64,
+    /// Local proof of work
+    pub local_pow: bool,
+}
+
 // TODO: Error Handling
 impl From<RustNodeInfo> for NodeInfo {
     fn from(node_info: RustNodeInfo) -> Self {
@@ -200,6 +215,24 @@ impl From<RustNodeInfo> for NodeInfo {
             solid_milestone_index: node_info.solid_milestone_index,
             pruning_index: node_info.pruning_index,
             features: node_info.features,
+        }
+    }
+}
+
+// TODO: Error Handling
+impl From<RustNetworkInfo> for NetworkInfo {
+    fn from(network_info: RustNetworkInfo) -> Self {
+        NetworkInfo {
+            network: {
+                match network_info.network {
+                    RustNetwork::Mainnet => String::from("Mainnet"),
+                    RustNetwork::Testnet => String::from("Testnet"),
+                }
+            },
+            network_id: network_info.network_id,
+            bech32_hrp: network_info.bech32_hrp,
+            min_pow_score: network_info.min_pow_score,
+            local_pow: network_info.local_pow,
         }
     }
 }
@@ -228,7 +261,7 @@ impl From<RustOutputMetadata> for OutputMetadata {
             transaction_id: output_metadata.transaction_id,
             output_index: output_metadata.output_index,
             is_spent: output_metadata.is_spent,
-            address: output_metadata.address.to_bech32(),
+            address: unsafe { output_metadata.address.to_bech32(BECH32_HRP) },
             amount: output_metadata.amount,
         }
     }
@@ -277,7 +310,7 @@ impl From<RustMessage> for Message {
                             .map(|output| {
                                 if let RustOutput::SignatureLockedSingle(output) = output {
                                     Output {
-                                        address: output.address().to_bech32(),
+                                        address: unsafe { output.address().to_bech32(BECH32_HRP) },
                                         amount: output.amount(),
                                     }
                                 } else {
