@@ -16,24 +16,14 @@ use std::{
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
-/// Network of the Iota nodes belong to
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
-#[serde(tag = "type")]
-pub enum Network {
-    /// Mainnet
-    Mainnet,
-    /// Any network that is not the mainnet
-    Testnet,
-}
-
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct NetworkInfo {
     /// Network of the Iota nodes belong to
-    pub network: Network,
+    pub network: String,
     /// Network ID
     #[serde(rename = "networkId")]
-    pub network_id: String,
+    pub network_id: u64,
     /// Bech32 HRP
     #[serde(rename = "bech32HRP")]
     pub bech32_hrp: String,
@@ -66,8 +56,8 @@ impl Default for ClientBuilder {
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             network_info: NetworkInfo {
-                network: Network::Testnet,
-                network_id: "alphanet2".into(),
+                network: "testnet2".into(),
+                network_id: 10360767990291427429,
                 min_pow_score: 4000f64,
                 local_pow: true,
                 bech32_hrp: "atoi".into(),
@@ -116,8 +106,8 @@ impl ClientBuilder {
     // TODO node pool
 
     /// Selects the type of network the added nodes belong to.
-    pub fn with_network(mut self, network: Network) -> Self {
-        self.network_info.network = network;
+    pub fn with_network(mut self, network: &str) -> Self {
+        self.network_info.network = network.into();
         self
     }
 
@@ -149,8 +139,8 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub fn finish(mut self) -> Result<Client> {
         if self.nodes.is_empty() {
-            match self.network_info.network {
-                Network::Testnet => {
+            match self.network_info.network.as_str() {
+                "testnet2" => {
                     let default_nodes = vec![
                         "https://api.lb-0.testnet.chrysalis2.com",
                         "https://api.hornet-0.testnet.chrysalis2.com",
@@ -160,7 +150,7 @@ impl ClientBuilder {
                         self.nodes.insert(url);
                     }
                 }
-                Network::Mainnet => {
+                _ => {
                     return Err(Error::MissingParameter(String::from("Iota node")));
                 }
             }

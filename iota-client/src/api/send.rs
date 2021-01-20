@@ -408,21 +408,24 @@ impl<'a> SendBuilder<'a> {
         // building message
         let mut message = MessageBuilder::<ClientMiner>::new();
 
-        match self.network_id {
-            Some(id) => message = message.with_network_id(id),
-            _ => message = message.with_network_id(self.client.get_network_id().await?),
-        }
+        message = match self.network_id {
+            Some(id) => message.with_network_id(id),
+            _ => message.with_network_id(self.client.get_network_info().network_id),
+        };
 
-        match self.parent {
-            Some(p) => message = message.with_parent1(p),
-            _ => message = message.with_parent1(tips.0),
-        }
+        message = match self.parent {
+            Some(p) => message.with_parent1(p),
+            _ => message.with_parent1(tips.0),
+        };
         if let Some(p) = payload {
             message = message.with_payload(p);
         }
         let final_message = message
             .with_parent2(tips.1)
-            .with_nonce_provider(self.client.get_pow_provider(), 4000f64)
+            .with_nonce_provider(
+                self.client.get_pow_provider(),
+                self.client.get_network_info().min_pow_score,
+            )
             .finish()
             .map_err(Error::MessageError)?;
 
