@@ -52,7 +52,7 @@ The data structure to initialize the instance of the Higher level client library
 
 | Parameter | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **network** | ✘ | Testnet | [Network] | Pass an enumeration with elements of **Mainnet/Testnet** to define the network. If no node url is provided, some default nodes are used for the specified network. |
+| **network** | ✘ | Testnet | &str | The network name for example "testnet2" to define the network. If no node url is provided, some default nodes are used for the specified network. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
@@ -480,21 +480,6 @@ An [Milestone] object.
 # Objects
 
 Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
-
-## `Network`
-
-[Network]: #Network
-
-Network is an enumeration with elements of **[Mainnet|Testnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
-
-```rust
-pub enum Network {
-    /// Mainnet
-    Mainnet,
-    /// Any network that is not the mainnet
-    Testnet,
-}
-```
 
 ## `MessageId`
 
