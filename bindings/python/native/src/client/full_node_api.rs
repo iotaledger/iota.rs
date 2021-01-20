@@ -6,19 +6,20 @@ use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
     MessageId as RustMessageId, UTXOInput as RustUTXOInput,
 };
-use pyo3::prelude::*;
+use pyo3::{exceptions, prelude::*};
 
 use std::convert::{From, Into};
 use std::str::FromStr;
 
-// use types::*;
-
 /// Full node API
 #[pymethods]
 impl Client {
-    fn get_health(&self) -> bool {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(async { self.client.get_health().await.unwrap() })
+    fn get_health(&self) -> PyResult<bool> {
+        let rt = tokio::runtime::Runtime::new()?;
+        match rt.block_on(async { self.client.get_health().await }) {
+            Err(err) => Err(PyErr::new::<exceptions::PyTypeError, _>(err.to_string())),
+            Ok(healthy) => Ok(healthy),
+        }
     }
     fn get_info(&self) -> NodeInfo {
         let rt = tokio::runtime::Runtime::new().unwrap();
