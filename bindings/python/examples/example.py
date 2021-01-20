@@ -20,13 +20,13 @@ client = iota_client.Client(
 
 def main():
     print('get_health()')
-    print(f'health: client.get_health()')
+    print(f'health: {client.get_health()}')
 
     print('get_info()')
-    print(f'node_info: client.get_info()')
+    print(f'node_info: {client.get_info()}')
 
     print('get_tips()')
-    print(f'tips: client.get_tips()')
+    print(f'tips: {client.get_tips()}')
 
     print('find_addresses')
     address_changed_list = client.find_addresses(
