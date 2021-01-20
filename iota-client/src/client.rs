@@ -4,7 +4,7 @@
 //! The Client module to connect through HORNET or Bee with API usages
 use crate::{
     api::*,
-    builder::{ClientBuilder, Network, NetworkInfo},
+    builder::{ClientBuilder, NetworkInfo},
     error::*,
     node::*,
     parse_response,
@@ -299,12 +299,11 @@ impl Client {
             // Put the healty node url into the synced_nodes
             if let Ok(info) = Client::get_node_info(node_url.clone()).await {
                 if info.is_healthy {
-                    if network_info.read().unwrap().network == Network::Testnet && info.network_id == "mainnet"
-                        || network_info.read().unwrap().network == Network::Mainnet && info.network_id != "mainnet"
-                    {
+                    if network_info.read().unwrap().network != info.network_id {
                         continue;
                     }
                     let mut client_network_info = network_info.write().unwrap();
+                    client_network_info.network_id = hash_network(&info.network_id);
                     client_network_info.min_pow_score = info.min_pow_score;
                     client_network_info.bech32_hrp = info.bech32_hrp;
                     if !client_network_info.local_pow {
@@ -331,13 +330,7 @@ impl Client {
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
         let info = self.get_info().await?;
-        let mut hasher = VarBlake2b::new(32).unwrap();
-        hasher.update(info.network_id.as_bytes());
-        let mut result: [u8; 32] = [0; 32];
-        hasher.finalize_variable(|res| {
-            result = res.try_into().unwrap();
-        });
-        let network_id = u64::from_le_bytes(result[0..8].try_into().unwrap());
+        let network_id = hash_network(&info.network_id);
         Ok(network_id)
     }
 
@@ -698,4 +691,15 @@ impl Client {
             Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
         }
     }
+}
+
+/// Hash the network id str from the nodeinfo to an u64 for the messageBuilder
+pub fn hash_network(network_id: &str) -> u64 {
+    let mut hasher = VarBlake2b::new(32).unwrap();
+    hasher.update(network_id.as_bytes());
+    let mut result: [u8; 32] = [0; 32];
+    hasher.finalize_variable(|res| {
+        result = res.try_into().unwrap();
+    });
+    u64::from_le_bytes(result[0..8].try_into().unwrap())
 }

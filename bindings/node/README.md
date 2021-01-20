@@ -330,8 +330,8 @@ Promotes the message associated with the given id.
 
 | Field       | Type                                          | Description                           |
 | ----------- | --------------------------------------------- | ------------------------------------- |
-| network     | <code>{ type: 'Mainnet' \| 'Testnet' }</code> | The network type                      |
-| networkId   | <code>string</code>                           | The network id                        |
+| network     | <code>string</code>                           | The network                           |
+| networkId   | <code>number</code>                           | The network hashed                    |
 | bech32HRP   | <code>string</code>                           | Bech32 HRP for this network           |
 | minPowScore | <code>number</code>                           | The network's minimum score for PoW   |
 | localPow    | <code>boolean</code>                          | Whether we are using local PoW or not |
