@@ -5,6 +5,9 @@
 use iota::{Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::sleep;
+#[macro_use]
+extern crate dotenv_codegen;
+
 /// In this example, we send 900 tokens to the following 3 locations, respectively
 ///
 /// Address Index 0. Note that we can use the `address` example codes to know the addresses belong to the seed.
@@ -21,20 +24,17 @@ use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::build() // Crate a client instance builder
+    let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();
 
-    // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    // First address from the seed below is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
-    )
-    .unwrap();
+    // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    // First address from the seed in the .env is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
+    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("seed")).unwrap()).unwrap();
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -49,11 +49,11 @@ async fn main() {
 
     println!(
         "First transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -68,11 +68,11 @@ async fn main() {
 
     println!(
         "Second transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -86,16 +86,13 @@ async fn main() {
         .unwrap();
     println!(
         "Third transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0").unwrap(),
-    )
-    .unwrap(); // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("second_seed")).unwrap()).unwrap();
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
@@ -116,10 +113,10 @@ async fn main() {
 
     println!(
         "Last transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
-    let message_metadata = iota.get_message().metadata(&message_id).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
+    let message_metadata = iota.get_message().metadata(&message.id().0).await;
     println!(
         "The ledgerInclusionState: {:?}",
         message_metadata.unwrap().ledger_inclusion_state

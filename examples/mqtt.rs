@@ -6,7 +6,7 @@ use iota::{BrokerOptions, Client, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 fn main() {
-    let mut iota = Client::build() // Crate a client instance builder
+    let mut iota = Client::builder() // Crate a client instance builder
         .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         // to use tcp instead

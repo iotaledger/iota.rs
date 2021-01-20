@@ -32,6 +32,9 @@ pub struct NetworkInfo {
     /// Network ID
     #[serde(rename = "networkId")]
     pub network_id: String,
+    /// Bech32 HRP
+    #[serde(rename = "bech32HRP")]
+    pub bech32_hrp: String,
     /// Mininum proof of work score
     #[serde(rename = "minPowScore")]
     pub min_pow_score: f64,
@@ -62,9 +65,10 @@ impl Default for ClientBuilder {
             broker_options: Default::default(),
             network_info: NetworkInfo {
                 network: Network::Testnet,
-                network_id: "alphanet1".into(),
+                network_id: "alphanet2".into(),
                 min_pow_score: 4000f64,
                 local_pow: true,
+                bech32_hrp: "atoi".into(),
             },
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
             api_timeout: {

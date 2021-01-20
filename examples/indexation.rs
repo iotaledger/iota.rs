@@ -6,7 +6,7 @@ use iota::{Client, Payload};
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::build() // Crate a client instance builder
+    let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
@@ -20,7 +20,7 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("MessageId {}", r);
+    println!("MessageId {}", r.id().0);
 
     let fetched_messages = iota.get_message().index(&"Hello").await.unwrap();
 

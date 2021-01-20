@@ -26,6 +26,8 @@ jobs:
           toolchain: stable
           override: true
           components: clippy
+    - name: Set seeds in .env
+      run: mv .env.example .env
     - name: core clippy check
       uses: actions-rs/clippy-check@v1
       with:
