@@ -5,12 +5,13 @@ use iota::{
     builder::{Network as RustNetwork, NetworkInfo as RustNetworkInfo},
     Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
     IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
-    MessageMetadata as RustMessageMetadata, MilestoneMetadata as RustMilestoneMetadata, NodeInfo as RustNodeInfo,
-    Output as RustOutput, OutputMetadata as RustOutputMetadata, Payload as RustPayload,
-    ReferenceUnlock as RustReferenceUnlock, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
-    TransactionPayload as RustTransactionPayload, TransactionPayloadEssence as RustTransactionPayloadEssence,
-    UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
+    MessageMetadata as RustMessageMetadata, MilestoneMetadata as RustMilestoneMetadata,
+    MilestonePayloadEssence as RustMilestonePayloadEssence, NodeInfo as RustNodeInfo, Output as RustOutput,
+    OutputMetadata as RustOutputMetadata, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
+    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
+    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload,
+    TransactionPayloadEssence as RustTransactionPayloadEssence, UTXOInput as RustUTXOInput,
+    UnlockBlock as RustUnlockBlock,
 };
 
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
@@ -278,6 +279,100 @@ impl From<RustMilestoneMetadata> for MilestoneMetadata {
     }
 }
 
+// TODO: Error Handling
+impl From<RustTransactionPayloadEssence> for TransactionPayloadEssence {
+    fn from(essence: RustTransactionPayloadEssence) -> Self {
+        TransactionPayloadEssence {
+            inputs: essence
+                .inputs()
+                .iter()
+                .cloned()
+                .map(|input| {
+                    if let RustInput::UTXO(input) = input {
+                        Input {
+                            transaction_id: input.output_id().transaction_id().to_string(),
+                            index: input.output_id().index(),
+                        }
+                    } else {
+                        unreachable!()
+                    }
+                })
+                .collect(),
+            outputs: essence
+                .outputs()
+                .iter()
+                .cloned()
+                .map(|output| {
+                    if let RustOutput::SignatureLockedSingle(output) = output {
+                        Output {
+                            address: unsafe { output.address().to_bech32(BECH32_HRP) },
+                            amount: output.amount(),
+                        }
+                    } else {
+                        unreachable!()
+                    }
+                })
+                .collect(),
+            payload: if essence.payload().is_some() {
+                if let Some(RustPayload::Indexation(payload)) = essence.payload() {
+                    Some(Payload {
+                        transaction: None,
+                        milestone: None,
+                        indexation: Some(vec![Indexation {
+                            index: payload.index().to_string(),
+                            data: payload.data().try_into().unwrap(),
+                        }]),
+                    })
+                } else {
+                    unreachable!()
+                }
+            } else {
+                None
+            },
+        }
+    }
+}
+
+// TODO: Error Handling
+impl From<RustMilestonePayloadEssence> for MilestonePayloadEssence {
+    fn from(essence: RustMilestonePayloadEssence) -> Self {
+        MilestonePayloadEssence {
+            index: essence.index(),
+            timestamp: essence.timestamp(),
+            parent1: essence.parent1().to_string(),
+            parent2: essence.parent2().to_string(),
+            merkle_proof: essence.merkle_proof().try_into().unwrap(),
+            public_keys: essence
+                .public_keys()
+                .iter()
+                .map(|public_key| public_key.to_vec().try_into().unwrap())
+                .collect(),
+        }
+    }
+}
+
+// TODO: Error Handling
+impl From<RustUnlockBlock> for UnlockBlock {
+    fn from(unlock_block: RustUnlockBlock) -> Self {
+        if let RustUnlockBlock::Signature(RustSignatureUnlock::Ed25519(signature)) = unlock_block {
+            UnlockBlock {
+                signature: Some(Ed25519Signature {
+                    public_key: signature.public_key().to_vec().try_into().unwrap(),
+                    signature: signature.signature().to_vec(),
+                }),
+                reference: None,
+            }
+        } else if let RustUnlockBlock::Reference(signature) = unlock_block {
+            UnlockBlock {
+                signature: None,
+                reference: Some(signature.index()),
+            }
+        } else {
+            unreachable!()
+        }
+    }
+}
+
 // TODO: Error Handling and split functions
 impl From<RustMessage> for Message {
     fn from(msg: RustMessage) -> Self {
@@ -285,78 +380,12 @@ impl From<RustMessage> for Message {
         let payload = match payload {
             Some(RustPayload::Transaction(payload)) => Some(Payload {
                 transaction: Some(vec![Transaction {
-                    essence: TransactionPayloadEssence {
-                        inputs: payload
-                            .essence()
-                            .inputs()
-                            .iter()
-                            .cloned()
-                            .map(|input| {
-                                if let RustInput::UTXO(input) = input {
-                                    Input {
-                                        transaction_id: input.output_id().transaction_id().to_string(),
-                                        index: input.output_id().index(),
-                                    }
-                                } else {
-                                    unreachable!()
-                                }
-                            })
-                            .collect(),
-                        outputs: payload
-                            .essence()
-                            .outputs()
-                            .iter()
-                            .cloned()
-                            .map(|output| {
-                                if let RustOutput::SignatureLockedSingle(output) = output {
-                                    Output {
-                                        address: unsafe { output.address().to_bech32(BECH32_HRP) },
-                                        amount: output.amount(),
-                                    }
-                                } else {
-                                    unreachable!()
-                                }
-                            })
-                            .collect(),
-                        payload: if payload.essence().payload().is_some() {
-                            if let Some(RustPayload::Indexation(payload)) = payload.essence().payload() {
-                                Some(Payload {
-                                    transaction: None,
-                                    milestone: None,
-                                    indexation: Some(vec![Indexation {
-                                        index: payload.index().to_string(),
-                                        data: payload.data().try_into().unwrap(),
-                                    }]),
-                                })
-                            } else {
-                                unreachable!()
-                            }
-                        } else {
-                            None
-                        },
-                    },
+                    essence: payload.essence().to_owned().into(),
                     unlock_blocks: payload
                         .unlock_blocks()
                         .iter()
                         .cloned()
-                        .map(|unlock_block| {
-                            if let RustUnlockBlock::Signature(RustSignatureUnlock::Ed25519(signature)) = unlock_block {
-                                UnlockBlock {
-                                    signature: Some(Ed25519Signature {
-                                        public_key: signature.public_key().to_vec().try_into().unwrap(),
-                                        signature: signature.signature().to_vec(),
-                                    }),
-                                    reference: None,
-                                }
-                            } else if let RustUnlockBlock::Reference(signature) = unlock_block {
-                                UnlockBlock {
-                                    signature: None,
-                                    reference: Some(signature.index()),
-                                }
-                            } else {
-                                unreachable!()
-                            }
-                        })
+                        .map(|unlock_block| unlock_block.into())
                         .collect(),
                 }]),
                 milestone: None,
@@ -373,19 +402,7 @@ impl From<RustMessage> for Message {
             Some(RustPayload::Milestone(payload)) => Some(Payload {
                 transaction: None,
                 milestone: Some(vec![Milestone {
-                    essence: MilestonePayloadEssence {
-                        index: payload.essence().index(),
-                        timestamp: payload.essence().timestamp(),
-                        parent1: payload.essence().parent1().to_string(),
-                        parent2: payload.essence().parent2().to_string(),
-                        merkle_proof: payload.essence().merkle_proof().try_into().unwrap(),
-                        public_keys: payload
-                            .essence()
-                            .public_keys()
-                            .iter()
-                            .map(|public_key| public_key.to_vec().try_into().unwrap())
-                            .collect(),
-                    },
+                    essence: payload.essence().to_owned().into(),
                     signatures: payload
                         .signatures()
                         .iter()
