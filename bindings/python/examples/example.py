@@ -1,3 +1,6 @@
+# Copyright 2020 IOTA Stiftung
+# SPDX-License-Identifier: Apache-2.0
+
 import iota_client
 import os
 LOCAL_NODE_URL = "http://0.0.0.0:14265"
@@ -5,12 +8,12 @@ LOCAL_NODE_URL = "http://0.0.0.0:14265"
 # NOTE! Load the seed from your env path instead
 # NEVER assign the seed directly in your codes!
 # DO NOT USE THIS!!:
-# SEED = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2"
+# SEED = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b9"
 
 # USE THIS INSTEAD
 SEED = os.getenv('MY_IOTA_SEED')
 
-EMPTY_ADDRESS = "iot1qxgamuxntdxq06q4zpmvmdnrerj2f94058ge3flfyx567unw25amvr978uw"
+EMPTY_ADDRESS = "atoi1qxekg37zm08epkqvuv0m3tql7asv37y3lqejpjhtlsvujrus2xsl67u0h5f"
 client = iota_client.Client(
     node=LOCAL_NODE_URL, node_sync_disabled=True)
 
@@ -57,7 +60,10 @@ def main():
 
     print(f'get_message_raw() for message_id {message_id}')
     message_raw = client.get_message_raw(message_id)
-    print(f"message_raw: {bytearray(message_raw, 'utf-8')}")
+    print(f"raw_data = {message_raw.encode('utf-8')}")
+    print(
+        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v1/messages/{message_id}/raw")
+    print(', which is not utf-8 format. The utf-8 format here is just for ease of demonstration')
 
     print(f'get_message_children() for message_id {message_id}')
     children = client.get_message_children(message_id)
@@ -65,7 +71,16 @@ def main():
 
     print(f'send() Indexation')
     message_id_indexation = client.send(
-        index="Hello", data=bytes("Tangle", 'utf-8'))
+        index="Hello", data=[84, 97, 110, 103, 108, 101])
+    print(f'Indexation sent with message_id: {message_id_indexation}')
+    print(
+        f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id_indexation}')
+
+    # Note that in rust we need to specify the parameter type explicitly, so if the user wants
+    # to use the utf-8 string as the data, then the `data_str` field can be used.
+    print(f'send() Indexation')
+    message_id_indexation = client.send(
+        index="Hi", data_str="Tangle")
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
         f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id_indexation}')

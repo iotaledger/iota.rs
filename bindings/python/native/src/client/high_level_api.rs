@@ -24,6 +24,7 @@ impl Client {
         outputs: Option<Vec<Output>>,
         index: Option<&str>,
         data: Option<Vec<u8>>,
+        data_str: Option<String>,
         parent: Option<&str>,
         network_id: Option<u64>,
     ) -> String {
@@ -57,6 +58,9 @@ impl Client {
         }
         if let Some(data) = data {
             send_builder = send_builder.with_data(data);
+        }
+        if let Some(data_str) = data_str {
+            send_builder = send_builder.with_data(data_str.as_bytes().to_vec());
         }
         if let Some(parent) = parent {
             send_builder = send_builder.with_parent(RustMessageId::from_str(parent).unwrap());
