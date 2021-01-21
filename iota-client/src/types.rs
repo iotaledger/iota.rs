@@ -68,6 +68,63 @@ pub struct NodeInfo {
 
 impl ResponseType for NodeInfo {}
 
+/// Peer gossip metrics.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PeerGossipMetrics {
+    /// The number of dropped packets.
+    #[serde(rename = "droppedPackets")]
+    dropped_packets: usize,
+    /// The number of received messages that already were known to the node.
+    #[serde(rename = "knownMessages")]
+    known_messages: usize,
+    /// The number of received messages that were new for the node.
+    #[serde(rename = "newMessages")]
+    new_messages: usize,
+    /// The number of received heartbeats from the peer.
+    #[serde(rename = "receivedHeartbeats")]
+    received_heartbeats: usize,
+    /// The number of received message requests from the peer.
+    #[serde(rename = "receivedMessageRequests")]
+    received_message_requests: usize,
+    /// The number of received messages from the peer.
+    #[serde(rename = "receivedMessages")]
+    received_messages: usize,
+    /// The number of received milestone requests from the peer.
+    #[serde(rename = "receivedMilestoneRequests")]
+    received_milestone_requests: usize,
+    /// The number of sent heartbeats to the peer.
+    #[serde(rename = "sentHeartbeats")]
+    sent_heartbeats: usize,
+    /// The number of sent message requests to the peer.
+    #[serde(rename = "sentMessageRequests")]
+    sent_message_requests: usize,
+    /// The number of sent messages to the peer.
+    #[serde(rename = "sentMessages")]
+    sent_messages: usize,
+    /// The number of sent milestone requests to the peer.
+    #[serde(rename = "sentMilestoneRequests")]
+    sent_milestone_requests: usize,
+}
+
+/// Response of GET /api/v1/peers endpoint
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Peer {
+    /// Tells whether the peer is connected or not.
+    connected: bool,
+    /// Metrics about the gossip stream with the peer.
+    #[serde(rename = "gossipMetrics")]
+    gossip_metrics: PeerGossipMetrics,
+    /// The identifier of the peer.
+    id: String,
+    /// The addresses of the peer.
+    #[serde(rename = "multiAddresses")]
+    multi_addresses: Vec<String>,
+    /// Peer relation.
+    relation: String,
+}
+
+impl ResponseType for Vec<Peer> {}
+
 /// Response of GET /api/v1/tips endpoint
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Tips {

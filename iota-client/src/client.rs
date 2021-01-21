@@ -175,6 +175,8 @@ pub enum Api {
     GetHealth,
     /// `get_info`API
     GetInfo,
+    /// `get_peers`API
+    GetPeers,
     /// `get_tips` API
     GetTips,
     /// `post_message` API
@@ -192,6 +194,7 @@ impl FromStr for Api {
         let t = match s {
             "GetHealth" => Self::GetHealth,
             "GetInfo" => Self::GetInfo,
+            "GetPeers" => Self::GetPeers,
             "GetTips" => Self::GetTips,
             "PostMessage" => Self::PostMessage,
             "GetOutput" => Self::GetOutput,
@@ -417,6 +420,22 @@ impl Client {
 
         parse_response!(resp, 200 => {
             Ok(resp.json::<Response<NodeInfo>>().await?.data)
+        })
+    }
+
+    /// GET /api/v1/peers endpoint
+    pub async fn get_peers(&self) -> Result<Vec<Peer>> {
+        let mut url = self.get_node()?;
+        url.set_path("api/v1/peers");
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetInfo))
+            .send()
+            .await?;
+
+        parse_response!(resp, 200 => {
+            Ok(resp.json::<Response<Vec<Peer>>>().await?.data)
         })
     }
 
