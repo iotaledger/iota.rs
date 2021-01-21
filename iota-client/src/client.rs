@@ -95,7 +95,7 @@ impl Client {
     /// Calls PrepareTransfers and then sends off the bundle via SendTrytes.
     /// * [`seed`] - An iota seed.
     /// * [`transfers`] - Transfer addresses to send data/value to.
-    /// * [`inputs`] - (Optional, but recommended) Input addresses used for signing. Use `get_inputs` to get the valid inputs yourself.
+    /// * [`inputs`] - (Optional, but recommended) Input addresses used for signing. Use `get_all_inputs` to get the valid inputs yourself.
     /// * [`remainder`] - (Optional) Custom remainder address.
     /// * [`security`] - (Optional) Security level. Default is 2.
     /// * [`depth`] - Number of milestones to go back to start the tip selection algorithm. Default is 3.
@@ -147,6 +147,22 @@ impl Client {
         GetInputsBuilder::new(self, seed)
     }
 
+    /// Creates and returns an Inputs object by generating addresses and fetching their latest balance.
+    /// Spent addresses will be included.
+    /// # Parameters
+    /// * [`seed`] - An iota seed.
+    /// * [`balance_threshold`] - (Optional) Minimum amount of balance required
+    /// * [`start_index`] - (Optional) Key index to start search at. Default is 0.
+    /// * [`security`] - (Optional) Security level. Default is 2.
+    ///
+    /// [`seed`]: ../extended/struct.GetInputsBuilder.html#method.seed
+    /// [`threshold`]: ../extended/struct.GetInputsBuilder.html#method.threshold
+    /// [`index`]: ../extended/struct.GetInputsBuilder.html#method.index
+    /// [`security`]: ../extended/struct.GetInputsBuilder.html#method.security
+    pub fn get_all_inputs(&self) -> GetAllInputsBuilder<'_> {
+        GetAllInputsBuilder::builder(self)
+    }
+
     /// Fetch inclusion states of the given transactions to determine if the transactions are confirmed.
     ///
     /// # Parameters
@@ -194,7 +210,7 @@ impl Client {
     /// # Parameters
     /// * [`seed`] - An iota seed.
     /// * [`transfers`] - Transfer addresses to send data/value to.
-    /// * [`inputs`] - (Optional, but recommended) Input addresses used for signing. Use `get_inputs` to get the valid inputs yourself.
+    /// * [`inputs`] - (Optional, but recommended) Input addresses used for signing. Use `get_all_inputs` to get the valid inputs yourself.
     /// * [`remainder`] - (Optional) Custom remainder address.
     /// * [`security`] - (Optional) Security level. Default is 2.
     ///

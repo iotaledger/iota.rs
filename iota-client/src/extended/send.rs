@@ -36,50 +36,50 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Add transfers
-    pub fn transfers(mut self, transfers: Vec<Transfer>) -> Self {
+    pub fn with_transfers(mut self, transfers: Vec<Transfer>) -> Self {
         self.transfers = transfers;
         self
     }
 
     /// Set security level
-    pub fn security(mut self, security: u8) -> Self {
+    pub fn with_security(mut self, security: u8) -> Self {
         self.security = security;
         self
     }
 
     /// Add custom inputs. It is always better to provide inputs yourself
     /// since it will have to seaching valid inputs from the beginning.
-    pub fn inputs(mut self, inputs: Vec<Input>) -> Self {
+    pub fn with_inputs(mut self, inputs: Vec<Input>) -> Self {
         self.inputs = Some(inputs);
         self
     }
 
     /// Add custom remainder
-    pub fn remainder(mut self, remainder: Address) -> Self {
+    pub fn with_remainder(mut self, remainder: Address) -> Self {
         self.remainder = Some(remainder);
         self
     }
 
     /// The depth of the random walk for GTTA
-    pub fn depth(mut self, depth: u8) -> Self {
+    pub fn with_depth(mut self, depth: u8) -> Self {
         self.depth = depth;
         self
     }
 
     /// Set difficulty of PoW
-    pub fn min_weight_magnitude(mut self, min_weight_magnitude: u8) -> Self {
+    pub fn with_min_weight_magnitude(mut self, min_weight_magnitude: u8) -> Self {
         self.min_weight_magnitude = min_weight_magnitude;
         self
     }
 
     /// Add reference hash
-    pub fn reference(mut self, reference: Hash) -> Self {
+    pub fn with_reference(mut self, reference: Hash) -> Self {
         self.reference = Some(reference);
         self
     }
 
     /// Send SendTransfers request
-    pub async fn send(self) -> Result<Vec<Transaction>> {
+    pub async fn finish(self) -> Result<Vec<Transaction>> {
         let mut transfer = self
             .client
             .prepare_transfers(self.seed)

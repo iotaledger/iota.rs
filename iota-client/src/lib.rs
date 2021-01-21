@@ -25,5 +25,6 @@ pub use builder::ClientBuilder;
 pub use chrysalis2::*;
 pub use client::Client;
 pub use error::*;
+pub use extended::GetAllInputsBuilder;
 pub use response::*;
 pub use util::{bytes_to_trytes, str_to_trytes};

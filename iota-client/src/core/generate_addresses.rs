@@ -12,7 +12,7 @@ use std::ops::Range;
 pub struct AddressBuilder<'a> {
     seed: Option<&'a Seed>,
     security: WotsSecurityLevel,
-    range: Range<usize>,
+    range: Range<u64>,
 }
 
 impl<'a> AddressBuilder<'a> {
@@ -43,13 +43,13 @@ impl<'a> AddressBuilder<'a> {
     }
 
     /// Set range to the builder
-    pub fn with_range(mut self, range: Range<usize>) -> Self {
+    pub fn with_range(mut self, range: Range<u64>) -> Self {
         self.range = range;
         self
     }
 
     /// Generate addresses
-    pub fn finish(self) -> Result<Vec<(usize, Address)>> {
+    pub fn finish(self) -> Result<Vec<(u64, Address)>> {
         let seed = match self.seed {
             Some(s) => s,
             None => return Err(Error::MissingSeed),
@@ -63,7 +63,7 @@ impl<'a> AddressBuilder<'a> {
                     .with_security_level(self.security)
                     .build()
                     .unwrap()
-                    .generate_from_seed(seed, index)
+                    .generate_from_seed(seed, index as usize)
                     .unwrap()
                     .generate_public_key()
                     .unwrap()
@@ -71,7 +71,7 @@ impl<'a> AddressBuilder<'a> {
                     .to_owned(),
             );
 
-            addresses.push((index, address))
+            addresses.push((index as u64, address))
         }
         Ok(addresses)
     }

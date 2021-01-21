@@ -4,7 +4,7 @@ use bee_signing::ternary::seed::Seed;
 use crate::response::Input;
 use crate::Client;
 
-/// Builder to construct GetInputs API
+/// Builder to construct GetUnspentInputs API
 //#[derive(Debug)]
 pub struct GetInputsBuilder<'a> {
     client: &'a Client,

@@ -197,7 +197,7 @@ async fn test_get_inclusion_states() {
 }
 
 #[smol_potat::test]
-async fn test_get_inputs() {
+async fn test_get_all_inputs() {
     let client = client_init();
     let _ = client
         .get_inputs(

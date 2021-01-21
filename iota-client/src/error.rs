@@ -26,6 +26,8 @@ pub enum Error {
     TernaryError,
     /// Inputs balance cannot satisfy threshold requirement
     ThresholdNotEnough,
+    /// No balance found
+    NoBalance,
     /// Error on Url type conversion
     UrlError,
     /// Error on IO
@@ -46,6 +48,7 @@ impl fmt::Display for Error {
             Error::IoError(e) => e.fmt(f),
             Error::ResponseError(s) => s.fmt(f),
             Error::ThresholdNotEnough => "Cannot find enough inputs to satisify threshold".fmt(f),
+            Error::NoBalance => "Can't find an address with balance'".fmt(f),
             Error::TernaryError => "Fail to convert message to trytes".fmt(f),
             Error::UrlError => "Fail to parse url".fmt(f),
             Error::ChrysalisAddressError(s) => s.fmt(f),

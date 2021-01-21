@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
         .finish()
         .unwrap();
 
-    let address_strings: Vec<(usize, String)> = addresses
+    let address_strings: Vec<(u64, String)> = addresses
         .iter()
         .map(|(index, address)| {
             (

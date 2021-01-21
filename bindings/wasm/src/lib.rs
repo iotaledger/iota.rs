@@ -1,8 +1,10 @@
-use iota::transaction::bundled::{Address, Tag, BundledTransaction as Transaction, BundledTransactionField};
 use iota::client::response::{TransactionDef, Transfer};
-use iota::crypto::ternary::{Kerl, Hash};
-use iota::signing::ternary::{TernarySeed, Seed};
+use iota::crypto::ternary::{Hash, Kerl};
+use iota::signing::ternary::{Seed, TernarySeed};
 use iota::ternary::{T1B1Buf, TryteBuf};
+use iota::transaction::bundled::{
+    Address, BundledTransaction as Transaction, BundledTransactionField, Tag,
+};
 use iota_conversion::Trinary;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -61,9 +63,9 @@ fn js_error<T: std::fmt::Debug>(e: T) -> JsValue {
 
 fn create_hash_from_string(bytes: String) -> Result<Hash, JsValue> {
     let trits = TryteBuf::try_from_str(&bytes)
-    .unwrap()
-    .as_trits()
-    .encode::<T1B1Buf>();
+        .unwrap()
+        .as_trits()
+        .encode::<T1B1Buf>();
     let mut hash = Hash::zeros();
     hash.0.copy_from_slice(trits.as_i8_slice());
     Ok(hash)
@@ -104,9 +106,7 @@ fn create_addresses(addresses: JsValue) -> Result<Vec<Address>, JsValue> {
 }
 
 fn create_tx_from_string(bytes: String) -> Result<Transaction, JsValue> {
-    let hash = Transaction::from_trits(
-        TryteBuf::try_from_str(&bytes).unwrap().as_trits(),
-    ).unwrap();
+    let hash = Transaction::from_trits(TryteBuf::try_from_str(&bytes).unwrap().as_trits()).unwrap();
     Ok(hash)
 }
 
@@ -289,9 +289,7 @@ pub async fn get_bundle(hash_bytes: JsValue) -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen(js_name = "getInclusionStates")]
-pub async fn get_inclusion_states(
-    transaction_hashes_bytes: JsValue,
-) -> Result<JsValue, JsValue> {
+pub async fn get_inclusion_states(transaction_hashes_bytes: JsValue) -> Result<JsValue, JsValue> {
     let mut builder = iota::Client::get_inclusion_states();
 
     if transaction_hashes_bytes.is_truthy() {
@@ -306,7 +304,7 @@ pub async fn get_inclusion_states(
 }
 
 // #[wasm_bindgen(js_name = "getInputs")]
-// pub async fn get_inputs(
+// pub async fn get_all_inputs(
 //     seed: String,
 //     index: Option<f64>,
 //     security: Option<u8>,
@@ -319,7 +317,7 @@ pub async fn get_inclusion_states(
 //             .encode::<T1B1Buf>(),
 //     )
 //     .map_err(js_error)?;
-//     let mut builder = iota::Client::get_inputs(&encoded_seed);
+//     let mut builder = iota::Client::get_all_inputs(&encoded_seed);
 
 //     if let Some(index) = index {
 //         builder = builder.index(index as u64);
