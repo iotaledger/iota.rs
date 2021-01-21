@@ -103,3 +103,9 @@ impl ClientBuilder {
         Ok(client)
     }
 }
+
+impl Default for ClientBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}

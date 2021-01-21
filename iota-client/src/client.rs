@@ -517,7 +517,7 @@ impl Client {
 
         let now = chrono::Utc::now().timestamp();
         let milestone_interval: i64 = 2 * 60 * 1000;
-        let one_way_delay: i64 = 1 * 60 * 1000;
+        let one_way_delay: i64 = 60 * 1000;
         let max_depth: i64 = 6;
 
         let is_above_max_depth =
