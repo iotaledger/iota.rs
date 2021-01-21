@@ -20,6 +20,7 @@ pub mod extended;
 pub mod response;
 mod util;
 
+pub use crate::core as iota_core;
 pub use builder::ClientBuilder;
 pub use chrysalis2::*;
 pub use client::Client;
