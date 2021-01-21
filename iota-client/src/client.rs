@@ -5,7 +5,7 @@ use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
 use bee_crypto::ternary::Hash;
