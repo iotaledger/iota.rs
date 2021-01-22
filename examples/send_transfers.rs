@@ -54,11 +54,11 @@ async fn main() -> Result<()> {
         .unwrap(),
     ))
     // Input the transfers
-    .transfers(transfers)
+    .with_transfers(transfers)
     // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.
-    .min_weight_magnitude(10)
+    .with_min_weight_magnitude(10)
     // Sending to the node and receive the response
-    .send()
+    .finish()
     .await?;
 
     // The response of send_transfers is vector of Transaction type. We choose the first one and see what is its bundle hash

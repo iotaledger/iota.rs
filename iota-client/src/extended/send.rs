@@ -18,6 +18,7 @@ pub struct SendBuilder<'a> {
     depth: u8,
     min_weight_magnitude: u8,
     reference: Option<Hash>,
+    local_pow: bool,
 }
 
 impl<'a> SendBuilder<'a> {
@@ -32,6 +33,7 @@ impl<'a> SendBuilder<'a> {
             depth: 3,
             min_weight_magnitude: client.mwm,
             reference: Default::default(),
+            local_pow: true,
         }
     }
 
@@ -72,6 +74,12 @@ impl<'a> SendBuilder<'a> {
         self
     }
 
+    /// Set local PoW
+    pub fn with_local_pow(mut self, local_pow: bool) -> Self {
+        self.local_pow = local_pow;
+        self
+    }
+
     /// Add reference hash
     pub fn with_reference(mut self, reference: Hash) -> Self {
         self.reference = Some(reference);
@@ -99,14 +107,14 @@ impl<'a> SendBuilder<'a> {
         let mut send_trytes = self
             .client
             .send_trytes()
-            .trytes(trytes)
-            .depth(self.depth)
-            .min_weight_magnitude(self.min_weight_magnitude);
+            .with_trytes(trytes)
+            .with_depth(self.depth)
+            .with_min_weight_magnitude(self.min_weight_magnitude);
 
         if let Some(reference) = self.reference {
-            send_trytes = send_trytes.reference(reference);
+            send_trytes = send_trytes.with_reference(reference);
         }
 
-        Ok(send_trytes.send().await?)
+        Ok(send_trytes.finish().await?)
     }
 }

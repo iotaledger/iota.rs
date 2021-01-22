@@ -235,7 +235,7 @@ impl Client {
     pub async fn reattach<'a>(&'a self, hash: &'a Hash) -> Result<SendTrytesBuilder<'a>> {
         let mut bundle = self.get_bundle(hash).await?;
         bundle.reverse();
-        Ok(SendTrytesBuilder::new(self).trytes(bundle))
+        Ok(SendTrytesBuilder::new(self).with_trytes(bundle))
     }
 
     /// Store and broadcast transactions to the node.

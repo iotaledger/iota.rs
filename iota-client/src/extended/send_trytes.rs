@@ -15,6 +15,7 @@ pub struct SendTrytesBuilder<'a> {
     trytes: Vec<Transaction>,
     depth: u8,
     min_weight_magnitude: u8,
+    local_pow: bool,
     reference: Option<Hash>,
 }
 
@@ -25,36 +26,43 @@ impl<'a> SendTrytesBuilder<'a> {
             trytes: Default::default(),
             depth: Default::default(),
             min_weight_magnitude: client.mwm,
+            local_pow: true,
             reference: Default::default(),
         }
     }
 
     /// The depth of the random walk for GTTA
-    pub fn depth(mut self, depth: u8) -> Self {
+    pub fn with_depth(mut self, depth: u8) -> Self {
         self.depth = depth;
         self
     }
 
     /// Set difficulty of PoW
-    pub fn min_weight_magnitude(mut self, min_weight_magnitude: u8) -> Self {
+    pub fn with_min_weight_magnitude(mut self, min_weight_magnitude: u8) -> Self {
         self.min_weight_magnitude = min_weight_magnitude;
         self
     }
 
+    /// Set local PoW
+    pub fn with_local_pow(mut self, local_pow: bool) -> Self {
+        self.local_pow = local_pow;
+        self
+    }
+
     /// Add vector of transaction trytes
-    pub fn trytes(mut self, trytes: Vec<Transaction>) -> Self {
+    pub fn with_trytes(mut self, trytes: Vec<Transaction>) -> Self {
         self.trytes = trytes;
         self
     }
 
     /// Add reference hash
-    pub fn reference(mut self, reference: Hash) -> Self {
+    pub fn with_reference(mut self, reference: Hash) -> Self {
         self.reference = Some(reference);
         self
     }
 
     /// Send SendTrytes request
-    pub async fn send(self) -> Result<Vec<Transaction>> {
+    pub async fn finish(self) -> Result<Vec<Transaction>> {
         let mut gtta = self.client.get_transactions_to_approve().depth(self.depth);
         if let Some(hash) = self.reference {
             gtta = gtta.reference(&hash);
@@ -76,6 +84,7 @@ impl<'a> SendTrytesBuilder<'a> {
             );
         }
 
+        // let res: Vec<Transaction> = attach_to_tangle(trytes)?;
         let res = self
             .client
             .attach_to_tangle()
@@ -83,6 +92,7 @@ impl<'a> SendTrytesBuilder<'a> {
             .branch_transaction(&res.branch_transaction)
             .trunk_transaction(&res.trunk_transaction)
             .min_weight_magnitude(self.min_weight_magnitude)
+            .local_pow(self.local_pow)
             .send()
             .await?
             .trytes;

@@ -29,6 +29,13 @@ bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 hex = "0.4.2"
 
+#pow
+iota-model = {git = "https://github.com/iotaledger/iota.rs", rev = "0aa7e11b075bea17ae52b1f7dff51f3a13c9d914"}
+num_cpus = "1.10"
+crossbeam = "0.7"
+failure = "0.1"
+iota-conversion = "0.5"
+
 [dev-dependencies]
 anyhow = "1.0.31"
 smol = {version = "0.1.18", features = ["tokio02"] }

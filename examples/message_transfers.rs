@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
 
     // Create a client instance
     let iota = iota::ClientBuilder::new()
-        .node("https://nodes.comnet.thetangle.org")?
+        .node("https://nodes.devnet.iota.org")?
         .build()?;
     // Call send_transfers api
     // Below is just a dummy seed which just serves as an example.
@@ -57,11 +57,12 @@ async fn main() -> Result<()> {
     let res = iota
         .send(None)
         // Input the transfers
-        .transfers(transfers)
+        .with_transfers(transfers)
         // We are sending to comnet, so mwm should be 10. It's 14 by default if you don't call this.
-        .min_weight_magnitude(10)
+        .with_min_weight_magnitude(9)
+        .with_local_pow(false)
         // Sending to the node and receive the response
-        .send()
+        .finish()
         .await?;
 
     // The response of send_transfers is vector of Transaction type. We choose the first one and see what is its bundle hash

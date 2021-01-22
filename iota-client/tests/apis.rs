@@ -378,9 +378,9 @@ async fn test_reattach() {
         ))
         .await
         .unwrap()
-        .depth(3)
-        .min_weight_magnitude(9)
-        .send()
+        .with_depth(3)
+        .with_min_weight_magnitude(9)
+        .finish()
         .await;
 }
 
@@ -413,9 +413,9 @@ async fn test_send_transfers_no_value() {
             )
             .unwrap(),
         ))
-        .transfers(transfers)
-        .min_weight_magnitude(10)
-        .send()
+        .with_transfers(transfers)
+        .with_min_weight_magnitude(10)
+        .finish()
         .await
         .unwrap();
 }
@@ -425,9 +425,9 @@ async fn test_send_trytes() {
     let client = client_init();
     let _ = client
         .send_trytes()
-        .min_weight_magnitude(9)
-        .trytes(vec![tx()])
-        .send()
+        .with_min_weight_magnitude(9)
+        .with_trytes(vec![tx()])
+        .finish()
         .await;
 }
 

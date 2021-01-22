@@ -139,7 +139,7 @@ fn generate_address(
 pub fn migration_address(address: Ed25519Address) -> String {
     // Compute the BLAKE2b-256 hash H of A.
     let mut hasher = VarBlake2b::new(32).unwrap();
-    hasher.update(address.clone());
+    hasher.update(address);
     let mut result: [u8; 32] = [0; 32];
     hasher.finalize_variable(|res| {
         result = res.try_into().expect("Invalid Length of Public Key");
