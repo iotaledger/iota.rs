@@ -13,6 +13,7 @@ name = "iota_client"
 crate-type = ["cdylib"]
 
 [dependencies]
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 tokio = { version = "1.0", features = ["macros"] }
 hex = "0.4"
 iota-core = { path = "../../../iota-core" }
