@@ -27,7 +27,7 @@ impl Client {
         data_str: Option<String>,
         parent: Option<&str>,
         network_id: Option<u64>,
-    ) -> String {
+    ) -> Message {
         let mut send_builder = self.client.send();
         if let Some(account_index) = account_index {
             send_builder = send_builder.with_account_index(account_index);
@@ -73,9 +73,9 @@ impl Client {
             let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..]).unwrap()).unwrap();
             return rt
                 .block_on(async { send_builder.with_seed(&seed).finish().await.unwrap() })
-                .to_string();
+                .into();
         } else {
-            return rt.block_on(async { send_builder.finish().await.unwrap() }).to_string();
+            return rt.block_on(async { send_builder.finish().await.unwrap() }).into();
         }
     }
     /// Get the message data from the message_id.

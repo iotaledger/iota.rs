@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    builder::{Network as RustNetwork, NetworkInfo as RustNetworkInfo},
-    Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
-    IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
-    MessageMetadata as RustMessageMetadata, MilestoneMetadata as RustMilestoneMetadata,
+    builder::NetworkInfo as RustNetworkInfo, Address as RustAddress, Ed25519Address as RustEd25519Address,
+    Ed25519Signature as RustEd25519Signature, IndexationPayload as RustIndexationPayload, Input as RustInput,
+    Message as RustMessage, MessageMetadata as RustMessageMetadata, MilestoneMetadata as RustMilestoneMetadata,
     MilestonePayloadEssence as RustMilestonePayloadEssence, NodeInfo as RustNodeInfo, Output as RustOutput,
     OutputMetadata as RustOutputMetadata, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
     SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
@@ -194,7 +193,7 @@ pub struct NetworkInfo {
     /// Network of the Iota nodes belong to
     pub network: String,
     /// Network ID
-    pub network_id: String,
+    pub network_id: u64,
     /// Bech32 HRP
     pub bech32_hrp: String,
     /// Mininum proof of work score
@@ -224,12 +223,7 @@ impl From<RustNodeInfo> for NodeInfo {
 impl From<RustNetworkInfo> for NetworkInfo {
     fn from(network_info: RustNetworkInfo) -> Self {
         NetworkInfo {
-            network: {
-                match network_info.network {
-                    RustNetwork::Mainnet => String::from("Mainnet"),
-                    RustNetwork::Testnet => String::from("Testnet"),
-                }
-            },
+            network: network_info.network,
             network_id: network_info.network_id,
             bech32_hrp: network_info.bech32_hrp,
             min_pow_score: network_info.min_pow_score,

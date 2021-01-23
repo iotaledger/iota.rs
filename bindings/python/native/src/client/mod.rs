@@ -5,7 +5,7 @@ pub mod full_node_api;
 pub mod high_level_api;
 pub mod mqtt;
 pub mod types;
-use iota::{builder::Network, Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
+use iota::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
 use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::time::Duration;
@@ -37,13 +37,9 @@ impl Client {
         local_pow: Option<bool>,
         mqtt_broker_options: Option<BrokerOptions>,
     ) -> Self {
-        let mut client = RustClient::build();
+        let mut client = RustClient::builder();
         if let Some(network) = network {
-            match network {
-                "Mainnet" => client = client.with_network(Network::Mainnet),
-                "Testnet" => client = client.with_network(Network::Testnet),
-                _ => (),
-            }
+            client = client.with_network(network.into());
         }
         if let Some(node) = node {
             client = client.with_node(node).unwrap();
