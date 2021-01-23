@@ -1,3 +1,6 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::client::Client;
 use pyo3::{conversion::ToPyObject, exceptions, prelude::*, types::PyTuple};
 use std::convert::TryInto;
