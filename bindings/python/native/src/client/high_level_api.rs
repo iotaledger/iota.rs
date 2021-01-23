@@ -9,8 +9,10 @@ use iota::{
 use pyo3::prelude::*;
 
 use hex;
-use std::convert::{From, Into};
-use std::str::FromStr;
+use std::{
+    convert::{From, Into},
+    str::FromStr,
+};
 
 /// General high level APIs
 #[pymethods]
@@ -85,7 +87,6 @@ impl Client {
     ///
     /// Returns:
     ///     message_metadata (dict): The returned MessageMetadata dict.
-    ///
     fn get_message_metadata(&self, message_id: &str) -> MessageMetadata {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_metadata = rt.block_on(async {
@@ -104,7 +105,6 @@ impl Client {
     ///
     /// Returns:
     ///     message (dict): The returned message dict.
-    ///
     fn get_message_data(&self, message_id: &str) -> Message {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message = rt.block_on(async {
@@ -123,7 +123,6 @@ impl Client {
     ///
     /// Returns:
     ///     raw (str): The returned message string.
-    ///
     fn get_message_raw(&self, message_id: &str) -> String {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let raw_data = rt.block_on(async {
@@ -142,7 +141,6 @@ impl Client {
     ///
     /// Returns:
     ///     children ([str]): The returned list of children string.
-    ///
     fn get_message_children(&self, message_id: &str) -> Vec<String> {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let children = rt.block_on(async {
@@ -161,7 +159,6 @@ impl Client {
     ///
     /// Returns:
     ///     message_indices ([str]): The returned list of message indices.
-    ///
     fn get_message_index(&self, index: &str) -> Vec<String> {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let indices = rt.block_on(async { self.client.get_message().index(index).await.unwrap() });
@@ -175,7 +172,6 @@ impl Client {
     ///
     /// Returns:
     ///     messages ([str]): The returned list of message dict.
-    ///
     fn find_messages(&self, indexation_keys: Option<Vec<String>>, message_ids: Option<Vec<String>>) -> Vec<Message> {
         let message_ids: Vec<RustMessageId> = message_ids
             .unwrap_or(vec![])

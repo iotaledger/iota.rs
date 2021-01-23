@@ -7,11 +7,10 @@ pub mod mqtt;
 pub mod types;
 use iota::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
 use pyo3::prelude::*;
-use std::collections::HashMap;
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 use types::{
-    bech32_hrp, AddressBalancePair, BrokerOptions, Input, Message, MessageMetadata, MilestoneMetadata, NodeInfo,
-    Output, OutputMetadata, UTXOInput,
+    AddressBalancePair, BrokerOptions, Input, Message, MessageMetadata, MilestoneMetadata, NodeInfo, Output,
+    OutputMetadata, UTXOInput, BECH32_HRP,
 };
 
 /// Client builder
@@ -88,11 +87,11 @@ impl Client {
         }
         let client = client.finish().unwrap();
 
-        // Update the bech32_hrp
-        // Note: This unsafe code is actually safe, because the bech32_hrp will be only initialized when we
+        // Update the BECH32_HRP
+        // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
         //       create the client object.
         unsafe {
-            bech32_hrp = Box::leak(client.get_network_info().bech32_hrp.into_boxed_str());
+            BECH32_HRP = Box::leak(client.get_network_info().bech32_hrp.into_boxed_str());
         }
         Client { client: client }
     }

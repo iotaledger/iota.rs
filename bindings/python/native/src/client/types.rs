@@ -15,11 +15,13 @@ use iota::{
 
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 
-use std::convert::{From, Into, TryInto};
-use std::str::FromStr;
+use std::{
+    convert::{From, Into, TryInto},
+    str::FromStr,
+};
 pub const MILESTONE_MERKLE_PROOF_LENGTH: usize = 32;
 pub const MILESTONE_PUBLIC_KEY_LENGTH: usize = 32;
-pub static mut bech32_hrp: &str = "atoi1";
+pub static mut BECH32_HRP: &str = "atoi1";
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MessageMetadata {
@@ -256,7 +258,7 @@ impl From<RustOutputMetadata> for OutputMetadata {
             transaction_id: output_metadata.transaction_id,
             output_index: output_metadata.output_index,
             is_spent: output_metadata.is_spent,
-            address: unsafe { output_metadata.address.to_bech32(bech32_hrp) },
+            address: unsafe { output_metadata.address.to_bech32(BECH32_HRP) },
             amount: output_metadata.amount,
         }
     }
@@ -299,7 +301,7 @@ impl From<RustTransactionPayloadEssence> for TransactionPayloadEssence {
                 .map(|output| {
                     if let RustOutput::SignatureLockedSingle(output) = output {
                         Output {
-                            address: unsafe { output.address().to_bech32(bech32_hrp) },
+                            address: unsafe { output.address().to_bech32(BECH32_HRP) },
                             amount: output.amount(),
                         }
                     } else {

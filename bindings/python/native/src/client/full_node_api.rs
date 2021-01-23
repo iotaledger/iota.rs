@@ -8,8 +8,10 @@ use iota::{
 };
 use pyo3::{exceptions, prelude::*};
 
-use std::convert::{From, Into};
-use std::str::FromStr;
+use std::{
+    convert::{From, Into},
+    str::FromStr,
+};
 
 /// Full node API
 #[pymethods]
