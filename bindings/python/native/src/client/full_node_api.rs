@@ -87,12 +87,12 @@ impl Client {
     }
     fn find_outputs(&self, output_ids: Option<Vec<String>>, addresses: Option<Vec<String>>) -> Vec<OutputMetadata> {
         let output_ids: Vec<RustUTXOInput> = output_ids
-            .unwrap_or(vec![])
+            .unwrap_or_default()
             .iter()
             .map(|input| RustUTXOInput::from_str(input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
             .collect();
         let addresses: Vec<RustBech32Address> = addresses
-            .unwrap_or(vec![])
+            .unwrap_or_default()
             .iter()
             .map(|address| RustBech32Address::from(&address[..]))
             .collect();
