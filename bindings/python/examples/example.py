@@ -8,7 +8,7 @@ LOCAL_NODE_URL = "http://0.0.0.0:14265"
 # NOTE! Load the seed from your env path instead
 # NEVER assign the seed directly in your codes!
 # DO NOT USE THIS!!:
-# SEED = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b9"
+# SEED = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2"
 
 # USE THIS INSTEAD
 SEED = os.getenv('MY_IOTA_SEED')
@@ -46,7 +46,7 @@ def main():
 
     print(f'send() 100 tokens to address {EMPTY_ADDRESS}')
     message_id = client.send(
-        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])
+        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['message_id']
     print(f'Token sent with message_id: {message_id}')
     print(f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id}')
 

@@ -85,6 +85,7 @@ pub struct OutputMetadata {
 
 #[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Message {
+    pub message_id: String,
     pub network_id: u64,
     pub parent1: String,
     pub parent2: String,
@@ -411,6 +412,7 @@ impl From<RustMessage> for Message {
         };
 
         Message {
+            message_id: msg.id().0.to_string(),
             network_id: msg.network_id(),
             parent1: msg.parent1().to_string(),
             parent2: msg.parent2().to_string(),
