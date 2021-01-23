@@ -10,8 +10,7 @@ extern crate dotenv_codegen;
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::build() // Crate a client instance builder
-        .with_node_sync_disabled()
+    let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
@@ -34,7 +33,7 @@ async fn main() {
     let message = iota
         .send()
         .with_seed(&seed)
-        .with_input(outputs[0].clone())
+        .with_input(outputs[1].clone())
         .with_output(
             &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
             100,
