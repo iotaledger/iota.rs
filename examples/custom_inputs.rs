@@ -31,7 +31,7 @@ async fn main() {
     let outputs = iota.get_address().outputs(&address[0]).await.unwrap();
     println!("{:?}", outputs);
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         .with_input(outputs[0].clone())
@@ -46,6 +46,6 @@ async fn main() {
 
     println!(
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
-        message_id
+        message.id().0
     );
 }
