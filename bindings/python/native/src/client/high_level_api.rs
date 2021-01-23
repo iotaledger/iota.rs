@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client::{AddressBalancePair, Client, Input, Message, MessageMetadata, Output};
+use crate::client::{error::Result, AddressBalancePair, Client, Input, Message, MessageMetadata, Output};
 use iota::{
     Bech32Address as RustBech32Address, MessageId as RustMessageId, Seed as RustSeed,
     TransactionId as RustTransationId, UTXOInput as RustUTXOInput,
@@ -27,7 +27,7 @@ impl Client {
         data_str: Option<String>,
         parent: Option<&str>,
         network_id: Option<u64>,
-    ) -> Message {
+    ) -> Result<Message> {
         let mut send_builder = self.client.send();
         if let Some(account_index) = account_index {
             send_builder = send_builder.with_account_index(account_index);
@@ -37,20 +37,15 @@ impl Client {
         }
         if let Some(inputs) = inputs {
             for input in inputs {
-                send_builder = send_builder.with_input(
-                    RustUTXOInput::new(
-                        RustTransationId::from_str(&input.transaction_id[..]).unwrap(),
-                        input.index,
-                    )
-                    .unwrap(),
-                );
+                send_builder = send_builder.with_input(RustUTXOInput::new(
+                    RustTransationId::from_str(&input.transaction_id[..])?,
+                    input.index,
+                )?);
             }
         }
         if let Some(outputs) = outputs {
             for output in outputs {
-                send_builder = send_builder
-                    .with_output(&output.address[..].into(), output.amount)
-                    .unwrap();
+                send_builder = send_builder.with_output(&output.address[..].into(), output.amount)?;
             }
         }
         if let Some(index) = index {
@@ -63,19 +58,19 @@ impl Client {
             send_builder = send_builder.with_data(data_str.as_bytes().to_vec());
         }
         if let Some(parent) = parent {
-            send_builder = send_builder.with_parent(RustMessageId::from_str(parent).unwrap());
+            send_builder = send_builder.with_parent(RustMessageId::from_str(parent)?);
         }
         if let Some(network_id) = network_id {
             send_builder = send_builder.with_network_id(network_id);
         }
-        let rt = tokio::runtime::Runtime::new().unwrap();
+        let rt = tokio::runtime::Runtime::new()?;
         if let Some(seed) = seed {
-            let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..]).unwrap()).unwrap();
-            return rt
-                .block_on(async { send_builder.with_seed(&seed).finish().await.unwrap() })
-                .into();
+            let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
+            Ok(rt
+                .block_on(async { send_builder.with_seed(&seed).finish().await })?
+                .into())
         } else {
-            return rt.block_on(async { send_builder.finish().await.unwrap() }).into();
+            Ok(rt.block_on(async { send_builder.finish().await })?.into())
         }
     }
     /// Get the message data from the message_id.
