@@ -276,8 +276,6 @@ impl Client {
             })
             .collect()
     }
-    // TODO MQTT subscriber
-    fn subscriber(&self) {}
     fn retry(&self, message_id: String) -> (String, Message) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         let message_id_message = rt.block_on(async {
