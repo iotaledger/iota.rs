@@ -7,8 +7,6 @@ use iota::{
     TransactionId as RustTransationId, UTXOInput as RustUTXOInput,
 };
 use pyo3::prelude::*;
-
-use hex;
 use std::{
     convert::{From, Into},
     str::FromStr,

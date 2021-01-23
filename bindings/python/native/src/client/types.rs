@@ -414,7 +414,7 @@ impl From<RustMessage> for Message {
             network_id: msg.network_id(),
             parent1: msg.parent1().to_string(),
             parent2: msg.parent2().to_string(),
-            payload: payload,
+            payload,
             nonce: msg.nonce(),
         }
     }
@@ -485,10 +485,10 @@ impl From<UnlockBlock> for RustUnlockBlock {
     fn from(block: UnlockBlock) -> Self {
         if let Some(signature) = block.signature {
             let sig: RustSignatureUnlock = signature.try_into().unwrap();
-            return sig.into();
+            sig.into()
         } else {
             let reference: RustReferenceUnlock = block.reference.unwrap().try_into().unwrap();
-            return reference.into();
+            reference.into()
         }
     }
 }
@@ -505,7 +505,7 @@ impl From<Payload> for RustPayload {
                 transaction = transaction.add_unlock_block(unlock_block.try_into().unwrap());
             }
 
-            return RustPayload::Transaction(Box::new(transaction.finish().unwrap()));
+            RustPayload::Transaction(Box::new(transaction.finish().unwrap()))
         } else {
             let indexation = RustIndexationPayload::new(
                 (&payload.indexation.as_ref().unwrap()[0].index.clone()).to_owned(),

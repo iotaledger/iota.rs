@@ -38,7 +38,7 @@ impl Client {
     ) -> Self {
         let mut client = RustClient::builder();
         if let Some(network) = network {
-            client = client.with_network(network.into());
+            client = client.with_network(network);
         }
         if let Some(node) = node {
             client = client.with_node(node).unwrap();
@@ -93,6 +93,6 @@ impl Client {
         unsafe {
             BECH32_HRP = Box::leak(client.get_network_info().bech32_hrp.into_boxed_str());
         }
-        Client { client: client }
+        Client { client }
     }
 }
