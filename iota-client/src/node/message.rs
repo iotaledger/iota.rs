@@ -32,9 +32,14 @@ impl<'a> GetMessageBuilder<'a> {
         url.set_query(Some(&format!("index={}", index)));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessagesForIndexResponse,
+        };
+
         parse_response!(resp, 200 => {
-            let ids = resp.json::<MessagesForIndexResponse>().await?;
-            ids.message_ids
+            let ids = resp.json::<MessagesWrapper>().await?;
+            ids.data.message_ids
                 .iter()
                 .map(|s| {
                     let mut message_id = [0u8; 32];
@@ -52,10 +57,14 @@ impl<'a> GetMessageBuilder<'a> {
         url.set_path(&format!("api/v1/messages/{}", message_id));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessageDto,
+        };
         parse_response!(resp, 200 => {
-            let meta = resp.json::<MessageDto>().await?;
+            let meta = resp.json::<MessagesWrapper>().await?;
             Ok(
-                Message::try_from(&meta).expect("Can't convert MessageDto to Message"))
+                Message::try_from(&meta.data).expect("Can't convert MessageDto to Message"))
         })
     }
 
@@ -65,9 +74,13 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id));
         let resp = reqwest::get(url).await?;
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessageMetadata,
+        };
         parse_response!(resp, 200 => {
-            let meta = resp.json::<MessageMetadata>().await?;
-            Ok(meta)
+            let meta = resp.json::<MessagesWrapper>().await?;
+            Ok(meta.data)
         })
     }
 
@@ -89,9 +102,13 @@ impl<'a> GetMessageBuilder<'a> {
         url.set_path(&format!("api/v1/messages/{}/children", message_id));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessageChildrenResponse,
+        };
         crate::parse_response!(resp, 200 => {
-            let meta = resp.json::<MessageChildrenResponse>().await?;
-            meta.children_message_ids
+            let meta = resp.json::<MessagesWrapper>().await?;
+            meta.data.children_message_ids
                 .iter()
                 .map(|s| {
                     let mut message_id = [0u8; 32];

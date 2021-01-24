@@ -28,9 +28,13 @@ impl<'a> GetAddressBuilder<'a> {
         url.set_path(&format!("api/v1/addresses/{}", address));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct BalanceWrapper {
+            data: BalanceForAddressResponse,
+        };
         parse_response!(resp, 200 => {
-            let r = resp.json::<BalanceForAddressResponse>().await?;
-            Ok(r)
+            let r = resp.json::<BalanceWrapper>().await?;
+            Ok(r.data)
         })
     }
 
@@ -42,9 +46,13 @@ impl<'a> GetAddressBuilder<'a> {
         url.set_path(&format!("api/v1/addresses/{}/outputs", address));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct OutputWrapper {
+            data: OutputsForAddressResponse,
+        };
         parse_response!(resp, 200 => {
-            let r = resp.json::<OutputsForAddressResponse>().await?.output_ids;
-            r.iter()
+            let r = resp.json::<OutputWrapper>().await?.data;
+            r.output_ids.iter()
                 .map(|s| {
                     let mut transaction_id = [0u8; 32];
                     hex::decode_to_slice(&s[..64], &mut transaction_id)?;

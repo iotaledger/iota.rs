@@ -462,7 +462,6 @@ impl Client {
         url.set_path("api/v1/messages");
 
         let message = MessageDto::try_from(message).expect("Can't convert message into json");
-
         let resp = self
             .client
             .post(url)
@@ -471,12 +470,20 @@ impl Client {
             .json(&message)
             .send()
             .await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdResponseWrapper {
+            data: MessageIdWrapper,
+        };
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdWrapper {
+            #[serde(rename = "messageId")]
+            message_id: String,
+        };
         parse_response!(resp, 201 => {
-            let m = resp.json::<MessageId>().await?;
-            let mut message_id = [0u8; 32];
-            hex::decode_to_slice(m, &mut message_id)?;
-            Ok(MessageId::from(message_id))
+            let message_id = resp.json::<MessageIdResponseWrapper>().await?;
+            let mut message_id_bytes = [0u8; 32];
+            hex::decode_to_slice(message_id.data.message_id, &mut message_id_bytes)?;
+            Ok(MessageId::from(message_id_bytes))
         })
     }
 
@@ -559,10 +566,13 @@ impl Client {
             .timeout(self.get_timeout(Api::GetMilestone))
             .send()
             .await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MilestoneWrapper {
+            data: MilestoneMetadata,
+        };
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<MilestoneMetadata>().await?;
-            Ok(milestone)
+            let milestone = resp.json::<MilestoneWrapper>().await?;
+            Ok(milestone.data)
         })
     }
 
