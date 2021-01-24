@@ -108,6 +108,7 @@ A generic send function for easily sending a message.
 | **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 | **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
 | **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
+| **input_range** | ✘ | 0..100 | Range | Custom range to search for the input addresses if custom inputs are provided. |
 | **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
