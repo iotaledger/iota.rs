@@ -41,16 +41,16 @@ impl From<bee_message::Error> for Error {
     }
 }
 
-impl From<hex::FromHexError> for Error {
-    fn from(err: hex::FromHexError) -> Self {
+impl From<bee_signing_ext::binary::Error> for Error {
+    fn from(err: bee_signing_ext::binary::Error) -> Self {
         Error {
             error: PyErr::new::<exceptions::PyTypeError, _>(err.to_string()),
         }
     }
 }
 
-impl From<bee_signing_ext::binary::Error> for Error {
-    fn from(err: bee_signing_ext::binary::Error) -> Self {
+impl From<hex::FromHexError> for Error {
+    fn from(err: hex::FromHexError) -> Self {
         Error {
             error: PyErr::new::<exceptions::PyTypeError, _>(err.to_string()),
         }

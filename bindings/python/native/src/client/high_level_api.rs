@@ -80,16 +80,16 @@ impl Client {
     ///
     /// Returns:
     ///     message_metadata (dict): The returned MessageMetadata dict.
-    fn get_message_metadata(&self, message_id: &str) -> MessageMetadata {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let message_metadata = rt.block_on(async {
-            self.client
-                .get_message()
-                .metadata(&RustMessageId::from_str(message_id).unwrap())
-                .await
-                .unwrap()
-        });
-        message_metadata.into()
+    fn get_message_metadata(&self, message_id: &str) -> Result<MessageMetadata> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt
+            .block_on(async {
+                self.client
+                    .get_message()
+                    .metadata(&RustMessageId::from_str(message_id)?)
+                    .await
+            })?
+            .into())
     }
     /// Get the message data from the message_id.
     ///
@@ -98,16 +98,16 @@ impl Client {
     ///
     /// Returns:
     ///     message (dict): The returned message dict.
-    fn get_message_data(&self, message_id: &str) -> Message {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let message = rt.block_on(async {
-            self.client
-                .get_message()
-                .data(&RustMessageId::from_str(message_id).unwrap())
-                .await
-                .unwrap()
-        });
-        message.into()
+    fn get_message_data(&self, message_id: &str) -> Result<Message> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt
+            .block_on(async {
+                self.client
+                    .get_message()
+                    .data(&RustMessageId::from_str(message_id)?)
+                    .await
+            })?
+            .into())
     }
     /// Get the message raw string from the message_id.
     ///
@@ -116,16 +116,14 @@ impl Client {
     ///
     /// Returns:
     ///     raw (str): The returned message string.
-    fn get_message_raw(&self, message_id: &str) -> String {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let raw_data = rt.block_on(async {
+    fn get_message_raw(&self, message_id: &str) -> Result<String> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt.block_on(async {
             self.client
                 .get_message()
-                .raw(&RustMessageId::from_str(message_id).unwrap())
+                .raw(&RustMessageId::from_str(message_id)?)
                 .await
-                .unwrap()
-        });
-        raw_data
+        })?)
     }
     /// Get the message children from the message_id.
     ///
@@ -134,16 +132,15 @@ impl Client {
     ///
     /// Returns:
     ///     children ([str]): The returned list of children string.
-    fn get_message_children(&self, message_id: &str) -> Vec<String> {
-        let rt = tokio::runtime::Runtime::new().unwrap();
+    fn get_message_children(&self, message_id: &str) -> Result<Vec<String>> {
+        let rt = tokio::runtime::Runtime::new()?;
         let children = rt.block_on(async {
             self.client
                 .get_message()
-                .children(&RustMessageId::from_str(message_id).unwrap())
+                .children(&RustMessageId::from_str(message_id)?)
                 .await
-                .unwrap()
-        });
-        children.into_iter().map(|child| hex::encode(child.as_ref())).collect()
+        })?;
+        Ok(children.into_iter().map(|child| hex::encode(child.as_ref())).collect())
     }
     /// Get the list of message indices from the message_id.
     ///
@@ -152,10 +149,10 @@ impl Client {
     ///
     /// Returns:
     ///     message_indices ([str]): The returned list of message indices.
-    fn get_message_index(&self, index: &str) -> Vec<String> {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let indices = rt.block_on(async { self.client.get_message().index(index).await.unwrap() });
-        indices.into_iter().map(|index| hex::encode(index.as_ref())).collect()
+    fn get_message_index(&self, index: &str) -> Result<Vec<String>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let indices = rt.block_on(async { self.client.get_message().index(index).await })?;
+        Ok(indices.into_iter().map(|index| hex::encode(index.as_ref())).collect())
     }
     /// Find all messages by provided message IDs.
     ///
@@ -165,39 +162,41 @@ impl Client {
     ///
     /// Returns:
     ///     messages ([str]): The returned list of message dict.
-    fn find_messages(&self, indexation_keys: Option<Vec<String>>, message_ids: Option<Vec<String>>) -> Vec<Message> {
+    fn find_messages(
+        &self,
+        indexation_keys: Option<Vec<String>>,
+        message_ids: Option<Vec<String>>,
+    ) -> Result<Vec<Message>> {
         let message_ids: Vec<RustMessageId> = message_ids
-            .unwrap_or(vec![])
+            .unwrap_or_default()
             .iter()
             .map(|id| RustMessageId::from_str(&id[..]).unwrap())
             .collect();
-        let rt = tokio::runtime::Runtime::new().unwrap();
+        let rt = tokio::runtime::Runtime::new()?;
         let messages = rt.block_on(async {
             self.client
-                .find_messages(&indexation_keys.unwrap_or(vec![])[..], &message_ids[..])
+                .find_messages(&indexation_keys.unwrap_or_default()[..], &message_ids[..])
                 .await
-                .unwrap()
-        });
-        messages.into_iter().map(|message| message.into()).collect()
+        })?;
+        Ok(messages.into_iter().map(|message| message.into()).collect())
     }
     fn get_unspent_address(
         &self,
         seed: String,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
-    ) -> (String, usize) {
-        let rt = tokio::runtime::Runtime::new().unwrap();
+    ) -> Result<(String, usize)> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
         let address_index = rt.block_on(async {
-            let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..]).unwrap()).unwrap();
             self.client
                 .get_unspent_address(&seed)
                 .with_account_index(account_index.unwrap_or(0))
                 .with_initial_address_index(initial_address_index.unwrap_or(0))
                 .get()
                 .await
-                .unwrap()
-        });
-        (address_index.0 .0, address_index.1)
+        })?;
+        Ok((address_index.0 .0, address_index.1))
     }
     fn find_addresses(
         &self,
@@ -206,93 +205,83 @@ impl Client {
         begin: Option<usize>,
         end: Option<usize>,
         get_all: Option<bool>,
-    ) -> Vec<(String, Option<bool>)> {
-        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..]).unwrap()).unwrap();
+    ) -> Result<Vec<(String, Option<bool>)>> {
+        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
         if get_all.unwrap_or(false) {
             let addresses = self
                 .client
                 .find_addresses(&seed)
                 .with_account_index(account_index.unwrap_or(0))
                 .with_range(begin.unwrap_or(0)..end.unwrap_or(20))
-                .get_all()
-                .unwrap();
-            return addresses
+                .get_all()?;
+            Ok(addresses
                 .iter()
                 .map(|address_changed| (address_changed.0.to_string(), Some(address_changed.1)))
-                .collect();
+                .collect())
         } else {
             let addresses = self
                 .client
                 .find_addresses(&seed)
                 .with_account_index(account_index.unwrap_or(0))
                 .with_range(begin.unwrap_or(0)..end.unwrap_or(20))
-                .finish()
-                .unwrap();
-            return addresses
+                .finish()?;
+            Ok(addresses
                 .iter()
                 .map(|addresses| (addresses.to_string(), None))
-                .collect();
+                .collect())
         }
     }
-    fn get_balance(&self, seed: String, account_index: Option<usize>, initial_address_index: Option<usize>) -> u64 {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..]).unwrap()).unwrap();
-        rt.block_on(async {
+    fn get_balance(
+        &self,
+        seed: String,
+        account_index: Option<usize>,
+        initial_address_index: Option<usize>,
+    ) -> Result<u64> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
+        let balance = rt.block_on(async {
             self.client
                 .get_balance(&seed)
                 .with_account_index(account_index.unwrap_or(0))
                 .with_initial_address_index(initial_address_index.unwrap_or(0))
                 .finish()
                 .await
-                .unwrap()
-        })
+        })?;
+        Ok(balance)
     }
-    fn get_address_balances(&self, addresses: Vec<String>) -> Vec<AddressBalancePair> {
-        let rt = tokio::runtime::Runtime::new().unwrap();
+    fn get_address_balances(&self, addresses: Vec<String>) -> Result<Vec<AddressBalancePair>> {
+        let rt = tokio::runtime::Runtime::new()?;
         let bench32_addresses: Vec<RustBech32Address> = addresses
             .iter()
             .map(|address| RustBech32Address::from(&address[..]))
             .collect();
 
-        let address_balances =
-            rt.block_on(async { self.client.get_address_balances(&bench32_addresses[..]).await.unwrap() });
+        let address_balances = rt.block_on(async { self.client.get_address_balances(&bench32_addresses[..]).await })?;
 
-        address_balances
+        Ok(address_balances
             .iter()
             .map(|address_balance| AddressBalancePair {
                 address: address_balance.address.0.clone(),
                 balance: address_balance.balance,
             })
-            .collect()
+            .collect())
     }
-    fn retry(&self, message_id: String) -> (String, Message) {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let message_id_message = rt.block_on(async {
-            self.client
-                .retry(&RustMessageId::from_str(&message_id).unwrap())
-                .await
-                .unwrap()
-        });
-        (message_id_message.0.to_string(), message_id_message.1.into())
+    fn retry(&self, message_id: String) -> Result<(String, Message)> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let message_id_message =
+            rt.block_on(async { self.client.retry(&RustMessageId::from_str(&message_id)?).await })?;
+        Ok((message_id_message.0.to_string(), message_id_message.1.into()))
     }
-    fn reattach(&self, message_id: String) -> (String, Message) {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let message_id_message = rt.block_on(async {
-            self.client
-                .reattach(&RustMessageId::from_str(&message_id).unwrap())
-                .await
-                .unwrap()
-        });
-        (message_id_message.0.to_string(), message_id_message.1.into())
+    fn reattach(&self, message_id: String) -> Result<(String, Message)> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let message_id_message =
+            rt.block_on(async { self.client.reattach(&RustMessageId::from_str(&message_id)?).await })?;
+        Ok((message_id_message.0.to_string(), message_id_message.1.into()))
     }
-    fn promote(&self, message_id: String) -> (String, Message) {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        let message_id_message = rt.block_on(async {
-            self.client
-                .promote(&RustMessageId::from_str(&message_id).unwrap())
-                .await
-                .unwrap()
-        });
-        (message_id_message.0.to_string(), message_id_message.1.into())
+    fn promote(&self, message_id: String) -> Result<(String, Message)> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let message_id_message =
+            rt.block_on(async { self.client.promote(&RustMessageId::from_str(&message_id)?).await })?;
+        Ok((message_id_message.0.to_string(), message_id_message.1.into()))
     }
 }
