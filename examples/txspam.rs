@@ -3,8 +3,10 @@
 
 //! cargo run --example txspam --release
 use iota::{Client, MessageId, Payload, Seed, UTXOInput};
-use std::time::Duration;
 use tokio::time::sleep;
+extern crate dotenv;
+use dotenv::dotenv;
+use std::{env, time::Duration};
 
 /// In this example, we spam transactions
 /// Send 10 Mi from the faucet to the first address before you run this
@@ -17,10 +19,8 @@ async fn main() {
         .finish()
         .unwrap();
 
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("253a818b2aac458942f3274925a430e57fb730f3a3a67969ece5bd9ae7eef2b1").unwrap(),
-    )
-    .unwrap();
+    dotenv().ok();
+    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("seed").unwrap()).unwrap()).unwrap();
 
     // split funds to own addresses
     let addresses = iota
@@ -45,10 +45,8 @@ async fn main() {
 
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
-        let mut index = 0;
-        for _output in tx.essence().outputs() {
-            initial_outputs.push(UTXOInput::new(tx.id(), index).unwrap());
-            index += 1;
+        for (index, _output) in tx.essence().outputs().into_iter().enumerate() {
+            initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
         }
     }
 
