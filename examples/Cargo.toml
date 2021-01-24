@@ -49,3 +49,7 @@ path = "custom_parent.rs"
 [[example]]
 name = "nodeinfo"
 path = "nodeinfo.rs"
+
+[[example]]
+name = "txspam"
+path = "txspam.rs"
