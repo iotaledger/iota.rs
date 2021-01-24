@@ -198,7 +198,8 @@ impl From<OutputMetadata> for OutputMetadataDto {
             transaction_id: hex::encode(value.transaction_id),
             output_index: value.output_index,
             is_spent: value.is_spent,
-            address: value.address.to_bech32(),
+            // todo encode hex so it's always correct?
+            address: value.address.to_bech32("atoi"),
             amount: value.amount,
         }
     }

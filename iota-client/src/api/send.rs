@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, types::Bech32Address, Client, ClientMiner, Error, Result};
+use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
@@ -126,7 +126,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish(self) -> Result<MessageId> {
+    pub async fn finish(self) -> Result<Message> {
         // Indexation payload requires an indexation tag
         if self.data.is_some() && self.index.is_none() {
             return Err(Error::MissingParameter(String::from("index")));
@@ -150,7 +150,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish_transaction(self) -> Result<MessageId> {
+    pub async fn finish_transaction(self) -> Result<Message> {
         let account_index = self.account_index.unwrap_or(0);
         let path = BIP32Path::from_str(&crate::account_path!(account_index)).expect("invalid account index");
 
@@ -184,11 +184,13 @@ impl<'a> SendBuilder<'a> {
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
+                            let bech32_hrp = self.client.get_network_info().bech32_hrp;
+                            let bech32_addresses = output.address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 account_index,
                                 0..100,
-                                &output.address.to_bech32().into(),
+                                &bech32_addresses.into(),
                             )?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
@@ -381,7 +383,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish_indexation(self) -> Result<MessageId> {
+    pub async fn finish_indexation(self) -> Result<Message> {
         let payload: Payload;
         {
             let index = &self.index.as_ref();
@@ -399,31 +401,35 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Builds the final message and posts it to the node
-    pub async fn finish_message(self, payload: Option<Payload>) -> Result<MessageId> {
+    pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         // get tips
         let tips = self.client.get_tips().await?;
 
         // building message
         let mut message = MessageBuilder::<ClientMiner>::new();
 
-        match self.network_id {
-            Some(id) => message = message.with_network_id(id),
-            _ => message = message.with_network_id(self.client.get_network_id().await?),
-        }
+        message = match self.network_id {
+            Some(id) => message.with_network_id(id),
+            _ => message.with_network_id(self.client.get_network_info().network_id),
+        };
 
-        match self.parent {
-            Some(p) => message = message.with_parent1(p),
-            _ => message = message.with_parent1(tips.0),
-        }
+        message = match self.parent {
+            Some(p) => message.with_parent1(p),
+            _ => message.with_parent1(tips.0),
+        };
         if let Some(p) = payload {
             message = message.with_payload(p);
         }
         let final_message = message
             .with_parent2(tips.1)
-            .with_nonce_provider(self.client.get_pow_provider(), 4000f64)
+            .with_nonce_provider(
+                self.client.get_pow_provider(),
+                self.client.get_network_info().min_pow_score,
+            )
             .finish()
             .map_err(Error::MessageError)?;
 
-        self.client.post_message(&final_message).await
+        self.client.post_message(&final_message).await?;
+        Ok(final_message)
     }
 }

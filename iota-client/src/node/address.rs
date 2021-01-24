@@ -1,9 +1,9 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{parse_response, types::Bech32Address, AddressBalance, AddressOutputs, Client, Error, Response, Result};
+use crate::{parse_response, AddressBalance, AddressOutputs, Client, Error, Response, Result};
 
-use bee_message::prelude::{TransactionId, UTXOInput};
+use bee_message::prelude::{Bech32Address, TransactionId, UTXOInput};
 
 use std::convert::TryInto;
 
