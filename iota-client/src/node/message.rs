@@ -1,12 +1,17 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{parse_response, Client, Error, MessageIds, MessageJson, Response, Result};
+use crate::{parse_response, Client, Error, Result};
 use bee_message::{Message, MessageId};
-use bee_rest_api::handlers::message_children::MessageChildrenResponse;
-use bee_rest_api::handlers::message_metadata::MessageMetadataResponse as MessageMetadata;
+use bee_rest_api::{
+    handlers::{
+        message_children::MessageChildrenResponse, message_metadata::MessageMetadataResponse as MessageMetadata,
+        messages_find::MessagesForIndexResponse,
+    },
+    types::MessageDto,
+};
 
-use std::convert::TryInto;
+use std::convert::TryFrom;
 
 /// Builder of GET /api/v1/messages/{messageId} endpoint
 pub struct GetMessageBuilder<'a> {
@@ -28,9 +33,8 @@ impl<'a> GetMessageBuilder<'a> {
         let resp = reqwest::get(url).await?;
 
         parse_response!(resp, 200 => {
-            let ids = resp.json::<Response<MessageIds>>().await?;
-            ids.data
-                .inner
+            let ids = resp.json::<MessagesForIndexResponse>().await?;
+            ids.message_ids
                 .iter()
                 .map(|s| {
                     let mut message_id = [0u8; 32];
@@ -49,8 +53,9 @@ impl<'a> GetMessageBuilder<'a> {
         let resp = reqwest::get(url).await?;
 
         parse_response!(resp, 200 => {
-            let meta = resp.json::<Response<MessageJson>>().await?;
-            Ok(meta.data.try_into()?)
+            let meta = resp.json::<MessageDto>().await?;
+            Ok(
+                Message::try_from(&meta).expect("Can't convert MessageDto to Message"))
         })
     }
 

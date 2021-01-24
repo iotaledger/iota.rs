@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Output, OutputMetadata, Payload, ReferenceUnlock,
-    SignatureLockedSingleOutput, SignatureUnlock, TransactionPayload, TransactionPayloadEssence, UTXOInput,
-    UnlockBlock,
+    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Output,
+    OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock, SignatureLockedSingleOutput,
+    SignatureUnlock, TransactionPayload, TransactionPayloadEssence, UTXOInput, UnlockBlock,
 };
 use serde::{Deserialize, Serialize};
 
@@ -193,14 +193,20 @@ pub(super) struct OutputMetadataDto {
 
 impl From<OutputMetadata> for OutputMetadataDto {
     fn from(value: OutputMetadata) -> Self {
+        let (output_amount, output_address) = match value.output {
+            BeeOutput::SignatureLockedSingle(r) => match r.address {
+                AddressDto::Ed25519(addr) => (r.amount, addr.address),
+            },
+        };
+
         Self {
             message_id: hex::encode(value.message_id),
             transaction_id: hex::encode(value.transaction_id),
             output_index: value.output_index,
             is_spent: value.is_spent,
             // todo encode hex so it's always correct?
-            address: value.address.to_bech32("atoi"),
-            amount: value.amount,
+            address: output_address,
+            amount: output_amount,
         }
     }
 }
