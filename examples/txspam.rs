@@ -45,7 +45,7 @@ async fn main() {
 
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
-        for (index, _output) in tx.essence().outputs().into_iter().enumerate() {
+        for (index, _output) in tx.essence().outputs().iter().enumerate() {
             initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
         }
     }
