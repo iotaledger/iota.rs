@@ -9,7 +9,7 @@ use iota::{
 use pyo3::prelude::*;
 
 use std::{
-    convert::{From, Into},
+    convert::{From, Into, TryInto},
     str::FromStr,
 };
 
@@ -36,7 +36,7 @@ impl Client {
             .with_parent2(RustMessageId::from_str(&msg.parent1)?)
             .with_nonce_provider(self.client.get_pow_provider(), 4000f64);
         if let Some(payload) = msg.payload {
-            msg_builder = msg_builder.with_payload(payload.into());
+            msg_builder = msg_builder.with_payload(payload.try_into()?);
         }
         let msg = msg_builder.finish()?;
         let rt = tokio::runtime::Runtime::new()?;

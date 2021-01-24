@@ -7,6 +7,7 @@ use std::convert::From;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[derive(Debug)]
 pub struct Error {
     pub error: PyErr,
 }
@@ -14,7 +15,7 @@ pub struct Error {
 impl std::convert::From<RustError> for Error {
     fn from(err: RustError) -> Self {
         Error {
-            error: PyErr::new::<exceptions::PyRuntimeError, _>(err.to_string()),
+            error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
         }
     }
 }
@@ -36,7 +37,7 @@ impl From<std::io::Error> for Error {
 impl From<bee_message::Error> for Error {
     fn from(err: bee_message::Error) -> Self {
         Error {
-            error: PyErr::new::<exceptions::PyTypeError, _>(err.to_string()),
+            error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
         }
     }
 }
@@ -44,13 +45,21 @@ impl From<bee_message::Error> for Error {
 impl From<bee_signing_ext::binary::Error> for Error {
     fn from(err: bee_signing_ext::binary::Error) -> Self {
         Error {
-            error: PyErr::new::<exceptions::PyTypeError, _>(err.to_string()),
+            error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
         }
     }
 }
 
 impl From<hex::FromHexError> for Error {
     fn from(err: hex::FromHexError) -> Self {
+        Error {
+            error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
+        }
+    }
+}
+
+impl From<std::array::TryFromSliceError> for Error {
+    fn from(err: std::array::TryFromSliceError) -> Self {
         Error {
             error: PyErr::new::<exceptions::PyTypeError, _>(err.to_string()),
         }

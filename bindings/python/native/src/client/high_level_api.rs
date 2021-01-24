@@ -8,7 +8,7 @@ use iota::{
 };
 use pyo3::prelude::*;
 use std::{
-    convert::{From, Into},
+    convert::{From, Into, TryInto},
     str::FromStr,
 };
 
@@ -66,11 +66,10 @@ impl Client {
         let rt = tokio::runtime::Runtime::new()?;
         if let Some(seed) = seed {
             let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
-            Ok(rt
-                .block_on(async { send_builder.with_seed(&seed).finish().await })?
-                .into())
+            rt.block_on(async { send_builder.with_seed(&seed).finish().await })?
+                .try_into()
         } else {
-            Ok(rt.block_on(async { send_builder.finish().await })?.into())
+            rt.block_on(async { send_builder.finish().await })?.try_into()
         }
     }
     /// Get the message data from the message_id.
@@ -100,14 +99,13 @@ impl Client {
     ///     message (dict): The returned message dict.
     fn get_message_data(&self, message_id: &str) -> Result<Message> {
         let rt = tokio::runtime::Runtime::new()?;
-        Ok(rt
-            .block_on(async {
-                self.client
-                    .get_message()
-                    .data(&RustMessageId::from_str(message_id)?)
-                    .await
-            })?
-            .into())
+        rt.block_on(async {
+            self.client
+                .get_message()
+                .data(&RustMessageId::from_str(message_id)?)
+                .await
+        })?
+        .try_into()
     }
     /// Get the message raw string from the message_id.
     ///
@@ -178,7 +176,7 @@ impl Client {
                 .find_messages(&indexation_keys.unwrap_or_default()[..], &message_ids[..])
                 .await
         })?;
-        Ok(messages.into_iter().map(|message| message.into()).collect())
+        messages.into_iter().map(|message| message.try_into()).collect()
     }
     fn get_unspent_address(
         &self,
@@ -270,18 +268,18 @@ impl Client {
         let rt = tokio::runtime::Runtime::new()?;
         let message_id_message =
             rt.block_on(async { self.client.retry(&RustMessageId::from_str(&message_id)?).await })?;
-        Ok((message_id_message.0.to_string(), message_id_message.1.into()))
+        Ok((message_id_message.0.to_string(), message_id_message.1.try_into()?))
     }
     fn reattach(&self, message_id: String) -> Result<(String, Message)> {
         let rt = tokio::runtime::Runtime::new()?;
         let message_id_message =
             rt.block_on(async { self.client.reattach(&RustMessageId::from_str(&message_id)?).await })?;
-        Ok((message_id_message.0.to_string(), message_id_message.1.into()))
+        Ok((message_id_message.0.to_string(), message_id_message.1.try_into()?))
     }
     fn promote(&self, message_id: String) -> Result<(String, Message)> {
         let rt = tokio::runtime::Runtime::new()?;
         let message_id_message =
             rt.block_on(async { self.client.promote(&RustMessageId::from_str(&message_id)?).await })?;
-        Ok((message_id_message.0.to_string(), message_id_message.1.into()))
+        Ok((message_id_message.0.to_string(), message_id_message.1.try_into()?))
     }
 }

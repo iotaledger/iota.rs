@@ -1,6 +1,9 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::client::error::{Error, Result};
+use core::convert::TryFrom;
+use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota::{
     builder::NetworkInfo as RustNetworkInfo, Address as RustAddress, Ed25519Address as RustEd25519Address,
     Ed25519Signature as RustEd25519Signature, IndexationPayload as RustIndexationPayload, Input as RustInput,
@@ -13,8 +16,6 @@ use iota::{
     UnlockBlock as RustUnlockBlock,
 };
 
-use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
-
 use std::{
     convert::{From, Into, TryInto},
     str::FromStr,
@@ -23,7 +24,7 @@ pub const MILESTONE_MERKLE_PROOF_LENGTH: usize = 32;
 pub const MILESTONE_PUBLIC_KEY_LENGTH: usize = 32;
 pub static mut BECH32_HRP: &str = "atoi1";
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MessageMetadata {
     /// Message ID
     pub message_id: String,
@@ -43,7 +44,7 @@ pub struct MessageMetadata {
     pub ledger_inclusion_state: Option<String>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct AddressBalancePair {
     /// Address
     pub address: String,
@@ -51,7 +52,7 @@ pub struct AddressBalancePair {
     pub balance: u64,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MilestoneMetadata {
     /// Milestone index
     pub milestone_index: u64,
@@ -61,13 +62,13 @@ pub struct MilestoneMetadata {
     pub timestamp: u64,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct UTXOInput {
     pub transaction_id: Vec<u8>,
     pub index: u16,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct OutputMetadata {
     /// Message ID of the output
     pub message_id: Vec<u8>,
@@ -83,7 +84,7 @@ pub struct OutputMetadata {
     pub amount: u64,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Message {
     pub message_id: String,
     pub network_id: u64,
@@ -93,27 +94,26 @@ pub struct Message {
     pub nonce: u64,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-// TODO: Remove Vec wrapper
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Payload {
     pub transaction: Option<Vec<Transaction>>,
     pub milestone: Option<Vec<Milestone>>,
     pub indexation: Option<Vec<Indexation>>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Transaction {
     pub essence: TransactionPayloadEssence,
     pub unlock_blocks: Vec<UnlockBlock>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Milestone {
     pub essence: MilestonePayloadEssence,
     pub signatures: Vec<Vec<u8>>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MilestonePayloadEssence {
     pub index: u32,
     pub timestamp: u64,
@@ -123,44 +123,44 @@ pub struct MilestonePayloadEssence {
     pub public_keys: Vec<[u8; MILESTONE_PUBLIC_KEY_LENGTH]>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Indexation {
     pub index: String,
     pub data: Vec<u8>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct TransactionPayloadEssence {
     pub inputs: Vec<Input>,
     pub outputs: Vec<Output>,
     pub payload: Option<Payload>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Output {
     pub address: String,
     pub amount: u64,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Input {
     pub transaction_id: String,
     pub index: u16,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct UnlockBlock {
     pub signature: Option<Ed25519Signature>,
     pub reference: Option<u16>,
 }
 
-#[derive(Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Ed25519Signature {
     pub public_key: [u8; 32],
     pub signature: Vec<u8>,
 }
 
-#[derive(DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct BrokerOptions {
     /// automatic disconnect or not
     pub automatic_disconnect: bool,
@@ -170,7 +170,7 @@ pub struct BrokerOptions {
     pub use_ws: bool,
 }
 
-#[derive(DeriveFromPyObject, DeriveIntoPyObject)]
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct NodeInfo {
     /// Iota node Name
     pub name: String,
@@ -205,7 +205,6 @@ pub struct NetworkInfo {
     pub local_pow: bool,
 }
 
-// TODO: Error Handling
 impl From<RustNodeInfo> for NodeInfo {
     fn from(node_info: RustNodeInfo) -> Self {
         NodeInfo {
@@ -222,7 +221,6 @@ impl From<RustNodeInfo> for NodeInfo {
     }
 }
 
-// TODO: Error Handling
 impl From<RustNetworkInfo> for NetworkInfo {
     fn from(network_info: RustNetworkInfo) -> Self {
         NetworkInfo {
@@ -235,7 +233,6 @@ impl From<RustNetworkInfo> for NetworkInfo {
     }
 }
 
-// TODO: Error Handling
 impl From<RustMessageMetadata> for MessageMetadata {
     fn from(message_metadata: RustMessageMetadata) -> Self {
         MessageMetadata {
@@ -251,7 +248,6 @@ impl From<RustMessageMetadata> for MessageMetadata {
     }
 }
 
-// TODO: Error Handling
 impl From<RustOutputMetadata> for OutputMetadata {
     fn from(output_metadata: RustOutputMetadata) -> Self {
         OutputMetadata {
@@ -265,7 +261,6 @@ impl From<RustOutputMetadata> for OutputMetadata {
     }
 }
 
-// TODO: Error Handling
 impl From<RustMilestoneMetadata> for MilestoneMetadata {
     fn from(milestone_metadata: RustMilestoneMetadata) -> Self {
         MilestoneMetadata {
@@ -276,10 +271,10 @@ impl From<RustMilestoneMetadata> for MilestoneMetadata {
     }
 }
 
-// TODO: Error Handling
-impl From<RustTransactionPayloadEssence> for TransactionPayloadEssence {
-    fn from(essence: RustTransactionPayloadEssence) -> Self {
-        TransactionPayloadEssence {
+impl TryFrom<RustTransactionPayloadEssence> for TransactionPayloadEssence {
+    type Error = Error;
+    fn try_from(essence: RustTransactionPayloadEssence) -> Result<Self> {
+        Ok(TransactionPayloadEssence {
             inputs: essence
                 .inputs()
                 .iter()
@@ -317,7 +312,13 @@ impl From<RustTransactionPayloadEssence> for TransactionPayloadEssence {
                         milestone: None,
                         indexation: Some(vec![Indexation {
                             index: payload.index().to_string(),
-                            data: payload.data().try_into().unwrap(),
+                            data: payload.data().try_into().unwrap_or_else(|_| {
+                                panic!(
+                                    "invalid Indexation Payload {:?} with data: {:?}",
+                                    essence,
+                                    payload.data()
+                                )
+                            }),
                         }]),
                     })
                 } else {
@@ -326,63 +327,77 @@ impl From<RustTransactionPayloadEssence> for TransactionPayloadEssence {
             } else {
                 None
             },
-        }
+        })
     }
 }
 
-// TODO: Error Handling
-impl From<RustMilestonePayloadEssence> for MilestonePayloadEssence {
-    fn from(essence: RustMilestonePayloadEssence) -> Self {
-        MilestonePayloadEssence {
+impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
+    type Error = Error;
+    fn try_from(essence: RustMilestonePayloadEssence) -> Result<Self> {
+        Ok(MilestonePayloadEssence {
             index: essence.index(),
             timestamp: essence.timestamp(),
             parent1: essence.parent1().to_string(),
             parent2: essence.parent2().to_string(),
-            merkle_proof: essence.merkle_proof().try_into().unwrap(),
+            merkle_proof: essence.merkle_proof().try_into()?,
             public_keys: essence
                 .public_keys()
                 .iter()
-                .map(|public_key| public_key.to_vec().try_into().unwrap())
+                .map(|public_key| {
+                    public_key.to_vec().try_into().unwrap_or_else(|_| {
+                        panic!(
+                            "invalid MilestonePayloadEssence {:?} with public key: {:?}",
+                            essence,
+                            essence.public_keys()
+                        )
+                    })
+                })
                 .collect(),
-        }
+        })
     }
 }
 
-// TODO: Error Handling
-impl From<RustUnlockBlock> for UnlockBlock {
-    fn from(unlock_block: RustUnlockBlock) -> Self {
+impl TryFrom<RustUnlockBlock> for UnlockBlock {
+    type Error = Error;
+    fn try_from(unlock_block: RustUnlockBlock) -> Result<Self> {
         if let RustUnlockBlock::Signature(RustSignatureUnlock::Ed25519(signature)) = unlock_block {
-            UnlockBlock {
+            Ok(UnlockBlock {
                 signature: Some(Ed25519Signature {
-                    public_key: signature.public_key().to_vec().try_into().unwrap(),
+                    public_key: signature.public_key().to_vec().try_into().unwrap_or_else(|_| {
+                        panic!(
+                            "invalid Ed25519Signature {:?} with public key: {:?}",
+                            signature,
+                            signature.public_key()
+                        )
+                    }),
                     signature: signature.signature().to_vec(),
                 }),
                 reference: None,
-            }
+            })
         } else if let RustUnlockBlock::Reference(signature) = unlock_block {
-            UnlockBlock {
+            Ok(UnlockBlock {
                 signature: None,
                 reference: Some(signature.index()),
-            }
+            })
         } else {
             unreachable!()
         }
     }
 }
 
-// TODO: Error Handling and split functions
-impl From<RustMessage> for Message {
-    fn from(msg: RustMessage) -> Self {
+impl TryFrom<RustMessage> for Message {
+    type Error = Error;
+    fn try_from(msg: RustMessage) -> Result<Self> {
         let payload = msg.payload().as_ref();
         let payload = match payload {
             Some(RustPayload::Transaction(payload)) => Some(Payload {
                 transaction: Some(vec![Transaction {
-                    essence: payload.essence().to_owned().into(),
+                    essence: payload.essence().to_owned().try_into()?,
                     unlock_blocks: payload
                         .unlock_blocks()
                         .iter()
                         .cloned()
-                        .map(|unlock_block| unlock_block.into())
+                        .map(|unlock_block| unlock_block.try_into().expect("Invalid UnlockBlock"))
                         .collect(),
                 }]),
                 milestone: None,
@@ -393,13 +408,19 @@ impl From<RustMessage> for Message {
                 milestone: None,
                 indexation: Some(vec![Indexation {
                     index: payload.index().to_string(),
-                    data: payload.data().try_into().unwrap(),
+                    data: payload.data().try_into().unwrap_or_else(|_| {
+                        panic!(
+                            "invalid Indexation Payload {:?} with data: {:?}",
+                            payload,
+                            payload.data()
+                        )
+                    }),
                 }]),
             }),
             Some(RustPayload::Milestone(payload)) => Some(Payload {
                 transaction: None,
                 milestone: Some(vec![Milestone {
-                    essence: payload.essence().to_owned().into(),
+                    essence: payload.essence().to_owned().try_into()?,
                     signatures: payload
                         .signatures()
                         .iter()
@@ -411,30 +432,40 @@ impl From<RustMessage> for Message {
             _ => None,
         };
 
-        Message {
+        Ok(Message {
             message_id: msg.id().0.to_string(),
             network_id: msg.network_id(),
             parent1: msg.parent1().to_string(),
             parent2: msg.parent2().to_string(),
             payload,
             nonce: msg.nonce(),
-        }
+        })
     }
 }
 
-// TODO: Error Handling
-impl From<TransactionPayloadEssence> for RustTransactionPayloadEssence {
-    fn from(essence: TransactionPayloadEssence) -> Self {
+impl TryFrom<TransactionPayloadEssence> for RustTransactionPayloadEssence {
+    type Error = Error;
+    fn try_from(essence: TransactionPayloadEssence) -> Result<Self> {
         let mut builder = RustTransactionPayloadEssence::builder();
         let inputs: Vec<RustInput> = essence
             .inputs
             .iter()
             .map(|input| {
                 RustUTXOInput::new(
-                    RustTransationId::from_str(&input.transaction_id[..]).unwrap(),
+                    RustTransationId::from_str(&input.transaction_id[..]).unwrap_or_else(|_| {
+                        panic!(
+                            "invalid UTXOInput transaction_id: {} with input index {}",
+                            input.transaction_id, input.index
+                        )
+                    }),
                     input.index,
                 )
-                .unwrap()
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "invalid UTXOInput transaction_id: {} with input index {}",
+                        input.transaction_id, input.index
+                    )
+                })
                 .into()
             })
             .collect();
@@ -447,13 +478,20 @@ impl From<TransactionPayloadEssence> for RustTransactionPayloadEssence {
             .iter()
             .map(|output| {
                 RustSignatureLockedSingleOutput::new(
-                    RustAddress::from(
-                        RustEd25519Address::from_str(&output.address[..])
-                            .unwrap_or_else(|_| panic!("invalid output address: {}", output.address)),
-                    ),
+                    RustAddress::from(RustEd25519Address::from_str(&output.address[..]).unwrap_or_else(|_| {
+                        panic!(
+                            "invalid SignatureLockedSingleOutput with output address: {}",
+                            output.address
+                        )
+                    })),
                     output.amount,
                 )
-                .unwrap()
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "invalid SignatureLockedSingleOutput with output address: {}",
+                        output.address
+                    )
+                })
                 .into()
             })
             .collect();
@@ -462,59 +500,82 @@ impl From<TransactionPayloadEssence> for RustTransactionPayloadEssence {
         }
         if let Some(indexation_payload) = &essence.payload {
             let index = RustIndexationPayload::new(
-                indexation_payload.indexation.as_ref().unwrap()[0].index.clone(),
-                &(indexation_payload.indexation.as_ref().unwrap()[0].data).clone(),
+                indexation_payload
+                    .indexation
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {:?}", indexation_payload))[0]
+                    .index
+                    .clone(),
+                &(indexation_payload
+                    .indexation
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {:?}", indexation_payload))[0]
+                    .data)
+                    .clone(),
             )
             .unwrap();
             builder = builder.with_payload(RustPayload::from(index));
         }
-        builder.finish().unwrap()
+        Ok(builder.finish()?)
     }
 }
 
-// TODO: Error Handling
-impl From<Ed25519Signature> for RustSignatureUnlock {
-    fn from(signature: Ed25519Signature) -> Self {
+impl TryFrom<Ed25519Signature> for RustSignatureUnlock {
+    type Error = Error;
+    fn try_from(signature: Ed25519Signature) -> Result<Self> {
         let mut public_key = [0u8; 32];
-        hex::decode_to_slice(signature.public_key, &mut public_key).unwrap();
-        let signature = hex::decode(signature.signature).unwrap().into_boxed_slice();
-        RustEd25519Signature::new(public_key, signature).into()
+        hex::decode_to_slice(signature.public_key, &mut public_key)?;
+        let signature = hex::decode(signature.signature)?.into_boxed_slice();
+        Ok(RustEd25519Signature::new(public_key, signature).into())
     }
 }
 
-// TODO: Error Handling
-impl From<UnlockBlock> for RustUnlockBlock {
-    fn from(block: UnlockBlock) -> Self {
+impl TryFrom<UnlockBlock> for RustUnlockBlock {
+    type Error = Error;
+    fn try_from(block: UnlockBlock) -> Result<Self> {
         if let Some(signature) = block.signature {
-            let sig: RustSignatureUnlock = signature.try_into().unwrap();
-            sig.into()
+            let sig: RustSignatureUnlock = signature.try_into()?;
+            Ok(sig.into())
         } else {
-            let reference: RustReferenceUnlock = block.reference.unwrap().try_into().unwrap();
-            reference.into()
+            let reference: RustReferenceUnlock = block
+                .reference
+                .unwrap()
+                .try_into()
+                .unwrap_or_else(|_| panic!("Invalid ReferenceUnlock: {:?}", block.reference));
+            Ok(reference.into())
         }
     }
 }
 
-// TODO: Error Handling
-impl From<Payload> for RustPayload {
-    fn from(payload: Payload) -> Self {
+impl TryFrom<Payload> for RustPayload {
+    type Error = Error;
+    fn try_from(payload: Payload) -> Result<Self> {
         if let Some(transaction_payload) = &payload.transaction {
             let mut transaction = RustTransactionPayload::builder();
-            transaction = transaction.with_essence(transaction_payload[0].essence.clone().try_into().unwrap());
+            transaction = transaction.with_essence(transaction_payload[0].essence.clone().try_into()?);
 
             let unlock_blocks = transaction_payload[0].unlock_blocks.clone();
             for unlock_block in unlock_blocks {
-                transaction = transaction.add_unlock_block(unlock_block.try_into().unwrap());
+                transaction = transaction.add_unlock_block(unlock_block.try_into()?);
             }
 
-            RustPayload::Transaction(Box::new(transaction.finish().unwrap()))
+            Ok(RustPayload::Transaction(Box::new(transaction.finish()?)))
         } else {
             let indexation = RustIndexationPayload::new(
-                (&payload.indexation.as_ref().unwrap()[0].index.clone()).to_owned(),
-                &payload.indexation.as_ref().unwrap()[0].data,
-            )
-            .unwrap();
-            RustPayload::Indexation(Box::new(indexation))
+                (&payload
+                    .indexation
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("Invalid Payload: {:?}", payload))[0]
+                    .index
+                    .clone())
+                    .to_owned(),
+                &payload
+                    .indexation
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("Invalid Payload: {:?}", payload))[0]
+                    .data,
+            )?;
+            Ok(RustPayload::Indexation(Box::new(indexation)))
         }
     }
 }
