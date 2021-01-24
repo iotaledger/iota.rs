@@ -9,7 +9,7 @@ use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-use std::{collections::HashMap, convert::TryInto};
+use std::{collections::HashMap, convert::TryInto, ops::Range};
 
 const HARDEND: u32 = 1 << 31;
 const TRANSACTION_ID_LENGTH: usize = 32;
@@ -30,6 +30,7 @@ pub struct SendBuilder<'a> {
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
     inputs: Option<Vec<UTXOInput>>,
+    input_range: Range<usize>,
     outputs: Vec<Output>,
     index: Option<String>,
     data: Option<Vec<u8>>,
@@ -46,6 +47,7 @@ impl<'a> SendBuilder<'a> {
             account_index: None,
             initial_address_index: None,
             inputs: None,
+            input_range: 0..100,
             outputs: Vec::new(),
             index: None,
             data: None,
@@ -81,6 +83,12 @@ impl<'a> SendBuilder<'a> {
             }
             None => Some(vec![input]),
         };
+        self
+    }
+
+    /// Set a custom range in which to search for addresses for custom inputs. Default: 0..100
+    pub fn with_input_range(mut self, range: Range<usize>) -> Self {
+        self.input_range = range;
         self
     }
 
@@ -189,9 +197,10 @@ impl<'a> SendBuilder<'a> {
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 account_index,
-                                0..100,
+                                self.input_range.clone(),
                                 &bech32_addresses.into(),
-                            )?;
+                            )
+                            .map_err(|_| Error::InputAddressNotFound(format!("{:?}", self.input_range.clone())))?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());
@@ -213,7 +222,7 @@ impl<'a> SendBuilder<'a> {
                             if total_already_spent > total_to_spend {
                                 essence = essence.add_output(
                                     SignatureLockedSingleOutput::new(
-                                        output.address.clone(),
+                                        output.address,
                                         total_already_spent - total_to_spend,
                                     )
                                     .unwrap()
