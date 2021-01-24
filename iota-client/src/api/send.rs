@@ -213,7 +213,7 @@ impl<'a> SendBuilder<'a> {
                             if total_already_spent > total_to_spend {
                                 essence = essence.add_output(
                                     SignatureLockedSingleOutput::new(
-                                        output.address.clone(),
+                                        output,
                                         total_already_spent - total_to_spend,
                                     )
                                     .unwrap()
