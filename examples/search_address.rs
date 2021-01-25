@@ -16,8 +16,9 @@ async fn main() {
         .finish()
         .unwrap();
 
+    println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
-    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("seed").unwrap()).unwrap()).unwrap();
+    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let address = iota
         .find_addresses(&seed)
