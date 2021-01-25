@@ -184,7 +184,8 @@ impl<'a> SendBuilder<'a> {
             .iter()
             .filter_map(|output| match output {
                 Output::SignatureLockedDustAllowance(dust_allowance_output) => {
-                    Some(dust_allowance_output.address().to_bech32().into())
+                    let bech32_hrp = self.client.get_network_info().bech32_hrp;
+                    Some(dust_allowance_output.address().to_bech32(&bech32_hrp).into())
                 }
                 _ => None,
             })
@@ -246,7 +247,6 @@ impl<'a> SendBuilder<'a> {
                             let mut address_path = path.clone();
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
-                            // Todo: Make the range 0..100 configurable
                             let bech32_hrp = self.client.get_network_info().bech32_hrp;
                             let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(

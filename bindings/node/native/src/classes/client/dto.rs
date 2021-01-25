@@ -204,7 +204,6 @@ impl From<OutputMetadata> for OutputMetadataDto {
             transaction_id: hex::encode(value.transaction_id),
             output_index: value.output_index,
             is_spent: value.is_spent,
-            // todo encode hex so it's always correct?
             address: output_address,
             amount: output_amount,
         }
