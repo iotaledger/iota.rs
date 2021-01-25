@@ -3,8 +3,9 @@
 
 //! cargo run --example address --release
 use iota::{Client, Seed};
-#[macro_use]
-extern crate dotenv_codegen;
+extern crate dotenv;
+use dotenv::dotenv;
+use std::env;
 
 /// In this example we create addresses from a seed defined in .env
 #[tokio::main]
@@ -15,7 +16,8 @@ async fn main() {
         .finish()
         .unwrap();
 
-    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("seed")).unwrap()).unwrap();
+    dotenv().ok();
+    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("seed").unwrap()).unwrap()).unwrap();
 
     let addresses = iota
         .find_addresses(&seed)
