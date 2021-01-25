@@ -11,7 +11,7 @@ use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-use std::{collections::HashMap, convert::TryInto, ops::Range};
+use std::{collections::HashMap, ops::Range, str::FromStr};
 
 const HARDEND: u32 = 1 << 31;
 
@@ -207,7 +207,7 @@ impl<'a> SendBuilder<'a> {
                                 &self.seed.expect("No seed"),
                                 account_index,
                                 self.input_range.clone(),
-                                &bech32_addresses.into(),
+                                &bech32_address.into(),
                             )
                             .map_err(|_| Error::InputAddressNotFound(format!("{:?}", self.input_range.clone())))?;
                             address_path.push(internal as u32 + HARDEND);
@@ -242,7 +242,7 @@ impl<'a> SendBuilder<'a> {
             None => {
                 'input_selection: loop {
                     // Reset the empty_address_count for each run of output address searching
-                    let mut empty_address_count = 0;
+                    let mut empty_address_count: u64 = 0;
                     // Get the addresses in the BIP path/index ~ path/index+20
                     let addresses = self
                         .client
