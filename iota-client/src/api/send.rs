@@ -5,14 +5,15 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
+// use bee_message::transaction::outputs::Ed25519Address;
+use bee_rest_api::types::{AddressDto, OutputDto};
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-use std::{collections::HashMap, convert::TryInto, ops::Range};
+use std::{collections::HashMap, ops::Range, str::FromStr};
 
 const HARDEND: u32 = 1 << 31;
-const TRANSACTION_ID_LENGTH: usize = 32;
 
 /// Structure for sorting of UnlockBlocks
 // TODO: move the sorting process to the `Message` crate
@@ -188,28 +189,33 @@ impl<'a> SendBuilder<'a> {
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
                             // todo check if already used in another pending transaction if possible
-                            total_already_spent += output.amount;
+                            let (output_amount, output_address) = match output.output {
+                                OutputDto::SignatureLockedSingle(r) => match r.address {
+                                    AddressDto::Ed25519(addr) => {
+                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                                        (r.amount, output_address)
+                                    }
+                                },
+                            };
+                            total_already_spent += output_amount;
                             let mut address_path = path.clone();
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
                             let bech32_hrp = self.client.get_network_info().bech32_hrp;
-                            let bech32_addresses = output.address.to_bech32(&bech32_hrp);
+                            let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 account_index,
                                 self.input_range.clone(),
-                                &bech32_addresses.into(),
+                                &bech32_address.into(),
                             )
                             .map_err(|_| Error::InputAddressNotFound(format!("{:?}", self.input_range.clone())))?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());
-                            let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
-                                .try_into()
-                                .map_err(|_| Error::TransactionError)?;
                             let input = Input::UTXO(
-                                UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
+                                UTXOInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
                                     .map_err(|_| Error::TransactionError)?,
                             );
                             essence = essence.add_input(input.clone());
@@ -223,7 +229,7 @@ impl<'a> SendBuilder<'a> {
                             if total_already_spent > total_to_spend {
                                 essence = essence.add_output(
                                     SignatureLockedSingleOutput::new(
-                                        output.address,
+                                        output_address,
                                         total_already_spent - total_to_spend,
                                     )
                                     .unwrap()
@@ -237,7 +243,7 @@ impl<'a> SendBuilder<'a> {
             None => {
                 'input_selection: loop {
                     // Reset the empty_address_count for each run of output address searching
-                    let mut empty_address_count = 0;
+                    let mut empty_address_count: u64 = 0;
                     // Get the addresses in the BIP path/index ~ path/index+20
                     let addresses = self
                         .client
@@ -266,27 +272,30 @@ impl<'a> SendBuilder<'a> {
                             empty_address_count += 1;
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
+                            let output_amount = match output.output {
+                                OutputDto::SignatureLockedSingle(r) => r.amount,
+                            };
                             match output.is_spent {
                                 true => {
-                                    if output.amount != 0 {
+                                    if output_amount != 0 {
                                         return Err(Error::SpentAddress);
                                     }
                                 }
                                 false => {
-                                    if output.amount != 0 && total_already_spent < total_to_spend {
-                                        total_already_spent += output.amount;
+                                    if output_amount != 0 && total_already_spent < total_to_spend {
+                                        total_already_spent += output_amount;
                                         let mut address_path = path.clone();
                                         // Note that we need to sign the original address, i.e., `path/index`,
                                         // instead of `path/index/_offset` or `path/_offset`.
                                         address_path.push(*internal as u32 + HARDEND);
                                         address_path.push(address_index as u32 + HARDEND);
                                         paths.push(address_path.clone());
-                                        let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
-                                            .try_into()
-                                            .map_err(|_| Error::TransactionError)?;
                                         let input = Input::UTXO(
-                                            UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
-                                                .map_err(|_| Error::TransactionError)?,
+                                            UTXOInput::new(
+                                                TransactionId::from_str(&output.transaction_id)?,
+                                                output.output_index,
+                                            )
+                                            .map_err(|_| Error::TransactionError)?,
                                         );
                                         essence = essence.add_input(input.clone());
                                         address_index_recorders.push(AddressIndexRecorder {

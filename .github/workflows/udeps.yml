@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - ''
-#       - dev
-#       - master
+      # - dev
+      # - master
   pull_request:
     branches:
       - ''
-#       - dev
-#       - master
+      # - dev
+      # - master
 
 jobs:
   udeps:

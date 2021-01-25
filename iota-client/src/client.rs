@@ -8,11 +8,17 @@ use crate::{
     error::*,
     node::*,
     parse_response,
-    types::*,
 };
 
-use bee_message::prelude::{Address, Bech32Address, Ed25519Address, Message, MessageId, UTXOInput};
+use bee_message::prelude::{Bech32Address, Message, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
+use bee_rest_api::{
+    handlers::{
+        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo, output::OutputResponse,
+        tips::TipsResponse,
+    },
+    types::{MessageDto, MilestoneDto as MilestoneMetadata},
+};
 use bee_signing_ext::Seed;
 
 use blake2::{
@@ -30,14 +36,12 @@ use tokio::{
 
 use std::{
     collections::{HashMap, HashSet},
-    convert::TryInto,
+    convert::{TryFrom, TryInto},
     hash::Hash,
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
 };
-
-const ADDRESS_LENGTH: usize = 32;
 
 #[cfg(feature = "mqtt")]
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
@@ -398,9 +402,12 @@ impl Client {
         let mut url = url.into_url()?;
         url.set_path("api/v1/info");
         let resp = reqwest::get(url).await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct NodeInfoWrapper {
+            data: NodeInfo,
+        };
         parse_response!(resp, 200 => {
-            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+            Ok(resp.json::<NodeInfoWrapper>().await.unwrap().data)
         })
     }
 
@@ -415,8 +422,12 @@ impl Client {
             .send()
             .await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct NodeInfoWrapper {
+            data: NodeInfo,
+        };
         parse_response!(resp, 200 => {
-            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+            Ok(resp.json::<NodeInfoWrapper>().await?.data)
         })
     }
 
@@ -431,11 +442,15 @@ impl Client {
             .send()
             .await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct TipsWrapper {
+            data: TipsResponse,
+        };
         parse_response!(resp, 200 => {
-            let pair = resp.json::<Response<Tips>>().await?.data;
+            let pair = resp.json::<TipsWrapper>().await?;
             let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
-            hex::decode_to_slice(pair.tip1, &mut tip1)?;
-            hex::decode_to_slice(pair.tip2, &mut tip2)?;
+            hex::decode_to_slice(pair.data.tip_1_message_id, &mut tip1)?;
+            hex::decode_to_slice(pair.data.tip_2_message_id, &mut tip2)?;
 
             Ok((MessageId::from(tip1), MessageId::from(tip2)))
         })
@@ -446,8 +461,7 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
-        let message: MessageJson = message.into();
-
+        let message = MessageDto::try_from(message).expect("Can't convert message into json");
         let resp = self
             .client
             .post(url)
@@ -456,12 +470,20 @@ impl Client {
             .json(&message)
             .send()
             .await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdResponseWrapper {
+            data: MessageIdWrapper,
+        };
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdWrapper {
+            #[serde(rename = "messageId")]
+            message_id: String,
+        };
         parse_response!(resp, 201 => {
-            let m = resp.json::<Response<PostMessageId>>().await?.data;
-            let mut message_id = [0u8; 32];
-            hex::decode_to_slice(m.message_id, &mut message_id)?;
-            Ok(MessageId::from(message_id))
+            let message_id = resp.json::<MessageIdResponseWrapper>().await?;
+            let mut message_id_bytes = [0u8; 32];
+            hex::decode_to_slice(message_id.data.message_id, &mut message_id_bytes)?;
+            Ok(MessageId::from(message_id_bytes))
         })
     }
 
@@ -472,7 +494,7 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputMetadata> {
+    pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputResponse> {
         let mut url = self.get_node()?;
         url.set_path(&format!(
             "api/v1/outputs/{}{}",
@@ -486,24 +508,13 @@ impl Client {
             .send()
             .await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct OutputWrapper {
+            data: OutputResponse,
+        };
         parse_response!(resp, 200 => {
-            let raw = resp.json::<Response<RawOutput>>().await?.data;
-            Ok(OutputMetadata {
-                message_id: hex::decode(raw.message_id)?,
-                transaction_id: hex::decode(raw.transaction_id)?,
-                output_index: raw.output_index,
-                is_spent: raw.is_spent,
-                amount: raw.output.amount,
-                address: {
-                    if raw.output.type_ == 0 && raw.output.address.type_ == 1 {
-                        let mut address = [0u8; ADDRESS_LENGTH];
-                        hex::decode_to_slice(raw.output.address.address, &mut address)?;
-                        Address::from(Ed25519Address::from(address))
-                    } else {
-                        return Err(Error::InvalidParameter("address type".to_string()));
-                    }
-                },
-            })
+            let output_response = resp.json::<OutputWrapper>().await?;
+            Ok(output_response.data)
         })
     }
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
@@ -512,8 +523,8 @@ impl Client {
         &self,
         outputs: &[UTXOInput],
         addresses: &[Bech32Address],
-    ) -> Result<Vec<OutputMetadata>> {
-        let mut output_metadata = Vec::<OutputMetadata>::new();
+    ) -> Result<Vec<OutputResponse>> {
+        let mut output_metadata = Vec::<OutputResponse>::new();
         // Use a `HashSet` to prevent duplicate output.
         let mut output_to_query = HashSet::<UTXOInput>::new();
 
@@ -555,10 +566,13 @@ impl Client {
             .timeout(self.get_timeout(Api::GetMilestone))
             .send()
             .await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MilestoneWrapper {
+            data: MilestoneMetadata,
+        };
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
-            Ok(milestone)
+            let milestone = resp.json::<MilestoneWrapper>().await?;
+            Ok(milestone.data)
         })
     }
 
@@ -666,14 +680,11 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed or security level needed to do this
     /// since we are only checking and already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[Bech32Address]) -> Result<Vec<AddressBalancePair>> {
+    pub async fn get_address_balances(&self, addresses: &[Bech32Address]) -> Result<Vec<BalanceForAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
-            let balance = self.get_address().balance(&address).await?;
-            address_balance_pairs.push(AddressBalancePair {
-                address: address.clone(),
-                balance,
-            });
+            let balance_response = self.get_address().balance(&address).await?;
+            address_balance_pairs.push(balance_response);
         }
         Ok(address_balance_pairs)
     }
