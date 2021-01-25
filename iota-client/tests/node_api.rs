@@ -10,7 +10,6 @@ use bee_rest_api::types::MessageDto;
 use std::{convert::TryFrom, str::FromStr};
 
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
-const DEFAULT_NODE_POOL_URLS: &str = "https://nodes.iota.works/api/ssl/live";
 
 // Sends a full message object to the node with already computed nonce. Serves as a test object.
 async fn setup_indexation_message() -> MessageId {
@@ -36,6 +35,7 @@ async fn setup_indexation_message() -> MessageId {
 }
 
 // Ignored as long as we don't have a realy node pool url, otherwise the tests fail
+// const DEFAULT_NODE_POOL_URLS: &str = "https://nodes.iota.works/api/ssl/live";
 // #[test]
 // fn test_with_node_pool_urls() {
 //     let r = iota_client::Client::builder()
