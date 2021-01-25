@@ -65,7 +65,7 @@ Adds a list of IOTA nodes to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
-#### node_pool_urls(urls): ClientBuilder
+#### nodePoolUrls(urls): ClientBuilder
 
 Adds a list of IOTA nodes from node pool URLs to the client pool.
 

@@ -15,7 +15,7 @@ export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
-  node_pool_urls(urls: string[]): ClientBuilder
+  nodePoolUrls(urls: string[]): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
