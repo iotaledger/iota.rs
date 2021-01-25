@@ -26,6 +26,7 @@ pub(crate) enum Api {
         initial_address_index: Option<usize>,
     },
     FindMessages {
+        indexation_keys: Vec<String>,
         message_ids: Vec<MessageId>,
     },
     GetBalance {
@@ -129,8 +130,11 @@ impl Task for ClientTask {
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
                 }
-                Api::FindMessages { message_ids } => {
-                    let messages = client.find_messages(&message_ids[..]).await?;
+                Api::FindMessages {
+                    indexation_keys,
+                    message_ids,
+                } => {
+                    let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetBalance {

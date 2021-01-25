@@ -1,10 +1,8 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Builder of the client instance
-
+//! Builder of the Clinet Instnace
 use crate::{client::*, error::*};
-
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
@@ -63,7 +61,17 @@ impl Default for ClientBuilder {
                 bech32_hrp: "atoi".into(),
             },
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
-            api_timeout: Default::default(),
+            api_timeout: {
+                let mut api_default_timeout: HashMap<Api, Duration> = HashMap::new();
+                api_default_timeout.insert(Api::GetInfo, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::GetHealth, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::GetMilestone, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::GetTips, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::PostMessage, Duration::from_millis(2000));
+                api_default_timeout.insert(Api::PostMessageWithRemotePow, Duration::from_millis(30000));
+                api_default_timeout.insert(Api::GetOutput, Duration::from_millis(2000));
+                api_default_timeout
+            },
         }
     }
 }
@@ -103,7 +111,21 @@ impl ClientBuilder {
         self
     }
 
-    // TODO node pool
+    /// Get node list from the node_pool_urls
+    pub fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
+        for pool_url in node_pool_urls {
+            let text: String = reqwest::blocking::get(pool_url)
+                .unwrap()
+                .text()
+                .map_err(|_| Error::NodePoolUrlsError)?;
+            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
+            for node_detail in nodes_details {
+                let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
+                self.nodes.insert(url);
+            }
+        }
+        Ok(self)
+    }
 
     /// Selects the type of network the added nodes belong to.
     pub fn with_network(mut self, network: &str) -> Self {
@@ -203,4 +225,23 @@ impl ClientBuilder {
 
         Ok(client)
     }
+}
+
+/// JSON struct for NodeDetail from the node_pool_urls
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeDetail {
+    /// Iota node url
+    pub node: String,
+    /// value of health
+    pub health: usize,
+    /// number of neighbors
+    pub neighbors: usize,
+    /// implementation name
+    pub implementation: String,
+    /// Iota node version
+    pub version: String,
+    /// enabled PoW
+    pub pow: bool,
+    /// spent or not
+    pub spent: bool,
 }

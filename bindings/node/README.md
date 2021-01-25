@@ -65,6 +65,16 @@ Adds a list of IOTA nodes to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### nodePoolUrls(urls): ClientBuilder
+
+Adds a list of IOTA nodes from node pool URLs to the client pool.
+
+| Param | Type                  | Description                |
+| ----- | --------------------- | -------------------------- |
+| url   | <code>string[]</code> | An array of node pool URLs |
+
+**Returns** the client builder instance for chained calls.
+
 #### quorumSize(size): ClientBuilder
 
 Defines how many of nodes will be queried at the same time to check for quorum.

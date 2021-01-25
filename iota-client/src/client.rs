@@ -183,6 +183,8 @@ pub enum Api {
     GetTips,
     /// `post_message` API
     PostMessage,
+    /// `post_message` API with remote pow
+    PostMessageWithRemotePow,
     /// `get_output` API
     GetOutput,
     /// `get_milestone` API
@@ -198,6 +200,7 @@ impl FromStr for Api {
             "GetInfo" => Self::GetInfo,
             "GetTips" => Self::GetTips,
             "PostMessage" => Self::PostMessage,
+            "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
             "GetOutput" => Self::GetOutput,
             "GetMilestone" => Self::GetMilestone,
             _ => return Err(format!("unknown api kind `{}`", s)),
@@ -461,11 +464,15 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
+        let mut timeout = self.get_timeout(Api::PostMessage);
+        if self.network_info.read().unwrap().local_pow {
+            timeout = self.get_timeout(Api::PostMessageWithRemotePow);
+        }
         let message = MessageDto::try_from(message).expect("Can't convert message into json");
         let resp = self
             .client
             .post(url)
-            .timeout(self.get_timeout(Api::PostMessage))
+            .timeout(timeout)
             .header("content-type", "application/json; charset=UTF-8")
             .json(&message)
             .send()
@@ -650,8 +657,8 @@ impl Client {
         GetAddressesBuilder::new(self, seed)
     }
 
-    /// Find all messages by provided message IDs.
-    pub async fn find_messages(&self, message_ids: &[MessageId]) -> Result<Vec<Message>> {
+    /// Find all messages by provided message IDs and/or indexation_keys.
+    pub async fn find_messages(&self, indexation_keys: &[String], message_ids: &[MessageId]) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
         // Use a `HashSet` to prevent duplicate message_ids.
@@ -660,6 +667,15 @@ impl Client {
         // Collect the `MessageId` in the HashSet.
         for message_id in message_ids {
             message_ids_to_query.insert(message_id.to_owned());
+        }
+
+        // Use `get_message().index()` API to get the message ID first,
+        // then collect the `MessageId` in the HashSet.
+        for index in indexation_keys {
+            let message_ids = self.get_message().index(&index).await?;
+            for message_id in message_ids.iter() {
+                message_ids_to_query.insert(message_id.to_owned());
+            }
         }
 
         // Use `get_message().data()` API to get the `Message`.

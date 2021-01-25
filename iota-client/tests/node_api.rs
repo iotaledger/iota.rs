@@ -34,6 +34,17 @@ async fn setup_indexation_message() -> MessageId {
     client.post_message(&message).await.unwrap()
 }
 
+// Ignored as long as we don't have a realy node pool url, otherwise the tests fail
+// const DEFAULT_NODE_POOL_URLS: &str = "https://nodes.iota.works/api/ssl/live";
+// #[test]
+// fn test_with_node_pool_urls() {
+//     let r = iota_client::Client::builder()
+//         .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
+//         .unwrap()
+//         .finish();
+//     println!("{:#?}", r);
+// }
+
 #[tokio::test]
 #[ignore]
 async fn test_get_info() {
