@@ -19,8 +19,11 @@ async fn main() {
         .finish()
         .unwrap();
 
+    println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
-    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("seed").unwrap()).unwrap()).unwrap();
+    let seed =
+        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
+            .unwrap();
 
     // split funds to own addresses
     let addresses = iota
@@ -43,6 +46,7 @@ async fn main() {
     reattach_promote_until_confirmed(message.id().0, &iota).await;
     // At this point we have 10 Mi on 10 addresses and will just send it to their addresses again
 
+    // Use own outputs directly so we don't double spend them
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
         for (index, _output) in tx.essence().outputs().iter().enumerate() {

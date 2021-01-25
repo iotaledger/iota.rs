@@ -6,8 +6,8 @@ use iota::{Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
-/// In this example, we send 100 tokens to iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6
-/// This address belongs to the seed "256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0", defined in .env
+/// In this example, we send 1_000_000 tokens to atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5
+/// This address belongs to the first seed in .env.example
 
 #[tokio::main]
 async fn main() {
@@ -19,8 +19,11 @@ async fn main() {
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
     // First address from the seed below is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
+    println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
-    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("seed").unwrap()).unwrap()).unwrap();
+    let seed =
+        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
+            .unwrap();
 
     let address = iota
         .find_addresses(&seed)
@@ -38,8 +41,8 @@ async fn main() {
         .with_input(outputs[0].clone())
         // .with_input_range(20..25)
         .with_output(
-            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
-            1000000,
+            &"atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5".into(),
+            1_000_000,
         )
         .unwrap()
         .finish()
