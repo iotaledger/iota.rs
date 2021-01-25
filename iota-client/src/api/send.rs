@@ -189,7 +189,15 @@ impl<'a> SendBuilder<'a> {
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
                             // todo check if already used in another pending transaction if possible
-                            total_already_spent += output.amount;
+                            let (output_amount, output_address) = match output.output {
+                                OutputDto::SignatureLockedSingle(r) => match r.address {
+                                    AddressDto::Ed25519(addr) => {
+                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                                        (r.amount, output_address)
+                                    }
+                                },
+                            };
+                            total_already_spent += output_amount;
                             let mut address_path = path.clone();
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
