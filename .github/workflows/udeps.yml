@@ -52,7 +52,7 @@ jobs:
     - uses: actions-rs/cargo@v1
       with:
         command: install
-        args: cargo-udeps
+        args: cargo-udeps --version 0.1.16
 
     - uses: actions-rs/cargo@v1
       with:
