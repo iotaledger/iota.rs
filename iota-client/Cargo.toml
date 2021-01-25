@@ -34,4 +34,3 @@ num_cpus = "1.13"
 
 [features]
 default = ["mqtt"]
-mqtt = ["paho-mqtt"]
