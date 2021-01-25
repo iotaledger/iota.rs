@@ -65,7 +65,7 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
-        method node_pool_urls(mut cx) {
+        method nodePoolUrls(mut cx) {
             let js_node_urls = cx.argument::<JsArray>(0)?;
             let js_node_urls: Vec<Handle<JsValue>> = js_node_urls.to_vec(&mut cx)?;
 

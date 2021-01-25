@@ -1,9 +1,11 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{parse_response, AddressBalance, AddressOutputs, Client, Error, Response, Result};
+use crate::{parse_response, Client, Error, Result};
 
 use bee_message::prelude::{Bech32Address, TransactionId, UTXOInput};
+
+use bee_rest_api::handlers::{balance_ed25519::BalanceForAddressResponse, outputs_ed25519::OutputsForAddressResponse};
 
 use std::convert::TryInto;
 
@@ -21,14 +23,18 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get the balance of a given Bech32 encoded address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn balance(self, address: &Bech32Address) -> Result<u64> {
+    pub async fn balance(self, address: &Bech32Address) -> Result<BalanceForAddressResponse> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/addresses/{}", address));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct BalanceWrapper {
+            data: BalanceForAddressResponse,
+        };
         parse_response!(resp, 200 => {
-            let r = resp.json::<Response<AddressBalance>>().await?.data;
-            Ok(r.balance)
+            let r = resp.json::<BalanceWrapper>().await?;
+            Ok(r.data)
         })
     }
 
@@ -40,9 +46,13 @@ impl<'a> GetAddressBuilder<'a> {
         url.set_path(&format!("api/v1/addresses/{}/outputs", address));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct OutputWrapper {
+            data: OutputsForAddressResponse,
+        };
         parse_response!(resp, 200 => {
-            let r = resp.json::<Response<AddressOutputs>>().await?.data.output_ids;
-            r.iter()
+            let r = resp.json::<OutputWrapper>().await?.data;
+            r.output_ids.iter()
                 .map(|s| {
                     let mut transaction_id = [0u8; 32];
                     hex::decode_to_slice(&s[..64], &mut transaction_id)?;

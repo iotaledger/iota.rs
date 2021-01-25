@@ -52,7 +52,7 @@ The data structure to initialize the instance of the Higher level client library
 
 | Parameter | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **network** | ✘ | Testnet | [Network] | Pass an enumeration with elements of **Mainnet/Testnet** to define the network. If no node url is provided, some default nodes are used for the specified network. |
+| **network** | ✘ | Testnet | &str | The network name for example "testnet2" to define the network. If no node url is provided, some default nodes are used for the specified network. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
@@ -108,6 +108,7 @@ A generic send function for easily sending a message.
 | **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 | **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
 | **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
+| **input_range** | ✘ | 0..100 | Range | Custom range to search for the input addresses if custom inputs are provided. |
 | **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
@@ -194,7 +195,7 @@ Return a tuple with type of `(Bech32Address, usize)` as the address and correspo
 Following are the steps for implementing this method:
 
 * Start generating addresses with given account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
-* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Check for balances on the generated addresses using [`find_outputs()`](#find_outputs) and keep track of the positive balances;
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
 
@@ -207,9 +208,9 @@ Return a list of addresses from the seed regardless of their validity.
 | Parameter | Required | Default | Type | Definition |
 | - | - | - | - | - |
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
-| **account_index()** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
-| **range()** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
-| **get_all()** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
+| **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+| **range** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
+| **get_all** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
 
 ### Return
 
@@ -236,7 +237,7 @@ Total account balance.
 Following are the steps for implementing this method:
 
 * Start generating addresses with given wallet account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
-* Check for balances on the generated addresses using [`get_outputs()`](#get_outputs-get-outputs) and keep track of the positive balances;
+* Check for balances on the generated addresses using [`find_outputs()`](#find_outputs) and keep track of the positive balances;
 * Repeat the above step till an address of zero balance is found;
 * Accumulate the positive balances and return the result.
 
@@ -259,7 +260,7 @@ A list of tuples with value of [AddressBalancePair]. The usize is the balance of
 Following are the steps for implementing this method:
 
 * Validate _address_ semantics;
-* Get latest balance for the provided address using [`get_outputs()`](#get_outputs-get-outputs) with addresses as parameter;
+* Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
 * Return the list of Output which contains corresponding pairs of address and balance.
 
 ## `subscriber()`
@@ -480,21 +481,6 @@ An [Milestone] object.
 # Objects
 
 Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
-
-## `Network`
-
-[Network]: #Network
-
-Network is an enumeration with elements of **[Mainnet|Testnet]**. Some languages might lack of type like an enum. In this case, Network can be a set of constant variables.
-
-```rust
-pub enum Network {
-    /// Mainnet
-    Mainnet,
-    /// Any network that is not the mainnet
-    Testnet,
-}
-```
 
 ## `MessageId`
 

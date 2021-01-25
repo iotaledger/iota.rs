@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Clinet Instnace
-use crate::{client::*, error::*, types::*};
+use crate::{client::*, error::*};
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
@@ -225,4 +225,23 @@ impl ClientBuilder {
 
         Ok(client)
     }
+}
+
+/// JSON struct for NodeDetail from the node_pool_urls
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeDetail {
+    /// Iota node url
+    pub node: String,
+    /// value of health
+    pub health: usize,
+    /// number of neighbors
+    pub neighbors: usize,
+    /// implementation name
+    pub implementation: String,
+    /// Iota node version
+    pub version: String,
+    /// enabled PoW
+    pub pow: bool,
+    /// spent or not
+    pub spent: bool,
 }

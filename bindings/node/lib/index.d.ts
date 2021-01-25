@@ -15,7 +15,7 @@ export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
-  node_pool_urls(urls: string[]): ClientBuilder
+  nodePoolUrls(urls: string[]): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
@@ -35,6 +35,7 @@ export declare class MessageSender {
   accountIndex(index: number): MessageSender
   initialAddressIndex(index: number): MessageSender
   input(transactionId: string, index: number): MessageSender
+  inputRange(start: number, end: number): MessageSender
   output(address: string, value: number): MessageSender
   submit(): Promise<string>
 }

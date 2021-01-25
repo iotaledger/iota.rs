@@ -6,7 +6,7 @@ use neon::prelude::*;
 
 use super::{parse_address, Api, ClientTask};
 
-use std::str::FromStr;
+use std::{ops::Range, str::FromStr};
 
 pub struct MessageSender {
     client_id: String,
@@ -17,6 +17,7 @@ pub struct MessageSender {
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
     inputs: Vec<UTXOInput>,
+    input_range: Range<usize>,
     outputs: Vec<(Address, u64)>,
 }
 
@@ -33,6 +34,7 @@ declare_types! {
                 account_index: None,
                 initial_address_index:None,
                 inputs: Vec::new(),
+                input_range: 0..100,
                 outputs: Vec::new(),
             })
         }
@@ -135,7 +137,7 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
-         method input(mut cx) {
+        method input(mut cx) {
             let transaction_id = cx.argument::<JsString>(0)?.value();
             let transaction_id = TransactionId::from_str(&transaction_id).expect("invalid transaction id");
             let index = cx.argument::<JsNumber>(1)?.value() as u16;
@@ -146,6 +148,18 @@ declare_types! {
                 inputs.push(UTXOInput::new(transaction_id, index).expect("invalid UTXO input"));
             }
 
+            Ok(cx.this().upcast())
+        }
+
+        method inputRange(mut cx){
+            let start = cx.argument::<JsNumber>(0)?.value() as usize;
+            let end = cx.argument::<JsNumber>(1)?.value() as usize;
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let input_range = &mut this.borrow_mut(&guard).input_range;
+                *input_range = start..end;
+            }
             Ok(cx.this().upcast())
         }
 

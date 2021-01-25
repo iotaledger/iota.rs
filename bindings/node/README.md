@@ -65,7 +65,7 @@ Adds a list of IOTA nodes to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
-#### node_pool_urls(urls): ClientBuilder
+#### nodePoolUrls(urls): ClientBuilder
 
 Adds a list of IOTA nodes from node pool URLs to the client pool.
 
@@ -450,6 +450,17 @@ Adds an output to the transaction.
 | ------------- | ------------------- | ------------------ |
 | transactionId | <code>string</code> | The transaction id |
 | index         | <code>number</code> | The input index    |
+
+**Returns** the message submit instance for chained calls.
+
+#### inputRange(start, end): MessageSender
+
+Defines the range in which to search for addresses fro custom inputs.
+
+| Param         | Type                | Description        |
+| ------------- | ------------------- | ------------------ |
+| start         | <code>number</code> | The start index |
+| end           | <code>number</code> | The end index    |
 
 **Returns** the message submit instance for chained calls.
 
