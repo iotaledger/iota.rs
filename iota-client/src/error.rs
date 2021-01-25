@@ -39,6 +39,9 @@ pub enum Error {
     /// Error on Url type conversion
     #[error("Failed to parse url")]
     UrlError,
+    /// Error on Url type conversion
+    #[error("Failed to parse node_pool_urls")]
+    NodePoolUrlsError,
     /// Errors from reqwest api call
     #[error("{0}")]
     ReqwestError(#[from] reqwest::Error),
@@ -71,8 +74,8 @@ pub enum Error {
     #[error("{0}")]
     Pow(String),
     /// Address not found
-    #[error("Address not found in range")]
-    AddressNotFound,
+    #[error("Address not found in range {0}")]
+    InputAddressNotFound(String),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

@@ -3,19 +3,21 @@
 
 //! cargo run --example search_address --release
 use iota::{api::search_address, Client, Seed};
-#[macro_use]
-extern crate dotenv_codegen;
+extern crate dotenv;
+use dotenv::dotenv;
+use std::env;
 
 /// In this example we try to find the index of an address from a seed.
 #[tokio::main]
 async fn main() {
-    let iota = Client::build() // Crate a client instance builder
+    let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();
 
-    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("seed")).unwrap()).unwrap(); // Insert your seed
+    dotenv().ok();
+    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("seed").unwrap()).unwrap()).unwrap();
 
     let address = iota
         .find_addresses(&seed)

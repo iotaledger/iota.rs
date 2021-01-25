@@ -10,11 +10,12 @@ import {
   MessageDto
 } from './types'
 
-export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'GetOutput' | 'GetMilestone'
+export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'PostMessageWithRemotePoW' | 'GetOutput' | 'GetMilestone'
 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
+  nodePoolUrls(urls: string[]): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
@@ -34,6 +35,7 @@ export declare class MessageSender {
   accountIndex(index: number): MessageSender
   initialAddressIndex(index: number): MessageSender
   input(transactionId: string, index: number): MessageSender
+  inputRange(start: number, end: number): MessageSender
   output(address: string, value: number): MessageSender
   submit(): Promise<string>
 }
@@ -59,6 +61,7 @@ export declare class BalanceGetter {
 export declare interface NetworkInfo {
   network: { type: 'Mainnet' | 'Testnet' }
   networkId: string
+  bech32HRP: string
   minPowScore: number
   localPow: boolean
 }
@@ -77,6 +80,7 @@ export declare class Client {
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: MessageDto): Promise<string>
+  postMessageWithRemotePow(message: MessageDto): Promise<string>
   getMessage(): MessageFinder
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>

@@ -65,6 +65,16 @@ Adds a list of IOTA nodes to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### nodePoolUrls(urls): ClientBuilder
+
+Adds a list of IOTA nodes from node pool URLs to the client pool.
+
+| Param | Type                  | Description                |
+| ----- | --------------------- | -------------------------- |
+| url   | <code>string[]</code> | An array of node pool URLs |
+
+**Returns** the client builder instance for chained calls.
+
 #### quorumSize(size): ClientBuilder
 
 Defines how many of nodes will be queried at the same time to check for quorum.
@@ -330,8 +340,9 @@ Promotes the message associated with the given id.
 
 | Field       | Type                                          | Description                           |
 | ----------- | --------------------------------------------- | ------------------------------------- |
-| network     | <code>{ type: 'Mainnet' \| 'Testnet' }</code> | The network type                      |
-| networkId   | <code>string</code>                           | The network id                        |
+| network     | <code>string</code>                           | The network                           |
+| networkId   | <code>number</code>                           | The network hashed                    |
+| bech32HRP   | <code>string</code>                           | Bech32 HRP for this network           |
 | minPowScore | <code>number</code>                           | The network's minimum score for PoW   |
 | localPow    | <code>boolean</code>                          | Whether we are using local PoW or not |
 
@@ -439,6 +450,17 @@ Adds an output to the transaction.
 | ------------- | ------------------- | ------------------ |
 | transactionId | <code>string</code> | The transaction id |
 | index         | <code>number</code> | The input index    |
+
+**Returns** the message submit instance for chained calls.
+
+#### inputRange(start, end): MessageSender
+
+Defines the range in which to search for addresses fro custom inputs.
+
+| Param         | Type                | Description        |
+| ------------- | ------------------- | ------------------ |
+| start         | <code>number</code> | The start index |
+| end           | <code>number</code> | The end index    |
 
 **Returns** the message submit instance for chained calls.
 
@@ -793,6 +815,7 @@ Gets the metadata of the given message.
 | version              | <code>string</code>   | Node version                  |
 | isHealthy            | <code>boolean</code>  | Node health status            |
 | networkId            | <code>string</code>   | Node network identifier       |
+| bech32HRP            | <code>string</code>   | Bech32 HRP for this network   |
 | latestMilestoneIndex | <code>number</code>   | Index of the latest milestone |
 | solidMilestoneIndex  | <code>number</code>   | Index of the solid milestone  |
 | pruningIndex         | <code>number</code>   | Pruning index                 |

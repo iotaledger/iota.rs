@@ -4,15 +4,21 @@
 //! The Client module to connect through HORNET or Bee with API usages
 use crate::{
     api::*,
-    builder::{ClientBuilder, Network, NetworkInfo},
+    builder::{ClientBuilder, NetworkInfo},
     error::*,
     node::*,
     parse_response,
-    types::*,
 };
 
-use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
+use bee_message::prelude::{Bech32Address, Message, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
+use bee_rest_api::{
+    handlers::{
+        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo, output::OutputResponse,
+        tips::TipsResponse,
+    },
+    types::{MessageDto, MilestoneDto as MilestoneMetadata},
+};
 use bee_signing_ext::Seed;
 
 use blake2::{
@@ -30,14 +36,12 @@ use tokio::{
 
 use std::{
     collections::{HashMap, HashSet},
-    convert::TryInto,
+    convert::{TryFrom, TryInto},
     hash::Hash,
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
 };
-
-const ADDRESS_LENGTH: usize = 32;
 
 #[cfg(feature = "mqtt")]
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
@@ -179,6 +183,8 @@ pub enum Api {
     GetTips,
     /// `post_message` API
     PostMessage,
+    /// `post_message` API with remote pow
+    PostMessageWithRemotePow,
     /// `get_output` API
     GetOutput,
     /// `get_milestone` API
@@ -194,6 +200,7 @@ impl FromStr for Api {
             "GetInfo" => Self::GetInfo,
             "GetTips" => Self::GetTips,
             "PostMessage" => Self::PostMessage,
+            "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
             "GetOutput" => Self::GetOutput,
             "GetMilestone" => Self::GetMilestone,
             _ => return Err(format!("unknown api kind `{}`", s)),
@@ -258,7 +265,7 @@ impl Drop for Client {
 
 impl Client {
     /// Create the builder to instntiate the IOTA Client.
-    pub fn build() -> ClientBuilder {
+    pub fn builder() -> ClientBuilder {
         ClientBuilder::new()
     }
 
@@ -299,13 +306,13 @@ impl Client {
             // Put the healty node url into the synced_nodes
             if let Ok(info) = Client::get_node_info(node_url.clone()).await {
                 if info.is_healthy {
-                    if network_info.read().unwrap().network == Network::Testnet && info.network_id == "mainnet"
-                        || network_info.read().unwrap().network == Network::Mainnet && info.network_id != "mainnet"
-                    {
+                    if network_info.read().unwrap().network != info.network_id {
                         continue;
                     }
                     let mut client_network_info = network_info.write().unwrap();
+                    client_network_info.network_id = hash_network(&info.network_id);
                     client_network_info.min_pow_score = info.min_pow_score;
+                    client_network_info.bech32_hrp = info.bech32_hrp;
                     if !client_network_info.local_pow {
                         if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
@@ -330,13 +337,7 @@ impl Client {
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
         let info = self.get_info().await?;
-        let mut hasher = VarBlake2b::new(32).unwrap();
-        hasher.update(info.network_id.as_bytes());
-        let mut result: [u8; 32] = [0; 32];
-        hasher.finalize_variable(|res| {
-            result = res.try_into().unwrap();
-        });
-        let network_id = u64::from_le_bytes(result[0..8].try_into().unwrap());
+        let network_id = hash_network(&info.network_id);
         Ok(network_id)
     }
 
@@ -404,9 +405,12 @@ impl Client {
         let mut url = url.into_url()?;
         url.set_path("api/v1/info");
         let resp = reqwest::get(url).await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct NodeInfoWrapper {
+            data: NodeInfo,
+        };
         parse_response!(resp, 200 => {
-            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+            Ok(resp.json::<NodeInfoWrapper>().await.unwrap().data)
         })
     }
 
@@ -421,8 +425,12 @@ impl Client {
             .send()
             .await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct NodeInfoWrapper {
+            data: NodeInfo,
+        };
         parse_response!(resp, 200 => {
-            Ok(resp.json::<Response<NodeInfo>>().await?.data)
+            Ok(resp.json::<NodeInfoWrapper>().await?.data)
         })
     }
 
@@ -437,11 +445,15 @@ impl Client {
             .send()
             .await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct TipsWrapper {
+            data: TipsResponse,
+        };
         parse_response!(resp, 200 => {
-            let pair = resp.json::<Response<Tips>>().await?.data;
+            let pair = resp.json::<TipsWrapper>().await?;
             let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
-            hex::decode_to_slice(pair.tip1, &mut tip1)?;
-            hex::decode_to_slice(pair.tip2, &mut tip2)?;
+            hex::decode_to_slice(pair.data.tip_1_message_id, &mut tip1)?;
+            hex::decode_to_slice(pair.data.tip_2_message_id, &mut tip2)?;
 
             Ok((MessageId::from(tip1), MessageId::from(tip2)))
         })
@@ -452,22 +464,33 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
-        let message: MessageJson = message.into();
-
+        let mut timeout = self.get_timeout(Api::PostMessage);
+        if self.network_info.read().unwrap().local_pow {
+            timeout = self.get_timeout(Api::PostMessageWithRemotePow);
+        }
+        let message = MessageDto::try_from(message).expect("Can't convert message into json");
         let resp = self
             .client
             .post(url)
-            .timeout(self.get_timeout(Api::PostMessage))
+            .timeout(timeout)
             .header("content-type", "application/json; charset=UTF-8")
             .json(&message)
             .send()
             .await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdResponseWrapper {
+            data: MessageIdWrapper,
+        };
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdWrapper {
+            #[serde(rename = "messageId")]
+            message_id: String,
+        };
         parse_response!(resp, 201 => {
-            let m = resp.json::<Response<PostMessageId>>().await?.data;
-            let mut message_id = [0u8; 32];
-            hex::decode_to_slice(m.message_id, &mut message_id)?;
-            Ok(MessageId::from(message_id))
+            let message_id = resp.json::<MessageIdResponseWrapper>().await?;
+            let mut message_id_bytes = [0u8; 32];
+            hex::decode_to_slice(message_id.data.message_id, &mut message_id_bytes)?;
+            Ok(MessageId::from(message_id_bytes))
         })
     }
 
@@ -478,7 +501,7 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputMetadata> {
+    pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputResponse> {
         let mut url = self.get_node()?;
         url.set_path(&format!(
             "api/v1/outputs/{}{}",
@@ -492,24 +515,13 @@ impl Client {
             .send()
             .await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct OutputWrapper {
+            data: OutputResponse,
+        };
         parse_response!(resp, 200 => {
-            let raw = resp.json::<Response<RawOutput>>().await?.data;
-            Ok(OutputMetadata {
-                message_id: hex::decode(raw.message_id)?,
-                transaction_id: hex::decode(raw.transaction_id)?,
-                output_index: raw.output_index,
-                is_spent: raw.is_spent,
-                amount: raw.output.amount,
-                address: {
-                    if raw.output.type_ == 0 && raw.output.address.type_ == 1 {
-                        let mut address = [0u8; ADDRESS_LENGTH];
-                        hex::decode_to_slice(raw.output.address.address, &mut address)?;
-                        Address::from(Ed25519Address::from(address))
-                    } else {
-                        return Err(Error::InvalidParameter("address type".to_string()));
-                    }
-                },
-            })
+            let output_response = resp.json::<OutputWrapper>().await?;
+            Ok(output_response.data)
         })
     }
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
@@ -518,8 +530,8 @@ impl Client {
         &self,
         outputs: &[UTXOInput],
         addresses: &[Bech32Address],
-    ) -> Result<Vec<OutputMetadata>> {
-        let mut output_metadata = Vec::<OutputMetadata>::new();
+    ) -> Result<Vec<OutputResponse>> {
+        let mut output_metadata = Vec::<OutputResponse>::new();
         // Use a `HashSet` to prevent duplicate output.
         let mut output_to_query = HashSet::<UTXOInput>::new();
 
@@ -561,10 +573,13 @@ impl Client {
             .timeout(self.get_timeout(Api::GetMilestone))
             .send()
             .await?;
-
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MilestoneWrapper {
+            data: MilestoneMetadata,
+        };
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<Response<MilestoneMetadata>>().await?.data;
-            Ok(milestone)
+            let milestone = resp.json::<MilestoneWrapper>().await?;
+            Ok(milestone.data)
         })
     }
 
@@ -614,8 +629,8 @@ impl Client {
         let tips = self.get_tips().await?;
         let promote_message = Message::builder()
             .with_network_id(self.get_network_id().await?)
-            .with_parent1(tips.0)
-            .with_parent2(*message_id)
+            .with_parent1(*message_id)
+            .with_parent2(tips.0)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
@@ -642,8 +657,8 @@ impl Client {
         GetAddressesBuilder::new(self, seed)
     }
 
-    /// Find all messages by provided message IDs.
-    pub async fn find_messages(&self, message_ids: &[MessageId]) -> Result<Vec<Message>> {
+    /// Find all messages by provided message IDs and/or indexation_keys.
+    pub async fn find_messages(&self, indexation_keys: &[String], message_ids: &[MessageId]) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
         // Use a `HashSet` to prevent duplicate message_ids.
@@ -652,6 +667,15 @@ impl Client {
         // Collect the `MessageId` in the HashSet.
         for message_id in message_ids {
             message_ids_to_query.insert(message_id.to_owned());
+        }
+
+        // Use `get_message().index()` API to get the message ID first,
+        // then collect the `MessageId` in the HashSet.
+        for index in indexation_keys {
+            let message_ids = self.get_message().index(&index).await?;
+            for message_id in message_ids.iter() {
+                message_ids_to_query.insert(message_id.to_owned());
+            }
         }
 
         // Use `get_message().data()` API to get the `Message`.
@@ -672,14 +696,11 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed or security level needed to do this
     /// since we are only checking and already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[Bech32Address]) -> Result<Vec<AddressBalancePair>> {
+    pub async fn get_address_balances(&self, addresses: &[Bech32Address]) -> Result<Vec<BalanceForAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
-            let balance = self.get_address().balance(&address).await?;
-            address_balance_pairs.push(AddressBalancePair {
-                address: address.clone(),
-                balance,
-            });
+            let balance_response = self.get_address().balance(&address).await?;
+            address_balance_pairs.push(balance_response);
         }
         Ok(address_balance_pairs)
     }
@@ -697,4 +718,15 @@ impl Client {
             Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
         }
     }
+}
+
+/// Hash the network id str from the nodeinfo to an u64 for the messageBuilder
+pub fn hash_network(network_id: &str) -> u64 {
+    let mut hasher = VarBlake2b::new(32).unwrap();
+    hasher.update(network_id.as_bytes());
+    let mut result: [u8; 32] = [0; 32];
+    hasher.finalize_variable(|res| {
+        result = res.try_into().unwrap();
+    });
+    u64::from_le_bytes(result[0..8].try_into().unwrap())
 }

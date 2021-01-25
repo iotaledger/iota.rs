@@ -1,18 +1,19 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, types::Bech32Address, Client, ClientMiner, Error, Result};
+use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
+// use bee_message::transaction::outputs::Ed25519Address;
+use bee_rest_api::types::{AddressDto, OutputDto};
 use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-use std::{collections::HashMap, convert::TryInto};
+use std::{collections::HashMap, ops::Range, str::FromStr};
 
 const HARDEND: u32 = 1 << 31;
-const TRANSACTION_ID_LENGTH: usize = 32;
 
 /// Structure for sorting of UnlockBlocks
 // TODO: move the sorting process to the `Message` crate
@@ -30,6 +31,7 @@ pub struct SendBuilder<'a> {
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
     inputs: Option<Vec<UTXOInput>>,
+    input_range: Range<usize>,
     outputs: Vec<Output>,
     index: Option<String>,
     data: Option<Vec<u8>>,
@@ -46,6 +48,7 @@ impl<'a> SendBuilder<'a> {
             account_index: None,
             initial_address_index: None,
             inputs: None,
+            input_range: 0..100,
             outputs: Vec::new(),
             index: None,
             data: None,
@@ -81,6 +84,12 @@ impl<'a> SendBuilder<'a> {
             }
             None => Some(vec![input]),
         };
+        self
+    }
+
+    /// Set a custom range in which to search for addresses for custom inputs. Default: 0..100
+    pub fn with_input_range(mut self, range: Range<usize>) -> Self {
+        self.input_range = range;
         self
     }
 
@@ -139,7 +148,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish(self) -> Result<MessageId> {
+    pub async fn finish(self) -> Result<Message> {
         // Indexation payload requires an indexation tag
         if self.data.is_some() && self.index.is_none() {
             return Err(Error::MissingParameter(String::from("index")));
@@ -163,7 +172,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish_transaction(self) -> Result<MessageId> {
+    pub async fn finish_transaction(self) -> Result<Message> {
         let account_index = self.account_index.unwrap_or(0);
         let path = BIP32Path::from_str(&crate::account_path!(account_index)).expect("invalid account index");
 
@@ -224,25 +233,34 @@ impl<'a> SendBuilder<'a> {
                     // Only add unspent outputs
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
-                            total_already_spent += output.amount;
+                            // todo check if already used in another pending transaction if possible
+                            let (output_amount, output_address) = match output.output {
+                                OutputDto::SignatureLockedSingle(r) => match r.address {
+                                    AddressDto::Ed25519(addr) => {
+                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                                        (r.amount, output_address)
+                                    }
+                                },
+                            };
+                            total_already_spent += output_amount;
                             let mut address_path = path.clone();
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             // Todo: Make the range 0..100 configurable
+                            let bech32_hrp = self.client.get_network_info().bech32_hrp;
+                            let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 account_index,
-                                0..100,
-                                &output.address.to_bech32().into(),
-                            )?;
+                                self.input_range.clone(),
+                                &bech32_address.into(),
+                            )
+                            .map_err(|_| Error::InputAddressNotFound(format!("{:?}", self.input_range.clone())))?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());
-                            let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
-                                .try_into()
-                                .map_err(|_| Error::TransactionError)?;
                             let input = Input::UTXO(
-                                UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
+                                UTXOInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
                                     .map_err(|_| Error::TransactionError)?,
                             );
                             essence = essence.add_input(input.clone());
@@ -256,7 +274,7 @@ impl<'a> SendBuilder<'a> {
                             if total_already_spent > total_to_spend {
                                 essence = essence.add_output(
                                     SignatureLockedSingleOutput::new(
-                                        output.address.clone(),
+                                        output_address,
                                         total_already_spent - total_to_spend,
                                     )
                                     .unwrap()
@@ -270,7 +288,7 @@ impl<'a> SendBuilder<'a> {
             None => {
                 'input_selection: loop {
                     // Reset the empty_address_count for each run of output address searching
-                    let mut empty_address_count = 0;
+                    let mut empty_address_count: u64 = 0;
                     // Get the addresses in the BIP path/index ~ path/index+20
                     let addresses = self
                         .client
@@ -285,7 +303,10 @@ impl<'a> SendBuilder<'a> {
                         let mut outputs = vec![];
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;
-                            outputs.push(curr_outputs);
+                            if !curr_outputs.is_spent {
+                                // todo check if already used in another pending transaction if possible
+                                outputs.push(curr_outputs);
+                            }
                         }
                         // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
                         // up the addresses belonging to the seed. Note that we don't really count the exact 20
@@ -296,27 +317,30 @@ impl<'a> SendBuilder<'a> {
                             empty_address_count += 1;
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
+                            let output_amount = match output.output {
+                                OutputDto::SignatureLockedSingle(r) => r.amount,
+                            };
                             match output.is_spent {
                                 true => {
-                                    if output.amount != 0 {
+                                    if output_amount != 0 {
                                         return Err(Error::SpentAddress);
                                     }
                                 }
                                 false => {
-                                    if output.amount != 0 && total_already_spent < total_to_spend {
-                                        total_already_spent += output.amount;
+                                    if output_amount != 0 && total_already_spent < total_to_spend {
+                                        total_already_spent += output_amount;
                                         let mut address_path = path.clone();
                                         // Note that we need to sign the original address, i.e., `path/index`,
                                         // instead of `path/index/_offset` or `path/_offset`.
                                         address_path.push(*internal as u32 + HARDEND);
                                         address_path.push(address_index as u32 + HARDEND);
                                         paths.push(address_path.clone());
-                                        let transaction_id: [u8; TRANSACTION_ID_LENGTH] = output.transaction_id[..]
-                                            .try_into()
-                                            .map_err(|_| Error::TransactionError)?;
                                         let input = Input::UTXO(
-                                            UTXOInput::new(TransactionId::from(transaction_id), output.output_index)
-                                                .map_err(|_| Error::TransactionError)?,
+                                            UTXOInput::new(
+                                                TransactionId::from_str(&output.transaction_id)?,
+                                                output.output_index,
+                                            )
+                                            .map_err(|_| Error::TransactionError)?,
                                         );
                                         essence = essence.add_input(input.clone());
                                         address_index_recorders.push(AddressIndexRecorder {
@@ -340,7 +364,7 @@ impl<'a> SendBuilder<'a> {
                                 }
                             }
                         }
-                        if total_already_spent > total_to_spend {
+                        if total_already_spent >= total_to_spend {
                             break 'input_selection;
                         }
                         // if we just processed an even index, increase the address index
@@ -426,7 +450,7 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish_indexation(self) -> Result<MessageId> {
+    pub async fn finish_indexation(self) -> Result<Message> {
         let payload: Payload;
         {
             let index = &self.index.as_ref();
@@ -444,31 +468,35 @@ impl<'a> SendBuilder<'a> {
     }
 
     /// Builds the final message and posts it to the node
-    pub async fn finish_message(self, payload: Option<Payload>) -> Result<MessageId> {
+    pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         // get tips
         let tips = self.client.get_tips().await?;
 
         // building message
         let mut message = MessageBuilder::<ClientMiner>::new();
 
-        match self.network_id {
-            Some(id) => message = message.with_network_id(id),
-            _ => message = message.with_network_id(self.client.get_network_id().await?),
-        }
+        message = match self.network_id {
+            Some(id) => message.with_network_id(id),
+            _ => message.with_network_id(self.client.get_network_info().network_id),
+        };
 
-        match self.parent {
-            Some(p) => message = message.with_parent1(p),
-            _ => message = message.with_parent1(tips.0),
-        }
+        message = match self.parent {
+            Some(p) => message.with_parent1(p),
+            _ => message.with_parent1(tips.0),
+        };
         if let Some(p) = payload {
             message = message.with_payload(p);
         }
         let final_message = message
             .with_parent2(tips.1)
-            .with_nonce_provider(self.client.get_pow_provider(), 4000f64)
+            .with_nonce_provider(
+                self.client.get_pow_provider(),
+                self.client.get_network_info().min_pow_score,
+            )
             .finish()
             .map_err(Error::MessageError)?;
 
-        self.client.post_message(&final_message).await
+        self.client.post_message(&final_message).await?;
+        Ok(final_message)
     }
 }
