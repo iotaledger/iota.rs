@@ -8,6 +8,8 @@ Official Rust library.
 
 The goal of this library is to have `one source code of truth`, which means there is one implementation in Rust and [bindings](#bindings) to other programming languages.
 
+For value transfers we recommend to use [wallet.rs](https://github.com/iotaledger/wallet.rs).
+
 This **alpha** version allows you to do the following:
 
 * Create messages and transactions
