@@ -3,12 +3,14 @@ name: Udeps
 on:
   push:
     branches:
-      - dev
-      - master
+      - ''
+#       - dev
+#       - master
   pull_request:
     branches:
-      - dev
-      - master
+      - ''
+#       - dev
+#       - master
 
 jobs:
   udeps:
@@ -19,7 +21,7 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly
+        toolchain: stable
         override: true
 
     - name: Set seeds in .env
