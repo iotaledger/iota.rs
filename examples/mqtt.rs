@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example mqtt --release
-use iota::{BrokerOptions, Client, Topic};
+use iota::{node::Topic, BrokerOptions, Client};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 fn main() {
