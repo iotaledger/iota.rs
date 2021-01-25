@@ -121,7 +121,7 @@ pub fn search_address(
     let addresses = iota
         .find_addresses(&seed)
         .with_account_index(account_index)
-        .with_range(range)
+        .with_range(range.clone())
         .get_all()?;
     let mut index_counter = 0;
     for address_internal in addresses {
@@ -132,5 +132,5 @@ pub fn search_address(
             index_counter += 1;
         }
     }
-    Err(crate::error::Error::AddressNotFound)
+    Err(crate::error::Error::InputAddressNotFound(format!("{:?}", range)))
 }
