@@ -443,6 +443,17 @@ Adds an output to the transaction.
 
 **Returns** the message submit instance for chained calls.
 
+#### inputRange(start, end): MessageSender
+
+Defines the range in which to search for addresses fro custom inputs.
+
+| Param         | Type                | Description        |
+| ------------- | ------------------- | ------------------ |
+| start         | <code>number</code> | The start index |
+| end           | <code>number</code> | The end index    |
+
+**Returns** the message submit instance for chained calls.
+
 #### output(address, amount): MessageSender
 
 Adds an output to the transaction.

@@ -33,10 +33,11 @@ async fn main() {
     let message = iota
         .send()
         .with_seed(&seed)
-        .with_input(outputs[1].clone())
+        .with_input(outputs[0].clone())
+        // .with_input_range(20..25)
         .with_output(
             &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
-            100,
+            1000000,
         )
         .unwrap()
         .finish()
