@@ -188,15 +188,8 @@ impl<'a> SendBuilder<'a> {
                     // Only add unspent outputs
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
-                            let (output_amount, output_address) = match output.output {
-                                OutputDto::SignatureLockedSingle(r) => match r.address {
-                                    AddressDto::Ed25519(addr) => {
-                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-                                        (r.amount, output_address)
-                                    }
-                                },
-                            };
-                            total_already_spent += output_amount;
+                            // todo check if already used in another pending transaction if possible
+                            total_already_spent += output.amount;
                             let mut address_path = path.clone();
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
@@ -257,7 +250,10 @@ impl<'a> SendBuilder<'a> {
                         let mut outputs = vec![];
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;
-                            outputs.push(curr_outputs);
+                            if !curr_outputs.is_spent {
+                                // todo check if already used in another pending transaction if possible
+                                outputs.push(curr_outputs);
+                            }
                         }
                         // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
                         // up the addresses belonging to the seed. Note that we don't really count the exact 20
@@ -315,7 +311,7 @@ impl<'a> SendBuilder<'a> {
                                 }
                             }
                         }
-                        if total_already_spent > total_to_spend {
+                        if total_already_spent >= total_to_spend {
                             break 'input_selection;
                         }
                         // if we just processed an even index, increase the address index

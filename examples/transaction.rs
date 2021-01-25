@@ -5,8 +5,9 @@
 use iota::{Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::sleep;
-#[macro_use]
-extern crate dotenv_codegen;
+extern crate dotenv;
+use dotenv::dotenv;
+use std::env;
 
 /// In this example, we send 900 tokens to the following 3 locations, respectively
 ///
@@ -32,7 +33,8 @@ async fn main() {
 
     // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
     // First address from the seed in the .env is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
-    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("seed")).unwrap()).unwrap();
+    dotenv().ok();
+    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("seed").unwrap()).unwrap()).unwrap();
 
     let message = iota
         .send()
@@ -90,7 +92,7 @@ async fn main() {
     );
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let seed = Seed::from_ed25519_bytes(&hex::decode(dotenv!("second_seed")).unwrap()).unwrap();
+    let seed = Seed::from_ed25519_bytes(&hex::decode(env::var("second_seed").unwrap()).unwrap()).unwrap();
 
     let message = iota
         .send()
