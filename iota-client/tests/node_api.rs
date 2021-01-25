@@ -35,14 +35,15 @@ async fn setup_indexation_message() -> MessageId {
     client.post_message(&message).await.unwrap()
 }
 
-#[test]
-fn test_with_node_pool_urls() {
-    let r = iota_client::Client::builder()
-        .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
-        .unwrap()
-        .finish();
-    println!("{:#?}", r);
-}
+// Ignored as long as we don't have a realy node pool url, otherwise the tests fail
+// #[test]
+// fn test_with_node_pool_urls() {
+//     let r = iota_client::Client::builder()
+//         .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
+//         .unwrap()
+//         .finish();
+//     println!("{:#?}", r);
+// }
 
 #[tokio::test]
 #[ignore]
