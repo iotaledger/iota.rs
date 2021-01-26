@@ -3,11 +3,17 @@
 
 //! Builder of the Clinet Instnace
 use crate::{client::*, error::*};
+
+#[cfg(feature = "storage")]
+#[cfg_attr(docsrs, doc(cfg(feature = "storage")))]
+use crate::storage::account::{AccountHandle, AccountInitialiser};
+
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
 use std::{
     collections::{HashMap, HashSet},
+    path::PathBuf,
     sync::{Arc, RwLock},
     time::Duration,
 };
@@ -43,6 +49,8 @@ pub struct ClientBuilder {
     network_info: NetworkInfo,
     request_timeout: Duration,
     api_timeout: HashMap<Api, Duration>,
+    #[cfg(feature = "storage")]
+    storage: Option<AccountHandle>,
 }
 
 impl Default for ClientBuilder {
@@ -72,6 +80,8 @@ impl Default for ClientBuilder {
                 api_default_timeout.insert(Api::GetOutput, Duration::from_millis(2000));
                 api_default_timeout
             },
+            #[cfg(feature = "storage")]
+            storage: None,
         }
     }
 }
@@ -158,6 +168,13 @@ impl ClientBuilder {
         self
     }
 
+    /// Sets the request timeout for a specific API usage.
+    #[cfg(feature = "storage")]
+    pub async fn with_storage(mut self, id: String, storage_path: PathBuf) -> Result<Self> {
+        self.storage = Some(AccountInitialiser::builder(id, storage_path).finish().await?);
+        Ok(self)
+    }
+
     /// Build the Client instance.
     pub fn finish(mut self) -> Result<Client> {
         if self.nodes.is_empty() {
@@ -221,6 +238,8 @@ impl ClientBuilder {
             network_info,
             request_timeout: self.request_timeout,
             api_timeout: self.api_timeout,
+            #[cfg(feature = "storage")]
+            storage: self.storage,
         };
 
         Ok(client)

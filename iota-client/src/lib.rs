@@ -14,6 +14,9 @@ pub mod builder;
 pub mod client;
 pub mod error;
 pub mod node;
+#[cfg(feature = "storage")]
+#[cfg_attr(docsrs, doc(cfg(feature = "storage")))]
+pub mod storage;
 
 pub use bee_rest_api::{
     handlers::{balance_ed25519::BalanceForAddressResponse, output::OutputResponse},
@@ -26,6 +29,8 @@ pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use reqwest::Url;
+#[cfg(feature = "storage")]
+pub use storage::*;
 
 /// match a response with an expected status code or return the default error variant.
 #[macro_export]

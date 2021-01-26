@@ -24,3 +24,4 @@ tokio = { version = "1.0", features = ["macros"] }
 [features]
 default = ["mqtt"]
 mqtt = ["iota-client/mqtt"]
+storage = ["iota-client/storage"]

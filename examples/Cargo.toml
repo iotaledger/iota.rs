@@ -6,7 +6,7 @@ edition = "2018"
 
 [dev-dependencies]
 tokio = { version = "1.0", features = ["full"] }
-iota-core = { path = "../iota-core"}
+iota-core = { path = "../iota-core", features= ["storage"]}
 hex = "0.4.2"
 dotenv = "0.15.0"
 
@@ -53,3 +53,7 @@ path = "nodeinfo.rs"
 [[example]]
 name = "txspam"
 path = "txspam.rs"
+
+[[example]]
+name = "storage"
+path = "storage.rs"

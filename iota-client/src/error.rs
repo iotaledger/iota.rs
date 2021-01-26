@@ -73,6 +73,18 @@ pub enum Error {
     /// Address not found
     #[error("Address not found in range {0}")]
     InputAddressNotFound(String),
+    /// Storage adapter not set_path
+    #[cfg(feature = "storage")]
+    #[error("Storage adapter not set {0}")]
+    StorageAdapterNotSet(String),
+    /// Storage error
+    #[cfg(feature = "storage")]
+    #[error("Storage error {0}")]
+    Storage(String),
+    /// Account not found error
+    #[cfg(feature = "storage")]
+    #[error("Account not found")]
+    AccountNotFound,
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

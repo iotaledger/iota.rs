@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! The Client module to connect through HORNET or Bee with API usages
+#[cfg(feature = "storage")]
+use crate::storage::account::AccountHandle;
 use crate::{
     api::*,
     builder::{ClientBuilder, NetworkInfo},
@@ -231,6 +233,9 @@ pub struct Client {
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for each API call.
     pub(crate) api_timeout: HashMap<Api, Duration>,
+    /// Storage adapter
+    #[cfg(feature = "storage")]
+    pub storage: Option<AccountHandle>,
 }
 
 impl std::fmt::Debug for Client {

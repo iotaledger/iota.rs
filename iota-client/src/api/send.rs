@@ -11,7 +11,11 @@ use bee_signing_ext::{
     binary::{BIP32Path, Ed25519PrivateKey},
     Seed, Signer,
 };
-use std::{collections::HashMap, ops::Range, str::FromStr};
+use std::{
+    collections::HashMap,
+    ops::{Deref, Range},
+    str::FromStr,
+};
 
 const HARDEND: u32 = 1 << 31;
 
@@ -452,6 +456,12 @@ impl<'a> SendBuilder<'a> {
             .map_err(Error::MessageError)?;
 
         self.client.post_message(&final_message).await?;
+
+        #[cfg(feature = "storage")]
+        if let Some(account) = &self.client.storage {
+            account.write().await.append_messages(vec![final_message.clone()]);
+            account.deref().write().await.save().await?;
+        }
         Ok(final_message)
     }
 }
