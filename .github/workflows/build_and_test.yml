@@ -103,4 +103,4 @@ jobs:
       with:
         command: build
         args: --all --release
-      working-directory: bindings/python/native
+        working-directory: bindings/python/native
