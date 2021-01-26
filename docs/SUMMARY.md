@@ -13,5 +13,5 @@
         - [Examples](./libraries/nodejs/examles.md)
         - [API Reference](./libraries/nodejs/api_reference.md)
         - [Troubleshooting](./libraries/nodejs/troubleshooting.md)
-- [Specification](./specs/iota-rs-ENGINEERING-SPEC-0000.md)
+- [Specification](./specs/README.md)
 - [Contribute](./contribute.md)

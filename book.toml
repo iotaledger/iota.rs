@@ -2,7 +2,7 @@
 authors = ["Thoralf Müller <thoralf.mueller@iota.org",  "Sebastian Heusser <sebastian.heusser@iota.org>"]
 language = "en"
 multilingual = false
-src = "./src"
+src = "./docs"
 title = "IOTA Client Library"
 
 [output.html]
