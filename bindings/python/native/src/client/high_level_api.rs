@@ -33,6 +33,13 @@ impl Client {
         parent: Option<&str>,
         network_id: Option<u64>,
     ) -> Result<Message> {
+        if input_range_begin.is_some() ^ input_range_end.is_some() {
+            return Err(Error {
+                error: PyErr::new::<exceptions::PyValueError, _>(
+                    "input_range_begin and input_range_end need to be assigned together!",
+                ),
+            });
+        }
         let mut send_builder = self.client.send();
         if let Some(account_index) = account_index {
             send_builder = send_builder.with_account_index(account_index);
@@ -48,16 +55,8 @@ impl Client {
                 )?);
             }
         }
-        if let Some(begin) = input_range_begin {
-            if let Some(end) = input_range_end {
-                send_builder = send_builder.with_input_range(begin..end);
-            } else {
-                return Err(Error {
-                    error: PyErr::new::<exceptions::PyValueError, _>(
-                        "input_range_begin and input_range_end need to be assigned together!",
-                    ),
-                });
-            }
+        if input_range_begin.is_some() & input_range_end.is_some() {
+            send_builder = send_builder.with_input_range(input_range_begin.unwrap()..input_range_end.unwrap());
         }
         if let Some(outputs) = outputs {
             for output in outputs {
@@ -216,17 +215,30 @@ impl Client {
         &self,
         seed: String,
         account_index: Option<usize>,
-        begin: Option<usize>,
-        end: Option<usize>,
+        input_range_begin: Option<usize>,
+        input_range_end: Option<usize>,
         get_all: Option<bool>,
     ) -> Result<Vec<(String, Option<bool>)>> {
         let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
+        if input_range_begin.is_some() ^ input_range_end.is_some() {
+            return Err(Error {
+                error: PyErr::new::<exceptions::PyValueError, _>(
+                    "input_range_begin and input_range_end need to be assigned together!",
+                ),
+            });
+        }
+        let mut begin: usize = 0;
+        let mut end: usize = 0;
+        if input_range_begin.is_some() & input_range_end.is_some() {
+            begin = input_range_begin.unwrap();
+            end = input_range_end.unwrap();
+        }
         if get_all.unwrap_or(false) {
             let addresses = self
                 .client
                 .find_addresses(&seed)
                 .with_account_index(account_index.unwrap_or(0))
-                .with_range(begin.unwrap_or(0)..end.unwrap_or(20))
+                .with_range(begin..end)
                 .get_all()?;
             Ok(addresses
                 .iter()
@@ -237,7 +249,7 @@ impl Client {
                 .client
                 .find_addresses(&seed)
                 .with_account_index(account_index.unwrap_or(0))
-                .with_range(begin.unwrap_or(0)..end.unwrap_or(20))
+                .with_range(begin..end)
                 .finish()?;
             Ok(addresses
                 .iter()
