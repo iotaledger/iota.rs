@@ -11,6 +11,16 @@ const client = new ClientBuilder()
   .build()
 
 describe('Client', () => {
+  it('gets network info', () => {
+    const info = client.networkInfo()
+    assert.strictEqual(typeof info, 'object')
+    assert.strictEqual(info.localPow, false)
+    assert.deepStrictEqual(info.network, { type: 'Testnet' })
+    assert.strictEqual(info.networkId, 'alphanet2')
+    assert.strictEqual(info.bech32HRP, 'atoi')
+    assert.strictEqual(info.minPowScore, 4000)
+  })
+
   it('gets tips', async () => {
     const tips = await client.getTips()
     assert.strictEqual(Array.isArray(tips), true)
@@ -32,7 +42,7 @@ describe('Client', () => {
   it('sends an indexation message with the high level API', async () => {
     const messageId = await client
       .send()
-      .indexation('IOTA.RS TEST')
+      .index('IOTA.RS TEST')
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
     assertMessageId(messageId)
@@ -42,7 +52,7 @@ describe('Client', () => {
     const depositAddress = 'iot1q9jyad2efwyq7ldg9u6eqg5krxdqawgcdxvhjlmxrveylrt4fgaqj30s9qj'
     const messageId = await client
       .send()
-      .transaction(seed)
+      .seed(seed)
       .accountIndex(0)
       .output(depositAddress, 2)
       .submit()

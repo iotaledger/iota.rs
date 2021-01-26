@@ -8,6 +8,8 @@ Official Rust library.
 
 The goal of this library is to have `one source code of truth`, which means there is one implementation in Rust and [bindings](#bindings) to other programming languages.
 
+For value transfers we recommend to use [wallet.rs](https://github.com/iotaledger/wallet.rs).
+
 This **alpha** version allows you to do the following:
 
 * Create messages and transactions
@@ -99,6 +101,8 @@ You can see the examples in the [examples](examples/) directory and try them wit
 ```bash
 cargo run --example balance
 ```
+
+For the examples where a seed is required you have to rename `.env.example` to `.env`.
 
 ## Bindings
 

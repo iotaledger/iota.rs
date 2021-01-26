@@ -6,14 +6,14 @@
 use bee_message::prelude::*;
 use bee_signing_ext::Seed;
 
-use iota_client::MessageJson;
-use std::{convert::TryInto, str::FromStr};
+use bee_rest_api::types::MessageDto;
+use std::{convert::TryFrom, str::FromStr};
 
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
 
 // Sends a full message object to the node with already computed nonce. Serves as a test object.
 async fn setup_indexation_message() -> MessageId {
-    let client = iota_client::Client::build()
+    let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -30,9 +30,20 @@ async fn setup_indexation_message() -> MessageId {
 	    },
 	    "nonce": "36952"
     }"#;
-    let message: Message = serde_json::from_str::<MessageJson>(data).unwrap().try_into().unwrap();
+    let message = Message::try_from(&serde_json::from_str::<MessageDto>(data).unwrap()).unwrap();
     client.post_message(&message).await.unwrap()
 }
+
+// Ignored as long as we don't have a realy node pool url, otherwise the tests fail
+// const DEFAULT_NODE_POOL_URLS: &str = "https://nodes.iota.works/api/ssl/live";
+// #[test]
+// fn test_with_node_pool_urls() {
+//     let r = iota_client::Client::builder()
+//         .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
+//         .unwrap()
+//         .finish();
+//     println!("{:#?}", r);
+// }
 
 #[tokio::test]
 #[ignore]
@@ -51,7 +62,7 @@ async fn test_get_health() {
 #[tokio::test]
 #[ignore]
 async fn test_get_tips() {
-    let r = iota_client::Client::build()
+    let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -65,7 +76,7 @@ async fn test_get_tips() {
 #[tokio::test]
 #[ignore]
 async fn test_post_message_with_indexation() {
-    let client = iota_client::Client::build()
+    let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -79,13 +90,13 @@ async fn test_post_message_with_indexation() {
         .await
         .unwrap();
 
-    println!("{}", r);
+    println!("{}", r.id().0);
 }
 
 #[tokio::test]
 #[ignore]
 async fn test_post_message_with_transaction() {
-    let iota = iota_client::Client::build() // Crate a client instance builder
+    let iota = iota_client::Client::builder() // Crate a client instance builder
         .with_node(DEFAULT_NODE_URL) // Insert the node here
         .unwrap()
         .finish()
@@ -116,7 +127,7 @@ async fn test_post_message_with_transaction() {
 #[ignore]
 async fn test_get_message_by_index() {
     setup_indexation_message().await;
-    let r = iota_client::Client::build()
+    let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -132,7 +143,7 @@ async fn test_get_message_by_index() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_data() {
-    let client = iota_client::Client::build()
+    let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -147,7 +158,7 @@ async fn test_get_message_data() {
 async fn test_get_message_metadata() {
     let message_id = setup_indexation_message().await;
 
-    let r = iota_client::Client::build()
+    let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -164,7 +175,7 @@ async fn test_get_message_metadata() {
 #[ignore]
 async fn test_get_message_raw() {
     let message_id = setup_indexation_message().await;
-    iota_client::Client::build()
+    iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -179,7 +190,7 @@ async fn test_get_message_raw() {
 #[ignore]
 async fn test_get_message_children() {
     let message_id = setup_indexation_message().await;
-    iota_client::Client::build()
+    iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -193,7 +204,7 @@ async fn test_get_message_children() {
 #[tokio::test]
 #[ignore]
 async fn test_get_address_balance() {
-    let r = iota_client::Client::build()
+    let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -209,7 +220,7 @@ async fn test_get_address_balance() {
 #[tokio::test]
 #[ignore]
 async fn test_get_address_outputs() {
-    let r = iota_client::Client::build()
+    let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -228,7 +239,7 @@ async fn test_get_address_outputs() {
 #[tokio::test]
 #[ignore]
 async fn test_get_output() {
-    let r = iota_client::Client::build()
+    let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
@@ -249,7 +260,7 @@ async fn test_get_output() {
 #[tokio::test]
 #[ignore]
 async fn test_get_milestone() {
-    let r = iota_client::Client::build()
+    let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()

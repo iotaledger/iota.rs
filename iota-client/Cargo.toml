@@ -13,21 +13,22 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-reqwest = { version = "0.10.6", features = ["json", "rustls-tls"], default-features = false }
-serde = { version = "1.0.116", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false }
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.58"
 chrono = "0.4.12"
 hex = "0.4.2"
 blake2 = "0.9"
 paho-mqtt = { version = "0.9", optional = true }
 regex = "1.4"
-tokio = { version = "0.2.22", features = ["macros", "sync"] }
+tokio = { version = "1.0.0", features = ["macros", "sync", "rt-multi-thread"] }
 thiserror = "1.0"
 num_cpus = "1.13"
 

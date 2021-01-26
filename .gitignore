@@ -5,3 +5,4 @@ Cargo.lock
 .vscode
 .DS_Store
 book
+.env

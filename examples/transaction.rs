@@ -4,43 +4,50 @@
 //! cargo run --example transaction --release
 use iota::{Client, MessageId, Seed};
 use std::time::Duration;
-use tokio::time::delay_for;
-/// In this example, we send 900 tokens to the following 3 locations, respectively
+use tokio::time::sleep;
+extern crate dotenv;
+use dotenv::dotenv;
+use std::env;
+
+/// In this example, we send 9_000_000 tokens to the following 3 locations, respectively
+/// First send 10 Mi from the faucet to atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5
+/// That's the first address of the first seed in the .env.example file
 ///
 /// Address Index 0. Note that we can use the `address` example codes to know the addresses belong to the seed.
-///   output 0: 300 tokens iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6
-///   output 1: 300 tokens iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc
-///   output 2: 300 tokens iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r
+/// Outputs we send to the first addresses from the second seed:
+///   output 0: 3_000_000 tokens atoi1qxj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pkq3p4j3
+///   output 1: 3_000_000 tokens atoi1qxu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwj28ls3l
+///   output 2: 3_000_000 tokens atoi1qx0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsmsrpjt
 ///
 ///
-/// These two addresses belong to seed "256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0"
-/// Then we send 550 tokens from seed "256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0"
-/// to addresses "iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr" and
-/// "iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m", and check the ledger
+/// Then we send 6_000_000 tokens from the second seed to the first one
+/// to addresses "atoi1q9nrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakc0ht47" and
+/// "atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua", and check the ledger
 /// inclusion state, which should be "included".
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::build() // Crate a client instance builder
+    let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();
 
-    // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    // First address from the seed below is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
-    )
-    .unwrap();
+    // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    // First address from the seed in the .env is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
+    println!("This example uses dotenv, which is not safe for use in production.");
+    dotenv().ok();
+    let seed =
+        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
+            .unwrap();
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
-            300,
+            &"atoi1qxj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pkq3p4j3".into(),
+            3_000_000,
         )
         .unwrap()
         .finish()
@@ -49,17 +56,17 @@ async fn main() {
 
     println!(
         "First transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".into(),
-            300,
+            &"atoi1qxu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwj28ls3l".into(),
+            3_000_000,
         )
         .unwrap()
         .finish()
@@ -68,17 +75,17 @@ async fn main() {
 
     println!(
         "Second transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".into(),
-            300,
+            &"atoi1qx0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsmsrpjt".into(),
+            3_000_000,
         )
         .unwrap()
         .finish()
@@ -86,28 +93,27 @@ async fn main() {
         .unwrap();
     println!(
         "Third transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
 
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67369ece5bd9ae7eef5b0").unwrap(),
-    )
-    .unwrap(); // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    let seed =
+        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap()).unwrap())
+            .unwrap();
 
-    let message_id = iota
+    let message = iota
         .send()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            &"iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0l76clafr".into(),
-            270,
+            &"atoi1q9nrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakc0ht47".into(),
+            3_000_000,
         )
         .unwrap()
         .with_output(
-            &"iot1q9gtmpa58j9vp23hrsztckt5rquy26lrrv25nz4g0v9pr8nsnqetcjskw9m".into(),
-            280,
+            &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),
+            3_000_000,
         )
         .unwrap()
         .finish()
@@ -116,10 +122,10 @@ async fn main() {
 
     println!(
         "Last transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id
+        message.id().0
     );
-    reattach_promote_until_confirmed(message_id, &iota).await;
-    let message_metadata = iota.get_message().metadata(&message_id).await;
+    reattach_promote_until_confirmed(message.id().0, &iota).await;
+    let message_metadata = iota.get_message().metadata(&message.id().0).await;
     println!(
         "The ledgerInclusionState: {:?}",
         message_metadata.unwrap().ledger_inclusion_state
@@ -129,11 +135,11 @@ async fn main() {
 async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
     while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
         if let Some(state) = metadata.ledger_inclusion_state {
-            println!("Leder inclusion state: {}", state);
+            println!("Leder inclusion state: {:?}", state);
             break;
         } else if let Ok(msg_id) = iota.reattach(&message_id).await {
             println!("Reattached or promoted {}", msg_id.0);
         }
-        delay_for(Duration::from_secs(5)).await;
+        sleep(Duration::from_secs(5)).await;
     }
 }

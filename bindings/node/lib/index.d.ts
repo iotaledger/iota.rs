@@ -10,11 +10,12 @@ import {
   MessageDto
 } from './types'
 
-export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'GetOutput' | 'GetMilestone'
+export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'PostMessageWithRemotePoW' | 'GetOutput' | 'GetMilestone'
 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
+  nodePoolUrls(urls: string[]): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
@@ -27,19 +28,15 @@ export declare class ClientBuilder {
 }
 
 export declare class MessageSender {
-  transaction(seed: string): ValueTransactionSender
-  indexation(index: string): IndexationSender
-}
-
-export declare class IndexationSender {
-  data(data: Uint8Array): IndexationSender
-  submit(): Promise<string>
-}
-
-export declare class ValueTransactionSender {
-  accountIndex(index: number): ValueTransactionSender
-  initialAddressIndex(index: number): ValueTransactionSender
-  output(address: string, value: number): ValueTransactionSender
+  seed(seed: string): MessageSender
+  index(index: string): MessageSender
+  data(data: Uint8Array): MessageSender
+  parent(messageId: string): MessageSender
+  accountIndex(index: number): MessageSender
+  initialAddressIndex(index: number): MessageSender
+  input(transactionId: string, index: number): MessageSender
+  inputRange(start: number, end: number): MessageSender
+  output(address: string, value: number): MessageSender
   submit(): Promise<string>
 }
 
@@ -61,7 +58,16 @@ export declare class BalanceGetter {
   get(): Promise<number>
 }
 
+export declare interface NetworkInfo {
+  network: { type: 'Mainnet' | 'Testnet' }
+  networkId: string
+  bech32HRP: string
+  minPowScore: number
+  localPow: boolean
+}
+
 export declare class Client {
+  networkInfo(): NetworkInfo
   subscriber(): TopicSubscriber
   send(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
@@ -74,6 +80,7 @@ export declare class Client {
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<[string, string]>
   postMessage(message: MessageDto): Promise<string>
+  postMessageWithRemotePow(message: MessageDto): Promise<string>
   getMessage(): MessageFinder
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>

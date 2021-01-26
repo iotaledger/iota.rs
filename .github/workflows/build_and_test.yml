@@ -79,6 +79,9 @@ jobs:
         choco install openssl --no-progress
         echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+    - name: Set seeds in .env
+      run: mv ".env.example" .env
+
     - name: Build
       uses: actions-rs/cargo@v1
       with:

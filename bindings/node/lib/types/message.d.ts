@@ -11,7 +11,7 @@ export declare interface Output {
   }
 }
 
-export declare interface TransactionEssence {
+export declare interface TransactionPayloadEssence {
   inputs: Input[]
   outputs: Output[]
   payload?: Payload
@@ -43,7 +43,7 @@ export declare interface ReferenceUnlockBlock {
 export declare type UnlockBlock = SignatureUnlockBlock | ReferenceUnlockBlock
 
 export declare interface TransactionPayload {
-  essence: TransactionEssence
+  essence: TransactionPayloadEssence
   unlock_blocks: UnlockBlock[]
 }
 

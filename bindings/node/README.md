@@ -65,6 +65,16 @@ Adds a list of IOTA nodes to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### nodePoolUrls(urls): ClientBuilder
+
+Adds a list of IOTA nodes from node pool URLs to the client pool.
+
+| Param | Type                  | Description                |
+| ----- | --------------------- | -------------------------- |
+| url   | <code>string[]</code> | An array of node pool URLs |
+
+**Returns** the client builder instance for chained calls.
+
 #### quorumSize(size): ClientBuilder
 
 Defines how many of nodes will be queried at the same time to check for quorum.
@@ -149,6 +159,12 @@ Builds the client instance.
 **Returns** a [Client](#client) instance.
 
 ### Client
+
+#### networkInfo(): NetworkInfo
+
+Gets the cached network info.
+
+**Returns** a [NetworkInfo](#networkinfo) instance.
 
 #### subscriber(): TopicSubscriber
 
@@ -320,6 +336,16 @@ Promotes the message associated with the given id.
 
 **Returns** A promise resolving to the new [Message](#message) instance.
 
+### NetworkInfo
+
+| Field       | Type                                          | Description                           |
+| ----------- | --------------------------------------------- | ------------------------------------- |
+| network     | <code>string</code>                           | The network                           |
+| networkId   | <code>number</code>                           | The network hashed                    |
+| bech32HRP   | <code>string</code>                           | Bech32 HRP for this network           |
+| minPowScore | <code>number</code>                           | The network's minimum score for PoW   |
+| localPow    | <code>boolean</code>                          | Whether we are using local PoW or not |
+
 ### TopicSubscriber
 
 #### topic(topic): TopicSubscriber
@@ -364,33 +390,29 @@ Unsubscribes from the provided topics.
 
 ### MessageSender
 
-Builder to create transactions or indexation messages.
+Builder to create and submit messages to the Tangle.
 
-#### indexation(index)
+#### index(index): MessageSender
 
-Initiates the builder to send indexation messages.
+Sets the message indexation. This field is required for indexation payloads.
 
 | Param | Type                | Description    |
 | ----- | ------------------- | -------------- |
 | index | <code>string</code> | The indexation |
 
-**Returns** a [IndexationSender](#indexationsender) instance.
+**Returns** the message submit instance for chained calls.
 
-#### transaction(seed)
+#### seed(seed): MessageSender
 
-Initiates the builder to send funds.
+Sets the transaction account seed. This field is required for transaction payloads.
 
 | Param | Type                | Description                                  |
 | ----- | ------------------- | -------------------------------------------- |
 | seed  | <code>string</code> | The hex-encoded seed of the account to spend |
 
-**Returns** a [ValueTransactionSender](#valuetransactionsender) instance.
+**Returns** the message submit instance for chained calls.
 
-### IndexationSender
-
-Submits an indexation message.
-
-#### data(data): IndexationSender
+#### data(data): MessageSender
 
 Sets the indexation data.
 
@@ -398,21 +420,21 @@ Sets the indexation data.
 | ----- | ----------------------- | ------------------ |
 | data  | <code>Uint8Array</code> | The message's data |
 
-**Returns** the indexation message submit instance for chained calls.
+**Returns** the message submit instance for chained calls.
 
-#### submit(): Promise<string>
+#### parent(messageId): MessageSender
 
-Submits the indexation message.
+Sets the message's parent.
 
-**Returns** a promise resolving to the message identifier.
+| Param     | Type                | Description           |
+| --------- | ------------------- | --------------------- |
+| messageId | <code>string</code> | The parent message id |
 
-### ValueTransactionSender
+**Returns** the message submit instance for chained calls.
 
-Submits a value transaction message.
+#### accountIndex(index): MessageSender
 
-#### accountIndex(index): ValueTransactionSender
-
-Sets the account index. This field is required.
+Sets the account index. This field is required for transactions.
 
 | Param | Type                | Description       |
 | ----- | ------------------- | ----------------- |
@@ -420,7 +442,29 @@ Sets the account index. This field is required.
 
 **Returns** the message submit instance for chained calls.
 
-#### output(address, amount): ValueTransactionSender
+#### input(transactionId, index): MessageSender
+
+Adds an output to the transaction.
+
+| Param         | Type                | Description        |
+| ------------- | ------------------- | ------------------ |
+| transactionId | <code>string</code> | The transaction id |
+| index         | <code>number</code> | The input index    |
+
+**Returns** the message submit instance for chained calls.
+
+#### inputRange(start, end): MessageSender
+
+Defines the range in which to search for addresses fro custom inputs.
+
+| Param         | Type                | Description        |
+| ------------- | ------------------- | ------------------ |
+| start         | <code>number</code> | The start index |
+| end           | <code>number</code> | The end index    |
+
+**Returns** the message submit instance for chained calls.
+
+#### output(address, amount): MessageSender
 
 Adds an output to the transaction.
 
@@ -431,7 +475,7 @@ Adds an output to the transaction.
 
 **Returns** the message submit instance for chained calls.
 
-#### initialAddressIndex(index): ValueTransactionSender
+#### initialAddressIndex(index): MessageSender
 
 Sets the initial address index to search for balance. Defaults to 0 if the function isn't called.
 
@@ -624,12 +668,12 @@ Gets the metadata of the given message.
 
 ##### TransactionPayload
 
-| Field         | Type                            | Description         |
-| ------------- | ------------------------------- | ------------------- |
-| essence       | <code>TransactionEssence</code> | Transaction essence |
-| unlock_blocks | <code>UnlockBlock[]</code>      | Unlock blocks       |
+| Field         | Type                                   | Description         |
+| ------------- | -------------------------------------- | ------------------- |
+| essence       | <code>TransactionPayloadEssence</code> | Transaction essence |
+| unlock_blocks | <code>UnlockBlock[]</code>             | Unlock blocks       |
 
-- TransactionEssence
+- TransactionPayloadEssence
 
 | Field   | Type                              | Description          |
 | ------- | --------------------------------- | -------------------- |
@@ -708,12 +752,12 @@ Gets the metadata of the given message.
 
 ##### TransactionPayloadDto
 
-| Field        | Type                               | Description         |
-| ------------ | ---------------------------------- | ------------------- |
-| essence      | <code>TransactionEssenceDto</code> | Transaction essence |
-| unlockBlocks | <code>UnlockBlockDto[]</code>      | Unlock blocks       |
+| Field        | Type                                      | Description         |
+| ------------ | ----------------------------------------- | ------------------- |
+| essence      | <code>TransactionPayloadEssenceDto</code> | Transaction essence |
+| unlockBlocks | <code>UnlockBlockDto[]</code>             | Unlock blocks       |
 
-- TransactionEssenceDto
+- TransactionPayloadEssenceDto
 
 | Field   | Type                                 | Description          |
 | ------- | ------------------------------------ | -------------------- |
@@ -771,6 +815,7 @@ Gets the metadata of the given message.
 | version              | <code>string</code>   | Node version                  |
 | isHealthy            | <code>boolean</code>  | Node health status            |
 | networkId            | <code>string</code>   | Node network identifier       |
+| bech32HRP            | <code>string</code>   | Bech32 HRP for this network   |
 | latestMilestoneIndex | <code>number</code>   | Index of the latest milestone |
 | solidMilestoneIndex  | <code>number</code>   | Index of the solid milestone  |
 | pruningIndex         | <code>number</code>   | Pruning index                 |

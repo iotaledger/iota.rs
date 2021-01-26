@@ -1,8 +1,8 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{types::Bech32Address, Client, Error, Result};
-
+use crate::{Client, Error, Result};
+use bee_message::prelude::Bech32Address;
 use bee_signing_ext::Seed;
 
 /// Builder of get_unspent_address API
@@ -56,7 +56,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             let mut address = None;
             for a in addresses {
                 let address_balance = self.client.get_address().balance(&a).await?;
-                match address_balance {
+                match address_balance.balance {
                     0 => {
                         address = Some(a);
                         break;
