@@ -402,11 +402,10 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
 
         let mut unlock_blocks = Vec::new();
-        let mut current_block_index: usize = 0;
         let mut signature_indexes = HashMap::<String, usize>::new();
         address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
 
-        for recorder in address_index_recorders.iter() {
+        for (current_block_index, recorder) in address_index_recorders.iter().enumerate() {
             // Check if current path is same as previous path
             // If so, add a reference unlock block
 
@@ -430,9 +429,6 @@ impl<'a> SendBuilder<'a> {
                     Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
                 }
                 signature_indexes.insert(index, current_block_index);
-
-                // Update current block index
-                current_block_index += 1;
             }
         }
         // TODO overflow check
