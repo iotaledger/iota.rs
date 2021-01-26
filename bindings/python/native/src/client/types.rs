@@ -5,15 +5,29 @@ use crate::client::error::{Error, Result};
 use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota::{
-    builder::NetworkInfo as RustNetworkInfo, Address as RustAddress, Ed25519Address as RustEd25519Address,
-    Ed25519Signature as RustEd25519Signature, IndexationPayload as RustIndexationPayload, Input as RustInput,
-    Message as RustMessage, MessageMetadata as RustMessageMetadata, MilestoneMetadata as RustMilestoneMetadata,
-    MilestonePayloadEssence as RustMilestonePayloadEssence, NodeInfo as RustNodeInfo, Output as RustOutput,
-    OutputMetadata as RustOutputMetadata, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
-    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
-    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload,
-    TransactionPayloadEssence as RustTransactionPayloadEssence, UTXOInput as RustUTXOInput,
-    UnlockBlock as RustUnlockBlock,
+    bee_rest_api::{
+        handlers::{
+            balance_ed25519::BalanceForAddressResponse as RustBalanceForAddressResponse,
+            info::InfoResponse as RustInfoResponse,
+            message_metadata::{
+                LedgerInclusionStateDto as RustLedgerInclusionStateDto,
+                MessageMetadataResponse as RustMessageMetadataResponse,
+            },
+            output::OutputResponse as RustOutputResponse,
+        },
+        types::{
+            AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, MilestoneDto as RustMilestoneDto,
+            OutputDto as RustOutputDto, SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
+        },
+    },
+    builder::NetworkInfo as RustNetworkInfo,
+    Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
+    IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
+    MilestonePayloadEssence as RustMilestonePayloadEssence, Output as RustOutput, Payload as RustPayload,
+    ReferenceUnlock as RustReferenceUnlock, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
+    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
+    TransactionPayload as RustTransactionPayload, TransactionPayloadEssence as RustTransactionPayloadEssence,
+    UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
 };
 
 use std::{
@@ -25,23 +39,32 @@ pub const MILESTONE_PUBLIC_KEY_LENGTH: usize = 32;
 pub static mut BECH32_HRP: &str = "atoi1";
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct MessageMetadata {
+pub struct MessageMetadataResponse {
     /// Message ID
     pub message_id: String,
-    /// Message ID of parent1
-    pub parent1: String,
-    /// Message ID of parent2
-    pub parent2: String,
+    /// Message ID of parent_1
+    pub parent_1_message_id: String,
+    /// Message ID of parent_2
+    pub parent_2_message_id: String,
     /// Solid status
     pub is_solid: bool,
-    /// Should promote
+    pub referenced_by_milestone_index: Option<u32>,
+    pub milestone_index: Option<u32>,
+    pub ledger_inclusion_state: Option<LedgerInclusionStateDto>,
+    pub conflict_reason: Option<u8>,
     pub should_promote: Option<bool>,
-    /// Should reattach
     pub should_reattach: Option<bool>,
-    /// Referenced by milestone index
-    pub referenced_by_milestone_index: Option<u64>,
-    /// Ledger inclusion state
-    pub ledger_inclusion_state: Option<String>,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct BalanceForAddressResponse {
+    // The type of the address (1=Ed25519).
+    pub address_type: u8,
+    // hex encoded address
+    pub address: String,
+    pub max_results: usize,
+    pub count: usize,
+    pub balance: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -53,13 +76,15 @@ pub struct AddressBalancePair {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct MilestoneMetadata {
-    /// Milestone index
-    pub milestone_index: u64,
-    /// Milestone ID
-    pub message_id: String,
-    /// Timestamp
+pub struct MilestoneDto {
+    pub kind: u32,
+    pub index: u32,
     pub timestamp: u64,
+    pub parent_1_message_id: String,
+    pub parent_2_message_id: String,
+    pub inclusion_merkle_proof: String,
+    pub public_keys: Vec<String>,
+    pub signatures: Vec<String>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -69,19 +94,35 @@ pub struct UTXOInput {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct OutputMetadata {
-    /// Message ID of the output
-    pub message_id: Vec<u8>,
-    /// Transaction ID of the output
-    pub transaction_id: Vec<u8>,
-    /// Output index.
+pub struct OutputResponse {
+    pub message_id: String,
+    pub transaction_id: String,
     pub output_index: u16,
-    /// Spend status of the output
     pub is_spent: bool,
-    /// Corresponding address
-    pub address: String,
-    /// Balance amount
+    pub output: OutputDto,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct OutputDto {
+    signature_locked_single: SignatureLockedSingleOutputDto,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct SignatureLockedSingleOutputDto {
+    pub kind: u32,
+    pub address: AddressDto,
     pub amount: u64,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct AddressDto {
+    ed25519: Ed25519AddressDto,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct Ed25519AddressDto {
+    pub kind: u32,
+    pub address: String,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -170,26 +211,23 @@ pub struct BrokerOptions {
     pub use_ws: bool,
 }
 
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct LedgerInclusionStateDto {
+    pub state: String,
+}
+
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct NodeInfo {
-    /// Iota node Name
+pub struct InfoResponse {
     pub name: String,
-    /// Iota node version
     pub version: String,
-    /// Connection status
     pub is_healthy: bool,
-    /// coordinator public key
     pub network_id: String,
-    /// minimum proof of work score
-    pub min_pow_score: f64,
-    /// latest milestone index
-    pub latest_milestone_index: usize,
-    /// solid milestone index
-    pub solid_milestone_index: usize,
-    /// pruning index
-    pub pruning_index: usize,
-    /// features
+    pub bech32_hrp: String,
+    pub latest_milestone_index: u32,
+    pub solid_milestone_index: u32,
+    pub pruning_index: u32,
     pub features: Vec<String>,
+    pub min_pow_score: f64,
 }
 
 pub struct NetworkInfo {
@@ -205,18 +243,105 @@ pub struct NetworkInfo {
     pub local_pow: bool,
 }
 
-impl From<RustNodeInfo> for NodeInfo {
-    fn from(node_info: RustNodeInfo) -> Self {
-        NodeInfo {
-            name: node_info.name,
-            version: node_info.version,
-            is_healthy: node_info.is_healthy,
-            network_id: node_info.network_id,
-            min_pow_score: node_info.min_pow_score,
-            latest_milestone_index: node_info.latest_milestone_index,
-            solid_milestone_index: node_info.solid_milestone_index,
-            pruning_index: node_info.pruning_index,
-            features: node_info.features,
+impl From<RustOutputResponse> for OutputResponse {
+    fn from(output: RustOutputResponse) -> Self {
+        Self {
+            message_id: output.message_id,
+            transaction_id: output.transaction_id,
+            output_index: output.output_index,
+            is_spent: output.is_spent,
+            output: output.output.into(),
+        }
+    }
+}
+
+impl From<RustOutputDto> for OutputDto {
+    fn from(output: RustOutputDto) -> Self {
+        Self {
+            signature_locked_single: match output {
+                RustOutputDto::SignatureLockedSingle(signature) => signature.into(),
+            },
+        }
+    }
+}
+
+impl From<RustEd25519AddressDto> for Ed25519AddressDto {
+    fn from(address: RustEd25519AddressDto) -> Self {
+        Self {
+            kind: address.kind,
+            address: address.address,
+        }
+    }
+}
+
+impl From<RustSignatureLockedSingleOutputDto> for SignatureLockedSingleOutputDto {
+    fn from(address: RustSignatureLockedSingleOutputDto) -> Self {
+        Self {
+            kind: address.kind,
+            address: address.address.into(),
+            amount: address.amount,
+        }
+    }
+}
+
+impl From<RustAddressDto> for AddressDto {
+    fn from(address: RustAddressDto) -> Self {
+        Self {
+            ed25519: match address {
+                RustAddressDto::Ed25519(ed25519) => ed25519.into(),
+            },
+        }
+    }
+}
+
+impl From<RustBalanceForAddressResponse> for BalanceForAddressResponse {
+    fn from(balance_for_address_response: RustBalanceForAddressResponse) -> Self {
+        BalanceForAddressResponse {
+            address_type: balance_for_address_response.address_type,
+            address: balance_for_address_response.address,
+            max_results: balance_for_address_response.max_results,
+            count: balance_for_address_response.count,
+            balance: balance_for_address_response.balance,
+        }
+    }
+}
+
+impl From<RustMessageMetadataResponse> for MessageMetadataResponse {
+    fn from(message_metadata_response: RustMessageMetadataResponse) -> Self {
+        Self {
+            message_id: message_metadata_response.message_id,
+            parent_1_message_id: message_metadata_response.parent_1_message_id,
+            parent_2_message_id: message_metadata_response.parent_2_message_id,
+            is_solid: message_metadata_response.is_solid,
+            referenced_by_milestone_index: message_metadata_response.referenced_by_milestone_index,
+            milestone_index: message_metadata_response.milestone_index,
+            ledger_inclusion_state: {
+                if let Some(state) = message_metadata_response.ledger_inclusion_state {
+                    Some(state.into())
+                } else {
+                    None
+                }
+            },
+            conflict_reason: message_metadata_response.conflict_reason,
+            should_promote: message_metadata_response.should_promote,
+            should_reattach: message_metadata_response.should_reattach,
+        }
+    }
+}
+
+impl From<RustInfoResponse> for InfoResponse {
+    fn from(info: RustInfoResponse) -> Self {
+        InfoResponse {
+            name: info.name,
+            version: info.version,
+            is_healthy: info.is_healthy,
+            network_id: info.network_id,
+            bech32_hrp: info.bech32_hrp,
+            latest_milestone_index: info.latest_milestone_index,
+            solid_milestone_index: info.solid_milestone_index,
+            pruning_index: info.pruning_index,
+            features: info.features,
+            min_pow_score: info.min_pow_score,
         }
     }
 }
@@ -233,40 +358,33 @@ impl From<RustNetworkInfo> for NetworkInfo {
     }
 }
 
-impl From<RustMessageMetadata> for MessageMetadata {
-    fn from(message_metadata: RustMessageMetadata) -> Self {
-        MessageMetadata {
-            message_id: message_metadata.message_id,
-            parent1: message_metadata.parent1,
-            parent2: message_metadata.parent2,
-            is_solid: message_metadata.is_solid,
-            should_promote: message_metadata.should_promote,
-            should_reattach: message_metadata.should_reattach,
-            referenced_by_milestone_index: message_metadata.referenced_by_milestone_index,
-            ledger_inclusion_state: message_metadata.ledger_inclusion_state,
+impl From<RustMilestoneDto> for MilestoneDto {
+    fn from(milestone_dto: RustMilestoneDto) -> Self {
+        Self {
+            kind: milestone_dto.kind,
+            index: milestone_dto.index,
+            timestamp: milestone_dto.timestamp,
+            parent_1_message_id: milestone_dto.parent_1_message_id,
+            parent_2_message_id: milestone_dto.parent_2_message_id,
+            inclusion_merkle_proof: milestone_dto.inclusion_merkle_proof,
+            public_keys: milestone_dto.public_keys,
+            signatures: milestone_dto.signatures,
         }
     }
 }
 
-impl From<RustOutputMetadata> for OutputMetadata {
-    fn from(output_metadata: RustOutputMetadata) -> Self {
-        OutputMetadata {
-            message_id: output_metadata.message_id,
-            transaction_id: output_metadata.transaction_id,
-            output_index: output_metadata.output_index,
-            is_spent: output_metadata.is_spent,
-            address: unsafe { output_metadata.address.to_bech32(BECH32_HRP) },
-            amount: output_metadata.amount,
-        }
-    }
-}
-
-impl From<RustMilestoneMetadata> for MilestoneMetadata {
-    fn from(milestone_metadata: RustMilestoneMetadata) -> Self {
-        MilestoneMetadata {
-            milestone_index: milestone_metadata.milestone_index,
-            message_id: milestone_metadata.message_id,
-            timestamp: milestone_metadata.timestamp,
+impl From<RustLedgerInclusionStateDto> for LedgerInclusionStateDto {
+    fn from(state: RustLedgerInclusionStateDto) -> Self {
+        match state {
+            RustLedgerInclusionStateDto::Conflicting => Self {
+                state: "Conflicting".to_string(),
+            },
+            RustLedgerInclusionStateDto::Included => Self {
+                state: "Included".to_string(),
+            },
+            RustLedgerInclusionStateDto::NoTransaction => Self {
+                state: "NoTransaction".to_string(),
+            },
         }
     }
 }

@@ -1,7 +1,9 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client::{error::Result, Client, Message, MilestoneMetadata, NodeInfo, OutputMetadata, UTXOInput};
+use crate::client::{
+    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, OutputResponse, UTXOInput,
+};
 use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
     MessageId as RustMessageId, UTXOInput as RustUTXOInput,
@@ -20,7 +22,7 @@ impl Client {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_health().await })?)
     }
-    fn get_info(&self) -> Result<NodeInfo> {
+    fn get_info(&self) -> Result<InfoResponse> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_info().await })?.into())
     }
@@ -42,20 +44,22 @@ impl Client {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.post_message(&msg).await })?.to_string())
     }
-    fn get_output(&self, output_id: String) -> Result<OutputMetadata> {
+    fn get_output(&self, output_id: String) -> Result<OutputResponse> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt
             .block_on(async { self.client.get_output(&RustUTXOInput::from_str(&output_id)?).await })?
             .into())
     }
-    fn get_address_balance(&self, address: &str) -> Result<u64> {
+    fn get_address_balance(&self, address: &str) -> Result<BalanceForAddressResponse> {
         let rt = tokio::runtime::Runtime::new().unwrap();
-        Ok(rt.block_on(async {
-            self.client
-                .get_address()
-                .balance(&RustBech32Address::from(address))
-                .await
-        })?)
+        Ok(rt
+            .block_on(async {
+                self.client
+                    .get_address()
+                    .balance(&RustBech32Address::from(address))
+                    .await
+            })?
+            .into())
     }
     fn get_address_outputs(&self, address: &str) -> Result<Vec<UTXOInput>> {
         let rt = tokio::runtime::Runtime::new()?;
@@ -78,7 +82,7 @@ impl Client {
         &self,
         output_ids: Option<Vec<String>>,
         addresses: Option<Vec<String>>,
-    ) -> Result<Vec<OutputMetadata>> {
+    ) -> Result<Vec<OutputResponse>> {
         let output_ids: Vec<RustUTXOInput> = output_ids
             .unwrap_or_default()
             .iter()
@@ -97,7 +101,7 @@ impl Client {
             .map(|metadata| metadata.into())
             .collect())
     }
-    fn get_milestone(&self, index: u64) -> Result<MilestoneMetadata> {
+    fn get_milestone(&self, index: u64) -> Result<MilestoneDto> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_milestone(index).await })?.into())
     }

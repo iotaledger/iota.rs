@@ -1,12 +1,15 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client::{error::Result, AddressBalancePair, Client, Input, Message, MessageMetadata, Output};
+use crate::client::{
+    error::{Error, Result},
+    AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output,
+};
 use iota::{
     Bech32Address as RustBech32Address, MessageId as RustMessageId, Seed as RustSeed,
     TransactionId as RustTransationId, UTXOInput as RustUTXOInput,
 };
-use pyo3::prelude::*;
+use pyo3::{exceptions, prelude::*};
 use std::{
     convert::{From, Into, TryInto},
     str::FromStr,
@@ -21,6 +24,8 @@ impl Client {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
         inputs: Option<Vec<Input>>,
+        input_range_begin: Option<usize>,
+        input_range_end: Option<usize>,
         outputs: Option<Vec<Output>>,
         index: Option<&str>,
         data: Option<Vec<u8>>,
@@ -41,6 +46,17 @@ impl Client {
                     RustTransationId::from_str(&input.transaction_id[..])?,
                     input.index,
                 )?);
+            }
+        }
+        if let Some(begin) = input_range_begin {
+            if let Some(end) = input_range_end {
+                send_builder = send_builder.with_input_range(begin..end);
+            } else {
+                return Err(Error {
+                    error: PyErr::new::<exceptions::PyValueError, _>(
+                        "input_range_begin and input_range_end need to be assigned together!",
+                    ),
+                });
             }
         }
         if let Some(outputs) = outputs {
@@ -78,8 +94,8 @@ impl Client {
     ///     message_id (str): The identifier of message.
     ///
     /// Returns:
-    ///     message_metadata (dict): The returned MessageMetadata dict.
-    fn get_message_metadata(&self, message_id: &str) -> Result<MessageMetadata> {
+    ///     message_metadata (dict): The returned MessageMetadataResponse dict.
+    fn get_message_metadata(&self, message_id: &str) -> Result<MessageMetadataResponse> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt
             .block_on(async {
@@ -259,7 +275,7 @@ impl Client {
         Ok(address_balances
             .iter()
             .map(|address_balance| AddressBalancePair {
-                address: address_balance.address.0.clone(),
+                address: address_balance.address.clone(),
                 balance: address_balance.balance,
             })
             .collect())
