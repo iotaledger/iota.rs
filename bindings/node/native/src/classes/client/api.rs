@@ -195,8 +195,7 @@ impl Task for ClientTask {
                     };
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(client.get_network_id().await?)
-                        .with_parent1(parent1)
-                        .with_parent2(parent2)
+                        .with_parents(vec![parent1, parent2])
                         .with_nonce_provider(client.get_pow_provider(), 4000f64)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;

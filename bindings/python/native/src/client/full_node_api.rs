@@ -34,8 +34,12 @@ impl Client {
     fn post_message(&self, msg: Message) -> Result<String> {
         let mut msg_builder = RustMessageBuilder::<RustClientMiner>::new()
             .with_network_id(msg.network_id)
-            .with_parent1(RustMessageId::from_str(&msg.parent1)?)
-            .with_parent2(RustMessageId::from_str(&msg.parent1)?)
+            .with_parents(
+                msg.parents
+                    .iter()
+                    .map(|m| m.parse::<RustMessageId>().expect("Invalid message id"))
+                    .collect::<Vec<RustMessageId>>(),
+            )
             .with_nonce_provider(self.client.get_pow_provider(), 4000f64);
         if let Some(payload) = msg.payload {
             msg_builder = msg_builder.with_payload(payload.try_into()?);

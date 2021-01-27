@@ -495,24 +495,22 @@ impl<'a> SendBuilder<'a> {
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         // get tips
         let tips = self.client.get_tips().await?;
-
+        let mut parent_messages = vec![tips.0, tips.1];
+        if let Some(parent) = self.parent {
+            parent_messages[0] = parent;
+        }
         // building message
         let mut message = MessageBuilder::<ClientMiner>::new();
-
         message = match self.network_id {
             Some(id) => message.with_network_id(id),
             _ => message.with_network_id(self.client.get_network_info().network_id),
         };
 
-        message = match self.parent {
-            Some(p) => message.with_parent1(p),
-            _ => message.with_parent1(tips.0),
-        };
         if let Some(p) = payload {
             message = message.with_payload(p);
         }
         let final_message = message
-            .with_parent2(tips.1)
+            .with_parents(parent_messages)
             .with_nonce_provider(
                 self.client.get_pow_provider(),
                 self.client.get_network_info().min_pow_score,

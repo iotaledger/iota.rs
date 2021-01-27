@@ -602,8 +602,7 @@ impl Client {
         let tips = self.get_tips().await?;
         let reattach_message = Message::builder()
             .with_network_id(self.get_network_id().await?)
-            .with_parent1(tips.0)
-            .with_parent2(tips.1)
+            .with_parents(vec![tips.0, tips.1])
             .with_payload(message.payload().to_owned().unwrap())
             .finish()
             .map_err(|_| Error::TransactionError)?;
@@ -629,8 +628,7 @@ impl Client {
         let tips = self.get_tips().await?;
         let promote_message = Message::builder()
             .with_network_id(self.get_network_id().await?)
-            .with_parent1(*message_id)
-            .with_parent2(tips.0)
+            .with_parents(vec![*message_id, tips.0])
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
