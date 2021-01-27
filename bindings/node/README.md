@@ -475,6 +475,17 @@ Adds an output to the transaction.
 
 **Returns** the message submit instance for chained calls.
 
+#### dustAllowanceOutput(address, amount): MessageSender
+
+Adds a dust allowance output to the transaction.
+
+| Param   | Type                | Description        |
+| ------- | ------------------- | ------------------ |
+| address | <code>string</code> | The output address |
+| amount  | <code>number</code> | The output amount  |
+
+**Returns** the message submit instance for chained calls.
+
 #### initialAddressIndex(index): MessageSender
 
 Sets the initial address index to search for balance. Defaults to 0 if the function isn't called.

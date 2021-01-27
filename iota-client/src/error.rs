@@ -18,15 +18,18 @@ pub enum Error {
     /// The wallet account doesn't have enough balance
     #[error("The wallet account doesn't have enough balance. It only has {0}")]
     NotEnoughBalance(u64),
+    /// Dust error, for example not enough balance on an address
+    #[error("Dust error: {0}")]
+    DustError(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(String),
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
     InvalidParameter(String),
-    /// Found Spent Address that still has balance
-    #[error("Found Spent Address that still has balance.")]
-    SpentAddress,
+    /// Found spent output
+    #[error("Found spent output.")]
+    SpentOutput,
     /// Error from RestAPI calls with unexpected status code response
     #[error("Response error with status code {0}: {1}")]
     ResponseError(u16, String),

@@ -1,0 +1,46 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+//! cargo run --example dust --release
+use iota::{Client, Seed};
+extern crate dotenv;
+use dotenv::dotenv;
+use std::env;
+
+/// In this example, we send a dust allowance output and dust
+
+#[tokio::main]
+async fn main() {
+    let iota = Client::builder() // Crate a client instance builder
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .unwrap()
+        .finish()
+        .unwrap();
+
+    println!("This example uses dotenv, which is not safe for use in production.");
+    dotenv().ok();
+    let seed =
+        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
+            .unwrap();
+    let message_id = iota
+        .send()
+        .with_seed(&seed)
+        .with_dust_allowance_output(
+            &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),
+            1_000_000,
+        )
+        .unwrap()
+        .with_output(
+            &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),
+            1,
+        )
+        .unwrap()
+        .finish()
+        .await
+        .unwrap();
+
+    println!(
+        "First transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
+        message_id.id().0
+    );
+}

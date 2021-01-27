@@ -47,6 +47,10 @@ name = "custom_parent"
 path = "custom_parent.rs"
 
 [[example]]
+name = "dust"
+path = "dust.rs"
+
+[[example]]
 name = "nodeinfo"
 path = "nodeinfo.rs"
 

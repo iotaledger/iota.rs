@@ -19,6 +19,7 @@ pub struct MessageSender {
     inputs: Vec<UTXOInput>,
     input_range: Range<usize>,
     outputs: Vec<(Address, u64)>,
+    dust_allowance_outputs: Vec<(Address, u64)>,
 }
 
 declare_types! {
@@ -36,6 +37,7 @@ declare_types! {
                 inputs: Vec::new(),
                 input_range: 0..100,
                 outputs: Vec::new(),
+                dust_allowance_outputs: Vec::new(),
             })
         }
 
@@ -137,6 +139,20 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method dustAllowanceOutput(mut cx) {
+            let address = cx.argument::<JsString>(0)?.value();
+            let address = parse_address(address).expect("invalid address");
+            let value = cx.argument::<JsNumber>(1)?.value() as u64;
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let dust_allowance_outputs = &mut this.borrow_mut(&guard).dust_allowance_outputs;
+                dust_allowance_outputs.push((address, value));
+            }
+
+            Ok(cx.this().upcast())
+        }
+
         method input(mut cx) {
             let transaction_id = cx.argument::<JsString>(0)?.value();
             let transaction_id = TransactionId::from_str(&transaction_id).expect("invalid transaction id");
@@ -180,6 +196,7 @@ declare_types! {
                         initial_address_index: ref_.initial_address_index,
                         inputs: ref_.inputs.clone(),
                         outputs: ref_.outputs.clone(),
+                        dust_allowance_outputs: ref_.dust_allowance_outputs.clone(),
                     },
                 };
                 client_task.schedule(cb);

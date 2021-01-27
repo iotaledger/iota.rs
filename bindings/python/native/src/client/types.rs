@@ -17,7 +17,9 @@ use iota::{
         },
         types::{
             AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, MilestoneDto as RustMilestoneDto,
-            OutputDto as RustOutputDto, SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
+            OutputDto as RustOutputDto,
+            SignatureLockedDustAllowanceOutputDto as RustSignatureLockedDustAllowanceOutputDto,
+            SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
@@ -62,8 +64,6 @@ pub struct BalanceForAddressResponse {
     pub address_type: u8,
     // hex encoded address
     pub address: String,
-    pub max_results: usize,
-    pub count: usize,
     pub balance: u64,
 }
 
@@ -104,11 +104,19 @@ pub struct OutputResponse {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct OutputDto {
-    signature_locked_single: SignatureLockedSingleOutputDto,
+    signature_locked_single: Option<SignatureLockedSingleOutputDto>,
+    signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutputDto>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct SignatureLockedSingleOutputDto {
+    pub kind: u32,
+    pub address: AddressDto,
+    pub amount: u64,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct SignatureLockedDustAllowanceOutputDto {
     pub kind: u32,
     pub address: AddressDto,
     pub amount: u64,
@@ -257,9 +265,14 @@ impl From<RustOutputResponse> for OutputResponse {
 
 impl From<RustOutputDto> for OutputDto {
     fn from(output: RustOutputDto) -> Self {
-        Self {
-            signature_locked_single: match output {
-                RustOutputDto::SignatureLockedSingle(signature) => signature.into(),
+        match output {
+            RustOutputDto::SignatureLockedSingle(signature) => OutputDto {
+                signature_locked_single: Some(signature.into()),
+                signature_locked_dust_allowance: None,
+            },
+            RustOutputDto::SignatureLockedDustAllowance(signature) => OutputDto {
+                signature_locked_single: None,
+                signature_locked_dust_allowance: Some(signature.into()),
             },
         }
     }
@@ -284,6 +297,16 @@ impl From<RustSignatureLockedSingleOutputDto> for SignatureLockedSingleOutputDto
     }
 }
 
+impl From<RustSignatureLockedDustAllowanceOutputDto> for SignatureLockedDustAllowanceOutputDto {
+    fn from(address: RustSignatureLockedDustAllowanceOutputDto) -> Self {
+        Self {
+            kind: address.kind,
+            address: address.address.into(),
+            amount: address.amount,
+        }
+    }
+}
+
 impl From<RustAddressDto> for AddressDto {
     fn from(address: RustAddressDto) -> Self {
         Self {
@@ -299,8 +322,6 @@ impl From<RustBalanceForAddressResponse> for BalanceForAddressResponse {
         BalanceForAddressResponse {
             address_type: balance_for_address_response.address_type,
             address: balance_for_address_response.address,
-            max_results: balance_for_address_response.max_results,
-            count: balance_for_address_response.count,
             balance: balance_for_address_response.balance,
         }
     }

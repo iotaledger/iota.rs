@@ -3,8 +3,8 @@
 
 use iota::{
     AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Output,
-    OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock, SignatureLockedSingleOutput,
-    SignatureUnlock, TransactionPayload, TransactionPayloadEssence, UTXOInput, UnlockBlock,
+    OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock, SignatureUnlock,
+    TransactionPayload, TransactionPayloadEssence, UTXOInput, UnlockBlock,
 };
 use serde::{Deserialize, Serialize};
 
@@ -14,15 +14,9 @@ use std::{
 };
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct OutputDto {
-    address: String,
-    amount: u64,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
 pub struct MessageTransactionPayloadEssenceDto {
     inputs: Box<[String]>,
-    outputs: Box<[OutputDto]>,
+    outputs: Box<[BeeOutput]>,
     payload: Option<Box<MessagePayloadDto>>,
 }
 
@@ -49,15 +43,7 @@ impl TryFrom<MessageTransactionPayloadEssenceDto> for TransactionPayloadEssence 
             .outputs
             .into_vec()
             .into_iter()
-            .map(|output| {
-                SignatureLockedSingleOutput::new(
-                    super::parse_address(output.address.clone())
-                        .unwrap_or_else(|_| panic!("invalid output address: {}", output.address)),
-                    output.amount,
-                )
-                .unwrap()
-                .into()
-            })
+            .map(|output| Output::try_from(&output).unwrap())
             .collect();
         for output in outputs {
             builder = builder.add_output(output);
@@ -197,6 +183,9 @@ impl From<OutputMetadata> for OutputMetadataDto {
             BeeOutput::SignatureLockedSingle(r) => match r.address {
                 AddressDto::Ed25519(addr) => (r.amount, addr.address),
             },
+            BeeOutput::SignatureLockedDustAllowance(r) => match r.address {
+                AddressDto::Ed25519(addr) => (r.amount, addr.address),
+            },
         };
 
         Self {
@@ -204,7 +193,6 @@ impl From<OutputMetadata> for OutputMetadataDto {
             transaction_id: hex::encode(value.transaction_id),
             output_index: value.output_index,
             is_spent: value.is_spent,
-            // todo encode hex so it's always correct?
             address: output_address,
             amount: output_amount,
         }
