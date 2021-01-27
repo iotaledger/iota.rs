@@ -13,7 +13,6 @@ use bee_signing_ext::{
 };
 use std::{
     collections::{HashMap, HashSet},
-    convert::TryInto,
     ops::Range,
     str::FromStr,
 };
@@ -101,7 +100,7 @@ impl<'a> SendBuilder<'a> {
     /// Set a transfer to the builder, address needs to be Bech32 encoded
     pub fn with_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
         let address = Address::try_from_bech32(&address.to_string())?;
-        let output = SignatureLockedSingleOutput::new(address, amount).unwrap().into();
+        let output = SignatureLockedSingleOutput::new(address, amount)?.into();
         self.outputs.push(output);
         Ok(self)
     }
@@ -114,16 +113,14 @@ impl<'a> SendBuilder<'a> {
             ));
         }
         let address = Address::try_from_bech32(&address.to_string())?;
-        let output = SignatureLockedDustAllowanceOutput::new(address, amount).unwrap().into();
+        let output = SignatureLockedDustAllowanceOutput::new(address, amount)?.into();
         self.outputs.push(output);
         Ok(self)
     }
 
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount)
-            .unwrap()
-            .into();
+        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount)?.into();
         self.outputs.push(output);
         Ok(self)
     }
@@ -270,9 +267,7 @@ impl<'a> SendBuilder<'a> {
                                     dust_and_allowance_recorders.push((remaining_balance, output_address, true));
                                 }
                                 essence = essence.add_output(
-                                    SignatureLockedSingleOutput::new(output_address, remaining_balance)
-                                        .unwrap()
-                                        .into(),
+                                    SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into(),
                                 );
                             }
                         }
@@ -370,8 +365,7 @@ impl<'a> SendBuilder<'a> {
                                                 SignatureLockedSingleOutput::new(
                                                     Address::try_from_bech32(address)?,
                                                     remaining_balance,
-                                                )
-                                                .unwrap()
+                                                )?
                                                 .into(),
                                             );
                                         }
@@ -533,9 +527,9 @@ impl<'a> SendBuilder<'a> {
 
 async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
     // balance of all dust allowance outputs
-    let mut dust_allowance_balance = 0;
+    let mut dust_allowance_balance: i64 = 0;
     // Amount of dust outputs
-    let mut dust_outputs_amount: i32 = 0;
+    let mut dust_outputs_amount: i64 = 0;
 
     // add outputs from this transaction
     for output in outputs {
@@ -543,7 +537,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
             // add newly created outputs
             true => {
                 if output.0 >= 1_000_000 {
-                    dust_allowance_balance += output.0;
+                    dust_allowance_balance += output.0 as i64;
                 } else {
                     dust_outputs_amount += 1
                 }
@@ -551,7 +545,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
             // remove consumed outputs
             false => {
                 if output.0 >= 1_000_000 {
-                    dust_allowance_balance -= output.0;
+                    dust_allowance_balance -= output.0 as i64;
                 } else {
                     dust_outputs_amount -= 1;
                 }
@@ -564,7 +558,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
             OutputDto::SignatureLockedDustAllowance(d_a_o) => {
-                dust_allowance_balance += d_a_o.amount;
+                dust_allowance_balance += d_a_o.amount as i64;
             }
             OutputDto::SignatureLockedSingle(s_o) => {
                 if s_o.amount < 1_000_000 {
@@ -575,8 +569,8 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     }
 
     // Max allowed dust outputs is 100
-    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, 100);
-    if dust_outputs_amount > allowed_dust_amount.try_into().unwrap() {
+    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, 100) as i64;
+    if dust_outputs_amount > allowed_dust_amount {
         return Err(Error::DustError(format!(
             "No dust output allowed on address {}",
             address
