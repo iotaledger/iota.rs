@@ -19,6 +19,7 @@ pub(crate) enum Api {
         initial_address_index: Option<usize>,
         inputs: Vec<UTXOInput>,
         outputs: Vec<(Address, u64)>,
+        dust_allowance_outputs: Vec<(Address, u64)>,
     },
     GetUnspentAddress {
         seed: Seed,
@@ -83,6 +84,7 @@ impl Task for ClientTask {
                     initial_address_index,
                     inputs,
                     outputs,
+                    dust_allowance_outputs,
                 } => {
                     let mut sender = client.send();
                     if let Some(seed) = seed {
@@ -110,6 +112,11 @@ impl Task for ClientTask {
                     for output in outputs {
                         sender = sender
                             .with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
+                            .unwrap();
+                    }
+                    for output in dust_allowance_outputs {
+                        sender = sender
+                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
                             .unwrap();
                     }
                     let message_id = sender.finish().await?;

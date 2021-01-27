@@ -37,6 +37,7 @@ export declare class MessageSender {
   input(transactionId: string, index: number): MessageSender
   inputRange(start: number, end: number): MessageSender
   output(address: string, value: number): MessageSender
+  dustAllowanceOutput(address: string, value: number): MessageSender
   submit(): Promise<string>
 }
 
