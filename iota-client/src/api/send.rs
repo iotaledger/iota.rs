@@ -526,7 +526,8 @@ impl<'a> SendBuilder<'a> {
 }
 
 // Calculate the outputs on this address after this transaction gets confirmed so we know if we can send dust or
-// dust allowance outputs (as input) the bool in the outputs defines if we consume this output (false) or create a new one (true)
+// dust allowance outputs (as input). the bool in the outputs defines if we consume this output (false) or create a new
+// one (true)
 async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
     // balance of all dust allowance outputs
     let mut dust_allowance_balance: i64 = 0;
