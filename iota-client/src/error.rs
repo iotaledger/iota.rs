@@ -27,9 +27,9 @@ pub enum Error {
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
     InvalidParameter(String),
-    /// Found Spent Address that still has balance
-    #[error("Found Spent Address that still has balance.")]
-    SpentAddress,
+    /// Found spent output
+    #[error("Found spent output.")]
+    SpentOutput,
     /// Error from RestAPI calls with unexpected status code response
     #[error("Response error with status code {0}: {1}")]
     ResponseError(u16, String),
