@@ -27,6 +27,7 @@ impl Client {
         input_range_begin: Option<usize>,
         input_range_end: Option<usize>,
         outputs: Option<Vec<Output>>,
+        dust_allowance_outputs: Option<Vec<Output>>,
         index: Option<&str>,
         data: Option<Vec<u8>>,
         data_str: Option<String>,
@@ -61,6 +62,11 @@ impl Client {
         if let Some(outputs) = outputs {
             for output in outputs {
                 send_builder = send_builder.with_output(&output.address[..].into(), output.amount)?;
+            }
+        }
+        if let Some(dust_allowance_outputs) = dust_allowance_outputs {
+            for output in dust_allowance_outputs {
+                send_builder = send_builder.with_dust_allowance_output(&output.address[..].into(), output.amount)?;
             }
         }
         if let Some(index) = index {
