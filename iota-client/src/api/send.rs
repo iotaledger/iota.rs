@@ -311,12 +311,10 @@ impl<'a> SendBuilder<'a> {
                             };
                             match output.is_spent {
                                 true => {
-                                    if output_amount != 0 {
-                                        return Err(Error::SpentAddress);
-                                    }
+                                    return Err(Error::SpentAddress);
                                 }
                                 false => {
-                                    if output_amount != 0 && total_already_spent < total_to_spend {
+                                    if total_already_spent < total_to_spend {
                                         total_already_spent += output_amount;
                                         let mut address_path = path.clone();
                                         // Note that we need to sign the original address, i.e., `path/index`,
