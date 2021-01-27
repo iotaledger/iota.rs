@@ -97,3 +97,10 @@ jobs:
     - name: Build nodejs binding
       run: yarn
       working-directory: bindings/node
+
+    - name: Build python binding
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --all --release
+        working-directory: bindings/python/native
