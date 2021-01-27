@@ -525,13 +525,15 @@ impl<'a> SendBuilder<'a> {
     }
 }
 
+// Calculate the outputs on this address after this transaction gets confirmed so we know if we can send dust or
+// dust allowance outputs (as input) the bool in the outputs defines if we consume this output (false) or create a new one (true)
 async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
     // balance of all dust allowance outputs
     let mut dust_allowance_balance: i64 = 0;
     // Amount of dust outputs
     let mut dust_outputs_amount: i64 = 0;
 
-    // add outputs from this transaction
+    // Add outputs from this transaction
     for output in outputs {
         match output.2 {
             // add newly created outputs
@@ -553,8 +555,8 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
         }
     }
 
+    // Get outputs from address and apply values
     let address_outputs_metadata = client.find_outputs(&[], &[address.clone()]).await?;
-
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
             OutputDto::SignatureLockedDustAllowance(d_a_o) => {
@@ -568,8 +570,9 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
         }
     }
 
+    // Here dust_allowance_balance and dust_outputs_amount should be as if this transaction gets confirmed
     // Max allowed dust outputs is 100
-    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, 100) as i64;
+    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, 100);
     if dust_outputs_amount > allowed_dust_amount {
         return Err(Error::DustError(format!(
             "No dust output allowed on address {}",
