@@ -129,8 +129,7 @@ pub enum MessagePayloadDto {
 
 #[derive(Serialize, Deserialize)]
 pub struct MessageDto {
-    pub parent1: Option<String>,
-    pub parent2: Option<String>,
+    pub parents: Option<Vec<String>>,
     pub payload: MessagePayloadDto,
 }
 

@@ -55,8 +55,7 @@ export declare interface IndexationPayload {
 export declare interface MilestoneEssence {
   index: string
   timestamp: string
-  parent1: string
-  parent2: string
+  parents: string[]
   merkle_proof: number[]
   public_keys: number[]
 }

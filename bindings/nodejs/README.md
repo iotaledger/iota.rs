@@ -656,18 +656,17 @@ Gets the metadata of the given message.
 
 ### Address
 
-| Field | Type                                    | Description                |
-| ----- | --------------------------------------- | -------------------------- |
-| type  | <code>'Wots'        \| 'Ed25519'</code> | Address type               |
-| data  | <code>string</code>                     | Address as a Bech32 string |
+| Field | Type                   | Description                |
+| ----- | ---------------------- | -------------------------- |
+| type  | <code>'Ed25519'</code> | Address type               |
+| data  | <code>string</code>    | Address as a Bech32 string |
 
 ### Message
 
 | Field     | Type                             | Description                                    |
 | --------- | -------------------------------- | ---------------------------------------------- |
 | networkId | <code>number</code>              | Network identifier                             |
-| parent1   | <code>string</code>              | Message id of the first message it references  |
-| parent2   | <code>string</code>              | Message id of the second message it references |
+| parents   | <code>string[]</code>              | Message ids of the message references          |
 | payload   | <code>[Payload](#payload)</code> | Message payload                                |
 | nonce     | <code>number</code>              | Message nonce                                  |
 
@@ -742,8 +741,7 @@ Gets the metadata of the given message.
 | ------------ | ----------------------- | --------------------------------------------------------- |
 | index        | <code>number</code>     | Milestone index                                           |
 | timestamp    | <code>number</code>     | Timestamp                                                 |
-| parent1      | <code>string</code>     | Message id of the first message the milestone references  |
-| parent2      | <code>string</code>     | Message id of the second message the milestone references |
+| parents      | <code>string[]</code>   | Message ids of the messages the milestone references      |
 | merkle_proof | <code>number[]</code>   | Merkle proof                                              |
 | public_keys  | <code>number[][]</code> | public keys                                               |
 
@@ -751,8 +749,7 @@ Gets the metadata of the given message.
 
 | Field   | Type                                   | Description                                                                 |
 | ------- | -------------------------------------- | --------------------------------------------------------------------------- |
-| parent1 | <code>string \| undefined</code>       | Message id of the first message it references. `getTips` is used by default |
-| parent2 | <code>string \| undefined</code>       | Message id of the second message it references `getTips` is used by default |
+| parents | <code>string[] \| undefined</code>     | Message ids of the messages it references. `getTips` is used by default     |
 | payload | <code>[PayloadDto](#payloaddto)</code> | Message payload                                                             |
 
 #### PayloadDto
@@ -810,8 +807,7 @@ Gets the metadata of the given message.
 | Field                      | Type                              | Description                                               |
 | -------------------------- | --------------------------------- | --------------------------------------------------------- |
 | messageId                  | <code>string</code>               | Message identifier                                        |
-| parent1                    | <code>string</code>               | Message id of the first message it references             |
-| parent2                    | <code>string</code>               | Message id of the second message it references            |
+| parents                    | <code>string[]</code>               | Message id of the messages it references                  |
 | isSolid                    | <code>boolean</code>              | Message solid state                                       |
 | shouldPromote              | <code>boolean \| undefined</code> | Indicates whether the message should be promoted or not   |
 | shouldReattach             | <code>boolean \| undefined</code> | Indicates whether the message should be reattached or not |
