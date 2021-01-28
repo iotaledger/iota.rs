@@ -65,7 +65,7 @@ jobs:
     - name: Cache nodejs binding cargo target
       uses: actions/cache@v2
       with:
-        path: bindings/node/native/target
+        path: bindings/nodejs/native/target
         # Add date to the cache to keep it up to date
         key: ${{ matrix.os }}-stable-cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
         # Restore from outdated cache for speed
@@ -96,4 +96,11 @@ jobs:
 
     - name: Build nodejs binding
       run: yarn
-      working-directory: bindings/node
+      working-directory: bindings/nodejs
+
+    - name: Build python binding
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --all --release
+        working-directory: bindings/python/native

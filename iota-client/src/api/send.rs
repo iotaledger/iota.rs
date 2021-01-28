@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
@@ -12,8 +12,13 @@ use bee_signing_ext::{
     Seed, Signer,
 };
 use std::{
+<<<<<<< HEAD
     collections::HashMap,
     ops::{Deref, Range},
+=======
+    collections::{HashMap, HashSet},
+    ops::Range,
+>>>>>>> dev
     str::FromStr,
 };
 
@@ -100,16 +105,27 @@ impl<'a> SendBuilder<'a> {
     /// Set a transfer to the builder, address needs to be Bech32 encoded
     pub fn with_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
         let address = Address::try_from_bech32(&address.to_string())?;
-        let output = SignatureLockedSingleOutput::new(address, amount).unwrap().into();
+        let output = SignatureLockedSingleOutput::new(address, amount)?.into();
+        self.outputs.push(output);
+        Ok(self)
+    }
+
+    /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+    pub fn with_dust_allowance_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
+        if amount < 1_000_000 {
+            return Err(Error::DustError(
+                "Amount for SignatureLockedDustAllowanceOutput needs to be >= 1_000_000".into(),
+            ));
+        }
+        let address = Address::try_from_bech32(&address.to_string())?;
+        let output = SignatureLockedDustAllowanceOutput::new(address, amount)?.into();
         self.outputs.push(output);
         Ok(self)
     }
 
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount)
-            .unwrap()
-            .into();
+        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount)?.into();
         self.outputs.push(output);
         Ok(self)
     }
@@ -169,16 +185,27 @@ impl<'a> SendBuilder<'a> {
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
-        if self.outputs.is_empty() {
-            return Err(Error::MissingParameter(String::from("Outputs")));
-        }
+        let bech32_hrp = self.client.get_network_info().bech32_hrp;
+
+        // store (amount, address, new_created) to check later if dust is allowed
+        let mut dust_and_allowance_recorders = Vec::new();
 
         // Calculate the total tokens to spend
         let mut total_to_spend = 0;
         let mut total_already_spent = 0;
         for output in &self.outputs {
-            if let Output::SignatureLockedSingle(x) = &output {
-                total_to_spend += x.amount();
+            match output {
+                Output::SignatureLockedSingle(x) => {
+                    total_to_spend += x.amount();
+                    if x.amount() < 1_000_000 {
+                        dust_and_allowance_recorders.push((x.amount(), *x.address(), true));
+                    }
+                }
+                Output::SignatureLockedDustAllowance(x) => {
+                    total_to_spend += x.amount();
+                    dust_and_allowance_recorders.push((x.amount(), *x.address(), true));
+                }
+                _ => {}
             }
         }
 
@@ -197,6 +224,17 @@ impl<'a> SendBuilder<'a> {
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
                                         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                                        // Only add dust
+                                        if r.amount < 1_000_000 {
+                                            dust_and_allowance_recorders.push((r.amount, output_address, false));
+                                        }
+                                        (r.amount, output_address)
+                                    }
+                                },
+                                OutputDto::SignatureLockedDustAllowance(r) => match r.address {
+                                    AddressDto::Ed25519(addr) => {
+                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                                        dust_and_allowance_recorders.push((r.amount, output_address, false));
                                         (r.amount, output_address)
                                     }
                                 },
@@ -205,8 +243,6 @@ impl<'a> SendBuilder<'a> {
                             let mut address_path = path.clone();
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
-                            // Todo: Make the range 0..100 configurable
-                            let bech32_hrp = self.client.get_network_info().bech32_hrp;
                             let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
@@ -231,13 +267,12 @@ impl<'a> SendBuilder<'a> {
                             });
                             // Output the remaining tokens back to the original address
                             if total_already_spent > total_to_spend {
+                                let remaining_balance = total_already_spent - total_to_spend;
+                                if remaining_balance < 1_000_000 {
+                                    dust_and_allowance_recorders.push((remaining_balance, output_address, true));
+                                }
                                 essence = essence.add_output(
-                                    SignatureLockedSingleOutput::new(
-                                        output_address,
-                                        total_already_spent - total_to_spend,
-                                    )
-                                    .unwrap()
-                                    .into(),
+                                    SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into(),
                                 );
                             }
                         }
@@ -277,16 +312,29 @@ impl<'a> SendBuilder<'a> {
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
                             let output_amount = match output.output {
-                                OutputDto::SignatureLockedSingle(r) => r.amount,
+                                OutputDto::SignatureLockedSingle(r) => match r.address {
+                                    AddressDto::Ed25519(addr) => {
+                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                                        if r.amount < 1_000_000 {
+                                            dust_and_allowance_recorders.push((r.amount, output_address, false));
+                                        }
+                                        r.amount
+                                    }
+                                },
+                                OutputDto::SignatureLockedDustAllowance(r) => match r.address {
+                                    AddressDto::Ed25519(addr) => {
+                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                                        dust_and_allowance_recorders.push((r.amount, output_address, false));
+                                        r.amount
+                                    }
+                                },
                             };
                             match output.is_spent {
                                 true => {
-                                    if output_amount != 0 {
-                                        return Err(Error::SpentAddress);
-                                    }
+                                    return Err(Error::SpentOutput);
                                 }
                                 false => {
-                                    if output_amount != 0 && total_already_spent < total_to_spend {
+                                    if total_already_spent < total_to_spend {
                                         total_already_spent += output_amount;
                                         let mut address_path = path.clone();
                                         // Note that we need to sign the original address, i.e., `path/index`,
@@ -308,14 +356,21 @@ impl<'a> SendBuilder<'a> {
                                             address_path,
                                             internal: *internal,
                                         });
-                                        // Output the remaining tokens back to the original address
                                         if total_already_spent > total_to_spend {
+                                            let remaining_balance = total_already_spent - total_to_spend;
+                                            if remaining_balance < 1_000_000 {
+                                                dust_and_allowance_recorders.push((
+                                                    remaining_balance,
+                                                    Address::try_from_bech32(address)?,
+                                                    true,
+                                                ));
+                                            }
+                                            // Output the remaining tokens back to the original address
                                             essence = essence.add_output(
                                                 SignatureLockedSingleOutput::new(
                                                     Address::try_from_bech32(address)?,
-                                                    total_already_spent - total_to_spend,
-                                                )
-                                                .unwrap()
+                                                    remaining_balance,
+                                                )?
                                                 .into(),
                                             );
                                         }
@@ -345,6 +400,25 @@ impl<'a> SendBuilder<'a> {
             return Err(Error::NotEnoughBalance(total_to_spend));
         }
 
+        // Check if we would let dust on an address behind or send new dust, which would make the tx unconfirmable
+        let mut single_addresses = HashSet::new();
+        for dust_or_allowance in &dust_and_allowance_recorders {
+            single_addresses.insert(dust_or_allowance.1);
+        }
+        for address in single_addresses {
+            let created_or_consumed_outputs: Vec<(u64, Address, bool)> = dust_and_allowance_recorders
+                .iter()
+                .cloned()
+                .filter(|d| d.1 == address)
+                .collect();
+            is_dust_allowed(
+                &self.client,
+                address.to_bech32(&bech32_hrp).into(),
+                created_or_consumed_outputs,
+            )
+            .await?;
+        }
+
         // Build signed transaction payload
         for output in self.outputs.clone() {
             essence = essence.add_output(output);
@@ -361,11 +435,10 @@ impl<'a> SendBuilder<'a> {
             .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
 
         let mut unlock_blocks = Vec::new();
-        let mut current_block_index: usize = 0;
         let mut signature_indexes = HashMap::<String, usize>::new();
         address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
 
-        for recorder in address_index_recorders.iter() {
+        for (current_block_index, recorder) in address_index_recorders.iter().enumerate() {
             // Check if current path is same as previous path
             // If so, add a reference unlock block
 
@@ -389,9 +462,6 @@ impl<'a> SendBuilder<'a> {
                     Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
                 }
                 signature_indexes.insert(index, current_block_index);
-
-                // Update current block index
-                current_block_index += 1;
             }
         }
         // TODO overflow check
@@ -464,4 +534,62 @@ impl<'a> SendBuilder<'a> {
         }
         Ok(final_message)
     }
+}
+
+// Calculate the outputs on this address after this transaction gets confirmed so we know if we can send dust or
+// dust allowance outputs (as input). the bool in the outputs defines if we consume this output (false) or create a new
+// one (true)
+async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
+    // balance of all dust allowance outputs
+    let mut dust_allowance_balance: i64 = 0;
+    // Amount of dust outputs
+    let mut dust_outputs_amount: i64 = 0;
+
+    // Add outputs from this transaction
+    for output in outputs {
+        match output.2 {
+            // add newly created outputs
+            true => {
+                if output.0 >= 1_000_000 {
+                    dust_allowance_balance += output.0 as i64;
+                } else {
+                    dust_outputs_amount += 1
+                }
+            }
+            // remove consumed outputs
+            false => {
+                if output.0 >= 1_000_000 {
+                    dust_allowance_balance -= output.0 as i64;
+                } else {
+                    dust_outputs_amount -= 1;
+                }
+            }
+        }
+    }
+
+    // Get outputs from address and apply values
+    let address_outputs_metadata = client.find_outputs(&[], &[address.clone()]).await?;
+    for output_metadata in address_outputs_metadata {
+        match output_metadata.output {
+            OutputDto::SignatureLockedDustAllowance(d_a_o) => {
+                dust_allowance_balance += d_a_o.amount as i64;
+            }
+            OutputDto::SignatureLockedSingle(s_o) => {
+                if s_o.amount < 1_000_000 {
+                    dust_outputs_amount += 1;
+                }
+            }
+        }
+    }
+
+    // Here dust_allowance_balance and dust_outputs_amount should be as if this transaction gets confirmed
+    // Max allowed dust outputs is 100
+    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, 100);
+    if dust_outputs_amount > allowed_dust_amount {
+        return Err(Error::DustError(format!(
+            "No dust output allowed on address {}",
+            address
+        )));
+    }
+    Ok(())
 }
