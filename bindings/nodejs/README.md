@@ -422,13 +422,13 @@ Sets the indexation data.
 
 **Returns** the message submit instance for chained calls.
 
-#### parent(messageId): MessageSender
+#### parents(messageId): MessageSender
 
-Sets the message's parent.
+Sets 1-8 custom parent message ids.
 
-| Param     | Type                | Description           |
-| --------- | ------------------- | --------------------- |
-| messageId | <code>string</code> | The parent message id |
+| Param     | Type                  | Description             |
+| --------- | --------------------- | ----------------------- |
+| messageId | <code>string[]</code> | The parents message ids |
 
 **Returns** the message submit instance for chained calls.
 

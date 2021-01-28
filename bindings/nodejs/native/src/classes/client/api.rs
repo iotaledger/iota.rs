@@ -14,7 +14,7 @@ pub(crate) enum Api {
         seed: Option<Seed>,
         index: Option<String>,
         data: Option<Vec<u8>>,
-        parent: Option<MessageId>,
+        parents: Option<Vec<MessageId>>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
         inputs: Vec<UTXOInput>,
@@ -79,7 +79,7 @@ impl Task for ClientTask {
                     seed,
                     index,
                     data,
-                    parent,
+                    parents,
                     account_index,
                     initial_address_index,
                     inputs,
@@ -96,8 +96,8 @@ impl Task for ClientTask {
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }
-                    if let Some(parent) = parent {
-                        sender = sender.with_parent(*parent);
+                    if let Some(parents) = parents {
+                        sender = sender.with_parents(parents.clone())?;
                     }
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
@@ -110,14 +110,11 @@ impl Task for ClientTask {
                     }
                     let bech32_hrp = client.get_network_info().bech32_hrp;
                     for output in outputs {
-                        sender = sender
-                            .with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
-                            .unwrap();
+                        sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
                     for output in dust_allowance_outputs {
                         sender = sender
-                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
-                            .unwrap();
+                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
                     let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()

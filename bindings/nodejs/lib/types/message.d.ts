@@ -72,8 +72,7 @@ export declare type Payload = { type: 'Indexation', data: IndexationPayload } |
 
 export declare interface Message {
   network_id: number
-  parent1: string
-  parent2: string
+  parents: string[]
   payload?: Payload
   nonce: number
 }
