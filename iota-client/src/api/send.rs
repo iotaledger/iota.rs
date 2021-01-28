@@ -39,7 +39,7 @@ pub struct SendBuilder<'a> {
     outputs: Vec<Output>,
     index: Option<String>,
     data: Option<Vec<u8>>,
-    parent: Option<MessageId>,
+    parents: Option<Vec<MessageId>>,
     network_id: Option<u64>,
 }
 
@@ -56,7 +56,7 @@ impl<'a> SendBuilder<'a> {
             outputs: Vec::new(),
             index: None,
             data: None,
-            parent: None,
+            parents: None,
             network_id: None,
         }
     }
@@ -137,10 +137,13 @@ impl<'a> SendBuilder<'a> {
         self
     }
 
-    /// Set a custom parent
-    pub fn with_parent(mut self, parent_id: MessageId) -> Self {
-        self.parent = Some(parent_id);
-        self
+    /// Set 1-8 custom parent message ids
+    pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
+        if !(1..=8).contains(&parent_ids.len()) {
+            return Err(Error::InvalidParentsAmount);
+        }
+        self.parents = Some(parent_ids);
+        Ok(self)
     }
 
     /// Set the network id
@@ -493,12 +496,15 @@ impl<'a> SendBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
-        // get tips
-        let tips = self.client.get_tips().await?;
-        let mut parent_messages = vec![tips.0, tips.1];
-        if let Some(parent) = self.parent {
-            parent_messages[0] = parent;
-        }
+        // set parent messages
+        let parent_messages = match self.parents {
+            Some(p) => p,
+            None => {
+                let tips = self.client.get_tips().await?;
+                vec![tips.0, tips.1]
+            }
+        };
+
         // building message
         let mut message = MessageBuilder::<ClientMiner>::new();
         message = match self.network_id {
