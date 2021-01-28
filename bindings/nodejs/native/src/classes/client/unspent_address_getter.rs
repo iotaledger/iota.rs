@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::Seed;
@@ -6,7 +6,7 @@ use neon::prelude::*;
 
 use super::{Api, ClientTask};
 
-pub struct BalanceGetter {
+pub struct UnspentAddressGetter {
     client_id: String,
     seed: String,
     account_index: Option<usize>,
@@ -14,11 +14,11 @@ pub struct BalanceGetter {
 }
 
 declare_types! {
-    pub class JsBalanceGetter for BalanceGetter {
+    pub class JsUnspentAddressGetter for UnspentAddressGetter {
         init(mut cx) {
             let client_id = cx.argument::<JsString>(0)?.value();
             let seed = cx.argument::<JsString>(1)?.value();
-            Ok(BalanceGetter {
+            Ok(UnspentAddressGetter {
                 client_id,
                 seed,
                 account_index: None,
@@ -58,7 +58,7 @@ declare_types! {
                 let ref_ = &(*this.borrow(&guard));
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
-                    api: Api::GetBalance {
+                    api: Api::GetUnspentAddress {
                         seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
