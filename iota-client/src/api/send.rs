@@ -12,13 +12,8 @@ use bee_signing_ext::{
     Seed, Signer,
 };
 use std::{
-<<<<<<< HEAD
-    collections::HashMap,
-    ops::{Deref, Range},
-=======
     collections::{HashMap, HashSet},
-    ops::Range,
->>>>>>> dev
+    ops::{Deref, Range},
     str::FromStr,
 };
 
