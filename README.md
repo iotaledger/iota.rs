@@ -108,7 +108,8 @@ For the examples where a seed is required you have to rename `.env.example` to `
 
 Bindings to other programming languages.
 
-* [Node.js binding](bindings/node/)
+* [Node.js binding](bindings/nodejs/)
+* [Python binding](bindings/python/)
 
 ## Supporting the project
 

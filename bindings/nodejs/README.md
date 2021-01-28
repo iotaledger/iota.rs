@@ -15,7 +15,7 @@ Currently the package isn't published so you'd need to link it to your project u
 - Using NPM:
 ```
 $ git clone https://github.com/iotaledger/iota.rs
-$ cd iota.rs/bindings/node
+$ cd iota.rs/bindings/nodejs
 $ npm link
 $ cd /path/to/nodejs/project/
 $ npm link iota-client
@@ -23,7 +23,7 @@ $ npm link iota-client
 - Using yarn: 
 ```
 $ git clone https://github.com/iotaledger/iota.rs
-$ cd iota.rs/bindings/node
+$ cd iota.rs/bindings/nodejs
 $ yarn link
 $ cd /path/to/nodejs/project/
 $ yarn link iota-client
