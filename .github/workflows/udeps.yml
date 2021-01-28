@@ -3,14 +3,12 @@ name: Udeps
 on:
   push:
     branches:
-      - ''
-      # - dev
-      # - master
+      - dev
+      - master
   pull_request:
     branches:
-      - ''
-      # - dev
-      # - master
+      - dev
+      - master
 
 jobs:
   udeps:
@@ -51,10 +49,16 @@ jobs:
         path: bindings/nodejs/native/target
         key: ubuntu-latest-nightly-cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}
 
+    - name: Cache python binding cargo target
+      uses: actions/cache@v2
+      with:
+        path: bindings/python/native/target
+        key: ubuntu-latest-nightly-cargo-build-node-target-${{ hashFiles('**/Cargo.toml') }}
+
     - uses: actions-rs/cargo@v1
       with:
         command: install
-        args: cargo-udeps
+        args: cargo-udeps --locked
 
     - uses: actions-rs/cargo@v1
       with:
@@ -65,3 +69,8 @@ jobs:
       with:
         command: udeps
         args: --manifest-path ./bindings/nodejs/native/Cargo.toml --all-targets
+
+    - uses: actions-rs/cargo@v1
+      with:
+        command: udeps
+        args: --manifest-path ./bindings/python/native/Cargo.toml --all-targets
