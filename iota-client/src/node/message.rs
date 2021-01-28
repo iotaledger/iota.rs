@@ -35,7 +35,7 @@ impl<'a> GetMessageBuilder<'a> {
         #[derive(Debug, Serialize, Deserialize)]
         struct MessagesWrapper {
             data: MessagesForIndexResponse,
-        };
+        }
 
         parse_response!(resp, 200 => {
             let ids = resp.json::<MessagesWrapper>().await?;
@@ -60,7 +60,7 @@ impl<'a> GetMessageBuilder<'a> {
         #[derive(Debug, Serialize, Deserialize)]
         struct MessagesWrapper {
             data: MessageDto,
-        };
+        }
         parse_response!(resp, 200 => {
             let meta = resp.json::<MessagesWrapper>().await?;
             Ok(
@@ -77,7 +77,7 @@ impl<'a> GetMessageBuilder<'a> {
         #[derive(Debug, Serialize, Deserialize)]
         struct MessagesWrapper {
             data: MessageMetadata,
-        };
+        }
         parse_response!(resp, 200 => {
             let meta = resp.json::<MessagesWrapper>().await?;
             Ok(meta.data)
@@ -105,7 +105,7 @@ impl<'a> GetMessageBuilder<'a> {
         #[derive(Debug, Serialize, Deserialize)]
         struct MessagesWrapper {
             data: MessageChildrenResponse,
-        };
+        }
         crate::parse_response!(resp, 200 => {
             let meta = resp.json::<MessagesWrapper>().await?;
             meta.data.children_message_ids
