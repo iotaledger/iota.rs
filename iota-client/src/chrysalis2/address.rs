@@ -162,7 +162,7 @@ pub fn encode_migration_address(ed25519_address: Ed25519Address) -> TryteAddress
 }
 
 /// Decode a TryteAddress to an Ed25519Address
-pub fn decode_mirgation_address(tryte_address: TryteAddress) -> Result<Ed25519Address> {
+pub fn decode_migration_address(tryte_address: TryteAddress) -> Result<Ed25519Address> {
     let tryte_string = tryte_address
         .to_inner()
         .encode::<T3B1Buf>()
@@ -244,6 +244,6 @@ fn test_migration_address() {
     let migration_address = add_tryte_checksum(encoded_address.clone());
     assert_eq!(migration_address.len(), 90);
     assert_eq!(&migration_address, "TRANSFERCDJWLVPAIXRWNAPXV9WYKVUZWWKXVBE9JBABJ9D9C9F9OEGADYO9CWDAGZHBRWIXLXG9MAJV9RJEOLXSJW");
-    let decoded_address = decode_mirgation_address(encoded_address).unwrap();
+    let decoded_address = decode_migration_address(encoded_address).unwrap();
     assert_eq!(decoded_address, ed25519_address);
 }

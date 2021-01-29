@@ -17,7 +17,7 @@ use iota::{
 async fn main() -> Result<()> {
     let seed = Seed::from_trits(
         TryteBuf::try_from_str(
-            "TROLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOFELOLOLOLOLOLOLOLOAD",
+            "TRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEED",
         )
         .unwrap()
         .as_trits()

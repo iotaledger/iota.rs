@@ -13,11 +13,14 @@ async fn main() {
     )
     .unwrap();
 
-    let address = GetAddressesBuilder::new(&seed)
+    let ed25519_address = GetAddressesBuilder::new(&seed)
         .with_account_index(0)
         .with_range(0..1)
         .finish()
         .unwrap();
 
-    println!("Generated public address: {}", address[0]);
+    println!(
+        "Generated migration address with checksum: {}",
+        add_tryte_checksum(encode_migration_address(ed25519_address[0]))
+    );
 }

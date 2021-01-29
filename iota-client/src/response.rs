@@ -624,9 +624,12 @@ impl WereAddressesSpentFromResponseBuilder {
 #[derive(Clone, Debug)]
 /// Address can be used as input to spend balance
 pub struct Input {
-    pub(crate) address: Address,
-    pub(crate) balance: u64,
-    pub(crate) index: u64,
+    /// Input address
+    pub address: Address,
+    /// Balance of the address
+    pub balance: u64,
+    /// Index of the address
+    pub index: u64,
 }
 
 /// A transfer could be an input or an output for building a bundle.

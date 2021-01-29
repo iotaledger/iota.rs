@@ -12,8 +12,7 @@ pub struct GetAllInputsBuilder<'a> {
     seed: Option<&'a Seed>,
     start_index: u64,
     security: u8,
-    threshold: Option<u64>,
-    interval: u64,
+    number_of_addresses: u64,
 }
 
 impl<'a> GetAllInputsBuilder<'a> {
@@ -24,8 +23,7 @@ impl<'a> GetAllInputsBuilder<'a> {
             seed: None,
             start_index: 0,
             security: 2,
-            threshold: None,
-            interval: 30,
+            number_of_addresses: 30,
         }
     }
 
@@ -41,9 +39,9 @@ impl<'a> GetAllInputsBuilder<'a> {
         self
     }
 
-    /// Set the amount of addresses which will be generated in each round to find one with balance
-    pub fn with_interval(mut self, interval: u64) -> Self {
-        self.interval = interval;
+    /// Set the amount of addresses which will be generated
+    pub fn with_number_of_addresses(mut self, number_of_addresses: u64) -> Self {
+        self.number_of_addresses = number_of_addresses;
         self
     }
 
@@ -58,15 +56,8 @@ impl<'a> GetAllInputsBuilder<'a> {
         self
     }
 
-    /// Set minimum amount of balance required
-    pub fn with_balance_threshold(mut self, threshold: u64) -> Self {
-        self.threshold = Some(threshold);
-        self
-    }
-
     /// Send GetInputs request and returns the inputs with their total balance
     pub async fn finish(self) -> Result<(u64, Vec<Input>)> {
-        // If threshold is None generate addresses until 30 addresses without balance in a row
         let seed = match self.seed {
             Some(s) => s,
             None => return Err(Error::MissingSeed),
@@ -74,63 +65,39 @@ impl<'a> GetAllInputsBuilder<'a> {
 
         let mut total_balance = 0;
         let mut inputs = Vec::new();
-        let mut loop_index = 0;
-        loop {
-            let range = self.start_index + (loop_index * self.interval)
-                ..self.start_index + (loop_index * self.interval) + self.interval;
-            let addresses_with_index = AddressBuilder::builder()
-                .with_seed(&seed)
-                .with_range(range)
-                .finish()
-                .unwrap();
 
-            let addresses: Vec<Address> = addresses_with_index
-                .clone()
-                .into_iter()
-                .map(|(_, address)| address)
-                .collect();
+        let range = self.start_index..self.start_index + self.number_of_addresses;
+        println!("{:?}", range);
+        let addresses_with_index = AddressBuilder::builder()
+            .with_seed(&seed)
+            .with_range(range)
+            .finish()
+            .unwrap();
 
-            let balance_response = self
-                .client
-                .get_balances()
-                .addresses(&addresses[..])
-                .send()
-                .await?;
-            let aggregated_balance: u64 = balance_response.balances.iter().sum::<u64>();
+        let addresses: Vec<Address> = addresses_with_index
+            .clone()
+            .into_iter()
+            .map(|(_, address)| address)
+            .collect();
 
-            // If the next couple of addresses don't have any balance, we determine it fails to prevent from infinite searching.
-            if aggregated_balance == 0 {
-                break;
+        let balance_response = self
+            .client
+            .get_balances()
+            .addresses(&addresses[..])
+            .send()
+            .await?;
+
+        //Iterate over each balance address output here
+        for (index, balance) in balance_response.balances.into_iter().enumerate() {
+            if balance == 0 {
+                continue;
             }
-
-            //Iterate over each balance address output here
-            for (index, balance) in balance_response.balances.into_iter().enumerate() {
-                if balance == 0 {
-                    continue;
-                }
-                inputs.push(Input {
-                    address: addresses_with_index[index].1.clone(),
-                    balance,
-                    index: addresses_with_index[index].0,
-                });
-                total_balance += balance;
-                if let Some(balance_treshold) = self.threshold {
-                    if total_balance >= balance_treshold {
-                        return Ok((total_balance, inputs));
-                    }
-                }
-            }
-            loop_index += 1;
-        }
-
-        if total_balance == 0 {
-            return Err(Error::NoBalance);
-        }
-
-        if let Some(balance_treshold) = self.threshold {
-            if total_balance < balance_treshold {
-                return Err(Error::ThresholdNotEnough);
-            }
+            inputs.push(Input {
+                address: addresses_with_index[index].1.clone(),
+                balance,
+                index: addresses_with_index[index].0,
+            });
+            total_balance += balance;
         }
 
         Ok((total_balance, inputs))

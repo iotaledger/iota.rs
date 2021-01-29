@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
     // Create seed from your seed trytes
     let seed = Seed::from_trits(
         TryteBuf::try_from_str(
-            "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA",
+            "TRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEED",
         )
         .unwrap()
         .as_trits()
@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
 
     let addresses = AddressBuilder::builder()
         .with_seed(&seed)
-        .with_range(0..100)
+        .with_range(70..80)
         .finish()
         .unwrap();
 

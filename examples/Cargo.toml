@@ -45,3 +45,7 @@ path = "generate_addresses.rs"
 [[example]]
 name = "transfer_all"
 path = "transfer_all.rs"
+
+[[example]]
+name = "migration"
+path = "migration.rs"
