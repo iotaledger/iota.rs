@@ -67,16 +67,10 @@ impl<'a> GetAddressesBuilder<'a> {
             None => 0..20,
         };
 
-        // let seed = match self.seed {
-        //     Seed::Ed25519(s) => s,
-        //     _ => panic!("Other seed scheme isn't supported yet."),
-        // };
-        let seed = self.seed;
-
         let mut addresses = Vec::new();
         for i in range {
-            let address = generate_address(&seed, &mut path, i, false)?;
-            let internal_address = generate_address(&seed, &mut path, i, true)?;
+            let address = generate_address(&self.seed, &mut path, i, false)?;
+            let internal_address = generate_address(&self.seed, &mut path, i, true)?;
             let bech32_hrp = self._client.get_network_info().bech32_hrp;
             addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
             addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
