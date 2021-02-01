@@ -169,13 +169,11 @@ impl Task for ClientTask {
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;
-                    let tips = vec![tips.0, tips.1];
                     serde_json::to_string(&tips).unwrap()
                 }
                 Api::PostMessage(message) => {
                     let parent_msg_ids = if message.parents.is_none() {
-                        let tips = client.get_tips().await?;
-                        vec![tips.0, tips.1]
+                        client.get_tips().await?
                     } else {
                         let mut parent_ids = Vec::new();
                         for msg_id in message.parents.as_ref().unwrap() {
