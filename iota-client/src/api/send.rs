@@ -1,16 +1,13 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
+use crate::{api::address::search_address, Client, ClientMiner, Error, Result, Seed};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
 // use bee_message::transaction::outputs::Ed25519Address;
 use bee_rest_api::types::{AddressDto, OutputDto};
-use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey},
-    Seed, Signer,
-};
+use slip10::BIP32Path;
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
@@ -443,19 +440,17 @@ impl<'a> SendBuilder<'a> {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we should create a signature unlock block
-                match &self.seed.expect("No seed") {
-                    Seed::Ed25519(s) => {
-                        let private_key = Ed25519PrivateKey::generate_from_seed(s, &recorder.address_path)
-                            .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
-                        let public_key = private_key.generate_public_key().to_bytes();
-                        // The block should sign the entire transaction essence part of the transaction payload
-                        let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
-                        unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
-                            public_key, signature,
-                        ))));
-                    }
-                    Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
-                }
+                let private_key = crate::secrets::Ed25519PrivateKey::generate_from_seed(
+                    self.seed.expect("Missing seed"),
+                    &recorder.address_path,
+                )
+                .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
+                let public_key = private_key.generate_public_key().to_compressed_bytes();
+                // The block should sign the entire transaction essence part of the transaction payload
+                let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
+                unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
+                    public_key, signature,
+                ))));
                 signature_indexes.insert(index, current_block_index);
             }
         }

@@ -76,11 +76,31 @@ pub enum Error {
     /// Address not found
     #[error("Address not found in range {0}")]
     InputAddressNotFound(String),
+    /// Crypto.rs error
+    #[error("{0}")]
+    CryptoError(crypto::Error),
+    /// Slip10 error
+    #[error("{0}")]
+    Slip10Error(slip10::Error),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it
 impl From<bee_message::Error> for Error {
     fn from(error: bee_message::Error) -> Self {
         Error::MessageError(error)
+    }
+}
+
+// can't use #[from] on crypto::Error so manually converting it
+impl From<crypto::Error> for Error {
+    fn from(error: crypto::Error) -> Self {
+        Error::CryptoError(error)
+    }
+}
+
+// can't use #[from] on slip10::Error so manually converting it
+impl From<slip10::Error> for Error {
+    fn from(error: slip10::Error) -> Self {
+        Error::Slip10Error(error)
     }
 }

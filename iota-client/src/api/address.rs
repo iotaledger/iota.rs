@@ -1,18 +1,15 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
+use crate::{Client, Error, Result, Seed};
 
 use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
-use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed},
-    Seed,
-};
 use blake2::{
     digest::{Update, VariableOutput},
     VarBlake2b,
 };
 use core::convert::TryInto;
+use slip10::BIP32Path;
 use std::ops::Range;
 
 const HARDEND: u32 = 1 << 31;
@@ -70,10 +67,11 @@ impl<'a> GetAddressesBuilder<'a> {
             None => 0..20,
         };
 
-        let seed = match self.seed {
-            Seed::Ed25519(s) => s,
-            _ => panic!("Other seed scheme isn't supported yet."),
-        };
+        // let seed = match self.seed {
+        //     Seed::Ed25519(s) => s,
+        //     _ => panic!("Other seed scheme isn't supported yet."),
+        // };
+        let seed = self.seed;
 
         let mut addresses = Vec::new();
         for i in range {
@@ -88,14 +86,14 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 }
 
-fn generate_address(seed: &Ed25519Seed, path: &mut BIP32Path, index: usize, internal: bool) -> Address {
+fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: bool) -> Address {
     path.push(internal as u32 + HARDEND);
     path.push(index as u32 + HARDEND);
 
-    let public_key = Ed25519PrivateKey::generate_from_seed(seed, &path)
+    let public_key = crate::secrets::Ed25519PrivateKey::generate_from_seed(seed, &path)
         .expect("Invalid Seed & BIP32Path. Probably because the index of path is not hardened.")
         .generate_public_key()
-        .to_bytes();
+        .to_compressed_bytes();
     // Hash the public key to get the address
     let mut hasher = VarBlake2b::new(32).unwrap();
     hasher.update(public_key);
