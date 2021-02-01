@@ -408,7 +408,7 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct NodeInfoWrapper {
             data: NodeInfo,
-        };
+        }
         parse_response!(resp, 200 => {
             Ok(resp.json::<NodeInfoWrapper>().await.unwrap().data)
         })
@@ -428,7 +428,7 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct NodeInfoWrapper {
             data: NodeInfo,
-        };
+        }
         parse_response!(resp, 200 => {
             Ok(resp.json::<NodeInfoWrapper>().await?.data)
         })
@@ -448,7 +448,7 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct TipsWrapper {
             data: TipsResponse,
-        };
+        }
         parse_response!(resp, 200 => {
             let pair = resp.json::<TipsWrapper>().await?;
             let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
@@ -464,10 +464,11 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
-        let mut timeout = self.get_timeout(Api::PostMessage);
-        if self.network_info.read().unwrap().local_pow {
-            timeout = self.get_timeout(Api::PostMessageWithRemotePow);
-        }
+        let timeout = if self.network_info.read().unwrap().local_pow {
+            self.get_timeout(Api::PostMessage)
+        } else {
+            self.get_timeout(Api::PostMessageWithRemotePow)
+        };
         let message = MessageDto::try_from(message).expect("Can't convert message into json");
         let resp = self
             .client
@@ -480,12 +481,12 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct MessageIdResponseWrapper {
             data: MessageIdWrapper,
-        };
+        }
         #[derive(Debug, Serialize, Deserialize)]
         struct MessageIdWrapper {
             #[serde(rename = "messageId")]
             message_id: String,
-        };
+        }
         parse_response!(resp, 201 => {
             let message_id = resp.json::<MessageIdResponseWrapper>().await?;
             let mut message_id_bytes = [0u8; 32];
@@ -518,7 +519,7 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct OutputWrapper {
             data: OutputResponse,
-        };
+        }
         parse_response!(resp, 200 => {
             let output_response = resp.json::<OutputWrapper>().await?;
             Ok(output_response.data)
@@ -576,7 +577,7 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct MilestoneWrapper {
             data: MilestoneMetadata,
-        };
+        }
         parse_response!(resp, 200 => {
             let milestone = resp.json::<MilestoneWrapper>().await?;
             Ok(milestone.data)
