@@ -14,7 +14,7 @@ pub mod builder;
 pub mod client;
 pub mod error;
 pub mod node;
-pub mod secrets;
+pub mod seed;
 
 pub use bee_message;
 pub use bee_rest_api::{
@@ -29,7 +29,7 @@ pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use reqwest::Url;
-pub use secrets::*;
+pub use seed::*;
 
 /// match a response with an expected status code or return the default error variant.
 #[macro_export]

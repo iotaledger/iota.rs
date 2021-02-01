@@ -440,12 +440,11 @@ impl<'a> SendBuilder<'a> {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we should create a signature unlock block
-                let private_key = crate::secrets::Ed25519PrivateKey::generate_from_seed(
-                    self.seed.expect("Missing seed"),
-                    &recorder.address_path,
-                )
-                .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
-                let public_key = private_key.generate_public_key().to_compressed_bytes();
+                let private_key = self
+                    .seed
+                    .expect("Missing seed")
+                    .generate_private_key(&recorder.address_path)?;
+                let public_key = private_key.public_key().to_compressed_bytes();
                 // The block should sign the entire transaction essence part of the transaction payload
                 let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
                 unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
