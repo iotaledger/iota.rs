@@ -311,10 +311,6 @@ impl Client {
                     }
                     let mut client_network_info = network_info.write().unwrap();
                     client_network_info.network_id = hash_network(&info.network_id);
-                    println!(
-                        "HASHED {:?} and GOT {:?}",
-                        info.network_id, client_network_info.network_id
-                    );
                     client_network_info.min_pow_score = info.min_pow_score;
                     client_network_info.bech32_hrp = info.bech32_hrp;
                     if !client_network_info.local_pow {
