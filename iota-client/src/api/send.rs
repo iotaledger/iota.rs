@@ -520,8 +520,14 @@ impl<'a> SendBuilder<'a> {
             .finish()
             .map_err(Error::MessageError)?;
 
-        self.client.post_message(&final_message).await?;
-        Ok(final_message)
+        let msg_id = self.client.post_message(&final_message).await?;
+
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.client.get_network_info().local_pow {
+            true => final_message,
+            false => self.client.get_message().data(&msg_id).await?,
+        };
+        Ok(msg)
     }
 }
 
