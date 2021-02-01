@@ -16,6 +16,7 @@ export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
+  network(network_name: string): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
@@ -31,7 +32,7 @@ export declare class MessageSender {
   seed(seed: string): MessageSender
   index(index: string): MessageSender
   data(data: Uint8Array): MessageSender
-  parent(messageId: string): MessageSender
+  parents(messageIds: string[]): MessageSender
   accountIndex(index: number): MessageSender
   initialAddressIndex(index: number): MessageSender
   input(transactionId: string, index: number): MessageSender

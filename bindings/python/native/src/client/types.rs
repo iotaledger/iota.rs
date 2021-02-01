@@ -44,10 +44,8 @@ pub static mut BECH32_HRP: &str = "atoi1";
 pub struct MessageMetadataResponse {
     /// Message ID
     pub message_id: String,
-    /// Message ID of parent_1
-    pub parent_1_message_id: String,
-    /// Message ID of parent_2
-    pub parent_2_message_id: String,
+    /// Message ID of parents
+    pub parent_message_ids: Vec<String>,
     /// Solid status
     pub is_solid: bool,
     pub referenced_by_milestone_index: Option<u32>,
@@ -80,8 +78,7 @@ pub struct MilestoneDto {
     pub kind: u32,
     pub index: u32,
     pub timestamp: u64,
-    pub parent_1_message_id: String,
-    pub parent_2_message_id: String,
+    pub parents: Vec<String>,
     pub inclusion_merkle_proof: String,
     pub public_keys: Vec<String>,
     pub signatures: Vec<String>,
@@ -137,8 +134,7 @@ pub struct Ed25519AddressDto {
 pub struct Message {
     pub message_id: String,
     pub network_id: u64,
-    pub parent1: String,
-    pub parent2: String,
+    pub parents: Vec<String>,
     pub payload: Option<Payload>,
     pub nonce: u64,
 }
@@ -166,8 +162,7 @@ pub struct Milestone {
 pub struct MilestonePayloadEssence {
     pub index: u32,
     pub timestamp: u64,
-    pub parent1: String,
-    pub parent2: String,
+    pub parents: Vec<String>,
     pub merkle_proof: [u8; MILESTONE_MERKLE_PROOF_LENGTH],
     pub public_keys: Vec<[u8; MILESTONE_PUBLIC_KEY_LENGTH]>,
 }
@@ -331,8 +326,7 @@ impl From<RustMessageMetadataResponse> for MessageMetadataResponse {
     fn from(message_metadata_response: RustMessageMetadataResponse) -> Self {
         Self {
             message_id: message_metadata_response.message_id,
-            parent_1_message_id: message_metadata_response.parent_1_message_id,
-            parent_2_message_id: message_metadata_response.parent_2_message_id,
+            parent_message_ids: message_metadata_response.parent_message_ids,
             is_solid: message_metadata_response.is_solid,
             referenced_by_milestone_index: message_metadata_response.referenced_by_milestone_index,
             milestone_index: message_metadata_response.milestone_index,
@@ -385,8 +379,7 @@ impl From<RustMilestoneDto> for MilestoneDto {
             kind: milestone_dto.kind,
             index: milestone_dto.index,
             timestamp: milestone_dto.timestamp,
-            parent_1_message_id: milestone_dto.parent_1_message_id,
-            parent_2_message_id: milestone_dto.parent_2_message_id,
+            parents: milestone_dto.parents,
             inclusion_merkle_proof: milestone_dto.inclusion_merkle_proof,
             public_keys: milestone_dto.public_keys,
             signatures: milestone_dto.signatures,
@@ -476,8 +469,7 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
         Ok(MilestonePayloadEssence {
             index: essence.index(),
             timestamp: essence.timestamp(),
-            parent1: essence.parent1().to_string(),
-            parent2: essence.parent2().to_string(),
+            parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
             public_keys: essence
                 .public_keys()
@@ -574,8 +566,7 @@ impl TryFrom<RustMessage> for Message {
         Ok(Message {
             message_id: msg.id().0.to_string(),
             network_id: msg.network_id(),
-            parent1: msg.parent1().to_string(),
-            parent2: msg.parent2().to_string(),
+            parents: msg.parents().iter().map(|m| m.to_string()).collect(),
             payload,
             nonce: msg.nonce(),
         })

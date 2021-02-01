@@ -21,8 +21,10 @@ async fn setup_indexation_message() -> MessageId {
     let data = r#"
     {
 	    "networkId": "6530425480034647824",
-	    "parent1MessageId": "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c",
-	    "parent2MessageId": "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664",
+	    "parentMessageIds": [
+            "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c", 
+            "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664"
+        ],
 	    "payload": {
 		    "type": 2,
 		    "index": "HORNET Spammer",

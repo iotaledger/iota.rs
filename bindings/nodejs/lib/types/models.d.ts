@@ -13,8 +13,7 @@ export declare interface NodeInfo {
 
 export declare interface MessageMetadata {
   messageId: string
-  parent1MessageId: string
-  parent2MessageId: string
+  parents: string[]
   isSolid: boolean
   shouldPromote?: boolean
   shouldReattach?: boolean

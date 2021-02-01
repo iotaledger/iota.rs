@@ -76,6 +76,9 @@ pub enum Error {
     /// Address not found
     #[error("Address not found in range {0}")]
     InputAddressNotFound(String),
+    /// Invalid amount of parents
+    #[error("Invalid amount of parents, length must be in 1..=8")]
+    InvalidParentsAmount,
 }
 
 // can't use #[from] on bee_message::Error so manually converting it
