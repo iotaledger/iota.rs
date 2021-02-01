@@ -75,6 +75,16 @@ Adds a list of IOTA nodes from node pool URLs to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### network(networkName): ClientBuilder
+
+Set a custom network name, useful for private tangles.
+
+| Param       | Type                  | Description      |
+| ----------- | --------------------- | ---------------- |
+| networkName | <code>string</code>   | The network name |
+
+**Returns** the client builder instance for chained calls.
+
 #### quorumSize(size): ClientBuilder
 
 Defines how many of nodes will be queried at the same time to check for quorum.

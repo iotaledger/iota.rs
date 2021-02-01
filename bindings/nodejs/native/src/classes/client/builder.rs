@@ -9,6 +9,7 @@ use neon::prelude::*;
 pub struct ClientBuilderWrapper {
     nodes: Vec<String>,
     node_pool_urls: Vec<String>,
+    network: Option<String>,
     broker_options: Option<BrokerOptions>,
     node_sync_interval: Option<NonZeroU64>,
     request_timeout: Option<Duration>,
@@ -23,6 +24,7 @@ declare_types! {
             Ok(ClientBuilderWrapper {
                 nodes: Default::default(),
                 node_pool_urls: Default::default(),
+                network: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
                 request_timeout: Default::default(),
@@ -84,6 +86,17 @@ declare_types! {
                 }
             }
 
+            Ok(cx.this().upcast())
+        }
+
+        method network(mut cx) {
+            let network_name = cx.argument::<JsString>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let network = &mut this.borrow_mut(&guard).network;
+                *network = Some(network_name);
+            }
             Ok(cx.this().upcast())
         }
 
@@ -167,6 +180,9 @@ declare_types! {
                 }
                 if !&ref_.node_pool_urls.is_empty() {
                     builder = builder.with_node_pool_urls(&ref_.node_pool_urls).expect("Problem with node pool url");
+                }
+                if let Some(network_name) = &ref_.network {
+                    builder = builder.with_network(network_name);
                 }
                 if let Some(broker_options) = &ref_.broker_options {
                     builder = builder.with_mqtt_broker_options(broker_options.clone());

@@ -16,6 +16,7 @@ export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
+  network(network_name: string): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder

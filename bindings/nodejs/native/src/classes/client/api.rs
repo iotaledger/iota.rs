@@ -172,14 +172,15 @@ impl Task for ClientTask {
                     serde_json::to_string(&tips).unwrap()
                 }
                 Api::PostMessage(message) => {
-                    let parent_msg_ids = if message.parents.is_none() {
-                        client.get_tips().await?
-                    } else {
-                        let mut parent_ids = Vec::new();
-                        for msg_id in message.parents.as_ref().unwrap() {
-                            parent_ids.push(MessageId::from_str(&msg_id)?)
+                    let parent_msg_ids = match message.parents.as_ref() {
+                        Some(parents) => {
+                            let mut parent_ids = Vec::new();
+                            for msg_id in parents {
+                                parent_ids.push(MessageId::from_str(&msg_id)?)
+                            }
+                            parent_ids
                         }
-                        parent_ids
+                        None => client.get_tips().await?,
                     };
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(client.get_network_id().await?)

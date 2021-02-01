@@ -6,17 +6,19 @@ const seed = 'b3a9bf35521157aa9c4508ab3a9266e210ae297ff5a4584234c4d9e7d01712e3'
 
 const client = new ClientBuilder()
   .node('http://localhost:14265')
+  .network('testnet3')
+  // .disableNodeSync()
   .brokerOptions({ timeout: 50 })
-  .localPow(false)
+  .localPow(true)
   .build()
 
 describe('Client', () => {
   it('gets network info', () => {
     const info = client.networkInfo()
     assert.strictEqual(typeof info, 'object')
-    assert.strictEqual(info.localPow, false)
-    assert.deepStrictEqual(info.network, { type: 'Testnet' })
-    assert.strictEqual(info.networkId, 'alphanet2')
+    assert.strictEqual(info.localPow, true)
+    assert.deepStrictEqual(info.network, 'testnet3')
+    assert.strictEqual(info.networkId, 18326844446802180000)
     assert.strictEqual(info.bech32HRP, 'atoi')
     assert.strictEqual(info.minPowScore, 4000)
   })
@@ -24,9 +26,7 @@ describe('Client', () => {
   it('gets tips', async () => {
     const tips = await client.getTips()
     assert.strictEqual(Array.isArray(tips), true)
-    assert.strictEqual(tips.length, 2)
     assertMessageId(tips[0])
-    assertMessageId(tips[1])
   })
 
   it('finds addresses', () => {
@@ -40,26 +40,27 @@ describe('Client', () => {
   })
 
   it('sends an indexation message with the high level API', async () => {
-    const messageId = await client
+    const message = await client
       .send()
       .index('IOTA.RS TEST')
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
-    assertMessageId(messageId)
+    console.log("message", message);
+    assertMessage(message)
   })
 
   it('sends a value transaction and checks output balance', async () => {
     const depositAddress = 'iot1q9jyad2efwyq7ldg9u6eqg5krxdqawgcdxvhjlmxrveylrt4fgaqj30s9qj'
-    const messageId = await client
+    const message = await client
       .send()
       .seed(seed)
       .accountIndex(0)
       .output(depositAddress, 2)
       .submit()
-    assertMessageId(messageId)
+    assertMessage(message)
 
     while (true) {
-      const metadata = await client.getMessage().metadata(messageId)
+      const metadata = await client.getMessage().metadata(message.id())
       if (metadata.ledgerInclusionState) {
         assert.strictEqual(metadata.ledgerInclusionState, 'included')
         break
