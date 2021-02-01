@@ -520,7 +520,8 @@ impl<'a> SendBuilder<'a> {
             .finish()
             .map_err(Error::MessageError)?;
 
-        self.client.post_message(&final_message).await?;
+        let id = self.client.post_message(&final_message).await?;
+        println!("{:?} {:?}", id, final_message.id().0);
         Ok(final_message)
     }
 }
