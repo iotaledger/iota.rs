@@ -497,12 +497,14 @@ impl<'a> SendBuilder<'a> {
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         // set parent messages
-        let mut parent_messages = match self.parents {
-            Some(p) => p,
+        let parent_messages = match self.parents {
+            Some(mut p) => {
+                p.sort_unstable();
+                p.dedup();
+                p
+            }
             None => self.client.get_tips().await?,
         };
-        parent_messages.sort_unstable();
-        parent_messages.dedup();
 
         // building message
         let mut message = MessageBuilder::<ClientMiner>::new();
