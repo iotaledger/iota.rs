@@ -464,10 +464,11 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
-        let mut timeout = self.get_timeout(Api::PostMessage);
-        if self.network_info.read().unwrap().local_pow {
-            timeout = self.get_timeout(Api::PostMessageWithRemotePow);
-        }
+        let timeout = if self.network_info.read().unwrap().local_pow {
+            self.get_timeout(Api::PostMessage)
+        } else {
+            self.get_timeout(Api::PostMessageWithRemotePow)
+        };
         let message = MessageDto::try_from(message).expect("Can't convert message into json");
         let resp = self
             .client
