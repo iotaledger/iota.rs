@@ -10,7 +10,7 @@ use crate::{
     parse_response,
 };
 
-use bee_message::prelude::{Bech32Address, Message, MessageId, UTXOInput};
+use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     handlers::{
@@ -435,7 +435,7 @@ impl Client {
     }
 
     /// GET /api/v1/tips endpoint
-    pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
+    pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
         let resp = self
@@ -450,12 +450,14 @@ impl Client {
             data: TipsResponse,
         }
         parse_response!(resp, 200 => {
-            let pair = resp.json::<TipsWrapper>().await?;
-            let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
-            hex::decode_to_slice(pair.data.tip_1_message_id, &mut tip1)?;
-            hex::decode_to_slice(pair.data.tip_2_message_id, &mut tip2)?;
-
-            Ok((MessageId::from(tip1), MessageId::from(tip2)))
+            let tips_response = resp.json::<TipsWrapper>().await?;
+            let mut tips = Vec::new();
+            for tip in tips_response.data.tip_message_ids {
+                let mut new_tip = [0u8; 32];
+                hex::decode_to_slice(tip, &mut new_tip)?;
+                tips.push(MessageId::from(new_tip));
+            }
+            Ok(tips)
         })
     }
 
@@ -595,22 +597,29 @@ impl Client {
         }
     }
 
-    async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+    /// Reattach a message without checking if it should be reattached
+    pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
-        // Change the fields of parent1 and parent2.
+        // Change the fields of parents.
         let tips = self.get_tips().await?;
-        let reattach_message = Message::builder()
+        let reattach_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
-            .with_parents(vec![tips.0, tips.1])
+            .with_parents(tips)
             .with_payload(message.payload().to_owned().unwrap())
+            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;
-        Ok((message_id, reattach_message))
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.get_network_info().local_pow {
+            true => reattach_message,
+            false => self.get_message().data(&message_id).await?,
+        };
+        Ok((message_id, msg))
     }
 
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
@@ -624,17 +633,24 @@ impl Client {
         }
     }
 
-    async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+    /// Promote a message without checking if it should be promoted
+    pub async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
-        let promote_message = Message::builder()
+        let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
-            .with_parents(vec![*message_id, tips.0])
+            .with_parents(vec![*message_id, tips[0]])
+            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
         let message_id = self.post_message(&promote_message).await?;
-        Ok((message_id, promote_message))
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.get_network_info().local_pow {
+            true => promote_message,
+            false => self.get_message().data(&message_id).await?,
+        };
+        Ok((message_id, msg))
     }
 
     //////////////////////////////////////////////////////////////////////

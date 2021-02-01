@@ -120,6 +120,7 @@ impl ClientBuilder {
     /// Selects the type of network the added nodes belong to.
     pub fn with_network(mut self, network: &str) -> Self {
         self.network_info.network = network.into();
+        self.network_info.network_id = hash_network(network);
         self
     }
 

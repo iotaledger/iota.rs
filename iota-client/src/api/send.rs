@@ -499,10 +499,7 @@ impl<'a> SendBuilder<'a> {
         // set parent messages
         let parent_messages = match self.parents {
             Some(p) => p,
-            None => {
-                let tips = self.client.get_tips().await?;
-                vec![tips.0, tips.1]
-            }
+            None => self.client.get_tips().await?,
         };
 
         // building message
