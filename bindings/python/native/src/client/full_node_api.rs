@@ -26,10 +26,10 @@ impl Client {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_info().await })?.into())
     }
-    fn get_tips(&self) -> Result<(String, String)> {
+    fn get_tips(&self) -> Result<Vec<String>> {
         let rt = tokio::runtime::Runtime::new()?;
         let tips = rt.block_on(async { self.client.get_tips().await })?;
-        Ok((tips.0.to_string(), tips.1.to_string()))
+        Ok(tips.into_iter().map(|p| p.to_string()).collect())
     }
     fn post_message(&self, msg: Message) -> Result<String> {
         let mut msg_builder = RustMessageBuilder::<RustClientMiner>::new()
