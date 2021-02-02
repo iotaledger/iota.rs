@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 // These are E2E test samples, so they are ignored by default.
@@ -6,8 +6,8 @@
 use bee_message::prelude::*;
 use bee_signing_ext::Seed;
 
-use iota_client::MessageJson;
-use std::{convert::TryInto, str::FromStr};
+use bee_rest_api::types::MessageDto;
+use std::{convert::TryFrom, str::FromStr};
 
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
 
@@ -21,8 +21,10 @@ async fn setup_indexation_message() -> MessageId {
     let data = r#"
     {
 	    "networkId": "6530425480034647824",
-	    "parent1MessageId": "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c",
-	    "parent2MessageId": "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664",
+	    "parentMessageIds": [
+            "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c", 
+            "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664"
+        ],
 	    "payload": {
 		    "type": 2,
 		    "index": "HORNET Spammer",
@@ -30,9 +32,20 @@ async fn setup_indexation_message() -> MessageId {
 	    },
 	    "nonce": "36952"
     }"#;
-    let message: Message = serde_json::from_str::<MessageJson>(data).unwrap().try_into().unwrap();
+    let message = Message::try_from(&serde_json::from_str::<MessageDto>(data).unwrap()).unwrap();
     client.post_message(&message).await.unwrap()
 }
+
+// Ignored as long as we don't have a realy node pool url, otherwise the tests fail
+// const DEFAULT_NODE_POOL_URLS: &str = "https://nodes.iota.works/api/ssl/live";
+// #[test]
+// fn test_with_node_pool_urls() {
+//     let r = iota_client::Client::builder()
+//         .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
+//         .unwrap()
+//         .finish();
+//     println!("{:#?}", r);
+// }
 
 #[tokio::test]
 #[ignore]

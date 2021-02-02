@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{Client, Error, Result};
@@ -56,7 +56,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
             let mut address = None;
             for a in addresses {
                 let address_balance = self.client.get_address().balance(&a).await?;
-                match address_balance {
+                match address_balance.balance {
                     0 => {
                         address = Some(a);
                         break;

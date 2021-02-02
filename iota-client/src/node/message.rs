@@ -1,13 +1,17 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    parse_response, ChildrenMessageIds, Client, Error, MessageIds, MessageJson, MessageMetadata, Response, Result,
+use crate::{parse_response, Client, Error, Result};
+use bee_message::{Message, MessageId};
+use bee_rest_api::{
+    handlers::{
+        message_children::MessageChildrenResponse, message_metadata::MessageMetadataResponse as MessageMetadata,
+        messages_find::MessagesForIndexResponse,
+    },
+    types::MessageDto,
 };
 
-use bee_message::{Message, MessageId};
-
-use std::convert::TryInto;
+use std::convert::TryFrom;
 
 /// Builder of GET /api/v1/messages/{messageId} endpoint
 pub struct GetMessageBuilder<'a> {
@@ -28,10 +32,14 @@ impl<'a> GetMessageBuilder<'a> {
         url.set_query(Some(&format!("index={}", index)));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessagesForIndexResponse,
+        }
+
         parse_response!(resp, 200 => {
-            let ids = resp.json::<Response<MessageIds>>().await?;
-            ids.data
-                .inner
+            let ids = resp.json::<MessagesWrapper>().await?;
+            ids.data.message_ids
                 .iter()
                 .map(|s| {
                     let mut message_id = [0u8; 32];
@@ -49,9 +57,14 @@ impl<'a> GetMessageBuilder<'a> {
         url.set_path(&format!("api/v1/messages/{}", message_id));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessageDto,
+        }
         parse_response!(resp, 200 => {
-            let meta = resp.json::<Response<MessageJson>>().await?;
-            Ok(meta.data.try_into()?)
+            let meta = resp.json::<MessagesWrapper>().await?;
+            Ok(
+                Message::try_from(&meta.data).expect("Can't convert MessageDto to Message"))
         })
     }
 
@@ -61,8 +74,12 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         url.set_path(&format!("api/v1/messages/{}/metadata", message_id));
         let resp = reqwest::get(url).await?;
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessageMetadata,
+        }
         parse_response!(resp, 200 => {
-            let meta = resp.json::<Response<MessageMetadata>>().await?;
+            let meta = resp.json::<MessagesWrapper>().await?;
             Ok(meta.data)
         })
     }
@@ -85,10 +102,13 @@ impl<'a> GetMessageBuilder<'a> {
         url.set_path(&format!("api/v1/messages/{}/children", message_id));
         let resp = reqwest::get(url).await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessagesWrapper {
+            data: MessageChildrenResponse,
+        }
         crate::parse_response!(resp, 200 => {
-            let meta = resp.json::<Response<ChildrenMessageIds>>().await?;
-            meta.data
-                .inner
+            let meta = resp.json::<MessagesWrapper>().await?;
+            meta.data.children_message_ids
                 .iter()
                 .map(|s| {
                     let mut message_id = [0u8; 32];

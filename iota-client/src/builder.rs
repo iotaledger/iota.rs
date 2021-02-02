@@ -1,10 +1,8 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Builder of the client instance
-
+//! Builder of the Clinet Instnace
 use crate::{client::*, error::*};
-
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
@@ -103,11 +101,26 @@ impl ClientBuilder {
         self
     }
 
-    // TODO node pool
+    /// Get node list from the node_pool_urls
+    pub fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
+        for pool_url in node_pool_urls {
+            let text: String = reqwest::blocking::get(pool_url)
+                .unwrap()
+                .text()
+                .map_err(|_| Error::NodePoolUrlsError)?;
+            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
+            for node_detail in nodes_details {
+                let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
+                self.nodes.insert(url);
+            }
+        }
+        Ok(self)
+    }
 
     /// Selects the type of network the added nodes belong to.
     pub fn with_network(mut self, network: &str) -> Self {
         self.network_info.network = network.into();
+        self.network_info.network_id = hash_network(network);
         self
     }
 
@@ -124,7 +137,7 @@ impl ClientBuilder {
         self
     }
 
-    /// Sets the request timeout.
+    /// Sets the default request timeout.
     pub fn with_request_timeout(mut self, timeout: Duration) -> Self {
         self.request_timeout = timeout;
         self
@@ -185,6 +198,50 @@ impl ClientBuilder {
             (None, Arc::new(RwLock::new(nodes)), None, network_info)
         };
 
+        let mut api_timeout = HashMap::new();
+        api_timeout.insert(
+            Api::GetInfo,
+            self.api_timeout
+                .remove(&Api::GetInfo)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::GetHealth,
+            self.api_timeout
+                .remove(&Api::GetHealth)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::GetMilestone,
+            self.api_timeout
+                .remove(&Api::GetMilestone)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::GetTips,
+            self.api_timeout
+                .remove(&Api::GetTips)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::PostMessage,
+            self.api_timeout
+                .remove(&Api::PostMessage)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::PostMessageWithRemotePow,
+            self.api_timeout
+                .remove(&Api::PostMessageWithRemotePow)
+                .unwrap_or_else(|| Duration::from_millis(30000)),
+        );
+        api_timeout.insert(
+            Api::GetOutput,
+            self.api_timeout
+                .remove(&Api::GetOutput)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+
         let client = Client {
             runtime,
             sync,
@@ -198,9 +255,28 @@ impl ClientBuilder {
             broker_options: self.broker_options,
             network_info,
             request_timeout: self.request_timeout,
-            api_timeout: self.api_timeout,
+            api_timeout,
         };
 
         Ok(client)
     }
+}
+
+/// JSON struct for NodeDetail from the node_pool_urls
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeDetail {
+    /// Iota node url
+    pub node: String,
+    /// value of health
+    pub health: usize,
+    /// number of neighbors
+    pub neighbors: usize,
+    /// implementation name
+    pub implementation: String,
+    /// Iota node version
+    pub version: String,
+    /// enabled PoW
+    pub pow: bool,
+    /// spent or not
+    pub spent: bool,
 }

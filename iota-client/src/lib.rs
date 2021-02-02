@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! Provides access to the Iota Client API
@@ -14,16 +14,20 @@ pub mod builder;
 pub mod client;
 pub mod error;
 pub mod node;
-pub mod types;
 
-pub use bee_signing_ext::{binary::BIP32Path, Seed};
+pub use bee_message;
+pub use bee_rest_api::{
+    self,
+    handlers::{balance_ed25519::BalanceForAddressResponse, output::OutputResponse},
+    types::{AddressDto, OutputDto},
+};
+pub use bee_signing_ext::{self, binary::BIP32Path, Seed};
 pub use builder::ClientBuilder;
 pub use client::*;
 pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use reqwest::Url;
-pub use types::*;
 
 /// match a response with an expected status code or return the default error variant.
 #[macro_export]

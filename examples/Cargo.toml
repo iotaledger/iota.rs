@@ -5,10 +5,10 @@ publish = false
 edition = "2018"
 
 [dev-dependencies]
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.1", features = ["full"] }
 iota-core = { path = "../iota-core"}
 hex = "0.4.2"
-dotenv_codegen = "0.15.0"
+dotenv = "0.15.0"
 
 [[example]]
 name = "address"
@@ -47,5 +47,13 @@ name = "custom_parent"
 path = "custom_parent.rs"
 
 [[example]]
+name = "dust"
+path = "dust.rs"
+
+[[example]]
 name = "nodeinfo"
 path = "nodeinfo.rs"
+
+[[example]]
+name = "txspam"
+path = "txspam.rs"
