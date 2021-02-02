@@ -17,7 +17,7 @@ use bee_rest_api::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo, output::OutputResponse,
         tips::TipsResponse,
     },
-    types::{MessageDto, MilestoneDto as MilestoneMetadata},
+    types::{MessageDto, MilestoneDto as MilestoneMetadata, PeerDto},
 };
 use bee_signing_ext::Seed;
 
@@ -438,7 +438,7 @@ impl Client {
     }
 
     /// GET /api/v1/peers endpoint
-    pub async fn get_peers(&self) -> Result<Vec<Peer>> {
+    pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/peers");
         let resp = self
@@ -448,8 +448,12 @@ impl Client {
             .send()
             .await?;
 
+        #[derive(Debug, Serialize, Deserialize)]
+        struct PeerWrapper {
+            data: Vec<PeerDto>,
+        }
         parse_response!(resp, 200 => {
-            Ok(resp.json::<Response<Vec<Peer>>>().await?.data)
+            Ok(resp.json::<PeerWrapper>().await?.data)
         })
     }
 
