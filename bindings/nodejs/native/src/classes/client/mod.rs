@@ -163,7 +163,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(parse_address(address.value()).unwrap_or_else(|_| panic!("invalid address: {}", address.value())));
+                addresses.push(address.value().into());
             }
 
             let cb = cx.argument::<JsFunction>(1)?;
@@ -322,8 +322,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                let address = parse_address(address.value()).expect("invalid address");
-                addresses.push(address);
+                addresses.push(address.value().into());
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
@@ -346,7 +345,6 @@ declare_types! {
 
         method getAddressOutputs(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid output id");
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -355,7 +353,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressOutputs(address),
+                    api: Api::GetAddressOutputs(address.into()),
                 };
                 client_task.schedule(cb);
             }
@@ -365,7 +363,6 @@ declare_types! {
 
         method getAddressBalance(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid output id");
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -374,7 +371,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressBalance(address),
+                    api: Api::GetAddressBalance(address.into()),
                 };
                 client_task.schedule(cb);
             }

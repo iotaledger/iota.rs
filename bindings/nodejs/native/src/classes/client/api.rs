@@ -35,7 +35,7 @@ pub(crate) enum Api {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
     },
-    GetAddressBalances(Vec<Address>),
+    GetAddressBalances(Vec<Bech32Address>),
     // Node APIs
     GetInfo,
     GetTips,
@@ -48,10 +48,10 @@ pub(crate) enum Api {
     GetOutput(UTXOInput),
     FindOutputs {
         outputs: Vec<UTXOInput>,
-        addresses: Vec<Address>,
+        addresses: Vec<Bech32Address>,
     },
-    GetAddressBalance(Address),
-    GetAddressOutputs(Address),
+    GetAddressBalance(Bech32Address),
+    GetAddressOutputs(Bech32Address),
     GetMilestone(u64),
     Retry(MessageId),
     Reattach(MessageId),
@@ -156,11 +156,7 @@ impl Task for ClientTask {
                     let balance = getter.finish().await?;
                     serde_json::to_string(&balance).unwrap()
                 }
-                Api::GetAddressBalances(addresses) => {
-                    let bech32_addresses: Vec<Bech32Address> = addresses
-                        .iter()
-                        .map(|a| a.to_bech32(&client.get_network_info().bech32_hrp).into())
-                        .collect();
+                Api::GetAddressBalances(bech32_addresses) => {
                     let balances = client.get_address_balances(&bech32_addresses[..]).await?;
                     let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
@@ -214,27 +210,16 @@ impl Task for ClientTask {
                     serde_json::to_string(&output).unwrap()
                 }
                 Api::FindOutputs { outputs, addresses } => {
-                    let bech32_hrp = client.get_network_info().bech32_hrp;
-                    let bech32_addresses: Vec<Bech32Address> = addresses
-                        .iter()
-                        .map(|a| Bech32Address(a.to_bech32(&bech32_hrp)))
-                        .collect();
-                    let outputs = client.find_outputs(outputs, &bech32_addresses[..]).await?;
+                    let outputs = client.find_outputs(outputs, &addresses[..]).await?;
                     let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }
                 Api::GetAddressBalance(address) => {
-                    let balance = client
-                        .get_address()
-                        .balance(&address.to_bech32(&client.get_network_info().bech32_hrp).into())
-                        .await?;
+                    let balance = client.get_address().balance(address).await?;
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressOutputs(address) => {
-                    let output_ids = client
-                        .get_address()
-                        .outputs(&address.to_bech32(&client.get_network_info().bech32_hrp).into())
-                        .await?;
+                    let output_ids = client.get_address().outputs(address).await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {

@@ -2,12 +2,12 @@ const { ClientBuilder } = require('../lib')
 const { assertAddress, assertMessageId, assertMessage } = require('./assertions')
 const assert = require('assert')
 
-const seed = 'b3a9bf35521157aa9c4508ab3a9266e210ae297ff5a4584234c4d9e7d01712e3'
+const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 
 const client = new ClientBuilder()
   .node('http://localhost:14265')
   .network('testnet3')
-  // .disableNodeSync()
+  .disableNodeSync()
   .brokerOptions({ timeout: 50 })
   .localPow(true)
   .build()
@@ -45,22 +45,21 @@ describe('Client', () => {
       .index('IOTA.RS TEST')
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
-    console.log("message", message);
     assertMessage(message)
   })
 
   it('sends a value transaction and checks output balance', async () => {
-    const depositAddress = 'iot1q9jyad2efwyq7ldg9u6eqg5krxdqawgcdxvhjlmxrveylrt4fgaqj30s9qj'
+    const depositAddress = 'atoi1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0ey2k2yn4'
     const message = await client
       .send()
       .seed(seed)
       .accountIndex(0)
-      .output(depositAddress, 2)
+      .output(depositAddress, 1000000)
       .submit()
     assertMessage(message)
 
     while (true) {
-      const metadata = await client.getMessage().metadata(message.id())
+      const metadata = await client.getMessage().metadata(message)
       if (metadata.ledgerInclusionState) {
         assert.strictEqual(metadata.ledgerInclusionState, 'included')
         break
@@ -111,7 +110,7 @@ describe('Client', () => {
   })
 
   it('get address outputs', async () => {
-    const outputs = await client.getAddressOutputs('iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0eyf5eyz5')
+    const outputs = await client.getAddressOutputs('atoi1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0ey2k2yn4')
     assert.strictEqual(Array.isArray(outputs), true)
     assert.strictEqual(outputs.length > 0, true)
     assert.strictEqual(typeof outputs[0], 'string')

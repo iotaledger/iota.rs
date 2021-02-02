@@ -8,16 +8,21 @@ use iota::Client;
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("http://0.0.0.0:14265") // Insert the node here
+        .with_node("http://localhost:14265") // Insert the node here
         .unwrap()
+        .with_network("testnet3")
+        .with_node_sync_disabled()
         .finish()
         .unwrap();
 
-    let address = "iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4";
+    let address = "atoi1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0ey2k2yn4";
 
     let balance = iota.get_address().balance(&address.into()).await.unwrap();
     println!("The balance of {:?} is {:?}", address, balance);
 
     let outputs = iota.get_address().outputs(&address.into()).await.unwrap();
     println!("The outputs of {:?} are {:?}", address, outputs);
+
+    let output = iota.get_output(&outputs[0]).await.unwrap();
+    println!("Output {:?}", output);
 }

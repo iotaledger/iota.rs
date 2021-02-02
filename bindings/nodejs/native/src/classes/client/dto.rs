@@ -188,8 +188,8 @@ impl From<OutputMetadata> for OutputMetadataDto {
         };
 
         Self {
-            message_id: hex::encode(value.message_id),
-            transaction_id: hex::encode(value.transaction_id),
+            message_id: value.message_id,
+            transaction_id: value.transaction_id,
             output_index: value.output_index,
             is_spent: value.is_spent,
             address: output_address,

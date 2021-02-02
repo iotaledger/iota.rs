@@ -80,7 +80,7 @@ export declare class Client {
   retry(messageId: string): Promise<Message>
 
   getInfo(): Promise<NodeInfo>
-  getTips(): Promise<[string, string]>
+  getTips(): Promise<string[]>
   postMessage(message: MessageDto): Promise<string>
   postMessageWithRemotePow(message: MessageDto): Promise<string>
   getMessage(): MessageFinder
