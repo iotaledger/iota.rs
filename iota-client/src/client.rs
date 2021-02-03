@@ -17,7 +17,7 @@ use bee_rest_api::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo, output::OutputResponse,
         tips::TipsResponse,
     },
-    types::{MessageDto, MilestoneDto as MilestoneMetadata},
+    types::{MessageDto, MilestoneDto as MilestoneMetadata, PeerDto},
 };
 
 use blake2::{
@@ -178,6 +178,8 @@ pub enum Api {
     GetHealth,
     /// `get_info`API
     GetInfo,
+    /// `get_peers`API
+    GetPeers,
     /// `get_tips` API
     GetTips,
     /// `post_message` API
@@ -197,6 +199,7 @@ impl FromStr for Api {
         let t = match s {
             "GetHealth" => Self::GetHealth,
             "GetInfo" => Self::GetInfo,
+            "GetPeers" => Self::GetPeers,
             "GetTips" => Self::GetTips,
             "PostMessage" => Self::PostMessage,
             "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
@@ -430,6 +433,26 @@ impl Client {
         }
         parse_response!(resp, 200 => {
             Ok(resp.json::<NodeInfoWrapper>().await?.data)
+        })
+    }
+
+    /// GET /api/v1/peers endpoint
+    pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
+        let mut url = self.get_node()?;
+        url.set_path("api/v1/peers");
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetPeers))
+            .send()
+            .await?;
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct PeerWrapper {
+            data: Vec<PeerDto>,
+        }
+        parse_response!(resp, 200 => {
+            Ok(resp.json::<PeerWrapper>().await?.data)
         })
     }
 
