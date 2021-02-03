@@ -36,7 +36,7 @@ pub struct SendBuilder<'a> {
     outputs: Vec<Output>,
     index: Option<String>,
     data: Option<Vec<u8>>,
-    parent: Option<MessageId>,
+    parents: Option<Vec<MessageId>>,
     network_id: Option<u64>,
 }
 
@@ -53,7 +53,7 @@ impl<'a> SendBuilder<'a> {
             outputs: Vec::new(),
             index: None,
             data: None,
-            parent: None,
+            parents: None,
             network_id: None,
         }
     }
@@ -134,10 +134,13 @@ impl<'a> SendBuilder<'a> {
         self
     }
 
-    /// Set a custom parent
-    pub fn with_parent(mut self, parent_id: MessageId) -> Self {
-        self.parent = Some(parent_id);
-        self
+    /// Set 1-8 custom parent message ids
+    pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
+        if !(1..=8).contains(&parent_ids.len()) {
+            return Err(Error::InvalidParentsAmount);
+        }
+        self.parents = Some(parent_ids);
+        Ok(self)
     }
 
     /// Set the network id
@@ -487,26 +490,28 @@ impl<'a> SendBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
-        // get tips
-        let tips = self.client.get_tips().await?;
+        // set parent messages
+        let parent_messages = match self.parents {
+            Some(mut p) => {
+                p.sort_unstable();
+                p.dedup();
+                p
+            }
+            None => self.client.get_tips().await?,
+        };
 
         // building message
         let mut message = MessageBuilder::<ClientMiner>::new();
-
         message = match self.network_id {
             Some(id) => message.with_network_id(id),
             _ => message.with_network_id(self.client.get_network_info().network_id),
         };
 
-        message = match self.parent {
-            Some(p) => message.with_parent1(p),
-            _ => message.with_parent1(tips.0),
-        };
         if let Some(p) = payload {
             message = message.with_payload(p);
         }
         let final_message = message
-            .with_parent2(tips.1)
+            .with_parents(parent_messages)
             .with_nonce_provider(
                 self.client.get_pow_provider(),
                 self.client.get_network_info().min_pow_score,
@@ -514,8 +519,14 @@ impl<'a> SendBuilder<'a> {
             .finish()
             .map_err(Error::MessageError)?;
 
-        self.client.post_message(&final_message).await?;
-        Ok(final_message)
+        let msg_id = self.client.post_message(&final_message).await?;
+
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.client.get_network_info().local_pow {
+            true => final_message,
+            false => self.client.get_message().data(&msg_id).await?,
+        };
+        Ok(msg)
     }
 }
 

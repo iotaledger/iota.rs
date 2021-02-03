@@ -82,6 +82,9 @@ pub enum Error {
     /// Slip10 error
     #[error("{0}")]
     Slip10Error(slip10::Error),
+    /// Invalid amount of parents
+    #[error("Invalid amount of parents, length must be in 1..=8")]
+    InvalidParentsAmount,
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

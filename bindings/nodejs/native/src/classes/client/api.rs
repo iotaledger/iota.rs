@@ -14,7 +14,7 @@ pub(crate) enum Api {
         seed: Option<Seed>,
         index: Option<String>,
         data: Option<Vec<u8>>,
-        parent: Option<MessageId>,
+        parents: Option<Vec<MessageId>>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
         inputs: Vec<UTXOInput>,
@@ -79,7 +79,7 @@ impl Task for ClientTask {
                     seed,
                     index,
                     data,
-                    parent,
+                    parents,
                     account_index,
                     initial_address_index,
                     inputs,
@@ -96,8 +96,8 @@ impl Task for ClientTask {
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }
-                    if let Some(parent) = parent {
-                        sender = sender.with_parent(*parent);
+                    if let Some(parents) = parents {
+                        sender = sender.with_parents(parents.clone())?;
                     }
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
@@ -110,14 +110,11 @@ impl Task for ClientTask {
                     }
                     let bech32_hrp = client.get_network_info().bech32_hrp;
                     for output in outputs {
-                        sender = sender
-                            .with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
-                            .unwrap();
+                        sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
                     for output in dust_allowance_outputs {
                         sender = sender
-                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
-                            .unwrap();
+                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
                     let message_id = sender.finish().await?;
                     serde_json::to_string(&message_id).unwrap()
@@ -172,31 +169,22 @@ impl Task for ClientTask {
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;
-                    let tips = vec![tips.0, tips.1];
                     serde_json::to_string(&tips).unwrap()
                 }
                 Api::PostMessage(message) => {
-                    let (parent1, parent2) = if message.parent1.is_none() || message.parent2.is_none() {
-                        let tips = client.get_tips().await?;
-                        let parent1 = match &message.parent1 {
-                            Some(id) => MessageId::from_str(&id)?,
-                            None => tips.0,
-                        };
-                        let parent2 = match &message.parent2 {
-                            Some(id) => MessageId::from_str(&id)?,
-                            None => tips.1,
-                        };
-                        (parent1, parent2)
-                    } else {
-                        (
-                            MessageId::from_str(&message.parent1.as_ref().unwrap())?,
-                            MessageId::from_str(&message.parent1.as_ref().unwrap())?,
-                        )
+                    let parent_msg_ids = match message.parents.as_ref() {
+                        Some(parents) => {
+                            let mut parent_ids = Vec::new();
+                            for msg_id in parents {
+                                parent_ids.push(MessageId::from_str(&msg_id)?)
+                            }
+                            parent_ids
+                        }
+                        None => client.get_tips().await?,
                     };
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(client.get_network_id().await?)
-                        .with_parent1(parent1)
-                        .with_parent2(parent2)
+                        .with_parents(parent_msg_ids)
                         .with_nonce_provider(client.get_pow_provider(), 4000f64)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;

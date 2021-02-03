@@ -18,7 +18,7 @@ bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-p
 iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-features = false }
 
 [dev-dependencies]
-tokio = { version = "1.0", features = ["macros"] }
+tokio = { version = "1.1", features = ["macros"] }
 
 [features]
 default = ["mqtt"]

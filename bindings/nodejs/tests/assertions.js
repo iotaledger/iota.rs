@@ -2,10 +2,8 @@ const assert = require('assert')
 
 function assertMessage(message) {
   assert.strictEqual(typeof message, 'object')
-  assert.strictEqual('parent1' in message, true)
-  assert.strictEqual('parent2' in message, true)
-  assertMessageId(message.parent1)
-  assertMessageId(message.parent2)
+  assert.strictEqual('parents' in message, true)
+  assertMessageId(message.parents)
 }
 
 function assertMessageId(messageId) {
@@ -15,8 +13,8 @@ function assertMessageId(messageId) {
 
 function assertAddress(address) {
   assert.strictEqual(typeof address, 'string')
-  assert.strictEqual(address.length, 63)
-  assert.strictEqual(address.startsWith('iot1'), true)
+  assert.strictEqual(address.length, 64)
+  assert.strictEqual(address.startsWith('atoi'), true)
 }
 
 module.exports = {

@@ -113,7 +113,7 @@ A generic send function for easily sending a message.
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
-| **parent** | ✘ | None | [MessageId] | An optional parent [MessageId] to be used as one parent. |
+| **parents** | ✘ | None | [MessageId] | 1-8 optional parents [MessageId] to be used. |
 | **network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
 
 Depending on the provided values this function will create a message with:
@@ -513,8 +513,7 @@ The message object returned by various functions; based on the [RFC](https://git
 
 ```rust
 struct Message {
-    parent1: MessageId,
-    parent2: MessageId,
+    parents: Vec<MessageId>,
     payload: Option<Payload>,
     nonce: u64,
 }
@@ -589,10 +588,8 @@ struct ReferenceUnlock(u16);
 pub struct MessageMetadata {
     /// Message ID
     pub message_id: String,
-    /// Message ID of parent1
-    pub parent1: String,
-    /// Message ID of parent2
-    pub parent2: String,
+    /// Message IDs of parents
+    pub parents: Vec<String>,
     /// Solid status
     pub is_solid: bool,
     /// Should promote
