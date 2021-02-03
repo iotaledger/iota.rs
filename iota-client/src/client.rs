@@ -42,7 +42,7 @@ use std::{
     time::Duration,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 /// Milestone data.
 pub struct MilestoneResponse {
     /// Milestone index.
