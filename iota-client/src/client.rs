@@ -7,7 +7,7 @@ use crate::{
     builder::{ClientBuilder, NetworkInfo},
     error::*,
     node::*,
-    parse_response,
+    parse_response, Seed,
 };
 
 use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
@@ -19,7 +19,6 @@ use bee_rest_api::{
     },
     types::{MessageDto, MilestoneDto as MilestoneMetadata},
 };
-use bee_signing_ext::Seed;
 
 use blake2::{
     digest::{Update, VariableOutput},

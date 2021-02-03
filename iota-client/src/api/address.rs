@@ -1,18 +1,15 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
+use crate::{Client, Error, Result, Seed};
 
 use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
-use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed},
-    Seed,
-};
 use blake2::{
     digest::{Update, VariableOutput},
     VarBlake2b,
 };
 use core::convert::TryInto;
+use slip10::BIP32Path;
 use std::ops::Range;
 
 const HARDEND: u32 = 1 << 31;
@@ -70,15 +67,10 @@ impl<'a> GetAddressesBuilder<'a> {
             None => 0..20,
         };
 
-        let seed = match self.seed {
-            Seed::Ed25519(s) => s,
-            _ => panic!("Other seed scheme isn't supported yet."),
-        };
-
         let mut addresses = Vec::new();
         for i in range {
-            let address = generate_address(&seed, &mut path, i, false);
-            let internal_address = generate_address(&seed, &mut path, i, true);
+            let address = generate_address(&self.seed, &mut path, i, false)?;
+            let internal_address = generate_address(&self.seed, &mut path, i, true)?;
             let bech32_hrp = self._client.get_network_info().bech32_hrp;
             addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
             addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
@@ -88,14 +80,11 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 }
 
-fn generate_address(seed: &Ed25519Seed, path: &mut BIP32Path, index: usize, internal: bool) -> Address {
+fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: bool) -> Result<Address> {
     path.push(internal as u32 + HARDEND);
     path.push(index as u32 + HARDEND);
 
-    let public_key = Ed25519PrivateKey::generate_from_seed(seed, &path)
-        .expect("Invalid Seed & BIP32Path. Probably because the index of path is not hardened.")
-        .generate_public_key()
-        .to_bytes();
+    let public_key = seed.generate_private_key(path)?.public_key().to_compressed_bytes();
     // Hash the public key to get the address
     let mut hasher = VarBlake2b::new(32).unwrap();
     hasher.update(public_key);
@@ -107,7 +96,7 @@ fn generate_address(seed: &Ed25519Seed, path: &mut BIP32Path, index: usize, inte
     path.pop();
     path.pop();
 
-    Address::Ed25519(Ed25519Address::new(result))
+    Ok(Address::Ed25519(Ed25519Address::new(result)))
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address

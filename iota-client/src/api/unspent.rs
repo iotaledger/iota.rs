@@ -1,9 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
+use crate::{Client, Error, Result, Seed};
 use bee_message::prelude::Bech32Address;
-use bee_signing_ext::Seed;
 
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {

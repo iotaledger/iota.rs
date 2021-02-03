@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Builder of the Clinet Instnace
+//! Builder of the Client Instance
 use crate::{client::*, error::*};
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};

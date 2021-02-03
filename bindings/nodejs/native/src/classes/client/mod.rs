@@ -87,7 +87,7 @@ declare_types! {
         method getUnspentAddress(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -102,7 +102,7 @@ declare_types! {
         method findAddresses(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -146,7 +146,7 @@ declare_types! {
         method getBalance(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
