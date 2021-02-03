@@ -54,7 +54,7 @@ impl Default for ClientBuilder {
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             network_info: NetworkInfo {
-                network: "testnet2".into(),
+                network: "testnet3".into(),
                 network_id: 10360767990291427429,
                 min_pow_score: 4000f64,
                 local_pow: true,
@@ -153,7 +153,7 @@ impl ClientBuilder {
     pub fn finish(mut self) -> Result<Client> {
         if self.nodes.is_empty() {
             match self.network_info.network.as_str() {
-                "testnet2" => {
+                "testnet3" => {
                     let default_nodes = vec![
                         "https://api.lb-0.testnet.chrysalis2.com",
                         "https://api.hornet-0.testnet.chrysalis2.com",

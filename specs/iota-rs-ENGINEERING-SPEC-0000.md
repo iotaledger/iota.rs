@@ -52,7 +52,7 @@ The data structure to initialize the instance of the Higher level client library
 
 | Parameter | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **network** | ✘ | Testnet | &str | The network name for example "testnet2" to define the network. If no node url is provided, some default nodes are used for the specified network. |
+| **network** | ✘ | Testnet | &str | The network name for example "testnet3" to define the network. If no node url is provided, some default nodes are used for the specified network. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
