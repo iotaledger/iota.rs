@@ -1,0 +1,26 @@
+[workspace]
+
+[package]
+name = "iota-core-python"
+version = "0.2.0-alpha.3"
+authors = ["YuWeiWu <wusyong9104@gmail.com>"]
+edition = "2018"
+description = "Core library of IOTA"
+license = "Apache-2.0"
+repository = "https://github.com/iotaledger/iota.rs"
+homepage = "https://iota.org"
+
+[lib]
+name = "iota_client"
+crate-type = ["cdylib"]
+
+[dependencies]
+tokio = { version = "1.1", features = ["macros"] }
+hex = "0.4"
+iota-core = { path = "../../../iota-core" }
+dict_derive = "0.3.0"
+serde_json = "1.0"
+
+[dependencies.pyo3]
+version = "0.13"
+features = ["extension-module", "abi3"]

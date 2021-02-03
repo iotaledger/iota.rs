@@ -1,10 +1,8 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Builder of the client instance
-
+//! Builder of the Clinet Instnace
 use crate::{client::*, error::*};
-
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 
@@ -16,24 +14,14 @@ use std::{
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
-/// Network of the Iota nodes belong to
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq)]
-#[serde(tag = "type")]
-pub enum Network {
-    /// Mainnet
-    Mainnet,
-    /// Any network that is not the mainnet
-    Testnet,
-}
-
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct NetworkInfo {
     /// Network of the Iota nodes belong to
-    pub network: Network,
+    pub network: String,
     /// Network ID
     #[serde(rename = "networkId")]
-    pub network_id: String,
+    pub network_id: u64,
     /// Bech32 HRP
     #[serde(rename = "bech32HRP")]
     pub bech32_hrp: String,
@@ -66,8 +54,8 @@ impl Default for ClientBuilder {
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             network_info: NetworkInfo {
-                network: Network::Testnet,
-                network_id: "alphanet2".into(),
+                network: "testnet2".into(),
+                network_id: 10360767990291427429,
                 min_pow_score: 4000f64,
                 local_pow: true,
                 bech32_hrp: "atoi".into(),
@@ -113,11 +101,26 @@ impl ClientBuilder {
         self
     }
 
-    // TODO node pool
+    /// Get node list from the node_pool_urls
+    pub fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
+        for pool_url in node_pool_urls {
+            let text: String = reqwest::blocking::get(pool_url)
+                .unwrap()
+                .text()
+                .map_err(|_| Error::NodePoolUrlsError)?;
+            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
+            for node_detail in nodes_details {
+                let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
+                self.nodes.insert(url);
+            }
+        }
+        Ok(self)
+    }
 
     /// Selects the type of network the added nodes belong to.
-    pub fn with_network(mut self, network: Network) -> Self {
-        self.network_info.network = network;
+    pub fn with_network(mut self, network: &str) -> Self {
+        self.network_info.network = network.into();
+        self.network_info.network_id = hash_network(network);
         self
     }
 
@@ -134,7 +137,7 @@ impl ClientBuilder {
         self
     }
 
-    /// Sets the request timeout.
+    /// Sets the default request timeout.
     pub fn with_request_timeout(mut self, timeout: Duration) -> Self {
         self.request_timeout = timeout;
         self
@@ -149,8 +152,8 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub fn finish(mut self) -> Result<Client> {
         if self.nodes.is_empty() {
-            match self.network_info.network {
-                Network::Testnet => {
+            match self.network_info.network.as_str() {
+                "testnet2" => {
                     let default_nodes = vec![
                         "https://api.lb-0.testnet.chrysalis2.com",
                         "https://api.hornet-0.testnet.chrysalis2.com",
@@ -160,7 +163,7 @@ impl ClientBuilder {
                         self.nodes.insert(url);
                     }
                 }
-                Network::Mainnet => {
+                _ => {
                     return Err(Error::MissingParameter(String::from("Iota node")));
                 }
             }
@@ -195,6 +198,50 @@ impl ClientBuilder {
             (None, Arc::new(RwLock::new(nodes)), None, network_info)
         };
 
+        let mut api_timeout = HashMap::new();
+        api_timeout.insert(
+            Api::GetInfo,
+            self.api_timeout
+                .remove(&Api::GetInfo)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::GetHealth,
+            self.api_timeout
+                .remove(&Api::GetHealth)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::GetMilestone,
+            self.api_timeout
+                .remove(&Api::GetMilestone)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::GetTips,
+            self.api_timeout
+                .remove(&Api::GetTips)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::PostMessage,
+            self.api_timeout
+                .remove(&Api::PostMessage)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
+            Api::PostMessageWithRemotePow,
+            self.api_timeout
+                .remove(&Api::PostMessageWithRemotePow)
+                .unwrap_or_else(|| Duration::from_millis(30000)),
+        );
+        api_timeout.insert(
+            Api::GetOutput,
+            self.api_timeout
+                .remove(&Api::GetOutput)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+
         let client = Client {
             runtime,
             sync,
@@ -208,9 +255,28 @@ impl ClientBuilder {
             broker_options: self.broker_options,
             network_info,
             request_timeout: self.request_timeout,
-            api_timeout: self.api_timeout,
+            api_timeout,
         };
 
         Ok(client)
     }
+}
+
+/// JSON struct for NodeDetail from the node_pool_urls
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeDetail {
+    /// Iota node url
+    pub node: String,
+    /// value of health
+    pub health: usize,
+    /// number of neighbors
+    pub neighbors: usize,
+    /// implementation name
+    pub implementation: String,
+    /// Iota node version
+    pub version: String,
+    /// enabled PoW
+    pub pow: bool,
+    /// spent or not
+    pub spent: bool,
 }

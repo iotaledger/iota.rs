@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example balance --release
@@ -8,8 +8,8 @@ use std::convert::TryInto;
 /// In this example we will get the balance of a known address
 #[tokio::main]
 async fn main() {
-    let iota = Client::build() // Crate a client instance builder
-        .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
+    let iota = Client::builder() // Crate a client instance builder
+        .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();

@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{Client, Error, Result};
@@ -117,11 +117,11 @@ pub fn search_address(
     range: Range<usize>,
     address: &String,
 ) -> Result<(usize, bool)> {
-    let iota = Client::build().with_node("http://0.0.0.0:14265")?.finish()?;
+    let iota = Client::builder().with_node("http://0.0.0.0:14265")?.finish()?;
     let addresses = iota
         .find_addresses(&seed)
         .with_account_index(account_index)
-        .with_range(range)
+        .with_range(range.clone())
         .get_all()?;
     let mut index_counter = 0;
     for address_internal in addresses {
@@ -132,5 +132,5 @@ pub fn search_address(
             index_counter += 1;
         }
     }
-    Err(crate::error::Error::AddressNotFound)
+    Err(crate::error::Error::InputAddressNotFound(format!("{:?}", range)))
 }

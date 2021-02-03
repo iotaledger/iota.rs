@@ -1,4 +1,4 @@
-// Copyright 2020 IOTA Stiftung
+// Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! Error handling in iota-client crate.
@@ -18,15 +18,18 @@ pub enum Error {
     /// The wallet account doesn't have enough balance
     #[error("The wallet account doesn't have enough balance. It only has {0}")]
     NotEnoughBalance(u64),
+    /// Dust error, for example not enough balance on an address
+    #[error("Dust error: {0}")]
+    DustError(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(String),
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
     InvalidParameter(String),
-    /// Found Spent Address that still has balance
-    #[error("Found Spent Address that still has balance.")]
-    SpentAddress,
+    /// Found spent output
+    #[error("Found spent output.")]
+    SpentOutput,
     /// Error from RestAPI calls with unexpected status code response
     #[error("Response error with status code {0}: {1}")]
     ResponseError(u16, String),
@@ -36,6 +39,9 @@ pub enum Error {
     /// Error on Url type conversion
     #[error("Failed to parse url")]
     UrlError,
+    /// Error on Url type conversion
+    #[error("Failed to parse node_pool_urls")]
+    NodePoolUrlsError,
     /// Errors from reqwest api call
     #[error("{0}")]
     ReqwestError(#[from] reqwest::Error),
@@ -68,8 +74,11 @@ pub enum Error {
     #[error("{0}")]
     Pow(String),
     /// Address not found
-    #[error("Address not found in range")]
-    AddressNotFound,
+    #[error("Address not found in range {0}")]
+    InputAddressNotFound(String),
+    /// Invalid amount of parents
+    #[error("Invalid amount of parents, length must be in 1..=8")]
+    InvalidParentsAmount,
 }
 
 // can't use #[from] on bee_message::Error so manually converting it
