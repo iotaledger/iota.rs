@@ -206,6 +206,12 @@ impl ClientBuilder {
                 .unwrap_or_else(|| Duration::from_millis(2000)),
         );
         api_timeout.insert(
+            Api::GetPeers,
+            self.api_timeout
+                .remove(&Api::GetPeers)
+                .unwrap_or_else(|| Duration::from_millis(2000)),
+        );
+        api_timeout.insert(
             Api::GetHealth,
             self.api_timeout
                 .remove(&Api::GetHealth)
