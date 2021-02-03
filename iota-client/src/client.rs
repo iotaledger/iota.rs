@@ -14,10 +14,10 @@ use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UT
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     handlers::{
-        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo, output::OutputResponse,
-        tips::TipsResponse,
+        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
+        milestone::MilestoneResponse as MilestoneResponseDto, output::OutputResponse, tips::TipsResponse,
     },
-    types::{MessageDto, MilestoneDto as MilestoneMetadata, PeerDto},
+    types::{MessageDto, PeerDto},
 };
 
 use blake2::{
@@ -41,6 +41,17 @@ use std::{
     sync::{Arc, RwLock},
     time::Duration,
 };
+
+#[derive(Debug)]
+/// Milestone data.
+pub struct MilestoneResponse {
+    /// Milestone index.
+    pub index: u32,
+    /// Milestone message id.
+    pub message_id: MessageId,
+    /// Milestone timestamp.
+    pub timestamp: u64,
+}
 
 #[cfg(feature = "mqtt")]
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
@@ -589,7 +600,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneMetadata> {
+    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneResponse> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = self
@@ -600,11 +611,17 @@ impl Client {
             .await?;
         #[derive(Debug, Serialize, Deserialize)]
         struct MilestoneWrapper {
-            data: MilestoneMetadata,
+            data: MilestoneResponseDto,
         }
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<MilestoneWrapper>().await?;
-            Ok(milestone.data)
+            let milestone = resp.json::<MilestoneWrapper>().await?.data;
+            let mut message_id = [0u8; 32];
+            hex::decode_to_slice(milestone.message_id, &mut message_id)?;
+            Ok(MilestoneResponse {
+                index: milestone.milestone_index,
+                message_id: MessageId::new(message_id),
+                timestamp: milestone.timestamp,
+            })
         })
     }
 
