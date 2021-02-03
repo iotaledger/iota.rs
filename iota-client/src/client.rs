@@ -444,7 +444,7 @@ impl Client {
         let resp = self
             .client
             .get(url)
-            .timeout(self.get_timeout(Api::GetInfo))
+            .timeout(self.get_timeout(Api::GetPeers))
             .send()
             .await?;
 
