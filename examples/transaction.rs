@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example transaction --release
-use core::convert::TryInto;
 use iota::{error::Error, Client, MessageId, Seed};
-use std::time::Duration;
+use std::{convert::TryInto, time::Duration};
 use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
@@ -27,7 +26,7 @@ use std::env;
 /// inclusion state, which should be "included".
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Error> {
     let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()

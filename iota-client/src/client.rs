@@ -10,7 +10,7 @@ use crate::{
     parse_response,
 };
 
-use bee_message::prelude::{Address, Ed25519Address, Message, MessageId, UTXOInput};
+use bee_message::prelude::{Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     handlers::{

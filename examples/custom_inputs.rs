@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_inputs --release
-use iota::{Client, Seed};
+use iota::{client::error::Result, Client, Seed};
 extern crate dotenv;
+use core::convert::TryInto;
 use dotenv::dotenv;
 use std::env;
 /// In this example, we send 1_000_000 tokens to atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5
 /// This address belongs to the first seed in .env.example
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     let iota = Client::builder() // Crate a client instance builder
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
@@ -32,7 +33,11 @@ async fn main() {
         .finish()
         .unwrap();
     println!("{:?}", address[0]);
-    let outputs = iota.get_address().outputs(&address[0]).await.unwrap();
+    let outputs = iota
+        .get_address()
+        .outputs(&address[0].clone().try_into()?)
+        .await
+        .unwrap();
     println!("{:?}", outputs);
 
     let message = iota
@@ -41,7 +46,7 @@ async fn main() {
         .with_input(outputs[0].clone())
         // .with_input_range(20..25)
         .with_output(
-            &"atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5".into(),
+            "atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5".try_into()?,
             1_000_000,
         )
         .unwrap()
@@ -53,4 +58,5 @@ async fn main() {
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
         message.id().0
     );
+    Ok(())
 }

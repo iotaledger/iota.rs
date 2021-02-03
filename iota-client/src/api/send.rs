@@ -13,6 +13,7 @@ use bee_signing_ext::{
 };
 use std::{
     collections::{HashMap, HashSet},
+    convert::TryInto,
     ops::Range,
     str::FromStr,
 };
@@ -407,12 +408,7 @@ impl<'a> SendBuilder<'a> {
                 .cloned()
                 .filter(|d| d.1 == address)
                 .collect();
-            is_dust_allowed(
-                &self.client,
-                address.to_bech32(&bech32_hrp).into(),
-                created_or_consumed_outputs,
-            )
-            .await?;
+            is_dust_allowed(&self.client, address, created_or_consumed_outputs).await?;
         }
 
         // Build signed transaction payload
@@ -537,7 +533,7 @@ impl<'a> SendBuilder<'a> {
 // Calculate the outputs on this address after this transaction gets confirmed so we know if we can send dust or
 // dust allowance outputs (as input). the bool in the outputs defines if we consume this output (false) or create a new
 // one (true)
-async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
+async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
     // balance of all dust allowance outputs
     let mut dust_allowance_balance: i64 = 0;
     // Amount of dust outputs
@@ -584,9 +580,10 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     // Max allowed dust outputs is 100
     let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, 100);
     if dust_outputs_amount > allowed_dust_amount {
+        let bech32_hrp = client.get_network_info().bech32_hrp;
         return Err(Error::DustError(format!(
             "No dust output allowed on address {}",
-            address
+            address.to_bech32(&bech32_hrp)
         )));
     }
     Ok(())

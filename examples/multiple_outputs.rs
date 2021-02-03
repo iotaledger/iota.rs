@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example multiple_outputs --release
-use iota::{Client, MessageId, Seed};
-use std::time::Duration;
+use iota::{client::Result, Client, MessageId, Seed};
+use std::{convert::TryInto, time::Duration};
 use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
@@ -20,7 +20,7 @@ use std::env;
 /// These three addresses belong to first seed in .env.example
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     let iota = Client::builder() // Crate a client instance builder
         // .with_node("http://0.0.0.0:14265") // Insert the node here
         // .unwrap()
@@ -39,17 +39,17 @@ async fn main() {
         .send()
         .with_seed(&seed)
         .with_output(
-            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
+            "iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".try_into()?,
             3_000_000,
         )
         .unwrap()
         .with_output(
-            &"iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".into(),
+            "iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".try_into()?,
             2_800_000,
         )
         .unwrap()
         .with_output(
-            &"iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".into(),
+            "iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".try_into()?,
             3_000_000,
         )
         .unwrap()
@@ -62,6 +62,7 @@ async fn main() {
         message.id().0
     );
     reattach_promote_until_confirmed(message.id().0, &iota).await;
+    Ok(())
 }
 
 async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {

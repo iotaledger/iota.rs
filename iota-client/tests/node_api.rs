@@ -7,7 +7,10 @@ use bee_message::prelude::*;
 use bee_signing_ext::Seed;
 
 use bee_rest_api::types::MessageDto;
-use std::{convert::TryFrom, str::FromStr};
+use std::{
+    convert::{TryFrom, TryInto},
+    str::FromStr,
+};
 
 const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
 
@@ -212,7 +215,11 @@ async fn test_get_address_balance() {
         .finish()
         .unwrap()
         .get_address()
-        .balance(&"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into())
+        .balance(
+            &"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4"
+                .try_into()
+                .unwrap(),
+        )
         .await
         .unwrap();
 
@@ -229,8 +236,9 @@ async fn test_get_address_outputs() {
         .unwrap()
         .get_address()
         .outputs(
-            &"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into(), /* Insert the address to
-                                                                                        * search for */
+            &"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4"
+                .try_into()
+                .unwrap(),
         )
         .await
         .unwrap();

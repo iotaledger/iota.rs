@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example txspam --release
-use iota::{Client, MessageId, Payload, Seed, UTXOInput};
+use iota::{client::error::Result, Client, MessageId, Payload, Seed, UTXOInput};
 use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
-use std::{env, time::Duration};
+use std::{convert::TryInto, env, time::Duration};
 
 /// In this example, we spam transactions
 /// Send 10 Mi from the faucet to the first address before you run this
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     let iota = Client::builder() // Crate a client instance builder
         .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
@@ -34,8 +34,8 @@ async fn main() {
         .unwrap();
 
     let mut message_builder = iota.send().with_seed(&seed);
-    for address in &addresses {
-        message_builder = message_builder.with_output(address, 1_000_000).unwrap();
+    for address in addresses.clone() {
+        message_builder = message_builder.with_output(address.try_into().unwrap(), 1_000_000)?;
     }
     let message = message_builder.finish().await.unwrap();
 
@@ -59,7 +59,7 @@ async fn main() {
             .send()
             .with_seed(&seed)
             .with_input(initial_outputs[index].clone())
-            .with_output(address, 1_000_000)
+            .with_output(address.as_str().try_into()?, 1_000_000)
             .unwrap()
             .finish()
             .await
@@ -69,6 +69,7 @@ async fn main() {
             message.id().0
         );
     }
+    Ok(())
 }
 
 async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
