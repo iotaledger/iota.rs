@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, Client, ClientMiner, Error, Result, Seed};
+use crate::{api::address::search_address, client::hash_network, Client, ClientMiner, Error, Result, Seed};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
@@ -504,7 +504,15 @@ impl<'a> SendBuilder<'a> {
         let mut message = MessageBuilder::<ClientMiner>::new();
         message = match self.network_id {
             Some(id) => message.with_network_id(id),
-            _ => message.with_network_id(self.client.get_network_info().network_id),
+            _ => match self.client.get_network_info().network_id {
+                Some(id) => message.with_network_id(id),
+                None => {
+                    let nodeinfo = self.client.get_info().await?;
+                    let mut client_network_info = self.client.network_info.write().unwrap();
+                    client_network_info.network_id = Some(hash_network(&nodeinfo.network_id));
+                    message.with_network_id(client_network_info.network_id.unwrap())
+                }
+            },
         };
 
         if let Some(p) = payload {

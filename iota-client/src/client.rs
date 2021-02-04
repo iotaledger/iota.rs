@@ -348,7 +348,7 @@ impl Client {
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             for (info, node_url) in nodes.iter() {
                 let mut client_network_info = network_info.write().unwrap();
-                client_network_info.network_id = hash_network(&info.network_id);
+                client_network_info.network_id = Some(hash_network(&info.network_id));
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp.clone();
                 if !client_network_info.local_pow {
@@ -373,7 +373,7 @@ impl Client {
 
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
-        Ok(self.get_network_info().network_id)
+        Ok(self.get_network_info().network_id.unwrap_or(0))
     }
 
     /// Gets the miner to use based on the PoW setting

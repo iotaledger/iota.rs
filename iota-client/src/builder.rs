@@ -21,7 +21,7 @@ pub struct NetworkInfo {
     pub network: Option<String>,
     /// Network ID
     #[serde(rename = "networkId")]
-    pub network_id: u64,
+    pub network_id: Option<u64>,
     /// Bech32 HRP
     #[serde(rename = "bech32HRP")]
     pub bech32_hrp: String,
@@ -55,7 +55,7 @@ impl Default for ClientBuilder {
             broker_options: Default::default(),
             network_info: NetworkInfo {
                 network: None,
-                network_id: 11132824894578709914,
+                network_id: None,
                 min_pow_score: 4000f64,
                 local_pow: true,
                 bech32_hrp: "iota".into(),
