@@ -11,7 +11,7 @@ use std::env;
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("http://0.0.0.0:14265") // Insert the node here
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
         .unwrap();

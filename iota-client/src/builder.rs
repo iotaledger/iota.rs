@@ -17,8 +17,8 @@ const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct NetworkInfo {
-    /// Network of the Iota nodes belong to
-    pub network: String,
+    /// Network
+    pub network: Option<String>,
     /// Network ID
     #[serde(rename = "networkId")]
     pub network_id: u64,
@@ -54,11 +54,11 @@ impl Default for ClientBuilder {
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             network_info: NetworkInfo {
-                network: "testnet3".into(),
-                network_id: 10360767990291427429,
+                network: None,
+                network_id: 11132824894578709914,
                 min_pow_score: 4000f64,
                 local_pow: true,
-                bech32_hrp: "atoi".into(),
+                bech32_hrp: "iota".into(),
             },
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
             api_timeout: Default::default(),
@@ -117,10 +117,9 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Selects the type of network the added nodes belong to.
+    /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment
     pub fn with_network(mut self, network: &str) -> Self {
-        self.network_info.network = network.into();
-        self.network_info.network_id = hash_network(network);
+        self.network_info.network = Some(network.into());
         self
     }
 
@@ -151,20 +150,17 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub fn finish(mut self) -> Result<Client> {
+        let default_testnet_node_pools = vec!["https://dbfiles.testnet.chrysalis2.com/testnet_nodes.json".to_string()];
         if self.nodes.is_empty() {
-            match self.network_info.network.as_str() {
-                "testnet3" => {
-                    let default_nodes = vec![
-                        "https://api.lb-0.testnet.chrysalis2.com",
-                        "https://api.hornet-0.testnet.chrysalis2.com",
-                    ];
-                    for node in default_nodes.iter() {
-                        let url = Url::parse(node).map_err(|_| Error::UrlError)?;
-                        self.nodes.insert(url);
+            match self.network_info.network {
+                Some(ref network) => match network.to_lowercase().as_str() {
+                    "testnet" | "devnet" | "test" | "dev" => {
+                        self = self.with_node_pool_urls(&default_testnet_node_pools[..])?;
                     }
-                }
+                    _ => return Err(Error::SyncedNodePoolEmpty),
+                },
                 _ => {
-                    return Err(Error::MissingParameter(String::from("Iota node")));
+                    self = self.with_node_pool_urls(&default_testnet_node_pools[..])?;
                 }
             }
         }
@@ -273,16 +269,10 @@ impl ClientBuilder {
 pub struct NodeDetail {
     /// Iota node url
     pub node: String,
-    /// value of health
-    pub health: usize,
-    /// number of neighbors
-    pub neighbors: usize,
-    /// implementation name
+    /// Network id
+    pub network_id: String,
+    /// Implementation name
     pub implementation: String,
-    /// Iota node version
-    pub version: String,
-    /// enabled PoW
+    /// Enabled PoW
     pub pow: bool,
-    /// spent or not
-    pub spent: bool,
 }
