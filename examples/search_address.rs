@@ -14,6 +14,7 @@ async fn main() {
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     println!("This example uses dotenv, which is not safe for use in production.");
@@ -28,7 +29,7 @@ async fn main() {
         .finish()
         .unwrap();
     println!("{:?}", address);
-    let res = search_address(&seed, 0, 0..10, &address[0]).unwrap();
+    let res = search_address(&seed, 0, 0..10, &address[0]).await.unwrap();
     println!(
         "Found address with address_index: {}, internal address: {}",
         res.0, res.1

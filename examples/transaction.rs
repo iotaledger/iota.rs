@@ -31,6 +31,7 @@ async fn main() {
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.

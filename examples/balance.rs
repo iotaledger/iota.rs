@@ -11,6 +11,7 @@ async fn main() {
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     let address = "iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4";

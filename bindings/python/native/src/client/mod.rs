@@ -37,6 +37,7 @@ impl Client {
         local_pow: Option<bool>,
         mqtt_broker_options: Option<BrokerOptions>,
     ) -> Self {
+        let rt = tokio::runtime::Runtime::new().unwrap();
         let mut client = RustClient::builder();
         if let Some(network) = network {
             client = client.with_network(network);
@@ -56,7 +57,7 @@ impl Client {
             }
         }
         if let Some(node_pool_urls) = node_pool_urls {
-            client = client.with_node_pool_urls(&node_pool_urls).unwrap();
+            client = rt.block_on(async { client.with_node_pool_urls(&node_pool_urls).await.unwrap() });
         }
         if let Some(timeout) = request_timeout {
             client = client.with_request_timeout(Duration::from_millis(timeout));
@@ -86,7 +87,7 @@ impl Client {
                 .use_websockets(broker_options.use_ws);
             client = client.with_mqtt_broker_options(rust_broker_options);
         }
-        let client = client.finish().unwrap();
+        let client = rt.block_on(async { client.finish().await.unwrap() });
 
         // Update the BECH32_HRP
         // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
