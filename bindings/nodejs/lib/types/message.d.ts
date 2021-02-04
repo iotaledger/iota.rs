@@ -70,3 +70,8 @@ export declare interface Message {
   payload?: Payload
   nonce: number
 }
+
+export declare interface MessageWrapper {
+  messageId: string
+  message: Message
+}

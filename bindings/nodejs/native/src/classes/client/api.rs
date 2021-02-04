@@ -5,6 +5,7 @@ use std::{convert::TryInto, str::FromStr};
 
 use super::MessageDto;
 
+use crate::classes::client::dto::MessageWrapper;
 use iota::{Address, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
 use neon::prelude::*;
 
@@ -116,8 +117,12 @@ impl Task for ClientTask {
                         sender = sender
                             .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
-                    let message_id = sender.finish().await?;
-                    serde_json::to_string(&message_id).unwrap()
+                    let message = sender.finish().await?;
+                    serde_json::to_string(&MessageWrapper {
+                        message_id: message.id().0,
+                        message,
+                    })
+                    .unwrap()
                 }
                 Api::GetUnspentAddress {
                     seed,
@@ -139,7 +144,14 @@ impl Task for ClientTask {
                     message_ids,
                 } => {
                     let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
-                    serde_json::to_string(&messages).unwrap()
+                    let message_wrappers: Vec<MessageWrapper> = messages
+                        .into_iter()
+                        .map(|message| MessageWrapper {
+                            message_id: message.id().0,
+                            message,
+                        })
+                        .collect();
+                    serde_json::to_string(&message_wrappers).unwrap()
                 }
                 Api::GetBalance {
                     seed,
@@ -184,8 +196,8 @@ impl Task for ClientTask {
                         .with_nonce_provider(client.get_pow_provider(), 4000f64)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
-                    let message_id = client.post_message(&message).await?;
-                    serde_json::to_string(&message_id).unwrap()
+                    let message = client.post_message(&message).await?;
+                    serde_json::to_string(&message).unwrap()
                 }
                 Api::GetMessagesByIndexation(index) => {
                     let messages = client.get_message().index(index.as_str()).await?;
@@ -193,7 +205,11 @@ impl Task for ClientTask {
                 }
                 Api::GetMessage(id) => {
                     let message = client.get_message().data(&id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message_id: message.id().0,
+                        message,
+                    })
+                    .unwrap()
                 }
                 Api::GetMessageMetadata(id) => {
                     let metadata = client.get_message().metadata(&id).await?;
@@ -228,15 +244,27 @@ impl Task for ClientTask {
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message: message.1,
+                        message_id: message.0,
+                    })
+                    .unwrap()
                 }
                 Api::Reattach(message_id) => {
                     let message = client.reattach(message_id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message: message.1,
+                        message_id: message.0,
+                    })
+                    .unwrap()
                 }
                 Api::Promote(message_id) => {
                     let message = client.promote(message_id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message: message.1,
+                        message_id: message.0,
+                    })
+                    .unwrap()
                 }
             };
             Ok(res)
