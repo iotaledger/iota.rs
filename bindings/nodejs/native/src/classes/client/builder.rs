@@ -179,7 +179,7 @@ declare_types! {
                     builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
                 }
                 if !&ref_.node_pool_urls.is_empty() {
-                    builder = builder.with_node_pool_urls(&ref_.node_pool_urls).expect("Problem with node pool url");
+                    builder = crate::block_on(builder.with_node_pool_urls(&ref_.node_pool_urls)).expect("Problem with node pool url");
                 }
                 if let Some(network_name) = &ref_.network {
                     builder = builder.with_network(network_name);
@@ -191,7 +191,7 @@ declare_types! {
                     builder = builder.with_node_sync_disabled();
                 }
 
-                builder.finish().expect("failed to build client instance")
+                crate::block_on(builder.finish()).expect("failed to build client instance")
             };
             let id = crate::store_client(client);
             let id = cx.string(id);

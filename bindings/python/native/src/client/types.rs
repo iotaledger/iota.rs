@@ -364,8 +364,8 @@ impl From<RustInfoResponse> for InfoResponse {
 impl From<RustNetworkInfo> for NetworkInfo {
     fn from(network_info: RustNetworkInfo) -> Self {
         NetworkInfo {
-            network: network_info.network,
-            network_id: network_info.network_id,
+            network: network_info.network.unwrap_or("undefined".to_string()),
+            network_id: network_info.network_id.unwrap_or(0),
             bech32_hrp: network_info.bech32_hrp,
             min_pow_score: network_info.min_pow_score,
             local_pow: network_info.local_pow,
