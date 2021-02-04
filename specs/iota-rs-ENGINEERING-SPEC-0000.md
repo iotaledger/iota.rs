@@ -52,7 +52,7 @@ The data structure to initialize the instance of the Higher level client library
 
 | Parameter | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **network** | ✘ | Testnet | &str | The network name for example "testnet3" to define the network. If no node url is provided, some default nodes are used for the specified network. |
+| **network** | ✘ | Testnet | &str | The network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
@@ -114,7 +114,7 @@ A generic send function for easily sending a message.
 | **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
 | **parents** | ✘ | None | [MessageId] | 1-8 optional parents [MessageId] to be used. |
-| **network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
+| **network** | ✘ | None | &str | Optional select a network to get default nodes for it if no other node is provided. Can be "mainnet" or "testnet" |
 
 Depending on the provided values this function will create a message with:
 

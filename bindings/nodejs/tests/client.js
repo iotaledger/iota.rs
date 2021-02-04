@@ -6,7 +6,7 @@ const seed = 'b3a9bf35521157aa9c4508ab3a9266e210ae297ff5a4584234c4d9e7d01712e3'
 
 const client = new ClientBuilder()
   .node('http://localhost:14265')
-  .network('testnet3')
+  .network('testnet')
   // .disableNodeSync()
   .brokerOptions({ timeout: 50 })
   .localPow(true)
@@ -17,7 +17,7 @@ describe('Client', () => {
     const info = client.networkInfo()
     assert.strictEqual(typeof info, 'object')
     assert.strictEqual(info.localPow, true)
-    assert.deepStrictEqual(info.network, 'testnet3')
+    assert.deepStrictEqual(info.network, 'testnet')
     assert.strictEqual(info.networkId, 18326844446802180000)
     assert.strictEqual(info.bech32HRP, 'atoi')
     assert.strictEqual(info.minPowScore, 4000)

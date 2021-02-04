@@ -314,25 +314,49 @@ impl Client {
         network_info: &Arc<RwLock<NetworkInfo>>,
     ) {
         let mut synced_nodes = HashSet::new();
-
+        let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
         for node_url in nodes {
-            // Put the healty node url into the synced_nodes
+            // Put the healty node url into the network_nodes
             if let Ok(info) = Client::get_node_info(node_url.clone()).await {
                 if info.is_healthy {
-                    if network_info.read().unwrap().network != info.network_id {
-                        continue;
-                    }
-                    let mut client_network_info = network_info.write().unwrap();
-                    client_network_info.network_id = hash_network(&info.network_id);
-                    client_network_info.min_pow_score = info.min_pow_score;
-                    client_network_info.bech32_hrp = info.bech32_hrp;
-                    if !client_network_info.local_pow {
-                        if info.features.contains(&"PoW".to_string()) {
-                            synced_nodes.insert(node_url.clone());
+                    match network_nodes.get_mut(&info.network_id) {
+                        Some(network_id_entry) => {
+                            network_id_entry.push((info, node_url.clone()));
                         }
-                    } else {
+                        None => match &network_info.read().unwrap().network {
+                            Some(id) => {
+                                if info.network_id.contains(id) {
+                                    network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
+                                }
+                            }
+                            None => {
+                                network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
+                            }
+                        },
+                    }
+                }
+            }
+        }
+        // Get network_id with the most nodes
+        let mut most_nodes = ("network_id", 0);
+        for (network_id, node) in network_nodes.iter() {
+            if node.len() > most_nodes.1 {
+                most_nodes.0 = network_id;
+                most_nodes.1 = node.len();
+            }
+        }
+        if let Some(nodes) = network_nodes.get(most_nodes.0) {
+            for (info, node_url) in nodes.iter() {
+                let mut client_network_info = network_info.write().unwrap();
+                client_network_info.network_id = hash_network(&info.network_id);
+                client_network_info.min_pow_score = info.min_pow_score;
+                client_network_info.bech32_hrp = info.bech32_hrp.clone();
+                if !client_network_info.local_pow {
+                    if info.features.contains(&"PoW".to_string()) {
                         synced_nodes.insert(node_url.clone());
                     }
+                } else {
+                    synced_nodes.insert(node_url.clone());
                 }
             }
         }
@@ -349,9 +373,7 @@ impl Client {
 
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
-        let info = self.get_info().await?;
-        let network_id = hash_network(&info.network_id);
-        Ok(network_id)
+        Ok(self.get_network_info().network_id)
     }
 
     /// Gets the miner to use based on the PoW setting

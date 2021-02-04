@@ -77,11 +77,11 @@ Adds a list of IOTA nodes from node pool URLs to the client pool.
 
 #### network(networkName): ClientBuilder
 
-Set a custom network name, useful for private tangles.
+Set a network to get default nodes for it. Can be "testnet" or "mainnet"
 
 | Param       | Type                  | Description      |
 | ----------- | --------------------- | ---------------- |
-| networkName | <code>string</code>   | The network name |
+| networkName | <code>string</code>   | The network |
 
 **Returns** the client builder instance for chained calls.
 

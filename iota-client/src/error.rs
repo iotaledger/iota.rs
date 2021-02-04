@@ -34,7 +34,7 @@ pub enum Error {
     #[error("Response error with status code {0}: {1}")]
     ResponseError(u16, String),
     /// No node available in the synced node pool
-    #[error("No node available")]
+    #[error("No synced node available")]
     SyncedNodePoolEmpty,
     /// Error on Url type conversion
     #[error("Failed to parse url")]
