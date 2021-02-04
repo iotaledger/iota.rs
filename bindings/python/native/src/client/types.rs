@@ -16,13 +16,13 @@ use iota::{
             output::OutputResponse as RustOutputResponse,
         },
         types::{
-            AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, MilestoneDto as RustMilestoneDto,
-            OutputDto as RustOutputDto,
+            AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, OutputDto as RustOutputDto,
             SignatureLockedDustAllowanceOutputDto as RustSignatureLockedDustAllowanceOutputDto,
             SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
+    client::MilestoneResponse,
     Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
     IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
     MilestonePayloadEssence as RustMilestonePayloadEssence, Output as RustOutput, Payload as RustPayload,
@@ -75,13 +75,9 @@ pub struct AddressBalancePair {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MilestoneDto {
-    pub kind: u32,
     pub index: u32,
     pub timestamp: u64,
-    pub parents: Vec<String>,
-    pub inclusion_merkle_proof: String,
-    pub public_keys: Vec<String>,
-    pub signatures: Vec<String>,
+    pub message_id: String,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -364,8 +360,8 @@ impl From<RustInfoResponse> for InfoResponse {
 impl From<RustNetworkInfo> for NetworkInfo {
     fn from(network_info: RustNetworkInfo) -> Self {
         NetworkInfo {
-            network: network_info.network,
-            network_id: network_info.network_id,
+            network: network_info.network.unwrap_or("undefined".to_string()),
+            network_id: network_info.network_id.unwrap_or(0),
             bech32_hrp: network_info.bech32_hrp,
             min_pow_score: network_info.min_pow_score,
             local_pow: network_info.local_pow,
@@ -373,16 +369,12 @@ impl From<RustNetworkInfo> for NetworkInfo {
     }
 }
 
-impl From<RustMilestoneDto> for MilestoneDto {
-    fn from(milestone_dto: RustMilestoneDto) -> Self {
+impl From<MilestoneResponse> for MilestoneDto {
+    fn from(milestone_dto: MilestoneResponse) -> Self {
         Self {
-            kind: milestone_dto.kind,
+            message_id: milestone_dto.message_id.to_string(),
             index: milestone_dto.index,
             timestamp: milestone_dto.timestamp,
-            parents: milestone_dto.parents,
-            inclusion_merkle_proof: milestone_dto.inclusion_merkle_proof,
-            public_keys: milestone_dto.public_keys,
-            signatures: milestone_dto.signatures,
         }
     }
 }

@@ -17,6 +17,7 @@ async fn main() {
         .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     println!("This example uses dotenv, which is not safe for use in production.");

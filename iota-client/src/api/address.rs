@@ -100,13 +100,13 @@ fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: b
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
-pub fn search_address(
+pub async fn search_address(
     seed: &Seed,
     account_index: usize,
     range: Range<usize>,
     address: &Bech32Address,
 ) -> Result<(usize, bool)> {
-    let iota = Client::builder().with_node("http://0.0.0.0:14265")?.finish()?;
+    let iota = Client::builder().with_node("http://0.0.0.0:14265")?.finish().await?;
     let addresses = iota
         .find_addresses(&seed)
         .with_account_index(account_index)

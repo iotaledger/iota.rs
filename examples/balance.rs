@@ -13,6 +13,7 @@ async fn main() {
         .with_network("testnet3")
         .with_node_sync_disabled()
         .finish()
+        .await
         .unwrap();
 
     let address = "atoi1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0ey2k2yn4";
