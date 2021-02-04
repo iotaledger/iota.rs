@@ -17,6 +17,7 @@ async fn setup_indexation_message() -> MessageId {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap();
     let data = r#"
     {
@@ -68,6 +69,7 @@ async fn test_get_tips() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_tips()
         .await
@@ -82,6 +84,7 @@ async fn test_post_message_with_indexation() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     let r = client
@@ -102,6 +105,7 @@ async fn test_post_message_with_transaction() {
         .with_node(DEFAULT_NODE_URL) // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
@@ -132,6 +136,7 @@ async fn test_get_message_by_index() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .index("HORNET Spammer")
@@ -148,6 +153,7 @@ async fn test_get_message_data() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap();
     let message_id = setup_indexation_message().await;
     let r = client.get_message().data(&message_id).await.unwrap();
@@ -163,6 +169,7 @@ async fn test_get_message_metadata() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .metadata(&message_id)
@@ -180,6 +187,7 @@ async fn test_get_message_raw() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .raw(&message_id)
@@ -195,6 +203,7 @@ async fn test_get_message_children() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .children(&message_id)
@@ -209,6 +218,7 @@ async fn test_get_address_balance() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_address()
         .balance(&"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into())
@@ -225,6 +235,7 @@ async fn test_get_address_outputs() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_address()
         .outputs(
@@ -244,6 +255,7 @@ async fn test_get_output() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_output(
             &UTXOInput::new(
@@ -265,6 +277,7 @@ async fn test_get_milestone() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_milestone(3)
         .await

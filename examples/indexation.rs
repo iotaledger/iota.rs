@@ -10,6 +10,7 @@ async fn main() {
         // .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         // .unwrap()
         .finish()
+        .await
         .unwrap();
 
     let message = iota

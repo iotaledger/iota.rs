@@ -245,7 +245,7 @@ impl<'a> SendBuilder<'a> {
                                 self.input_range.clone(),
                                 &bech32_address.into(),
                             )
-                            .map_err(|_| Error::InputAddressNotFound(format!("{:?}", self.input_range.clone())))?;
+                            .await?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());

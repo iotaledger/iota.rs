@@ -102,11 +102,13 @@ impl ClientBuilder {
     }
 
     /// Get node list from the node_pool_urls
-    pub fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
+    pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let text: String = reqwest::blocking::get(pool_url)
+            let text: String = reqwest::get(pool_url)
+                .await
                 .unwrap()
                 .text()
+                .await
                 .map_err(|_| Error::NodePoolUrlsError)?;
             let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
             for node_detail in nodes_details {
@@ -149,18 +151,18 @@ impl ClientBuilder {
     }
 
     /// Build the Client instance.
-    pub fn finish(mut self) -> Result<Client> {
+    pub async fn finish(mut self) -> Result<Client> {
         let default_testnet_node_pools = vec!["https://dbfiles.testnet.chrysalis2.com/testnet_nodes.json".to_string()];
         if self.nodes.is_empty() {
             match self.network_info.network {
                 Some(ref network) => match network.to_lowercase().as_str() {
                     "testnet" | "devnet" | "test" | "dev" => {
-                        self = self.with_node_pool_urls(&default_testnet_node_pools[..])?;
+                        self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                     }
                     _ => return Err(Error::SyncedNodePoolEmpty),
                 },
                 _ => {
-                    self = self.with_node_pool_urls(&default_testnet_node_pools[..])?;
+                    self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                 }
             }
         }
