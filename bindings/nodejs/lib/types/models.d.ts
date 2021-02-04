@@ -31,14 +31,9 @@ export declare interface OutputMetadata {
 }
 
 export declare interface MilestoneMetadata {
-  type: number
   index: number
   messageId: string
   timestamp: number
-  parentMessageIds: string[]
-  inclusionMerkleProof: string
-  publicKeys: string[]
-  signature: string[]
 }
 
 export declare interface BrokerOptions {
