@@ -6,8 +6,8 @@ import {
   BrokerOptions,
   Address,
   AddressBalance,
-  Message,
-  MessageDto
+  MessageDto,
+  MessageWrapper
 } from './types'
 
 export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'PostMessageWithRemotePoW' | 'GetOutput' | 'GetMilestone'
@@ -74,13 +74,13 @@ export declare class Client {
   send(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
   findAddresses(seed: string): AddressFinder
-  findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message[]>
+  findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
-  retry(messageId: string): Promise<Message>
+  retry(messageId: string): Promise<MessageWrapper>
 
   getInfo(): Promise<NodeInfo>
-  getTips(): Promise<[string, string]>
+  getTips(): Promise<string[]>
   postMessage(message: MessageDto): Promise<string>
   postMessageWithRemotePow(message: MessageDto): Promise<string>
   getMessage(): MessageFinder
@@ -89,13 +89,13 @@ export declare class Client {
   getAddressOutputs(address: string): Promise<string[]>
   getAddressBalance(address: string): Promise<number>
   getMilestone(index: number): Promise<MilestoneMetadata>
-  reattach(messageId: string): Promise<Message>
-  promote(messageId: string): Promise<Message>
+  reattach(messageId: string): Promise<MessageWrapper>
+  promote(messageId: string): Promise<MessageWrapper>
 }
 
 export declare class MessageFinder {
   index(index: string): Promise<string[]>
-  data(messageId: string): Promise<Message>
+  data(messageId: string): Promise<MessageWrapper>
   raw(messageId: string): Promise<string>
   children(messageId: string): Promise<string[]>
   metadata(messageId: string): Promise<MessageMetadata>

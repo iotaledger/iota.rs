@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Output,
-    OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock, SignatureUnlock,
-    TransactionPayload, TransactionPayloadEssence, UTXOInput, UnlockBlock,
+    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Message,
+    MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
+    SignatureUnlock, TransactionPayload, TransactionPayloadEssence, UTXOInput, UnlockBlock,
 };
 use serde::{Deserialize, Serialize};
 
@@ -12,6 +12,13 @@ use std::{
     convert::{TryFrom, TryInto},
     str::FromStr,
 };
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MessageWrapper {
+    pub message: Message,
+    #[serde(rename = "messageId")]
+    pub message_id: MessageId,
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MessageTransactionPayloadEssenceDto {
@@ -188,8 +195,8 @@ impl From<OutputMetadata> for OutputMetadataDto {
         };
 
         Self {
-            message_id: hex::encode(value.message_id),
-            transaction_id: hex::encode(value.transaction_id),
+            message_id: value.message_id,
+            transaction_id: value.transaction_id,
             output_index: value.output_index,
             is_spent: value.is_spent,
             address: output_address,

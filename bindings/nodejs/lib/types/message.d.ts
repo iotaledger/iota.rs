@@ -17,11 +17,6 @@ export declare interface TransactionPayloadEssence {
   payload?: Payload
 }
 
-export declare interface WotsSignatureUnlockBlock {
-  type: 'Wots'
-  data: number[]
-}
-
 export declare interface Ed25519SignatureUnlockBlock {
   type: 'Ed25519'
   data: {
@@ -74,4 +69,9 @@ export declare interface Message {
   parents: string[]
   payload?: Payload
   nonce: number
+}
+
+export declare interface MessageWrapper {
+  messageId: string
+  message: Message
 }

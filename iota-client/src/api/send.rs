@@ -214,7 +214,6 @@ impl<'a> SendBuilder<'a> {
                     // Only add unspent outputs
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
-                            // todo check if already used in another pending transaction if possible
                             let (output_amount, output_address) = match output.output {
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
@@ -293,7 +292,6 @@ impl<'a> SendBuilder<'a> {
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;
                             if !curr_outputs.is_spent {
-                                // todo check if already used in another pending transaction if possible
                                 outputs.push(curr_outputs);
                             }
                         }

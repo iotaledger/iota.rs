@@ -15,7 +15,7 @@ pub struct ClientBuilderWrapper {
     request_timeout: Option<Duration>,
     api_timeout: HashMap<Api, Duration>,
     local_pow: bool,
-    node_sync_enabled: bool,
+    node_sync_disabled: bool,
 }
 
 declare_types! {
@@ -30,7 +30,7 @@ declare_types! {
                 request_timeout: Default::default(),
                 api_timeout: Default::default(),
                 local_pow: true,
-                node_sync_enabled: true,
+                node_sync_disabled: false,
             })
         }
 
@@ -127,8 +127,8 @@ declare_types! {
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let node_sync_enabled = &mut this.borrow_mut(&guard).node_sync_enabled;
-                *node_sync_enabled = false;
+                let node_sync_disabled = &mut this.borrow_mut(&guard).node_sync_disabled;
+                *node_sync_disabled = true;
             }
             Ok(cx.this().upcast())
         }
@@ -187,7 +187,7 @@ declare_types! {
                 if let Some(broker_options) = &ref_.broker_options {
                     builder = builder.with_mqtt_broker_options(broker_options.clone());
                 }
-                if ref_.node_sync_enabled {
+                if ref_.node_sync_disabled {
                     builder = builder.with_node_sync_disabled();
                 }
 
