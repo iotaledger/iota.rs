@@ -14,6 +14,7 @@ pub mod builder;
 pub mod client;
 pub mod error;
 pub mod node;
+pub mod seed;
 
 pub use bee_message;
 pub use bee_rest_api::{
@@ -21,13 +22,14 @@ pub use bee_rest_api::{
     handlers::{balance_ed25519::BalanceForAddressResponse, output::OutputResponse},
     types::{AddressDto, OutputDto},
 };
-pub use bee_signing_ext::{self, binary::BIP32Path, Seed};
+// pub use bee_signing_ext::{self, binary::BIP32Path,};
 pub use builder::ClientBuilder;
 pub use client::*;
 pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use reqwest::Url;
+pub use seed::*;
 
 /// match a response with an expected status code or return the default error variant.
 #[macro_export]

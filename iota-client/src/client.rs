@@ -7,19 +7,18 @@ use crate::{
     builder::{ClientBuilder, NetworkInfo},
     error::*,
     node::*,
-    parse_response,
+    parse_response, Seed,
 };
 
 use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     handlers::{
-        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo, output::OutputResponse,
-        tips::TipsResponse,
+        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
+        milestone::MilestoneResponse as MilestoneResponseDto, output::OutputResponse, tips::TipsResponse,
     },
-    types::{MessageDto, MilestoneDto as MilestoneMetadata},
+    types::{MessageDto, PeerDto},
 };
-use bee_signing_ext::Seed;
 
 use blake2::{
     digest::{Update, VariableOutput},
@@ -42,6 +41,17 @@ use std::{
     sync::{Arc, RwLock},
     time::Duration,
 };
+
+#[derive(Debug, Serialize)]
+/// Milestone data.
+pub struct MilestoneResponse {
+    /// Milestone index.
+    pub index: u32,
+    /// Milestone message id.
+    pub message_id: MessageId,
+    /// Milestone timestamp.
+    pub timestamp: u64,
+}
 
 #[cfg(feature = "mqtt")]
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
@@ -179,6 +189,8 @@ pub enum Api {
     GetHealth,
     /// `get_info`API
     GetInfo,
+    /// `get_peers`API
+    GetPeers,
     /// `get_tips` API
     GetTips,
     /// `post_message` API
@@ -198,6 +210,7 @@ impl FromStr for Api {
         let t = match s {
             "GetHealth" => Self::GetHealth,
             "GetInfo" => Self::GetInfo,
+            "GetPeers" => Self::GetPeers,
             "GetTips" => Self::GetTips,
             "PostMessage" => Self::PostMessage,
             "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
@@ -434,6 +447,26 @@ impl Client {
         })
     }
 
+    /// GET /api/v1/peers endpoint
+    pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
+        let mut url = self.get_node()?;
+        url.set_path("api/v1/peers");
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetPeers))
+            .send()
+            .await?;
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct PeerWrapper {
+            data: Vec<PeerDto>,
+        }
+        parse_response!(resp, 200 => {
+            Ok(resp.json::<PeerWrapper>().await?.data)
+        })
+    }
+
     /// GET /api/v1/tips endpoint
     pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
         let mut url = self.get_node()?;
@@ -567,7 +600,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneMetadata> {
+    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneResponse> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = self
@@ -578,11 +611,17 @@ impl Client {
             .await?;
         #[derive(Debug, Serialize, Deserialize)]
         struct MilestoneWrapper {
-            data: MilestoneMetadata,
+            data: MilestoneResponseDto,
         }
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<MilestoneWrapper>().await?;
-            Ok(milestone.data)
+            let milestone = resp.json::<MilestoneWrapper>().await?.data;
+            let mut message_id = [0u8; 32];
+            hex::decode_to_slice(milestone.message_id, &mut message_id)?;
+            Ok(MilestoneResponse {
+                index: milestone.milestone_index,
+                message_id: MessageId::new(message_id),
+                timestamp: milestone.timestamp,
+            })
         })
     }
 

@@ -1,9 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
-
-use bee_signing_ext::Seed;
+use crate::{Client, Error, Result, Seed};
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
