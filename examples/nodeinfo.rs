@@ -8,8 +8,6 @@ use iota::Client;
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
-        // optional, because "testnet3" is default
-        .with_network("testnet3")
         .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()

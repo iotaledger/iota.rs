@@ -7,8 +7,8 @@ use iota::{Client, Payload};
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
-        .unwrap()
+        // .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        // .unwrap()
         .finish()
         .unwrap();
 
