@@ -4,7 +4,7 @@
 //! cargo run --example peers --release
 use iota::Client;
 
-/// In this example we get the nodeinfo
+/// In this example we get the peers info
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
