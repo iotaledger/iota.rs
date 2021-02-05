@@ -77,7 +77,8 @@ Adds a list of IOTA nodes from node pool URLs to the client pool.
 
 #### network(networkName): ClientBuilder
 
-Set a network to get default nodes for it. Can be "testnet" or "mainnet"
+Set a network to get default nodes for it. Can be "testnet" or "mainnet".
+Nodes that don't belong to this network are ignored.
 
 | Param       | Type                  | Description      |
 | ----------- | --------------------- | ---------------- |

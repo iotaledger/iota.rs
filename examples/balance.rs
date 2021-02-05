@@ -10,7 +10,6 @@ async fn main() {
     let iota = Client::builder() // Crate a client instance builder
         .with_node("http://localhost:14265") // Insert the node here
         .unwrap()
-        .with_network("testnet3")
         .with_node_sync_disabled()
         .finish()
         .await
