@@ -377,7 +377,10 @@ impl Client {
             Some(id) => id,
             None => {
                 let node_info = self.get_info().await?;
-                hash_network(&node_info.network_id)
+                let network_id = hash_network(&node_info.network_id);
+                let mut client_network_info = self.network_info.write().unwrap();
+                client_network_info.network_id = Some(network_id);
+                network_id
             }
         };
         Ok(network_id)
