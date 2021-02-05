@@ -57,3 +57,7 @@ path = "nodeinfo.rs"
 [[example]]
 name = "txspam"
 path = "txspam.rs"
+
+[[example]]
+name = "peers"
+path = "peers.rs"
