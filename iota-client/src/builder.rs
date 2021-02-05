@@ -119,7 +119,9 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment
+    /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
+    /// Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are
+    /// provided.
     pub fn with_network(mut self, network: &str) -> Self {
         self.network_info.network = Some(network.into());
         self
