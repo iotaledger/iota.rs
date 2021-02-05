@@ -502,10 +502,7 @@ impl<'a> SendBuilder<'a> {
         let mut message = MessageBuilder::<ClientMiner>::new();
         message = match self.network_id {
             Some(id) => message.with_network_id(id),
-            _ => match self.client.get_network_info().network_id {
-                Some(id) => message.with_network_id(id),
-                None => message.with_network_id(self.client.get_network_id().await?),
-            },
+            _ => message.with_network_id(self.client.get_network_id().await?),
         };
 
         if let Some(p) = payload {
