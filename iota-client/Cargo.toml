@@ -13,13 +13,10 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = { path = "../../bee/bee-api/bee-rest-api" }
-bee-message = { path = "../../bee/bee-message" }
-bee-pow = { path = "../../bee/bee-pow" }
-# bee-rest-api = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-# bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "9259a0617ca3b72e2bb2f63d5b7197247f85061c", features = ["ed25519", "random"]}
 bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 slip10 = "0.4"
