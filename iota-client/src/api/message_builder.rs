@@ -5,13 +5,17 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result, Se
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
-// use bee_message::transaction::outputs::Ed25519Address;
+use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
 use slip10::BIP32Path;
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
     str::FromStr,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 const HARDEND: u32 = 1 << 31;
@@ -215,6 +219,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
                             let (output_amount, output_address) = match output.output {
+                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
                                         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
@@ -305,10 +310,12 @@ impl<'a> ClientMessageBuilder<'a> {
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
                             let output_amount = match output.output {
+                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
-                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
                                         if r.amount < 1_000_000 {
+                                            let output_address =
+                                                Address::from(Ed25519Address::from_str(&addr.address)?);
                                             dust_and_allowance_recorders.push((r.amount, output_address, false));
                                         }
                                         r.amount
@@ -488,37 +495,31 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
-        // set parent messages
-        let parent_messages = match self.parents {
-            Some(mut p) => {
-                p.sort_unstable();
-                p.dedup();
-                p
+        let network_id = match self.network_id {
+            Some(id) => id,
+            _ => self.client.get_network_id().await?,
+        };
+        let final_message = match self.parents {
+            Some(mut parents) => {
+                parents.sort_unstable();
+                parents.dedup();
+                do_pow(
+                    crate::client::ClientMinerBuilder::new()
+                        .with_local_pow(self.client.get_network_info().local_pow)
+                        .finish(),
+                    self.client.get_network_info().min_pow_score,
+                    network_id,
+                    payload,
+                    parents,
+                    Arc::new(AtomicBool::new(false)),
+                )?
+                .1
+                .unwrap()
             }
-            None => self.client.get_tips().await?,
+            None => finish_pow(&self.client, network_id, payload.clone()).await?,
         };
-
-        // building message
-        let mut message = MessageBuilder::<ClientMiner>::new();
-        message = match self.network_id {
-            Some(id) => message.with_network_id(id),
-            _ => message.with_network_id(self.client.get_network_id().await?),
-        };
-
-        if let Some(p) = payload {
-            message = message.with_payload(p);
-        }
-        let final_message = message
-            .with_parents(parent_messages)
-            .with_nonce_provider(
-                self.client.get_pow_provider(),
-                self.client.get_network_info().min_pow_score,
-            )
-            .finish()
-            .map_err(Error::MessageError)?;
 
         let msg_id = self.client.post_message(&final_message).await?;
-
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.client.get_network_info().local_pow {
             true => final_message,
@@ -563,6 +564,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     let address_outputs_metadata = client.find_outputs(&[], &[address.clone()]).await?;
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
+            OutputDto::Treasury(_) => {}
             OutputDto::SignatureLockedDustAllowance(d_a_o) => {
                 dust_allowance_balance += d_a_o.amount as i64;
             }
@@ -584,4 +586,75 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
         )));
     }
     Ok(())
+}
+
+/// Does PoW with always new tips
+pub async fn finish_pow(client: &Client, network_id: u64, payload: Option<Payload>) -> Result<Message> {
+    let done = Arc::new(AtomicBool::new(false));
+    let local_pow = client.get_network_info().local_pow;
+    let min_pow_score = client.get_network_info().min_pow_score;
+    loop {
+        let abort1 = Arc::clone(&done);
+        let abort2 = Arc::clone(&done);
+        let payload_ = payload.clone();
+        let parent_messages = client.get_tips().await?;
+        let time_thread = std::thread::spawn(move || pow_timeout(15, &abort1));
+        let pow_thread = std::thread::spawn(move || {
+            do_pow(
+                crate::client::ClientMinerBuilder::new()
+                    .with_local_pow(local_pow)
+                    .finish(),
+                min_pow_score,
+                network_id,
+                payload_,
+                parent_messages,
+                abort2,
+            )
+        });
+
+        let threads = vec![pow_thread, time_thread];
+        for t in threads {
+            match t.join().unwrap() {
+                Ok(res) => {
+                    if res.0 != 0 || !local_pow {
+                        if let Some(message) = res.1 {
+                            return Ok(message);
+                        }
+                    }
+                    done.swap(false, Ordering::Relaxed);
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            }
+        }
+    }
+}
+
+fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> Result<(u64, Option<Message>)> {
+    std::thread::sleep(std::time::Duration::from_secs(after_seconds));
+    done.swap(true, Ordering::Relaxed);
+    Ok((0, None))
+}
+
+/// Does PoW
+pub fn do_pow(
+    client_miner: ClientMiner,
+    min_pow_score: f64,
+    network_id: u64,
+    payload: Option<Payload>,
+    parent_messages: Vec<MessageId>,
+    done: Arc<AtomicBool>,
+) -> Result<(u64, Option<Message>)> {
+    let mut message = MessageBuilder::<ClientMiner>::new();
+    message = message.with_network_id(network_id);
+    if let Some(p) = payload {
+        message = message.with_payload(p);
+    }
+    let message = message
+        .with_parents(parent_messages)
+        .with_nonce_provider(client_miner, min_pow_score, Some(Arc::clone(&done)))
+        .finish()
+        .map_err(Error::MessageError)?;
+    Ok((message.nonce(), Some(message)))
 }
