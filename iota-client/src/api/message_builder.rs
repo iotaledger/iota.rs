@@ -219,6 +219,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
                             let (output_amount, output_address) = match output.output {
+                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
                                         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
@@ -309,10 +310,12 @@ impl<'a> ClientMessageBuilder<'a> {
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
                             let output_amount = match output.output {
+                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
-                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
                                         if r.amount < 1_000_000 {
+                                            let output_address =
+                                                Address::from(Ed25519Address::from_str(&addr.address)?);
                                             dust_and_allowance_recorders.push((r.amount, output_address, false));
                                         }
                                         r.amount
@@ -561,6 +564,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     let address_outputs_metadata = client.find_outputs(&[], &[address.clone()]).await?;
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
+            OutputDto::Treasury(_) => {}
             OutputDto::SignatureLockedDustAllowance(d_a_o) => {
                 dust_allowance_balance += d_a_o.amount as i64;
             }
@@ -584,8 +588,8 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     Ok(())
 }
 
-// Does PoW with always new tips
-async fn finish_pow(client: &Client, network_id: u64, payload: Option<Payload>) -> Result<Message> {
+/// Does PoW with always new tips
+pub async fn finish_pow(client: &Client, network_id: u64, payload: Option<Payload>) -> Result<Message> {
     let done = Arc::new(AtomicBool::new(false));
     let local_pow = client.get_network_info().local_pow;
     let min_pow_score = client.get_network_info().min_pow_score;
@@ -633,7 +637,8 @@ fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> Result<(u64, Option<Mes
     Ok((0, None))
 }
 
-fn do_pow(
+/// Does PoW
+pub fn do_pow(
     client_miner: ClientMiner,
     min_pow_score: f64,
     network_id: u64,

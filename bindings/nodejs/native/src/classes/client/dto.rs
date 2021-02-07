@@ -186,6 +186,7 @@ pub(super) struct OutputMetadataDto {
 impl From<OutputMetadata> for OutputMetadataDto {
     fn from(value: OutputMetadata) -> Self {
         let (output_amount, output_address) = match value.output {
+            BeeOutput::Treasury(t) => (t.amount, "".to_string()),
             BeeOutput::SignatureLockedSingle(r) => match r.address {
                 AddressDto::Ed25519(addr) => (r.amount, addr.address),
             },

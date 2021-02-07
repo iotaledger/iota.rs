@@ -19,6 +19,7 @@ use iota::{
             AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, OutputDto as RustOutputDto,
             SignatureLockedDustAllowanceOutputDto as RustSignatureLockedDustAllowanceOutputDto,
             SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
+            TreasuryOutputDto as RustTreasuryOutputDto,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
@@ -97,6 +98,7 @@ pub struct OutputResponse {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct OutputDto {
+    treasury: Option<TreasuryOutputDto>,
     signature_locked_single: Option<SignatureLockedSingleOutputDto>,
     signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutputDto>,
 }
@@ -112,6 +114,12 @@ pub struct SignatureLockedSingleOutputDto {
 pub struct SignatureLockedDustAllowanceOutputDto {
     pub kind: u32,
     pub address: AddressDto,
+    pub amount: u64,
+}
+
+#[derive(Clone, Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct TreasuryOutputDto {
+    pub kind: u32,
     pub amount: u64,
 }
 
@@ -257,11 +265,18 @@ impl From<RustOutputResponse> for OutputResponse {
 impl From<RustOutputDto> for OutputDto {
     fn from(output: RustOutputDto) -> Self {
         match output {
+            RustOutputDto::Treasury(t) => OutputDto {
+                treasury: Some(t.into()),
+                signature_locked_single: None,
+                signature_locked_dust_allowance: None,
+            },
             RustOutputDto::SignatureLockedSingle(signature) => OutputDto {
+                treasury: None,
                 signature_locked_single: Some(signature.into()),
                 signature_locked_dust_allowance: None,
             },
             RustOutputDto::SignatureLockedDustAllowance(signature) => OutputDto {
+                treasury: None,
                 signature_locked_single: None,
                 signature_locked_dust_allowance: Some(signature.into()),
             },
@@ -274,6 +289,15 @@ impl From<RustEd25519AddressDto> for Ed25519AddressDto {
         Self {
             kind: address.kind,
             address: address.address,
+        }
+    }
+}
+
+impl From<RustTreasuryOutputDto> for TreasuryOutputDto {
+    fn from(treasury: RustTreasuryOutputDto) -> Self {
+        Self {
+            kind: treasury.kind,
+            amount: treasury.amount,
         }
     }
 }
