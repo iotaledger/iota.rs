@@ -5,14 +5,17 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result, Se
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
-// use bee_message::transaction::outputs::Ed25519Address;
+use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
 use slip10::BIP32Path;
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
     str::FromStr,
-    sync::{atomic::AtomicBool, Arc},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 const HARDEND: u32 = 1 << 31;
@@ -489,32 +492,29 @@ impl<'a> SendBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
-        // set parent messages
-        let parent_messages = match self.parents {
-            Some(mut p) => {
-                p.sort_unstable();
-                p.dedup();
-                p
-            }
-            None => self.client.get_tips().await?,
-        };
-
         let network_id = match self.network_id {
             Some(id) => id,
             _ => self.client.get_network_id().await?,
         };
-
-        let done = Arc::new(AtomicBool::new(false));
-
-        let final_message = finish_pow(
-            &self.client,
-            self.client.get_network_info().min_pow_score,
-            network_id,
-            payload.clone(),
-            parent_messages.clone(),
-            done,
-        )
-        .await?;
+        let final_message = match self.parents {
+            Some(mut parents) => {
+                parents.sort_unstable();
+                parents.dedup();
+                do_pow(
+                    crate::client::ClientMinerBuilder::new()
+                        .with_local_pow(self.client.get_network_info().local_pow)
+                        .finish(),
+                    self.client.get_network_info().min_pow_score,
+                    network_id,
+                    payload,
+                    parents,
+                    Arc::new(AtomicBool::new(false)),
+                )?
+                .1
+                .unwrap()
+            }
+            None => finish_pow(&self.client, network_id, payload.clone()).await?,
+        };
 
         let msg_id = self.client.post_message(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
@@ -583,59 +583,48 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     }
     Ok(())
 }
-use bee_pow::providers::ProviderBuilder;
-use std::sync::atomic::Ordering;
+
 // Does PoW with always new tips
-async fn finish_pow(
-    client: &Client,
-    min_pow_score: f64,
-    network_id: u64,
-    payload: Option<Payload>,
-    parent_messages: Vec<MessageId>,
-    done: Arc<AtomicBool>,
-) -> Result<Message> {
-    let mut max_tries = 10;
-    let mut parents = parent_messages;
-    while max_tries != 0 {
+async fn finish_pow(client: &Client, network_id: u64, payload: Option<Payload>) -> Result<Message> {
+    let done = Arc::new(AtomicBool::new(false));
+    let local_pow = client.get_network_info().local_pow;
+    let min_pow_score = client.get_network_info().min_pow_score;
+    loop {
         let abort1 = Arc::clone(&done);
         let abort2 = Arc::clone(&done);
         let payload_ = payload.clone();
-        let parent_messages_ = parents.clone();
-        let time_thread = std::thread::spawn(move || pow_timeout(10, &abort1));
+        let parent_messages = client.get_tips().await?;
+        let time_thread = std::thread::spawn(move || pow_timeout(15, &abort1));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
-                crate::client::ClientMinerBuilder::new().with_local_pow(true).finish(),
+                crate::client::ClientMinerBuilder::new()
+                    .with_local_pow(local_pow)
+                    .finish(),
                 min_pow_score,
                 network_id,
                 payload_,
-                parent_messages_,
+                parent_messages,
                 abort2,
             )
         });
 
         let threads = vec![pow_thread, time_thread];
-        for (index, t) in threads.into_iter().enumerate() {
+        for t in threads {
             match t.join().unwrap() {
                 Ok(res) => {
-                    if res.0 != 0 {
-                        return Ok(res.1.unwrap());
-                    }
-                    // Only call it once per loop
-                    if index == 0 {
-                        parents = client.get_tips().await?;
-                        println!("Got new tips: {:?}", parents);
+                    if res.0 != 0 || !local_pow {
+                        if let Some(message) = res.1 {
+                            return Ok(message);
+                        }
                     }
                     done.swap(false, Ordering::Relaxed);
                 }
-                Err(_) => {
-                    max_tries -= 1;
-                    continue;
+                Err(err) => {
+                    return Err(err);
                 }
             }
         }
     }
-
-    Err(Error::Pow("Couldn't finish PoW".into()))
 }
 
 fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> Result<(u64, Option<Message>)> {
@@ -659,7 +648,7 @@ fn do_pow(
     }
     let message = message
         .with_parents(parent_messages)
-        .with_nonce_provider(client_miner, min_pow_score, Arc::clone(&done))
+        .with_nonce_provider(client_miner, min_pow_score, Some(Arc::clone(&done)))
         .finish()
         .map_err(Error::MessageError)?;
     Ok((message.nonce(), Some(message)))
