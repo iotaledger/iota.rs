@@ -30,7 +30,7 @@ struct AddressIndexRecorder {
 }
 
 /// Builder of send API
-pub struct SendBuilder<'a> {
+pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
     seed: Option<&'a Seed>,
     account_index: Option<usize>,
@@ -44,7 +44,7 @@ pub struct SendBuilder<'a> {
     network_id: Option<u64>,
 }
 
-impl<'a> SendBuilder<'a> {
+impl<'a> ClientMessageBuilder<'a> {
     /// Create send builder
     pub fn new(client: &'a Client) -> Self {
         Self {

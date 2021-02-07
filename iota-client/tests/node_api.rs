@@ -88,7 +88,7 @@ async fn test_post_message_with_indexation() {
         .unwrap();
 
     let r = client
-        .send()
+        .message()
         .with_index("Hello")
         .with_data("Tangle".to_string().as_bytes().to_vec())
         .finish()
@@ -114,7 +114,7 @@ async fn test_post_message_with_transaction() {
             .unwrap();
 
     let message_id = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .with_output_hex(

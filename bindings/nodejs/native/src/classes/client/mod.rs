@@ -72,7 +72,7 @@ declare_types! {
         // High level API
         ///////////////////////////////////////////////////////////////////////
 
-        method send(mut cx) {
+        method message(mut cx) {
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();

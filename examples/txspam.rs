@@ -33,7 +33,7 @@ async fn main() {
         .finish()
         .unwrap();
 
-    let mut message_builder = iota.send().with_seed(&seed);
+    let mut message_builder = iota.message().with_seed(&seed);
     for address in &addresses {
         message_builder = message_builder.with_output(address, 1_000_000).unwrap();
     }
@@ -56,7 +56,7 @@ async fn main() {
 
     for (index, address) in addresses.iter().enumerate() {
         let message = iota
-            .send()
+            .message()
             .with_seed(&seed)
             .with_input(initial_outputs[index].clone())
             .with_output(address, 1_000_000)

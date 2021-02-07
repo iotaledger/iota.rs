@@ -36,7 +36,7 @@ async fn main() {
         Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         .with_output(
             &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),

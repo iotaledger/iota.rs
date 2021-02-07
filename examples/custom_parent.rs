@@ -18,7 +18,7 @@ async fn main() {
         MessageId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b").unwrap();
 
     let message = iota
-        .send()
+        .message()
         .with_parents(vec![custom_parent])
         .unwrap()
         .finish()
