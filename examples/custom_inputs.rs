@@ -36,7 +36,7 @@ async fn main() {
     println!("{:?}", outputs);
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         .with_input(outputs[0].clone())
         // .with_input_range(20..25)

@@ -729,8 +729,8 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// A generic send function for easily sending transaction or indexation messages.
-    pub fn send(&self) -> SendBuilder<'_> {
-        SendBuilder::new(self)
+    pub fn message(&self) -> ClientMessageBuilder<'_> {
+        ClientMessageBuilder::new(self)
     }
 
     /// Return a valid unspent address.

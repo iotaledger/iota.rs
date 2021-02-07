@@ -96,7 +96,7 @@ for node in node_pool_urls{
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
-## `send()`
+## `message()`
 
 A generic send function for easily sending a message.
 

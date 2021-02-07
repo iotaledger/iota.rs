@@ -44,8 +44,8 @@ def main():
     print(f'get_address_outputs() for address {EMPTY_ADDRESS}')
     print(f'outputs(): {client.get_address_outputs(EMPTY_ADDRESS)}')
 
-    print(f'send() 100 tokens to address {EMPTY_ADDRESS}')
-    message_id = client.send(
+    print(f'message() 100 tokens to address {EMPTY_ADDRESS}')
+    message_id = client.message(
         seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['message_id']
     print(f'Token sent with message_id: {message_id}')
     print(f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id}')
@@ -69,8 +69,8 @@ def main():
     children = client.get_message_children(message_id)
     print(f"children: {children}")
 
-    print(f'send() Indexation')
-    message_id_indexation = client.send(
+    print(f'message() Indexation')
+    message_id_indexation = client.message(
         index="Hello", data=[84, 97, 110, 103, 108, 101])
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
@@ -78,8 +78,8 @@ def main():
 
     # Note that in rust we need to specify the parameter type explicitly, so if the user wants
     # to use the utf-8 string as the data, then the `data_str` field can be used.
-    print(f'send() Indexation')
-    message_id_indexation = client.send(
+    print(f'message() Indexation')
+    message_id_indexation = client.message(
         index="Hi", data_str="Tangle")
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
