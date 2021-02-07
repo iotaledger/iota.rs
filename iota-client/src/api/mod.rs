@@ -5,10 +5,10 @@
 
 mod address;
 mod balance;
-mod send;
+mod message_builder;
 mod unspent;
 
 pub use address::*;
 pub use balance::*;
-pub use send::*;
+pub use message_builder::*;
 pub use unspent::*;

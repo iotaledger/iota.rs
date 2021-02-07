@@ -42,7 +42,7 @@ async fn main() {
         Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
@@ -61,7 +61,7 @@ async fn main() {
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
@@ -80,7 +80,7 @@ async fn main() {
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
@@ -101,7 +101,7 @@ async fn main() {
         Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap()).unwrap()).unwrap();
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`

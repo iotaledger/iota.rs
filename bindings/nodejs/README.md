@@ -183,7 +183,7 @@ Gets a handle to the MQTT topic subscriber.
 
 **Returns** a [TopicSubscriber](#topicsubscriber) instance.
 
-#### send(): MessageSender
+#### message(): MessageSender
 
 Initiates the builder to send messages.
 

@@ -75,8 +75,8 @@ def main():
     print(f'get_address_outputs() for address {EMPTY_ADDRESS}')
     print(f'outputs(): {client.get_address_outputs(EMPTY_ADDRESS)}')
 
-    print(f'send() 100 tokens to address {EMPTY_ADDRESS}')
-    message_id = client.send(
+    print(f'message() 100 tokens to address {EMPTY_ADDRESS}')
+    message_id = client.message(
         seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])
     print(f'Token sent with message_id: {message_id}')
     print(f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id}')
@@ -97,8 +97,8 @@ def main():
     children = client.get_message_children(message_id)
     print(f"children: {children}")
 
-    print(f'send() Indexation')
-    message_id_indexation = client.send(
+    print(f'message() Indexation')
+    message_id_indexation = client.message(
         index="Hello", data=bytes("Tangle", 'utf-8'))
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(

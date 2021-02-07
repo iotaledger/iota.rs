@@ -87,7 +87,7 @@ impl Task for ClientTask {
                     outputs,
                     dust_allowance_outputs,
                 } => {
-                    let mut sender = client.send();
+                    let mut sender = client.message();
                     if let Some(seed) = seed {
                         sender = sender.with_seed(seed);
                     }

@@ -71,7 +71,7 @@ export declare interface NetworkInfo {
 export declare class Client {
   networkInfo(): NetworkInfo
   subscriber(): TopicSubscriber
-  send(): MessageSender
+  message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
   findAddresses(seed: string): AddressFinder
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>

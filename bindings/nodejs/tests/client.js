@@ -38,7 +38,7 @@ describe('Client', () => {
 
   it('sends an indexation message with the high level API', async () => {
     const message = await client
-      .send()
+      .message()
       .index('IOTA.RS TEST')
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
@@ -48,7 +48,7 @@ describe('Client', () => {
   it('sends a value transaction and checks output balance', async () => {
     const depositAddress = 'atoi1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0ey2k2yn4'
     const message = await client
-      .send()
+      .message()
       .seed(seed)
       .accountIndex(0)
       .output(depositAddress, 1000000)
