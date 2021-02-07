@@ -40,7 +40,7 @@ impl Client {
                     .map(|m| m.parse::<RustMessageId>().expect("Invalid message id"))
                     .collect::<Vec<RustMessageId>>(),
             )
-            .with_nonce_provider(self.client.get_pow_provider(), 4000f64);
+            .with_nonce_provider(self.client.get_pow_provider(), 4000f64, None);
         if let Some(payload) = msg.payload {
             msg_builder = msg_builder.with_payload(payload.try_into()?);
         }

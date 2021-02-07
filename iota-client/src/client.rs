@@ -38,7 +38,7 @@ use std::{
     convert::{TryFrom, TryInto},
     hash::Hash,
     str::FromStr,
-    sync::{Arc, RwLock},
+    sync::{atomic::AtomicBool, Arc, RwLock},
     time::Duration,
 };
 
@@ -169,12 +169,17 @@ impl PowProvider for ClientMiner {
     type Builder = ClientMinerBuilder;
     type Error = crate::Error;
 
-    fn nonce(&self, bytes: &[u8], target_score: f64) -> std::result::Result<u64, Self::Error> {
+    fn nonce(
+        &self,
+        bytes: &[u8],
+        target_score: f64,
+        done: Option<Arc<AtomicBool>>,
+    ) -> std::result::Result<u64, Self::Error> {
         if self.local_pow {
             MinerBuilder::new()
                 .with_num_workers(num_cpus::get())
                 .finish()
-                .nonce(bytes, target_score)
+                .nonce(bytes, target_score, done)
                 .map_err(|e| crate::Error::Pow(e.to_string()))
         } else {
             Ok(0)
@@ -679,7 +684,7 @@ impl Client {
             .with_network_id(self.get_network_id().await?)
             .with_parents(tips)
             .with_payload(message.payload().to_owned().unwrap())
-            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score)
+            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
@@ -711,7 +716,7 @@ impl Client {
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
             .with_parents(vec![*message_id, tips[0]])
-            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score)
+            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
