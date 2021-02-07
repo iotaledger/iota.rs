@@ -23,7 +23,7 @@ async fn main() {
     let seed =
         Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
     let message_id = iota
-        .send()
+        .message()
         .with_seed(&seed)
         .with_dust_allowance_output(
             &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),

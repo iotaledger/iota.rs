@@ -18,7 +18,7 @@ use std::{
 /// General high level APIs
 #[pymethods]
 impl Client {
-    fn send(
+    fn message(
         &self,
         seed: Option<String>,
         account_index: Option<usize>,
@@ -41,7 +41,7 @@ impl Client {
                 ),
             });
         }
-        let mut send_builder = self.client.send();
+        let mut send_builder = self.client.message();
         if let Some(account_index) = account_index {
             send_builder = send_builder.with_account_index(account_index);
         }
