@@ -39,7 +39,7 @@ async fn main() {
 
 async fn reattach_promote_until_confirmed(message_id: &MessageId, iota: &Client) {
     while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
-        if let Some(_) = metadata.referenced_by_milestone_index {
+        if metadata.referenced_by_milestone_index.is_some() {
             break;
         } else if let Ok(msg_id) = iota.reattach(&message_id).await {
             println!("Reattached or promoted {}", msg_id.0);
