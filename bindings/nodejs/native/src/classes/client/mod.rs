@@ -413,7 +413,7 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
-        method getMilestoneUtxoChanges(mut cx) {
+        method getMilestoneUTXOChanges(mut cx) {
             let milestone_index = cx.argument::<JsNumber>(0)?.value() as u64;
 
             let cb = cx.argument::<JsFunction>(1)?;
@@ -423,7 +423,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetMilestoneUtxoChanges(milestone_index),
+                    api: Api::GetMilestoneUTXOChanges(milestone_index),
                 };
                 client_task.schedule(cb);
             }

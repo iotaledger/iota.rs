@@ -36,7 +36,7 @@ export declare interface MilestoneMetadata {
   timestamp: number
 }
 
-export declare interface MilestoneUtxoChanges {
+export declare interface MilestoneUTXOChanges {
   index: number
   createdOutputs: string[]
   consumedOutputs: string[]

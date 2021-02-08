@@ -520,7 +520,7 @@ Get all UTXO changes of a given milestone.
 ### Returns
 
 ```Rust
-MilestoneUtxoChanges {
+MilestoneUTXOChanges {
     index: 1,
     created_outputs: [],
     consumed_outputs: [],

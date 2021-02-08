@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, MilestoneUtxoChanges,
+    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, MilestoneUTXOChanges,
     OutputResponse, PeerDto, UTXOInput,
 };
 use iota::{
@@ -118,7 +118,7 @@ impl Client {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_milestone(index).await })?.into())
     }
-    fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUtxoChanges> {
+    fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUTXOChanges> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt
             .block_on(async { self.client.get_milestone_utxo_changes(index).await })?

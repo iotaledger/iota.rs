@@ -13,7 +13,7 @@ use iota::{
                 LedgerInclusionStateDto as RustLedgerInclusionStateDto,
                 MessageMetadataResponse as RustMessageMetadataResponse,
             },
-            milestone_utxo_changes::MilestoneUtxoChanges as RustMilestoneUtxoChanges,
+            milestone_utxo_changes::MilestoneUTXOChanges as RustMilestoneUTXOChanges,
             output::OutputResponse as RustOutputResponse,
         },
         types::{
@@ -85,10 +85,10 @@ pub struct MilestoneDto {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct MilestoneUtxoChanges {
+pub struct MilestoneUTXOChanges {
     pub index: u32,
-    pub created_outputs: Vec<String>,
-    pub consumed_outputs: Vec<String>,
+    pub created_outputs: Vec<UTXOInput>,
+    pub consumed_outputs: Vec<UTXOInput>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -462,12 +462,20 @@ impl From<MilestoneResponse> for MilestoneDto {
     }
 }
 
-impl From<RustMilestoneUtxoChanges> for MilestoneUtxoChanges {
-    fn from(milestone_utxo_changes: RustMilestoneUtxoChanges) -> Self {
+impl From<RustMilestoneUTXOChanges> for MilestoneUTXOChanges {
+    fn from(milestone_utxo_changes: RustMilestoneUTXOChanges) -> Self {
         Self {
             index: milestone_utxo_changes.index,
-            created_outputs: milestone_utxo_changes.created_outputs,
-            consumed_outputs: milestone_utxo_changes.consumed_outputs,
+            created_outputs: milestone_utxo_changes
+                .created_outputs
+                .iter()
+                .map(|o| UTXOInput::from(o))
+                .collect(),
+            consumed_outputs: milestone_utxo_changes
+                .consumed_outputs
+                .iter()
+                .map(|o| UTXOInput::from(o))
+                .collect(),
         }
     }
 }

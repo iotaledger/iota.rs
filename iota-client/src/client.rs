@@ -15,7 +15,7 @@ use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder 
 use bee_rest_api::{
     handlers::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
-        milestone::MilestoneResponse as MilestoneResponseDto, milestone_utxo_changes::MilestoneUtxoChanges,
+        milestone::MilestoneResponse as MilestoneResponseDto, milestone_utxo_changes::MilestoneUTXOChanges,
         output::OutputResponse, tips::TipsResponse,
     },
     types::{MessageDto, PeerDto},
@@ -666,7 +666,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index}/utxo-changes endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUtxoChanges> {
+    pub async fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUTXOChanges> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}/utxo-changes", index));
         let resp = self
@@ -676,11 +676,11 @@ impl Client {
             .send()
             .await?;
         #[derive(Debug, Serialize, Deserialize)]
-        struct MilestoneUtxoChangesWrapper {
-            data: MilestoneUtxoChanges,
+        struct MilestoneUTXOChangesWrapper {
+            data: MilestoneUTXOChanges,
         }
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<MilestoneUtxoChangesWrapper>().await?.data;
+            let milestone = resp.json::<MilestoneUTXOChangesWrapper>().await?.data;
             Ok(milestone)
         })
     }

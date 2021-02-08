@@ -89,7 +89,7 @@ export declare class Client {
   getAddressOutputs(address: string): Promise<string[]>
   getAddressBalance(address: string): Promise<number>
   getMilestone(index: number): Promise<MilestoneMetadata>
-  getMilestoneUtxoChanges(index: number): Promise<MilestoneUtxoChanges>
+  getMilestoneUTXOChanges(index: number): Promise<MilestoneUTXOChanges>
   reattach(messageId: string): Promise<MessageWrapper>
   promote(messageId: string): Promise<MessageWrapper>
 }

@@ -327,7 +327,7 @@ Gets the milestone by the given index.
 
 **Returns** a promise resolving to the [MilestoneMetadata](#milestonemetadata).
 
-#### getMilestoneUtxoChanges(index): Promise<MilestoneUtxoChanges>
+#### getMilestoneUTXOChanges(index): Promise<MilestoneUTXOChanges>
 
 Gets the utxo changes by the given milestone index.
 
@@ -335,7 +335,7 @@ Gets the utxo changes by the given milestone index.
 | ----- | ------------------- | -------------------------- |
 | index | <code>number</code> | The index of the milestone |
 
-**Returns** a promise resolving to the [MilestoneUtxoChanges](#milestoneutxochanges).
+**Returns** a promise resolving to the [MilestoneUTXOChanges](#MilestoneUTXOChanges).
 
 #### reattach(messageId): Promise<Message>
 
@@ -868,7 +868,7 @@ Gets the metadata of the given message.
 | messageId      | <code>string</code> | Id of the message associated with the milestone |
 | timestamp      | <code>number</code> | Milestone timestamp                             |
 
-### MilestoneUtxoChanges
+### MilestoneUTXOChanges
 
 | Field           | Type                  | Description                        |
 | --------------- | --------------------- | ---------------------------------- |

@@ -11,7 +11,7 @@ use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{
     AddressBalancePair, BalanceForAddressResponse, BrokerOptions, InfoResponse, Input, Message,
-    MessageMetadataResponse, MilestoneDto, MilestoneUtxoChanges, Output, OutputResponse, PeerDto, UTXOInput,
+    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, Output, OutputResponse, PeerDto, UTXOInput,
     BECH32_HRP,
 };
 
