@@ -1,15 +1,16 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::constant::{HASH_CHUNK_LEN, MAX_TRYTE_VALUE, MESSAGE_FRAGMENT_LENGTH, TRITS82_BE_U32};
+use crate::constant::{HASH_CHUNK_LEN, MAX_TRYTE_VALUE, TRITS82_BE_U32};
 use crate::error::{Error, Result};
+use crate::helper::{get_max_normalized_bundle_hash, get_the_max_tryte_values};
 use crate::success;
 use bee_crypto::ternary::{
     bigint::{binary_representation::U32Repr, endianness::BigEndian, I384, T242, T243},
     sponge::{Kerl, Sponge},
 };
 use bee_signing::ternary::wots::normalize;
-use bee_ternary::{t3b1::T3B1Buf, Btrit, T1B1Buf, TritBuf, Trits, T3B1};
+use bee_ternary::{t3b1::T3B1Buf, Btrit, T1B1Buf, TritBuf};
 use bee_transaction::bundled::TAG_TRIT_LEN;
 use futures::future::abortable;
 use std::{
@@ -750,52 +751,4 @@ pub async fn create_obsolete_tag(increment: i64, worker_id: i32) -> TritBuf<T1B1
     }
     .await;
     async { TritBuf::<T1B1Buf>::from_i8s(output).unwrap() }.await
-}
-
-/// Get max trytes values from two i8 vectors
-pub fn get_the_max_tryte_values(vec_i8_first: Vec<i8>, vec_i8_second: Vec<i8>) -> Vec<i8> {
-    vec_i8_first
-        .iter()
-        .zip(&vec_i8_second)
-        .map(|(&x, &y)| x.max(y))
-        .collect()
-}
-
-/// Get the maximum bundle hash by selecting the max trytes from all input bundle hashes
-pub fn get_max_normalized_bundle_hash(
-    bundle_hashes: &[TritBuf<T1B1Buf>],
-    security_level: usize,
-) -> TritBuf<T1B1Buf> {
-    // Normalize the bundle hashes
-    let mut normalized_hashes_i8_vecs = bundle_hashes
-        .iter()
-        .map(|t| {
-            TritBuf::<T3B1Buf>::from_i8s(
-                normalize(&t)
-                    .expect("Hash normalization error")
-                    .as_i8_slice(),
-            )
-            .expect("Cannot convert hash from i8s")
-            .as_i8_slice()
-            .to_vec()
-        })
-        .collect::<Vec<Vec<i8>>>();
-
-    // Get the max normalized bundle hash
-    let mut max_vec_i8 = normalized_hashes_i8_vecs
-        .pop()
-        .expect("Normalized hashes are empty");
-    while let Some(current_vec_i8) = normalized_hashes_i8_vecs.pop() {
-        max_vec_i8 = get_the_max_tryte_values(max_vec_i8, current_vec_i8);
-    }
-
-    // Return the max normalized bundle hash in TritBuf::<T1B1Buf>
-    unsafe {
-        Trits::<T3B1>::from_raw_unchecked(
-            &max_vec_i8[..MESSAGE_FRAGMENT_LENGTH * security_level],
-            MESSAGE_FRAGMENT_LENGTH * security_level * 3,
-        )
-        .to_buf::<T3B1Buf>()
-        .encode::<T1B1Buf>()
-    }
 }

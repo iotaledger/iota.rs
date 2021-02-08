@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use bee_ternary::{T1B1Buf, T3B1Buf, TritBuf, Trits, TryteBuf, T3B1};
+use iota_bundle_miner::helper::{get_max_normalized_bundle_hash, get_the_max_tryte_values};
 use iota_bundle_miner::miner::trit_buf_to_string;
-use iota_bundle_miner::recoverer::{get_max_normalized_bundle_hash, get_the_max_tryte_values};
 
 #[tokio::test]
 pub async fn test_get_max_normalized_bundle_hash() {
