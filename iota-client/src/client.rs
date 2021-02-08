@@ -15,8 +15,9 @@ use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder 
 use bee_rest_api::{
     handlers::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
-        milestone::MilestoneResponse as MilestoneResponseDto, milestone_utxo_changes::MilestoneUTXOChanges,
-        output::OutputResponse, tips::TipsResponse,
+        milestone::MilestoneResponse as MilestoneResponseDto,
+        milestone_utxo_changes::MilestoneUtxoChanges as MilestoneUTXOChanges, output::OutputResponse,
+        tips::TipsResponse,
     },
     types::{MessageDto, PeerDto},
 };
