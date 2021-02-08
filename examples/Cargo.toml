@@ -61,3 +61,7 @@ path = "txspam.rs"
 [[example]]
 name = "peers"
 path = "peers.rs"
+
+[[example]]
+name = "message_time"
+path = "message_time.rs"
