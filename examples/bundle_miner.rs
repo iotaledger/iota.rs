@@ -32,7 +32,7 @@ fn main() {
                 .collect::<Vec<TritBuf<T1B1Buf>>>(),
         )
         .with_security_level(security_level)
-        .with_kown_bundle_hashes(
+        .with_known_bundle_hashes(
             kown_bundle_hashes
                 .clone()
                 .iter()

@@ -209,7 +209,7 @@ pub fn test_miner_builder() {
     ];
 
     let _ = MinerBuilder::new()
-        .with_kown_bundle_hashes(vec![])
+        .with_known_bundle_hashes(vec![])
         .with_core_thread_count(1)
         .with_worker_count(5)
         .with_essences_from_unsigned_bundle(
@@ -250,7 +250,7 @@ pub fn test_miner_equal_target_hash_run() {
         .as_trits()
         .encode();
     let mut miner = MinerBuilder::new()
-        .with_kown_bundle_hashes(vec![])
+        .with_known_bundle_hashes(vec![])
         .with_core_thread_count(1)
         .with_worker_count(5)
         .with_essences_from_unsigned_bundle(
@@ -304,7 +304,7 @@ pub fn test_miner_less_than_max_hash_run() {
         .as_trits()
         .encode();
     let mut miner = MinerBuilder::new()
-        .with_kown_bundle_hashes(vec![])
+        .with_known_bundle_hashes(vec![])
         .with_core_thread_count(1)
         .with_worker_count(5)
         .with_essences_from_unsigned_bundle(

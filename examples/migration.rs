@@ -11,6 +11,8 @@ use iota::{
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
     transaction::bundled::{Address, BundledTransactionField},
 };
+use iota_bundle_miner::RecovererBuilder;
+use std::collections::HashSet;
 use std::io;
 
 /// Migration example
@@ -57,49 +59,73 @@ async fn main() -> Result<()> {
     // }
     println!("Preparing transaction...");
     // Get spent status of addresses, if spent do bundle mining
-    // let input_addresses: Vec<Address> = inputs.1.iter().map(|i| i.address.clone()).collect();
-    // let spent_status = iota.were_addresses_spent_from(&input_addresses[..]).await?;
-    // if spent_status.states.contains(&true) {
-    //     println!("Mining bundle because of spent addresses, this can take some time...");
-    // }
+    let input_addresses: Vec<Address> = inputs.1.iter().map(|i| i.address.clone()).collect();
+    let spent_status = iota.were_addresses_spent_from(&input_addresses[..]).await?;
+    println!("spent_status {:?}", spent_status);
+    let mut spent_addresses = Vec::new();
+    for (index, spent) in spent_status.states.iter().enumerate() {
+        if *spent {
+            spent_addresses.push(input_addresses[index].clone());
+        }
+    }
+    let tx_hashes_on_spent_addresses = iota
+        .find_transactions()
+        .addresses(&spent_addresses)
+        .send()
+        .await?
+        .hashes;
+    let txs_on_spent_addresses = iota.get_trytes(&tx_hashes_on_spent_addresses).await?.trytes;
+    let mut bundle_hashes = HashSet::new();
+    for tx in txs_on_spent_addresses {
+        if *tx.value().to_inner() < 0 {
+            bundle_hashes.insert(tx.bundle().clone());
+        }
+    }
+    println!("bundle_hashes {:?}", bundle_hashes);
+    if spent_status.states.contains(&true) {
+        println!("Mining bundle because of spent addresses, this can take some time...");
+    // RecovererBuilder
+    } else {
+        println!("No spent address as input");
+    }
 
-    //Send final bundle
-    let _migration_address = generate_migration_address(ed25519_seed);
-    // placeholder to reuse tokens for testing
-    let migration_address = Address::from_inner_unchecked(
-        TryteBuf::try_from_str(
-            "CHZHKFUCUMRHOFXB9SGEZVYUUXYKEIJ9VX9SLKATMLWQZUQXDWUKLYGZLMYYWHXKKTPQHIOHQMYARINLD",
-        )
-        .unwrap()
-        .as_trits()
-        .encode(),
-    );
+    // // Send final bundle
+    // let _migration_address = generate_migration_address(ed25519_seed);
+    // // placeholder to reuse tokens for testing
+    // let migration_address = Address::from_inner_unchecked(
+    //     TryteBuf::try_from_str(
+    //         "CHZHKFUCUMRHOFXB9SGEZVYUUXYKEIJ9VX9SLKATMLWQZUQXDWUKLYGZLMYYWHXKKTPQHIOHQMYARINLD",
+    //     )
+    //     .unwrap()
+    //     .as_trits()
+    //     .encode(),
+    // );
 
-    let transfer = vec![Transfer {
-        address: migration_address,
-        value: inputs.0,
-        message: None,
-        tag: None,
-    }];
+    // let transfer = vec![Transfer {
+    //     address: migration_address,
+    //     value: inputs.0,
+    //     message: None,
+    //     tag: None,
+    // }];
 
-    let res = iota
-        .send(Some(&tryte_seed))
-        .with_transfers(transfer)
-        .with_inputs(inputs.1)
-        .with_min_weight_magnitude(9)
-        .finish()
-        .await?;
+    // let res = iota
+    //     .send(Some(&tryte_seed))
+    //     .with_transfers(transfer)
+    //     .with_inputs(inputs.1)
+    //     .with_min_weight_magnitude(9)
+    //     .finish()
+    //     .await?;
 
-    println!(
-        "Bundle sent: {:?}",
-        res[0]
-            .bundle()
-            .to_inner()
-            .encode::<T3B1Buf>()
-            .iter_trytes()
-            .map(char::from)
-            .collect::<String>()
-    );
+    // println!(
+    //     "Bundle sent: {:?}",
+    //     res[0]
+    //         .bundle()
+    //         .to_inner()
+    //         .encode::<T3B1Buf>()
+    //         .iter_trytes()
+    //         .map(char::from)
+    //         .collect::<String>()
+    // );
     Ok(())
 }
 

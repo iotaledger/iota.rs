@@ -59,7 +59,7 @@ impl RecovererBuilder {
         self
     }
     /// Sets the kown bundle hashes of the recoverer.
-    pub fn with_kown_bundle_hashes(mut self, kown_bundle_hashes: Vec<TritBuf<T1B1Buf>>) -> Self {
+    pub fn with_known_bundle_hashes(mut self, kown_bundle_hashes: Vec<TritBuf<T1B1Buf>>) -> Self {
         self.kown_bundle_hashes.replace(kown_bundle_hashes);
         self
     }
