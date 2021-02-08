@@ -35,6 +35,7 @@ impl Client {
         request_timeout: Option<u64>,
         api_timeout: Option<HashMap<&str, u64>>,
         local_pow: Option<bool>,
+        tips_interval: Option<u64>,
         mqtt_broker_options: Option<BrokerOptions>,
     ) -> Self {
         let rt = tokio::runtime::Runtime::new().unwrap();
@@ -79,6 +80,9 @@ impl Client {
         }
         if let Some(local_pow) = local_pow {
             client = client.with_local_pow(local_pow);
+        }
+        if let Some(tips_interval) = tips_interval {
+            client = client.with_tips_interval(tips_interval);
         }
         if let Some(broker_options) = mqtt_broker_options {
             let rust_broker_options = RustBrokerOptions::new()

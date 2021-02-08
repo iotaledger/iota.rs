@@ -593,12 +593,13 @@ pub async fn finish_pow(client: &Client, network_id: u64, payload: Option<Payloa
     let done = Arc::new(AtomicBool::new(false));
     let local_pow = client.get_network_info().local_pow;
     let min_pow_score = client.get_network_info().min_pow_score;
+    let tips_interval = client.get_network_info().tips_interval;
     loop {
         let abort1 = Arc::clone(&done);
         let abort2 = Arc::clone(&done);
         let payload_ = payload.clone();
         let parent_messages = client.get_tips().await?;
-        let time_thread = std::thread::spawn(move || pow_timeout(15, &abort1));
+        let time_thread = std::thread::spawn(move || pow_timeout(tips_interval, &abort1));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
                 crate::client::ClientMinerBuilder::new()

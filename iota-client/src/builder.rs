@@ -31,6 +31,9 @@ pub struct NetworkInfo {
     /// Local proof of work
     #[serde(rename = "localPow")]
     pub local_pow: bool,
+    /// Tips request interval during PoW in seconds
+    #[serde(rename = "tipsInterval")]
+    pub tips_interval: u64,
 }
 
 /// Builder to construct client instance with sensible default values
@@ -59,6 +62,7 @@ impl Default for ClientBuilder {
                 min_pow_score: 4000f64,
                 local_pow: true,
                 bech32_hrp: "iota".into(),
+                tips_interval: 15,
             },
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
             api_timeout: Default::default(),
@@ -137,6 +141,12 @@ impl ClientBuilder {
     /// Sets whether the PoW should be done locally or remotely.
     pub fn with_local_pow(mut self, local: bool) -> Self {
         self.network_info.local_pow = local;
+        self
+    }
+
+    /// Sets after how many seconds new tips will be requested during PoW
+    pub fn with_tips_interval(mut self, tips_interval: u64) -> Self {
+        self.network_info.tips_interval = tips_interval;
         self
     }
 

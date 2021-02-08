@@ -678,15 +678,12 @@ impl Client {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
-        // Change the fields of parents.
-        let tips = self.get_tips().await?;
-        let reattach_message = MessageBuilder::<ClientMiner>::new()
-            .with_network_id(self.get_network_id().await?)
-            .with_parents(tips)
-            .with_payload(message.payload().to_owned().unwrap())
-            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score, None)
-            .finish()
-            .map_err(|_| Error::TransactionError)?;
+        let reattach_message = finish_pow(
+            self,
+            self.get_network_id().await?,
+            Some(message.payload().to_owned().unwrap()),
+        )
+        .await?;
 
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;
