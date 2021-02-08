@@ -12,7 +12,7 @@ const {
   BalanceGetter
 } = require('../native')
 
-function promisify (fn, parse = true) {
+function promisify(fn, parse = true) {
   return function () {
     return new Promise((resolve, reject) => fn.apply(this, [...Array.from(arguments), (err, data) => {
       if (err) {
@@ -42,7 +42,7 @@ TopicSubscriber.prototype.subscribe = function (cb) {
 }
 const unsubscribe = TopicSubscriber.prototype.unsubscribe
 TopicSubscriber.prototype.unsubscribe = function (cb) {
-  return unsubscribe.call(this, cb || function () {})
+  return unsubscribe.call(this, cb || function () { })
 }
 
 const brokerOptionsFn = ClientBuilder.prototype.brokerOptions
@@ -62,6 +62,7 @@ Client.prototype.networkInfo = function () {
 Client.prototype.findMessages = promisify(Client.prototype.findMessages)
 Client.prototype.getAddressBalances = promisify(Client.prototype.getAddressBalances)
 Client.prototype.getInfo = promisify(Client.prototype.getInfo)
+Client.prototype.getPeers = promisify(Client.prototype.getPeers)
 Client.prototype.getTips = promisify(Client.prototype.getTips)
 const postMessage = Client.prototype.postMessage
 Client.prototype.postMessage = function (message) {
@@ -75,6 +76,7 @@ Client.prototype.findOutputs = promisify(Client.prototype.findOutputs)
 Client.prototype.getAddressOutputs = promisify(Client.prototype.getAddressOutputs)
 Client.prototype.getAddressBalance = promisify(Client.prototype.getAddressBalance)
 Client.prototype.getMilestone = promisify(Client.prototype.getMilestone)
+Client.prototype.getMilestoneUtxoChanges = promisify(Client.prototype.getMilestoneUtxoChanges)
 Client.prototype.retry = promisify(Client.prototype.retry)
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)

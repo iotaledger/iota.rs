@@ -11,7 +11,8 @@ use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{
     AddressBalancePair, BalanceForAddressResponse, BrokerOptions, InfoResponse, Input, Message,
-    MessageMetadataResponse, MilestoneDto, Output, OutputResponse, UTXOInput, BECH32_HRP,
+    MessageMetadataResponse, MilestoneDto, MilestoneUtxoChanges, Output, OutputResponse, PeerDto, UTXOInput,
+    BECH32_HRP,
 };
 
 /// Client builder
@@ -68,6 +69,7 @@ impl Client {
                 match api {
                     "GetHealth" => client = client.with_api_timeout(Api::GetHealth, Duration::from_millis(timeout)),
                     "GetInfo" => client = client.with_api_timeout(Api::GetInfo, Duration::from_millis(timeout)),
+                    "GetPeers" => client = client.with_api_timeout(Api::GetPeers, Duration::from_millis(timeout)),
                     "GetTips" => client = client.with_api_timeout(Api::GetTips, Duration::from_millis(timeout)),
                     "PostMessage" => client = client.with_api_timeout(Api::PostMessage, Duration::from_millis(timeout)),
                     "GetOutput" => client = client.with_api_timeout(Api::GetOutput, Duration::from_millis(timeout)),

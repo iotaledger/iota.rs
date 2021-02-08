@@ -36,6 +36,12 @@ export declare interface MilestoneMetadata {
   timestamp: number
 }
 
+export declare interface MilestoneUtxoChanges {
+  index: number
+  createdOutputs: string[]
+  consumedOutputs: string[]
+}
+
 export declare interface BrokerOptions {
   automaticDisconnect: boolean
   // timeout in milliseconds

@@ -15,7 +15,8 @@ use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder 
 use bee_rest_api::{
     handlers::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
-        milestone::MilestoneResponse as MilestoneResponseDto, output::OutputResponse, tips::TipsResponse,
+        milestone::MilestoneResponse as MilestoneResponseDto, milestone_utxo_changes::MilestoneUtxoChanges,
+        output::OutputResponse, tips::TipsResponse,
     },
     types::{MessageDto, PeerDto},
 };
@@ -597,6 +598,7 @@ impl Client {
             Ok(output_response.data)
         })
     }
+
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceed individual node limit.
     pub async fn find_outputs(
@@ -659,6 +661,27 @@ impl Client {
                 message_id: MessageId::new(message_id),
                 timestamp: milestone.timestamp,
             })
+        })
+    }
+
+    /// GET /api/v1/milestones/{index}/utxo-changes endpoint
+    /// Get the milestone by the given index.
+    pub async fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUtxoChanges> {
+        let mut url = self.get_node()?;
+        url.set_path(&format!("api/v1/milestones/{}/utxo-changes", index));
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetMilestone))
+            .send()
+            .await?;
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MilestoneUtxoChangesWrapper {
+            data: MilestoneUtxoChanges,
+        }
+        parse_response!(resp, 200 => {
+            let milestone = resp.json::<MilestoneUtxoChangesWrapper>().await?.data;
+            Ok(milestone)
         })
     }
 
