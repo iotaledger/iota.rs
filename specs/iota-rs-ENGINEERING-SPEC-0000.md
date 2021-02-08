@@ -521,6 +521,7 @@ Get all UTXO changes of a given milestone.
 
 ```Rust
 MilestoneUtxoChanges {
+    index: 1,
     created_outputs: [],
     consumed_outputs: [],
 }
