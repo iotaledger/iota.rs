@@ -15,6 +15,7 @@ pub struct ClientBuilderWrapper {
     request_timeout: Option<Duration>,
     api_timeout: HashMap<Api, Duration>,
     local_pow: bool,
+    tips_interval: u64,
     node_sync_disabled: bool,
 }
 
@@ -30,6 +31,7 @@ declare_types! {
                 request_timeout: Default::default(),
                 api_timeout: Default::default(),
                 local_pow: true,
+                tips_interval: 15,
                 node_sync_disabled: false,
             })
         }
@@ -168,12 +170,23 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method tipsInterval(mut cx) {
+            let tips_interval = cx.argument::<JsNumber>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let tips_interval_ref = &mut this.borrow_mut(&guard).tips_interval;
+                *tips_interval_ref = tips_interval as u64;
+            }
+            Ok(cx.this().upcast())
+        }
+
         method build(mut cx) {
             let client = {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &*this.borrow(&guard);
-                let mut builder = ClientBuilder::new().with_local_pow(ref_.local_pow);
+                let mut builder = ClientBuilder::new().with_local_pow(ref_.local_pow).with_tips_interval(ref_.tips_interval);
 
                 for node in &ref_.nodes {
                     builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
