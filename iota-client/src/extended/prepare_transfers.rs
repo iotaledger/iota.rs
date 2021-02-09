@@ -25,7 +25,8 @@ pub struct PrepareTransfersBuilder<'a> {
 }
 
 impl<'a> PrepareTransfersBuilder<'a> {
-    pub(crate) fn new(client: &'a Client, seed: Option<&'a Seed>) -> Self {
+    /// Create a new PrepareTransfersBuilder
+    pub fn new(client: &'a Client, seed: Option<&'a Seed>) -> Self {
         Self {
             client,
             seed,

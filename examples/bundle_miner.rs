@@ -6,7 +6,7 @@ use iota::bundle_miner::MinerBuilder;
 use iota::ternary::{T1B1Buf, TritBuf, TryteBuf};
 
 fn main() {
-    let kown_bundle_hashes =
+    let known_bundle_hashes =
         vec!["SEYZLVFTIKFROANWJDVJVOU9HZCHSHOZEIKS9CGHNHGCRUJBUEAQPBYWREUEXEAIRDXEWO9H9HXRIWVKB"];
     let essences = vec![
         "GPB9PBNCJTPGFZ9CCAOPCZBFMBSMMFMARZAKBMJFMTSECEBRWMGLPTYZRAFKUFOGJQVWVUPPABLTTLCIA",
@@ -33,7 +33,7 @@ fn main() {
         )
         .with_security_level(security_level)
         .with_known_bundle_hashes(
-            kown_bundle_hashes
+            known_bundle_hashes
                 .clone()
                 .iter()
                 .map(|t| {

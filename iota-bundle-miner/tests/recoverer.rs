@@ -69,7 +69,7 @@ pub fn test_get_crack_probability_security_3() {
 
 #[test]
 pub fn test_recoverer_run_security_1() {
-    let kown_bundle_hashes =
+    let known_bundle_hashes =
         vec!["SEYZLVFTIKFROANWJDVJVOU9HZCHSHOZEIKS9CGHNHGCRUJBUEAQPBYWREUEXEAIRDXEWO9H9HXRIWVKB"];
     let essences = vec![
         "GPB9PBNCJTPGFZ9CCAOPCZBFMBSMMFMARZAKBMJFMTSECEBRWMGLPTYZRAFKUFOGJQVWVUPPABLTTLCIA",
@@ -82,7 +82,7 @@ pub fn test_recoverer_run_security_1() {
     let mined_crackability_expected: f64 = 8.99389659655018e-9;
     let miner = MinerBuilder::new()
         .with_known_bundle_hashes(
-            kown_bundle_hashes
+            known_bundle_hashes
                 .clone()
                 .iter()
                 .map(|t| {
@@ -114,7 +114,7 @@ pub fn test_recoverer_run_security_1() {
     let mut recoverer = RecovererBuilder::new()
         .with_security_level(security_level)
         .with_known_bundle_hashes(
-            kown_bundle_hashes
+            known_bundle_hashes
                 .clone()
                 .iter()
                 .map(|t| {

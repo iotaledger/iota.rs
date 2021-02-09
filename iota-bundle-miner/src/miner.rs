@@ -74,7 +74,7 @@ const RESERVED_NONCE_TRYTES_COUNT: usize = 42;
 /// Builder for a miner.
 pub struct MinerBuilder {
     /// Bundle hashes from previous spends.
-    kown_bundle_hashes: Option<Vec<TritBuf<T1B1Buf>>>,
+    known_bundle_hashes: Option<Vec<TritBuf<T1B1Buf>>>,
 
     /// Obsolete tag offset from which to start mining. The miner will begin from this offset.
     /// Existing obsolete tags in the unsignedBundle should be discarded.
@@ -102,7 +102,7 @@ pub struct MinerBuilder {
 impl Default for MinerBuilder {
     fn default() -> Self {
         Self {
-            kown_bundle_hashes: None,
+            known_bundle_hashes: None,
             offset: 0,
             essences_from_unsigned_bundle: None,
             security_level: 2,
@@ -116,7 +116,7 @@ impl Default for MinerBuilder {
 
 pub struct Miner {
     /// Bundle hashes from previous spends.
-    kown_bundle_hashes: Vec<TritBuf<T1B1Buf>>,
+    known_bundle_hashes: Vec<TritBuf<T1B1Buf>>,
 
     /// Obsolete tag offset from which to start mining. The miner will begin from this offset.
     /// Existing obsolete tags in the unsignedBundle should be discarded.
@@ -148,8 +148,8 @@ impl MinerBuilder {
     }
 
     /// Set the kown bundle hashes.
-    pub fn with_known_bundle_hashes(mut self, kown_bundle_hashes: Vec<TritBuf<T1B1Buf>>) -> Self {
-        self.kown_bundle_hashes = Some(kown_bundle_hashes);
+    pub fn with_known_bundle_hashes(mut self, known_bundle_hashes: Vec<TritBuf<T1B1Buf>>) -> Self {
+        self.known_bundle_hashes = Some(known_bundle_hashes);
         self
     }
 
@@ -201,7 +201,7 @@ impl MinerBuilder {
     /// Builds a bundler miner.
     pub fn finish(self) -> Result<Miner> {
         let miner = Miner {
-            kown_bundle_hashes: match self.kown_bundle_hashes {
+            known_bundle_hashes: match self.known_bundle_hashes {
                 Some(hashes) => hashes,
                 None => return Err(Error::KownBundleHashesNotSet),
             },
@@ -407,7 +407,7 @@ impl Miner {
         threshold: Option<f64>,
     ) -> Result<CrackabilityMinerEvent> {
         let target_hash =
-            get_max_normalized_bundle_hash(&self.kown_bundle_hashes, self.security_level);
+            get_max_normalized_bundle_hash(&self.known_bundle_hashes, self.security_level);
         let criterion = CrackProbabilityLessThanThresholdBuilder::new()
             .with_target_crack_probability(target_crack_probability.unwrap_or(0.0))
             .with_threshold(threshold.unwrap_or(0.0))
