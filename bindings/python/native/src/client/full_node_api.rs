@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, OutputResponse, UTXOInput,
+    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, MilestoneUTXOChanges,
+    OutputResponse, PeerDto, UTXOInput,
 };
 use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
@@ -25,6 +26,14 @@ impl Client {
     fn get_info(&self) -> Result<InfoResponse> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_info().await })?.into())
+    }
+    fn get_peers(&self) -> Result<Vec<PeerDto>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt
+            .block_on(async { self.client.get_peers().await })?
+            .into_iter()
+            .map(PeerDto::from)
+            .collect())
     }
     fn get_tips(&self) -> Result<Vec<String>> {
         let rt = tokio::runtime::Runtime::new()?;
@@ -108,5 +117,11 @@ impl Client {
     fn get_milestone(&self, index: u64) -> Result<MilestoneDto> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_milestone(index).await })?.into())
+    }
+    fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUTXOChanges> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt
+            .block_on(async { self.client.get_milestone_utxo_changes(index).await })?
+            .into())
     }
 }

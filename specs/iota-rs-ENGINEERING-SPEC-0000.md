@@ -20,6 +20,7 @@
   * [`promote`](#promote)
 * [Full node API](#Full-node-API)
   * [`get_health`](#get_health)
+  * [`get_health`](#get_peers)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
   * [`post_message`](#post_message)
@@ -27,6 +28,7 @@
   * [`get_address`](#get_address)
   * [`find_outputs`](#find_outputs)
   * [`get_milestone`](#get_milestone)
+  * [`get_milestone_utxo_changes`](#get_milestone_utxo_changes)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -59,7 +61,7 @@ The data structure to initialize the instance of the Higher level client library
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **node_pool_urls** | None | ✘ | &[String] | A list of node_pool_urls from which nodes are added. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
+| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
 | **tips_interval** | ✘ | 15 | u64 | Time interval during PoW when new tips get requested. |
 | **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
@@ -353,6 +355,30 @@ None
 
 Boolean to indicate if node is healthy.
 
+## `get_peers()`
+
+(`GET /peers`)
+
+Get information about the peers of the node.
+
+### Parameters
+
+None
+
+### Returns
+
+```Rust
+pub struct PeerDto {
+    pub id: String,
+    #[serde(rename = "multiAddresses")]
+    pub multi_addresses: Vec<String>,
+    pub alias: Option<String>,
+    pub relation: RelationDto,
+    pub connected: bool,
+    pub gossip: Option<GossipDto>,
+}
+```
+
 ## `get_info()`
 
 (`GET /api/v1/info`)
@@ -478,6 +504,28 @@ Get the milestone by the given index.
 ### Returns
 
 An [Milestone] object.
+
+## `get_milestone_utxo_changes()`
+
+(`GET /milestones/{}/utxo-changes`)
+
+Get all UTXO changes of a given milestone.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **index** | ✔ | u64 | Index of the milestone. |
+
+### Returns
+
+```Rust
+MilestoneUTXOChanges {
+    index: 1,
+    created_outputs: [],
+    consumed_outputs: [],
+}
+````
 
 # Objects
 

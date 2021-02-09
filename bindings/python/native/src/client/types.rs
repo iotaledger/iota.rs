@@ -13,10 +13,13 @@ use iota::{
                 LedgerInclusionStateDto as RustLedgerInclusionStateDto,
                 MessageMetadataResponse as RustMessageMetadataResponse,
             },
+            milestone_utxo_changes::MilestoneUtxoChanges as RustMilestoneUTXOChanges,
             output::OutputResponse as RustOutputResponse,
         },
         types::{
-            AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, OutputDto as RustOutputDto,
+            AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, GossipDto as RustgossipDto,
+            HeartbeatDto as RustheartbeatDto, MetricsDto as RustMetricsDto, OutputDto as RustOutputDto,
+            PeerDto as RustPeerDto, RelationDto as RustRelationDto,
             SignatureLockedDustAllowanceOutputDto as RustSignatureLockedDustAllowanceOutputDto,
             SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
             TreasuryOutputDto as RustTreasuryOutputDto,
@@ -79,6 +82,13 @@ pub struct MilestoneDto {
     pub index: u32,
     pub timestamp: u64,
     pub message_id: String,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct MilestoneUTXOChanges {
+    pub index: u32,
+    pub created_outputs: Vec<String>,
+    pub consumed_outputs: Vec<String>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -237,6 +247,7 @@ pub struct InfoResponse {
     pub min_pow_score: f64,
 }
 
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct NetworkInfo {
     /// Network of the Iota nodes belong to
     pub network: String,
@@ -248,6 +259,53 @@ pub struct NetworkInfo {
     pub min_pow_score: f64,
     /// Local proof of work
     pub local_pow: bool,
+    /// Tips interval
+    pub tips_interval: u64,
+}
+
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct PeerDto {
+    pub id: String,
+    pub multi_addresses: Vec<String>,
+    pub alias: Option<String>,
+    pub relation: RelationDto,
+    pub connected: bool,
+    pub gossip: Option<GossipDto>,
+}
+
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct RelationDto {
+    pub relation: String,
+}
+
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct GossipDto {
+    pub heartbeat: HeartbeatDto,
+    pub metrics: MetricsDto,
+}
+
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct HeartbeatDto {
+    pub solid_milestone_index: u32,
+    pub pruned_milestone_index: u32,
+    pub latest_milestone_index: u32,
+    pub connected_neighbors: u8,
+    pub synced_neighbors: u8,
+}
+
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct MetricsDto {
+    pub new_messages: u64,
+    pub received_messages: u64,
+    pub known_messages: u64,
+    pub received_message_requests: u64,
+    pub received_milestone_requests: u64,
+    pub received_heartbeats: u64,
+    pub sent_messages: u64,
+    pub sent_message_requests: u64,
+    pub sent_milestone_requests: u64,
+    pub sent_heartbeats: u64,
+    pub dropped_packets: u64,
 }
 
 impl From<RustOutputResponse> for OutputResponse {
@@ -389,6 +447,7 @@ impl From<RustNetworkInfo> for NetworkInfo {
             bech32_hrp: network_info.bech32_hrp,
             min_pow_score: network_info.min_pow_score,
             local_pow: network_info.local_pow,
+            tips_interval: network_info.tips_interval,
         }
     }
 }
@@ -399,6 +458,16 @@ impl From<MilestoneResponse> for MilestoneDto {
             message_id: milestone_dto.message_id.to_string(),
             index: milestone_dto.index,
             timestamp: milestone_dto.timestamp,
+        }
+    }
+}
+
+impl From<RustMilestoneUTXOChanges> for MilestoneUTXOChanges {
+    fn from(milestone_utxo_changes: RustMilestoneUTXOChanges) -> Self {
+        Self {
+            index: milestone_utxo_changes.index,
+            created_outputs: milestone_utxo_changes.created_outputs,
+            consumed_outputs: milestone_utxo_changes.consumed_outputs,
         }
     }
 }
@@ -415,6 +484,78 @@ impl From<RustLedgerInclusionStateDto> for LedgerInclusionStateDto {
             RustLedgerInclusionStateDto::NoTransaction => Self {
                 state: "NoTransaction".to_string(),
             },
+        }
+    }
+}
+
+impl From<RustPeerDto> for PeerDto {
+    fn from(peer: RustPeerDto) -> Self {
+        let gossip = match peer.gossip {
+            Some(g) => Some(GossipDto::from(g)),
+            None => None,
+        };
+        Self {
+            id: peer.id,
+            multi_addresses: peer.multi_addresses,
+            alias: peer.alias,
+            relation: RelationDto::from(peer.relation),
+            connected: peer.connected,
+            gossip,
+        }
+    }
+}
+
+impl From<RustRelationDto> for RelationDto {
+    fn from(relation: RustRelationDto) -> Self {
+        match relation {
+            RustRelationDto::Known => Self {
+                relation: "known".to_string(),
+            },
+            RustRelationDto::Unknown => Self {
+                relation: "unknown".to_string(),
+            },
+            RustRelationDto::Discovered => Self {
+                relation: "discovered".to_string(),
+            },
+        }
+    }
+}
+
+impl From<RustgossipDto> for GossipDto {
+    fn from(gossip: RustgossipDto) -> Self {
+        Self {
+            heartbeat: HeartbeatDto::from(gossip.heartbeat),
+            metrics: MetricsDto::from(gossip.metrics),
+        }
+    }
+}
+
+impl From<RustheartbeatDto> for HeartbeatDto {
+    fn from(heartbeat: RustheartbeatDto) -> Self {
+        Self {
+            solid_milestone_index: heartbeat.solid_milestone_index,
+            pruned_milestone_index: heartbeat.pruned_milestone_index,
+            latest_milestone_index: heartbeat.latest_milestone_index,
+            connected_neighbors: heartbeat.connected_neighbors,
+            synced_neighbors: heartbeat.synced_neighbors,
+        }
+    }
+}
+
+impl From<RustMetricsDto> for MetricsDto {
+    fn from(metrics: RustMetricsDto) -> Self {
+        Self {
+            new_messages: metrics.new_messages,
+            received_messages: metrics.received_messages,
+            known_messages: metrics.known_messages,
+            received_message_requests: metrics.received_message_requests,
+            received_milestone_requests: metrics.received_milestone_requests,
+            received_heartbeats: metrics.received_heartbeats,
+            sent_messages: metrics.sent_messages,
+            sent_message_requests: metrics.sent_message_requests,
+            sent_milestone_requests: metrics.sent_milestone_requests,
+            sent_heartbeats: metrics.sent_heartbeats,
+            dropped_packets: metrics.dropped_packets,
         }
     }
 }

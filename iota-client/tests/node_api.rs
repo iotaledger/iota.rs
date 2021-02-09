@@ -272,6 +272,22 @@ async fn test_get_output() {
 
 #[tokio::test]
 #[ignore]
+async fn test_get_peers() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_peers()
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
 async fn test_get_milestone() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
@@ -280,6 +296,22 @@ async fn test_get_milestone() {
         .await
         .unwrap()
         .get_milestone(3)
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_milestone_utxo_changes() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_milestone_utxo_changes(3)
         .await
         .unwrap();
 

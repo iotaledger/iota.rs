@@ -39,6 +39,7 @@ pub(crate) enum Api {
     GetAddressBalances(Vec<Bech32Address>),
     // Node APIs
     GetInfo,
+    GetPeers,
     GetTips,
     PostMessage(MessageDto),
     GetMessagesByIndexation(String),
@@ -54,6 +55,7 @@ pub(crate) enum Api {
     GetAddressBalance(Bech32Address),
     GetAddressOutputs(Bech32Address),
     GetMilestone(u64),
+    GetMilestoneUTXOChanges(u64),
     Retry(MessageId),
     Reattach(MessageId),
     Promote(MessageId),
@@ -175,6 +177,7 @@ impl Task for ClientTask {
                 }
                 // Node APIs
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
+                Api::GetPeers => serde_json::to_string(&client.get_peers().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;
                     serde_json::to_string(&tips).unwrap()
@@ -241,6 +244,10 @@ impl Task for ClientTask {
                 Api::GetMilestone(index) => {
                     let milestone = client.get_milestone(*index).await?;
                     serde_json::to_string(&milestone).unwrap()
+                }
+                Api::GetMilestoneUTXOChanges(index) => {
+                    let milestone_utxo_changes = client.get_milestone_utxo_changes(*index).await?;
+                    serde_json::to_string(&milestone_utxo_changes).unwrap()
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;
