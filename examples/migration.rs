@@ -3,7 +3,6 @@
 
 //! cargo run --example migration --release
 use anyhow::Result;
-use bee_signing_ext::Seed;
 use iota::client::chrysalis2::*;
 use iota::{
     client::extended::PrepareTransfersBuilder,
@@ -118,16 +117,13 @@ async fn main() -> Result<()> {
     let bundle = PrepareTransfersBuilder::new(&iota, Some(&tryte_seed)).security(security_level).transfers(transfer).inputs(inputs.1).build().await?;
     let mut txs = Vec::new();
     for i in 0..bundle.len(){
-        txs.push(bundle.get(i).unwrap());
+        txs.push(bundle.get(i).unwrap().clone());
     }
     // println!("{:?}",txs);
     let essence_parts = get_bundle_essence_parts(&txs);
     println!("essence_parts: {:?}",essence_parts);
 
-
-    let mined_iteration_expected: usize = 28925;
-    let mined_crackability_expected: f64 = 9.2430303968744906557891424497679297e-16;
-    let mut miner = MinerBuilder::new()
+    let miner = MinerBuilder::new()
         .with_offset(0)
         .with_essences_from_unsigned_bundle(
             essence_parts
@@ -174,25 +170,29 @@ async fn main() -> Result<()> {
                 })
                 .collect::<Vec<TritBuf<T1B1Buf>>>(),
         )
-        .with_threshold(1e-15_f64)
         .miner(miner)
         .finish()
         .unwrap();
 
-    if let CrackabilityMinerEvent::MinedCrackability(mined_info) = recoverer.recover() {
-        println!("{:?}",mined_info);
-        assert_eq!(mined_iteration_expected, mined_info.mined_iteration);
-        assert_eq!(
-            true,
-            (mined_crackability_expected - mined_info.crackability).abs()
-                < mined_crackability_expected * 1e-9
-        );
-    } else {
-        panic!();
-    }
+        let mined_info = match recoverer.recover() {
+            CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
+            CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
+        };
+        let latest_tx_essence_part = mined_info.mined_essence;
+        println!("latest_tx_essence_part{:?}",latest_tx_essence_part);
 
-    //todo replace obsolete_tag, sign and send with new tips
 
+    
+    // Replace obsolete tag of the last transaction with the mined obsolete_tag
+    let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
+    txs[txs.len()-1].as_trits_allocated(trits.as_slice_mut());
+    trits.subslice_mut(6804..7047).copy_from(&latest_tx_essence_part.unwrap());
+    let tx_len  = txs.len();
+    txs[tx_len-1] = BundledTransaction::from_trits(&trits).unwrap();
+
+    //todo sign and send with new tips
+
+    
     // println!(
     //     "Bundle sent: {:?}",
     //     res[0]
@@ -208,7 +208,7 @@ async fn main() -> Result<()> {
 
 // Generate first ed25519 address and convert it to a migration tryte address
 fn generate_migration_address(ed25519_seed: &str) -> Result<Address> {
-    let seed = Seed::from_ed25519_bytes(&hex::decode(ed25519_seed)?).unwrap();
+    let seed = Seed::from_bytes(&hex::decode(ed25519_seed)?).unwrap();
 
     let ed25519_address = GetAddressesBuilder::new(&seed)
         .with_account_index(0)
@@ -218,7 +218,7 @@ fn generate_migration_address(ed25519_seed: &str) -> Result<Address> {
     Ok(encode_migration_address(ed25519_address[0]))
 }
 
-fn get_bundle_essence_parts(txs: &Vec<&BundledTransaction>) -> Vec<String>{
+fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String>{
     let mut essence_parts = Vec::new();
     for tx in txs{
         let essence = tx.essence();

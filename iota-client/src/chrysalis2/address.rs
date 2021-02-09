@@ -9,14 +9,12 @@ macro_rules! account_path {
     };
 }
 
-use crate::{Error, Result};
+use crate::{Error, Result, chrysalis2::Seed};
 
 use bee_crypto::ternary::sponge::{Kerl, Sponge};
 use bee_message::prelude::{Address, Ed25519Address};
-use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey, Ed25519Seed},
-    Seed,
-};
+
+use slip10::{ BIP32Path};
 use bee_ternary::{b1t6, T1B1Buf, T3B1Buf, Trits, TryteBuf};
 use bee_transaction::bundled::{Address as TryteAddress, BundledTransactionField};
 use blake2::{
@@ -87,15 +85,10 @@ impl<'a> GetAddressesBuilder<'a> {
             None => 0..20,
         };
 
-        let seed = match self.seed {
-            Seed::Ed25519(s) => s,
-            _ => panic!("Other seed scheme isn't supported yet."),
-        };
-
         let mut addresses = Vec::new();
         for i in range {
-            let address = generate_address(&seed, &mut path, i, false);
-            let internal_address = generate_address(&seed, &mut path, i, true);
+            let address = generate_address(&self.seed, &mut path, i, false)?;
+            let internal_address = generate_address(&self.seed, &mut path, i, true)?;
             if let Address::Ed25519(address) = address {
                 addresses.push((address, false));
             }
@@ -109,18 +102,15 @@ impl<'a> GetAddressesBuilder<'a> {
 }
 
 fn generate_address(
-    seed: &Ed25519Seed,
+    seed: &Seed,
     path: &mut BIP32Path,
     index: usize,
     internal: bool,
-) -> Address {
+) -> Result<Address> {
     path.push(internal as u32 + HARDEND);
     path.push(index as u32 + HARDEND);
 
-    let public_key = Ed25519PrivateKey::generate_from_seed(seed, &path)
-        .expect("Invalid Seed & BIP32Path. Probably because the index of path is not hardened.")
-        .generate_public_key()
-        .to_bytes();
+    let public_key = seed.generate_private_key(path)?.public_key().to_compressed_bytes();
     // Hash the public key to get the address
     let mut hasher = VarBlake2b::new(32).unwrap();
     hasher.update(public_key);
@@ -132,7 +122,7 @@ fn generate_address(
     path.pop();
     path.pop();
 
-    Address::Ed25519(Ed25519Address::new(result))
+    Ok(Address::Ed25519(Ed25519Address::new(result)))
 }
 
 /// Encode an Ed25519Address to a TryteAddress

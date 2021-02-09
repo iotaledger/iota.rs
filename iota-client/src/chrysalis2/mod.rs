@@ -4,4 +4,6 @@
 //! Chrsalis migration address
 
 mod address;
+mod seed;
 pub use address::*;
+pub use seed::*;
