@@ -32,7 +32,6 @@ impl Client {
         data: Option<Vec<u8>>,
         data_str: Option<String>,
         parents: Option<Vec<&str>>,
-        network_id: Option<u64>,
     ) -> Result<Message> {
         if input_range_begin.is_some() ^ input_range_end.is_some() {
             return Err(Error {
@@ -84,9 +83,6 @@ impl Client {
                 parent_ids.push(RustMessageId::from_str(parent)?);
             }
             send_builder = send_builder.with_parents(parent_ids)?;
-        }
-        if let Some(network_id) = network_id {
-            send_builder = send_builder.with_network_id(network_id);
         }
         let rt = tokio::runtime::Runtime::new()?;
         if let Some(seed) = seed {
