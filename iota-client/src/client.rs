@@ -702,12 +702,7 @@ impl Client {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
-        let reattach_message = finish_pow(
-            self,
-            self.get_network_id().await?,
-            Some(message.payload().to_owned().unwrap()),
-        )
-        .await?;
+        let reattach_message = finish_pow(self, Some(message.payload().to_owned().unwrap())).await?;
 
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;

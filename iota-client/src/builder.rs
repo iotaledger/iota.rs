@@ -109,12 +109,11 @@ impl ClientBuilder {
     pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
             let text: String = reqwest::get(pool_url)
-                .await
-                .unwrap()
+                .await?
                 .text()
                 .await
                 .map_err(|_| Error::NodePoolUrlsError)?;
-            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text).unwrap();
+            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text)?;
             for node_detail in nodes_details {
                 let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
                 self.nodes.insert(url);
@@ -164,7 +163,7 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
-        let default_testnet_node_pools = vec!["https://dbfiles.testnet.chrysalis2.com/testnet_nodes.json".to_string()];
+        let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
         if self.nodes.is_empty() {
             match self.network_info.network {
                 Some(ref network) => match network.to_lowercase().as_str() {

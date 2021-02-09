@@ -41,7 +41,6 @@ pub struct ClientMessageBuilder<'a> {
     index: Option<String>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
-    network_id: Option<u64>,
 }
 
 impl<'a> ClientMessageBuilder<'a> {
@@ -58,7 +57,6 @@ impl<'a> ClientMessageBuilder<'a> {
             index: None,
             data: None,
             parents: None,
-            network_id: None,
         }
     }
 
@@ -145,12 +143,6 @@ impl<'a> ClientMessageBuilder<'a> {
         }
         self.parents = Some(parent_ids);
         Ok(self)
-    }
-
-    /// Set the network id
-    pub fn with_network_id(mut self, network_id: u64) -> Self {
-        self.network_id = Some(network_id);
-        self
     }
 
     /// Consume the builder and get the API result
@@ -495,10 +487,6 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
-        let network_id = match self.network_id {
-            Some(id) => id,
-            _ => self.client.get_network_id().await?,
-        };
         let final_message = match self.parents {
             Some(mut parents) => {
                 parents.sort_unstable();
@@ -508,7 +496,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         .with_local_pow(self.client.get_network_info().local_pow)
                         .finish(),
                     self.client.get_network_info().min_pow_score,
-                    network_id,
+                    self.client.get_network_id().await?,
                     payload,
                     parents,
                     Arc::new(AtomicBool::new(false)),
@@ -516,7 +504,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .1
                 .unwrap()
             }
-            None => finish_pow(&self.client, network_id, payload.clone()).await?,
+            None => finish_pow(&self.client, payload.clone()).await?,
         };
 
         let msg_id = self.client.post_message(&final_message).await?;
@@ -589,11 +577,12 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
 }
 
 /// Does PoW with always new tips
-pub async fn finish_pow(client: &Client, network_id: u64, payload: Option<Payload>) -> Result<Message> {
+pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let done = Arc::new(AtomicBool::new(false));
     let local_pow = client.get_network_info().local_pow;
     let min_pow_score = client.get_network_info().min_pow_score;
     let tips_interval = client.get_network_info().tips_interval;
+    let network_id = client.get_network_id().await?;
     loop {
         let abort1 = Arc::clone(&done);
         let abort2 = Arc::clone(&done);

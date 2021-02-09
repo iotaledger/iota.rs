@@ -7,7 +7,7 @@
 * [Introduction](#Introduction)
 * [Builder](#Builder)
 * [General high level API](#General-high-level-API)
-  * [`send`](#send)
+  * [`message`](#message)
   * [`get_message`](#get_message)
   * [`find_messages`](#find_messages)
   * [`get_unspent_address`](#get_unspent_address)
@@ -117,7 +117,6 @@ A generic send function for easily sending a message.
 | **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
 | **parents** | ✘ | None | [MessageId] | 1-8 optional parents [MessageId] to be used. |
-| **network** | ✘ | None | &str | Optional select a network to get default nodes for it if no other node is provided. Can be "mainnet" or "testnet" |
 
 Depending on the provided values this function will create a message with:
 
