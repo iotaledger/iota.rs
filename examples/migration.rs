@@ -304,10 +304,13 @@ fn generate_migration_address(ed25519_seed: &str) -> Result<Address> {
     Ok(encode_migration_address(ed25519_address[0]))
 }
 
+// Split each tx in two essence parts, first one is the address and the second one
+// includes value, obsoleteTag, currentIndex, lastIndex and timestamp
 fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String> {
     let mut essence_parts = Vec::new();
     for tx in txs {
         let essence = tx.essence();
+        // address
         essence_parts.push(
             essence[0..243]
                 .encode::<T3B1Buf>()
@@ -315,6 +318,7 @@ fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String> {
                 .map(char::from)
                 .collect::<String>(),
         );
+        // value, obsoleteTag, currentIndex, lastIndex and timestamp
         essence_parts.push(
             essence[243..]
                 .encode::<T3B1Buf>()
