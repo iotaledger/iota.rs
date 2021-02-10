@@ -393,7 +393,7 @@ impl Client {
     /// Gets the miner to use based on the PoW setting
     pub fn get_pow_provider(&self) -> ClientMiner {
         ClientMinerBuilder::new()
-            .with_local_pow(self.network_info.read().unwrap().local_pow)
+            .with_local_pow(self.get_local_pow())
             .finish()
     }
 
@@ -564,7 +564,7 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
-        let timeout = if self.network_info.read().unwrap().local_pow {
+        let timeout = if self.get_local_pow() {
             self.get_timeout(Api::PostMessage)
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
