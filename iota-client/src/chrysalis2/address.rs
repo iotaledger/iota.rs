@@ -9,12 +9,11 @@ macro_rules! account_path {
     };
 }
 
-use crate::{Error, Result, chrysalis2::Seed};
+use crate::{chrysalis2::Seed, Error, Result};
 
 use bee_crypto::ternary::sponge::{Kerl, Sponge};
 use bee_message::prelude::{Address, Ed25519Address};
 
-use slip10::{ BIP32Path};
 use bee_ternary::{b1t6, T1B1Buf, T3B1Buf, Trits, TryteBuf};
 use bee_transaction::bundled::{Address as TryteAddress, BundledTransactionField};
 use blake2::{
@@ -22,6 +21,7 @@ use blake2::{
     VarBlake2b,
 };
 use core::convert::TryInto;
+use slip10::BIP32Path;
 use std::ops::Range;
 
 const HARDEND: u32 = 1 << 31;
@@ -110,7 +110,10 @@ fn generate_address(
     path.push(internal as u32 + HARDEND);
     path.push(index as u32 + HARDEND);
 
-    let public_key = seed.generate_private_key(path)?.public_key().to_compressed_bytes();
+    let public_key = seed
+        .generate_private_key(path)?
+        .public_key()
+        .to_compressed_bytes();
     // Hash the public key to get the address
     let mut hasher = VarBlake2b::new(32).unwrap();
     hasher.update(public_key);

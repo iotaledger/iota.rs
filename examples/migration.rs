@@ -7,11 +7,15 @@ use iota::client::chrysalis2::*;
 use iota::{
     client::extended::PrepareTransfersBuilder,
     client::Transfer,
-    signing::ternary::seed::Seed as TernarySeed,
-    ternary::{T1B1Buf, T3B1Buf, TryteBuf, TritBuf},
-    transaction::bundled::{Address, BundledTransactionField, BundledTransaction},
+    crypto::ternary::Hash,
+    signing::ternary::{seed::Seed as TernarySeed, wots::WotsSecurityLevel},
+    ternary::{T1B1Buf, T3B1Buf, TritBuf, TryteBuf},
+    transaction::bundled::{
+        Address, BundledTransaction, BundledTransactionBuilder, BundledTransactionField, Nonce,
+        OutgoingBundleBuilder, Payload, Timestamp,
+    },
 };
-use iota_bundle_miner::{MinerBuilder, RecovererBuilder, CrackabilityMinerEvent};
+use iota_bundle_miner::{CrackabilityMinerEvent, MinerBuilder, RecovererBuilder};
 use std::collections::HashSet;
 use std::io;
 
@@ -19,6 +23,7 @@ use std::io;
 #[tokio::main]
 async fn main() -> Result<()> {
     let security_level: u8 = 2;
+    let min_weight_magnitude = 9;
     let iota = iota::ClientBuilder::new()
         .node("https://nodes.devnet.iota.org")?
         .build()?;
@@ -57,7 +62,7 @@ async fn main() -> Result<()> {
         address_index += 30;
     }
     // if inputs.0 < 1_000_000 {
-    //     panic!("Balance needs to be > 1_000_000i to do transaction")
+    //     panic!("Balance needs to be > 1_000_000i to do the migration because of the dust protection")
     // }
     println!("Preparing transaction...");
     // Get spent status of addresses, if spent do bundle mining
@@ -84,125 +89,206 @@ async fn main() -> Result<()> {
             known_bundle_hashes.insert(tx.bundle().clone());
         }
     }
-    let known_bundle_hashes: Vec<String> = known_bundle_hashes.into_iter().map(|b| b.to_inner().encode::<T3B1Buf>()
-    .iter_trytes()
-    .map(char::from)
-    .collect::<String>()).collect();
+    let known_bundle_hashes: Vec<String> = known_bundle_hashes
+        .into_iter()
+        .map(|b| {
+            b.to_inner()
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>()
+        })
+        .collect();
     println!("bundle_hashes {:?}", known_bundle_hashes);
+
+    // Create bundle
+    let _migration_address = generate_migration_address(ed25519_seed);
+    // placeholder to reuse tokens for testing
+    let migration_address = Address::from_inner_unchecked(
+        TryteBuf::try_from_str(
+            "CHZHKFUCUMRHOFXB9SGEZVYUUXYKEIJ9VX9SLKATMLWQZUQXDWUKLYGZLMYYWHXKKTPQHIOHQMYARINLD",
+        )
+        .unwrap()
+        .as_trits()
+        .encode(),
+    );
+
+    let transfer = vec![Transfer {
+        address: migration_address,
+        value: inputs.0,
+        message: None,
+        tag: None,
+    }];
+
     // TODO change to true, is false because devnet is broken
     if spent_status.states.contains(&false) {
         println!("Mining bundle because of spent addresses, this can take some time...");
-    // let res = RecovererBuilder::new().with_security_level(2).with_known_bundle_hashes(bundle_hashes.into_iter().collect()).finish()?;
-    } else {
-        println!("No spent address as input");
-    }
-        // Create bundle
-        let _migration_address = generate_migration_address(ed25519_seed);
-        // placeholder to reuse tokens for testing
-        let migration_address = Address::from_inner_unchecked(
-            TryteBuf::try_from_str(
-                "CHZHKFUCUMRHOFXB9SGEZVYUUXYKEIJ9VX9SLKATMLWQZUQXDWUKLYGZLMYYWHXKKTPQHIOHQMYARINLD",
+        // Provide random seed here, because we can't build a bundle without signed inputs, signature will be replaced later
+        let bundle = PrepareTransfersBuilder::new(&iota, Some(&TernarySeed::rand()))
+            .security(security_level)
+            .transfers(transfer)
+            .inputs(inputs.1.clone())
+            .build()
+            .await?;
+        let mut txs = Vec::new();
+        for i in 0..bundle.len() {
+            txs.push(bundle.get(i).unwrap().clone());
+        }
+        let essence_parts = get_bundle_essence_parts(&txs);
+
+        let miner = MinerBuilder::new()
+            .with_offset(0)
+            .with_essences_from_unsigned_bundle(
+                essence_parts
+                    .clone()
+                    .iter()
+                    .map(|t| {
+                        TryteBuf::try_from_str(&(*t).to_string())
+                            .unwrap()
+                            .as_trits()
+                            .encode()
+                    })
+                    .collect::<Vec<TritBuf<T1B1Buf>>>(),
             )
-            .unwrap()
-            .as_trits()
-            .encode(),
-        );
-    
-        let transfer = vec![Transfer {
-            address: migration_address,
-            value: inputs.0,
-            message: None,
-            tag: None,
-        }];
-    let bundle = PrepareTransfersBuilder::new(&iota, Some(&tryte_seed)).security(security_level).transfers(transfer).inputs(inputs.1).build().await?;
-    let mut txs = Vec::new();
-    for i in 0..bundle.len(){
-        txs.push(bundle.get(i).unwrap().clone());
-    }
-    // println!("{:?}",txs);
-    let essence_parts = get_bundle_essence_parts(&txs);
-    println!("essence_parts: {:?}",essence_parts);
+            .with_security_level(security_level as usize)
+            .with_known_bundle_hashes(
+                known_bundle_hashes
+                    .clone()
+                    .iter()
+                    .map(|t| {
+                        TryteBuf::try_from_str(&(*t).to_string())
+                            .unwrap()
+                            .as_trits()
+                            .encode()
+                    })
+                    .collect::<Vec<TritBuf<T1B1Buf>>>(),
+            )
+            .with_worker_count(1)
+            .with_core_thread_count(1)
+            .with_mining_timeout(40)
+            .finish()
+            .unwrap();
 
-    let miner = MinerBuilder::new()
-        .with_offset(0)
-        .with_essences_from_unsigned_bundle(
-            essence_parts
-                .clone()
-                .iter()
-                .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
-                        .as_trits()
-                        .encode()
-                })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
-        )
-        .with_security_level(security_level as usize)
-        .with_known_bundle_hashes(
-            known_bundle_hashes
-                .clone()
-                .iter()
-                .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
-                        .as_trits()
-                        .encode()
-                })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
-        )
-        .with_worker_count(1)
-        .with_core_thread_count(1)
-        .with_mining_timeout(40)
-        .finish()
-        .unwrap();
-
-    let mut recoverer = RecovererBuilder::new()
-        .with_security_level(security_level as usize)
-        .with_known_bundle_hashes(
-            known_bundle_hashes
-                .clone()
-                .iter()
-                .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
-                        .as_trits()
-                        .encode()
-                })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
-        )
-        .miner(miner)
-        .finish()
-        .unwrap();
-
+        let mut recoverer = RecovererBuilder::new()
+            .with_security_level(security_level as usize)
+            .with_known_bundle_hashes(
+                known_bundle_hashes
+                    .clone()
+                    .iter()
+                    .map(|t| {
+                        TryteBuf::try_from_str(&(*t).to_string())
+                            .unwrap()
+                            .as_trits()
+                            .encode()
+                    })
+                    .collect::<Vec<TritBuf<T1B1Buf>>>(),
+            )
+            .miner(miner)
+            .finish()
+            .unwrap();
+        // Todo: decide which crackability value is good enough
         let mined_info = match recoverer.recover() {
             CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
             CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
         };
         let latest_tx_essence_part = mined_info.mined_essence;
-        println!("latest_tx_essence_part{:?}",latest_tx_essence_part);
 
+        // Replace obsolete tag of the last transaction with the mined obsolete_tag
+        let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
+        txs[txs.len() - 1].as_trits_allocated(trits.as_slice_mut());
+        trits
+            .subslice_mut(6804..7047)
+            .copy_from(&latest_tx_essence_part.unwrap());
+        let tx_len = txs.len();
+        txs[tx_len - 1] = BundledTransaction::from_trits(&trits).unwrap();
 
-    
-    // Replace obsolete tag of the last transaction with the mined obsolete_tag
-    let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
-    txs[txs.len()-1].as_trits_allocated(trits.as_slice_mut());
-    trits.subslice_mut(6804..7047).copy_from(&latest_tx_essence_part.unwrap());
-    let tx_len  = txs.len();
-    txs[tx_len-1] = BundledTransaction::from_trits(&trits).unwrap();
+        // Create final bundle with updated obsolet_tag
+        let mut bundle = OutgoingBundleBuilder::default();
+        for tx in txs.into_iter() {
+            bundle.push(
+                BundledTransactionBuilder::new()
+                    .with_payload(Payload::zeros())
+                    .with_address(tx.address().clone())
+                    .with_value(tx.value().clone())
+                    .with_obsolete_tag(tx.obsolete_tag().clone())
+                    .with_timestamp(tx.timestamp().clone())
+                    .with_index(tx.index().clone())
+                    .with_last_index(tx.last_index().clone())
+                    .with_tag(tx.tag().clone())
+                    .with_attachment_ts(tx.attachment_ts().clone())
+                    .with_bundle(Hash::zeros())
+                    .with_trunk(Hash::zeros())
+                    .with_branch(Hash::zeros())
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                    .with_nonce(Nonce::zeros()),
+            )
+        }
 
-    //todo sign and send with new tips
+        let security = match security_level {
+            1 => WotsSecurityLevel::Low,
+            2 => WotsSecurityLevel::Medium,
+            3 => WotsSecurityLevel::High,
+            _ => panic!("Invalid scurity level"),
+        };
 
-    
-    // println!(
-    //     "Bundle sent: {:?}",
-    //     res[0]
-    //         .bundle()
-    //         .to_inner()
-    //         .encode::<T3B1Buf>()
-    //         .iter_trytes()
-    //         .map(char::from)
-    //         .collect::<String>()
-    // );
+        let inputs: Vec<(usize, Address, WotsSecurityLevel)> = inputs
+            .1
+            .into_iter()
+            .map(|i| (i.index as usize, i.address, security))
+            .collect();
+        // Sign
+        let final_signed_bundle = bundle
+            .seal()
+            .expect("Fail to seal bundle")
+            .sign(&tryte_seed, &inputs[..])
+            .expect("Fail to sign bundle")
+            .attach_local(Hash::zeros(), Hash::zeros())
+            .expect("Fail to attach bundle")
+            .build()
+            .expect("Fail to build bundle");
+
+        // Send to Tangle
+        let mut trytes: Vec<BundledTransaction> = final_signed_bundle.into_iter().collect();
+        trytes.reverse();
+        let send_trytes = iota
+            .send_trytes()
+            .with_trytes(trytes)
+            .with_depth(2)
+            .with_min_weight_magnitude(min_weight_magnitude)
+            .finish()
+            .await?;
+        println!(
+            "Bundle sent: {:?}",
+            send_trytes[0]
+                .bundle()
+                .to_inner()
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>()
+        );
+    } else {
+        println!("No spent address as input");
+        // No need to do bundle mining, we can sign and send it right away
+        let res = iota
+            .send(Some(&tryte_seed))
+            .with_transfers(transfer)
+            .with_inputs(inputs.1)
+            .with_min_weight_magnitude(9)
+            .finish()
+            .await?;
+        println!(
+            "Bundle sent: {:?}",
+            res[0]
+                .bundle()
+                .to_inner()
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>()
+        );
+    }
     Ok(())
 }
 
@@ -218,18 +304,24 @@ fn generate_migration_address(ed25519_seed: &str) -> Result<Address> {
     Ok(encode_migration_address(ed25519_address[0]))
 }
 
-fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String>{
+fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String> {
     let mut essence_parts = Vec::new();
-    for tx in txs{
+    for tx in txs {
         let essence = tx.essence();
-        essence_parts.push(essence[0..243].encode::<T3B1Buf>()
-        .iter_trytes()
-        .map(char::from)
-        .collect::<String>());
-        essence_parts.push(essence[243..].encode::<T3B1Buf>()
-        .iter_trytes()
-        .map(char::from)
-        .collect::<String>());
+        essence_parts.push(
+            essence[0..243]
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        );
+        essence_parts.push(
+            essence[243..]
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        );
     }
     essence_parts
 }
