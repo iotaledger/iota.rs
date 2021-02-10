@@ -403,10 +403,20 @@ impl Client {
             let mut client_network_info = self.network_info.write().unwrap();
             client_network_info.network_id = Some(network_id);
             client_network_info.min_pow_score = info.min_pow_score;
-            client_network_info.bech32_hrp = info.bech32_hrp.clone();
+            client_network_info.bech32_hrp = info.bech32_hrp;
         }
 
         Ok(self.get_network_info())
+    }
+
+    /// returns the min pow score
+    pub async fn get_bech32_hrp(&self) -> Result<String> {
+        Ok(self.get_synced_network_info().await?.bech32_hrp)
+    }
+
+    /// returns the min pow score
+    pub async fn get_min_pow_score(&self) -> Result<f64> {
+        Ok(self.get_synced_network_info().await?.min_pow_score)
     }
 
     /// returns the tips interval
@@ -417,11 +427,6 @@ impl Client {
     /// returns the local pow
     pub fn get_local_pow(&self) -> bool {
         self.network_info.read().unwrap().local_pow
-    }
-
-    /// returns the min pow score
-    pub fn get_min_pow_score(&self) -> f64 {
-        self.network_info.read().unwrap().min_pow_score
     }
 
     /// Gets the network related information such as network_id and min_pow_score
@@ -753,10 +758,11 @@ impl Client {
     pub async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
+        let min_pow_score = self.get_min_pow_score().await?;
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
             .with_parents(vec![*message_id, tips[0]])
-            .with_nonce_provider(self.get_pow_provider(), self.get_min_pow_score(), None)
+            .with_nonce_provider(self.get_pow_provider(), min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 

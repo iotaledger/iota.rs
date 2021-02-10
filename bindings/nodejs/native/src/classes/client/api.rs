@@ -39,6 +39,7 @@ pub(crate) enum Api {
     GetAddressBalances(Vec<Bech32Address>),
     // Node APIs
     GetInfo,
+    GetNetworkInfo,
     GetPeers,
     GetTips,
     PostMessage(MessageDto),
@@ -177,6 +178,7 @@ impl Task for ClientTask {
                 }
                 // Node APIs
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
+                Api::GetNetworkInfo => serde_json::to_string(&client.get_synced_network_info().await?).unwrap(),
                 Api::GetPeers => serde_json::to_string(&client.get_peers().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;

@@ -491,12 +491,14 @@ impl<'a> ClientMessageBuilder<'a> {
             Some(mut parents) => {
                 parents.sort_unstable();
                 parents.dedup();
+                let min_pow_score = self.client.get_min_pow_score().await?;
+                let network_id = self.client.get_network_id().await?;
                 do_pow(
                     crate::client::ClientMinerBuilder::new()
                         .with_local_pow(self.client.get_local_pow())
                         .finish(),
-                    self.client.get_min_pow_score(),
-                    self.client.get_network_id().await?,
+                    min_pow_score,
+                    network_id,
                     payload,
                     parents,
                     Arc::new(AtomicBool::new(false)),
@@ -580,7 +582,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let done = Arc::new(AtomicBool::new(false));
     let local_pow = client.get_local_pow();
-    let min_pow_score = client.get_min_pow_score();
+    let min_pow_score = client.get_min_pow_score().await?;
     let tips_interval = client.get_tips_interval();
     let network_id = client.get_network_id().await?;
     loop {
