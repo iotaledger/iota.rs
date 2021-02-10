@@ -176,7 +176,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
-        let bech32_hrp = self.client.get_network_info().bech32_hrp;
+        let bech32_hrp = self.client.get_synced_network_info().await?.bech32_hrp;
 
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
@@ -493,9 +493,9 @@ impl<'a> ClientMessageBuilder<'a> {
                 parents.dedup();
                 do_pow(
                     crate::client::ClientMinerBuilder::new()
-                        .with_local_pow(self.client.get_network_info().local_pow)
+                        .with_local_pow(self.client.get_local_pow())
                         .finish(),
-                    self.client.get_network_info().min_pow_score,
+                    self.client.get_min_pow_score(),
                     self.client.get_network_id().await?,
                     payload,
                     parents,
@@ -509,7 +509,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let msg_id = self.client.post_message(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.client.get_network_info().local_pow {
+        let msg = match self.client.get_local_pow() {
             true => final_message,
             false => self.client.get_message().data(&msg_id).await?,
         };
@@ -579,9 +579,9 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
 /// Does PoW with always new tips
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let done = Arc::new(AtomicBool::new(false));
-    let local_pow = client.get_network_info().local_pow;
-    let min_pow_score = client.get_network_info().min_pow_score;
-    let tips_interval = client.get_network_info().tips_interval;
+    let local_pow = client.get_local_pow();
+    let min_pow_score = client.get_min_pow_score();
+    let tips_interval = client.get_tips_interval();
     let network_id = client.get_network_id().await?;
     loop {
         let abort1 = Arc::clone(&done);

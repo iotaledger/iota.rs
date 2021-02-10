@@ -383,11 +383,8 @@ impl Client {
         let network_id = match self.get_network_info().network_id {
             Some(id) => id,
             None => {
-                let node_info = self.get_info().await?;
-                let network_id = hash_network(&node_info.network_id);
-                let mut client_network_info = self.network_info.write().unwrap();
-                client_network_info.network_id = Some(network_id);
-                network_id
+                let network_info = self.get_synced_network_info().await?;
+                network_info.network_id.unwrap()
             }
         };
         Ok(network_id)
@@ -398,6 +395,35 @@ impl Client {
         ClientMinerBuilder::new()
             .with_local_pow(self.network_info.read().unwrap().local_pow)
             .finish()
+    }
+
+    /// Gets the network related information and if it's the default one, sync it first.
+    pub async fn get_synced_network_info(&self) -> Result<NetworkInfo> {
+        if self.get_network_info().network_id.is_none() {
+            let info = self.get_info().await?;
+            let network_id = hash_network(&info.network_id);
+            let mut client_network_info = self.network_info.write().unwrap();
+            client_network_info.network_id = Some(network_id);
+            client_network_info.min_pow_score = info.min_pow_score;
+            client_network_info.bech32_hrp = info.bech32_hrp.clone()
+        }
+
+        Ok(self.get_network_info())
+    }
+
+    /// returns the tips interval
+    pub fn get_tips_interval(&self) -> u64 {
+        self.network_info.read().unwrap().tips_interval
+    }
+
+    /// returns the local pow
+       pub fn get_local_pow(&self) -> bool {
+        self.network_info.read().unwrap().local_pow
+    }
+
+    /// returns the min pow score
+    pub fn get_min_pow_score(&self) -> f64 {
+        self.network_info.read().unwrap().min_pow_score
     }
 
     /// Gets the network related information such as network_id and min_pow_score
@@ -707,7 +733,7 @@ impl Client {
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_network_info().local_pow {
+        let msg = match self.get_local_pow() {
             true => reattach_message,
             false => self.get_message().data(&message_id).await?,
         };
@@ -732,13 +758,13 @@ impl Client {
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
             .with_parents(vec![*message_id, tips[0]])
-            .with_nonce_provider(self.get_pow_provider(), self.get_network_info().min_pow_score, None)
+            .with_nonce_provider(self.get_pow_provider(), self.get_min_pow_score(), None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
         let message_id = self.post_message(&promote_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_network_info().local_pow {
+        let msg = match self.get_local_pow() {
             true => promote_message,
             false => self.get_message().data(&message_id).await?,
         };
