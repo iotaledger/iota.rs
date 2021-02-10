@@ -392,9 +392,7 @@ impl Client {
 
     /// Gets the miner to use based on the PoW setting
     pub fn get_pow_provider(&self) -> ClientMiner {
-        ClientMinerBuilder::new()
-            .with_local_pow(self.get_local_pow())
-            .finish()
+        ClientMinerBuilder::new().with_local_pow(self.get_local_pow()).finish()
     }
 
     /// Gets the network related information and if it's the default one, sync it first.
@@ -405,7 +403,7 @@ impl Client {
             let mut client_network_info = self.network_info.write().unwrap();
             client_network_info.network_id = Some(network_id);
             client_network_info.min_pow_score = info.min_pow_score;
-            client_network_info.bech32_hrp = info.bech32_hrp.clone()
+            client_network_info.bech32_hrp = info.bech32_hrp.clone();
         }
 
         Ok(self.get_network_info())
@@ -417,7 +415,7 @@ impl Client {
     }
 
     /// returns the local pow
-       pub fn get_local_pow(&self) -> bool {
+    pub fn get_local_pow(&self) -> bool {
         self.network_info.read().unwrap().local_pow
     }
 
