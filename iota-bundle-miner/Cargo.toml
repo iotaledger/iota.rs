@@ -1,0 +1,22 @@
+[package]
+name = "iota-bundle-miner"
+version = "0.1.0-alpha.0"
+authors = ["bingyanglin <bingyang.lin@iota.org>"]
+edition = "2018"
+
+[lib]
+name = "iota_bundle_miner"
+
+[dependencies]
+bee-ternary = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
+bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+tokio = { version = "0.2", features = ["rt-core", "rt-threaded", "sync", "time", "macros"] }
+futures = { version = "0.3"}
+criterion = "0.3"
+thiserror = "1.0"
+
+[[bench]]
+name = "miner_benchmark"
+harness = false

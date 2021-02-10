@@ -49,3 +49,7 @@ path = "transfer_all.rs"
 [[example]]
 name = "migration"
 path = "migration.rs"
+
+[[example]]
+name = "bundle_miner"
+path = "bundle_miner.rs"

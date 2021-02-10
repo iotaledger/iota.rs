@@ -12,6 +12,7 @@ pub use bee_crypto as crypto;
 pub use bee_signing as signing;
 pub use bee_ternary as ternary;
 pub use bee_transaction as transaction;
+pub use iota_bundle_miner as bundle_miner;
 pub use iota_client as client;
 
 pub use client::{iota_core::AddressBuilder, Client, ClientBuilder};
