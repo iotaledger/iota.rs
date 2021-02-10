@@ -24,6 +24,7 @@ use std::io;
 async fn main() -> Result<()> {
     let security_level: u8 = 2;
     let min_weight_magnitude = 9;
+    let ledger = false;
     let iota = iota::ClientBuilder::new()
         .node("https://nodes.devnet.iota.org")?
         .build()?;
@@ -136,7 +137,7 @@ async fn main() -> Result<()> {
         }
         let essence_parts = get_bundle_essence_parts(&txs);
 
-        let miner = MinerBuilder::new()
+        let mut miner_builder = MinerBuilder::new()
             .with_offset(0)
             .with_essences_from_unsigned_bundle(
                 essence_parts
@@ -150,7 +151,13 @@ async fn main() -> Result<()> {
                     })
                     .collect::<Vec<TritBuf<T1B1Buf>>>(),
             )
-            .with_security_level(security_level as usize)
+            .with_security_level(security_level as usize);
+        // Ledger Nano App rejects bundles that contain a 13 anywhere in the signed fragments
+        miner_builder = match ledger {
+            true => miner_builder.with_num_13_free_fragments(81),
+            false => miner_builder.with_num_13_free_fragments((security_level * 27) as usize),
+        };
+        let miner = miner_builder
             .with_known_bundle_hashes(
                 known_bundle_hashes
                     .clone()
@@ -163,6 +170,7 @@ async fn main() -> Result<()> {
                     })
                     .collect::<Vec<TritBuf<T1B1Buf>>>(),
             )
+            // use num_cpus::get()? Or not all, because it could lag?
             .with_worker_count(1)
             .with_core_thread_count(1)
             .with_mining_timeout(40)
@@ -238,6 +246,7 @@ async fn main() -> Result<()> {
             .map(|i| (i.index as usize, i.address, security))
             .collect();
         // Sign
+        // Todo signing with a Ledger
         let final_signed_bundle = bundle
             .seal()
             .expect("Fail to seal bundle")
