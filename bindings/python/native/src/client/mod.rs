@@ -98,8 +98,9 @@ impl Client {
         // Update the BECH32_HRP
         // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
         //       create the client object.
+        let bech32_hrp = rt.block_on(async { client.get_bech32_hrp().await.unwrap() });
         unsafe {
-            BECH32_HRP = Box::leak(async {client.get_bech32_hrp().await.into_boxed_str() });
+            BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
         }
         Client { client }
     }

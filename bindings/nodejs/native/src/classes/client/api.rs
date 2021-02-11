@@ -31,6 +31,7 @@ pub(crate) enum Api {
         seed: Seed,
         account_index: Option<usize>,
         range: Option<Range<usize>>,
+        bech32_hrp: Option<String>,
     },
     FindMessages {
         indexation_keys: Vec<String>,
@@ -151,6 +152,7 @@ impl Task for ClientTask {
                     seed,
                     account_index,
                     range,
+                    bech32_hrp,
                 } => {
                     let mut getter = client.find_addresses(&seed);
                     if let Some(account_index) = account_index {
@@ -158,6 +160,10 @@ impl Task for ClientTask {
                     }
                     if let Some(range) = range {
                         getter = getter.with_range(range.clone());
+                    }
+
+                    if let Some(bech32_hrp) = bech32_hrp {
+                        getter = getter.with_bech32_hrp(bech32_hrp.clone())
                     }
 
                     let addresses = getter.finish().await?;

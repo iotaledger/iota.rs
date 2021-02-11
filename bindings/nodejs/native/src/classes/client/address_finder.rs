@@ -56,6 +56,18 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method bech32_hrp(mut cx) {
+            let bech32_hrp = cx.argument::<JsString>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let find_bech32_hrp = &mut this.borrow_mut(&guard).bech32_hrp;
+                find_bech32_hrp.replace(bech32_hrp);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
         method get(mut cx) {
             let cb = cx.argument::<JsFunction>(0)?;
             {
@@ -68,6 +80,7 @@ declare_types! {
                         seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
                         account_index: ref_.account_index,
                         range: ref_.range.clone(),
+                        bech32_hrp: ref_.bech32_hrp.clone(),
                     },
                 };
                 client_task.schedule(cb);
