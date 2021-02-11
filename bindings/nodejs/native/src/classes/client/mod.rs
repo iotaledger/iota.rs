@@ -200,7 +200,8 @@ declare_types! {
         }
 
         method networkInfo(mut cx) {
-            let network_info = {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
                 let this = cx.this();
                 let guard = cx.lock();
                 let id = &this.borrow(&guard).0;
@@ -210,7 +211,7 @@ declare_types! {
                 };
                 client_task.schedule(cb);
             };
-            Ok(cx.string(network_info).upcast())
+            Ok(cx.undefined().upcast())
         }
 
         ///////////////////////////////////////////////////////////////////////
