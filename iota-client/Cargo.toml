@@ -34,4 +34,4 @@ thiserror = "1.0"
 num_cpus = "1.13"
 
 [features]
-mqtt = ["paho-mqtt"]
+mqtt = ["paho-mqtt", "regex"]
