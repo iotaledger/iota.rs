@@ -11,6 +11,10 @@ iota-core = { path = "../iota-core" }
 hex = "0.4.2"
 dotenv = "0.15.0"
 
+# [[example]]
+# name = "mqtt"
+# path = "mqtt.rs"
+
 [[example]]
 name = "address"
 path = "address.rs"
@@ -26,10 +30,6 @@ path = "indexation.rs"
 [[example]]
 name = "transaction"
 path = "transaction.rs"
-
-[[example]]
-name = "mqtt"
-path = "mqtt.rs"
 
 [[example]]
 name = "multiple_outputs"
