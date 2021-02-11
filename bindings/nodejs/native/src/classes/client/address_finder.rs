@@ -6,6 +6,8 @@ use neon::prelude::*;
 
 use std::ops::Range;
 
+use super::{Api, ClientTask};
+
 pub struct AddressFinder {
     client_id: String,
     seed: String,
@@ -63,7 +65,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::FindAddresses {
-                        seed: Seed::fromcar_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
+                        seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
                         account_index: ref_.account_index,
                         range: ref_.range,
                     },
