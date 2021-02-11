@@ -20,6 +20,7 @@ pub struct GetAddressesBuilder<'a> {
     seed: &'a Seed,
     account_index: Option<usize>,
     range: Option<Range<usize>>,
+    bech32_hrp: Option<String>,
 }
 
 impl<'a> GetAddressesBuilder<'a> {
@@ -30,6 +31,7 @@ impl<'a> GetAddressesBuilder<'a> {
             seed,
             account_index: None,
             range: None,
+            bech32_hrp: None,
         }
     }
 
@@ -45,10 +47,16 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
+    /// Set range to the builder
+    pub fn with_bech32_hrp(mut self, bech32_hrp: String) -> Self {
+        self.bech32_hrp = Some(bech32_hrp);
+        self
+    }
+
     /// Consume the builder and get a vector of public Bech32Addresses
-    pub fn finish(self) -> Result<Vec<Bech32Address>> {
+    pub async fn finish(self) -> Result<Vec<Bech32Address>> {
         Ok(self
-            .get_all()?
+            .get_all().await?
             .into_iter()
             .filter(|(_, internal)| !internal)
             .map(|(a, _)| a)
@@ -56,7 +64,7 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Consume the builder and get the vector of Bech32Address
-    pub fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
+    pub async fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
         let mut path = self
             .account_index
             .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
@@ -68,10 +76,10 @@ impl<'a> GetAddressesBuilder<'a> {
         };
 
         let mut addresses = Vec::new();
+        let bech32_hrp = self.bech32_hrp.unwrap_or(self._client.get_bech32_hrp().await?);
         for i in range {
             let address = generate_address(&self.seed, &mut path, i, false)?;
             let internal_address = generate_address(&self.seed, &mut path, i, true)?;
-            let bech32_hrp = self._client.get_network_info().bech32_hrp;
             addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
             addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
         }
@@ -111,7 +119,7 @@ pub async fn search_address(
         .find_addresses(&seed)
         .with_account_index(account_index)
         .with_range(range.clone())
-        .get_all()?;
+        .get_all().await?;
     let mut index_counter = 0;
     for address_internal in addresses {
         if address_internal.0 == *address {

@@ -380,7 +380,7 @@ impl Client {
 
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
-        let network_info = self.get_synced_network_info().await?;
+        let network_info = self.get_network_info().await?;
         Ok(network_info.network_id.unwrap())
     }
 
@@ -389,9 +389,11 @@ impl Client {
         ClientMinerBuilder::new().with_local_pow(self.get_local_pow()).finish()
     }
 
-    /// Gets the network related information and if it's the default one, sync it first.
-    pub async fn get_synced_network_info(&self) -> Result<NetworkInfo> {
-        if self.get_network_info().network_id.is_none() {
+    /// Gets the network related information such as network_id and min_pow_score
+    /// and if it's the default one, sync it first.
+    pub async fn get_network_info(&self) -> Result<NetworkInfo> {
+        let network_info = self.network_info.read().unwrap();
+        if network_info.network_id.is_none() {
             let info = self.get_info().await?;
             let network_id = hash_network(&info.network_id);
             let mut client_network_info = self.network_info.write().unwrap();
@@ -400,17 +402,17 @@ impl Client {
             client_network_info.bech32_hrp = info.bech32_hrp;
         }
 
-        Ok(self.get_network_info())
+        Ok(network_info.clone())
     }
 
     /// returns the min pow score
     pub async fn get_bech32_hrp(&self) -> Result<String> {
-        Ok(self.get_synced_network_info().await?.bech32_hrp)
+        Ok(self.get_network_info().await?.bech32_hrp)
     }
 
     /// returns the min pow score
     pub async fn get_min_pow_score(&self) -> Result<f64> {
-        Ok(self.get_synced_network_info().await?.min_pow_score)
+        Ok(self.get_network_info().await?.min_pow_score)
     }
 
     /// returns the tips interval
@@ -421,11 +423,6 @@ impl Client {
     /// returns the local pow
     pub fn get_local_pow(&self) -> bool {
         self.network_info.read().unwrap().local_pow
-    }
-
-    /// Gets the network related information such as network_id and min_pow_score
-    pub fn get_network_info(&self) -> NetworkInfo {
-        self.network_info.read().unwrap().clone()
     }
 
     ///////////////////////////////////////////////////////////////////////

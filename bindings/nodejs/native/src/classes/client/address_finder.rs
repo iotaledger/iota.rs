@@ -11,6 +11,7 @@ pub struct AddressFinder {
     seed: String,
     account_index: Option<usize>,
     range: Option<Range<usize>>,
+    bech32_hrp: Option<String>,
 }
 
 declare_types! {
@@ -23,6 +24,7 @@ declare_types! {
                 seed,
                 account_index: None,
                 range: None,
+                bech32_hrp: None,
             })
         }
 
@@ -53,32 +55,23 @@ declare_types! {
         }
 
         method get(mut cx) {
-            let addresses_json = {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
                 let this = cx.this();
                 let guard = cx.lock();
-                let ref_ = &this.borrow(&guard);
-
-                let seed = Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed");
-
-                let client = crate::get_client(&ref_.client_id);
-                let client = client.read().unwrap();
-                let mut getter = client.find_addresses(&seed);
-
-                if let Some(account_index) = &ref_.account_index {
-                    getter = getter.with_account_index(*account_index);
-                }
-                if let Some(range) = &ref_.range {
-                    getter = getter.with_range(range.clone());
-                }
-                getter.get_all().map(|addresses| {
-                    serde_json::to_string(&addresses).unwrap()
-                })
-            };
-
-            match addresses_json {
-                Ok(addresses) => Ok(cx.string(addresses).upcast()),
-                Err(e) => cx.throw_error(e.to_string()),
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::FindAddresses {
+                        seed: Seed::fromcar_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
+                        account_index: ref_.account_index,
+                        range: ref_.range,
+                    },
+                };
+                client_task.schedule(cb);
             }
+
+            Ok(cx.undefined().upcast())
         }
     }
 }

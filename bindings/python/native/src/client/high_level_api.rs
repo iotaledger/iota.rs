@@ -240,23 +240,28 @@ impl Client {
             end = input_range_end.unwrap();
         }
         if get_all.unwrap_or(false) {
-            let addresses = self
-                .client
-                .find_addresses(&seed)
-                .with_account_index(account_index.unwrap_or(0))
-                .with_range(begin..end)
-                .get_all()?;
+            let rt = tokio::runtime::Runtime::new()?;
+            let addresses = rt.block_on(async {
+                self.client
+                    .find_addresses(&seed)
+                    .with_account_index(account_index.unwrap_or(0))
+                    .with_range(begin..end)
+                    .get_all()
+                    .await
+            })?;
             Ok(addresses
                 .iter()
                 .map(|address_changed| (address_changed.0.to_string(), Some(address_changed.1)))
                 .collect())
         } else {
-            let addresses = self
-                .client
-                .find_addresses(&seed)
-                .with_account_index(account_index.unwrap_or(0))
-                .with_range(begin..end)
-                .finish()?;
+            let rt = tokio::runtime::Runtime::new()?;
+            let addresses = rt.block_on(async {
+                self.client
+                    .find_addresses(&seed)
+                    .with_account_index(account_index.unwrap_or(0))
+                    .with_range(begin..end)
+                    .finish()?;
+            })?;
             Ok(addresses
                 .iter()
                 .map(|addresses| (addresses.to_string(), None))

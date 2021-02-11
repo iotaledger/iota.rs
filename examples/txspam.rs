@@ -31,6 +31,7 @@ async fn main() {
         .with_account_index(0)
         .with_range(0..10)
         .finish()
+        .await
         .unwrap();
 
     let mut message_builder = iota.message().with_seed(&seed);

@@ -27,6 +27,11 @@ pub(crate) enum Api {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
     },
+    FindAddresses {
+        seed: Seed,
+        account_index: Option<usize>,
+        range: Option<Range<usize>>,
+    },
     FindMessages {
         indexation_keys: Vec<String>,
         message_ids: Vec<MessageId>,
@@ -112,7 +117,7 @@ impl Task for ClientTask {
                     for input in inputs {
                         sender = sender.with_input(input.clone());
                     }
-                    let bech32_hrp = client.get_network_info().bech32_hrp;
+                    let bech32_hrp = client.get_bech32_hrp().await?;
                     for output in outputs {
                         sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
@@ -141,6 +146,22 @@ impl Task for ClientTask {
                     }
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
+                }
+                Api::FindAddresses {
+                    seed,
+                    account_index,
+                    range,
+                } => {
+                    let mut getter = client.find_addresses(&seed);
+                    if let Some(account_index) = account_index {
+                        getter = getter.with_account_index(*account_index);
+                    }
+                    if let Some(range) = range {
+                        getter = getter.with_range(range.clone());
+                    }
+                    getter.get_all().await?.map(|addresses| {
+                        serde_json::to_string(&addresses).unwrap()
+                    })
                 }
                 Api::FindMessages {
                     indexation_keys,

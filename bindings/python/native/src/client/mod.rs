@@ -99,7 +99,7 @@ impl Client {
         // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
         //       create the client object.
         unsafe {
-            BECH32_HRP = Box::leak(client.get_network_info().bech32_hrp.into_boxed_str());
+            BECH32_HRP = Box::leak(async {client.get_bech32_hrp().await.into_boxed_str() });
         }
         Client { client }
     }

@@ -30,6 +30,7 @@ async fn main() {
         .with_account_index(0)
         .with_range(0..1)
         .finish()
+        .await
         .unwrap();
     println!("{:?}", address[0]);
     let outputs = iota.get_address().outputs(&address[0]).await.unwrap();

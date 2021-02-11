@@ -176,7 +176,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
-        let bech32_hrp = self.client.get_synced_network_info().await?.bech32_hrp;
+        let bech32_hrp = self.client.get_bech32_hrp().await?;
 
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
@@ -280,7 +280,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         .find_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
                         .with_range(index..index + 20)
-                        .get_all()?;
+                        .get_all().await?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
