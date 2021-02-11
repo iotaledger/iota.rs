@@ -591,7 +591,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         let abort2 = Arc::clone(&done);
         let payload_ = payload.clone();
         let parent_messages = client.get_tips().await?;
-        let time_thread = std::thread::spawn(move || pow_timeout(tips_interval, &abort1));
+        let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, &abort1)));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
                 crate::client::ClientMinerBuilder::new()
@@ -624,10 +624,10 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     }
 }
 
-fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> Result<(u64, Option<Message>)> {
+fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
     done.swap(true, Ordering::Relaxed);
-    Ok((0, None))
+    (0, None)
 }
 
 /// Does PoW

@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, str::FromStr, ops::Range};
+use std::{convert::TryInto, ops::Range, str::FromStr};
 
 use super::MessageDto;
 
@@ -159,11 +159,9 @@ impl Task for ClientTask {
                     if let Some(range) = range {
                         getter = getter.with_range(range.clone());
                     }
-                    let addresses = getter.get_all().await?;
 
-                    addresses.into_iter().map(|addresses| {
-                        serde_json::to_string(&addresses).unwrap()
-                    })
+                    let addresses = getter.finish();
+                    serde_json::to_string(&addresses).unwrap()
                 }
                 Api::FindMessages {
                     indexation_keys,
