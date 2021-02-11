@@ -160,7 +160,7 @@ impl Task for ClientTask {
                         getter = getter.with_range(range.clone());
                     }
 
-                    let addresses = getter.finish();
+                    let addresses = getter.finish().await?;
                     serde_json::to_string(&addresses).unwrap()
                 }
                 Api::FindMessages {

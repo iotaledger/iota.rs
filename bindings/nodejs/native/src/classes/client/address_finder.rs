@@ -67,7 +67,7 @@ declare_types! {
                     api: Api::FindAddresses {
                         seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
                         account_index: ref_.account_index,
-                        range: ref_.range,
+                        range: ref_.range.clone(),
                     },
                 };
                 client_task.schedule(cb);
