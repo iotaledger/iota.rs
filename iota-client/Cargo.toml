@@ -34,5 +34,4 @@ thiserror = "1.0"
 num_cpus = "1.13"
 
 [features]
-default = ["mqtt"]
 mqtt = ["paho-mqtt"]

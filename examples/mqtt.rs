@@ -5,6 +5,8 @@
 use iota::{BrokerOptions, Client, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
+// To run this example you need to add `features = ["mqtt"]` to the import of iota-core in the Cargo.toml
+// like this: iota-core = { path = "../iota-core", features = ["mqtt"] }
 #[tokio::main]
 async fn main() {
     let mut iota = Client::builder() // Crate a client instance builder
