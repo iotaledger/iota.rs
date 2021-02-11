@@ -380,14 +380,8 @@ impl Client {
 
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
-        let network_id = match self.get_network_info().network_id {
-            Some(id) => id,
-            None => {
-                let network_info = self.get_synced_network_info().await?;
-                network_info.network_id.unwrap()
-            }
-        };
-        Ok(network_id)
+        let network_info = self.get_synced_network_info().await?;
+        Ok(network_info.network_id.unwrap())
     }
 
     /// Gets the miner to use based on the PoW setting
