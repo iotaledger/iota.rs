@@ -102,5 +102,4 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --all --release
-        working-directory: bindings/python/native
+        args: --manifest-path=bindings/python/native/Cargo.toml --all --release
