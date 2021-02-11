@@ -200,16 +200,18 @@ declare_types! {
         }
 
         method networkInfo(mut cx) {
-            let network_info = {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
                 let this = cx.this();
                 let guard = cx.lock();
                 let id = &this.borrow(&guard).0;
-                let client = crate::get_client(&id);
-                let client = client.read().unwrap();
-                let info = client.get_network_info();
-                serde_json::to_string(&info).unwrap()
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetNetworkInfo,
+                };
+                client_task.schedule(cb);
             };
-            Ok(cx.string(network_info).upcast())
+            Ok(cx.undefined().upcast())
         }
 
         ///////////////////////////////////////////////////////////////////////
