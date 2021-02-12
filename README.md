@@ -36,6 +36,8 @@ To use the library, we recommend you update Rust to latest stable version [`$ ru
 
 `no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
 
+Following dependencies are only required if you use the "mqtt" feature.
+
 ### Dependencies
 
 `cmake` and `openssl` are required. In order to run the build process succesfully using Cargo you might need install additional build tools on your system. 
