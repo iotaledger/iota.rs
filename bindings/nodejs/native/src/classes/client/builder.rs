@@ -1,6 +1,6 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-
+#![allow(clippy::unnecessary_wraps)]
 use std::{collections::HashMap, num::NonZeroU64, str::FromStr, time::Duration};
 
 use iota::client::{Api, BrokerOptions, ClientBuilder};
