@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, str::FromStr};
+use std::{convert::TryInto, ops::Range, str::FromStr};
 
 use super::MessageDto;
 
@@ -26,6 +26,12 @@ pub(crate) enum Api {
         seed: Seed,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
+    },
+    FindAddresses {
+        seed: Seed,
+        account_index: Option<usize>,
+        range: Option<Range<usize>>,
+        bech32_hrp: Option<String>,
     },
     FindMessages {
         indexation_keys: Vec<String>,
@@ -112,7 +118,7 @@ impl Task for ClientTask {
                     for input in inputs {
                         sender = sender.with_input(input.clone());
                     }
-                    let bech32_hrp = client.get_network_info().bech32_hrp;
+                    let bech32_hrp = client.get_bech32_hrp().await?;
                     for output in outputs {
                         sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
@@ -141,6 +147,27 @@ impl Task for ClientTask {
                     }
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
+                }
+                Api::FindAddresses {
+                    seed,
+                    account_index,
+                    range,
+                    bech32_hrp,
+                } => {
+                    let mut getter = client.find_addresses(&seed);
+                    if let Some(account_index) = account_index {
+                        getter = getter.with_account_index(*account_index);
+                    }
+                    if let Some(range) = range {
+                        getter = getter.with_range(range.clone());
+                    }
+
+                    if let Some(bech32_hrp) = bech32_hrp {
+                        getter = getter.with_bech32_hrp(bech32_hrp.clone())
+                    }
+
+                    let addresses = getter.finish().await?;
+                    serde_json::to_string(&addresses).unwrap()
                 }
                 Api::FindMessages {
                     indexation_keys,
@@ -178,7 +205,7 @@ impl Task for ClientTask {
                 }
                 // Node APIs
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
-                Api::GetNetworkInfo => serde_json::to_string(&client.get_synced_network_info().await?).unwrap(),
+                Api::GetNetworkInfo => serde_json::to_string(&client.get_network_info().await?).unwrap(),
                 Api::GetPeers => serde_json::to_string(&client.get_peers().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;

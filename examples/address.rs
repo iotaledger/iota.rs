@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example address --release
-use iota::{Client, Seed};
+use iota::{api::GetAddressesBuilder, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -27,6 +27,7 @@ async fn main() {
         .with_account_index(0)
         .with_range(0..4)
         .finish()
+        .await
         .unwrap();
     println!("List of generated public addresses: {:?}", addresses);
     let all_addresses = iota
@@ -34,7 +35,18 @@ async fn main() {
         .with_account_index(0)
         .with_range(0..4)
         .get_all()
+        .await
         .unwrap();
     // bool for public addresses is false and for internal addresses true
     println!("List of generated public and internal addresses: {:?}", all_addresses);
+
+    // Or generate addresses offline with the bech32_hrp defined
+    let addresses = GetAddressesBuilder::new(&seed)
+        .with_bech32_hrp("atoi".into())
+        .with_account_index(0)
+        .with_range(0..1)
+        .finish()
+        .await
+        .unwrap();
+    println!("{:?}", addresses);
 }

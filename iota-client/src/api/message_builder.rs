@@ -181,7 +181,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
-        let bech32_hrp = self.client.get_synced_network_info().await?.bech32_hrp;
+        let bech32_hrp = self.client.get_bech32_hrp().await?;
 
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
@@ -242,6 +242,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
+                                bech32_hrp.clone(),
                                 account_index,
                                 self.input_range.clone(),
                                 &bech32_address.into(),
@@ -285,7 +286,8 @@ impl<'a> ClientMessageBuilder<'a> {
                         .find_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
                         .with_range(index..index + 20)
-                        .get_all()?;
+                        .get_all()
+                        .await?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
@@ -602,7 +604,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         let abort2 = Arc::clone(&done);
         let payload_ = payload.clone();
         let parent_messages = client.get_tips().await?;
-        let time_thread = std::thread::spawn(move || pow_timeout(tips_interval, &abort1));
+        let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, &abort1)));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
                 crate::client::ClientMinerBuilder::new()
@@ -635,10 +637,10 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     }
 }
 
-fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> Result<(u64, Option<Message>)> {
+fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
     done.swap(true, Ordering::Relaxed);
-    Ok((0, None))
+    (0, None)
 }
 
 /// Does PoW
