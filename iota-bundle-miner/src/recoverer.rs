@@ -30,7 +30,7 @@ pub struct RecovererBuilder {
     /// The security level of the input hashes.
     security_level: Option<usize>,
     /// The input bundle hashes for cracking.
-    kown_bundle_hashes: Option<Vec<TritBuf<T1B1Buf>>>,
+    known_bundle_hashes: Option<Vec<TritBuf<T1B1Buf>>>,
     /// The threshold of the recoverer.
     threshold: Option<f64>,
     /// The bundle miner used in recoverer.
@@ -41,7 +41,7 @@ pub struct Recoverer {
     /// The security level of the input hashes.
     security_level: usize,
     /// The input bundle hashes for recovering.
-    kown_bundle_hashes: Vec<TritBuf<T1B1Buf>>,
+    known_bundle_hashes: Vec<TritBuf<T1B1Buf>>,
     /// The threshold of the recoverer.
     threshold: f64,
     /// The bundle miner used in recoverer.
@@ -59,8 +59,8 @@ impl RecovererBuilder {
         self
     }
     /// Sets the kown bundle hashes of the recoverer.
-    pub fn with_kown_bundle_hashes(mut self, kown_bundle_hashes: Vec<TritBuf<T1B1Buf>>) -> Self {
-        self.kown_bundle_hashes.replace(kown_bundle_hashes);
+    pub fn with_known_bundle_hashes(mut self, known_bundle_hashes: Vec<TritBuf<T1B1Buf>>) -> Self {
+        self.known_bundle_hashes.replace(known_bundle_hashes);
         self
     }
     /// Sets the threshold of the recoverer.
@@ -80,7 +80,7 @@ impl RecovererBuilder {
                 Some(level) => level,
                 None => return Err(Error::RecovererSecurityLevelNotSet),
             },
-            kown_bundle_hashes: match self.kown_bundle_hashes {
+            known_bundle_hashes: match self.known_bundle_hashes {
                 Some(hashes) => hashes,
                 None => return Err(Error::KownBundleHashesNotSet),
             },
@@ -97,7 +97,7 @@ impl Recoverer {
     /// Start running mining workers
     pub fn recover(&mut self) -> CrackabilityMinerEvent {
         let target_crackability =
-            get_crack_probability(self.security_level, &self.kown_bundle_hashes);
+            get_crack_probability(self.security_level, &self.known_bundle_hashes);
         self.miner
             .run(Some(target_crackability), Some(self.threshold))
             .unwrap()

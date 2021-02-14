@@ -34,6 +34,10 @@ pub enum Error {
     IoError(std::io::Error),
     /// ChrysalisAddressError
     ChrysalisAddressError(String),
+    /// Crypto.rs error
+    CryptoError(crypto::Error),
+    /// Crypto.rs error
+    Slip10Error(slip10::Error),
 }
 
 impl fmt::Display for Error {
@@ -52,6 +56,8 @@ impl fmt::Display for Error {
             Error::TernaryError => "Fail to convert message to trytes".fmt(f),
             Error::UrlError => "Fail to parse url".fmt(f),
             Error::ChrysalisAddressError(s) => s.fmt(f),
+            Error::CryptoError(e) => e.fmt(f),
+            Error::Slip10Error(e) => e.fmt(f),
         }
     }
 }
@@ -61,5 +67,15 @@ impl std::error::Error for Error {}
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
         Error::IoError(error)
+    }
+}
+impl From<crypto::Error> for Error {
+    fn from(error: crypto::Error) -> Self {
+        Error::CryptoError(error)
+    }
+}
+impl From<slip10::Error> for Error {
+    fn from(error: slip10::Error) -> Self {
+        Error::Slip10Error(error)
     }
 }
