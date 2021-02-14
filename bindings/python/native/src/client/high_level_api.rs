@@ -18,6 +18,7 @@ use std::{
 /// General high level APIs
 #[pymethods]
 impl Client {
+    #[allow(clippy::too_many_arguments)]
     fn message(
         &self,
         seed: Option<String>,

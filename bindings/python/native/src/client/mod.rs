@@ -25,6 +25,7 @@ pub struct Client {
 #[pymethods]
 impl Client {
     #[new]
+    #[allow(clippy::too_many_arguments)]
     /// The constructor of the client instance.
     fn new(
         network: Option<&str>,

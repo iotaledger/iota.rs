@@ -16,7 +16,7 @@ const HARDEND: u32 = 1 << 31;
 
 /// Builder of find_addresses API
 pub struct GetAddressesBuilder<'a> {
-    _client: &'a Client,
+    client: Option<&'a Client>,
     seed: &'a Seed,
     account_index: Option<usize>,
     range: Option<Range<usize>>,
@@ -25,14 +25,20 @@ pub struct GetAddressesBuilder<'a> {
 
 impl<'a> GetAddressesBuilder<'a> {
     /// Create find_addresses builder
-    pub fn new(_client: &'a Client, seed: &'a Seed) -> Self {
+    pub fn new(seed: &'a Seed) -> Self {
         Self {
-            _client,
+            client: None,
             seed,
             account_index: None,
             range: None,
             bech32_hrp: None,
         }
+    }
+
+    /// Provide a client to get the bech32_hrp from the node
+    pub fn with_client(mut self, client: &'a Client) -> Self {
+        self.client = Some(client);
+        self
     }
 
     /// Sets the account index.
@@ -77,7 +83,15 @@ impl<'a> GetAddressesBuilder<'a> {
         };
 
         let mut addresses = Vec::new();
-        let bech32_hrp = self.bech32_hrp.unwrap_or(self._client.get_bech32_hrp().await?);
+        let bech32_hrp = match self.bech32_hrp {
+            Some(bech32_hrp) => bech32_hrp,
+            None => {
+                self.client
+                    .ok_or_else(|| Error::MissingParameter(String::from("Client or bech32_hrp")))?
+                    .get_bech32_hrp()
+                    .await?
+            }
+        };
         for i in range {
             let address = generate_address(&self.seed, &mut path, i, false)?;
             let internal_address = generate_address(&self.seed, &mut path, i, true)?;
@@ -111,13 +125,13 @@ fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: b
 /// Function to find the index and public or internal type of an Bech32 encoded address
 pub async fn search_address(
     seed: &Seed,
+    bech32_hrp: String,
     account_index: usize,
     range: Range<usize>,
     address: &Bech32Address,
 ) -> Result<(usize, bool)> {
-    let iota = Client::builder().with_node("http://0.0.0.0:14265")?.finish().await?;
-    let addresses = iota
-        .find_addresses(&seed)
+    let addresses = GetAddressesBuilder::new(&seed)
+        .with_bech32_hrp(bech32_hrp)
         .with_account_index(account_index)
         .with_range(range.clone())
         .get_all()
