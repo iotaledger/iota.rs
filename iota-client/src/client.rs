@@ -405,7 +405,7 @@ impl Client {
         Ok(network_info.clone())
     }
 
-    /// returns the min pow score
+    /// returns the bech32_hrp
     pub async fn get_bech32_hrp(&self) -> Result<String> {
         Ok(self.get_network_info().await?.bech32_hrp)
     }
@@ -782,7 +782,7 @@ impl Client {
 
     /// Return a list of addresses from the seed regardless of their validity.
     pub fn find_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
-        GetAddressesBuilder::new(self, seed)
+        GetAddressesBuilder::new(seed).with_client(&self)
     }
 
     /// Find all messages by provided message IDs and/or indexation_keys.

@@ -237,6 +237,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
+                                bech32_hrp.clone(),
                                 account_index,
                                 self.input_range.clone(),
                                 &bech32_address.into(),
