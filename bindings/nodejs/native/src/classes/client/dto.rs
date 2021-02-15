@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Message,
-    MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
-    SignatureUnlock, TransactionPayload, RegularEssence, UTXOInput, UnlockBlock, Essence,
+    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, Essence, IndexationPayload, Input,
+    Message, MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
+    RegularEssence, SignatureUnlock, TransactionPayload, UTXOInput, UnlockBlock,
 };
 use serde::{Deserialize, Serialize};
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example txspam --release
-use iota::{Client, MessageId, Payload, Seed, UTXOInput, Essence};
+use iota::{Client, Essence, MessageId, Payload, Seed, UTXOInput};
 use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
@@ -60,7 +60,6 @@ async fn main() {
                 panic!("Unexisting essence type");
             }
         }
-
     }
 
     for (index, address) in addresses.iter().enumerate() {

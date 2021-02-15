@@ -30,10 +30,10 @@ use iota::{
     Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
     Essence as RustEssence, IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
     MilestonePayloadEssence as RustMilestonePayloadEssence, Output as RustOutput, Payload as RustPayload,
-    ReferenceUnlock as RustReferenceUnlock, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
-    TransactionPayload as RustTransactionPayload, RegularEssence as RustRegularEssence,
-    UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
+    ReferenceUnlock as RustReferenceUnlock, RegularEssence as RustRegularEssence,
+    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
+    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput,
+    UnlockBlock as RustUnlockBlock,
 };
 
 use std::{
@@ -697,7 +697,7 @@ impl TryFrom<RustMessage> for Message {
                     milestone: None,
                     indexation: None,
                 })
-            },
+            }
             Some(RustPayload::Indexation(payload)) => Some(Payload {
                 transaction: None,
                 milestone: None,
@@ -846,7 +846,8 @@ impl TryFrom<Payload> for RustPayload {
     fn try_from(payload: Payload) -> Result<Self> {
         if let Some(transaction_payload) = &payload.transaction {
             let mut transaction = RustTransactionPayload::builder();
-            transaction = transaction.with_essence(RustEssence::Regular(transaction_payload[0].essence.clone().try_into()?));
+            transaction =
+                transaction.with_essence(RustEssence::Regular(transaction_payload[0].essence.clone().try_into()?));
 
             let unlock_blocks = transaction_payload[0].unlock_blocks.clone();
             for unlock_block in unlock_blocks {
