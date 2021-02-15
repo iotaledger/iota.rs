@@ -498,7 +498,7 @@ Get the milestone by the given index.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **index** | ✔ | u64 | Index of the milestone. |
+| **index** | ✔ | u32 | Index of the milestone. |
 
 ### Returns
 
@@ -514,7 +514,7 @@ Get all UTXO changes of a given milestone.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **index** | ✔ | u64 | Index of the milestone. |
+| **index** | ✔ | u32 | Index of the milestone. |
 
 ### Returns
 
@@ -645,7 +645,7 @@ pub struct MessageMetadata {
     /// Should reattach
     pub should_reattach: Option<bool>,
     /// Referenced by milestone index
-    pub referenced_by_milestone_index: Option<u64>,
+    pub referenced_by_milestone_index: Option<u32>,
     /// Ledger inclusion state
     pub ledger_inclusion_state: Option<String>,
 }
@@ -718,7 +718,7 @@ A milestone metadata.
 ```rust
 pub struct MilestoneMetadata {
     /// Milestone index
-    pub milestone_index: u64,
+    pub milestone_index: u32,
     /// Milestone ID
     pub message_id: String,
     /// Timestamp

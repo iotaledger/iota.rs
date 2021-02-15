@@ -398,7 +398,7 @@ declare_types! {
         }
 
         method getMilestone(mut cx) {
-            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u64;
+            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -416,7 +416,7 @@ declare_types! {
         }
 
         method getMilestoneUTXOChanges(mut cx) {
-            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u64;
+            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
