@@ -660,7 +660,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneResponse> {
+    pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = self
@@ -687,7 +687,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index}/utxo-changes endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUTXOChanges> {
+    pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}/utxo-changes", index));
         let resp = self

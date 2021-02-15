@@ -114,11 +114,11 @@ impl Client {
             .map(|metadata| metadata.into())
             .collect())
     }
-    fn get_milestone(&self, index: u64) -> Result<MilestoneDto> {
+    fn get_milestone(&self, index: u32) -> Result<MilestoneDto> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_milestone(index).await })?.into())
     }
-    fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUTXOChanges> {
+    fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt
             .block_on(async { self.client.get_milestone_utxo_changes(index).await })?
