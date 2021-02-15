@@ -40,6 +40,10 @@ name = "custom_inputs"
 path = "custom_inputs.rs"
 
 [[example]]
+name = "custom_payload"
+path = "custom_payload.rs"
+
+[[example]]
 name = "search_address"
 path = "search_address.rs"
 

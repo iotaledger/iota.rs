@@ -520,7 +520,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .1
                 .unwrap()
             }
-            None => finish_pow(&self.client, payload.clone()).await?,
+            None => finish_pow(&self.client, payload).await?,
         };
 
         let msg_id = self.client.post_message(&final_message).await?;
