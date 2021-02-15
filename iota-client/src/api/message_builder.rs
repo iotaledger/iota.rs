@@ -206,7 +206,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         let mut paths = Vec::new();
-        let mut essence = TransactionPayloadEssence::builder();
+        let mut essence = RegularEssence::builder();
         let mut address_index_recorders = Vec::new();
 
         match self.inputs.clone() {
@@ -468,7 +468,7 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
         // TODO overflow check
-        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(essence);
+        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(Essence::Regular(essence));
         for unlock in unlock_blocks {
             payload_builder = payload_builder.add_unlock_block(unlock);
         }
