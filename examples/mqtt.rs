@@ -29,11 +29,12 @@ async fn main() {
             println!("{:?}", event);
             tx.lock().unwrap().send(()).unwrap();
         })
+        .await
         .unwrap();
     for _ in 0..10 {
         rx.recv().unwrap();
     }
-    iota.subscriber().disconnect().unwrap();
+    iota.subscriber().disconnect().await.unwrap();
     // alternatively
     // iota.subscriber().unsubscribe().unwrap();
 }
