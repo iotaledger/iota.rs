@@ -380,7 +380,7 @@ impl Client {
 
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
-        let network_info = self.get_synced_network_info().await?;
+        let network_info = self.get_network_info().await?;
         Ok(network_info.network_id.unwrap())
     }
 
@@ -389,28 +389,28 @@ impl Client {
         ClientMinerBuilder::new().with_local_pow(self.get_local_pow()).finish()
     }
 
-    /// Gets the network related information and if it's the default one, sync it first.
-    pub async fn get_synced_network_info(&self) -> Result<NetworkInfo> {
-        if self.get_network_info().network_id.is_none() {
+    /// Gets the network related information such as network_id and min_pow_score
+    /// and if it's the default one, sync it first.
+    pub async fn get_network_info(&self) -> Result<NetworkInfo> {
+        let mut client_network_info = self.network_info.write().unwrap();
+        if client_network_info.network_id.is_none() {
             let info = self.get_info().await?;
             let network_id = hash_network(&info.network_id);
-            let mut client_network_info = self.network_info.write().unwrap();
             client_network_info.network_id = Some(network_id);
             client_network_info.min_pow_score = info.min_pow_score;
             client_network_info.bech32_hrp = info.bech32_hrp;
         }
-
-        Ok(self.get_network_info())
+        Ok(client_network_info.clone())
     }
 
-    /// returns the min pow score
+    /// returns the bech32_hrp
     pub async fn get_bech32_hrp(&self) -> Result<String> {
-        Ok(self.get_synced_network_info().await?.bech32_hrp)
+        Ok(self.get_network_info().await?.bech32_hrp)
     }
 
     /// returns the min pow score
     pub async fn get_min_pow_score(&self) -> Result<f64> {
-        Ok(self.get_synced_network_info().await?.min_pow_score)
+        Ok(self.get_network_info().await?.min_pow_score)
     }
 
     /// returns the tips interval
@@ -421,11 +421,6 @@ impl Client {
     /// returns the local pow
     pub fn get_local_pow(&self) -> bool {
         self.network_info.read().unwrap().local_pow
-    }
-
-    /// Gets the network related information such as network_id and min_pow_score
-    pub fn get_network_info(&self) -> NetworkInfo {
-        self.network_info.read().unwrap().clone()
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -663,7 +658,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneResponse> {
+    pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = self
@@ -690,7 +685,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index}/utxo-changes endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone_utxo_changes(&self, index: u64) -> Result<MilestoneUTXOChanges> {
+    pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}/utxo-changes", index));
         let resp = self
@@ -785,7 +780,7 @@ impl Client {
 
     /// Return a list of addresses from the seed regardless of their validity.
     pub fn find_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
-        GetAddressesBuilder::new(self, seed)
+        GetAddressesBuilder::new(seed).with_client(&self)
     }
 
     /// Find all messages by provided message IDs and/or indexation_keys.

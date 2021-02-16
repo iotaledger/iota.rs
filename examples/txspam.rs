@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example txspam --release
-use iota::{Client, MessageId, Payload, Seed, UTXOInput};
+use iota::{Client, Essence, MessageId, Payload, Seed, UTXOInput};
 use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
@@ -31,6 +31,7 @@ async fn main() {
         .with_account_index(0)
         .with_range(0..10)
         .finish()
+        .await
         .unwrap();
 
     let mut message_builder = iota.message().with_seed(&seed);
@@ -49,8 +50,15 @@ async fn main() {
     // Use own outputs directly so we don't double spend them
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
-        for (index, _output) in tx.essence().outputs().iter().enumerate() {
-            initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
+        match tx.essence() {
+            Essence::Regular(essence) => {
+                for (index, _output) in essence.outputs().iter().enumerate() {
+                    initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
+                }
+            }
+            _ => {
+                panic!("Unexisting essence type");
+            }
         }
     }
 

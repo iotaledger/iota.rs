@@ -7,7 +7,12 @@ use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
+use blake2::{
+    digest::{Update, VariableOutput},
+    VarBlake2b,
+};
 use slip10::BIP32Path;
+
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
@@ -176,7 +181,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
-        let bech32_hrp = self.client.get_synced_network_info().await?.bech32_hrp;
+        let bech32_hrp = self.client.get_bech32_hrp().await?;
 
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
@@ -201,7 +206,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         let mut paths = Vec::new();
-        let mut essence = TransactionPayloadEssence::builder();
+        let mut essence = RegularEssence::builder();
         let mut address_index_recorders = Vec::new();
 
         match self.inputs.clone() {
@@ -237,6 +242,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
+                                bech32_hrp.clone(),
                                 account_index,
                                 self.input_range.clone(),
                                 &bech32_address.into(),
@@ -280,7 +286,8 @@ impl<'a> ClientMessageBuilder<'a> {
                         .find_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
                         .with_range(index..index + 20)
-                        .get_all()?;
+                        .get_all()
+                        .await?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
@@ -426,6 +433,13 @@ impl<'a> ClientMessageBuilder<'a> {
             .pack(&mut serialized_essence)
             .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
 
+        let mut hasher = VarBlake2b::new(32).unwrap();
+        hasher.update(serialized_essence);
+        let mut hashed_essence: [u8; 32] = [0; 32];
+        hasher.finalize_variable(|res| {
+            hashed_essence[..32].clone_from_slice(&res[..32]);
+        });
+
         let mut unlock_blocks = Vec::new();
         let mut signature_indexes = HashMap::<String, usize>::new();
         address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
@@ -446,7 +460,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     .generate_private_key(&recorder.address_path)?;
                 let public_key = private_key.public_key().to_compressed_bytes();
                 // The block should sign the entire transaction essence part of the transaction payload
-                let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
+                let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
                 unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
                     public_key, signature,
                 ))));
@@ -454,7 +468,7 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
         // TODO overflow check
-        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(essence);
+        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(Essence::Regular(essence));
         for unlock in unlock_blocks {
             payload_builder = payload_builder.add_unlock_block(unlock);
         }
@@ -506,7 +520,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .1
                 .unwrap()
             }
-            None => finish_pow(&self.client, payload.clone()).await?,
+            None => finish_pow(&self.client, payload).await?,
         };
 
         let msg_id = self.client.post_message(&final_message).await?;
@@ -590,7 +604,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         let abort2 = Arc::clone(&done);
         let payload_ = payload.clone();
         let parent_messages = client.get_tips().await?;
-        let time_thread = std::thread::spawn(move || pow_timeout(tips_interval, &abort1));
+        let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, &abort1)));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
                 crate::client::ClientMinerBuilder::new()
@@ -623,10 +637,10 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     }
 }
 
-fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> Result<(u64, Option<Message>)> {
+fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
     done.swap(true, Ordering::Relaxed);
-    Ok((0, None))
+    (0, None)
 }
 
 /// Does PoW

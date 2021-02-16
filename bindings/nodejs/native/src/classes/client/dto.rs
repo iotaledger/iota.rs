@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Message,
-    MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
-    SignatureUnlock, TransactionPayload, TransactionPayloadEssence, UTXOInput, UnlockBlock,
+    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, Essence, IndexationPayload, Input,
+    Message, MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
+    RegularEssence, SignatureUnlock, TransactionPayload, UTXOInput, UnlockBlock,
 };
 use serde::{Deserialize, Serialize};
 
@@ -21,16 +21,16 @@ pub struct MessageWrapper {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct MessageTransactionPayloadEssenceDto {
+pub struct MessageRegularEssenceDto {
     inputs: Box<[String]>,
     outputs: Box<[BeeOutput]>,
     payload: Option<Box<MessagePayloadDto>>,
 }
 
-impl TryFrom<MessageTransactionPayloadEssenceDto> for TransactionPayloadEssence {
+impl TryFrom<MessageRegularEssenceDto> for RegularEssence {
     type Error = crate::Error;
-    fn try_from(value: MessageTransactionPayloadEssenceDto) -> crate::Result<Self> {
-        let mut builder = TransactionPayloadEssence::builder();
+    fn try_from(value: MessageRegularEssenceDto) -> crate::Result<Self> {
+        let mut builder = RegularEssence::builder();
 
         let inputs: Vec<Input> = value
             .inputs
@@ -60,7 +60,7 @@ impl TryFrom<MessageTransactionPayloadEssenceDto> for TransactionPayloadEssence 
             Some(indexation) => builder.with_payload(
                 (*indexation)
                     .try_into()
-                    .expect("Invalid indexation in TransactionPayloadEssenceJson"),
+                    .expect("Invalid indexation in RegularEssenceJson"),
             ),
             _ => builder,
         };
@@ -114,7 +114,7 @@ impl TryFrom<MessageUnlockBlockJsonDto> for UnlockBlock {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MessageTransactionPayloadDto {
-    essence: MessageTransactionPayloadEssenceDto,
+    essence: MessageRegularEssenceDto,
     #[serde(rename = "unlockBlocks")]
     unlock_blocks: Box<[MessageUnlockBlockJsonDto]>,
 }
@@ -146,7 +146,7 @@ impl TryFrom<MessagePayloadDto> for Payload {
         match payload {
             MessagePayloadDto::Transaction(transaction_payload) => {
                 let mut transaction = TransactionPayload::builder();
-                transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
+                transaction = transaction.with_essence(Essence::Regular(transaction_payload.essence.try_into()?));
 
                 let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
                 for unlock_block in unlock_blocks {

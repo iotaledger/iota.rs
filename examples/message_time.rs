@@ -30,7 +30,7 @@ async fn main() {
     let metadata = iota.get_message().metadata(&message_id).await.unwrap();
     match metadata.referenced_by_milestone_index {
         Some(ms_index) => {
-            let ms = iota.get_milestone(ms_index.into()).await.unwrap();
+            let ms = iota.get_milestone(ms_index).await.unwrap();
             println!("Message got referenced by milestone {} at {}", ms_index, ms.timestamp);
         }
         _ => println!("Message is not referenced by a milestone"),

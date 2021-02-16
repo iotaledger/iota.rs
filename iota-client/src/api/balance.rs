@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result, Seed};
+use crate::{Client, Result, Seed};
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
@@ -36,9 +36,7 @@ impl<'a> GetBalanceBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn finish(self) -> Result<u64> {
-        let account_index = self
-            .account_index
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let account_index = self.account_index.unwrap_or(0);
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
@@ -50,7 +48,8 @@ impl<'a> GetBalanceBuilder<'a> {
                 .find_addresses(self.seed)
                 .with_account_index(account_index)
                 .with_range(index..index + 20)
-                .get_all()?;
+                .get_all()
+                .await?;
 
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut found_zero_balance = false;

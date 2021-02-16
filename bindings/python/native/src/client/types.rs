@@ -28,12 +28,12 @@ use iota::{
     builder::NetworkInfo as RustNetworkInfo,
     client::MilestoneResponse,
     Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
-    IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
+    Essence as RustEssence, IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
     MilestonePayloadEssence as RustMilestonePayloadEssence, Output as RustOutput, Payload as RustPayload,
-    ReferenceUnlock as RustReferenceUnlock, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
-    TransactionPayload as RustTransactionPayload, TransactionPayloadEssence as RustTransactionPayloadEssence,
-    UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
+    ReferenceUnlock as RustReferenceUnlock, RegularEssence as RustRegularEssence,
+    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
+    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput,
+    UnlockBlock as RustUnlockBlock,
 };
 
 use std::{
@@ -115,21 +115,21 @@ pub struct OutputDto {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct SignatureLockedSingleOutputDto {
-    pub kind: u32,
+    pub kind: u8,
     pub address: AddressDto,
     pub amount: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct SignatureLockedDustAllowanceOutputDto {
-    pub kind: u32,
+    pub kind: u8,
     pub address: AddressDto,
     pub amount: u64,
 }
 
 #[derive(Clone, Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct TreasuryOutputDto {
-    pub kind: u32,
+    pub kind: u8,
     pub amount: u64,
 }
 
@@ -140,7 +140,7 @@ pub struct AddressDto {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Ed25519AddressDto {
-    pub kind: u32,
+    pub kind: u8,
     pub address: String,
 }
 
@@ -162,7 +162,7 @@ pub struct Payload {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Transaction {
-    pub essence: TransactionPayloadEssence,
+    pub essence: RegularEssence,
     pub unlock_blocks: Vec<UnlockBlock>,
 }
 
@@ -188,7 +188,7 @@ pub struct Indexation {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct TransactionPayloadEssence {
+pub struct RegularEssence {
     pub inputs: Vec<Input>,
     pub outputs: Vec<Output>,
     pub payload: Option<Payload>,
@@ -560,10 +560,10 @@ impl From<RustMetricsDto> for MetricsDto {
     }
 }
 
-impl TryFrom<RustTransactionPayloadEssence> for TransactionPayloadEssence {
+impl TryFrom<RustRegularEssence> for RegularEssence {
     type Error = Error;
-    fn try_from(essence: RustTransactionPayloadEssence) -> Result<Self> {
-        Ok(TransactionPayloadEssence {
+    fn try_from(essence: RustRegularEssence) -> Result<Self> {
+        Ok(RegularEssence {
             inputs: essence
                 .inputs()
                 .iter()
@@ -678,19 +678,26 @@ impl TryFrom<RustMessage> for Message {
     fn try_from(msg: RustMessage) -> Result<Self> {
         let payload = msg.payload().as_ref();
         let payload = match payload {
-            Some(RustPayload::Transaction(payload)) => Some(Payload {
-                transaction: Some(vec![Transaction {
-                    essence: payload.essence().to_owned().try_into()?,
-                    unlock_blocks: payload
-                        .unlock_blocks()
-                        .iter()
-                        .cloned()
-                        .map(|unlock_block| unlock_block.try_into().expect("Invalid UnlockBlock"))
-                        .collect(),
-                }]),
-                milestone: None,
-                indexation: None,
-            }),
+            Some(RustPayload::Transaction(payload)) => {
+                let essence = match payload.essence().to_owned() {
+                    RustEssence::Regular(e) => e.try_into()?,
+                    _ => panic!("Unexisting essence."),
+                };
+
+                Some(Payload {
+                    transaction: Some(vec![Transaction {
+                        essence: essence,
+                        unlock_blocks: payload
+                            .unlock_blocks()
+                            .iter()
+                            .cloned()
+                            .map(|unlock_block| unlock_block.try_into().expect("Invalid UnlockBlock"))
+                            .collect(),
+                    }]),
+                    milestone: None,
+                    indexation: None,
+                })
+            }
             Some(RustPayload::Indexation(payload)) => Some(Payload {
                 transaction: None,
                 milestone: None,
@@ -730,10 +737,10 @@ impl TryFrom<RustMessage> for Message {
     }
 }
 
-impl TryFrom<TransactionPayloadEssence> for RustTransactionPayloadEssence {
+impl TryFrom<RegularEssence> for RustRegularEssence {
     type Error = Error;
-    fn try_from(essence: TransactionPayloadEssence) -> Result<Self> {
-        let mut builder = RustTransactionPayloadEssence::builder();
+    fn try_from(essence: RegularEssence) -> Result<Self> {
+        let mut builder = RustRegularEssence::builder();
         let inputs: Vec<RustInput> = essence
             .inputs
             .iter()
@@ -839,7 +846,8 @@ impl TryFrom<Payload> for RustPayload {
     fn try_from(payload: Payload) -> Result<Self> {
         if let Some(transaction_payload) = &payload.transaction {
             let mut transaction = RustTransactionPayload::builder();
-            transaction = transaction.with_essence(transaction_payload[0].essence.clone().try_into()?);
+            transaction =
+                transaction.with_essence(RustEssence::Regular(transaction_payload[0].essence.clone().try_into()?));
 
             let unlock_blocks = transaction_payload[0].unlock_blocks.clone();
             for unlock_block in unlock_blocks {
