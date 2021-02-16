@@ -109,8 +109,5 @@ jobs:
       working-directory: bindings/nodejs
 
     - name: Build python binding
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --all --release
-        working-directory: bindings/python/native
+      run: cargo build --all --release
+      working-directory: bindings/python/native
