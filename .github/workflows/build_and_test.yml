@@ -109,7 +109,5 @@ jobs:
       working-directory: bindings/nodejs
 
     - name: Build python binding
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --manifest-path=bindings/python/native/Cargo.toml --all --release
+      run: cargo build --all --release
+      working-directory: bindings/python/native
