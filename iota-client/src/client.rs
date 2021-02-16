@@ -392,15 +392,16 @@ impl Client {
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
-        let mut client_network_info = self.network_info.write().unwrap();
-        if client_network_info.network_id.is_none() {
+        let client_network_info_read = self.network_info.read().unwrap().clone();
+        if let None = client_network_info_read.network_id {
             let info = self.get_info().await?;
             let network_id = hash_network(&info.network_id);
+            let mut client_network_info = self.network_info.write().unwrap();
             client_network_info.network_id = Some(network_id);
             client_network_info.min_pow_score = info.min_pow_score;
             client_network_info.bech32_hrp = info.bech32_hrp;
         }
-        Ok(client_network_info.clone())
+        Ok(self.network_info.read().unwrap().clone())
     }
 
     /// returns the bech32_hrp
