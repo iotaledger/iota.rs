@@ -13,14 +13,18 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+# bee-rest-api = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+# bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+# bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+# bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+# bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
+bee-common-derive = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
+bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "6e67b652dd55df05877f575b9a09ccb5a7006694", features = ["ed25519", "random"]}
-bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 slip10 = "0.4"
-bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.58"

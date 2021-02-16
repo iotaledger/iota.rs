@@ -3,14 +3,9 @@
 
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result, Seed};
 
-use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
-use blake2::{
-    digest::{Update, VariableOutput},
-    VarBlake2b,
-};
 use slip10::BIP32Path;
 
 use std::{
@@ -427,19 +422,9 @@ impl<'a> ClientMessageBuilder<'a> {
             let indexation_payload = IndexationPayload::new(index, &self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
         }
-        let essence = essence.finish()?;
-        let mut serialized_essence = Vec::new();
-        essence
-            .pack(&mut serialized_essence)
-            .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
-
-        let mut hasher = VarBlake2b::new(32).unwrap();
-        hasher.update(serialized_essence);
-        let mut hashed_essence: [u8; 32] = [0; 32];
-        hasher.finalize_variable(|res| {
-            hashed_essence[..32].clone_from_slice(&res[..32]);
-        });
-
+        let regular_essence = essence.finish()?;
+        let essence = Essence::Regular(regular_essence);
+        let hashed_essence = essence.hash();
         let mut unlock_blocks = Vec::new();
         let mut signature_indexes = HashMap::<String, usize>::new();
         address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
@@ -468,7 +453,7 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
         // TODO overflow check
-        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(Essence::Regular(essence));
+        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(essence);
         for unlock in unlock_blocks {
             payload_builder = payload_builder.add_unlock_block(unlock);
         }
