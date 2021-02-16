@@ -29,6 +29,8 @@ use blake2::{
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
+#[cfg(feature = "mqtt")]
+use tokio::sync::RwLock as AsyncRwLock;
 use tokio::{
     runtime::Runtime,
     sync::broadcast::{Receiver, Sender},
@@ -243,7 +245,7 @@ pub struct Client {
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
     #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
+    pub(crate) mqtt_topic_handlers: Arc<AsyncRwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
@@ -276,9 +278,7 @@ impl Drop for Client {
 
         #[cfg(feature = "mqtt")]
         if self.mqtt_client.is_some() {
-            self.subscriber()
-                .disconnect()
-                .expect("failed to disconnect MQTT client");
+            crate::async_runtime::block_on(self.subscriber().disconnect()).expect("failed to disconnect MQTT");
         }
     }
 }

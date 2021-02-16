@@ -27,11 +27,15 @@ serde_json = "1.0.58"
 chrono = "0.4.12"
 hex = "0.4.2"
 blake2 = "0.9"
-paho-mqtt = { version = "0.9", optional = true }
-regex = { version = "1.4", optional = true }
 tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread"] }
 thiserror = "1.0"
 num_cpus = "1.13"
 
+# MQTT
+paho-mqtt = { version = "0.9", optional = true }
+regex = { version = "1.4", optional = true }
+once_cell = { version = "1.5", optional = true }
+futures = { version = "0.3", optional = true }
+
 [features]
-mqtt = ["paho-mqtt", "regex"]
+mqtt = ["paho-mqtt", "regex", "once_cell", "futures"]
