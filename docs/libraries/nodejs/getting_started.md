@@ -4,13 +4,13 @@
 
 ## Requirements
 
-
 ## Installation
+
 ```bash
 npm install 
 ```
 
-## Example 
+## Example
 
 ```javascript
 

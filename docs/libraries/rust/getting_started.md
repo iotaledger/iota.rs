@@ -6,7 +6,41 @@ To use the library, we recommend you update Rust to latest stable version [`$ ru
 
 `no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
 
-### Dependencies
+## Using the library
+
+Using the library is easy, just add it as dependency in your `Cargo.toml`:
+
+```bash
+[dependencies]
+iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
+```
+
+And then you can use the library in your code with `use iota;`.
+
+### Initialisation
+
+This example fetches node information
+
+```rust
+use iota::Client;
+
+#[tokio::main]
+async fn main() {
+    let iota = Client::builder() // Crate a client instance builder
+        .with_node("http://api.lb-0.testnet.chrysalis2.com")
+        .unwrap()
+        .finish()
+        .await
+        .unwrap();
+
+    let info = iota.get_info().await.unwrap();
+    println!("Nodeinfo: {:?}", info);
+}
+```
+
+### Required dependencies when using the mqtt feature
+
+`iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev", features = ["mqtt"] }`
 
 `cmake` and `openssl` are required. In order to run the build process succesfully using Cargo you might need install additional build tools on your system. 
 
@@ -42,28 +76,3 @@ $ brew install cmake openssl@1.1
 ### Linux
 
 Install `cmake` and `openssl` with your distro's package manager or download from their websites. On Debian and Ubuntu you will also need `build-essential`.
-
-## Using the library
-
-Using the library is easy, just add it as dependancy in `Cargo.toml`:
-
-```bash
-[dependencies]
-iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
-```
-
-And then you can use the library in your code with `iota`.
-
-### Initialisation
-
-This example fetches node information with  the
-```rust
-    let iota = Client::builder() // Crate a client instance builder
-    .node("https://api.lb-0.testnet.chrysalis2.com") // Insert the node here
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let node_info = iota.get_info().await.unwrap();
-    println!("{:#?}", node_info);
-```
