@@ -4,7 +4,7 @@
 
 > [https://iota.stackexchange.com](https://iota.stackexchange.com/)
 
-The IOTA StackExchange a a nice tool for developers to find  Answers for a problem. Just search your problem and find your answer! If there is no one, submit your question and share it in the discussion channel below.
+The IOTA StackExchange a a nice tool for developers to find answers for a problem. Just search your problem and find your answer! If there is no one, submit your question and share it in the discussion channel below.
 
 ## Joining the discussion
 
