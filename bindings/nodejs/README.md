@@ -423,16 +423,6 @@ Sets the message indexation. This field is required for indexation payloads.
 
 **Returns** the message submit instance for chained calls.
 
-#### indexRaw(index): MessageSender
-
-Sets the message indexation. This field is required for indexation payloads.
-
-| Param | Type                     | Description    |
-| ----- | ------------------------ | -------------- |
-| index | <code>ArrayBuffer</code> | The indexation |
-
-**Returns** the message submit instance for chained calls.
-
 #### seed(seed): MessageSender
 
 Sets the transaction account seed. This field is required for transaction payloads.

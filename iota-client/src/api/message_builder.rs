@@ -124,9 +124,9 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok(self)
     }
 
-    /// Set indexation string to the builder
-    pub fn with_index(mut self, index: &[u8]) -> Self {
-        self.index = Some(index.into());
+    /// Set indexation to the builder
+    pub fn with_index<I: AsRef<[u8]>>(mut self, index: I) -> Self {
+        self.index = Some(Box::new(index.into()));
         self
     }
 
