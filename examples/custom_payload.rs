@@ -12,7 +12,7 @@ async fn main() {
         .finish()
         .await
         .unwrap();
-    let indexation_payload = IndexationPayload::new("index".as_bytes().into(), &"data".as_bytes().to_vec()).unwrap();
+    let indexation_payload = IndexationPayload::new("index".as_bytes(), &"data".as_bytes().to_vec()).unwrap();
     let message = iota
         .message()
         .finish_message(Some(Payload::Indexation(Box::new(indexation_payload))))
