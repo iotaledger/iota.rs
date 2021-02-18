@@ -126,7 +126,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set indexation to the builder
     pub fn with_index<I: AsRef<[u8]>>(mut self, index: I) -> Self {
-        self.index = Some(Box::new(index.into()));
+        self.index = Some(index.as_ref().into());
         self
     }
 
