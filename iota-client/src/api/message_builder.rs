@@ -385,7 +385,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     }
                     index += GAP_LIMIT;
                     // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-                    if empty_address_count == 40{
+                    if empty_address_count == 40 {
                         break;
                     }
                 }
