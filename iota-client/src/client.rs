@@ -129,7 +129,7 @@ impl BrokerOptions {
         self
     }
 
-    /// Decid if websockets or tcp will be used for the connection
+    /// Decide if websockets or tcp will be used for the connection
     pub fn use_websockets(mut self, use_ws: bool) -> Self {
         self.use_ws = use_ws;
         self
@@ -323,7 +323,7 @@ impl Client {
         let mut synced_nodes = HashSet::new();
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
         for node_url in nodes {
-            // Put the healty node url into the network_nodes
+            // Put the healthy node url into the network_nodes
             if let Ok(info) = Client::get_node_info(node_url.clone()).await {
                 if info.is_healthy {
                     match network_nodes.get_mut(&info.network_id) {
@@ -620,7 +620,7 @@ impl Client {
     }
 
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
-    /// the request amount exceed individual node limit.
+    /// the request amount exceeds individual node limit.
     pub async fn find_outputs(
         &self,
         outputs: &[UTXOInput],
@@ -810,7 +810,6 @@ impl Client {
             let message = self.get_message().data(&message_id).await.unwrap();
             messages.push(message);
         }
-
         Ok(messages)
     }
 
