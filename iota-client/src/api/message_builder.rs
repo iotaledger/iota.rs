@@ -282,7 +282,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         .client
                         .find_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
-                        .with_range(index..index + GAP_LIMIT
+                        .with_range(index..index + GAP_LIMIT)
                         .get_all()
                         .await?;
                     // For each address, get the address outputs
@@ -385,7 +385,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     }
                     index += GAP_LIMIT;
                     // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-                    if empty_address_count == 40
+                    if empty_address_count == 40{
                         break;
                     }
                 }
