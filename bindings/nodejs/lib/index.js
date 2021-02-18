@@ -82,6 +82,7 @@ Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
 
 MessageGetter.prototype.index = promisify(MessageGetter.prototype.index)
+MessageGetter.prototype.indexRaw = promisify(MessageGetter.prototype.indexRaw)
 MessageGetter.prototype.data = promisify(MessageGetter.prototype.data)
 MessageGetter.prototype.raw = promisify(MessageGetter.prototype.raw, false)
 MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
