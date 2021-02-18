@@ -95,7 +95,7 @@ export declare class Client {
 }
 
 export declare class MessageFinder {
-  index(index: string): Promise<string[]>
+  index(index: string | number[] | Uint8Array): Promise<string[]>
   data(messageId: string): Promise<MessageWrapper>
   raw(messageId: string): Promise<string>
   children(messageId: string): Promise<string[]>

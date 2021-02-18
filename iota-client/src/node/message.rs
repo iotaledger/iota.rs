@@ -26,7 +26,7 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages?index={Index} endpoint
     /// Consume the builder and search for messages matching the index
-    pub async fn index(self, index: &[u8]) -> Result<Box<[MessageId]>> {
+    pub async fn index<I: AsRef<[u8]>>(self, index: I) -> Result<Box<[MessageId]>> {
         let mut url = self.client.get_node()?;
         url.set_path("api/v1/messages");
         url.set_query(Some(&format!("index={}", hex::encode(index))));
