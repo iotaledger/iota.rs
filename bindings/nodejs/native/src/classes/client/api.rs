@@ -14,6 +14,7 @@ pub(crate) enum Api {
     Send {
         seed: Option<Seed>,
         index: Option<String>,
+        index_raw: Option<Box<[u8]>>,
         data: Option<Vec<u8>>,
         parents: Option<Vec<MessageId>>,
         account_index: Option<usize>,
@@ -88,6 +89,7 @@ impl Task for ClientTask {
                 Api::Send {
                     seed,
                     index,
+                    index_raw,
                     data,
                     parents,
                     account_index,
@@ -101,7 +103,10 @@ impl Task for ClientTask {
                         sender = sender.with_seed(seed);
                     }
                     if let Some(index) = index {
-                        sender = sender.with_index(index);
+                        sender = sender.with_index(&index.as_bytes());
+                    }
+                    if let Some(index_raw) = index_raw {
+                        sender = sender.with_index(index_raw);
                     }
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());

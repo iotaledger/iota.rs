@@ -38,7 +38,7 @@ pub struct ClientMessageBuilder<'a> {
     inputs: Option<Vec<UTXOInput>>,
     input_range: Range<usize>,
     outputs: Vec<Output>,
-    index: Option<String>,
+    index: Option<Box<[u8]>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
 }
@@ -125,8 +125,8 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Set indexation string to the builder
-    pub fn with_index(mut self, index: &str) -> Self {
-        self.index = Some(index.to_string());
+    pub fn with_index(mut self, index: &[u8]) -> Self {
+        self.index = Some(index.into());
         self
     }
 
@@ -419,7 +419,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
         // Add indexation_payload if index set
         if let Some(index) = self.index.clone() {
-            let indexation_payload = IndexationPayload::new(index, &self.data.clone().unwrap_or_default())?;
+            let indexation_payload = IndexationPayload::new(&index, &self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
         }
         let regular_essence = essence.finish()?;
@@ -475,7 +475,7 @@ impl<'a> ClientMessageBuilder<'a> {
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
             // build indexation
-            let index = IndexationPayload::new(index.expect("No indexation tag").to_string(), data)
+            let index = IndexationPayload::new(index.expect("No indexation tag"), data)
                 .map_err(|e| Error::IndexationError(e.to_string()))?;
             payload = Payload::Indexation(Box::new(index));
         }

@@ -31,6 +31,7 @@ export declare class ClientBuilder {
 export declare class MessageSender {
   seed(seed: string): MessageSender
   index(index: string): MessageSender
+  indexRaw(index: ArrayBuffer): MessageSender
   data(data: Uint8Array): MessageSender
   parents(messageIds: string[]): MessageSender
   accountIndex(index: number): MessageSender

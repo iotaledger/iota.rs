@@ -114,7 +114,7 @@ A generic send function for easily sending a message.
 | **input_range** | ✘ | 0..100 | Range | Custom range to search for the input addresses if custom inputs are provided. |
 | **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
-| **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
+| **index** | ✘ | None | &[u8] | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
 | **parents** | ✘ | None | [MessageId] | 1-8 optional parents [MessageId] to be used. |
 

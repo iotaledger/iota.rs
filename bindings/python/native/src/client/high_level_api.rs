@@ -72,7 +72,7 @@ impl Client {
             }
         }
         if let Some(index) = index {
-            send_builder = send_builder.with_index(index);
+            send_builder = send_builder.with_index(index.as_bytes());
         }
         if let Some(data) = data {
             send_builder = send_builder.with_data(data);
