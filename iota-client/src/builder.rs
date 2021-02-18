@@ -251,7 +251,7 @@ impl ClientBuilder {
             Api::PostMessageWithRemotePow,
             self.api_timeout
                 .remove(&Api::PostMessageWithRemotePow)
-                .unwrap_or_else(|| Duration = Duration::from_millis(30000)),
+                .unwrap_or_else(|| Duration::from_millis(30000)),
         );
         api_timeout.insert(
             Api::GetOutput,
