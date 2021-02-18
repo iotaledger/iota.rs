@@ -18,9 +18,9 @@ name = "iota_client"
 # bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 # bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 # bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "8ee15fbc064b2aa1a506fa7ac5d88b5073e5d0f7" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "8ee15fbc064b2aa1a506fa7ac5d88b5073e5d0f7" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "8ee15fbc064b2aa1a506fa7ac5d88b5073e5d0f7" }
 bee-common-derive = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "6e67b652dd55df05877f575b9a09ccb5a7006694", features = ["ed25519", "random"]}

@@ -156,7 +156,8 @@ impl TryFrom<MessagePayloadDto> for Payload {
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
             MessagePayloadDto::Indexation(indexation_payload) => {
-                let indexation = IndexationPayload::new(indexation_payload.index, &indexation_payload.data).unwrap();
+                let indexation =
+                    IndexationPayload::new(&hex::decode(indexation_payload.index)?, &indexation_payload.data)?;
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
         }

@@ -89,7 +89,7 @@ async fn test_post_message_with_indexation() {
 
     let r = client
         .message()
-        .with_index("Hello")
+        .with_index(b"Hello")
         .with_data("Tangle".to_string().as_bytes().to_vec())
         .finish()
         .await
