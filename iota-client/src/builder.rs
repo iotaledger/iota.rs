@@ -12,9 +12,8 @@ use std::{
     time::Duration,
 };
 
-const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);//=POST_MESSAGE_WITH_REMOTE_POW_TIMEOUT
 const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
-const POST_MESSAGE_WITH_REMOTE_POW_TIMEOUT: Duration = Duration::from_millis(30000);
 const NODE_SYNC_INTERVAL: Duration = Duration::from_millis(60000);
 const TIPS_INTERVAL: u64 = 15;
 
