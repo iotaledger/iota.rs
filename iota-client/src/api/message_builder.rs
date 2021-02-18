@@ -19,8 +19,8 @@ use std::{
 };
 
 const HARDEND: u32 = 1 << 31;
-const MAX_ALLOWED_DUST_OUTPUTS: u32 = 100;
-const GAP_LIMIT: u32 = 20;
+const MAX_ALLOWED_DUST_OUTPUTS: usize = 100;
+const GAP_LIMIT: usize = 20;
 
 /// Structure for sorting of UnlockBlocks
 // TODO: move the sorting process to the `Message` crate
