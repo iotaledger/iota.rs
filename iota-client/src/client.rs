@@ -799,7 +799,7 @@ impl Client {
         // Use `get_message().index()` API to get the message ID first,
         // then collect the `MessageId` in the HashSet.
         for index in indexation_keys {
-            let message_ids = self.get_message().index(&index).await?;
+            let message_ids = self.get_message().index(index.as_bytes()).await?;
             for message_id in message_ids.iter() {
                 message_ids_to_query.insert(message_id.to_owned());
             }

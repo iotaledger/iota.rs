@@ -13,8 +13,7 @@ pub(crate) enum Api {
     // High level APIs
     Send {
         seed: Option<Seed>,
-        index: Option<String>,
-        index_raw: Option<Box<[u8]>>,
+        index: Option<Vec<u8>>,
         data: Option<Vec<u8>>,
         parents: Option<Vec<MessageId>>,
         account_index: Option<usize>,
@@ -50,7 +49,7 @@ pub(crate) enum Api {
     GetPeers,
     GetTips,
     PostMessage(MessageDto),
-    GetMessagesByIndexation(String),
+    GetMessagesByIndexation(Vec<u8>),
     GetMessage(MessageId),
     GetMessageMetadata(MessageId),
     GetRawMessage(MessageId),
@@ -89,7 +88,6 @@ impl Task for ClientTask {
                 Api::Send {
                     seed,
                     index,
-                    index_raw,
                     data,
                     parents,
                     account_index,
@@ -103,10 +101,7 @@ impl Task for ClientTask {
                         sender = sender.with_seed(seed);
                     }
                     if let Some(index) = index {
-                        sender = sender.with_index(&index.as_bytes());
-                    }
-                    if let Some(index_raw) = index_raw {
-                        sender = sender.with_index(index_raw);
+                        sender = sender.with_index(index);
                     }
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
@@ -237,7 +232,7 @@ impl Task for ClientTask {
                     serde_json::to_string(&message).unwrap()
                 }
                 Api::GetMessagesByIndexation(index) => {
-                    let messages = client.get_message().index(index.as_str()).await?;
+                    let messages = client.get_message().index(index).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetMessage(id) => {

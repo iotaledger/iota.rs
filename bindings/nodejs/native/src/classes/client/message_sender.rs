@@ -10,8 +10,7 @@ use std::{ops::Range, str::FromStr};
 
 pub struct MessageSender {
     client_id: String,
-    index: Option<String>,
-    index_raw: Option<Box<[u8]>>,
+    index: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
     seed: Option<String>,
@@ -30,7 +29,6 @@ declare_types! {
             Ok(MessageSender {
                 client_id,
                 index: None,
-                index_raw: None,
                 data: None,
                 parents: None,
                 seed: None,
@@ -60,25 +58,20 @@ declare_types! {
         }
 
         method index(mut cx) {
-            let index = cx.argument::<JsString>(0)?.value();
-            {
-                let mut this = cx.this();
-                let guard = cx.lock();
-                let send_index = &mut this.borrow_mut(&guard).index;
-                send_index.replace(index);
+            let mut index: Vec<u8> = vec![];
+            let index_js_array = cx.argument::<JsArray>(0)?;
+            let js_index: Vec<Handle<JsValue>> = index_js_array.to_vec(&mut cx)?;
+            for value in js_index {
+                let value: Handle<JsNumber> = value.downcast_or_throw(&mut cx)?;
+                index.push(value.value() as u8);
             }
+            println!("{:?}", index);
 
-            Ok(cx.this().upcast())
-        }
-
-        method indexRaw(mut cx) {
-            let index = cx.argument::<JsArrayBuffer>(0)?;
-            let index = cx.borrow(&index, |data| { data.as_slice::<u8>() });
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let send_index_raw = &mut this.borrow_mut(&guard).index_raw;
-                send_index_raw.replace(index.into());
+                let index_ = &mut this.borrow_mut(&guard).index;
+                index_.replace(index);
             }
 
             Ok(cx.this().upcast())
@@ -211,7 +204,6 @@ declare_types! {
                     api: Api::Send {
                         seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed")),
                         index: ref_.index.clone(),
-                        index_raw: ref_.index_raw.clone(),
                         data: ref_.data.clone(),
                         parents: ref_.parents.clone(),
                         account_index: ref_.account_index,
