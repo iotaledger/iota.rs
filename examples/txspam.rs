@@ -13,7 +13,7 @@ use std::{env, time::Duration};
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
+    let iota = Client::builder() // Create a client instance builder
         .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
@@ -82,7 +82,7 @@ async fn main() {
 async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
     while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
         if let Some(state) = metadata.ledger_inclusion_state {
-            println!("Leder inclusion state: {:?}", state);
+            println!("Ledger inclusion state: {:?}", state);
             break;
         } else if let Ok(msg_id) = iota.reattach(&message_id).await {
             println!("Reattached or promoted {}", msg_id.0);
