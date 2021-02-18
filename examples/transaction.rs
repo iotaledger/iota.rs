@@ -31,6 +31,7 @@ async fn main() {
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
@@ -38,11 +39,10 @@ async fn main() {
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
     let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
-            .unwrap();
+        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
@@ -61,7 +61,7 @@ async fn main() {
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
@@ -80,7 +80,7 @@ async fn main() {
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
@@ -98,11 +98,10 @@ async fn main() {
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap()).unwrap())
-            .unwrap();
+        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap()).unwrap()).unwrap();
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`

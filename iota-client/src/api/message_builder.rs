@@ -1,20 +1,21 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
+use crate::{api::address::search_address, Client, ClientMiner, Error, Result, Seed};
 
-use bee_common::packable::Packable;
 use bee_message::prelude::*;
-// use bee_message::transaction::outputs::Ed25519Address;
+use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
-use bee_signing_ext::{
-    binary::{BIP32Path, Ed25519PrivateKey},
-    Seed, Signer,
-};
+use slip10::BIP32Path;
+
 use std::{
     collections::{HashMap, HashSet},
     ops::{Deref, Range},
     str::FromStr,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 const HARDEND: u32 = 1 << 31;
@@ -29,7 +30,7 @@ struct AddressIndexRecorder {
 }
 
 /// Builder of send API
-pub struct SendBuilder<'a> {
+pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
     seed: Option<&'a Seed>,
     account_index: Option<usize>,
@@ -39,11 +40,10 @@ pub struct SendBuilder<'a> {
     outputs: Vec<Output>,
     index: Option<String>,
     data: Option<Vec<u8>>,
-    parent: Option<MessageId>,
-    network_id: Option<u64>,
+    parents: Option<Vec<MessageId>>,
 }
 
-impl<'a> SendBuilder<'a> {
+impl<'a> ClientMessageBuilder<'a> {
     /// Create send builder
     pub fn new(client: &'a Client) -> Self {
         Self {
@@ -56,8 +56,7 @@ impl<'a> SendBuilder<'a> {
             outputs: Vec::new(),
             index: None,
             data: None,
-            parent: None,
-            network_id: None,
+            parents: None,
         }
     }
 
@@ -137,16 +136,13 @@ impl<'a> SendBuilder<'a> {
         self
     }
 
-    /// Set a custom parent
-    pub fn with_parent(mut self, parent_id: MessageId) -> Self {
-        self.parent = Some(parent_id);
-        self
-    }
-
-    /// Set the network id
-    pub fn with_network_id(mut self, network_id: u64) -> Self {
-        self.network_id = Some(network_id);
-        self
+    /// Set 1-8 custom parent message ids
+    pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
+        if !(1..=8).contains(&parent_ids.len()) {
+            return Err(Error::InvalidParentsAmount);
+        }
+        self.parents = Some(parent_ids);
+        Ok(self)
     }
 
     /// Consume the builder and get the API result
@@ -180,7 +176,7 @@ impl<'a> SendBuilder<'a> {
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
-        let bech32_hrp = self.client.get_network_info().bech32_hrp;
+        let bech32_hrp = self.client.get_bech32_hrp().await?;
 
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
@@ -205,7 +201,7 @@ impl<'a> SendBuilder<'a> {
         }
 
         let mut paths = Vec::new();
-        let mut essence = TransactionPayloadEssence::builder();
+        let mut essence = RegularEssence::builder();
         let mut address_index_recorders = Vec::new();
 
         match self.inputs.clone() {
@@ -214,8 +210,8 @@ impl<'a> SendBuilder<'a> {
                     // Only add unspent outputs
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
-                            // todo check if already used in another pending transaction if possible
                             let (output_amount, output_address) = match output.output {
+                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
                                         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
@@ -241,11 +237,12 @@ impl<'a> SendBuilder<'a> {
                             let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
+                                bech32_hrp.clone(),
                                 account_index,
                                 self.input_range.clone(),
                                 &bech32_address.into(),
                             )
-                            .map_err(|_| Error::InputAddressNotFound(format!("{:?}", self.input_range.clone())))?;
+                            .await?;
                             address_path.push(internal as u32 + HARDEND);
                             address_path.push(address_index as u32 + HARDEND);
                             paths.push(address_path.clone());
@@ -284,7 +281,8 @@ impl<'a> SendBuilder<'a> {
                         .find_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
                         .with_range(index..index + 20)
-                        .get_all()?;
+                        .get_all()
+                        .await?;
                     // For each address, get the address outputs
                     let mut address_index = 0;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
@@ -293,7 +291,6 @@ impl<'a> SendBuilder<'a> {
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;
                             if !curr_outputs.is_spent {
-                                // todo check if already used in another pending transaction if possible
                                 outputs.push(curr_outputs);
                             }
                         }
@@ -307,10 +304,12 @@ impl<'a> SendBuilder<'a> {
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
                             let output_amount = match output.output {
+                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
-                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
                                         if r.amount < 1_000_000 {
+                                            let output_address =
+                                                Address::from(Ed25519Address::from_str(&addr.address)?);
                                             dust_and_allowance_recorders.push((r.amount, output_address, false));
                                         }
                                         r.amount
@@ -423,12 +422,9 @@ impl<'a> SendBuilder<'a> {
             let indexation_payload = IndexationPayload::new(index, &self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
         }
-        let essence = essence.finish()?;
-        let mut serialized_essence = Vec::new();
-        essence
-            .pack(&mut serialized_essence)
-            .map_err(|_| Error::InvalidParameter("inputs".to_string()))?;
-
+        let regular_essence = essence.finish()?;
+        let essence = Essence::Regular(regular_essence);
+        let hashed_essence = essence.hash();
         let mut unlock_blocks = Vec::new();
         let mut signature_indexes = HashMap::<String, usize>::new();
         address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
@@ -443,19 +439,16 @@ impl<'a> SendBuilder<'a> {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we should create a signature unlock block
-                match &self.seed.expect("No seed") {
-                    Seed::Ed25519(s) => {
-                        let private_key = Ed25519PrivateKey::generate_from_seed(s, &recorder.address_path)
-                            .map_err(|_| Error::InvalidParameter("seed inputs".to_string()))?;
-                        let public_key = private_key.generate_public_key().to_bytes();
-                        // The block should sign the entire transaction essence part of the transaction payload
-                        let signature = Box::new(private_key.sign(&serialized_essence).to_bytes());
-                        unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
-                            public_key, signature,
-                        ))));
-                    }
-                    Seed::Wots(_) => panic!("Wots signing scheme isn't supported."),
-                }
+                let private_key = self
+                    .seed
+                    .expect("Missing seed")
+                    .generate_private_key(&recorder.address_path)?;
+                let public_key = private_key.public_key().to_compressed_bytes();
+                // The block should sign the entire transaction essence part of the transaction payload
+                let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
+                unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
+                    public_key, signature,
+                ))));
                 signature_indexes.insert(index, current_block_index);
             }
         }
@@ -493,41 +486,41 @@ impl<'a> SendBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
-        // get tips
-        let tips = self.client.get_tips().await?;
-
-        // building message
-        let mut message = MessageBuilder::<ClientMiner>::new();
-
-        message = match self.network_id {
-            Some(id) => message.with_network_id(id),
-            _ => message.with_network_id(self.client.get_network_info().network_id),
+        let final_message = match self.parents {
+            Some(mut parents) => {
+                parents.sort_unstable();
+                parents.dedup();
+                let min_pow_score = self.client.get_min_pow_score().await?;
+                let network_id = self.client.get_network_id().await?;
+                do_pow(
+                    crate::client::ClientMinerBuilder::new()
+                        .with_local_pow(self.client.get_local_pow())
+                        .finish(),
+                    min_pow_score,
+                    network_id,
+                    payload,
+                    parents,
+                    Arc::new(AtomicBool::new(false)),
+                )?
+                .1
+                .unwrap()
+            }
+            None => finish_pow(&self.client, payload).await?,
         };
 
-        message = match self.parent {
-            Some(p) => message.with_parent1(p),
-            _ => message.with_parent1(tips.0),
+        let msg_id = self.client.post_message(&final_message).await?;
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.client.get_local_pow() {
+            true => final_message,
+            false => self.client.get_message().data(&msg_id).await?,
         };
-        if let Some(p) = payload {
-            message = message.with_payload(p);
-        }
-        let final_message = message
-            .with_parent2(tips.1)
-            .with_nonce_provider(
-                self.client.get_pow_provider(),
-                self.client.get_network_info().min_pow_score,
-            )
-            .finish()
-            .map_err(Error::MessageError)?;
-
-        self.client.post_message(&final_message).await?;
 
         #[cfg(feature = "storage")]
         if let Some(account) = &self.client.storage {
-            account.write().await.append_messages(vec![final_message.clone()]);
+            account.write().await.append_messages(vec![msg.clone()]);
             account.deref().write().await.save().await?;
         }
-        Ok(final_message)
+        Ok(msg)
     }
 }
 
@@ -566,6 +559,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     let address_outputs_metadata = client.find_outputs(&[], &[address.clone()]).await?;
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
+            OutputDto::Treasury(_) => {}
             OutputDto::SignatureLockedDustAllowance(d_a_o) => {
                 dust_allowance_balance += d_a_o.amount as i64;
             }
@@ -587,4 +581,77 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
         )));
     }
     Ok(())
+}
+
+/// Does PoW with always new tips
+pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
+    let done = Arc::new(AtomicBool::new(false));
+    let local_pow = client.get_local_pow();
+    let min_pow_score = client.get_min_pow_score().await?;
+    let tips_interval = client.get_tips_interval();
+    let network_id = client.get_network_id().await?;
+    loop {
+        let abort1 = Arc::clone(&done);
+        let abort2 = Arc::clone(&done);
+        let payload_ = payload.clone();
+        let parent_messages = client.get_tips().await?;
+        let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, &abort1)));
+        let pow_thread = std::thread::spawn(move || {
+            do_pow(
+                crate::client::ClientMinerBuilder::new()
+                    .with_local_pow(local_pow)
+                    .finish(),
+                min_pow_score,
+                network_id,
+                payload_,
+                parent_messages,
+                abort2,
+            )
+        });
+
+        let threads = vec![pow_thread, time_thread];
+        for t in threads {
+            match t.join().unwrap() {
+                Ok(res) => {
+                    if res.0 != 0 || !local_pow {
+                        if let Some(message) = res.1 {
+                            return Ok(message);
+                        }
+                    }
+                    done.swap(false, Ordering::Relaxed);
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            }
+        }
+    }
+}
+
+fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> (u64, Option<Message>) {
+    std::thread::sleep(std::time::Duration::from_secs(after_seconds));
+    done.swap(true, Ordering::Relaxed);
+    (0, None)
+}
+
+/// Does PoW
+pub fn do_pow(
+    client_miner: ClientMiner,
+    min_pow_score: f64,
+    network_id: u64,
+    payload: Option<Payload>,
+    parent_messages: Vec<MessageId>,
+    done: Arc<AtomicBool>,
+) -> Result<(u64, Option<Message>)> {
+    let mut message = MessageBuilder::<ClientMiner>::new();
+    message = message.with_network_id(network_id);
+    if let Some(p) = payload {
+        message = message.with_payload(p);
+    }
+    let message = message
+        .with_parents(parent_messages)
+        .with_nonce_provider(client_miner, min_pow_score, Some(Arc::clone(&done)))
+        .finish()
+        .map_err(Error::MessageError)?;
+    Ok((message.nonce(), Some(message)))
 }

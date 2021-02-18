@@ -1,6 +1,6 @@
 # API Reference
 
-PI reference
+API reference
 
 You can read the [API reference](https://docs.rs/iota-core) here, or generate it yourself.
 

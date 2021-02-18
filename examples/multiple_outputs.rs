@@ -25,6 +25,7 @@ async fn main() {
         // .with_node("http://0.0.0.0:14265") // Insert the node here
         // .unwrap()
         .finish()
+        .await
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
@@ -32,11 +33,10 @@ async fn main() {
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
     let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
-            .unwrap();
+        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         .with_output(
             &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),

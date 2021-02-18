@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, OutputResponse, UTXOInput,
+    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, MilestoneUTXOChanges,
+    OutputResponse, PeerDto, UTXOInput,
 };
 use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
@@ -26,17 +27,29 @@ impl Client {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_info().await })?.into())
     }
-    fn get_tips(&self) -> Result<(String, String)> {
+    fn get_peers(&self) -> Result<Vec<PeerDto>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt
+            .block_on(async { self.client.get_peers().await })?
+            .into_iter()
+            .map(PeerDto::from)
+            .collect())
+    }
+    fn get_tips(&self) -> Result<Vec<String>> {
         let rt = tokio::runtime::Runtime::new()?;
         let tips = rt.block_on(async { self.client.get_tips().await })?;
-        Ok((tips.0.to_string(), tips.1.to_string()))
+        Ok(tips.into_iter().map(|p| p.to_string()).collect())
     }
     fn post_message(&self, msg: Message) -> Result<String> {
         let mut msg_builder = RustMessageBuilder::<RustClientMiner>::new()
             .with_network_id(msg.network_id)
-            .with_parent1(RustMessageId::from_str(&msg.parent1)?)
-            .with_parent2(RustMessageId::from_str(&msg.parent1)?)
-            .with_nonce_provider(self.client.get_pow_provider(), 4000f64);
+            .with_parents(
+                msg.parents
+                    .iter()
+                    .map(|m| m.parse::<RustMessageId>().expect("Invalid message id"))
+                    .collect::<Vec<RustMessageId>>(),
+            )
+            .with_nonce_provider(self.client.get_pow_provider(), 4000f64, None);
         if let Some(payload) = msg.payload {
             msg_builder = msg_builder.with_payload(payload.try_into()?);
         }
@@ -101,8 +114,14 @@ impl Client {
             .map(|metadata| metadata.into())
             .collect())
     }
-    fn get_milestone(&self, index: u64) -> Result<MilestoneDto> {
+    fn get_milestone(&self, index: u32) -> Result<MilestoneDto> {
         let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.get_milestone(index).await })?.into())
+    }
+    fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt
+            .block_on(async { self.client.get_milestone_utxo_changes(index).await })?
+            .into())
     }
 }

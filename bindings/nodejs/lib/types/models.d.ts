@@ -13,8 +13,7 @@ export declare interface NodeInfo {
 
 export declare interface MessageMetadata {
   messageId: string
-  parent1MessageId: string
-  parent2MessageId: string
+  parents: string[]
   isSolid: boolean
   shouldPromote?: boolean
   shouldReattach?: boolean
@@ -35,6 +34,12 @@ export declare interface MilestoneMetadata {
   index: number
   messageId: string
   timestamp: number
+}
+
+export declare interface MilestoneUTXOChanges {
+  index: number
+  createdOutputs: string[]
+  consumedOutputs: string[]
 }
 
 export declare interface BrokerOptions {

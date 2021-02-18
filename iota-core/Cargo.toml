@@ -12,16 +12,17 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
+bee-common = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
+# bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+# bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+# bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-features = false }
 
 [dev-dependencies]
-tokio = { version = "1.0", features = ["macros"] }
+tokio = { version = "1.1", features = ["macros"] }
 
 [features]
-default = ["mqtt"]
 mqtt = ["iota-client/mqtt"]
 storage = ["iota-client/storage"]

@@ -17,11 +17,6 @@ export declare interface TransactionPayloadEssence {
   payload?: Payload
 }
 
-export declare interface WotsSignatureUnlockBlock {
-  type: 'Wots'
-  data: number[]
-}
-
 export declare interface Ed25519SignatureUnlockBlock {
   type: 'Ed25519'
   data: {
@@ -55,8 +50,7 @@ export declare interface IndexationPayload {
 export declare interface MilestoneEssence {
   index: string
   timestamp: string
-  parent1: string
-  parent2: string
+  parents: string[]
   merkle_proof: number[]
   public_keys: number[]
 }
@@ -72,8 +66,12 @@ export declare type Payload = { type: 'Indexation', data: IndexationPayload } |
 
 export declare interface Message {
   network_id: number
-  parent1: string
-  parent2: string
+  parents: string[]
   payload?: Payload
   nonce: number
+}
+
+export declare interface MessageWrapper {
+  messageId: string
+  message: Message
 }

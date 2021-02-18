@@ -7,7 +7,7 @@
 * [Introduction](#Introduction)
 * [Builder](#Builder)
 * [General high level API](#General-high-level-API)
-  * [`send`](#send)
+  * [`message`](#message)
   * [`get_message`](#get_message)
   * [`find_messages`](#find_messages)
   * [`get_unspent_address`](#get_unspent_address)
@@ -20,6 +20,7 @@
   * [`promote`](#promote)
 * [Full node API](#Full-node-API)
   * [`get_health`](#get_health)
+  * [`get_health`](#get_peers)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
   * [`post_message`](#post_message)
@@ -27,6 +28,7 @@
   * [`get_address`](#get_address)
   * [`find_outputs`](#find_outputs)
   * [`get_milestone`](#get_milestone)
+  * [`get_milestone_utxo_changes`](#get_milestone_utxo_changes)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -52,15 +54,16 @@ The data structure to initialize the instance of the Higher level client library
 
 | Parameter | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **network** | ✘ | Testnet | &str | The network name for example "testnet2" to define the network. If no node url is provided, some default nodes are used for the specified network. |
+| **network** | ✘ | Testnet | &str | Optional, the network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. Nodes that aren't in this network will be ignored. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **node_pool_urls** | None | ✘ | &[String] | A list of node_pool_urls from which nodes are added. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
+| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
+| **tips_interval** | ✘ | 15 | u64 | Time interval during PoW when new tips get requested. |
 | **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
 
 * Note that there must be at least one node to build the instance successfully.
@@ -96,7 +99,7 @@ for node in node_pool_urls{
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
-## `send()`
+## `message()`
 
 A generic send function for easily sending a message.
 
@@ -113,8 +116,7 @@ A generic send function for easily sending a message.
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
-| **parent** | ✘ | None | [MessageId] | An optional parent [MessageId] to be used as one parent. |
-| **network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
+| **parents** | ✘ | None | [MessageId] | 1-8 optional parents [MessageId] to be used. |
 
 Depending on the provided values this function will create a message with:
 
@@ -352,6 +354,30 @@ None
 
 Boolean to indicate if node is healthy.
 
+## `get_peers()`
+
+(`GET /peers`)
+
+Get information about the peers of the node.
+
+### Parameters
+
+None
+
+### Returns
+
+```Rust
+pub struct PeerDto {
+    pub id: String,
+    #[serde(rename = "multiAddresses")]
+    pub multi_addresses: Vec<String>,
+    pub alias: Option<String>,
+    pub relation: RelationDto,
+    pub connected: bool,
+    pub gossip: Option<GossipDto>,
+}
+```
+
 ## `get_info()`
 
 (`GET /api/v1/info`)
@@ -472,11 +498,33 @@ Get the milestone by the given index.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **index** | ✔ | u64 | Index of the milestone. |
+| **index** | ✔ | u32 | Index of the milestone. |
 
 ### Returns
 
 An [Milestone] object.
+
+## `get_milestone_utxo_changes()`
+
+(`GET /milestones/{}/utxo-changes`)
+
+Get all UTXO changes of a given milestone.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **index** | ✔ | u32 | Index of the milestone. |
+
+### Returns
+
+```Rust
+MilestoneUTXOChanges {
+    index: 1,
+    created_outputs: [],
+    consumed_outputs: [],
+}
+````
 
 # Objects
 
@@ -513,8 +561,7 @@ The message object returned by various functions; based on the [RFC](https://git
 
 ```rust
 struct Message {
-    parent1: MessageId,
-    parent2: MessageId,
+    parents: Vec<MessageId>,
     payload: Option<Payload>,
     nonce: u64,
 }
@@ -589,10 +636,8 @@ struct ReferenceUnlock(u16);
 pub struct MessageMetadata {
     /// Message ID
     pub message_id: String,
-    /// Message ID of parent1
-    pub parent1: String,
-    /// Message ID of parent2
-    pub parent2: String,
+    /// Message IDs of parents
+    pub parents: Vec<String>,
     /// Solid status
     pub is_solid: bool,
     /// Should promote
@@ -600,7 +645,7 @@ pub struct MessageMetadata {
     /// Should reattach
     pub should_reattach: Option<bool>,
     /// Referenced by milestone index
-    pub referenced_by_milestone_index: Option<u64>,
+    pub referenced_by_milestone_index: Option<u32>,
     /// Ledger inclusion state
     pub ledger_inclusion_state: Option<String>,
 }
@@ -673,7 +718,7 @@ A milestone metadata.
 ```rust
 pub struct MilestoneMetadata {
     /// Milestone index
-    pub milestone_index: u64,
+    pub milestone_index: u32,
     /// Milestone ID
     pub message_id: String,
     /// Timestamp

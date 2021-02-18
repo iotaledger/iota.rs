@@ -15,7 +15,7 @@ Currently the package isn't published so you'd need to link it to your project u
 - Using NPM:
 ```
 $ git clone https://github.com/iotaledger/iota.rs
-$ cd iota.rs/bindings/node
+$ cd iota.rs/bindings/nodejs
 $ npm link
 $ cd /path/to/nodejs/project/
 $ npm link iota-client
@@ -23,7 +23,7 @@ $ npm link iota-client
 - Using yarn: 
 ```
 $ git clone https://github.com/iotaledger/iota.rs
-$ cd iota.rs/bindings/node
+$ cd iota.rs/bindings/nodejs
 $ yarn link
 $ cd /path/to/nodejs/project/
 $ yarn link iota-client
@@ -72,6 +72,17 @@ Adds a list of IOTA nodes from node pool URLs to the client pool.
 | Param | Type                  | Description                |
 | ----- | --------------------- | -------------------------- |
 | url   | <code>string[]</code> | An array of node pool URLs |
+
+**Returns** the client builder instance for chained calls.
+
+#### network(networkName): ClientBuilder
+
+Set a network to get default nodes for it. Can be "testnet" or "mainnet".
+Nodes that don't belong to this network are ignored.
+
+| Param       | Type                  | Description      |
+| ----------- | --------------------- | ---------------- |
+| networkName | <code>string</code>   | The network |
 
 **Returns** the client builder instance for chained calls.
 
@@ -172,7 +183,7 @@ Gets a handle to the MQTT topic subscriber.
 
 **Returns** a [TopicSubscriber](#topicsubscriber) instance.
 
-#### send(): MessageSender
+#### message(): MessageSender
 
 Initiates the builder to send messages.
 
@@ -316,6 +327,16 @@ Gets the milestone by the given index.
 
 **Returns** a promise resolving to the [MilestoneMetadata](#milestonemetadata).
 
+#### getMilestoneUTXOChanges(index): Promise<MilestoneUTXOChanges>
+
+Gets the utxo changes by the given milestone index.
+
+| Param | Type                | Description                |
+| ----- | ------------------- | -------------------------- |
+| index | <code>number</code> | The index of the milestone |
+
+**Returns** a promise resolving to the [MilestoneUTXOChanges](#MilestoneUTXOChanges).
+
 #### reattach(messageId): Promise<Message>
 
 Reattaches the message associated with the given id.
@@ -422,13 +443,13 @@ Sets the indexation data.
 
 **Returns** the message submit instance for chained calls.
 
-#### parent(messageId): MessageSender
+#### parents(messageId): MessageSender
 
-Sets the message's parent.
+Sets 1-8 custom parent message ids.
 
-| Param     | Type                | Description           |
-| --------- | ------------------- | --------------------- |
-| messageId | <code>string</code> | The parent message id |
+| Param     | Type                  | Description             |
+| --------- | --------------------- | ----------------------- |
+| messageId | <code>string[]</code> | The parents message ids |
 
 **Returns** the message submit instance for chained calls.
 
@@ -656,18 +677,17 @@ Gets the metadata of the given message.
 
 ### Address
 
-| Field | Type                                    | Description                |
-| ----- | --------------------------------------- | -------------------------- |
-| type  | <code>'Wots'        \| 'Ed25519'</code> | Address type               |
-| data  | <code>string</code>                     | Address as a Bech32 string |
+| Field | Type                   | Description                |
+| ----- | ---------------------- | -------------------------- |
+| type  | <code>'Ed25519'</code> | Address type               |
+| data  | <code>string</code>    | Address as a Bech32 string |
 
 ### Message
 
 | Field     | Type                             | Description                                    |
 | --------- | -------------------------------- | ---------------------------------------------- |
 | networkId | <code>number</code>              | Network identifier                             |
-| parent1   | <code>string</code>              | Message id of the first message it references  |
-| parent2   | <code>string</code>              | Message id of the second message it references |
+| parents   | <code>string[]</code>              | Message ids of the message references          |
 | payload   | <code>[Payload](#payload)</code> | Message payload                                |
 | nonce     | <code>number</code>              | Message nonce                                  |
 
@@ -742,8 +762,7 @@ Gets the metadata of the given message.
 | ------------ | ----------------------- | --------------------------------------------------------- |
 | index        | <code>number</code>     | Milestone index                                           |
 | timestamp    | <code>number</code>     | Timestamp                                                 |
-| parent1      | <code>string</code>     | Message id of the first message the milestone references  |
-| parent2      | <code>string</code>     | Message id of the second message the milestone references |
+| parents      | <code>string[]</code>   | Message ids of the messages the milestone references      |
 | merkle_proof | <code>number[]</code>   | Merkle proof                                              |
 | public_keys  | <code>number[][]</code> | public keys                                               |
 
@@ -751,8 +770,7 @@ Gets the metadata of the given message.
 
 | Field   | Type                                   | Description                                                                 |
 | ------- | -------------------------------------- | --------------------------------------------------------------------------- |
-| parent1 | <code>string \| undefined</code>       | Message id of the first message it references. `getTips` is used by default |
-| parent2 | <code>string \| undefined</code>       | Message id of the second message it references `getTips` is used by default |
+| parents | <code>string[] \| undefined</code>     | Message ids of the messages it references. `getTips` is used by default     |
 | payload | <code>[PayloadDto](#payloaddto)</code> | Message payload                                                             |
 
 #### PayloadDto
@@ -810,8 +828,7 @@ Gets the metadata of the given message.
 | Field                      | Type                              | Description                                               |
 | -------------------------- | --------------------------------- | --------------------------------------------------------- |
 | messageId                  | <code>string</code>               | Message identifier                                        |
-| parent1                    | <code>string</code>               | Message id of the first message it references             |
-| parent2                    | <code>string</code>               | Message id of the second message it references            |
+| parents                    | <code>string[]</code>               | Message id of the messages it references                  |
 | isSolid                    | <code>boolean</code>              | Message solid state                                       |
 | shouldPromote              | <code>boolean \| undefined</code> | Indicates whether the message should be promoted or not   |
 | shouldReattach             | <code>boolean \| undefined</code> | Indicates whether the message should be reattached or not |
@@ -850,3 +867,11 @@ Gets the metadata of the given message.
 | milestoneIndex | <code>number</code> | Milestone index                                 |
 | messageId      | <code>string</code> | Id of the message associated with the milestone |
 | timestamp      | <code>number</code> | Milestone timestamp                             |
+
+### MilestoneUTXOChanges
+
+| Field           | Type                  | Description                        |
+| --------------- | --------------------- | ---------------------------------- |
+| index           | <code>number</code>   | Milestone index                    |
+| createdOutputs  | <code>string[]</code> | OutputIds from new created outputs |
+| consumedOutputs | <code>string[]</code> | OutputIds from consumed outputs    |

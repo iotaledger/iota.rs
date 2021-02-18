@@ -15,6 +15,7 @@ async fn main() {
         .with_node("http://0.0.0.0:14265") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
@@ -22,21 +23,21 @@ async fn main() {
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
     let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
-            .unwrap();
+        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let address = iota
         .find_addresses(&seed)
         .with_account_index(0)
         .with_range(0..1)
         .finish()
+        .await
         .unwrap();
     println!("{:?}", address[0]);
     let outputs = iota.get_address().outputs(&address[0]).await.unwrap();
     println!("{:?}", outputs);
 
     let message = iota
-        .send()
+        .message()
         .with_seed(&seed)
         .with_input(outputs[0].clone())
         // .with_input_range(20..25)

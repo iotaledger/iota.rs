@@ -14,15 +14,13 @@ export declare interface TransactionPayloadEssenceDto {
   payload?: IndexationPayloadDto
 }
 
-export declare type WotsSignatureUnlockBlockDto = number[]
-
 export declare interface Ed25519SignatureUnlockBlockDto {
   publicKey: number[]
   signature: number[]
 }
 
 export declare interface SignatureUnlockBlockDto {
-  data: WotsSignatureUnlockBlockDto | Ed25519SignatureUnlockBlockDto
+  data: Ed25519SignatureUnlockBlockDto
 }
 
 export declare type ReferenceUnlockBlockDto = number
@@ -42,7 +40,6 @@ export declare interface IndexationPayloadDto {
 export declare type PayloadDto = TransactionPayloadDto | IndexationPayloadDto
 
 export declare interface MessageDto {
-  parent1?: string
-  parent2?: string
+  parents?: string[]
   payload?: PayloadDto
 }

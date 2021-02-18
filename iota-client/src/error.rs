@@ -34,7 +34,7 @@ pub enum Error {
     #[error("Response error with status code {0}: {1}")]
     ResponseError(u16, String),
     /// No node available in the synced node pool
-    #[error("No node available")]
+    #[error("No synced node available")]
     SyncedNodePoolEmpty,
     /// Error on Url type conversion
     #[error("Failed to parse url")]
@@ -88,11 +88,34 @@ pub enum Error {
     #[cfg(feature = "storage")]
     #[error("Account not found")]
     AccountNotFound,
+    /// Crypto.rs error
+    #[error("{0}")]
+    CryptoError(crypto::Error),
+    /// Slip10 error
+    #[error("{0}")]
+    Slip10Error(slip10::Error),
+    /// Invalid amount of parents
+    #[error("Invalid amount of parents, length must be in 1..=8")]
+    InvalidParentsAmount,
 }
 
 // can't use #[from] on bee_message::Error so manually converting it
 impl From<bee_message::Error> for Error {
     fn from(error: bee_message::Error) -> Self {
         Error::MessageError(error)
+    }
+}
+
+// can't use #[from] on crypto::Error so manually converting it
+impl From<crypto::Error> for Error {
+    fn from(error: crypto::Error) -> Self {
+        Error::CryptoError(error)
+    }
+}
+
+// can't use #[from] on slip10::Error so manually converting it
+impl From<slip10::Error> for Error {
+    fn from(error: slip10::Error) -> Self {
+        Error::Slip10Error(error)
     }
 }

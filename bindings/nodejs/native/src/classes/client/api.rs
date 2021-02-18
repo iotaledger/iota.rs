@@ -1,10 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, str::FromStr};
+use std::{convert::TryInto, ops::Range, str::FromStr};
 
 use super::MessageDto;
 
+use crate::classes::client::dto::MessageWrapper;
 use iota::{Address, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
 use neon::prelude::*;
 
@@ -14,7 +15,7 @@ pub(crate) enum Api {
         seed: Option<Seed>,
         index: Option<String>,
         data: Option<Vec<u8>>,
-        parent: Option<MessageId>,
+        parents: Option<Vec<MessageId>>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
         inputs: Vec<UTXOInput>,
@@ -26,6 +27,12 @@ pub(crate) enum Api {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
     },
+    FindAddresses {
+        seed: Seed,
+        account_index: Option<usize>,
+        range: Option<Range<usize>>,
+        bech32_hrp: Option<String>,
+    },
     FindMessages {
         indexation_keys: Vec<String>,
         message_ids: Vec<MessageId>,
@@ -35,9 +42,11 @@ pub(crate) enum Api {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
     },
-    GetAddressBalances(Vec<Address>),
+    GetAddressBalances(Vec<Bech32Address>),
     // Node APIs
     GetInfo,
+    GetNetworkInfo,
+    GetPeers,
     GetTips,
     PostMessage(MessageDto),
     GetMessagesByIndexation(String),
@@ -48,11 +57,12 @@ pub(crate) enum Api {
     GetOutput(UTXOInput),
     FindOutputs {
         outputs: Vec<UTXOInput>,
-        addresses: Vec<Address>,
+        addresses: Vec<Bech32Address>,
     },
-    GetAddressBalance(Address),
-    GetAddressOutputs(Address),
-    GetMilestone(u64),
+    GetAddressBalance(Bech32Address),
+    GetAddressOutputs(Bech32Address),
+    GetMilestone(u32),
+    GetMilestoneUTXOChanges(u32),
     Retry(MessageId),
     Reattach(MessageId),
     Promote(MessageId),
@@ -79,14 +89,14 @@ impl Task for ClientTask {
                     seed,
                     index,
                     data,
-                    parent,
+                    parents,
                     account_index,
                     initial_address_index,
                     inputs,
                     outputs,
                     dust_allowance_outputs,
                 } => {
-                    let mut sender = client.send();
+                    let mut sender = client.message();
                     if let Some(seed) = seed {
                         sender = sender.with_seed(seed);
                     }
@@ -96,8 +106,8 @@ impl Task for ClientTask {
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
                     }
-                    if let Some(parent) = parent {
-                        sender = sender.with_parent(*parent);
+                    if let Some(parents) = parents {
+                        sender = sender.with_parents(parents.clone())?;
                     }
                     if let Some(account_index) = account_index {
                         sender = sender.with_account_index(*account_index);
@@ -108,19 +118,20 @@ impl Task for ClientTask {
                     for input in inputs {
                         sender = sender.with_input(input.clone());
                     }
-                    let bech32_hrp = client.get_network_info().bech32_hrp;
+                    let bech32_hrp = client.get_bech32_hrp().await?;
                     for output in outputs {
-                        sender = sender
-                            .with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
-                            .unwrap();
+                        sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
                     for output in dust_allowance_outputs {
                         sender = sender
-                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)
-                            .unwrap();
+                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
                     }
-                    let message_id = sender.finish().await?;
-                    serde_json::to_string(&message_id).unwrap()
+                    let message = sender.finish().await?;
+                    serde_json::to_string(&MessageWrapper {
+                        message_id: message.id().0,
+                        message,
+                    })
+                    .unwrap()
                 }
                 Api::GetUnspentAddress {
                     seed,
@@ -137,12 +148,40 @@ impl Task for ClientTask {
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
                 }
+                Api::FindAddresses {
+                    seed,
+                    account_index,
+                    range,
+                    bech32_hrp,
+                } => {
+                    let mut getter = client.find_addresses(&seed);
+                    if let Some(account_index) = account_index {
+                        getter = getter.with_account_index(*account_index);
+                    }
+                    if let Some(range) = range {
+                        getter = getter.with_range(range.clone());
+                    }
+
+                    if let Some(bech32_hrp) = bech32_hrp {
+                        getter = getter.with_bech32_hrp(bech32_hrp.clone())
+                    }
+
+                    let addresses = getter.finish().await?;
+                    serde_json::to_string(&addresses).unwrap()
+                }
                 Api::FindMessages {
                     indexation_keys,
                     message_ids,
                 } => {
                     let messages = client.find_messages(&indexation_keys[..], &message_ids[..]).await?;
-                    serde_json::to_string(&messages).unwrap()
+                    let message_wrappers: Vec<MessageWrapper> = messages
+                        .into_iter()
+                        .map(|message| MessageWrapper {
+                            message_id: message.id().0,
+                            message,
+                        })
+                        .collect();
+                    serde_json::to_string(&message_wrappers).unwrap()
                 }
                 Api::GetBalance {
                     seed,
@@ -159,49 +198,38 @@ impl Task for ClientTask {
                     let balance = getter.finish().await?;
                     serde_json::to_string(&balance).unwrap()
                 }
-                Api::GetAddressBalances(addresses) => {
-                    let bech32_addresses: Vec<Bech32Address> = addresses
-                        .iter()
-                        .map(|a| a.to_bech32(&client.get_network_info().bech32_hrp).into())
-                        .collect();
+                Api::GetAddressBalances(bech32_addresses) => {
                     let balances = client.get_address_balances(&bech32_addresses[..]).await?;
                     let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
                     serde_json::to_string(&balances).unwrap()
                 }
                 // Node APIs
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
+                Api::GetNetworkInfo => serde_json::to_string(&client.get_network_info().await?).unwrap(),
+                Api::GetPeers => serde_json::to_string(&client.get_peers().await?).unwrap(),
                 Api::GetTips => {
                     let tips = client.get_tips().await?;
-                    let tips = vec![tips.0, tips.1];
                     serde_json::to_string(&tips).unwrap()
                 }
                 Api::PostMessage(message) => {
-                    let (parent1, parent2) = if message.parent1.is_none() || message.parent2.is_none() {
-                        let tips = client.get_tips().await?;
-                        let parent1 = match &message.parent1 {
-                            Some(id) => MessageId::from_str(&id)?,
-                            None => tips.0,
-                        };
-                        let parent2 = match &message.parent2 {
-                            Some(id) => MessageId::from_str(&id)?,
-                            None => tips.1,
-                        };
-                        (parent1, parent2)
-                    } else {
-                        (
-                            MessageId::from_str(&message.parent1.as_ref().unwrap())?,
-                            MessageId::from_str(&message.parent1.as_ref().unwrap())?,
-                        )
+                    let parent_msg_ids = match message.parents.as_ref() {
+                        Some(parents) => {
+                            let mut parent_ids = Vec::new();
+                            for msg_id in parents {
+                                parent_ids.push(MessageId::from_str(&msg_id)?)
+                            }
+                            parent_ids
+                        }
+                        None => client.get_tips().await?,
                     };
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(client.get_network_id().await?)
-                        .with_parent1(parent1)
-                        .with_parent2(parent2)
-                        .with_nonce_provider(client.get_pow_provider(), 4000f64)
+                        .with_parents(parent_msg_ids)
+                        .with_nonce_provider(client.get_pow_provider(), 4000f64, None)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
-                    let message_id = client.post_message(&message).await?;
-                    serde_json::to_string(&message_id).unwrap()
+                    let message = client.post_message(&message).await?;
+                    serde_json::to_string(&message).unwrap()
                 }
                 Api::GetMessagesByIndexation(index) => {
                     let messages = client.get_message().index(index.as_str()).await?;
@@ -209,7 +237,11 @@ impl Task for ClientTask {
                 }
                 Api::GetMessage(id) => {
                     let message = client.get_message().data(&id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message_id: message.id().0,
+                        message,
+                    })
+                    .unwrap()
                 }
                 Api::GetMessageMetadata(id) => {
                     let metadata = client.get_message().metadata(&id).await?;
@@ -226,44 +258,49 @@ impl Task for ClientTask {
                     serde_json::to_string(&output).unwrap()
                 }
                 Api::FindOutputs { outputs, addresses } => {
-                    let bech32_hrp = client.get_network_info().bech32_hrp;
-                    let bech32_addresses: Vec<Bech32Address> = addresses
-                        .iter()
-                        .map(|a| Bech32Address(a.to_bech32(&bech32_hrp)))
-                        .collect();
-                    let outputs = client.find_outputs(outputs, &bech32_addresses[..]).await?;
+                    let outputs = client.find_outputs(outputs, &addresses[..]).await?;
                     let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
                     serde_json::to_string(&outputs).unwrap()
                 }
                 Api::GetAddressBalance(address) => {
-                    let balance = client
-                        .get_address()
-                        .balance(&address.to_bech32(&client.get_network_info().bech32_hrp).into())
-                        .await?;
+                    let balance = client.get_address().balance(address).await?;
                     serde_json::to_string(&balance).unwrap()
                 }
                 Api::GetAddressOutputs(address) => {
-                    let output_ids = client
-                        .get_address()
-                        .outputs(&address.to_bech32(&client.get_network_info().bech32_hrp).into())
-                        .await?;
+                    let output_ids = client.get_address().outputs(address).await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {
                     let milestone = client.get_milestone(*index).await?;
                     serde_json::to_string(&milestone).unwrap()
                 }
+                Api::GetMilestoneUTXOChanges(index) => {
+                    let milestone_utxo_changes = client.get_milestone_utxo_changes(*index).await?;
+                    serde_json::to_string(&milestone_utxo_changes).unwrap()
+                }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message: message.1,
+                        message_id: message.0,
+                    })
+                    .unwrap()
                 }
                 Api::Reattach(message_id) => {
                     let message = client.reattach(message_id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message: message.1,
+                        message_id: message.0,
+                    })
+                    .unwrap()
                 }
                 Api::Promote(message_id) => {
                     let message = client.promote(message_id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message: message.1,
+                        message_id: message.0,
+                    })
+                    .unwrap()
                 }
             };
             Ok(res)

@@ -4,7 +4,7 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use bee_signing_ext::Seed;
+use iota_client::Seed;
 
 use bee_rest_api::types::MessageDto;
 use std::{convert::TryFrom, str::FromStr};
@@ -17,12 +17,15 @@ async fn setup_indexation_message() -> MessageId {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap();
     let data = r#"
     {
 	    "networkId": "6530425480034647824",
-	    "parent1MessageId": "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c",
-	    "parent2MessageId": "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664",
+	    "parentMessageIds": [
+            "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c", 
+            "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664"
+        ],
 	    "payload": {
 		    "type": 2,
 		    "index": "HORNET Spammer",
@@ -66,6 +69,7 @@ async fn test_get_tips() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_tips()
         .await
@@ -80,10 +84,11 @@ async fn test_post_message_with_indexation() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     let r = client
-        .send()
+        .message()
         .with_index("Hello")
         .with_data("Tangle".to_string().as_bytes().to_vec())
         .finish()
@@ -100,16 +105,16 @@ async fn test_post_message_with_transaction() {
         .with_node(DEFAULT_NODE_URL) // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    let seed = Seed::from_ed25519_bytes(
-        &hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap(),
-    )
-    .unwrap();
+    let seed =
+        Seed::from_bytes(&hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap())
+            .unwrap();
 
     let message_id = iota
-        .send()
+        .message()
         .with_seed(&seed)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .with_output_hex(
@@ -131,6 +136,7 @@ async fn test_get_message_by_index() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .index("HORNET Spammer")
@@ -147,6 +153,7 @@ async fn test_get_message_data() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap();
     let message_id = setup_indexation_message().await;
     let r = client.get_message().data(&message_id).await.unwrap();
@@ -162,6 +169,7 @@ async fn test_get_message_metadata() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .metadata(&message_id)
@@ -179,6 +187,7 @@ async fn test_get_message_raw() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .raw(&message_id)
@@ -194,6 +203,7 @@ async fn test_get_message_children() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_message()
         .children(&message_id)
@@ -208,6 +218,7 @@ async fn test_get_address_balance() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_address()
         .balance(&"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into())
@@ -224,6 +235,7 @@ async fn test_get_address_outputs() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_address()
         .outputs(
@@ -243,6 +255,7 @@ async fn test_get_output() {
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_output(
             &UTXOInput::new(
@@ -259,13 +272,46 @@ async fn test_get_output() {
 
 #[tokio::test]
 #[ignore]
+async fn test_get_peers() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_peers()
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
 async fn test_get_milestone() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
+        .await
         .unwrap()
         .get_milestone(3)
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_milestone_utxo_changes() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_milestone_utxo_changes(3)
         .await
         .unwrap();
 

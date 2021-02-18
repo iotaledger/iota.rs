@@ -12,7 +12,7 @@ pub struct MessageSender {
     client_id: String,
     index: Option<String>,
     data: Option<Vec<u8>>,
-    parent: Option<MessageId>,
+    parents: Option<Vec<MessageId>>,
     seed: Option<String>,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
@@ -30,7 +30,7 @@ declare_types! {
                 client_id,
                 index: None,
                 data: None,
-                parent: None,
+                parents: None,
                 seed: None,
                 account_index: None,
                 initial_address_index:None,
@@ -45,7 +45,7 @@ declare_types! {
             let seed = cx.argument::<JsString>(0)?.value();
 
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed");
 
             {
                 let mut this = cx.this();
@@ -88,14 +88,20 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
-        method parent(mut cx) {
-            let parent = cx.argument::<JsString>(0)?.value();
-            let parent = MessageId::from_str(&parent).expect("invalid parent message id");
+        method parents(mut cx) {
+            let mut data: Vec<MessageId> = vec![];
+            let data_js_array = cx.argument::<JsArray>(0)?;
+            let js_data: Vec<Handle<JsValue>> = data_js_array.to_vec(&mut cx)?;
+            for parent in js_data {
+                let value: Handle<JsString> = parent.downcast_or_throw(&mut cx)?;
+                let parent = MessageId::from_str(&value.value()).expect("invalid parent message id");
+                data.push(parent);
+            }
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let send_parent = &mut this.borrow_mut(&guard).parent;
-                send_parent.replace(parent);
+                let send_parents = &mut this.borrow_mut(&guard).parents;
+                send_parents.replace(data);
             }
 
             Ok(cx.this().upcast())
@@ -188,10 +194,10 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::Send {
-                        seed: ref_.seed.as_ref().map(|seed| Seed::from_ed25519_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed")),
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed")),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
-                        parent: ref_.parent,
+                        parents: ref_.parents.clone(),
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
                         inputs: ref_.inputs.clone(),

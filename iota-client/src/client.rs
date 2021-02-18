@@ -9,19 +9,20 @@ use crate::{
     builder::{ClientBuilder, NetworkInfo},
     error::*,
     node::*,
-    parse_response,
+    parse_response, Seed,
 };
 
-use bee_message::prelude::{Bech32Address, Message, MessageId, UTXOInput};
+use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     handlers::{
-        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo, output::OutputResponse,
+        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
+        milestone::MilestoneResponse as MilestoneResponseDto,
+        milestone_utxo_changes::MilestoneUtxoChanges as MilestoneUTXOChanges, output::OutputResponse,
         tips::TipsResponse,
     },
-    types::{MessageDto, MilestoneDto as MilestoneMetadata},
+    types::{MessageDto, PeerDto},
 };
-use bee_signing_ext::Seed;
 
 use blake2::{
     digest::{Update, VariableOutput},
@@ -30,6 +31,8 @@ use blake2::{
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
+#[cfg(feature = "mqtt")]
+use tokio::sync::RwLock as AsyncRwLock;
 use tokio::{
     runtime::Runtime,
     sync::broadcast::{Receiver, Sender},
@@ -41,9 +44,20 @@ use std::{
     convert::{TryFrom, TryInto},
     hash::Hash,
     str::FromStr,
-    sync::{Arc, RwLock},
+    sync::{atomic::AtomicBool, Arc, RwLock},
     time::Duration,
 };
+
+#[derive(Debug, Serialize)]
+/// Milestone data.
+pub struct MilestoneResponse {
+    /// Milestone index.
+    pub index: u32,
+    /// Milestone message id.
+    pub message_id: MessageId,
+    /// Milestone timestamp.
+    pub timestamp: u64,
+}
 
 #[cfg(feature = "mqtt")]
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
@@ -117,7 +131,7 @@ impl BrokerOptions {
         self
     }
 
-    /// Decid if websockets or tcp will be used for the connection
+    /// Decide if websockets or tcp will be used for the connection
     pub fn use_websockets(mut self, use_ws: bool) -> Self {
         self.use_ws = use_ws;
         self
@@ -161,12 +175,17 @@ impl PowProvider for ClientMiner {
     type Builder = ClientMinerBuilder;
     type Error = crate::Error;
 
-    fn nonce(&self, bytes: &[u8], target_score: f64) -> std::result::Result<u64, Self::Error> {
+    fn nonce(
+        &self,
+        bytes: &[u8],
+        target_score: f64,
+        done: Option<Arc<AtomicBool>>,
+    ) -> std::result::Result<u64, Self::Error> {
         if self.local_pow {
             MinerBuilder::new()
                 .with_num_workers(num_cpus::get())
                 .finish()
-                .nonce(bytes, target_score)
+                .nonce(bytes, target_score, done)
                 .map_err(|e| crate::Error::Pow(e.to_string()))
         } else {
             Ok(0)
@@ -181,6 +200,8 @@ pub enum Api {
     GetHealth,
     /// `get_info`API
     GetInfo,
+    /// `get_peers`API
+    GetPeers,
     /// `get_tips` API
     GetTips,
     /// `post_message` API
@@ -200,6 +221,7 @@ impl FromStr for Api {
         let t = match s {
             "GetHealth" => Self::GetHealth,
             "GetInfo" => Self::GetInfo,
+            "GetPeers" => Self::GetPeers,
             "GetTips" => Self::GetTips,
             "PostMessage" => Self::PostMessage,
             "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
@@ -225,7 +247,7 @@ pub struct Client {
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
     #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
+    pub(crate) mqtt_topic_handlers: Arc<AsyncRwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
@@ -261,9 +283,7 @@ impl Drop for Client {
 
         #[cfg(feature = "mqtt")]
         if self.mqtt_client.is_some() {
-            self.subscriber()
-                .disconnect()
-                .expect("failed to disconnect MQTT client");
+            crate::async_runtime::block_on(self.subscriber().disconnect()).expect("failed to disconnect MQTT");
         }
     }
 }
@@ -306,25 +326,49 @@ impl Client {
         network_info: &Arc<RwLock<NetworkInfo>>,
     ) {
         let mut synced_nodes = HashSet::new();
-
+        let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
         for node_url in nodes {
-            // Put the healty node url into the synced_nodes
+            // Put the healthy node url into the network_nodes
             if let Ok(info) = Client::get_node_info(node_url.clone()).await {
                 if info.is_healthy {
-                    if network_info.read().unwrap().network != info.network_id {
-                        continue;
-                    }
-                    let mut client_network_info = network_info.write().unwrap();
-                    client_network_info.network_id = hash_network(&info.network_id);
-                    client_network_info.min_pow_score = info.min_pow_score;
-                    client_network_info.bech32_hrp = info.bech32_hrp;
-                    if !client_network_info.local_pow {
-                        if info.features.contains(&"PoW".to_string()) {
-                            synced_nodes.insert(node_url.clone());
+                    match network_nodes.get_mut(&info.network_id) {
+                        Some(network_id_entry) => {
+                            network_id_entry.push((info, node_url.clone()));
                         }
-                    } else {
+                        None => match &network_info.read().unwrap().network {
+                            Some(id) => {
+                                if info.network_id.contains(id) {
+                                    network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
+                                }
+                            }
+                            None => {
+                                network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
+                            }
+                        },
+                    }
+                }
+            }
+        }
+        // Get network_id with the most nodes
+        let mut most_nodes = ("network_id", 0);
+        for (network_id, node) in network_nodes.iter() {
+            if node.len() > most_nodes.1 {
+                most_nodes.0 = network_id;
+                most_nodes.1 = node.len();
+            }
+        }
+        if let Some(nodes) = network_nodes.get(most_nodes.0) {
+            for (info, node_url) in nodes.iter() {
+                let mut client_network_info = network_info.write().unwrap();
+                client_network_info.network_id = Some(hash_network(&info.network_id));
+                client_network_info.min_pow_score = info.min_pow_score;
+                client_network_info.bech32_hrp = info.bech32_hrp.clone();
+                if !client_network_info.local_pow {
+                    if info.features.contains(&"PoW".to_string()) {
                         synced_nodes.insert(node_url.clone());
                     }
+                } else {
+                    synced_nodes.insert(node_url.clone());
                 }
             }
         }
@@ -341,21 +385,48 @@ impl Client {
 
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
-        let info = self.get_info().await?;
-        let network_id = hash_network(&info.network_id);
-        Ok(network_id)
+        let network_info = self.get_network_info().await?;
+        Ok(network_info.network_id.unwrap())
     }
 
     /// Gets the miner to use based on the PoW setting
     pub fn get_pow_provider(&self) -> ClientMiner {
-        ClientMinerBuilder::new()
-            .with_local_pow(self.network_info.read().unwrap().local_pow)
-            .finish()
+        ClientMinerBuilder::new().with_local_pow(self.get_local_pow()).finish()
     }
 
     /// Gets the network related information such as network_id and min_pow_score
-    pub fn get_network_info(&self) -> NetworkInfo {
-        self.network_info.read().unwrap().clone()
+    /// and if it's the default one, sync it first.
+    pub async fn get_network_info(&self) -> Result<NetworkInfo> {
+        let not_synced = { self.network_info.read().unwrap().network_id.is_none() };
+        if not_synced {
+            let info = self.get_info().await?;
+            let network_id = hash_network(&info.network_id);
+            let mut client_network_info = self.network_info.write().unwrap();
+            client_network_info.network_id = Some(network_id);
+            client_network_info.min_pow_score = info.min_pow_score;
+            client_network_info.bech32_hrp = info.bech32_hrp;
+        }
+        Ok(self.network_info.read().unwrap().clone())
+    }
+
+    /// returns the bech32_hrp
+    pub async fn get_bech32_hrp(&self) -> Result<String> {
+        Ok(self.get_network_info().await?.bech32_hrp)
+    }
+
+    /// returns the min pow score
+    pub async fn get_min_pow_score(&self) -> Result<f64> {
+        Ok(self.get_network_info().await?.min_pow_score)
+    }
+
+    /// returns the tips interval
+    pub fn get_tips_interval(&self) -> u64 {
+        self.network_info.read().unwrap().tips_interval
+    }
+
+    /// returns the local pow
+    pub fn get_local_pow(&self) -> bool {
+        self.network_info.read().unwrap().local_pow
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -413,7 +484,7 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct NodeInfoWrapper {
             data: NodeInfo,
-        };
+        }
         parse_response!(resp, 200 => {
             Ok(resp.json::<NodeInfoWrapper>().await.unwrap().data)
         })
@@ -433,14 +504,34 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct NodeInfoWrapper {
             data: NodeInfo,
-        };
+        }
         parse_response!(resp, 200 => {
             Ok(resp.json::<NodeInfoWrapper>().await?.data)
         })
     }
 
+    /// GET /api/v1/peers endpoint
+    pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
+        let mut url = self.get_node()?;
+        url.set_path("api/v1/peers");
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetPeers))
+            .send()
+            .await?;
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct PeerWrapper {
+            data: Vec<PeerDto>,
+        }
+        parse_response!(resp, 200 => {
+            Ok(resp.json::<PeerWrapper>().await?.data)
+        })
+    }
+
     /// GET /api/v1/tips endpoint
-    pub async fn get_tips(&self) -> Result<(MessageId, MessageId)> {
+    pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
         let mut url = self.get_node()?;
         url.set_path("api/v1/tips");
         let resp = self
@@ -453,14 +544,16 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct TipsWrapper {
             data: TipsResponse,
-        };
+        }
         parse_response!(resp, 200 => {
-            let pair = resp.json::<TipsWrapper>().await?;
-            let (mut tip1, mut tip2) = ([0u8; 32], [0u8; 32]);
-            hex::decode_to_slice(pair.data.tip_1_message_id, &mut tip1)?;
-            hex::decode_to_slice(pair.data.tip_2_message_id, &mut tip2)?;
-
-            Ok((MessageId::from(tip1), MessageId::from(tip2)))
+            let tips_response = resp.json::<TipsWrapper>().await?;
+            let mut tips = Vec::new();
+            for tip in tips_response.data.tip_message_ids {
+                let mut new_tip = [0u8; 32];
+                hex::decode_to_slice(tip, &mut new_tip)?;
+                tips.push(MessageId::from(new_tip));
+            }
+            Ok(tips)
         })
     }
 
@@ -469,10 +562,11 @@ impl Client {
         let mut url = self.get_node()?;
         url.set_path("api/v1/messages");
 
-        let mut timeout = self.get_timeout(Api::PostMessage);
-        if self.network_info.read().unwrap().local_pow {
-            timeout = self.get_timeout(Api::PostMessageWithRemotePow);
-        }
+        let timeout = if self.get_local_pow() {
+            self.get_timeout(Api::PostMessage)
+        } else {
+            self.get_timeout(Api::PostMessageWithRemotePow)
+        };
         let message = MessageDto::try_from(message).expect("Can't convert message into json");
         let resp = self
             .client
@@ -485,12 +579,12 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct MessageIdResponseWrapper {
             data: MessageIdWrapper,
-        };
+        }
         #[derive(Debug, Serialize, Deserialize)]
         struct MessageIdWrapper {
             #[serde(rename = "messageId")]
             message_id: String,
-        };
+        }
         parse_response!(resp, 201 => {
             let message_id = resp.json::<MessageIdResponseWrapper>().await?;
             let mut message_id_bytes = [0u8; 32];
@@ -523,14 +617,15 @@ impl Client {
         #[derive(Debug, Serialize, Deserialize)]
         struct OutputWrapper {
             data: OutputResponse,
-        };
+        }
         parse_response!(resp, 200 => {
             let output_response = resp.json::<OutputWrapper>().await?;
             Ok(output_response.data)
         })
     }
+
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
-    /// the request amount exceed individual node limit.
+    /// the request amount exceeds individual node limit.
     pub async fn find_outputs(
         &self,
         outputs: &[UTXOInput],
@@ -569,7 +664,7 @@ impl Client {
 
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone(&self, index: u64) -> Result<MilestoneMetadata> {
+    pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
         let mut url = self.get_node()?;
         url.set_path(&format!("api/v1/milestones/{}", index));
         let resp = self
@@ -580,11 +675,38 @@ impl Client {
             .await?;
         #[derive(Debug, Serialize, Deserialize)]
         struct MilestoneWrapper {
-            data: MilestoneMetadata,
-        };
+            data: MilestoneResponseDto,
+        }
         parse_response!(resp, 200 => {
-            let milestone = resp.json::<MilestoneWrapper>().await?;
-            Ok(milestone.data)
+            let milestone = resp.json::<MilestoneWrapper>().await?.data;
+            let mut message_id = [0u8; 32];
+            hex::decode_to_slice(milestone.message_id, &mut message_id)?;
+            Ok(MilestoneResponse {
+                index: milestone.milestone_index,
+                message_id: MessageId::new(message_id),
+                timestamp: milestone.timestamp,
+            })
+        })
+    }
+
+    /// GET /api/v1/milestones/{index}/utxo-changes endpoint
+    /// Get the milestone by the given index.
+    pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
+        let mut url = self.get_node()?;
+        url.set_path(&format!("api/v1/milestones/{}/utxo-changes", index));
+        let resp = self
+            .client
+            .get(url)
+            .timeout(self.get_timeout(Api::GetMilestone))
+            .send()
+            .await?;
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MilestoneUTXOChangesWrapper {
+            data: MilestoneUTXOChanges,
+        }
+        parse_response!(resp, 200 => {
+            let milestone = resp.json::<MilestoneUTXOChangesWrapper>().await?.data;
+            Ok(milestone)
         })
     }
 
@@ -599,23 +721,21 @@ impl Client {
         }
     }
 
-    async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+    /// Reattach a message without checking if it should be reattached
+    pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
-        // Change the fields of parent1 and parent2.
-        let tips = self.get_tips().await?;
-        let reattach_message = Message::builder()
-            .with_network_id(self.get_network_id().await?)
-            .with_parent1(tips.0)
-            .with_parent2(tips.1)
-            .with_payload(message.payload().to_owned().unwrap())
-            .finish()
-            .map_err(|_| Error::TransactionError)?;
+        let reattach_message = finish_pow(self, Some(message.payload().to_owned().unwrap())).await?;
 
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;
-        Ok((message_id, reattach_message))
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.get_local_pow() {
+            true => reattach_message,
+            false => self.get_message().data(&message_id).await?,
+        };
+        Ok((message_id, msg))
     }
 
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
@@ -629,18 +749,25 @@ impl Client {
         }
     }
 
-    async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+    /// Promote a message without checking if it should be promoted
+    pub async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
-        let promote_message = Message::builder()
+        let min_pow_score = self.get_min_pow_score().await?;
+        let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
-            .with_parent1(*message_id)
-            .with_parent2(tips.0)
+            .with_parents(vec![*message_id, tips[0]])
+            .with_nonce_provider(self.get_pow_provider(), min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
         let message_id = self.post_message(&promote_message).await?;
-        Ok((message_id, promote_message))
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.get_local_pow() {
+            true => promote_message,
+            false => self.get_message().data(&message_id).await?,
+        };
+        Ok((message_id, msg))
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -648,8 +775,8 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     /// A generic send function for easily sending transaction or indexation messages.
-    pub fn send(&self) -> SendBuilder<'_> {
-        SendBuilder::new(self)
+    pub fn message(&self) -> ClientMessageBuilder<'_> {
+        ClientMessageBuilder::new(self)
     }
 
     /// Return a valid unspent address.
@@ -659,7 +786,7 @@ impl Client {
 
     /// Return a list of addresses from the seed regardless of their validity.
     pub fn find_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
-        GetAddressesBuilder::new(self, seed)
+        GetAddressesBuilder::new(seed).with_client(&self)
     }
 
     /// Find all messages by provided message IDs and/or indexation_keys.
@@ -688,7 +815,6 @@ impl Client {
             let message = self.get_message().data(&message_id).await.unwrap();
             messages.push(message);
         }
-
         Ok(messages)
     }
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example txspam --release
-use iota::{Client, MessageId, Payload, Seed, UTXOInput};
+use iota::{Client, Essence, MessageId, Payload, Seed, UTXOInput};
 use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
@@ -17,13 +17,13 @@ async fn main() {
         .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
     let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
-            .unwrap();
+        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     // split funds to own addresses
     let addresses = iota
@@ -31,9 +31,10 @@ async fn main() {
         .with_account_index(0)
         .with_range(0..10)
         .finish()
+        .await
         .unwrap();
 
-    let mut message_builder = iota.send().with_seed(&seed);
+    let mut message_builder = iota.message().with_seed(&seed);
     for address in &addresses {
         message_builder = message_builder.with_output(address, 1_000_000).unwrap();
     }
@@ -49,14 +50,21 @@ async fn main() {
     // Use own outputs directly so we don't double spend them
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
-        for (index, _output) in tx.essence().outputs().iter().enumerate() {
-            initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
+        match tx.essence() {
+            Essence::Regular(essence) => {
+                for (index, _output) in essence.outputs().iter().enumerate() {
+                    initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
+                }
+            }
+            _ => {
+                panic!("Unexisting essence type");
+            }
         }
     }
 
     for (index, address) in addresses.iter().enumerate() {
         let message = iota
-            .send()
+            .message()
             .with_seed(&seed)
             .with_input(initial_outputs[index].clone())
             .with_output(address, 1_000_000)

@@ -31,7 +31,7 @@ impl<'a> GetAddressBuilder<'a> {
         #[derive(Debug, Serialize, Deserialize)]
         struct BalanceWrapper {
             data: BalanceForAddressResponse,
-        };
+        }
         parse_response!(resp, 200 => {
             let r = resp.json::<BalanceWrapper>().await?;
             Ok(r.data)
@@ -49,7 +49,7 @@ impl<'a> GetAddressBuilder<'a> {
         #[derive(Debug, Serialize, Deserialize)]
         struct OutputWrapper {
             data: OutputsForAddressResponse,
-        };
+        }
         parse_response!(resp, 200 => {
             let r = resp.json::<OutputWrapper>().await?.data;
             r.output_ids.iter()

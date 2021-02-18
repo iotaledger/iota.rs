@@ -10,12 +10,9 @@ use paho_mqtt::{
     MQTT_VERSION_3_1_1,
 };
 use regex::Regex;
+use tokio::sync::RwLock;
 
-use std::{
-    convert::TryFrom,
-    sync::{Arc, RwLock},
-    time::Duration,
-};
+use std::{convert::TryFrom, sync::Arc, time::Duration};
 
 macro_rules! lazy_static {
     ($init:expr => $type:ty) => {{
@@ -71,7 +68,6 @@ fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
         Some(ref c) => Ok(c),
         None => {
             for node in client.sync.read().unwrap().iter() {
-                // node.set_path("mqtt");
                 let uri = match client.broker_options.use_ws {
                     true => format!(
                         "{}://{}:{}/mqtt",
@@ -109,18 +105,21 @@ fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, client: &mut Mqt
     let receiver = client.start_consuming();
     std::thread::spawn(move || {
         while let Ok(message) = receiver.recv() {
+            let mqtt_topic_handlers = mqtt_topic_handlers.clone();
             if let Some(message) = message {
                 let topic = message.topic().to_string();
-                let mqtt_topic_handlers_guard = mqtt_topic_handlers.read().unwrap();
-                if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
-                    let event = TopicEvent {
-                        topic,
-                        payload: message.payload_str().to_string(),
-                    };
-                    for handler in handlers {
-                        handler(&event)
+                crate::async_runtime::spawn(async move {
+                    let mqtt_topic_handlers_guard = mqtt_topic_handlers.read().await;
+                    if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
+                        let event = TopicEvent {
+                            topic,
+                            payload: message.payload_str().to_string(),
+                        };
+                        for handler in handlers {
+                            handler(&event)
+                        }
                     }
-                }
+                });
             }
         }
     });
@@ -148,13 +147,13 @@ impl<'a> MqttManager<'a> {
     }
 
     /// Unsubscribes from all subscriptions.
-    pub fn unsubscribe(self) -> crate::Result<()> {
-        MqttTopicManager::new(self.client).unsubscribe()
+    pub async fn unsubscribe(self) -> crate::Result<()> {
+        MqttTopicManager::new(self.client).unsubscribe().await
     }
 
     /// Disconnects the broker.
     /// This will clear the stored topic handlers and close the MQTT connection.
-    pub fn disconnect(self) -> Result<()> {
+    pub async fn disconnect(self) -> Result<()> {
         let timeout = self.client.broker_options.timeout;
         if let Some(client) = &self.client.mqtt_client {
             let disconnect_options = DisconnectOptionsBuilder::new().timeout(timeout).finalize();
@@ -163,7 +162,7 @@ impl<'a> MqttManager<'a> {
 
             {
                 let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-                let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
+                let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
                 mqtt_topic_handlers.clear()
             }
         }
@@ -198,7 +197,10 @@ impl<'a> MqttTopicManager<'a> {
     }
 
     /// Subscribe to the given topics with the callback.
-    pub fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(mut self, callback: C) -> Result<()> {
+    pub async fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(
+        mut self,
+        callback: C,
+    ) -> Result<()> {
         let client = get_mqtt_client(&mut self.client)?;
         let cb = Arc::new(Box::new(callback) as Box<dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static>);
         client.subscribe_many(
@@ -207,7 +209,7 @@ impl<'a> MqttTopicManager<'a> {
         )?;
         {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
+            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
             for topic in self.topics {
                 match mqtt_topic_handlers.get_mut(&topic) {
                     Some(handlers) => handlers.push(cb.clone()),
@@ -222,10 +224,10 @@ impl<'a> MqttTopicManager<'a> {
 
     /// Unsubscribe from the given topics.
     /// If no topics were provided, the function will unsubscribe from every subscribed topic.
-    pub fn unsubscribe(self) -> Result<()> {
+    pub async fn unsubscribe(self) -> Result<()> {
         let topics = {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mqtt_topic_handlers = mqtt_topic_handlers.read().unwrap();
+            let mqtt_topic_handlers = mqtt_topic_handlers.read().await;
             if self.topics.is_empty() {
                 mqtt_topic_handlers.keys().cloned().collect()
             } else {
@@ -239,7 +241,7 @@ impl<'a> MqttTopicManager<'a> {
 
         let empty_topic_handlers = {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().unwrap();
+            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
             for topic in topics {
                 mqtt_topic_handlers.remove(&topic);
             }
@@ -247,7 +249,7 @@ impl<'a> MqttTopicManager<'a> {
         };
 
         if self.client.broker_options.automatic_disconnect && empty_topic_handlers {
-            MqttManager::new(self.client).disconnect()?;
+            MqttManager::new(self.client).disconnect().await?;
         }
 
         Ok(())

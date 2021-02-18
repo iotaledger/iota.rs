@@ -72,7 +72,7 @@ declare_types! {
         // High level API
         ///////////////////////////////////////////////////////////////////////
 
-        method send(mut cx) {
+        method message(mut cx) {
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -87,7 +87,7 @@ declare_types! {
         method getUnspentAddress(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -102,7 +102,7 @@ declare_types! {
         method findAddresses(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -146,7 +146,7 @@ declare_types! {
         method getBalance(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -163,7 +163,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(parse_address(address.value()).unwrap_or_else(|_| panic!("invalid address: {}", address.value())));
+                addresses.push(address.value().into());
             }
 
             let cb = cx.argument::<JsFunction>(1)?;
@@ -200,16 +200,18 @@ declare_types! {
         }
 
         method networkInfo(mut cx) {
-            let network_info = {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
                 let this = cx.this();
                 let guard = cx.lock();
                 let id = &this.borrow(&guard).0;
-                let client = crate::get_client(&id);
-                let client = client.read().unwrap();
-                let info = client.get_network_info();
-                serde_json::to_string(&info).unwrap()
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetNetworkInfo,
+                };
+                client_task.schedule(cb);
             };
-            Ok(cx.string(network_info).upcast())
+            Ok(cx.undefined().upcast())
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -236,6 +238,22 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: id.clone(),
                     api: Api::GetInfo,
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getPeers(mut cx) {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetPeers,
                 };
                 client_task.schedule(cb);
             }
@@ -322,8 +340,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                let address = parse_address(address.value()).expect("invalid address");
-                addresses.push(address);
+                addresses.push(address.value().into());
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
@@ -346,7 +363,6 @@ declare_types! {
 
         method getAddressOutputs(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid output id");
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -355,7 +371,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressOutputs(address),
+                    api: Api::GetAddressOutputs(address.into()),
                 };
                 client_task.schedule(cb);
             }
@@ -365,7 +381,6 @@ declare_types! {
 
         method getAddressBalance(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid output id");
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -374,7 +389,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressBalance(address),
+                    api: Api::GetAddressBalance(address.into()),
                 };
                 client_task.schedule(cb);
             }
@@ -383,7 +398,7 @@ declare_types! {
         }
 
         method getMilestone(mut cx) {
-            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u64;
+            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -393,6 +408,24 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: id.clone(),
                     api: Api::GetMilestone(milestone_index),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getMilestoneUTXOChanges(mut cx) {
+            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
+
+            let cb = cx.argument::<JsFunction>(1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetMilestoneUTXOChanges(milestone_index),
                 };
                 client_task.schedule(cb);
             }

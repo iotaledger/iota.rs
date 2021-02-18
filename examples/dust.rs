@@ -15,15 +15,15 @@ async fn main() {
         .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
     let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
-            .unwrap();
+        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
     let message_id = iota
-        .send()
+        .message()
         .with_seed(&seed)
         .with_dust_allowance_output(
             &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),

@@ -1,6 +1,6 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-
+#![allow(clippy::unnecessary_wraps)]
 use std::{collections::HashMap, num::NonZeroU64, str::FromStr, time::Duration};
 
 use iota::client::{Api, BrokerOptions, ClientBuilder};
@@ -9,12 +9,14 @@ use neon::prelude::*;
 pub struct ClientBuilderWrapper {
     nodes: Vec<String>,
     node_pool_urls: Vec<String>,
+    network: Option<String>,
     broker_options: Option<BrokerOptions>,
     node_sync_interval: Option<NonZeroU64>,
     request_timeout: Option<Duration>,
     api_timeout: HashMap<Api, Duration>,
     local_pow: bool,
-    node_sync_enabled: bool,
+    tips_interval: u64,
+    node_sync_disabled: bool,
 }
 
 declare_types! {
@@ -23,12 +25,14 @@ declare_types! {
             Ok(ClientBuilderWrapper {
                 nodes: Default::default(),
                 node_pool_urls: Default::default(),
+                network: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
                 request_timeout: Default::default(),
                 api_timeout: Default::default(),
                 local_pow: true,
-                node_sync_enabled: true,
+                tips_interval: 15,
+                node_sync_disabled: false,
             })
         }
 
@@ -87,6 +91,17 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method network(mut cx) {
+            let network_name = cx.argument::<JsString>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let network = &mut this.borrow_mut(&guard).network;
+                *network = Some(network_name);
+            }
+            Ok(cx.this().upcast())
+        }
+
         method brokerOptions(mut cx) {
             let options = cx.argument::<JsString>(0)?.value();
             let options: BrokerOptions = serde_json::from_str(&options).expect("invalid broker options JSON");
@@ -114,8 +129,8 @@ declare_types! {
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let node_sync_enabled = &mut this.borrow_mut(&guard).node_sync_enabled;
-                *node_sync_enabled = false;
+                let node_sync_disabled = &mut this.borrow_mut(&guard).node_sync_disabled;
+                *node_sync_disabled = true;
             }
             Ok(cx.this().upcast())
         }
@@ -155,27 +170,41 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method tipsInterval(mut cx) {
+            let tips_interval = cx.argument::<JsNumber>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let tips_interval_ref = &mut this.borrow_mut(&guard).tips_interval;
+                *tips_interval_ref = tips_interval as u64;
+            }
+            Ok(cx.this().upcast())
+        }
+
         method build(mut cx) {
             let client = {
                 let this = cx.this();
                 let guard = cx.lock();
                 let ref_ = &*this.borrow(&guard);
-                let mut builder = ClientBuilder::new().with_local_pow(ref_.local_pow);
+                let mut builder = ClientBuilder::new().with_local_pow(ref_.local_pow).with_tips_interval(ref_.tips_interval);
 
                 for node in &ref_.nodes {
                     builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
                 }
                 if !&ref_.node_pool_urls.is_empty() {
-                    builder = builder.with_node_pool_urls(&ref_.node_pool_urls).expect("Problem with node pool url");
+                    builder = crate::block_on(builder.with_node_pool_urls(&ref_.node_pool_urls)).expect("Problem with node pool url");
+                }
+                if let Some(network_name) = &ref_.network {
+                    builder = builder.with_network(network_name);
                 }
                 if let Some(broker_options) = &ref_.broker_options {
                     builder = builder.with_mqtt_broker_options(broker_options.clone());
                 }
-                if ref_.node_sync_enabled {
+                if ref_.node_sync_disabled {
                     builder = builder.with_node_sync_disabled();
                 }
 
-                builder.finish().expect("failed to build client instance")
+                crate::block_on(builder.finish()).expect("failed to build client instance")
             };
             let id = crate::store_client(client);
             let id = cx.string(id);
