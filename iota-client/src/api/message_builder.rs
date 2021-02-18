@@ -10,7 +10,7 @@ use slip10::BIP32Path;
 
 use std::{
     collections::{HashMap, HashSet},
-    ops::{Deref, Range},
+    ops::Range,
     str::FromStr,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -515,11 +515,6 @@ impl<'a> ClientMessageBuilder<'a> {
             false => self.client.get_message().data(&msg_id).await?,
         };
 
-        #[cfg(feature = "storage")]
-        if let Some(account) = &self.client.storage {
-            account.write().await.append_messages(vec![msg.clone()]);
-            account.deref().write().await.save().await?;
-        }
         Ok(msg)
     }
 }

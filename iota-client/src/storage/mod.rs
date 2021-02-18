@@ -2,13 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Storage adapter
-
-/// Account for storage
-pub mod account;
 /// Sqlite storage.
 pub mod sqlite;
-use account::Account;
-pub use account::*;
 use once_cell::sync::OnceCell;
 use tokio::sync::{Mutex, RwLock};
 
@@ -20,7 +15,6 @@ use std::{
 
 /// Storage struct
 pub struct Storage {
-    storage_path: PathBuf,
     inner: Box<dyn StorageAdapter + Sync + Send>,
 }
 
@@ -33,10 +27,6 @@ impl Storage {
     #[allow(dead_code)]
     pub async fn get(&mut self, account_id: &str) -> crate::Result<String> {
         self.inner.get(account_id).await
-    }
-    /// Get all accounts
-    pub async fn get_all(&mut self) -> crate::Result<Vec<Account>> {
-        parse_accounts(&self.storage_path, &self.inner.get_all().await?)
     }
     /// Set an account
     pub async fn set(&mut self, account_id: &str, account: String) -> crate::Result<()> {
@@ -57,15 +47,12 @@ pub async fn set<P: AsRef<Path>>(storage_path: P, storage: Box<dyn StorageAdapte
     let mut instances = INSTANCES.get_or_init(Default::default).write().await;
     instances.insert(
         storage_path.as_ref().to_path_buf(),
-        Arc::new(Mutex::new(Storage {
-            storage_path: storage_path.as_ref().to_path_buf(),
-            inner: storage,
-        })),
+        Arc::new(Mutex::new(Storage { inner: storage })),
     );
 }
 
 /// gets the storage adapter
-pub(crate) async fn get(storage_path: &PathBuf) -> crate::Result<StorageHandle> {
+pub async fn get(storage_path: &PathBuf) -> crate::Result<StorageHandle> {
     let instances = INSTANCES.get_or_init(Default::default).read().await;
     if let Some(instance) = instances.get(storage_path) {
         Ok(instance.clone())
@@ -88,39 +75,9 @@ pub trait StorageAdapter {
     /// Gets all the accounts from the storage.
     async fn get_all(&mut self) -> crate::Result<Vec<String>>;
     /// Saves or updates an account on the storage.
-    async fn set(&mut self, account_id: &str, account: String) -> crate::Result<()>;
+    async fn set(&mut self, account_id: &str, data: String) -> crate::Result<()>;
     /// Removes an account from the storage.
     async fn remove(&mut self, account_id: &str) -> crate::Result<()>;
-}
-
-fn parse_accounts(storage_path: &PathBuf, accounts: &[String]) -> crate::Result<Vec<Account>> {
-    let mut err = None;
-    let accounts: Vec<Option<Account>> = accounts
-        .iter()
-        .map(|account| {
-            if account.starts_with('{') {
-                match serde_json::from_str::<Account>(&account.to_string()) {
-                    Ok(mut acc) => {
-                        acc.set_storage_path(storage_path.clone());
-                        Some(acc)
-                    }
-                    Err(e) => {
-                        err = Some(e.into());
-                        None
-                    }
-                }
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    if let Some(err) = err {
-        Err(err)
-    } else {
-        let accounts = accounts.into_iter().map(|account| account.unwrap()).collect();
-        Ok(accounts)
-    }
 }
 
 #[cfg(test)]
@@ -139,7 +96,7 @@ mod tests {
             async fn get_all(&mut self) -> crate::Result<Vec<String>> {
                 Ok(vec![])
             }
-            async fn set(&mut self, _key: &str, _account: String) -> crate::Result<()> {
+            async fn set(&mut self, _key: &str, _data: String) -> crate::Result<()> {
                 Ok(())
             }
             async fn remove(&mut self, _key: &str) -> crate::Result<()> {

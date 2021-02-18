@@ -86,12 +86,12 @@ impl StorageAdapter for SqliteStorageAdapter {
         Ok(accounts)
     }
 
-    async fn set(&mut self, account_id: &str, account: String) -> crate::Result<()> {
+    async fn set(&mut self, account_id: &str, data: String) -> crate::Result<()> {
         let connection = self.connection.lock().expect("failed to get connection lock");
         connection
             .execute(
                 &format!("INSERT OR REPLACE INTO {} VALUES (?1, ?2)", self.table_name),
-                params![account_id, account],
+                params![account_id, data],
             )
             .map_err(|_| crate::Error::Storage("failed to insert data".into()))?;
         Ok(())

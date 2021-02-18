@@ -36,7 +36,6 @@ thiserror = "1.0"
 num_cpus = "1.13"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 async-trait = "0.1"
-once_cell = "1.5"
 
 # MQTT
 paho-mqtt = { version = "0.9", optional = true }
@@ -46,4 +45,4 @@ futures = { version = "0.3", optional = true }
 
 [features]
 mqtt = ["paho-mqtt", "regex", "once_cell", "futures"]
-storage = ["rusqlite"]
+storage = ["rusqlite", "once_cell"]
