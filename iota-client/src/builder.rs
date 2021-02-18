@@ -216,49 +216,49 @@ impl ClientBuilder {
             Api::GetInfo,
             self.api_timeout
                 .remove(&Api::GetInfo)
-                .unwrap_or(GET_API_TIMEOUT),
+                .unwrap_or_else(||Duration::from_millis(2000)),
         );
         api_timeout.insert(
             Api::GetPeers,
             self.api_timeout
                 .remove(&Api::GetPeers)
-                .unwrap_or(GET_API_TIMEOUT),
+                .unwrap_or_else(||Duration::from_millis(2000)),
         );
         api_timeout.insert(
             Api::GetHealth,
             self.api_timeout
                 .remove(&Api::GetHealth)
-                .unwrap_or(GET_API_TIMEOUT),
+                .unwrap_or_else(||Duration::from_millis(2000)),
         );
         api_timeout.insert(
             Api::GetMilestone,
             self.api_timeout
                 .remove(&Api::GetMilestone)
-                .unwrap_or(GET_API_TIMEOUT),
+                .unwrap_or_else(||Duration::from_millis(2000)),
         );
         api_timeout.insert(
             Api::GetTips,
             self.api_timeout
                 .remove(&Api::GetTips)
-                .unwrap_or(GET_API_TIMEOUT),
+                .unwrap_or_else(||Duration::from_millis(2000)),
         );
         api_timeout.insert(
             Api::PostMessage,
             self.api_timeout
                 .remove(&Api::PostMessage)
-                .unwrap_or(GET_API_TIMEOUT),
+                .unwrap_or_else(||Duration::from_millis(2000)),
         );
         api_timeout.insert(
             Api::PostMessageWithRemotePow,
             self.api_timeout
                 .remove(&Api::PostMessageWithRemotePow)
-                .unwrap_or(POST_MESSAGE_WITH_REMOTE_POW_TIMEOUT),
+                .unwrap_or_else(||Duration = Duration::from_millis(30000)),
         );
         api_timeout.insert(
             Api::GetOutput,
             self.api_timeout
                 .remove(&Api::GetOutput)
-                .unwrap_or(GET_API_TIMEOUT),
+                .unwrap_or_else(||Duration::from_millis(2000)),
         );
 
         let client = Client {
