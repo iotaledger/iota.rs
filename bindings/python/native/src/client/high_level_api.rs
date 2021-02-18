@@ -30,6 +30,7 @@ impl Client {
         outputs: Option<Vec<Output>>,
         dust_allowance_outputs: Option<Vec<Output>>,
         index: Option<&str>,
+        index_raw: Option<&[u8]>,
         data: Option<Vec<u8>>,
         data_str: Option<String>,
         parents: Option<Vec<&str>>,
@@ -73,6 +74,9 @@ impl Client {
         }
         if let Some(index) = index {
             send_builder = send_builder.with_index(index.as_bytes());
+        }
+        if let Some(index_raw) = index_raw {
+            send_builder = send_builder.with_index(index_raw);
         }
         if let Some(data) = data {
             send_builder = send_builder.with_data(data);
