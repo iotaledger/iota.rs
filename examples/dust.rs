@@ -26,12 +26,12 @@ async fn main() {
         .message()
         .with_seed(&seed)
         .with_dust_allowance_output(
-            &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),
+            &"atoi1qrdypwg7lrghd9urpuhtsx5mt2r27wxma5nevcr39pszkqejt00dgku89p7".into(),
             1_000_000,
         )
         .unwrap()
         .with_output(
-            &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),
+            &"atoi1qrdypwg7lrghd9urpuhtsx5mt2r27wxma5nevcr39pszkqejt00dgku89p7".into(),
             1,
         )
         .unwrap()

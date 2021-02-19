@@ -6,7 +6,7 @@ use iota::{Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
-/// In this example, we send 1_000_000 tokens to atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5
+/// In this example, we send 1_000_000 tokens to atoi1qzj86lzml2ktagye4mj0th6zymgka8lt96qre9yye0v8sawzmdu0ut90vm7
 /// This address belongs to the first seed in .env.example
 
 #[tokio::main]
@@ -42,7 +42,7 @@ async fn main() {
         .with_input(outputs[0].clone())
         // .with_input_range(20..25)
         .with_output(
-            &"atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5".into(),
+            &"atoi1qzj86lzml2ktagye4mj0th6zymgka8lt96qre9yye0v8sawzmdu0ut90vm7".into(),
             1_000_000,
         )
         .unwrap()
