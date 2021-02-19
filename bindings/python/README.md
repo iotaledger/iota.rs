@@ -669,7 +669,7 @@ milestone = {
 }
 ```
 
-Please refer to [MilestonePayloadEssence](#milestonepayloadessence) for the detail of this type.
+Please refer to [MilestonePayloadEssence](#milestonepayloadessence) for the details of this type.
 
 #### MilestonePayloadEssence
 
@@ -743,7 +743,7 @@ unlock_block = {
 }
 ```
 
-Please refer to [Ed25519Signature](#ed25519Signature) for the detail of this type.
+Please refer to [Ed25519Signature](#ed25519Signature) for the details of this type.
 
 #### Ed25519Signature
 
@@ -871,7 +871,7 @@ heart_beat_dto = {
 A dict with the following key/value pairs.
 
 ```python
-xxx = {
+metrics_dto = {
     'received_messages': int,
     'known_messages': int,
     'received_message_requests': int,
