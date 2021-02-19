@@ -172,7 +172,7 @@ Gets peers of the node.
 
 #### get_tips(): list[str]
 
-Gets two non-lazy tips.
+Gets non-lazy tips.
 
 **Returns** two non-lazy tips' message ids in list.
 
@@ -249,7 +249,7 @@ Gets the utxo changes by the given milestone index.
 
 ### High-Level APIs
 
-#### message(seed (optional), account_index (optional), initial_address_index (optional), inputs (optional), input_range_begin (optional), input_range_end (optional), outputs (optional), dust_allowance_outputs (optional), index (optional), data (optional), data_str (optional), parents (optional)): Message
+#### message(seed (optional), account_index (optional), initial_address_index (optional), inputs (optional), input_range_begin (optional), input_range_end (optional), outputs (optional), dust_allowance_outputs (optional), index (optional), index_raw (optional), data (optional), data_str (optional), parents (optional)): Message
 
 Build a message.
 
@@ -264,6 +264,7 @@ Build a message.
 | [outputs]                | <code>list[[Output](#output)]</code> | <code>undefined</code> | Outputs                                      |
 | [dust_allowance_outputs] | <code>list[[Output](#output)]</code> | <code>undefined</code> | Dust allowance output to the transaction     |
 | [index]                  | <code>str</code>                     | <code>undefined</code> | The indexation string                        |
+| [index_raw]              | <code>list[int]</code>               | <code>undefined</code> | The indexation byte array                    |
 | [data]                   | <code>list[int]</code>               | <code>undefined</code> | The data in bytes                            |
 | [data_str]               | <code>str</code>                     | <code>undefined</code> | The data string                              |
 | [parents]                | <code>list[str]</code>               | <code>undefined</code> | The message ids of the parents               |
