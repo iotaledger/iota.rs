@@ -114,7 +114,7 @@ A generic send function for easily sending a message.
 | **input_range** | ✘ | 0..100 | Range | Custom range to search for the input addresses if custom inputs are provided. |
 | **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
-| **index** | ✘ | None | &[u8] | An optional indexation key for an indexation payload. 1-64 bytes long. |
+| **index** | ✘ | None | &[u8] / &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
 | **parents** | ✘ | None | [MessageId] | 1-8 optional parents [MessageId] to be used. |
 
@@ -149,7 +149,7 @@ Endpoint collection all about GET messages.
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
-| **index** | ✔ | str | An indexation key. |
+| **index** | ✔ | &[u8] / &str | An indexation key. |
 
 ### Returns
 
@@ -159,7 +159,7 @@ Depend on the final calling method, users could get different results they need:
 - `data(&MessageId)`: Return a [Message] object.
 - `raw(&MessageId)`: Return the raw data of given message.
 - `children(&MessageId)`: Return the list of [MessageId]s that reference a message by its identifier.
-- `index(&str)` : Return the list of [MessageId]s that have this str as indexation key
+- `index(&[u8] | &str)` : Return the list of [MessageId]s that have this str as indexation key
 
 ## `find_messages()`
 
@@ -169,7 +169,7 @@ Find all messages by provided message IDs.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **indexation_keys** | ✘ | [String] | The index key of the indexation payload. |
+| **indexation_keys** | ✘ | [&[u8] / &str] | The index key of the indexation payload. |
 | **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
 
 ### Returns
