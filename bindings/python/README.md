@@ -13,7 +13,6 @@
 - `$ ./run_coo_bootstrap.sh `
 
 2. Build the iota-client-python library by yourself (Optional)
-- **IMPORTANT**: Enable the `bindings/python/native` in your `Cargo.toml`
 ```toml
 [workspace]
 members = [
@@ -154,7 +153,7 @@ Creates a new instance of the Client.
 | [request_timeout]     | <code>int</code>                             | <code>undefined</code> | Sets the default HTTP request timeout                                                                                                                             |
 | [api_timeout]         | <code>dict</code>                            | <code>undefined</code> | The API to set the request timeout. Key: 'GetHealth', 'GetInfo', 'GetPeers', 'GetTips', 'PostMessage', 'GetOutput', 'GetMilestone' Value: timeout in milliseconds |
 | [local_pow]           | <code>bool</code>                            | <code>undefined</code> | Flag determining if PoW should be done locally or remotely                                                                                                        |
-| [tips_interval]       | <code>int</code>                             | <code>undefined</code> | Tips between tips                                                                                                                                                 |
+| [tips_interval]       | <code>int</code>                             | <code>undefined</code> | Time between requests for new tips during PoW                                                                                                                     |
 | [mqtt_broker_options] | <code>[BrokerOptions](#brokeroptions)</code> | <code>undefined</code> | Sets the options for the MQTT connection with the node                                                                                                            |
 
 **Returns** The constructed [Client](#client).
