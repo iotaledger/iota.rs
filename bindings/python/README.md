@@ -12,21 +12,13 @@
 - Modify your `create_snapshot_alphanet.sh`, modify Line 14 to `go run ../main.go tool snapgen alphanet1 96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813 snapshots/alphanet1/full_export.bin`
 - `$ ./run_coo_bootstrap.sh `
 
-2. Build the iota-client-python library by yourself (Optional)
-```toml
-[workspace]
-members = [
-    "iota-core",
-    "bindings/python/native",
-    "iota-client",
-    "examples",
-]
-``` 
+2. Build the iota-client-python library by yourself
+- Go to `bindings/python/native`
 - `$ cargo build --release`
 - The built library is located in `target/release/`
 - On MacOS, rename `libiota_client.dylib` to `iota_client.so`, on Windows, use `iota_client.dll` directly, and on Linux `libiota_client.so` to `iota_client.so`.
 - Copy your renamed library to `bindings/python/examples/`
-- Go to `binding/python/`
+- Go to `bindings/python/examples`
 - `$ python example.py`
 
 ## Python Example
