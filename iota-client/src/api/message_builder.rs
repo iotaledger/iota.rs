@@ -514,6 +514,7 @@ impl<'a> ClientMessageBuilder<'a> {
             true => final_message,
             false => self.client.get_message().data(&msg_id).await?,
         };
+
         Ok(msg)
     }
 }
