@@ -19,8 +19,8 @@ use std::{
 };
 
 const HARDEND: u32 = 1 << 31;
-const MAX_ALLOWED_DUST_OUTPUTS: u64 = 100;
-const GAP_LIMIT: usize = 20;
+const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
+const ADDRESS_GAP_LIMIT: usize = 20;
 
 /// Structure for sorting of UnlockBlocks
 // TODO: move the sorting process to the `Message` crate
@@ -54,7 +54,7 @@ impl<'a> ClientMessageBuilder<'a> {
             account_index: None,
             initial_address_index: None,
             inputs: None,
-            input_range: 0..MAX_ALLOWED_DUST_OUTPUTS,
+            input_range: 0..100,
             outputs: Vec::new(),
             index: None,
             data: None,
@@ -282,7 +282,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         .client
                         .find_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
-                        .with_range(index..index + GAP_LIMIT)
+                        .with_range(index..index + ADDRESS_GAP_LIMIT)
                         .get_all()
                         .await?;
                     // For each address, get the address outputs
@@ -383,7 +383,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             address_index += 1;
                         }
                     }
-                    index += GAP_LIMIT;
+                    index += ADDRESS_GAP_LIMIT;
                     // The gap limit is 20 and use reference 40 here because there's public and internal addresses
                     if empty_address_count == 40 {
                         break;
