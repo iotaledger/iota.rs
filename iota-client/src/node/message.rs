@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{parse_response, Client, Error, Result};
+use crate::{log_request, parse_response, Client, Error, Result};
 use bee_message::{Message, MessageId};
 use bee_rest_api::{
     handlers::{
@@ -10,6 +10,8 @@ use bee_rest_api::{
     },
     types::MessageDto,
 };
+
+use log::info;
 
 use std::convert::TryFrom;
 
@@ -28,7 +30,8 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and search for messages matching the index
     pub async fn index<I: AsRef<[u8]>>(self, index: I) -> Result<Box<[MessageId]>> {
         let mut url = self.client.get_node()?;
-        url.set_path("api/v1/messages");
+        let path = "api/v1/messages";
+        url.set_path(path);
         url.set_query(Some(&format!("index={}", hex::encode(index))));
         let resp = reqwest::get(url).await?;
 
@@ -36,7 +39,7 @@ impl<'a> GetMessageBuilder<'a> {
         struct MessagesWrapper {
             data: MessagesForIndexResponse,
         }
-
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             let ids = resp.json::<MessagesWrapper>().await?;
             ids.data.message_ids
@@ -54,13 +57,15 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
     pub async fn data(self, message_id: &MessageId) -> Result<Message> {
         let mut url = self.client.get_node()?;
-        url.set_path(&format!("api/v1/messages/{}", message_id));
+        let path = &format!("api/v1/messages/{}", message_id);
+        url.set_path(path);
         let resp = reqwest::get(url).await?;
 
         #[derive(Debug, Serialize, Deserialize)]
         struct MessagesWrapper {
             data: MessageDto,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             let meta = resp.json::<MessagesWrapper>().await?;
             Ok(
@@ -72,12 +77,14 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
     pub async fn metadata(self, message_id: &MessageId) -> Result<MessageMetadata> {
         let mut url = self.client.get_node()?;
-        url.set_path(&format!("api/v1/messages/{}/metadata", message_id));
+        let path = &format!("api/v1/messages/{}/metadata", message_id);
+        url.set_path(path);
         let resp = reqwest::get(url).await?;
         #[derive(Debug, Serialize, Deserialize)]
         struct MessagesWrapper {
             data: MessageMetadata,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             let meta = resp.json::<MessagesWrapper>().await?;
             Ok(meta.data)
@@ -88,9 +95,11 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
     pub async fn raw(self, message_id: &MessageId) -> Result<String> {
         let mut url = self.client.get_node()?;
-        url.set_path(&format!("api/v1/messages/{}/raw", message_id));
+        let path = &format!("api/v1/messages/{}/raw", message_id);
+        url.set_path(path);
         let resp = reqwest::get(url).await?;
 
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             Ok(resp.text().await?)
         })
@@ -99,13 +108,15 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
     pub async fn children(self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
         let mut url = self.client.get_node()?;
-        url.set_path(&format!("api/v1/messages/{}/children", message_id));
+        let path = &format!("api/v1/messages/{}/children", message_id);
+        url.set_path(path);
         let resp = reqwest::get(url).await?;
 
         #[derive(Debug, Serialize, Deserialize)]
         struct MessagesWrapper {
             data: MessageChildrenResponse,
         }
+        log_request!("GET", path, resp);
         crate::parse_response!(resp, 200 => {
             let meta = resp.json::<MessagesWrapper>().await?;
             meta.data.children_message_ids

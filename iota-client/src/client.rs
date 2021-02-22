@@ -6,6 +6,7 @@ use crate::{
     api::*,
     builder::{ClientBuilder, NetworkInfo},
     error::*,
+    log_request,
     node::*,
     parse_response, Seed,
 };
@@ -36,6 +37,8 @@ use tokio::{
     sync::broadcast::{Receiver, Sender},
     time::{sleep, Duration as TokioDuration},
 };
+
+use log::info;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -474,12 +477,14 @@ impl Client {
     /// GET /api/v1/info endpoint
     pub async fn get_node_info<T: IntoUrl>(url: T) -> Result<NodeInfo> {
         let mut url = url.into_url()?;
-        url.set_path("api/v1/info");
+        let path = "api/v1/info";
+        url.set_path(path);
         let resp = reqwest::get(url).await?;
         #[derive(Debug, Serialize, Deserialize)]
         struct NodeInfoWrapper {
             data: NodeInfo,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             Ok(resp.json::<NodeInfoWrapper>().await.unwrap().data)
         })
@@ -488,7 +493,8 @@ impl Client {
     /// GET /api/v1/info endpoint
     pub async fn get_info(&self) -> Result<NodeInfo> {
         let mut url = self.get_node()?;
-        url.set_path("api/v1/info");
+        let path = "api/v1/info";
+        url.set_path(path);
         let resp = self
             .client
             .get(url)
@@ -500,6 +506,7 @@ impl Client {
         struct NodeInfoWrapper {
             data: NodeInfo,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             Ok(resp.json::<NodeInfoWrapper>().await?.data)
         })
@@ -508,7 +515,8 @@ impl Client {
     /// GET /api/v1/peers endpoint
     pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
         let mut url = self.get_node()?;
-        url.set_path("api/v1/peers");
+        let path = "api/v1/peers";
+        url.set_path(path);
         let resp = self
             .client
             .get(url)
@@ -520,6 +528,7 @@ impl Client {
         struct PeerWrapper {
             data: Vec<PeerDto>,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             Ok(resp.json::<PeerWrapper>().await?.data)
         })
@@ -528,7 +537,8 @@ impl Client {
     /// GET /api/v1/tips endpoint
     pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
         let mut url = self.get_node()?;
-        url.set_path("api/v1/tips");
+        let path = "api/v1/tips";
+        url.set_path(path);
         let resp = self
             .client
             .get(url)
@@ -540,6 +550,7 @@ impl Client {
         struct TipsWrapper {
             data: TipsResponse,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             let tips_response = resp.json::<TipsWrapper>().await?;
             let mut tips = Vec::new();
@@ -555,7 +566,8 @@ impl Client {
     /// POST /api/v1/messages endpoint
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
         let mut url = self.get_node()?;
-        url.set_path("api/v1/messages");
+        let path = "api/v1/messages";
+        url.set_path(path);
 
         let timeout = if self.get_local_pow() {
             self.get_timeout(Api::PostMessage)
@@ -580,6 +592,7 @@ impl Client {
             #[serde(rename = "messageId")]
             message_id: String,
         }
+        log_request!("POST", path, resp);
         parse_response!(resp, 201 => {
             let message_id = resp.json::<MessageIdResponseWrapper>().await?;
             let mut message_id_bytes = [0u8; 32];
@@ -597,11 +610,12 @@ impl Client {
     /// Find an output by its transaction_id and corresponding output_index.
     pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputResponse> {
         let mut url = self.get_node()?;
-        url.set_path(&format!(
+        let path = &format!(
             "api/v1/outputs/{}{}",
             output_id.output_id().transaction_id().to_string(),
             hex::encode(output_id.output_id().index().to_le_bytes())
-        ));
+        );
+        url.set_path(path);
         let resp = self
             .client
             .get(url)
@@ -613,6 +627,7 @@ impl Client {
         struct OutputWrapper {
             data: OutputResponse,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             let output_response = resp.json::<OutputWrapper>().await?;
             Ok(output_response.data)
@@ -661,7 +676,8 @@ impl Client {
     /// Get the milestone by the given index.
     pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
         let mut url = self.get_node()?;
-        url.set_path(&format!("api/v1/milestones/{}", index));
+        let path = &format!("api/v1/milestones/{}", index);
+        url.set_path(path);
         let resp = self
             .client
             .get(url)
@@ -672,6 +688,7 @@ impl Client {
         struct MilestoneWrapper {
             data: MilestoneResponseDto,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             let milestone = resp.json::<MilestoneWrapper>().await?.data;
             let mut message_id = [0u8; 32];
@@ -688,7 +705,8 @@ impl Client {
     /// Get the milestone by the given index.
     pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
         let mut url = self.get_node()?;
-        url.set_path(&format!("api/v1/milestones/{}/utxo-changes", index));
+        let path = &format!("api/v1/milestones/{}/utxo-changes", index);
+        url.set_path(path);
         let resp = self
             .client
             .get(url)
@@ -699,6 +717,7 @@ impl Client {
         struct MilestoneUTXOChangesWrapper {
             data: MilestoneUTXOChanges,
         }
+        log_request!("GET", path, resp);
         parse_response!(resp, 200 => {
             let milestone = resp.json::<MilestoneUTXOChangesWrapper>().await?.data;
             Ok(milestone)
