@@ -391,7 +391,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         if total_already_spent < total_to_spend {
-            return Err(Error::NotEnoughBalance(total_to_spend));
+            return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
         }
 
         // Check if we would let dust on an address behind or send new dust, which would make the tx unconfirmable
