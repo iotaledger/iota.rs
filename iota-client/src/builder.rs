@@ -3,6 +3,7 @@
 
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
+
 use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 

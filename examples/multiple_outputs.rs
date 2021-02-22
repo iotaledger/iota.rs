@@ -12,12 +12,12 @@ use std::env;
 /// In this example, we send 8_800_000 tokens to the following 3 locations, respectively
 ///
 /// Address Index (1..4)
-///   output 0: 3_000_000 tokens atoi1q9nrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakc0ht47
-///   output 1: 2_800_000 tokens atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua
-///   output 2: 3_000_000 tokens atoi1qxumqjtucwglfja746vvmr7n54ep88kcu2qvaquqrnx9qs2z8f4t6hpwr8h
+///   output 0: 3_000_000 tokens atoi1qzj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pk6w523x
+///   output 1: 2_800_000 tokens atoi1qzu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwjsc20jg
+///   output 2: 3_000_000 tokens atoi1qz0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsp0k73u
 ///
 ///
-/// These three addresses belong to first seed in .env.example
+/// These three addresses belong to second seed in .env.example
 
 #[tokio::main]
 async fn main() {
@@ -39,17 +39,17 @@ async fn main() {
         .message()
         .with_seed(&seed)
         .with_output(
-            &"iot1q86rlrygq5wcgdwt7fpajaxxppc49tg0jk0xadnp66fsfjtwt8vgc48sse6".into(),
+            &"atoi1qzj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pk6w523x".into(),
             3_000_000,
         )
         .unwrap()
         .with_output(
-            &"iot1qyg7l34etk4sdfrdt46vwt7a964avk9sfrxh8ecq2sgpezaktd55cyc76lc".into(),
+            &"atoi1qzu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwjsc20jg".into(),
             2_800_000,
         )
         .unwrap()
         .with_output(
-            &"iot1q9r5hvlppf44gvcxnuue4dwjtjcredrw6yesphqeq7fqm2fyjy6kul4tv5r".into(),
+            &"atoi1qz0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsp0k73u".into(),
             3_000_000,
         )
         .unwrap()

@@ -785,7 +785,11 @@ impl Client {
     }
 
     /// Find all messages by provided message IDs and/or indexation_keys.
-    pub async fn find_messages(&self, indexation_keys: &[String], message_ids: &[MessageId]) -> Result<Vec<Message>> {
+    pub async fn find_messages<I: AsRef<[u8]>>(
+        &self,
+        indexation_keys: &[I],
+        message_ids: &[MessageId],
+    ) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
         // Use a `HashSet` to prevent duplicate message_ids.
@@ -799,7 +803,7 @@ impl Client {
         // Use `get_message().index()` API to get the message ID first,
         // then collect the `MessageId` in the HashSet.
         for index in indexation_keys {
-            let message_ids = self.get_message().index(&index).await?;
+            let message_ids = self.get_message().index(index).await?;
             for message_id in message_ids.iter() {
                 message_ids_to_query.insert(message_id.to_owned());
             }

@@ -13,7 +13,7 @@ pub(crate) enum Api {
     // High level APIs
     Send {
         seed: Option<Seed>,
-        index: Option<String>,
+        index: Option<Vec<u8>>,
         data: Option<Vec<u8>>,
         parents: Option<Vec<MessageId>>,
         account_index: Option<usize>,
@@ -49,7 +49,7 @@ pub(crate) enum Api {
     GetPeers,
     GetTips,
     PostMessage(MessageDto),
-    GetMessagesByIndexation(String),
+    GetMessagesByIndexation(Vec<u8>),
     GetMessage(MessageId),
     GetMessageMetadata(MessageId),
     GetRawMessage(MessageId),
@@ -232,7 +232,7 @@ impl Task for ClientTask {
                     serde_json::to_string(&message).unwrap()
                 }
                 Api::GetMessagesByIndexation(index) => {
-                    let messages = client.get_message().index(index.as_str()).await?;
+                    let messages = client.get_message().index(index).await?;
                     serde_json::to_string(&messages).unwrap()
                 }
                 Api::GetMessage(id) => {

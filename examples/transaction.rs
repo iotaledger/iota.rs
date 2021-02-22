@@ -10,26 +10,27 @@ use dotenv::dotenv;
 use std::env;
 
 /// In this example, we send 9_000_000 tokens to the following 3 locations, respectively
-/// First send 10 Mi from the faucet to atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5
+/// First send 10 Mi from the faucet to atoi1qzj86lzml2ktagye4mj0th6zymgka8lt96qre9yye0v8sawzmdu0ut90vm7
 /// That's the first address of the first seed in the .env.example file
 ///
 /// Address Index 0. Note that we can use the `address` example codes to know the addresses belong to the seed.
 /// Outputs we send to the first addresses from the second seed:
-///   output 0: 3_000_000 tokens atoi1qxj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pkq3p4j3
-///   output 1: 3_000_000 tokens atoi1qxu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwj28ls3l
-///   output 2: 3_000_000 tokens atoi1qx0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsmsrpjt
+///   output 0: 3_000_000 tokens atoi1qzj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pk6w523x
+///   output 1: 3_000_000 tokens atoi1qzu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwjsc20jg
+///   output 2: 3_000_000 tokens atoi1qz0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsp0k73u
 ///
 ///
 /// Then we send 6_000_000 tokens from the second seed to the first one
-/// to addresses "atoi1q9nrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakc0ht47" and
-/// "atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua", and check the ledger
+/// to addresses "atoi1qrdypwg7lrghd9urpuhtsx5mt2r27wxma5nevcr39pszkqejt00dgku89p7" and
+/// "atoi1qp9zlm8j628qp4x9853hcvuuwy6m85kllzv5fcveex67ym8ut7peu9tnm7r", and check the ledger
 /// inclusion state, which should be "included".
 
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("http://0.0.0.0:14265") // Insert the node here
+        .with_node("http://localhost:14265") // Insert the node here
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
@@ -46,7 +47,7 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"atoi1qxj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pkq3p4j3".into(),
+            &"atoi1qzj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pk6w523x".into(),
             3_000_000,
         )
         .unwrap()
@@ -65,7 +66,7 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"atoi1qxu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwj28ls3l".into(),
+            &"atoi1qzu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwjsc20jg".into(),
             3_000_000,
         )
         .unwrap()
@@ -84,7 +85,7 @@ async fn main() {
         .with_seed(&seed)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &"atoi1qx0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsmsrpjt".into(),
+            &"atoi1qz0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsp0k73u".into(),
             3_000_000,
         )
         .unwrap()
@@ -106,12 +107,12 @@ async fn main() {
         // Insert the output address and amount to spent. The amount cannot be zero.
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            &"atoi1q9nrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakc0ht47".into(),
+            &"atoi1qrdypwg7lrghd9urpuhtsx5mt2r27wxma5nevcr39pszkqejt00dgku89p7".into(),
             3_000_000,
         )
         .unwrap()
         .with_output(
-            &"atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".into(),
+            &"atoi1qp9zlm8j628qp4x9853hcvuuwy6m85kllzv5fcveex67ym8ut7peu9tnm7r".into(),
             3_000_000,
         )
         .unwrap()

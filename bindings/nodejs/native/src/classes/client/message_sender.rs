@@ -10,7 +10,7 @@ use std::{ops::Range, str::FromStr};
 
 pub struct MessageSender {
     client_id: String,
-    index: Option<String>,
+    index: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
     seed: Option<String>,
@@ -58,12 +58,20 @@ declare_types! {
         }
 
         method index(mut cx) {
-            let index = cx.argument::<JsString>(0)?.value();
+            let mut index: Vec<u8> = vec![];
+            let index_js_array = cx.argument::<JsArray>(0)?;
+            let js_index: Vec<Handle<JsValue>> = index_js_array.to_vec(&mut cx)?;
+            for value in js_index {
+                let value: Handle<JsNumber> = value.downcast_or_throw(&mut cx)?;
+                index.push(value.value() as u8);
+            }
+            println!("{:?}", index);
+
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let send_index = &mut this.borrow_mut(&guard).index;
-                send_index.replace(index);
+                let index_ = &mut this.borrow_mut(&guard).index;
+                index_.replace(index);
             }
 
             Ok(cx.this().upcast())

@@ -600,7 +600,7 @@ impl TryFrom<RustRegularEssence> for RegularEssence {
                         transaction: None,
                         milestone: None,
                         indexation: Some(vec![Indexation {
-                            index: payload.index().to_string(),
+                            index: hex::encode(payload.index()),
                             data: payload.data().try_into().unwrap_or_else(|_| {
                                 panic!(
                                     "invalid Indexation Payload {:?} with data: {:?}",
@@ -686,7 +686,7 @@ impl TryFrom<RustMessage> for Message {
 
                 Some(Payload {
                     transaction: Some(vec![Transaction {
-                        essence: essence,
+                        essence,
                         unlock_blocks: payload
                             .unlock_blocks()
                             .iter()
@@ -702,7 +702,7 @@ impl TryFrom<RustMessage> for Message {
                 transaction: None,
                 milestone: None,
                 indexation: Some(vec![Indexation {
-                    index: payload.index().to_string(),
+                    index: hex::encode(payload.index()),
                     data: payload.data().try_into().unwrap_or_else(|_| {
                         panic!(
                             "invalid Indexation Payload {:?} with data: {:?}",
@@ -799,7 +799,8 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
                     .as_ref()
                     .unwrap_or_else(|| panic!("Invalid IndexationPayload: {:?}", indexation_payload))[0]
                     .index
-                    .clone(),
+                    .clone()
+                    .as_bytes(),
                 &(indexation_payload
                     .indexation
                     .as_ref()
@@ -863,7 +864,8 @@ impl TryFrom<Payload> for RustPayload {
                     .unwrap_or_else(|| panic!("Invalid Payload: {:?}", payload))[0]
                     .index
                     .clone())
-                    .to_owned(),
+                    .to_owned()
+                    .as_bytes(),
                 &payload
                     .indexation
                     .as_ref()

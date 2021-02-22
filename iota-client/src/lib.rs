@@ -15,6 +15,9 @@ pub mod client;
 pub mod error;
 pub mod node;
 pub mod seed;
+#[cfg(feature = "storage")]
+#[cfg_attr(docsrs, doc(cfg(feature = "storage")))]
+pub mod storage;
 
 pub use bee_message;
 pub use bee_rest_api::{
@@ -30,6 +33,8 @@ pub use error::*;
 pub use node::Topic;
 pub use reqwest::Url;
 pub use seed::*;
+#[cfg(feature = "storage")]
+pub use storage::*;
 
 #[cfg(feature = "mqtt")]
 mod async_runtime {
