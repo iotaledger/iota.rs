@@ -17,21 +17,30 @@ const HARDEND: u32 = 1 << 31;
 /// Builder of find_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
-    seed: &'a Seed,
+    seed: Option<&'a Seed>,
     account_index: Option<usize>,
     range: Option<Range<usize>>,
     bech32_hrp: Option<String>,
+}
+
+impl<'a> Default for GetAddressesBuilder<'a> {
+    fn default() -> Self {
+        Self {
+            client: None,
+            seed: None,
+            account_index: Some(0),
+            range: Some(0..20),
+            bech32_hrp: None,
+        }
+    }
 }
 
 impl<'a> GetAddressesBuilder<'a> {
     /// Create find_addresses builder
     pub fn new(seed: &'a Seed) -> Self {
         Self {
-            client: None,
-            seed,
-            account_index: None,
-            range: None,
-            bech32_hrp: None,
+            seed: Some(seed),
+            ..Default::default()
         }
     }
 
@@ -77,11 +86,6 @@ impl<'a> GetAddressesBuilder<'a> {
             .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
             .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
 
-        let range = match self.range {
-            Some(r) => r,
-            None => 0..20,
-        };
-
         let mut addresses = Vec::new();
         let bech32_hrp = match self.bech32_hrp {
             Some(bech32_hrp) => bech32_hrp,
@@ -92,9 +96,9 @@ impl<'a> GetAddressesBuilder<'a> {
                     .await?
             }
         };
-        for i in range {
-            let address = generate_address(&self.seed, &mut path, i, false)?;
-            let internal_address = generate_address(&self.seed, &mut path, i, true)?;
+        for i in self.range.unwrap() {
+            let address = generate_address(&self.seed.unwrap(), &mut path, i, false)?;
+            let internal_address = generate_address(&self.seed.unwrap(), &mut path, i, true)?;
             addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
             addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
         }
