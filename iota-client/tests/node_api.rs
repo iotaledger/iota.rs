@@ -21,17 +21,19 @@ async fn setup_indexation_message() -> MessageId {
         .unwrap();
     let data = r#"
     {
-	    "networkId": "6530425480034647824",
-	    "parentMessageIds": [
-            "2e071ee19dc58d250e0e084a1ac890a9769896cd4c5689fd7f202bfc6c8d574c", 
-            "4375fb2a9d6b0b5a6c529bde678f227192d409b75cf87f7245ceeed8ed611664"
+        "networkId": "3720706210109972015",
+        "parentMessageIds": [
+            "8c25fdaba5b71e7f36c48ee6cb81863acb8eea687f798b56494dbc419c9e65a8",
+            "abaf5fb4ae5e8738cfb639aeefe083363dd4a4813e180657cc5ddedc187ee0fc",
+            "cda9e19ece953f510953324bcde291022faf29d03f8a51b069164dd639c494ed",
+            "fee998c47715cff74f54c32629ab9b53127d5acce9bb2adc3d462a7a7456c699"
         ],
-	    "payload": {
-		    "type": 2,
-		    "index": "HORNET Spammer",
-		    "data": "42696e61727920697320746865206675747572652e0a436f756e743a203030373730370a54696d657374616d703a20323032302d31322d31345431343a33363a33342b30313a30300a54697073656c656374696f6e3a2035c2b573"
-	    },
-	    "nonce": "36952"
+        "payload": {
+            "type": 2,
+            "index": "696f74612e7273",
+            "data": "74657374"
+        },
+        "nonce": "1152921504606863500"
     }"#;
     let message = Message::try_from(&serde_json::from_str::<MessageDto>(data).unwrap()).unwrap();
     client.post_message(&message).await.unwrap()
@@ -119,7 +121,7 @@ async fn test_post_message_with_transaction() {
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .with_output_hex(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8", // Insert the address to search for
-            100,
+            1_000_000,
         )
         .unwrap()
         .finish()
@@ -221,7 +223,7 @@ async fn test_get_address_balance() {
         .await
         .unwrap()
         .get_address()
-        .balance(&"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into())
+        .balance(&"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into())
         .await
         .unwrap();
 
@@ -239,7 +241,7 @@ async fn test_get_address_outputs() {
         .unwrap()
         .get_address()
         .outputs(
-            &"iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4".into(), /* Insert the address to
+            &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(), /* Insert the address to
                                                                                         * search for */
         )
         .await
