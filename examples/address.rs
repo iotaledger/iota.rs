@@ -23,7 +23,7 @@ async fn main() {
         Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let addresses = iota
-        .find_addresses(&seed)
+        .get_addresses(&seed)
         .with_account_index(0)
         .with_range(0..4)
         .finish()
@@ -31,7 +31,7 @@ async fn main() {
         .unwrap();
     println!("List of generated public addresses: {:?}", addresses);
     let all_addresses = iota
-        .find_addresses(&seed)
+        .get_addresses(&seed)
         .with_account_index(0)
         .with_range(0..4)
         .get_all()

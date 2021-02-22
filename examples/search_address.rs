@@ -23,7 +23,7 @@ async fn main() {
         Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
 
     let address = iota
-        .find_addresses(&seed)
+        .get_addresses(&seed)
         .with_account_index(0)
         .with_range(9..10)
         .finish()

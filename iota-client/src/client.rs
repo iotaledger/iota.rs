@@ -780,7 +780,7 @@ impl Client {
     }
 
     /// Return a list of addresses from the seed regardless of their validity.
-    pub fn find_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
+    pub fn get_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(seed).with_client(&self)
     }
 
