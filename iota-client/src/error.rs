@@ -16,8 +16,8 @@ pub enum Error {
     #[error("Error when building transaction message")]
     TransactionError,
     /// The wallet account doesn't have enough balance
-    #[error("The wallet account doesn't have enough balance. It only has {0}")]
-    NotEnoughBalance(u64),
+    #[error("The wallet account doesn't have enough balance. It only has {0}, required is {1}")]
+    NotEnoughBalance(u64, u64),
     /// Dust error, for example not enough balance on an address
     #[error("Dust error: {0}")]
     DustError(String),
