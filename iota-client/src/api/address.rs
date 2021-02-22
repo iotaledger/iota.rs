@@ -14,7 +14,7 @@ use std::ops::Range;
 
 const HARDEND: u32 = 1 << 31;
 
-/// Builder of find_addresses API
+/// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
     seed: Option<&'a Seed>,
@@ -36,7 +36,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
 }
 
 impl<'a> GetAddressesBuilder<'a> {
-    /// Create find_addresses builder
+    /// Create get_addresses builder
     pub fn new(seed: &'a Seed) -> Self {
         Self {
             seed: Some(seed),
@@ -50,7 +50,7 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
-    /// Sets the account index.
+    /// Set the account index
     pub fn with_account_index(mut self, account_index: usize) -> Self {
         self.account_index = Some(account_index);
         self
@@ -62,7 +62,7 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
-    /// Set range to the builder
+    /// Set bech32 human readable part (hrp)
     pub fn with_bech32_hrp(mut self, bech32_hrp: String) -> Self {
         self.bech32_hrp = Some(bech32_hrp);
         self
@@ -79,7 +79,7 @@ impl<'a> GetAddressesBuilder<'a> {
             .collect::<Vec<Bech32Address>>())
     }
 
-    /// Consume the builder and get the vector of Bech32Address
+    /// Consume the builder and get the vector of Bech32Addresses
     pub async fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
         let mut path = self
             .account_index
