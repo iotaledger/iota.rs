@@ -242,7 +242,7 @@ async fn test_get_address_outputs() {
         .get_address()
         .outputs(
             &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(), /* Insert the address to
-                                                                                        * search for */
+                                                                                         * search for */
         )
         .await
         .unwrap();
