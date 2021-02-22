@@ -12,8 +12,8 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "408e16a7db1a62eaab6666fbc4dc0cacbc2d7f67" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "8ee15fbc064b2aa1a506fa7ac5d88b5073e5d0f7" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "8ee15fbc064b2aa1a506fa7ac5d88b5073e5d0f7" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 # bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 # bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
@@ -25,3 +25,4 @@ tokio = { version = "1.1", features = ["macros"] }
 
 [features]
 mqtt = ["iota-client/mqtt"]
+storage = ["iota-client/storage"]

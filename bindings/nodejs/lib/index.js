@@ -81,7 +81,13 @@ Client.prototype.retry = promisify(Client.prototype.retry)
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
 
-MessageGetter.prototype.index = promisify(MessageGetter.prototype.index)
+const messageGetterIndexSetter = promisify(MessageGetter.prototype.index)
+MessageGetter.prototype.index = function (index) {
+  if (typeof index === 'string') {
+    index = new TextEncoder().encode(index)
+  }
+  return messageGetterIndexSetter.apply(this, [Array.from(index)])
+}
 MessageGetter.prototype.data = promisify(MessageGetter.prototype.data)
 MessageGetter.prototype.raw = promisify(MessageGetter.prototype.raw, false)
 MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
@@ -90,10 +96,17 @@ MessageGetter.prototype.metadata = promisify(MessageGetter.prototype.metadata)
 MessageSender.prototype.submit = promisify(MessageSender.prototype.submit)
 const messageSenderDataSetter = MessageSender.prototype.data
 MessageSender.prototype.data = function (data) {
-  if (data instanceof Uint8Array) {
-    return messageSenderDataSetter.apply(this, [Array.from(data)])
+  if (typeof data === 'string') {
+    data = new TextEncoder().encode(data)
   }
-  return messageSenderDataSetter.apply(this, [data])
+  return messageSenderDataSetter.apply(this, [Array.from(data)])
+}
+const messageSenderIndexSetter = MessageSender.prototype.index
+MessageSender.prototype.index = function (index) {
+  if (typeof index === 'string') {
+    index = new TextEncoder().encode(index)
+  }
+  return messageSenderIndexSetter.apply(this, [Array.from(index)])
 }
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)

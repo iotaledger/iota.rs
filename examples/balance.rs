@@ -18,7 +18,7 @@ async fn main() {
         .await
         .unwrap();
 
-    let address = "atoi1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0ey2k2yn4";
+    let address = "atoi1qzj86lzml2ktagye4mj0th6zymgka8lt96qre9yye0v8sawzmdu0ut90vm7";
 
     let balance = iota.get_address().balance(&address.into()).await.unwrap();
     println!("The balance of {:?} is {:?}", address, balance);

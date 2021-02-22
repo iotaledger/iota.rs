@@ -13,7 +13,7 @@ LOCAL_NODE_URL = "http://0.0.0.0:14265"
 # USE THIS INSTEAD
 SEED = os.getenv('MY_IOTA_SEED')
 
-EMPTY_ADDRESS = "atoi1qxekg37zm08epkqvuv0m3tql7asv37y3lqejpjhtlsvujrus2xsl67u0h5f"
+EMPTY_ADDRESS = "atoi1qzj86lzml2ktagye4mj0th6zymgka8lt96qre9yye0v8sawzmdu0ut90vm7"
 client = iota_client.Client(
     node=LOCAL_NODE_URL, node_sync_disabled=True)
 

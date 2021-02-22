@@ -30,7 +30,7 @@ export declare class ClientBuilder {
 
 export declare class MessageSender {
   seed(seed: string): MessageSender
-  index(index: string): MessageSender
+  index(index: string | number[] | Uint8Array): MessageSender
   data(data: Uint8Array): MessageSender
   parents(messageIds: string[]): MessageSender
   accountIndex(index: number): MessageSender
@@ -95,7 +95,7 @@ export declare class Client {
 }
 
 export declare class MessageFinder {
-  index(index: string): Promise<string[]>
+  index(index: string | number[] | Uint8Array): Promise<string[]>
   data(messageId: string): Promise<MessageWrapper>
   raw(messageId: string): Promise<string>
   children(messageId: string): Promise<string[]>
