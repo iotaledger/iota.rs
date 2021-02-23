@@ -28,8 +28,8 @@ def main():
     print('get_tips()')
     print(f'tips: {client.get_tips()}')
 
-    print('find_addresses')
-    address_changed_list = client.find_addresses(
+    print('get_addresses')
+    address_changed_list = client.get_addresses(
         seed=SEED, account_index=0, begin=0, end=10, get_all=True)
     print(f'address_changed list: {address_changed_list}')
 

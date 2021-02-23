@@ -45,7 +45,7 @@ impl<'a> GetBalanceBuilder<'a> {
         loop {
             let addresses = self
                 .client
-                .find_addresses(self.seed)
+                .get_addresses(self.seed)
                 .with_account_index(account_index)
                 .with_range(index..index + 20)
                 .get_all()

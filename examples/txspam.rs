@@ -27,7 +27,7 @@ async fn main() {
 
     // split funds to own addresses
     let addresses = iota
-        .find_addresses(&seed)
+        .get_addresses(&seed)
         .with_account_index(0)
         .with_range(0..10)
         .finish()

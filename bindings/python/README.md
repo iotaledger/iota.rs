@@ -50,8 +50,8 @@ def main():
     print('get_tips()')
     print(f'tips: client.get_tips()')
 
-    print('find_addresses')
-    address_changed_list = client.find_addresses(
+    print('get_addresses')
+    address_changed_list = client.get_addresses(
         seed=SEED, account_index=0, begin=0, end=10, get_all=True)
     print(f'address_changed list: {address_changed_list}')
 
@@ -342,7 +342,7 @@ Gets a valid unspent address.
 
 **Returns** a tuple with type of `(str, int)` as the address and corresponding index in the account.
 
-#### find_addresses(seed, account_index (optional), input_range_begin (optional), input_range_end (optional) get_all (optional)): list[(str, bool (optional))]
+#### get_addresses(seed, account_index (optional), input_range_begin (optional), input_range_end (optional) get_all (optional)): list[(str, bool (optional))]
 
 Finds addresses from the seed regardless of their validity.
 

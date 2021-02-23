@@ -8,7 +8,7 @@ use std::ops::Range;
 
 use super::{Api, ClientTask};
 
-pub struct AddressFinder {
+pub struct AddressGetter {
     client_id: String,
     seed: String,
     account_index: Option<usize>,
@@ -17,11 +17,11 @@ pub struct AddressFinder {
 }
 
 declare_types! {
-    pub class JsAddressFinder for AddressFinder {
+    pub class JsAddressGetter for AddressGetter {
         init(mut cx) {
             let client_id = cx.argument::<JsString>(0)?.value();
             let seed = cx.argument::<JsString>(1)?.value();
-            Ok(AddressFinder {
+            Ok(AddressGetter {
                 client_id,
                 seed,
                 account_index: None,
@@ -76,7 +76,7 @@ declare_types! {
                 let ref_ = &(*this.borrow(&guard));
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
-                    api: Api::FindAddresses {
+                    api: Api::GetAddresses {
                         seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
                         account_index: ref_.account_index,
                         range: ref_.range.clone(),
