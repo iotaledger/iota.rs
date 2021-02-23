@@ -12,7 +12,7 @@ use core::convert::TryInto;
 use slip10::BIP32Path;
 use std::ops::Range;
 
-const HARDEND: u32 = 1 << 31;
+const HARDENED: u32 = 1 << 31;
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
@@ -105,8 +105,8 @@ impl<'a> GetAddressesBuilder<'a> {
 }
 
 fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: bool) -> Result<Address> {
-    path.push(internal as u32 + HARDEND);
-    path.push(index as u32 + HARDEND);
+    path.push(internal as u32 + HARDENED);
+    path.push(index as u32 + HARDENED);
 
     let public_key = seed.generate_private_key(path)?.public_key().to_compressed_bytes();
     // Hash the public key to get the address
