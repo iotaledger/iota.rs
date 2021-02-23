@@ -48,9 +48,10 @@ export declare class UnspentAddressGetter {
   get(): Promise<[Address, number]>
 }
 
-export declare class AddressFinder {
-  accountIndex(index: number): AddressFinder
-  range(start: number, end: number): AddressFinder
+export declare class AddressGetter {
+  accountIndex(index: number): AddressGetter
+  range(start: number, end: number): AddressGetter
+  bech32_hrp(bech32_hrp: string): AddressGetter
   get(): [Address, boolean][]
 }
 
@@ -73,7 +74,7 @@ export declare class Client {
   subscriber(): TopicSubscriber
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
-  findAddresses(seed: string): AddressFinder
+  getAddresses(seed: string): AddressGetter
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>

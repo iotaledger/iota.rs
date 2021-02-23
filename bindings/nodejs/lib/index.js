@@ -8,7 +8,7 @@ const {
   MessageGetter,
   MessageSender,
   UnspentAddressGetter,
-  AddressFinder,
+  AddressGetter,
   BalanceGetter
 } = require('../native')
 
@@ -70,7 +70,7 @@ Client.prototype.postMessage = function (message) {
       }
       message.payload.index = Array.from(message.payload.index)
     }
-    
+
     if ('data' in message.payload) {
       if (typeof message.payload.data === 'string') {
         message.payload.data = new TextEncoder().encode(message.payload.data)
@@ -120,7 +120,7 @@ MessageSender.prototype.index = function (index) {
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)
 
-AddressFinder.prototype.get = promisify(AddressFinder.prototype.get)
+AddressGetter.prototype.get = promisify(AddressGetter.prototype.get)
 
 BalanceGetter.prototype.get = promisify(BalanceGetter.prototype.get)
 

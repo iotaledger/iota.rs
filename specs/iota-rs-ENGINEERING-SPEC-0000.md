@@ -11,7 +11,7 @@
   * [`get_message`](#get_message)
   * [`find_messages`](#find_messages)
   * [`get_unspent_address`](#get_unspent_address)
-  * [`find_addresses`](#find_addresses)
+  * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
   * [`subscriber`](#subscriber)
@@ -201,7 +201,7 @@ Following are the steps for implementing this method:
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
 
-## `find_addresses()`
+## `get_addresses()`
 
 Return a list of addresses from the seed regardless of their validity.
 

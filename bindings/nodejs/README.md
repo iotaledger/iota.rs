@@ -199,7 +199,7 @@ Get a valid unspent address.
 
 **Returns** a [UnspentAddressGetter](#unspentaddressgetter) instance.
 
-#### findAddresses(seed): AddressFinder
+#### getAddresses(seed): AddressGetter
 
 Find addresses from the seed regardless of their validity.
 
@@ -207,7 +207,7 @@ Find addresses from the seed regardless of their validity.
 | ----- | ------------------- | ------------------------------ |
 | seed  | <code>string</code> | The hex-encoded seed to search |
 
-**Returns** a [AddressFinder](#addressfinder) instance.
+**Returns** a [AddressGetter](#addressgetter) instance.
 
 #### findMessages(indexationKeys, messageIds): Promise<Message[]>
 
@@ -553,11 +553,11 @@ Performs the operation.
 
 **Returns** a promise resolving to the [Address](#address) instance and its index.
 
-### AddressFinder
+### AddressGetter
 
-Finds addresses on a given seed.
+Generates addresses with a given seed.
 
-#### accountIndex(index): AddressFinder
+#### accountIndex(index): AddressGetter
 
 Sets the account index. This field is required.
 
@@ -567,7 +567,7 @@ Sets the account index. This field is required.
 
 **Returns** the address finder instance for chained calls.
 
-#### range(start, end): AddressFinder
+#### range(start, end): AddressGetter
 
 Defines the range of addresses to get. Defaults to `0..20` if the function isn't called.
 

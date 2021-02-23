@@ -12,26 +12,35 @@ use core::convert::TryInto;
 use slip10::BIP32Path;
 use std::ops::Range;
 
-const HARDEND: u32 = 1 << 31;
+const HARDENED: u32 = 1 << 31;
 
-/// Builder of find_addresses API
+/// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
-    seed: &'a Seed,
-    account_index: Option<usize>,
-    range: Option<Range<usize>>,
+    seed: Option<&'a Seed>,
+    account_index: usize,
+    range: Range<usize>,
     bech32_hrp: Option<String>,
 }
 
-impl<'a> GetAddressesBuilder<'a> {
-    /// Create find_addresses builder
-    pub fn new(seed: &'a Seed) -> Self {
+impl<'a> Default for GetAddressesBuilder<'a> {
+    fn default() -> Self {
         Self {
             client: None,
-            seed,
-            account_index: None,
-            range: None,
+            seed: None,
+            account_index: 0,
+            range: 0..20,
             bech32_hrp: None,
+        }
+    }
+}
+
+impl<'a> GetAddressesBuilder<'a> {
+    /// Create get_addresses builder
+    pub fn new(seed: &'a Seed) -> Self {
+        Self {
+            seed: Some(seed),
+            ..Default::default()
         }
     }
 
@@ -41,19 +50,19 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
-    /// Sets the account index.
+    /// Set the account index
     pub fn with_account_index(mut self, account_index: usize) -> Self {
-        self.account_index = Some(account_index);
+        self.account_index = account_index;
         self
     }
 
     /// Set range to the builder
     pub fn with_range(mut self, range: Range<usize>) -> Self {
-        self.range = Some(range);
+        self.range = range;
         self
     }
 
-    /// Set range to the builder
+    /// Set bech32 human readable part (hrp)
     pub fn with_bech32_hrp(mut self, bech32_hrp: String) -> Self {
         self.bech32_hrp = Some(bech32_hrp);
         self
@@ -70,17 +79,9 @@ impl<'a> GetAddressesBuilder<'a> {
             .collect::<Vec<Bech32Address>>())
     }
 
-    /// Consume the builder and get the vector of Bech32Address
+    /// Consume the builder and get the vector of Bech32Addresses
     pub async fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
-        let mut path = self
-            .account_index
-            .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
-
-        let range = match self.range {
-            Some(r) => r,
-            None => 0..20,
-        };
+        let mut path = BIP32Path::from_str(&crate::account_path!(self.account_index)).expect("invalid account index");
 
         let mut addresses = Vec::new();
         let bech32_hrp = match self.bech32_hrp {
@@ -92,9 +93,9 @@ impl<'a> GetAddressesBuilder<'a> {
                     .await?
             }
         };
-        for i in range {
-            let address = generate_address(&self.seed, &mut path, i, false)?;
-            let internal_address = generate_address(&self.seed, &mut path, i, true)?;
+        for i in self.range {
+            let address = generate_address(&self.seed.unwrap(), &mut path, i, false)?;
+            let internal_address = generate_address(&self.seed.unwrap(), &mut path, i, true)?;
             addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
             addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
         }
@@ -104,8 +105,8 @@ impl<'a> GetAddressesBuilder<'a> {
 }
 
 fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: bool) -> Result<Address> {
-    path.push(internal as u32 + HARDEND);
-    path.push(index as u32 + HARDEND);
+    path.push(internal as u32 + HARDENED);
+    path.push(index as u32 + HARDENED);
 
     let public_key = seed.generate_private_key(path)?.public_key().to_compressed_bytes();
     // Hash the public key to get the address

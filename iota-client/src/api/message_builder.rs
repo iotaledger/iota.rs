@@ -280,7 +280,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     // Get the addresses in the BIP path/index ~ path/index+20
                     let addresses = self
                         .client
-                        .find_addresses(self.seed.expect("No seed"))
+                        .get_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
                         .with_range(index..index + ADDRESS_GAP_LIMIT)
                         .get_all()

@@ -26,8 +26,8 @@ describe('Client', () => {
     assertMessageId(tips[0])
   })
 
-  it('finds addresses', async () => {
-    const addresses = await client.findAddresses(seed)
+  it('get addresses', async () => {
+    const addresses = await client.getAddresses(seed)
       .accountIndex(0)
       .range(0, 5)
       .get()
@@ -121,7 +121,8 @@ describe('Client', () => {
 
   it('submits an indexation message and reads it', async () => {
     const indexation = {
-      index: 'IOTA.RS BINDING - NODE.JS',
+      // index: 'IOTA.RS BINDING - NODE.JS',
+      index: '494f54412e52532042494e44494e47202d204e4f44452e4a53',
       data: new TextEncoder().encode('INDEXATION DATA')
     }
     const messageId = await client.postMessage({

@@ -27,7 +27,7 @@ pub(crate) enum Api {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
     },
-    FindAddresses {
+    GetAddresses {
         seed: Seed,
         account_index: Option<usize>,
         range: Option<Range<usize>>,
@@ -148,13 +148,13 @@ impl Task for ClientTask {
                     let (address, index) = getter.get().await?;
                     serde_json::to_string(&(address, index)).unwrap()
                 }
-                Api::FindAddresses {
+                Api::GetAddresses {
                     seed,
                     account_index,
                     range,
                     bech32_hrp,
                 } => {
-                    let mut getter = client.find_addresses(&seed);
+                    let mut getter = client.get_addresses(&seed);
                     if let Some(account_index) = account_index {
                         getter = getter.with_account_index(*account_index);
                     }
