@@ -46,7 +46,7 @@ describe('Client', () => {
   })
 
   it('sends a value transaction and checks output balance', async () => {
-    const depositAddress = 'atoi1qzj86lzml2ktagye4mj0th6zymgka8lt96qre9yye0v8sawzmdu0ut90vm7'
+    const depositAddress = 'atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r'
     const message = await client
       .message()
       .seed(seed)
@@ -107,7 +107,7 @@ describe('Client', () => {
   })
 
   it('get address outputs', async () => {
-    const outputs = await client.getAddressOutputs('atoi1qzj86lzml2ktagye4mj0th6zymgka8lt96qre9yye0v8sawzmdu0ut90vm7')
+    const outputs = await client.getAddressOutputs('atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
     assert.strictEqual(Array.isArray(outputs), true)
     assert.strictEqual(outputs.length > 0, true)
     assert.strictEqual(typeof outputs[0], 'string')
