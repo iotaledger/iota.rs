@@ -12,9 +12,9 @@ use std::env;
 /// In this example, we send 8_800_000 tokens to the following 3 locations, respectively
 ///
 /// Address Index (1..4)
-///   output 0: 3_000_000 tokens atoi1qzj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pk6w523x
-///   output 1: 2_800_000 tokens atoi1qzu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwjsc20jg
-///   output 2: 3_000_000 tokens atoi1qz0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsp0k73u
+///   output 0: 3_000_000 tokens atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf
+///   output 1: 2_800_000 tokens atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2
+///   output 2: 3_000_000 tokens atoi1qzumqjtucwglfja746vvmr7n54ep88kcu2qvaquqrnx9qs2z8f4t6d7muyq
 ///
 ///
 /// These three addresses belong to second seed in .env.example
@@ -29,7 +29,7 @@ async fn main() {
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    // First address from the seed below is atoi1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxtmtev5
+    // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
     let seed =
@@ -39,17 +39,17 @@ async fn main() {
         .message()
         .with_seed(&seed)
         .with_output(
-            &"atoi1qzj8s3kpacr6kmh05sxul4zp0xqulzn2vy9rznqj6rrc4nwd304pk6w523x".into(),
+            &"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf".into(),
             3_000_000,
         )
         .unwrap()
         .with_output(
-            &"atoi1qzu7dnlfld2p0rhld20nr6axdnl0katmwu59fprwcnahglmnvgpwjsc20jg".into(),
+            &"atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2".into(),
             2_800_000,
         )
         .unwrap()
         .with_output(
-            &"atoi1qz0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsp0k73u".into(),
+            &"atoi1qzumqjtucwglfja746vvmr7n54ep88kcu2qvaquqrnx9qs2z8f4t6d7muyq".into(),
             3_000_000,
         )
         .unwrap()
