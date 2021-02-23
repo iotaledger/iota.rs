@@ -14,6 +14,10 @@ use std::{
 };
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
+const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
+// Interval in seconds when new tips will be requested during PoW
+const TIPS_INTERVAL: u64 = 15;
 
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -53,7 +57,7 @@ impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
             nodes: HashSet::new(),
-            node_sync_interval: Duration::from_millis(60000),
+            node_sync_interval: NODE_SYNC_INTERVAL,
             node_sync_enabled: true,
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
@@ -63,7 +67,7 @@ impl Default for ClientBuilder {
                 min_pow_score: 4000f64,
                 local_pow: true,
                 bech32_hrp: "iota".into(),
-                tips_interval: 15,
+                tips_interval: TIPS_INTERVAL,
             },
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
             api_timeout: Default::default(),
@@ -211,51 +215,37 @@ impl ClientBuilder {
         let mut api_timeout = HashMap::new();
         api_timeout.insert(
             Api::GetInfo,
-            self.api_timeout
-                .remove(&Api::GetInfo)
-                .unwrap_or_else(|| Duration::from_millis(2000)),
+            self.api_timeout.remove(&Api::GetInfo).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
             Api::GetPeers,
-            self.api_timeout
-                .remove(&Api::GetPeers)
-                .unwrap_or_else(|| Duration::from_millis(2000)),
+            self.api_timeout.remove(&Api::GetPeers).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
             Api::GetHealth,
-            self.api_timeout
-                .remove(&Api::GetHealth)
-                .unwrap_or_else(|| Duration::from_millis(2000)),
+            self.api_timeout.remove(&Api::GetHealth).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
             Api::GetMilestone,
-            self.api_timeout
-                .remove(&Api::GetMilestone)
-                .unwrap_or_else(|| Duration::from_millis(2000)),
+            self.api_timeout.remove(&Api::GetMilestone).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
             Api::GetTips,
-            self.api_timeout
-                .remove(&Api::GetTips)
-                .unwrap_or_else(|| Duration::from_millis(2000)),
+            self.api_timeout.remove(&Api::GetTips).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
             Api::PostMessage,
-            self.api_timeout
-                .remove(&Api::PostMessage)
-                .unwrap_or_else(|| Duration::from_millis(2000)),
+            self.api_timeout.remove(&Api::PostMessage).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
             Api::PostMessageWithRemotePow,
             self.api_timeout
                 .remove(&Api::PostMessageWithRemotePow)
-                .unwrap_or_else(|| Duration::from_millis(30000)),
+                .unwrap_or(DEFAULT_REQUEST_TIMEOUT),
         );
         api_timeout.insert(
             Api::GetOutput,
-            self.api_timeout
-                .remove(&Api::GetOutput)
-                .unwrap_or_else(|| Duration::from_millis(2000)),
+            self.api_timeout.remove(&Api::GetOutput).unwrap_or(GET_API_TIMEOUT),
         );
 
         let client = Client {
@@ -273,7 +263,6 @@ impl ClientBuilder {
             request_timeout: self.request_timeout,
             api_timeout,
         };
-
         Ok(client)
     }
 }

@@ -19,6 +19,8 @@ use std::{
 };
 
 const HARDEND: u32 = 1 << 31;
+const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
+const ADDRESS_GAP_LIMIT: usize = 20;
 
 /// Structure for sorting of UnlockBlocks
 // TODO: move the sorting process to the `Message` crate
@@ -280,7 +282,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         .client
                         .get_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
-                        .with_range(index..index + 20)
+                        .with_range(index..index + ADDRESS_GAP_LIMIT)
                         .get_all()
                         .await?;
                     // For each address, get the address outputs
@@ -296,8 +298,8 @@ impl<'a> ClientMessageBuilder<'a> {
                         }
                         // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
                         // up the addresses belonging to the seed. Note that we don't really count the exact 20
-                        // consecutive empty addresses, which is uncessary. We just need to check the address range,
-                        // [k*20, k*20 + 20), where k is natural number, and to see if the outpus are all empty.
+                        // consecutive empty addresses, which is unnecessary. We just need to check the address range,
+                        // [k*20, k*20 + 20), where k is natural number, and to see if the outputs are all empty.
                         if outputs.is_empty() {
                             // Accumulate the empty_address_count for each run of output address searching
                             empty_address_count += 1;
@@ -381,7 +383,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             address_index += 1;
                         }
                     }
-                    index += 20;
+                    index += ADDRESS_GAP_LIMIT;
                     // The gap limit is 20 and use reference 40 here because there's public and internal addresses
                     if empty_address_count == 40 {
                         break;
@@ -391,7 +393,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         if total_already_spent < total_to_spend {
-            return Err(Error::NotEnoughBalance(total_to_spend));
+            return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
         }
 
         // Check if we would let dust on an address behind or send new dust, which would make the tx unconfirmable
@@ -432,7 +434,6 @@ impl<'a> ClientMessageBuilder<'a> {
         for (current_block_index, recorder) in address_index_recorders.iter().enumerate() {
             // Check if current path is same as previous path
             // If so, add a reference unlock block
-
             // Format to differentiate between public and private addresses
             let index = format!("{}{}", recorder.address_index, recorder.internal);
             if let Some(block_index) = signature_indexes.get(&index) {
@@ -459,7 +460,6 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         let payload = payload_builder.finish().map_err(|_| Error::TransactionError)?;
-
         // building message
         let payload = Payload::Transaction(Box::new(payload));
 
@@ -520,7 +520,7 @@ impl<'a> ClientMessageBuilder<'a> {
 }
 
 // Calculate the outputs on this address after this transaction gets confirmed so we know if we can send dust or
-// dust allowance outputs (as input). the bool in the outputs defines if we consume this output (false) or create a new
+// dust allowance outputs (as input), the bool in the outputs defines if we consume this output (false) or create a new
 // one (true)
 async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
     // balance of all dust allowance outputs
@@ -568,7 +568,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
 
     // Here dust_allowance_balance and dust_outputs_amount should be as if this transaction gets confirmed
     // Max allowed dust outputs is 100
-    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, 100);
+    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, MAX_ALLOWED_DUST_OUTPUTS);
     if dust_outputs_amount > allowed_dust_amount {
         return Err(Error::DustError(format!(
             "No dust output allowed on address {}",

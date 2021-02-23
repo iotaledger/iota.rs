@@ -5,15 +5,15 @@ const assert = require('assert')
 const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 
 const client = new ClientBuilder()
-  // .node('http://localhost:14265')
+  .node('http://api.hornet-1.testnet.chrysalis2.com')
   .disableNodeSync()
   .brokerOptions({ timeout: 50 })
   .localPow(true)
   .build()
 
 describe('Client', () => {
-  it('gets network info', () => {
-    const info = client.networkInfo()
+  it('gets network info', async () => {
+    const info = await client.networkInfo()
     assert.strictEqual(typeof info, 'object')
     assert.strictEqual(info.localPow, true)
     assert.strictEqual(info.bech32HRP, 'atoi')
@@ -26,14 +26,14 @@ describe('Client', () => {
     assertMessageId(tips[0])
   })
 
-  it('get addresses', () => {
-    const addresses = client.getAddresses(seed)
+  it('get addresses', async () => {
+    const addresses = await client.getAddresses(seed)
       .accountIndex(0)
       .range(0, 5)
       .get()
     assert.strictEqual(Array.isArray(addresses), true)
-    assert.strictEqual(addresses.length, 10)
-    addresses.forEach(([address, _internal]) => assertAddress(address))
+    assert.strictEqual(addresses.length, 5)
+    addresses.forEach(assertAddress)
   })
 
   it('sends an indexation message with the high level API', async () => {

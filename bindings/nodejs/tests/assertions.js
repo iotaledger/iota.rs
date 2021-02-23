@@ -15,7 +15,7 @@ function assertMessageId(messageId) {
 function assertAddress(address) {
   assert.strictEqual(typeof address, 'string')
   assert.strictEqual(address.length, 64)
-  assert.strictEqual(address.startsWith('iota'), true)
+  assert.strictEqual(address.startsWith('atoi'), true)
 }
 
 module.exports = {
