@@ -65,7 +65,6 @@ declare_types! {
                 let value: Handle<JsNumber> = value.downcast_or_throw(&mut cx)?;
                 index.push(value.value() as u8);
             }
-            println!("{:?}", index);
 
             {
                 let mut this = cx.this();
