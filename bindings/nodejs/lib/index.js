@@ -8,7 +8,7 @@ const {
   MessageGetter,
   MessageSender,
   UnspentAddressGetter,
-  AddressFinder,
+  AddressGetter,
   BalanceGetter
 } = require('../native')
 
@@ -111,9 +111,9 @@ MessageSender.prototype.index = function (index) {
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)
 
-const findAddressesGetter = AddressFinder.prototype.get
-AddressFinder.prototype.get = function () {
-  return JSON.parse(findAddressesGetter.apply(this))
+const AddressesGetter = AddressGetter.prototype.get
+AddressGetter.prototype.get = function () {
+  return JSON.parse(AddressesGetter.apply(this))
 }
 
 BalanceGetter.prototype.get = promisify(BalanceGetter.prototype.get)

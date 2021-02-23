@@ -224,7 +224,7 @@ impl Client {
         })?;
         Ok((address_index.0 .0, address_index.1))
     }
-    fn find_addresses(
+    fn get_addresses(
         &self,
         seed: String,
         account_index: Option<usize>,
@@ -246,7 +246,7 @@ impl Client {
             let rt = tokio::runtime::Runtime::new()?;
             let addresses = rt.block_on(async {
                 self.client
-                    .find_addresses(&seed)
+                    .get_addresses(&seed)
                     .with_account_index(account_index.unwrap_or(0))
                     .with_range(begin..end)
                     .get_all()
@@ -260,7 +260,7 @@ impl Client {
             let rt = tokio::runtime::Runtime::new()?;
             let addresses = rt.block_on(async {
                 self.client
-                    .find_addresses(&seed)
+                    .get_addresses(&seed)
                     .with_account_index(account_index.unwrap_or(0))
                     .with_range(begin..end)
                     .finish()

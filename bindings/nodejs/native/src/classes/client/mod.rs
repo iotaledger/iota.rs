@@ -27,8 +27,8 @@ pub use message_sender::JsMessageSender;
 mod unspent_address_getter;
 pub use unspent_address_getter::JsUnspentAddressGetter;
 
-mod address_finder;
-pub use address_finder::JsAddressFinder;
+mod address_getter;
+pub use address_getter::JsAddressGetter;
 
 mod balance_getter;
 pub use balance_getter::JsBalanceGetter;
@@ -99,7 +99,7 @@ declare_types! {
             Ok(JsUnspentAddressGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
-        method findAddresses(mut cx) {
+        method getAddresses(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
             Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
@@ -111,7 +111,7 @@ declare_types! {
             };
             let client_id = cx.string(client_id);
 
-            Ok(JsAddressFinder::new(&mut cx, vec![client_id, seed])?.upcast())
+            Ok(JsAddressGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
         method findMessages(mut cx) {
