@@ -158,6 +158,8 @@ pub struct Payload {
     pub transaction: Option<Vec<Transaction>>,
     pub milestone: Option<Vec<Milestone>>,
     pub indexation: Option<Vec<Indexation>>,
+    pub receipt: Option<Vec<Receipt>>,
+    pub treasury_transaction: Option<Vec<TreasuryTransaction>>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -185,6 +187,29 @@ pub struct MilestonePayloadEssence {
 pub struct Indexation {
     pub index: String,
     pub data: Vec<u8>,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct Receipt {
+    pub kind: u32,
+    pub index: u32,
+    pub last: bool,
+    pub funds: Vec<MigratedFundsEntry>,
+    pub transaction: Payload,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct MigratedFundsEntry {
+    tail_transaction_hash: Vec<u8>,
+    address: AddressDto,
+    amount: u64,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct TreasuryTransaction {
+    pub kind: u32,
+    pub input: Input,
+    pub output: Output,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -320,6 +345,20 @@ impl From<RustOutputResponse> for OutputResponse {
     }
 }
 
+impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
+    fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
+        Self {
+            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_vec(),
+            address: migrated_funds_entry
+                .address()
+                .clone()
+                .try_into()
+                .expect("Can't convert address"),
+            amount: migrated_funds_entry.amount(),
+        }
+    }
+}
+
 impl From<RustOutputDto> for OutputDto {
     fn from(output: RustOutputDto) -> Self {
         match output {
@@ -382,6 +421,17 @@ impl From<RustSignatureLockedDustAllowanceOutputDto> for SignatureLockedDustAllo
 
 impl From<RustAddressDto> for AddressDto {
     fn from(address: RustAddressDto) -> Self {
+        Self {
+            ed25519: match address {
+                RustAddressDto::Ed25519(ed25519) => ed25519.into(),
+            },
+        }
+    }
+}
+
+impl From<RustAddress> for AddressDto {
+    fn from(address: RustAddress) -> Self {
+        let address = RustAddressDto::try_from(&address).unwrap();
         Self {
             ed25519: match address {
                 RustAddressDto::Ed25519(ed25519) => ed25519.into(),
@@ -609,6 +659,8 @@ impl TryFrom<RustRegularEssence> for RegularEssence {
                                 )
                             }),
                         }]),
+                        receipt: None,
+                        treasury_transaction: None,
                     })
                 } else {
                     unreachable!()
@@ -696,6 +748,8 @@ impl TryFrom<RustMessage> for Message {
                     }]),
                     milestone: None,
                     indexation: None,
+                    receipt: None,
+                    treasury_transaction: None,
                 })
             }
             Some(RustPayload::Indexation(payload)) => Some(Payload {
@@ -711,6 +765,8 @@ impl TryFrom<RustMessage> for Message {
                         )
                     }),
                 }]),
+                receipt: None,
+                treasury_transaction: None,
             }),
             Some(RustPayload::Milestone(payload)) => Some(Payload {
                 transaction: None,
@@ -723,7 +779,52 @@ impl TryFrom<RustMessage> for Message {
                         .collect(),
                 }]),
                 indexation: None,
+                receipt: None,
+                treasury_transaction: None,
             }),
+            Some(RustPayload::Receipt(payload)) => {
+                let essence = match payload.transaction() {
+                    RustPayload::Transaction(transaction_payload) => match transaction_payload.essence().to_owned() {
+                        RustEssence::Regular(e) => e.try_into()?,
+                        _ => panic!("Unexisting essence."),
+                    },
+                    _ => panic!("Missing transaction payload"),
+                };
+                Some(Payload {
+                    transaction: None,
+                    milestone: None,
+                    indexation: None,
+                    receipt: Some(vec![Receipt {
+                        kind: 3,
+                        index: payload.index(),
+                        last: payload.last(),
+                        funds: payload
+                            .funds()
+                            .iter()
+                            .map(|m| m.try_into().expect("Couldn't convert funds"))
+                            .collect::<Vec<MigratedFundsEntry>>(),
+                        transaction: Payload {
+                            transaction: Some(vec![Transaction {
+                                essence,
+                                unlock_blocks: match payload.transaction() {
+                                    RustPayload::Transaction(transaction_payload) => transaction_payload
+                                        .unlock_blocks()
+                                        .iter()
+                                        .cloned()
+                                        .map(|unlock_block| unlock_block.try_into().expect("Invalid UnlockBlock"))
+                                        .collect(),
+                                    _ => panic!("Missing transaction payload"),
+                                },
+                            }]),
+                            milestone: None,
+                            indexation: None,
+                            receipt: None,
+                            treasury_transaction: None,
+                        },
+                    }]),
+                    treasury_transaction: None,
+                })
+            }
             _ => None,
         };
 
