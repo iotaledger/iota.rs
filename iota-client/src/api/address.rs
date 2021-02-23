@@ -18,8 +18,8 @@ const HARDEND: u32 = 1 << 31;
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
     seed: Option<&'a Seed>,
-    account_index: Option<usize>,
-    range: Option<Range<usize>>,
+    account_index: usize,
+    range: Range<usize>,
     bech32_hrp: Option<String>,
 }
 
@@ -28,8 +28,8 @@ impl<'a> Default for GetAddressesBuilder<'a> {
         Self {
             client: None,
             seed: None,
-            account_index: Some(0),
-            range: Some(0..20),
+            account_index: 0,
+            range: 0..20,
             bech32_hrp: None,
         }
     }
@@ -52,13 +52,13 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Set the account index
     pub fn with_account_index(mut self, account_index: usize) -> Self {
-        self.account_index = Some(account_index);
+        self.account_index = account_index;
         self
     }
 
     /// Set range to the builder
     pub fn with_range(mut self, range: Range<usize>) -> Self {
-        self.range = Some(range);
+        self.range = range;
         self
     }
 
@@ -81,10 +81,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Consume the builder and get the vector of Bech32Addresses
     pub async fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
-        let mut path = self
-            .account_index
-            .map(|i| BIP32Path::from_str(&crate::account_path!(i)).expect("invalid account index"))
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let mut path = BIP32Path::from_str(&crate::account_path!(self.account_index)).expect("invalid account index");
 
         let mut addresses = Vec::new();
         let bech32_hrp = match self.bech32_hrp {
@@ -96,7 +93,7 @@ impl<'a> GetAddressesBuilder<'a> {
                     .await?
             }
         };
-        for i in self.range.unwrap() {
+        for i in self.range {
             let address = generate_address(&self.seed.unwrap(), &mut path, i, false)?;
             let internal_address = generate_address(&self.seed.unwrap(), &mut path, i, true)?;
             addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
