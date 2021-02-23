@@ -121,8 +121,7 @@ describe('Client', () => {
 
   it('submits an indexation message and reads it', async () => {
     const indexation = {
-      // index: 'IOTA.RS BINDING - NODE.JS',
-      index: '494f54412e52532042494e44494e47202d204e4f44452e4a53',
+      index: 'IOTA.RS BINDING - NODE.JS',
       data: new TextEncoder().encode('INDEXATION DATA')
     }
     const messageId = await client.postMessage({
