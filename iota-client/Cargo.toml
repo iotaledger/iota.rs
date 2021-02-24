@@ -23,14 +23,13 @@ bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "8baba875c0
 bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "8baba875c0f07e62f159f264e8edf1667e013433" }
 bee-common-derive = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
-iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "6e67b652dd55df05877f575b9a09ccb5a7006694", features = ["ed25519", "random"]}
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", rev = "09ff1a94d6a87838589ccf1b874cfa3283a00f26", features = ["blake2b", "ed25519", "random"] }
 slip10 = "0.4"
 reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.58"
 chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4.2"
-blake2 = "0.9"
 tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread"] }
 thiserror = "1.0"
 num_cpus = "1.13"
