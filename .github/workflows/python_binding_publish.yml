@@ -3,12 +3,12 @@ name: Build python binding wheels
 on:
   push:
     branches:
+      - dev
       - master
   pull_request:
     branches:
       - dev
-    paths-ignore:
-      - 'specs/**'
+      - master
 
 jobs:
 
@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7]
     steps:
-     - uses: actions/checkout@v1
+     - uses: actions/checkout@v2
      - uses: actions-rs/toolchain@v1
-        with:
+       with:
           toolchain: stable
           override: true
      - uses: actions/setup-python@v2
@@ -30,22 +30,22 @@ jobs:
        working-directory: bindings/python/native
        run: |
          python3 -m pip install maturin
-         maturin build --release
-     - uses: actions/upload-artifact@v1
+         maturin build --release --manylinux off
+     - uses: actions/upload-artifact@v2
        with:
-         name: linux-${{ matrix.python-version }}-wheel
-         path: target/wheels
+         name: '**.whl'
+         path: bindings/python/native/target/wheels/
 
   # osx-wheels:
   #   runs-on: macos-latest
   #   strategy:
   #     matrix:
-  #       python-version: [3.5, 3.6, 3.7, 3.8]
+  #       python-version: [3.6, 3.7, 3.8]
   #   steps:
-  #    - uses: actions/checkout@v1
+  #    - uses: actions/checkout@v2
   #    - uses: actions-rs/toolchain@v1
   #      with:
-  #        toolchain: nightly
+  #        toolchain: stable
   #        default: true
   #    - uses: actions/setup-python@v2
   #      with:
@@ -54,27 +54,32 @@ jobs:
   #      working-directory: bindings/python/native
   #      run: |
   #        python3 -m pip install maturin
-  #        maturin build --release
+  #        maturin build --release --manylinux off
   #    - uses: actions/upload-artifact@v1
   #      with:
   #        name: osx-${{ matrix.python-version }}-wheel
-  #        path: target/wheels
+  #        path: bindings/python/wheels
 
   # windows-wheels:
   #   runs-on: windows-latest
+  #   strategy:
+  #     matrix:
+  #       python-version: [3.6, 3.7, 3.8]
   #   steps:
-  #    - uses: actions/checkout@v1
+  #    - uses: actions/checkout@v2
   #    - uses: actions-rs/toolchain@v1
   #      with:
-  #        toolchain: nightly
+  #        toolchain: stable
   #        default: true
   #    - uses: actions/setup-python@v2
+  #      with:
+  #        python-version: ${{ matrix.python-version }}
   #    - name: Build wheels
   #      working-directory: bindings/python/native
   #      run: |
   #        python -m pip install maturin
-  #        maturin build --release
+  #        maturin build --release --manylinux off
   #    - uses: actions/upload-artifact@v1
   #      with:
-  #        name: windows-wheels
-  #        path: target/wheels
+  #        name: windows-${{ matrix.python-version }}-wheels
+  #        path: bindings/python/wheels
