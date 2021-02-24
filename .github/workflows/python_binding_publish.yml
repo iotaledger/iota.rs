@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6, 3.7, 3.8]
     steps:
      - uses: actions/checkout@v2
      - uses: actions-rs/toolchain@v1
@@ -36,52 +36,52 @@ jobs:
          name: linux-${{ matrix.python-version }}-wheel
          path: bindings/python/native/target/wheels/
 
-  # osx-wheels:
-  #   runs-on: macos-latest
-  #   strategy:
-  #     matrix:
-  #       python-version: [3.6, 3.7, 3.8]
-  #   steps:
-  #    - uses: actions/checkout@v2
-  #    - uses: actions-rs/toolchain@v1
-  #      with:
-  #        toolchain: stable
-  #        default: true
-  #    - uses: actions/setup-python@v2
-  #      with:
-  #        python-version: ${{ matrix.python-version }}
-  #    - name: Build wheels
-  #      working-directory: bindings/python/native
-  #      run: |
-  #        python3 -m pip install maturin
-  #        maturin build --release --manylinux off
-  #    - uses: actions/upload-artifact@v1
-  #      with:
-  #        name: osx-${{ matrix.python-version }}-wheel
-  #        path: bindings/python/wheels
+  osx-wheels:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: ${{ matrix.python-version }}
+     - name: Build wheels
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install maturin
+         maturin build --release --manylinux off
+     - uses: actions/upload-artifact@v2
+       with:
+         name: osx-${{ matrix.python-version }}-wheel
+         path: bindings/python/native/target/wheels/
 
-  # windows-wheels:
-  #   runs-on: windows-latest
-  #   strategy:
-  #     matrix:
-  #       python-version: [3.6, 3.7, 3.8]
-  #   steps:
-  #    - uses: actions/checkout@v2
-  #    - uses: actions-rs/toolchain@v1
-  #      with:
-  #        toolchain: stable
-  #        default: true
-  #    - uses: actions/setup-python@v2
-  #      with:
-  #        python-version: ${{ matrix.python-version }}
-  #    - name: Build wheels
-  #      working-directory: bindings/python/native
-  #      run: |
-  #        choco install openssl --no-progress
-  #        echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-  #        python -m pip install maturin
-  #        maturin build --release --manylinux off
-  #    - uses: actions/upload-artifact@v1
-  #      with:
-  #        name: windows-${{ matrix.python-version }}-wheels
-  #        path: bindings/python/native/target/wheels/
+  windows-wheels:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: ${{ matrix.python-version }}
+     - name: Build wheels
+       working-directory: bindings/python/native
+       run: |
+         choco install openssl --no-progress
+         echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         python -m pip install maturin
+         maturin build --release --manylinux off
+     - uses: actions/upload-artifact@v1
+       with:
+         name: windows-${{ matrix.python-version }}-wheels
+         path: bindings/python/native/target/wheels/
