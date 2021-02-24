@@ -14,16 +14,15 @@ jobs:
 
   linux-wheels:
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux1_x86_64
     strategy:
       matrix:
         python-version: [3.5, 3.6, 3.7, 3.8]
     steps:
      - uses: actions/checkout@v1
      - uses: actions-rs/toolchain@v1
-       with:
-         toolchain: nightly
-         default: true
+        with:
+          toolchain: stable
+          override: true
      - uses: actions/setup-python@v2
        with:
          python-version: ${{ matrix.python-version }}
