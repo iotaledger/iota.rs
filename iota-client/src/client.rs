@@ -11,6 +11,7 @@ use crate::{
     parse_response, Seed,
 };
 
+use bee_common::packable::Packable;
 use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
@@ -562,6 +563,42 @@ impl Client {
 
     /// POST /api/v1/messages endpoint
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
+        let mut url = self.get_node()?;
+        let path = "api/v1/messages";
+        url.set_path(path);
+
+        let timeout = if self.get_local_pow() {
+            self.get_timeout(Api::PostMessage)
+        } else {
+            self.get_timeout(Api::PostMessageWithRemotePow)
+        };
+        let resp = self
+            .client
+            .post(url)
+            .timeout(timeout)
+            .body(message.pack_new())
+            .send()
+            .await?;
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdResponseWrapper {
+            data: MessageIdWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdWrapper {
+            #[serde(rename = "messageId")]
+            message_id: String,
+        }
+        log_request!("POST", path, resp);
+        parse_response!(resp, 201 => {
+            let message_id = resp.json::<MessageIdResponseWrapper>().await?;
+            let mut message_id_bytes = [0u8; 32];
+            hex::decode_to_slice(message_id.data.message_id, &mut message_id_bytes)?;
+            Ok(MessageId::from(message_id_bytes))
+        })
+    }
+
+    /// POST JSON to /api/v1/messages endpoint
+    pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
         let mut url = self.get_node()?;
         let path = "api/v1/messages";
         url.set_path(path);
