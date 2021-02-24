@@ -22,11 +22,8 @@ use bee_rest_api::{
     },
     types::{MessageDto, PeerDto},
 };
+use crypto::hashes::{blake2b::Blake2b256, Digest};
 
-use blake2::{
-    digest::{Update, VariableOutput},
-    VarBlake2b,
-};
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
@@ -870,12 +867,10 @@ impl Client {
 }
 
 /// Hash the network id str from the nodeinfo to an u64 for the messageBuilder
-pub fn hash_network(network_id: &str) -> u64 {
-    let mut hasher = VarBlake2b::new(32).unwrap();
-    hasher.update(network_id.as_bytes());
-    let mut result: [u8; 32] = [0; 32];
-    hasher.finalize_variable(|res| {
-        result = res.try_into().unwrap();
-    });
-    u64::from_le_bytes(result[0..8].try_into().unwrap())
+pub fn hash_network(network_id_string: &str) -> u64 {
+    u64::from_le_bytes(
+        Blake2b256::digest(network_id_string.as_bytes())[0..8]
+            .try_into()
+            .unwrap(),
+    )
 }

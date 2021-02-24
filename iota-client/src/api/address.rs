@@ -4,11 +4,8 @@
 use crate::{Client, Error, Result, Seed};
 
 use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
-use blake2::{
-    digest::{Update, VariableOutput},
-    VarBlake2b,
-};
 use core::convert::TryInto;
+use crypto::hashes::{blake2b::Blake2b256, Digest};
 use slip10::BIP32Path;
 use std::ops::Range;
 
@@ -110,17 +107,12 @@ fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: b
 
     let public_key = seed.generate_private_key(path)?.public_key().to_compressed_bytes();
     // Hash the public key to get the address
-    let mut hasher = VarBlake2b::new(32).unwrap();
-    hasher.update(public_key);
-    let mut result: [u8; 32] = [0; 32];
-    hasher.finalize_variable(|res| {
-        result = res.try_into().expect("Invalid Length of Public Key");
-    });
+    let result = Blake2b256::digest(&public_key);
 
     path.pop();
     path.pop();
 
-    Ok(Address::Ed25519(Ed25519Address::new(result)))
+    Ok(Address::Ed25519(Ed25519Address::new(result.try_into().unwrap())))
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
