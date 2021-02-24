@@ -33,7 +33,7 @@ jobs:
          maturin build --release --manylinux off
      - uses: actions/upload-artifact@v2
        with:
-         name: '**.whl'
+         name: linux-${{ matrix.python-version }}-wheel
          path: bindings/python/native/target/wheels/
 
   # osx-wheels:
@@ -77,9 +77,11 @@ jobs:
   #    - name: Build wheels
   #      working-directory: bindings/python/native
   #      run: |
+  #        choco install openssl --no-progress
+  #        echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
   #        python -m pip install maturin
   #        maturin build --release --manylinux off
   #    - uses: actions/upload-artifact@v1
   #      with:
   #        name: windows-${{ matrix.python-version }}-wheels
-  #        path: bindings/python/wheels
+  #        path: bindings/python/native/target/wheels/
