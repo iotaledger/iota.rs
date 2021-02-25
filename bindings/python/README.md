@@ -35,24 +35,24 @@ LOCAL_NODE_URL = "http://0.0.0.0:14265"
 # USE THIS INSTEAD
 SEED = os.getenv('MY_IOTA_SEED')
 
-EMPTY_ADDRESS = "iot1qxgamuxntdxq06q4zpmvmdnrerj2f94058ge3flfyx567unw25amvr978uw"
+EMPTY_ADDRESS = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r"
 client = iota_client.Client(
     node=LOCAL_NODE_URL, node_sync_disabled=True)
 
 
 def main():
     print('get_health()')
-    print(f'health: client.get_health()')
+    print(f'health: {client.get_health()}')
 
     print('get_info()')
-    print(f'node_info: client.get_info()')
+    print(f'node_info: {client.get_info()}')
 
     print('get_tips()')
-    print(f'tips: client.get_tips()')
+    print(f'tips: {client.get_tips()}')
 
     print('get_addresses')
     address_changed_list = client.get_addresses(
-        seed=SEED, account_index=0, begin=0, end=10, get_all=True)
+        seed=SEED, account_index=0, input_range_begin=0, input_range_end=10, get_all=True)
     print(f'address_changed list: {address_changed_list}')
 
     # Get the (address, changed ) for the first found address
@@ -68,7 +68,7 @@ def main():
 
     print(f'message() 100 tokens to address {EMPTY_ADDRESS}')
     message_id = client.message(
-        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])
+        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['message_id']
     print(f'Token sent with message_id: {message_id}')
     print(f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id}')
 
@@ -82,7 +82,10 @@ def main():
 
     print(f'get_message_raw() for message_id {message_id}')
     message_raw = client.get_message_raw(message_id)
-    print(f"message_raw: {bytearray(message_raw, 'utf-8')}")
+    print(f"raw_data = {message_raw.encode('utf-8')}")
+    print(
+        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v1/messages/{message_id}/raw")
+    print(', which is not utf-8 format. The utf-8 format here is just for ease of demonstration')
 
     print(f'get_message_children() for message_id {message_id}')
     children = client.get_message_children(message_id)
@@ -90,7 +93,16 @@ def main():
 
     print(f'message() Indexation')
     message_id_indexation = client.message(
-        index="Hello", data=bytes("Tangle", 'utf-8'))
+        index="Hello", data=[84, 97, 110, 103, 108, 101])
+    print(f'Indexation sent with message_id: {message_id_indexation}')
+    print(
+        f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id_indexation}')
+
+    # Note that in rust we need to specify the parameter type explicitly, so if the user wants
+    # to use the utf-8 string as the data, then the `data_str` field can be used.
+    print(f'message() Indexation')
+    message_id_indexation = client.message(
+        index="Hi", data_str="Tangle")
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
         f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id_indexation}')
@@ -121,6 +133,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 ```
 
 ## API Reference
