@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
-    let seed_1 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?)?;
+    let seed_1 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
 
     let total_balance = iota.get_balance(&seed_1).finish().await?;
     let message = iota

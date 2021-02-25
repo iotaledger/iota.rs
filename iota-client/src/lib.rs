@@ -14,7 +14,6 @@ pub mod builder;
 pub mod client;
 pub mod error;
 pub mod node;
-pub mod seed;
 #[cfg(feature = "storage")]
 #[cfg_attr(docsrs, doc(cfg(feature = "storage")))]
 pub mod storage;
@@ -28,11 +27,11 @@ pub use bee_rest_api::{
 // pub use bee_signing_ext::{self, binary::BIP32Path,};
 pub use builder::ClientBuilder;
 pub use client::*;
+pub use crypto::slip10::Seed;
 pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use reqwest::Url;
-pub use seed::*;
 #[cfg(feature = "storage")]
 pub use storage::*;
 
@@ -69,14 +68,6 @@ macro_rules! parse_response {
             status => Err(Error::ResponseError(status, $response.text().await?)),
         }
     }};
-}
-
-/// gets the BIP32 account path from a given account_index/address_internal/address_index
-#[macro_export]
-macro_rules! account_path {
-    ($account_index:expr) => {
-        format!("m/44'/4218'/{}'", $account_index)
-    };
 }
 
 /// Log info about the request and response.

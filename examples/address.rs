@@ -20,8 +20,7 @@ async fn main() {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let seed =
-        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
 
     // Generate addresses with default account index and range
     let addresses = iota.get_addresses(&seed).finish().await.unwrap();

@@ -8,8 +8,10 @@ use crate::{
     error::*,
     log_request,
     node::*,
-    parse_response, Seed,
+    parse_response,
 };
+
+use crypto::slip10::Seed;
 
 use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};

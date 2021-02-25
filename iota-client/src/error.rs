@@ -91,9 +91,6 @@ pub enum Error {
     /// Crypto.rs error
     #[error("{0}")]
     CryptoError(crypto::Error),
-    /// Slip10 error
-    #[error("{0}")]
-    Slip10Error(slip10::Error),
     /// Invalid amount of parents
     #[error("Invalid amount of parents, length must be in 1..=8")]
     InvalidParentsAmount,
@@ -110,12 +107,5 @@ impl From<bee_message::Error> for Error {
 impl From<crypto::Error> for Error {
     fn from(error: crypto::Error) -> Self {
         Error::CryptoError(error)
-    }
-}
-
-// can't use #[from] on slip10::Error so manually converting it
-impl From<slip10::Error> for Error {
-    fn from(error: slip10::Error) -> Self {
-        Error::Slip10Error(error)
     }
 }

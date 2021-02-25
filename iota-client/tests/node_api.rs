@@ -4,7 +4,7 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use iota_client::Seed;
+use crypto::slip10::Seed;
 
 use bee_rest_api::types::MessageDto;
 use std::{convert::TryFrom, str::FromStr};
@@ -112,8 +112,7 @@ async fn test_post_message_with_transaction() {
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
     let seed =
-        Seed::from_bytes(&hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap())
-            .unwrap();
+        Seed::from_bytes(&hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap());
 
     let message_id = iota
         .message()
