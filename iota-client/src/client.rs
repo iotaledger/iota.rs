@@ -11,8 +11,6 @@ use crate::{
     parse_response,
 };
 
-
-use crypto::slip10::Seed;
 use bee_common::packable::Packable;
 use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
@@ -26,6 +24,7 @@ use bee_rest_api::{
     types::{MessageDto, PeerDto},
 };
 use crypto::hashes::{blake2b::Blake2b256, Digest};
+use crypto::slip10::Seed;
 
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
