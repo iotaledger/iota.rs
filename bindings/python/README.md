@@ -16,7 +16,7 @@
 - Go to `bindings/python/native`
 - `$ cargo build --release`
 - The built library is located in `target/release/`
-- On MacOS, rename `libiota_client.dylib` to `iota_client.so`, on Windows, use `iota_client.dll` directly, and on Linux `libiota_client.so` to `iota_client.so`.
+- On MacOS, rename `libiota_client.dylib` to `iota_client.so`, on Windows, rename `iota_client.dll` to `iota_client.pyd`, and on Linux `libiota_client.so` to `iota_client.so`.
 - Copy your renamed library to `bindings/python/examples/`
 - Go to `bindings/python/examples`
 - `$ python example.py`
