@@ -23,8 +23,10 @@ use bee_rest_api::{
     },
     types::{MessageDto, PeerDto},
 };
-use crypto::hashes::{blake2b::Blake2b256, Digest};
-use crypto::slip10::Seed;
+use crypto::{
+    hashes::{blake2b::Blake2b256, Digest},
+    slip10::Seed,
+};
 
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;

@@ -5,8 +5,10 @@ use crate::{Client, Error, Result};
 
 use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
 use core::convert::TryInto;
-use crypto::hashes::{blake2b::Blake2b256, Digest};
-use crypto::slip10::{Chain, Seed};
+use crypto::{
+    hashes::{blake2b::Blake2b256, Digest},
+    slip10::{Chain, Seed},
+};
 use std::ops::Range;
 
 const HASH_KEY: &[u8] = b"ed25519 seed";
