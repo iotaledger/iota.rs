@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     let seed_2 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?)?;
 
     let total_balance = iota.get_balance(&seed_1).finish().await?;
-    let mut available = total_balance.clone();
+    let mut available = total_balance;
     println!("total_balance {}", total_balance);
     let addresses_from_seed_2 = iota
         .get_addresses(&seed_2)
@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     for i in 0..total_balance / 1_000_000 {
         let mut amount = 1_000_000;
         // Don't add more than we have or is allowed; 1 less here for remaining iotas
-        if available <= 0 || i > 125 {
+        if available == 0 || i > 125 {
             break;
         }
         available -= amount;
