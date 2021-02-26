@@ -6,7 +6,7 @@ use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota::{
     bee_rest_api::{
-        handlers::{
+        handlers::api::v1::{
             balance_ed25519::BalanceForAddressResponse as RustBalanceForAddressResponse,
             info::InfoResponse as RustInfoResponse,
             message_metadata::{
