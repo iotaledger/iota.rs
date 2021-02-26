@@ -286,7 +286,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         .get_all()
                         .await?;
                     // For each address, get the address outputs
-                    let mut address_index = 0;
+                    let mut address_index = index;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
                         let address_outputs = self.client.get_address().outputs(&address).await?;
                         let mut outputs = vec![];

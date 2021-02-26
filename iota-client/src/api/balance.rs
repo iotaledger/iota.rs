@@ -43,6 +43,8 @@ impl<'a> GetBalanceBuilder<'a> {
 
         // get account balance and check with value
         let mut balance = 0;
+        // Count addresses with zero balances in a row
+        let mut found_zero_balance = 0;
         loop {
             let addresses = self
                 .client
@@ -52,23 +54,22 @@ impl<'a> GetBalanceBuilder<'a> {
                 .get_all()
                 .await?;
 
-            // TODO we assume all addresses are unspent and valid if balance > 0
-            let mut found_zero_balance = false;
             for (address, _) in addresses {
                 let address_balance = self.client.get_address().balance(&address).await?;
                 match address_balance.balance {
-                    0 => {
-                        found_zero_balance = true;
-                        break;
+                    0 => found_zero_balance += 1,
+                    _ => {
+                        balance += address_balance.balance;
+                        // reset
+                        found_zero_balance = 0;
                     }
-                    _ => balance += address_balance.balance,
                 }
             }
 
-            match found_zero_balance {
-                true => break,
-                false => index += 20,
+            if found_zero_balance >= 20 {
+                break;
             }
+            index += 20;
         }
 
         Ok(balance)
