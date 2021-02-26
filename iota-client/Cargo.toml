@@ -24,7 +24,7 @@ bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "8baba875c0f07e
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-common-derive = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
-iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "09ff1a94d6a87838589ccf1b874cfa3283a00f26", features = ["ed25519", "random", "slip10"]}
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "527392202e78fa35620a9b30061d5e231a046ea2", features = ["blake2b", "ed25519", "random", "slip10"]}
 reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.58"

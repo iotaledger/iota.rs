@@ -7,11 +7,9 @@ use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
 use core::convert::TryInto;
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
-    slip10::{Chain, Seed},
+    slip10::{Chain, Curve, Seed},
 };
 use std::ops::Range;
-
-const HASH_KEY: &[u8] = b"ed25519 seed";
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
@@ -114,7 +112,7 @@ impl<'a> GetAddressesBuilder<'a> {
 fn generate_address(seed: &Seed, account_index: u32, address_index: u32, internal: bool) -> Result<Address> {
     let chain = Chain::from_u32_hardened(vec![44, 4218, account_index, internal as u32, address_index]);
     let public_key = seed
-        .derive(HASH_KEY, &chain)?
+        .derive(Curve::Ed25519, &chain)?
         .secret_key()?
         .public_key()
         .to_compressed_bytes();

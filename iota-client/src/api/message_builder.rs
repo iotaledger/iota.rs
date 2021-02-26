@@ -6,7 +6,7 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
-use crypto::slip10::{Chain, Seed};
+use crypto::slip10::{Chain, Curve, Seed};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -18,7 +18,6 @@ use std::{
     },
 };
 
-const HASH_KEY: &[u8] = b"ed25519 seed";
 const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const ADDRESS_GAP_LIMIT: usize = 20;
 
@@ -447,7 +446,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 let private_key = self
                     .seed
                     .expect("No seed")
-                    .derive(HASH_KEY, &recorder.chain)?
+                    .derive(Curve::Ed25519, &recorder.chain)?
                     .secret_key()?;
                 let public_key = private_key.public_key().to_compressed_bytes();
                 // The block should sign the entire transaction essence part of the transaction payload
