@@ -74,3 +74,11 @@ path = "peers.rs"
 [[example]]
 name = "message_time"
 path = "message_time.rs"
+
+[[example]]
+name = "send_all"
+path = "send_all.rs"
+
+[[example]]
+name = "split_all"
+path = "split_all.rs"
