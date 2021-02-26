@@ -1,15 +1,15 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result, Seed};
+use crate::{Client, Error, Result};
 
 use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
 use core::convert::TryInto;
-use crypto::hashes::{blake2b::Blake2b256, Digest};
-use slip10::BIP32Path;
+use crypto::{
+    hashes::{blake2b::Blake2b256, Digest},
+    slip10::{Chain, Curve, Seed},
+};
 use std::ops::Range;
-
-const HARDENED: u32 = 1 << 31;
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
@@ -78,8 +78,6 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Consume the builder and get the vector of Bech32Addresses
     pub async fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
-        let mut path = BIP32Path::from_str(&crate::account_path!(self.account_index)).expect("invalid account index");
-
         let mut addresses = Vec::new();
         let bech32_hrp = match self.bech32_hrp {
             Some(bech32_hrp) => bech32_hrp,
@@ -90,9 +88,19 @@ impl<'a> GetAddressesBuilder<'a> {
                     .await?
             }
         };
-        for i in self.range {
-            let address = generate_address(&self.seed.unwrap(), &mut path, i, false)?;
-            let internal_address = generate_address(&self.seed.unwrap(), &mut path, i, true)?;
+        for address_index in self.range {
+            let address = generate_address(
+                &self.seed.unwrap(),
+                self.account_index as u32,
+                address_index as u32,
+                false,
+            )?;
+            let internal_address = generate_address(
+                &self.seed.unwrap(),
+                self.account_index as u32,
+                address_index as u32,
+                true,
+            )?;
             addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
             addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
         }
@@ -101,16 +109,15 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 }
 
-fn generate_address(seed: &Seed, path: &mut BIP32Path, index: usize, internal: bool) -> Result<Address> {
-    path.push(internal as u32 + HARDENED);
-    path.push(index as u32 + HARDENED);
-
-    let public_key = seed.generate_private_key(path)?.public_key().to_compressed_bytes();
+fn generate_address(seed: &Seed, account_index: u32, address_index: u32, internal: bool) -> Result<Address> {
+    let chain = Chain::from_u32_hardened(vec![44, 4218, account_index, internal as u32, address_index]);
+    let public_key = seed
+        .derive(Curve::Ed25519, &chain)?
+        .secret_key()?
+        .public_key()
+        .to_compressed_bytes();
     // Hash the public key to get the address
     let result = Blake2b256::digest(&public_key);
-
-    path.pop();
-    path.pop();
 
     Ok(Address::Ed25519(Ed25519Address::new(result.try_into().unwrap())))
 }

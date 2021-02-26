@@ -59,7 +59,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::GetUnspentAddress {
-                        seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
+                        seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")),
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
                     },

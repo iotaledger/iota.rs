@@ -8,7 +8,7 @@ use crate::{
     error::*,
     log_request,
     node::*,
-    parse_response, Seed,
+    parse_response,
 };
 
 use bee_common::packable::Packable;
@@ -23,7 +23,10 @@ use bee_rest_api::{
     },
     types::{MessageDto, PeerDto},
 };
-use crypto::hashes::{blake2b::Blake2b256, Digest};
+use crypto::{
+    hashes::{blake2b::Blake2b256, Digest},
+    slip10::Seed,
+};
 
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;

@@ -22,8 +22,7 @@ async fn main() {
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
-    let seed =
-        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
 
     let address = iota
         .get_addresses(&seed)

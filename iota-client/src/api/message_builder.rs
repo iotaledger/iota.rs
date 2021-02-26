@@ -1,12 +1,12 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, Client, ClientMiner, Error, Result, Seed};
+use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
-use slip10::BIP32Path;
+use crypto::slip10::{Chain, Curve, Seed};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -18,7 +18,6 @@ use std::{
     },
 };
 
-const HARDEND: u32 = 1 << 31;
 const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const ADDRESS_GAP_LIMIT: usize = 20;
 
@@ -27,7 +26,7 @@ const ADDRESS_GAP_LIMIT: usize = 20;
 struct AddressIndexRecorder {
     input: Input,
     address_index: usize,
-    address_path: BIP32Path,
+    chain: Chain,
     internal: bool,
 }
 
@@ -174,7 +173,6 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Consume the builder and get the API result
     pub async fn finish_transaction(self) -> Result<Message> {
         let account_index = self.account_index.unwrap_or(0);
-        let path = BIP32Path::from_str(&crate::account_path!(account_index)).expect("invalid account index");
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
@@ -202,7 +200,6 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
 
-        let mut paths = Vec::new();
         let mut essence = RegularEssence::builder();
         let mut address_index_recorders = Vec::new();
 
@@ -233,7 +230,6 @@ impl<'a> ClientMessageBuilder<'a> {
                                 },
                             };
                             total_already_spent += output_amount;
-                            let mut address_path = path.clone();
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
                             let bech32_address = output_address.to_bech32(&bech32_hrp);
@@ -245,9 +241,13 @@ impl<'a> ClientMessageBuilder<'a> {
                                 &bech32_address.into(),
                             )
                             .await?;
-                            address_path.push(internal as u32 + HARDEND);
-                            address_path.push(address_index as u32 + HARDEND);
-                            paths.push(address_path.clone());
+                            let chain = Chain::from_u32_hardened(vec![
+                                44,
+                                4218,
+                                account_index as u32,
+                                internal as u32,
+                                address_index as u32,
+                            ]);
                             let input = Input::UTXO(
                                 UTXOInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
                                     .map_err(|_| Error::TransactionError)?,
@@ -256,7 +256,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             address_index_recorders.push(AddressIndexRecorder {
                                 input,
                                 address_index,
-                                address_path,
+                                chain,
                                 internal,
                             });
                             // Output the remaining tokens back to the original address
@@ -332,12 +332,15 @@ impl<'a> ClientMessageBuilder<'a> {
                                 false => {
                                     if total_already_spent < total_to_spend {
                                         total_already_spent += output_amount;
-                                        let mut address_path = path.clone();
                                         // Note that we need to sign the original address, i.e., `path/index`,
                                         // instead of `path/index/_offset` or `path/_offset`.
-                                        address_path.push(*internal as u32 + HARDEND);
-                                        address_path.push(address_index as u32 + HARDEND);
-                                        paths.push(address_path.clone());
+                                        let chain = Chain::from_u32_hardened(vec![
+                                            44,
+                                            4218,
+                                            account_index as u32,
+                                            *internal as u32,
+                                            address_index as u32,
+                                        ]);
                                         let input = Input::UTXO(
                                             UTXOInput::new(
                                                 TransactionId::from_str(&output.transaction_id)?,
@@ -349,7 +352,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                         address_index_recorders.push(AddressIndexRecorder {
                                             input,
                                             address_index,
-                                            address_path,
+                                            chain,
                                             internal: *internal,
                                         });
                                         if total_already_spent > total_to_spend {
@@ -442,8 +445,9 @@ impl<'a> ClientMessageBuilder<'a> {
                 // If not, we should create a signature unlock block
                 let private_key = self
                     .seed
-                    .expect("Missing seed")
-                    .generate_private_key(&recorder.address_path)?;
+                    .expect("No seed")
+                    .derive(Curve::Ed25519, &recorder.chain)?
+                    .secret_key()?;
                 let public_key = private_key.public_key().to_compressed_bytes();
                 // The block should sign the entire transaction essence part of the transaction payload
                 let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());

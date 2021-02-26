@@ -20,8 +20,7 @@ async fn main() {
 
     println!("This example uses dotenv, which is not safe for use in production.");
     dotenv().ok();
-    let seed =
-        Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap()).unwrap();
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
     let message_id = iota
         .message()
         .with_seed(&seed)

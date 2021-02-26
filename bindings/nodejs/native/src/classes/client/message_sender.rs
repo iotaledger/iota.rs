@@ -45,7 +45,7 @@ declare_types! {
             let seed = cx.argument::<JsString>(0)?.value();
 
             // validate the seed
-            Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"));
 
             {
                 let mut this = cx.this();
@@ -201,7 +201,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::Send {
-                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed")),
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"))),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
                         parents: ref_.parents.clone(),

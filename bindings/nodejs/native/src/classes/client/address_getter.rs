@@ -77,7 +77,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::GetAddresses {
-                        seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
+                        seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")),
                         account_index: ref_.account_index,
                         range: ref_.range.clone(),
                         bech32_hrp: ref_.bech32_hrp.clone(),
