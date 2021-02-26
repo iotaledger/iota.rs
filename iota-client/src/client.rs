@@ -11,6 +11,7 @@ use crate::{
     parse_response, Seed,
 };
 
+use bee_common::packable::Packable;
 use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
@@ -22,11 +23,8 @@ use bee_rest_api::{
     },
     types::{MessageDto, PeerDto},
 };
+use crypto::hashes::{blake2b::Blake2b256, Digest};
 
-use blake2::{
-    digest::{Update, VariableOutput},
-    VarBlake2b,
-};
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
 use reqwest::{IntoUrl, Url};
@@ -574,6 +572,42 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
+        let resp = self
+            .client
+            .post(url)
+            .timeout(timeout)
+            .body(message.pack_new())
+            .send()
+            .await?;
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdResponseWrapper {
+            data: MessageIdWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MessageIdWrapper {
+            #[serde(rename = "messageId")]
+            message_id: String,
+        }
+        log_request!("POST", path, resp);
+        parse_response!(resp, 201 => {
+            let message_id = resp.json::<MessageIdResponseWrapper>().await?;
+            let mut message_id_bytes = [0u8; 32];
+            hex::decode_to_slice(message_id.data.message_id, &mut message_id_bytes)?;
+            Ok(MessageId::from(message_id_bytes))
+        })
+    }
+
+    /// POST JSON to /api/v1/messages endpoint
+    pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
+        let mut url = self.get_node()?;
+        let path = "api/v1/messages";
+        url.set_path(path);
+
+        let timeout = if self.get_local_pow() {
+            self.get_timeout(Api::PostMessage)
+        } else {
+            self.get_timeout(Api::PostMessageWithRemotePow)
+        };
         let message = MessageDto::try_from(message).expect("Can't convert message into json");
         let resp = self
             .client
@@ -870,12 +904,10 @@ impl Client {
 }
 
 /// Hash the network id str from the nodeinfo to an u64 for the messageBuilder
-pub fn hash_network(network_id: &str) -> u64 {
-    let mut hasher = VarBlake2b::new(32).unwrap();
-    hasher.update(network_id.as_bytes());
-    let mut result: [u8; 32] = [0; 32];
-    hasher.finalize_variable(|res| {
-        result = res.try_into().unwrap();
-    });
-    u64::from_le_bytes(result[0..8].try_into().unwrap())
+pub fn hash_network(network_id_string: &str) -> u64 {
+    u64::from_le_bytes(
+        Blake2b256::digest(network_id_string.as_bytes())[0..8]
+            .try_into()
+            .unwrap(),
+    )
 }

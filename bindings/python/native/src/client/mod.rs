@@ -21,7 +21,7 @@ pub struct Client {
     pub client: RustClient,
 }
 
-/// An instance of the client using IRI URI.
+/// An instance of the client using IOTA node URI.
 #[pymethods]
 impl Client {
     #[new]
