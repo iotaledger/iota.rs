@@ -1,0 +1,90 @@
+name: Build python binding wheels
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+
+jobs:
+
+  linux-wheels:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+          toolchain: stable
+          override: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: ${{ matrix.python-version }}
+     - name: Build wheels
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install maturin
+         maturin build --release --manylinux off
+     - uses: actions/upload-artifact@v2
+       with:
+         name: linux-iota-client-py${{ matrix.python-version }}-wheel
+         path: bindings/python/native/target/wheels/
+
+  osx-wheels:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: ${{ matrix.python-version }}
+     - name: Build wheels
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install maturin
+         maturin build --release --manylinux off
+     - uses: actions/upload-artifact@v2
+       with:
+         name: osx-iota-client-py${{ matrix.python-version }}-wheel
+         path: bindings/python/native/target/wheels/
+
+  windows-wheels:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: ${{ matrix.python-version }}
+
+     - name: Get current date
+       run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    
+     - name: Install OpenSSL (Windows)
+       run: |
+         choco install openssl --no-progress
+         echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+     - name: Build wheels
+       working-directory: bindings/python/native
+       run: |
+         python -m pip install maturin
+         maturin build --release --manylinux off
+     - uses: actions/upload-artifact@v1
+       with:
+         name: windows-iota-client-py${{ matrix.python-version }}-wheels
+         path: bindings/python/native/target/wheels/

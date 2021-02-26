@@ -23,4 +23,4 @@ serde_json = "1.0"
 
 [dependencies.pyo3]
 version = "0.13"
-features = ["extension-module", "abi3"]
+features = ["extension-module", "abi3-py36"]
