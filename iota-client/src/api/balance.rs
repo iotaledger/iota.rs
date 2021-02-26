@@ -13,7 +13,7 @@ pub struct GetBalanceBuilder<'a> {
 }
 
 impl<'a> GetBalanceBuilder<'a> {
-    /// Create get_balance buildergit
+    /// Create get_balance builder
     pub fn new(client: &'a Client, seed: &'a Seed) -> Self {
         Self {
             client,
