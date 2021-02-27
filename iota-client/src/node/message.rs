@@ -4,7 +4,7 @@
 use crate::{log_request, parse_response, Client, Error, Result};
 use bee_message::{Message, MessageId};
 use bee_rest_api::{
-    handlers::{
+    handlers::api::v1::{
         message_children::MessageChildrenResponse, message_metadata::MessageMetadataResponse as MessageMetadata,
         messages_find::MessagesForIndexResponse,
     },
