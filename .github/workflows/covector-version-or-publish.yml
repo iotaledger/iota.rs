@@ -6,7 +6,7 @@ on:
       - dev
   pull_request:
     branches:
-      - develop
+      - dev
 
 jobs:
   version-or-publish:
