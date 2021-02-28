@@ -94,6 +94,9 @@ pub enum Error {
     /// Invalid amount of parents
     #[error("Invalid amount of parents, length must be in 1..=8")]
     InvalidParentsAmount,
+    /// ureq error
+    #[error("{0}")]
+    UreqError(#[from] ureq::Error),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

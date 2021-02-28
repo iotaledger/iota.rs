@@ -76,11 +76,11 @@ macro_rules! log_request {
     ($method: expr, $url: expr, $response:ident) => {
         info!(
             "Request method: {}
-            Request URL: {}
-            Response status: {}",
+            Request URL: {}",
+            // Response status: {}",
             $method,
             $url,
-            $response.status().as_u16()
+            // $response.status().as_u16()
         );
     };
 }

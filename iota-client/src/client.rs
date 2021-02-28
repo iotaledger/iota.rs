@@ -38,6 +38,7 @@ use tokio::{
     sync::broadcast::{Receiver, Sender},
     time::{sleep, Duration as TokioDuration},
 };
+use ureq::{Agent, AgentBuilder};
 
 use log::info;
 
@@ -496,21 +497,18 @@ impl Client {
         let mut url = self.get_node()?;
         let path = "api/v1/info";
         url.set_path(path);
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetInfo))
-            .send()
-            .await?;
-
         #[derive(Debug, Serialize, Deserialize)]
         struct NodeInfoWrapper {
             data: NodeInfo,
         }
+
+        let resp: NodeInfoWrapper = get_ureq_agent(self.get_timeout(Api::GetInfo))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
         log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            Ok(resp.json::<NodeInfoWrapper>().await?.data)
-        })
+        Ok(resp.data)
     }
 
     /// GET /api/v1/peers endpoint
@@ -913,4 +911,9 @@ pub fn hash_network(network_id_string: &str) -> u64 {
             .try_into()
             .unwrap(),
     )
+}
+
+// Create ureq agent with timeout
+fn get_ureq_agent(timeout: Duration) -> Agent {
+    AgentBuilder::new().timeout_read(timeout).timeout_write(timeout).build()
 }

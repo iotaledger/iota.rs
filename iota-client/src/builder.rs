@@ -88,6 +88,15 @@ impl ClientBuilder {
         Ok(self)
     }
 
+    /// Adds an IOTA node by its URL with basic authentication
+    pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
+        let mut url = Url::parse(url).map_err(|_| Error::UrlError)?;
+        url.set_username(name).unwrap();
+        url.set_password(Some(password)).unwrap();
+        self.nodes.insert(url);
+        Ok(self)
+    }
+
     /// Adds a list of IOTA nodes by their URLs.
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
