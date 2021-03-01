@@ -7,9 +7,11 @@ use std::sync::{mpsc::channel, Arc, Mutex};
 
 // To run this example you need to add `features = ["mqtt"]` to the import of iota-core in the Cargo.toml
 // like this: iota-core = { path = "../iota-core", features = ["mqtt"] } and uncomment the mqtt example below
+
 #[tokio::main]
 async fn main() {
-    let mut iota = Client::builder() // Crate a client instance builder
+    // Create a client instance
+    let mut iota = Client::builder()
         .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         // to use tcp instead
@@ -17,6 +19,7 @@ async fn main() {
         .finish()
         .await
         .unwrap();
+        
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
 
@@ -38,9 +41,11 @@ async fn main() {
         })
         .await
         .unwrap();
+        
     for _ in 0..10 {
         rx.recv().unwrap();
     }
+
     iota.subscriber().disconnect().await.unwrap();
     // alternatively
     // iota.subscriber().unsubscribe().unwrap();

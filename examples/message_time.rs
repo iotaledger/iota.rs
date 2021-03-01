@@ -8,8 +8,9 @@ use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert the node here
+    // Create a client instance
+    let iota = Client::builder()
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
         .await
@@ -22,8 +23,9 @@ async fn main() {
         .finish()
         .await
         .unwrap();
+
     let message_id = message.id().0;
-    println!("MessageId {}", message_id);
+    println!("Message ID: {}", message_id);
 
     reattach_promote_until_confirmed(&message_id, &iota).await;
 
