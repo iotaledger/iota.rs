@@ -8,7 +8,6 @@ use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
-
 /// In this example, we send 9_000_000 tokens to the following 3 locations, respectively
 /// First send 10 Mi from the faucet to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
 /// That's the first address of the first seed in the .env.example file

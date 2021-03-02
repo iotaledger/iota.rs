@@ -36,15 +36,12 @@ pub enum Error {
     /// No node available in the synced node pool
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
-    /// Error on Url type conversion
-    #[error("Failed to parse url")]
-    UrlError,
+    // /// Error on Url type conversion
+    // #[error("Failed to parse url")]
+    // UrlError,
     /// Error on Url type conversion
     #[error("Failed to parse node_pool_urls")]
     NodePoolUrlsError,
-    /// Errors from reqwest api call
-    #[error("{0}")]
-    ReqwestError(#[from] reqwest::Error),
     /// Hex string convert error
     #[error("{0}")]
     FromHexError(#[from] hex::FromHexError),
@@ -97,6 +94,9 @@ pub enum Error {
     /// ureq error
     #[error("{0}")]
     UreqError(#[from] ureq::Error),
+    /// URL error
+    #[error("{0}")]
+    UrlError(#[from] url::ParseError),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

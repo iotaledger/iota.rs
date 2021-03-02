@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{log_request, parse_response, Client, Error, Result};
+use crate::{get_ureq_agent, log_request, Api, Client, Error, Result};
 
 use bee_message::prelude::{Bech32Address, TransactionId, UTXOInput};
 
@@ -29,17 +29,18 @@ impl<'a> GetAddressBuilder<'a> {
         let mut url = self.client.get_node()?;
         let path = &format!("api/v1/addresses/{}", address);
         url.set_path(path);
-        let resp = reqwest::get(url).await?;
 
         #[derive(Debug, Serialize, Deserialize)]
-        struct BalanceWrapper {
+        struct ResponseWrapper {
             data: BalanceForAddressResponse,
         }
+        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetBalance))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
         log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let r = resp.json::<BalanceWrapper>().await?;
-            Ok(r.data)
-        })
+        Ok(resp.data)
     }
 
     /// Consume the builder and get all outputs that use a given address.
@@ -49,27 +50,31 @@ impl<'a> GetAddressBuilder<'a> {
         let mut url = self.client.get_node()?;
         let path = &format!("api/v1/addresses/{}/outputs", address);
         url.set_path(path);
-        let resp = reqwest::get(url).await?;
 
         #[derive(Debug, Serialize, Deserialize)]
-        struct OutputWrapper {
+        struct ResponseWrapper {
             data: OutputsForAddressResponse,
         }
+
+        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetOutput))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
         log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let r = resp.json::<OutputWrapper>().await?.data;
-            r.output_ids.iter()
-                .map(|s| {
-                    let mut transaction_id = [0u8; 32];
-                    hex::decode_to_slice(&s[..64], &mut transaction_id)?;
-                    let index = u16::from_le_bytes(
-                        hex::decode(&s[64..]).map_err(|_| Error::InvalidParameter("index".to_string()))?[..]
-                            .try_into()
-                            .map_err(|_| Error::InvalidParameter("index".to_string()))?,
-                    );
-                    Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
-                })
-                .collect::<Result<Box<[UTXOInput]>>>()
-        })
+        resp.data
+            .output_ids
+            .iter()
+            .map(|s| {
+                let mut transaction_id = [0u8; 32];
+                hex::decode_to_slice(&s[..64], &mut transaction_id)?;
+                let index = u16::from_le_bytes(
+                    hex::decode(&s[64..]).map_err(|_| Error::InvalidParameter("index".to_string()))?[..]
+                        .try_into()
+                        .map_err(|_| Error::InvalidParameter("index".to_string()))?,
+                );
+                Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
+            })
+            .collect::<Result<Box<[UTXOInput]>>>()
     }
 }
