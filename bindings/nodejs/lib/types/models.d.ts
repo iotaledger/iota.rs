@@ -6,7 +6,7 @@ export declare interface NodeInfo {
   bech32HRP: string
   minPoWScore: number
   latestMilestoneIndex: number
-  solidMilestoneIndex: number
+  confirmedMilestoneIndex: number
   pruningIndex: number
   features: string[]
 }

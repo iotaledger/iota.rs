@@ -820,7 +820,7 @@ info_response = {
     'network_id': str,
     'bech32_hrp': str,
     'latest_milestone_index': int,
-    'solid_milestone_index': int,
+    'confirmed_milestone_index': int,
     'pruning_index': int,
     'features': list[str],
     'min_pow_score': float,
@@ -888,7 +888,7 @@ A dict with the following key/value pairs.
 
 ```python
 heart_beat_dto = {
-    'solid_milestone_index': int,
+    'confirmed_milestone_index': int,
     'pruned_milestone_index': int,
     'latest_milestone_index': int,
     'connected_neighbors': int,

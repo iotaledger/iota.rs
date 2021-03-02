@@ -266,7 +266,7 @@ pub struct InfoResponse {
     pub network_id: String,
     pub bech32_hrp: String,
     pub latest_milestone_index: u32,
-    pub solid_milestone_index: u32,
+    pub confirmed_milestone_index: u32,
     pub pruning_index: u32,
     pub features: Vec<String>,
     pub min_pow_score: f64,
@@ -311,7 +311,7 @@ pub struct GossipDto {
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct HeartbeatDto {
-    pub solid_milestone_index: u32,
+    pub confirmed_milestone_index: u32,
     pub pruned_milestone_index: u32,
     pub latest_milestone_index: u32,
     pub connected_neighbors: u8,
@@ -481,7 +481,7 @@ impl From<RustInfoResponse> for InfoResponse {
             network_id: info.network_id,
             bech32_hrp: info.bech32_hrp,
             latest_milestone_index: info.latest_milestone_index,
-            solid_milestone_index: info.solid_milestone_index,
+            confirmed_milestone_index: info.confirmed_milestone_index,
             pruning_index: info.pruning_index,
             features: info.features,
             min_pow_score: info.min_pow_score,
@@ -583,7 +583,7 @@ impl From<RustgossipDto> for GossipDto {
 impl From<RustheartbeatDto> for HeartbeatDto {
     fn from(heartbeat: RustheartbeatDto) -> Self {
         Self {
-            solid_milestone_index: heartbeat.solid_milestone_index,
+            confirmed_milestone_index: heartbeat.confirmed_milestone_index,
             pruned_milestone_index: heartbeat.pruned_milestone_index,
             latest_milestone_index: heartbeat.latest_milestone_index,
             connected_neighbors: heartbeat.connected_neighbors,
