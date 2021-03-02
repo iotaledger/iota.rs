@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example mqtt --release
-use iota::{BrokerOptions, Client, Topic};
+use iota::{BrokerOptions, Client, Message, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 // To run this example you need to add `features = ["mqtt"]` to the import of iota-core in the Cargo.toml
@@ -26,7 +26,14 @@ async fn main() {
             Topic::new("messages").unwrap(),
         ])
         .subscribe(move |event| {
-            println!("{:?}", event);
+            match event.topic.as_str() {
+                "messages" => {
+                    let message: Message = serde_json::from_str(&event.payload).unwrap();
+                    println!("{:?}", event);
+                    println!("{:?}", message);
+                }
+                _ => println!("{:?}", event),
+            }
             tx.lock().unwrap().send(()).unwrap();
         })
         .await
