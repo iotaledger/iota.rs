@@ -36,9 +36,6 @@ pub enum Error {
     /// No node available in the synced node pool
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
-    // /// Error on Url type conversion
-    // #[error("Failed to parse url")]
-    // UrlError,
     /// Error on Url type conversion
     #[error("Failed to parse node_pool_urls")]
     NodePoolUrlsError,

@@ -177,7 +177,6 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut index = self.initial_address_index.unwrap_or(0);
 
         let bech32_hrp = self.client.get_bech32_hrp().await?;
-        println!("s");
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
 

@@ -28,7 +28,7 @@ use std::env;
 async fn main() -> Result<()> {
     let explorer_url = "https://explorer.iota.org/chrysalis/message/";
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("http://api.lb-0.testnet.chrysalis2.com")? // Insert the node here
+        .with_node("http://api.hornet-0.testnet.chrysalis2.com")? // Insert the node here
         .with_node_sync_disabled()
         .finish()
         .await?;
