@@ -888,7 +888,7 @@ A dict with the following key/value pairs.
 
 ```python
 heart_beat_dto = {
-    'confirmed_milestone_index': int,
+    'solid_milestone_index': int,
     'pruned_milestone_index': int,
     'latest_milestone_index': int,
     'connected_neighbors': int,

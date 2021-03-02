@@ -311,7 +311,7 @@ pub struct GossipDto {
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct HeartbeatDto {
-    pub confirmed_milestone_index: u32,
+    pub solid_milestone_index: u32,
     pub pruned_milestone_index: u32,
     pub latest_milestone_index: u32,
     pub connected_neighbors: u8,
@@ -583,7 +583,7 @@ impl From<RustgossipDto> for GossipDto {
 impl From<RustheartbeatDto> for HeartbeatDto {
     fn from(heartbeat: RustheartbeatDto) -> Self {
         Self {
-            confirmed_milestone_index: heartbeat.confirmed_milestone_index,
+            solid_milestone_index: heartbeat.solid_milestone_index,
             pruned_milestone_index: heartbeat.pruned_milestone_index,
             latest_milestone_index: heartbeat.latest_milestone_index,
             connected_neighbors: heartbeat.connected_neighbors,
