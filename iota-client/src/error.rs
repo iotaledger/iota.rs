@@ -8,6 +8,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 /// Error type of the iota client crate.
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     /// Error when building indexation messages
     #[error("Error when building indexation message: {0}")]
