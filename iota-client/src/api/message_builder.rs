@@ -456,13 +456,13 @@ impl<'a> ClientMessageBuilder<'a> {
                 signature_indexes.insert(index, current_block_index);
             }
         }
-        // TODO overflow check
-        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(essence);
-        for unlock in unlock_blocks {
-            payload_builder = payload_builder.add_unlock_block(unlock);
-        }
 
-        let payload = payload_builder.finish().map_err(|_| Error::TransactionError)?;
+        let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
+        let payload = TransactionPayloadBuilder::new()
+            .with_essence(essence)
+            .with_unlock_blocks(unlock_blocks)
+            .finish()
+            .map_err(|_| Error::TransactionError)?;
         // building message
         let payload = Payload::Transaction(Box::new(payload));
 

@@ -5,6 +5,8 @@ use crate::{
     client::{Client, TopicEvent, TopicHandlerMap},
     Result,
 };
+use bee_common::packable::Packable;
+use bee_message::Message;
 use paho_mqtt::{
     Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, SslOptions,
     MQTT_VERSION_3_1_1,
@@ -40,7 +42,7 @@ impl Topic {
     /// Creates a new topic and checks if it's valid.
     pub fn new<S: Into<String>>(name: S) -> Result<Self> {
         let valid_topics = lazy_static!(
-          ["milestones/latest", "milestones/solid", "messages", "messages/referenced"].to_vec() => Vec<&str>
+          ["milestones/latest", "milestones/confirmed", "messages", "messages/referenced"].to_vec() => Vec<&str>
         );
         let regexes = lazy_static!(
           [
@@ -111,9 +113,18 @@ fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, client: &mut Mqt
                 crate::async_runtime::spawn(async move {
                     let mqtt_topic_handlers_guard = mqtt_topic_handlers.read().await;
                     if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
-                        let event = TopicEvent {
-                            topic,
-                            payload: message.payload_str().to_string(),
+                        let event = match topic.as_str() {
+                            "messages" => {
+                                let iota_message = Message::unpack(&mut message.payload()).unwrap();
+                                TopicEvent {
+                                    topic,
+                                    payload: serde_json::to_string(&iota_message).unwrap(),
+                                }
+                            }
+                            _ => TopicEvent {
+                                topic,
+                                payload: message.payload_str().to_string(),
+                            },
                         };
                         for handler in handlers {
                             handler(&event)

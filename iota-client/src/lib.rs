@@ -21,7 +21,7 @@ pub mod storage;
 pub use bee_message;
 pub use bee_rest_api::{
     self,
-    handlers::{balance_ed25519::BalanceForAddressResponse, output::OutputResponse},
+    endpoints::api::v1::{balance_ed25519::BalanceForAddressResponse, output::OutputResponse},
     types::{AddressDto, OutputDto},
 };
 // pub use bee_signing_ext::{self, binary::BIP32Path,};

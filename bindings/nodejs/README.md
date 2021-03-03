@@ -828,7 +828,7 @@ Gets the metadata of the given message.
 | Field                      | Type                              | Description                                               |
 | -------------------------- | --------------------------------- | --------------------------------------------------------- |
 | messageId                  | <code>string</code>               | Message identifier                                        |
-| parents                    | <code>string[]</code>               | Message id of the messages it references                  |
+| parents                    | <code>string[]</code>             | Message id of the messages it references                  |
 | isSolid                    | <code>boolean</code>              | Message solid state                                       |
 | shouldPromote              | <code>boolean \| undefined</code> | Indicates whether the message should be promoted or not   |
 | shouldReattach             | <code>boolean \| undefined</code> | Indicates whether the message should be reattached or not |
@@ -837,17 +837,17 @@ Gets the metadata of the given message.
 
 ### NodeInfo
 
-| Field                | Type                  | Description                   |
-| -------------------- | --------------------- | ----------------------------- |
-| name                 | <code>string</code>   | Node name                     |
-| version              | <code>string</code>   | Node version                  |
-| isHealthy            | <code>boolean</code>  | Node health status            |
-| networkId            | <code>string</code>   | Node network identifier       |
-| bech32HRP            | <code>string</code>   | Bech32 HRP for this network   |
-| latestMilestoneIndex | <code>number</code>   | Index of the latest milestone |
-| solidMilestoneIndex  | <code>number</code>   | Index of the solid milestone  |
-| pruningIndex         | <code>number</code>   | Pruning index                 |
-| features             | <code>string[]</code> | List of node features         |
+| Field                    | Type                  | Description                      |
+| ------------------------ | --------------------- | -------------------------------- |
+| name                     | <code>string</code>   | Node name                        |
+| version                  | <code>string</code>   | Node version                     |
+| isHealthy                | <code>boolean</code>  | Node health status               |
+| networkId                | <code>string</code>   | Node network identifier          |
+| bech32HRP                | <code>string</code>   | Bech32 HRP for this network      |
+| latestMilestoneIndex     | <code>number</code>   | Index of the latest milestone    |
+| confirmedMilestoneIndex  | <code>number</code>   | Index of the confirmed milestone |
+| pruningIndex             | <code>number</code>   | Pruning index                    |
+| features                 | <code>string[]</code> | List of node features            |
 
 ### OutputMetadata
 

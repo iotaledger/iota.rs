@@ -5,7 +5,9 @@ use crate::{get_ureq_agent, Api, Client, Error, Result};
 
 use bee_message::prelude::{Bech32Address, TransactionId, UTXOInput};
 
-use bee_rest_api::handlers::{balance_ed25519::BalanceForAddressResponse, outputs_ed25519::OutputsForAddressResponse};
+use bee_rest_api::endpoints::api::v1::{
+    balance_ed25519::BalanceForAddressResponse, outputs_ed25519::OutputsForAddressResponse,
+};
 
 use std::convert::TryInto;
 
