@@ -8,7 +8,6 @@ use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
-
 /// In this example, we send 9_000_000 tokens to the following 3 locations, respectively
 /// First send 10 Mi from the faucet to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
 /// That's the first address of the first seed in the .env.example file
@@ -29,7 +28,7 @@ use std::env;
 async fn main() -> Result<()> {
     let explorer_url = "https://explorer.iota.org/chrysalis/message/";
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("http://api.lb-0.testnet.chrysalis2.com")? // Insert the node here
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com")? // Insert the node here
         .with_node_sync_disabled()
         .finish()
         .await?;

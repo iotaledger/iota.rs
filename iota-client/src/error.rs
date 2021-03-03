@@ -8,6 +8,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 /// Error type of the iota client crate.
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     /// Error when building indexation messages
     #[error("Error when building indexation message: {0}")]
@@ -30,21 +31,12 @@ pub enum Error {
     /// Found spent output
     #[error("Found spent output.")]
     SpentOutput,
-    /// Error from RestAPI calls with unexpected status code response
-    #[error("Response error with status code {0}: {1}")]
-    ResponseError(u16, String),
     /// No node available in the synced node pool
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
     /// Error on Url type conversion
-    #[error("Failed to parse url")]
-    UrlError,
-    /// Error on Url type conversion
     #[error("Failed to parse node_pool_urls")]
     NodePoolUrlsError,
-    /// Errors from reqwest api call
-    #[error("{0}")]
-    ReqwestError(#[from] reqwest::Error),
     /// Hex string convert error
     #[error("{0}")]
     FromHexError(#[from] hex::FromHexError),
@@ -94,6 +86,18 @@ pub enum Error {
     /// Invalid amount of parents
     #[error("Invalid amount of parents, length must be in 1..=8")]
     InvalidParentsAmount,
+    /// ureq error
+    #[error("{0}")]
+    UreqError(#[from] ureq::Error),
+    /// URL error
+    #[error("{0}")]
+    UrlError(#[from] url::ParseError),
+    /// URL auth error
+    #[error("Can't set {0} to URL")]
+    UrlAuthError(String),
+    /// DTO error
+    #[error("failed to convert data: {0}")]
+    DtoError(String),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

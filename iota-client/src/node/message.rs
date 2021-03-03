@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{log_request, parse_response, Client, Error, Result};
+use crate::{get_ureq_agent, Api, Client, Result};
 use bee_message::{Message, MessageId};
 use bee_rest_api::{
     endpoints::api::v1::{
@@ -10,8 +10,6 @@ use bee_rest_api::{
     },
     types::MessageDto,
 };
-
-use log::info;
 
 use std::convert::TryFrom;
 
@@ -33,24 +31,25 @@ impl<'a> GetMessageBuilder<'a> {
         let path = "api/v1/messages";
         url.set_path(path);
         url.set_query(Some(&format!("index={}", hex::encode(index))));
-        let resp = reqwest::get(url).await?;
 
         #[derive(Debug, Serialize, Deserialize)]
-        struct MessagesWrapper {
+        struct ResponseWrapper {
             data: MessagesForIndexResponse,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let ids = resp.json::<MessagesWrapper>().await?;
-            ids.data.message_ids
-                .iter()
-                .map(|s| {
-                    let mut message_id = [0u8; 32];
-                    hex::decode_to_slice(s, &mut message_id)?;
-                    Ok(MessageId::from(message_id))
-                })
-                .collect::<Result<Box<[MessageId]>>>()
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        resp.data
+            .message_ids
+            .iter()
+            .map(|s| {
+                let mut message_id = [0u8; 32];
+                hex::decode_to_slice(s, &mut message_id)?;
+                Ok(MessageId::from(message_id))
+            })
+            .collect::<Result<Box<[MessageId]>>>()
     }
 
     /// GET /api/v1/messages/{messageID} endpoint
@@ -59,18 +58,16 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         let path = &format!("api/v1/messages/{}", message_id);
         url.set_path(path);
-        let resp = reqwest::get(url).await?;
-
         #[derive(Debug, Serialize, Deserialize)]
-        struct MessagesWrapper {
+        struct ResponseWrapper {
             data: MessageDto,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let meta = resp.json::<MessagesWrapper>().await?;
-            Ok(
-                Message::try_from(&meta.data).expect("Can't convert MessageDto to Message"))
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(Message::try_from(&resp.data).map_err(crate::Error::DtoError)?)
     }
 
     /// GET /api/v1/messages/{messageID}/metadata endpoint
@@ -79,16 +76,16 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         let path = &format!("api/v1/messages/{}/metadata", message_id);
         url.set_path(path);
-        let resp = reqwest::get(url).await?;
         #[derive(Debug, Serialize, Deserialize)]
-        struct MessagesWrapper {
+        struct ResponseWrapper {
             data: MessageMetadata,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let meta = resp.json::<MessagesWrapper>().await?;
-            Ok(meta.data)
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
     }
 
     /// GET /api/v1/messages/{messageID}/children endpoint
@@ -97,12 +94,12 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         let path = &format!("api/v1/messages/{}/raw", message_id);
         url.set_path(path);
-        let resp = reqwest::get(url).await?;
+        let resp = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
+            .get(&url.to_string())
+            .call()?
+            .into_string()?;
 
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            Ok(resp.text().await?)
-        })
+        Ok(resp)
     }
 
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
@@ -110,23 +107,23 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node()?;
         let path = &format!("api/v1/messages/{}/children", message_id);
         url.set_path(path);
-        let resp = reqwest::get(url).await?;
-
         #[derive(Debug, Serialize, Deserialize)]
-        struct MessagesWrapper {
+        struct ResponseWrapper {
             data: MessageChildrenResponse,
         }
-        log_request!("GET", path, resp);
-        crate::parse_response!(resp, 200 => {
-            let meta = resp.json::<MessagesWrapper>().await?;
-            meta.data.children_message_ids
-                .iter()
-                .map(|s| {
-                    let mut message_id = [0u8; 32];
-                    hex::decode_to_slice(s, &mut message_id)?;
-                    Ok(MessageId::from(message_id))
-                })
-                .collect::<Result<Box<[MessageId]>>>()
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        resp.data
+            .children_message_ids
+            .iter()
+            .map(|s| {
+                let mut message_id = [0u8; 32];
+                hex::decode_to_slice(s, &mut message_id)?;
+                Ok(MessageId::from(message_id))
+            })
+            .collect::<Result<Box<[MessageId]>>>()
     }
 }
