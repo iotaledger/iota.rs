@@ -1,6 +1,6 @@
 # Getting Started with Node.js
 
-You can look at https://github.com/iotaledger/iota.rs/blob/dev/bindings/nodejs/README.md for now
+You can look at https://github.com/iotaledger/iota.rs/blob/dev/bindings/python/README.md for now
 
 > TODO
 

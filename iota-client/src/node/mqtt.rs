@@ -74,10 +74,10 @@ fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                     true => format!(
                         "{}://{}:{}/mqtt",
                         if node.scheme() == "https" { "wss" } else { "ws" },
-                        node.host_str().unwrap(),
-                        node.port_or_known_default().unwrap()
+                        node.host_str()?,
+                        node.port_or_known_default()?
                     ),
-                    false => format!("tcp://{}", node.host_str().unwrap(),),
+                    false => format!("tcp://{}", node.host_str()?),
                 };
                 let mqtt_options = CreateOptionsBuilder::new()
                     .server_uri(uri)
