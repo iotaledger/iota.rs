@@ -820,7 +820,7 @@ info_response = {
     'network_id': str,
     'bech32_hrp': str,
     'latest_milestone_index': int,
-    'solid_milestone_index': int,
+    'confirmed_milestone_index': int,
     'pruning_index': int,
     'features': list[str],
     'min_pow_score': float,

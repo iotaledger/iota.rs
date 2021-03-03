@@ -6,7 +6,7 @@ use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota::{
     bee_rest_api::{
-        handlers::api::v1::{
+        endpoints::api::v1::{
             balance_ed25519::BalanceForAddressResponse as RustBalanceForAddressResponse,
             info::InfoResponse as RustInfoResponse,
             message_metadata::{
@@ -33,7 +33,7 @@ use iota::{
     ReferenceUnlock as RustReferenceUnlock, RegularEssence as RustRegularEssence,
     SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
     TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput,
-    UnlockBlock as RustUnlockBlock,
+    UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks,
 };
 
 use std::{
@@ -201,8 +201,7 @@ pub struct Receipt {
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MigratedFundsEntry {
     tail_transaction_hash: Vec<u8>,
-    address: AddressDto,
-    amount: u64,
+    output: SignatureLockedSingleOutputDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -266,7 +265,7 @@ pub struct InfoResponse {
     pub network_id: String,
     pub bech32_hrp: String,
     pub latest_milestone_index: u32,
-    pub solid_milestone_index: u32,
+    pub confirmed_milestone_index: u32,
     pub pruning_index: u32,
     pub features: Vec<String>,
     pub min_pow_score: f64,
@@ -349,12 +348,7 @@ impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
     fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
         Self {
             tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_vec(),
-            address: migrated_funds_entry
-                .address()
-                .clone()
-                .try_into()
-                .expect("Can't convert address"),
-            amount: migrated_funds_entry.amount(),
+            output: migrated_funds_entry.output().clone().into(),
         }
     }
 }
@@ -395,6 +389,17 @@ impl From<RustTreasuryOutputDto> for TreasuryOutputDto {
         Self {
             kind: treasury.kind,
             amount: treasury.amount,
+        }
+    }
+}
+
+impl From<RustSignatureLockedSingleOutput> for SignatureLockedSingleOutputDto {
+    fn from(address: RustSignatureLockedSingleOutput) -> Self {
+        let address_dto: AddressDto = address.address().clone().into();
+        Self {
+            kind: 0,
+            address: address_dto,
+            amount: address.amount(),
         }
     }
 }
@@ -481,7 +486,7 @@ impl From<RustInfoResponse> for InfoResponse {
             network_id: info.network_id,
             bech32_hrp: info.bech32_hrp,
             latest_milestone_index: info.latest_milestone_index,
-            solid_milestone_index: info.solid_milestone_index,
+            confirmed_milestone_index: info.confirmed_milestone_index,
             pruning_index: info.pruning_index,
             features: info.features,
             min_pow_score: info.min_pow_score,
@@ -952,9 +957,10 @@ impl TryFrom<Payload> for RustPayload {
                 transaction.with_essence(RustEssence::Regular(transaction_payload[0].essence.clone().try_into()?));
 
             let unlock_blocks = transaction_payload[0].unlock_blocks.clone();
-            for unlock_block in unlock_blocks {
-                transaction = transaction.add_unlock_block(unlock_block.try_into()?);
-            }
+            let unlock_blocks: Result<Vec<RustUnlockBlock>> =
+                unlock_blocks.to_vec().into_iter().map(|u| u.try_into()).collect();
+
+            transaction = transaction.with_unlock_blocks(RustUnlockBlocks::new(unlock_blocks?.into())?);
 
             Ok(RustPayload::Transaction(Box::new(transaction.finish()?)))
         } else {

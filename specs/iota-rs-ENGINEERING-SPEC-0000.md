@@ -400,7 +400,7 @@ pub struct NodeInfo {
     pub network_id: String,
     pub latest_milestone_index: usize,
     pub min_pow_score: f64,
-    pub solid_milestone_index: usize,
+    pub confirmed_milestone_index: usize,
     pub pruning_index: usize,
     pub features: Vec<String>,
 }
@@ -772,7 +772,7 @@ A string with the exact MQTT topic to monitor, can have one of the following var
 
 ```
 milestones/latest
-milestones/solid
+milestones/confirmed
 
 messages
 messages/referenced

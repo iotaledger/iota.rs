@@ -42,7 +42,7 @@ impl Topic {
     /// Creates a new topic and checks if it's valid.
     pub fn new<S: Into<String>>(name: S) -> Result<Self> {
         let valid_topics = lazy_static!(
-          ["milestones/latest", "milestones/solid", "messages", "messages/referenced"].to_vec() => Vec<&str>
+          ["milestones/latest", "milestones/confirmed", "messages", "messages/referenced"].to_vec() => Vec<&str>
         );
         let regexes = lazy_static!(
           [

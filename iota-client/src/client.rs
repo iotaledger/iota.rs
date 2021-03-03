@@ -15,7 +15,7 @@ use bee_common::packable::Packable;
 use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
-    handlers::api::v1::{
+    endpoints::api::v1::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
         milestone::MilestoneResponse as MilestoneResponseDto,
         milestone_utxo_changes::MilestoneUtxoChanges as MilestoneUTXOChanges, output::OutputResponse,
