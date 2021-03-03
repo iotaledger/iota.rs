@@ -31,9 +31,6 @@ pub enum Error {
     /// Found spent output
     #[error("Found spent output.")]
     SpentOutput,
-    /// Error from RestAPI calls with unexpected status code response
-    #[error("Response error with status code {0}: {1}")]
-    ResponseError(u16, String),
     /// No node available in the synced node pool
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
@@ -98,6 +95,9 @@ pub enum Error {
     /// URL auth error
     #[error("Can't set {0} to URL")]
     UrlAuthError(String),
+    /// DTO error
+    #[error("failed to convert data: {0}")]
+    DtoError(String),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it
