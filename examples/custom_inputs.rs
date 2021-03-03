@@ -32,7 +32,11 @@ async fn main() {
         .await
         .unwrap();
     println!("{:?}", address[0]);
-    let outputs = iota.get_address().outputs(&address[0]).await.unwrap();
+    let outputs = iota
+        .get_address()
+        .outputs(&address[0], Default::default())
+        .await
+        .unwrap();
     println!("{:?}", outputs);
 
     let message = iota

@@ -27,13 +27,14 @@ use iota::{
     },
     builder::NetworkInfo as RustNetworkInfo,
     client::MilestoneResponse,
-    Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
-    Essence as RustEssence, IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
-    MilestonePayloadEssence as RustMilestonePayloadEssence, Output as RustOutput, Payload as RustPayload,
-    ReferenceUnlock as RustReferenceUnlock, RegularEssence as RustRegularEssence,
-    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
-    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput,
-    UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks,
+    Address as RustAddress, AddressOutputsOptions as RustAddressOutputsOptions, Ed25519Address as RustEd25519Address,
+    Ed25519Signature as RustEd25519Signature, Essence as RustEssence, IndexationPayload as RustIndexationPayload,
+    Input as RustInput, Message as RustMessage, MilestonePayloadEssence as RustMilestonePayloadEssence,
+    Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
+    RegularEssence as RustRegularEssence, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
+    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
+    TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
+    UnlockBlocks as RustUnlockBlocks,
 };
 
 use std::{
@@ -980,6 +981,25 @@ impl TryFrom<Payload> for RustPayload {
                     .data,
             )?;
             Ok(RustPayload::Indexation(Box::new(indexation)))
+        }
+    }
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct AddressOutputsOptions {
+    include_spent: bool,
+    output_type: Option<String>,
+}
+
+impl From<AddressOutputsOptions> for RustAddressOutputsOptions {
+    fn from(value: AddressOutputsOptions) -> Self {
+        Self {
+            include_spent: value.include_spent,
+            output_type: value.output_type.map(|o| match o.as_str() {
+                "SignatureLockedSingle" => OutputType::SignatureLockedSingle,
+                "SignatureLockedDustAllowance" => OutputType::SignatureLockedDustAllowance,
+                _ => panic!("unexpected output type option"),
+            }),
         }
     }
 }

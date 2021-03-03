@@ -11,6 +11,49 @@ use bee_rest_api::endpoints::api::v1::{
 
 use std::convert::TryInto;
 
+/// Output type filter.
+#[derive(Clone)]
+pub enum OutputType {
+    /// Signature locked single output.
+    SignatureLockedSingle,
+    /// Dust allowance output.
+    SignatureLockedDustAllowance,
+}
+
+impl From<OutputType> for u16 {
+    fn from(value: OutputType) -> Self {
+        match value {
+            OutputType::SignatureLockedSingle => 0,
+            OutputType::SignatureLockedDustAllowance => 1,
+        }
+    }
+}
+
+/// The outputs query options.
+#[derive(Default, Clone)]
+pub struct OutputsOptions {
+    /// Whether the query should include spent outputs or not.
+    pub include_spent: bool,
+    /// The output type filter.
+    pub output_type: Option<OutputType>,
+}
+
+impl OutputsOptions {
+    fn into_query(self) -> Option<String> {
+        let mut params = Vec::new();
+        if self.include_spent {
+            params.push("include-spent=true".to_string());
+        }
+        if let Some(output_type) = self.output_type {
+            params.push(format!("type={}", u16::from(output_type)))
+        }
+        match params.len() {
+            0 => None,
+            _ => Some(params.join("&")),
+        }
+    }
+}
+
 /// Builder of GET /api/v1/address/{address} endpoint
 pub struct GetAddressBuilder<'a> {
     client: &'a Client,
@@ -45,10 +88,11 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get all outputs that use a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &Bech32Address) -> Result<Box<[UTXOInput]>> {
+    pub async fn outputs(self, address: &Bech32Address, options: OutputsOptions) -> Result<Box<[UTXOInput]>> {
         let mut url = self.client.get_node()?;
         let path = &format!("api/v1/addresses/{}/outputs", address);
         url.set_path(path);
+        url.set_query(options.into_query().as_deref());
 
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
