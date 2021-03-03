@@ -30,8 +30,6 @@ pub enum Error {
     #[error("`{0}`")]
     Client(#[from] iota::client::Error),
     #[error("`{0}`")]
-    Address(#[from] bech32::Error),
-    #[error("`{0}`")]
     Hex(#[from] hex::FromHexError),
     #[error("`{0}`")]
     Panic(String),
