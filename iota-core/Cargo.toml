@@ -12,8 +12,8 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "ce3bd4e1b1ba423c8268e435dcc98c90c397379e" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "ce3bd4e1b1ba423c8268e435dcc98c90c397379e" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "8b61a12bc4539b740a93b9adf346a3b526d8759a" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "8b61a12bc4539b740a93b9adf346a3b526d8759a" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 # bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 # bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }

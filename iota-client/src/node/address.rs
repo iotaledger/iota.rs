@@ -5,7 +5,9 @@ use crate::{log_request, parse_response, Client, Error, Result};
 
 use bee_message::prelude::{Bech32Address, TransactionId, UTXOInput};
 
-use bee_rest_api::handlers::{balance_ed25519::BalanceForAddressResponse, outputs_ed25519::OutputsForAddressResponse};
+use bee_rest_api::handlers::api::v1::{
+    balance_ed25519::BalanceForAddressResponse, outputs_ed25519::OutputsForAddressResponse,
+};
 
 use log::info;
 
