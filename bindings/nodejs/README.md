@@ -337,6 +337,28 @@ Gets the utxo changes by the given milestone index.
 
 **Returns** a promise resolving to the [MilestoneUTXOChanges](#MilestoneUTXOChanges).
 
+#### getReceipts(): Promise<Receipts[]>
+
+Get all receipts.
+
+**Returns** a promise resolving to the [Receipts](#Receipts).
+
+#### getReceiptsMigratedAt(index): Promise<Receipts[]>
+
+Get all receipts for a given milestone index
+
+| Param | Type                | Description                |
+| ----- | ------------------- | -------------------------- |
+| index | <code>number</code> | The index of the milestone |
+
+**Returns** a promise resolving to the [Receipts](#Receipts).
+
+#### getTreasury(): Promise<Treasury>
+
+Get the treasury amount.
+
+**Returns** a promise resolving to the [Treasury](#Treasury).
+
 #### reattach(messageId): Promise<Message>
 
 Reattaches the message associated with the given id.
@@ -728,12 +750,10 @@ Gets the metadata of the given message.
 
 - UnlockBlock
 
-| Field | Type                                                                           | Description                                           |
-| ----- | ------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| type  | <code>'Signature' \| 'Reference'</code>                                        | Unlock block type identifier                          |
-| data  | <code>WotsSignatureUnlockBlock \| Ed25519SignatureUnlockBlock \| number</code> | Unlock block data (signature type or reference index) |
-
-- WotsSignatureUnlockBlock = number[] (WOTS signature)
+| Field | Type                                               | Description                                           |
+| ----- | -------------------------------------------------- | ----------------------------------------------------- |
+| type  | <code>'Signature' \| 'Reference'</code>            | Unlock block type identifier                          |
+| data  | <code>Ed25519SignatureUnlockBlock \| number</code> | Unlock block data (signature type or reference index) |
 
 - Ed25519SignatureUnlockBlock
 
@@ -805,9 +825,7 @@ Gets the metadata of the given message.
 
 | Field | Type                                                                                 | Description                                           |
 | ----- | ------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| data  | <code>WotsSignatureUnlockBlockDto \| Ed25519SignatureUnlockBlockDto \| number</code> | Unlock block data (signature type or reference index) |
-
-- WotsSignatureUnlockBlockDto = number[] (WOTS signature)
+| data  | <code>Ed25519SignatureUnlockBlockDto \| number</code> | Unlock block data (signature type or reference index) |
 
 - Ed25519SignatureUnlockBlockDto
 
@@ -875,3 +893,17 @@ Gets the metadata of the given message.
 | index           | <code>number</code>   | Milestone index                    |
 | createdOutputs  | <code>string[]</code> | OutputIds from new created outputs |
 | consumedOutputs | <code>string[]</code> | OutputIds from consumed outputs    |
+
+### Receipts
+
+| Field           | Type                 | Description     |
+| --------------- | -------------------- | --------------- |
+| receipt         | <code>receipt</code> | Receipt         |
+| milestone_index | <code>number</code>  | Milestone index |
+
+### Treasury
+
+| Field         | Type                | Description  |
+| ------------- | ------------------- | ------------ |
+| milestone_id  | <code>string</code> | Milestone id |
+| amount        | <code>number</code> | Amount       |
