@@ -94,6 +94,12 @@ pub enum Error {
     /// Invalid amount of parents
     #[error("Invalid amount of parents, length must be in 1..=8")]
     InvalidParentsAmount,
+    /// Bech32 error
+    #[error("Invalid bech32 address")]
+    Bech32Error(#[from] bech32::Error),
+    /// Invalid address length
+    #[error("Invalid address length")]
+    InvalidAddressLength,
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

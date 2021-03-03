@@ -10,9 +10,9 @@ use crate::{
     node::*,
     parse_response,
 };
-
+use bech32::FromBase32;
 use bee_common::packable::Packable;
-use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
+use bee_message::prelude::{Address, Bech32Address, Ed25519Address, Message, MessageBuilder, MessageId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     handlers::api::v1::{
@@ -889,6 +889,22 @@ impl Client {
             address_balance_pairs.push(balance_response);
         }
         Ok(address_balance_pairs)
+    }
+
+    /// Returns a valid Address parsed from a String.
+    pub fn parse_bech32_address<S: Into<String>>(address: S) -> crate::Result<Address> {
+        let address_ed25519 = Vec::from_base32(&bech32::decode(&address.into())?.1)?;
+        let address = Address::Ed25519(Ed25519Address::new(
+            address_ed25519[1..]
+                .try_into()
+                .map_err(|_| Error::InvalidAddressLength)?,
+        ));
+        Ok(address)
+    }
+
+    /// Checks if a String address is valid.
+    pub fn is_address_valid<S: Into<String>>(address: S) -> bool {
+        Client::parse_bech32_address(address).is_ok()
     }
 
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
