@@ -17,7 +17,7 @@ use bee_rest_api::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
         milestone::MilestoneResponse as MilestoneResponseDto,
         milestone_utxo_changes::MilestoneUtxoChanges as MilestoneUTXOChanges, output::OutputResponse,
-        tips::TipsResponse, receipt::ReceiptsResponse, treasury::TreasuryResponse
+        receipt::ReceiptsResponse, tips::TipsResponse, treasury::TreasuryResponse,
     },
     types::{MessageDto, PeerDto, ReceiptDto},
 };
@@ -724,14 +724,18 @@ impl Client {
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
-            data: ReceiptsResponse,
+            data: ReceiptsResponseWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ReceiptsResponseWrapper {
+            receipts: ReceiptsResponse,
         }
         let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
             .get(&url.to_string())
             .call()?
             .into_json()?;
 
-        Ok(resp.data.0)
+        Ok(resp.data.receipts.0)
     }
 
     /// GET /api/v1/receipts/{migratedAt} endpoint
@@ -742,14 +746,18 @@ impl Client {
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
-            data: ReceiptsResponse,
+            data: ReceiptsResponseWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ReceiptsResponseWrapper {
+            receipts: ReceiptsResponse,
         }
         let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
             .get(&url.to_string())
             .call()?
             .into_json()?;
 
-        Ok(resp.data.0)
+        Ok(resp.data.receipts.0)
     }
 
     /// GET /api/v1/treasury endpoint
@@ -760,7 +768,7 @@ impl Client {
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
-            data: TreasuryResponse ,
+            data: TreasuryResponse,
         }
         let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
             .get(&url.to_string())
