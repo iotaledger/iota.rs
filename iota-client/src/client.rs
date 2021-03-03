@@ -720,7 +720,7 @@ impl Client {
     /// Get all receipts.
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
         let mut url = self.get_node()?;
-        let path = &format!("api/v1/receipts");
+        let path = &"api/v1/receipts";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
@@ -764,7 +764,7 @@ impl Client {
     /// Get the treasury output.
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
         let mut url = self.get_node()?;
-        let path = &format!("api/v1/treasury");
+        let path = "api/v1/treasury";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {

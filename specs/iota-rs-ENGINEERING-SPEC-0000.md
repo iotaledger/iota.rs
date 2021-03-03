@@ -29,6 +29,9 @@
   * [`find_outputs`](#find_outputs)
   * [`get_milestone`](#get_milestone)
   * [`get_milestone_utxo_changes`](#get_milestone_utxo_changes)
+  * [`get_receipts`](#get_receipts)
+  * [`get_receipts_migrated_at`](#get_receipts_migrated_at)
+  * [`get_treasury`](#get_treasury)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -524,7 +527,47 @@ MilestoneUTXOChanges {
     created_outputs: [],
     consumed_outputs: [],
 }
-````
+```
+
+## `get_receipts()`
+
+(`GET /receipts`)
+
+Get all receipts.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_receipts_migrated_at()`
+
+(`GET /receipts/{migratedAt}`)
+
+Get all receipts for a given milestone index.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_treasury()`
+
+(`GET /treasury`)
+
+Get the treasury amount.
+
+### Returns
+
+```Rust
+pub struct TreasuryResponse {
+    #[serde(rename = "milestoneId")]
+    milestone_id: String,
+    amount: u64,
+}
+```
 
 # Objects
 
