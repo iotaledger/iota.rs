@@ -349,12 +349,6 @@ impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
         Self {
             tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_vec(),
             output: migrated_funds_entry.output().clone().into()
-            // address: migrated_funds_entry
-            //     .address()
-            //     .clone()
-            //     .try_into()
-            //     .expect("Can't convert address"),
-            // amount: migrated_funds_entry.amount(),
         }
     }
 }
