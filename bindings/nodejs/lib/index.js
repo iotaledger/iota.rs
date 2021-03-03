@@ -82,7 +82,14 @@ Client.prototype.postMessage = function (message) {
 }
 Client.prototype.getOutput = promisify(Client.prototype.getOutput)
 Client.prototype.findOutputs = promisify(Client.prototype.findOutputs)
-Client.prototype.getAddressOutputs = promisify(Client.prototype.getAddressOutputs)
+const getAddressOutputs = Client.prototype.getAddressOutputs
+Client.prototype.getAddressOutputs = function (address, options) {
+  if (options) {
+    return promisify(getAddressOutputs).apply(this, [address, JSON.stringify(options)])
+  } else {
+    return promisify(getAddressOutputs).apply(this, [address])
+  }
+}
 Client.prototype.getAddressBalance = promisify(Client.prototype.getAddressBalance)
 Client.prototype.getMilestone = promisify(Client.prototype.getMilestone)
 Client.prototype.getMilestoneUTXOChanges = promisify(Client.prototype.getMilestoneUTXOChanges)

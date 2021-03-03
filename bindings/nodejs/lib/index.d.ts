@@ -69,6 +69,11 @@ export declare interface NetworkInfo {
   localPow: boolean
 }
 
+export declare interface AddressOutputsOptions {
+  includeSpent?: boolean
+  outputType?: { type: 'SignatureLockedSingle' | 'SignatureLockedDustAllowance' }
+}
+
 export declare class Client {
   networkInfo(): NetworkInfo
   subscriber(): TopicSubscriber
@@ -87,7 +92,7 @@ export declare class Client {
   getMessage(): MessageFinder
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
-  getAddressOutputs(address: string): Promise<string[]>
+  getAddressOutputs(address: string, options?: AddressOutputsOptions): Promise<string[]>
   getAddressBalance(address: string): Promise<number>
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUTXOChanges(index: number): Promise<MilestoneUTXOChanges>
