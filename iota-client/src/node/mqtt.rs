@@ -52,7 +52,7 @@ impl Topic {
             Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").unwrap(),
             // ED25519 address hex
             Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
-            Regex::new(r"messages/indexation/(\.)").unwrap()
+            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").unwrap()
           ].to_vec() => Vec<Regex>
         );
         let name = name.into();
