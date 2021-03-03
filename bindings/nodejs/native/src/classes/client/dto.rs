@@ -155,7 +155,7 @@ impl TryFrom<MessagePayloadDto> for Payload {
                     .map(|u| u.try_into())
                     .collect();
 
-                transaction = transaction.with_unlock_blocks(UnlockBlocks::new(unlock_blocks?.into())?);
+                transaction = transaction.with_unlock_blocks(UnlockBlocks::new(unlock_blocks?)?);
 
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
