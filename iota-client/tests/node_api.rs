@@ -311,3 +311,51 @@ async fn test_get_milestone_utxo_changes() {
 
     println!("{:#?}", r);
 }
+
+#[tokio::test]
+#[ignore]
+async fn test_get_receipts() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_receipts()
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn get_receipts_migrated_at() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_receipts_migrated_at(3)
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_treasury() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_treasury()
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
