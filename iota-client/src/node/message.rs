@@ -67,7 +67,7 @@ impl<'a> GetMessageBuilder<'a> {
             .call()?
             .into_json()?;
 
-        Ok(Message::try_from(&resp.data).expect("Can't convert MessageDto to Message"))
+        Ok(Message::try_from(&resp.data).map_err(crate::Error::DtoError)?)
     }
 
     /// GET /api/v1/messages/{messageID}/metadata endpoint

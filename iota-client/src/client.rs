@@ -585,7 +585,7 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        let message = MessageDto::try_from(message).expect("Can't convert message into json");
+        let message = MessageDto::try_from(message).map_err(crate::Error::DtoError)?;
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageIdWrapper,
