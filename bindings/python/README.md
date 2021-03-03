@@ -244,13 +244,14 @@ Gets the balance in the address.
 
 **Returns** the [BalanceForAddressResponse](#balanceforaddressresponse).
 
-#### get_address_outputs(address): list[UTXOInput]
+#### get_address_outputs(address, options (optional)): list[UTXOInput]
 
 Gets the UTXO outputs associated with the given address.
 
-| Param     | Type             | Default                | Description               |
-| --------- | ---------------- | ---------------------- | ------------------------- |
-| [address] | <code>str</code> | <code>undefined</code> | The address Bech32 string |
+| Param     | Type                                                           | Default                | Description               |
+| --------- | -------------------------------------------------------------- | ---------------------- | ------------------------- |
+| [address] | <code>str</code>                                               | <code>undefined</code> | The address Bech32 string |
+| [options] | <code>[[AddressOutputsOptions](#addressoutputsoptions)]</code> | <code>undefined</code> | The query filters         |
 
 **Returns** the list of [UTXOInput](#utxoinput).
 
@@ -914,3 +915,13 @@ metrics_dto = {
     'dropped_packets': int,
 }
 ```
+
+#### AddressOutputsOptions
+
+A dict with the following key/value pairs.
+
+```python
+options = {
+    'include_spent': bool,
+    'output_type': string
+}
