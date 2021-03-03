@@ -1,13 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{get_ureq_agent, log_request, Api, Client, Error, Result};
+use crate::{get_ureq_agent, Api, Client, Error, Result};
 
 use bee_message::prelude::{Bech32Address, TransactionId, UTXOInput};
 
 use bee_rest_api::handlers::{balance_ed25519::BalanceForAddressResponse, outputs_ed25519::OutputsForAddressResponse};
-
-use log::info;
 
 use std::convert::TryInto;
 
@@ -39,7 +37,6 @@ impl<'a> GetAddressBuilder<'a> {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         Ok(resp.data)
     }
 
@@ -61,7 +58,6 @@ impl<'a> GetAddressBuilder<'a> {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         resp.data
             .output_ids
             .iter()

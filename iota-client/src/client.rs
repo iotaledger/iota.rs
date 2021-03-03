@@ -6,7 +6,6 @@ use crate::{
     api::*,
     builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
     error::*,
-    log_request,
     node::*,
 };
 
@@ -38,8 +37,6 @@ use tokio::{
 };
 use ureq::{Agent, AgentBuilder};
 use url::Url;
-
-use log::info;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -486,7 +483,6 @@ impl Client {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         Ok(resp.data)
     }
 
@@ -505,7 +501,6 @@ impl Client {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         Ok(resp.data)
     }
 
@@ -523,7 +518,6 @@ impl Client {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         Ok(resp.data)
     }
 
@@ -541,7 +535,6 @@ impl Client {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         let mut tips = Vec::new();
         for tip in resp.data.tip_message_ids {
             let mut new_tip = [0u8; 32];
@@ -576,7 +569,6 @@ impl Client {
             .send_bytes(&message.pack_new())?
             .into_json()?;
 
-        log_request!("POST", path, resp);
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
         Ok(MessageId::from(message_id_bytes))
@@ -607,7 +599,7 @@ impl Client {
             .post(&url.to_string())
             .send_json(serde_json::to_value(message)?)?
             .into_json()?;
-        log_request!("POST", path, resp);
+
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
         Ok(MessageId::from(message_id_bytes))
@@ -637,7 +629,7 @@ impl Client {
             .get(&url.to_string())
             .call()?
             .into_json()?;
-        log_request!("GET", path, resp);
+
         Ok(resp.data)
     }
 
@@ -696,7 +688,6 @@ impl Client {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         let milestone = resp.data;
         let mut message_id = [0u8; 32];
         hex::decode_to_slice(milestone.message_id, &mut message_id)?;
@@ -722,7 +713,6 @@ impl Client {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         Ok(resp.data)
     }
 

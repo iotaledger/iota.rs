@@ -95,6 +95,9 @@ pub enum Error {
     /// URL error
     #[error("{0}")]
     UrlError(#[from] url::ParseError),
+    /// URL auth error
+    #[error("Can't set {0} to URL")]
+    UrlAuthError(String),
 }
 
 // can't use #[from] on bee_message::Error so manually converting it

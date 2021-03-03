@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{get_ureq_agent, log_request, Api, Client, Result};
+use crate::{get_ureq_agent, Api, Client, Result};
 use bee_message::{Message, MessageId};
 use bee_rest_api::{
     handlers::{
@@ -10,8 +10,6 @@ use bee_rest_api::{
     },
     types::MessageDto,
 };
-
-use log::info;
 
 use std::convert::TryFrom;
 
@@ -43,7 +41,6 @@ impl<'a> GetMessageBuilder<'a> {
             .call()?
             .into_json()?;
 
-        log_request!("GET", path, resp);
         resp.data
             .message_ids
             .iter()
@@ -69,7 +66,6 @@ impl<'a> GetMessageBuilder<'a> {
             .get(&url.to_string())
             .call()?
             .into_json()?;
-        log_request!("GET", path, resp);
 
         Ok(Message::try_from(&resp.data).expect("Can't convert MessageDto to Message"))
     }
@@ -88,7 +84,7 @@ impl<'a> GetMessageBuilder<'a> {
             .get(&url.to_string())
             .call()?
             .into_json()?;
-        log_request!("GET", path, resp);
+
         Ok(resp.data)
     }
 
@@ -102,7 +98,7 @@ impl<'a> GetMessageBuilder<'a> {
             .get(&url.to_string())
             .call()?
             .into_string()?;
-        log_request!("GET", path, resp);
+
         Ok(resp)
     }
 
@@ -119,7 +115,6 @@ impl<'a> GetMessageBuilder<'a> {
             .get(&url.to_string())
             .call()?
             .into_json()?;
-        log_request!("GET", path, resp);
 
         resp.data
             .children_message_ids
