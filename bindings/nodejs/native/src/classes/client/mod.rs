@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    message::prelude::{Address, Ed25519Address, MessageId, UTXOInput},
+    message::prelude::{Address, MessageId, UTXOInput},
     AddressOutputsOptions, OutputType, Seed,
 };
 use neon::prelude::*;
