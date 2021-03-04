@@ -89,6 +89,7 @@ export declare class Client {
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
   getAddressOutputs(address: string): Promise<string[]>
   getAddressBalance(address: string): Promise<number>
+  isAddressValid(address: string): boolean
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUTXOChanges(index: number): Promise<MilestoneUTXOChanges>
   reattach(messageId: string): Promise<MessageWrapper>

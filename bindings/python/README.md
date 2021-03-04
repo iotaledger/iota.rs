@@ -416,6 +416,16 @@ Get the balance in iotas for the given addresses.
 
 **Returns** the list of [AddressBalancePair](#addressbalancepair).
 
+#### is_address_valid(address): bool
+
+Checks if a given address is valid.
+
+| Param   | Type                | Default                | Description               |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| address | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+
+**Returns** A boolean.
+
 #### retry(message_id): (str, Message)
 
 Retries (promotes or reattaches) the message associated with the given id.
