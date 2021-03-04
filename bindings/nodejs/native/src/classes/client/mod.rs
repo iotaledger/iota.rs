@@ -4,9 +4,10 @@
 use bech32::FromBase32;
 use iota::{
     message::prelude::{Address, Ed25519Address, MessageId, UTXOInput},
-    Seed,
+    AddressOutputsOptions, OutputType, Seed,
 };
 use neon::prelude::*;
+use serde::Deserialize;
 
 use std::{convert::TryInto, str::FromStr};
 
@@ -50,6 +51,39 @@ fn parse_address(address: String) -> crate::Result<Address> {
         Err(_) => Ok(Address::Ed25519(Ed25519Address::new(
             hex::decode(address)?.try_into().expect("invalid address length"),
         ))),
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(tag = "type")]
+pub enum OutputTypeDto {
+    SignatureLockedSingle,
+    SignatureLockedDustAllowance,
+}
+
+impl From<OutputTypeDto> for OutputType {
+    fn from(value: OutputTypeDto) -> Self {
+        match value {
+            OutputTypeDto::SignatureLockedSingle => OutputType::SignatureLockedSingle,
+            OutputTypeDto::SignatureLockedDustAllowance => OutputType::SignatureLockedSingle,
+        }
+    }
+}
+
+#[derive(Default, Deserialize)]
+pub struct AddressOutputsOptionsDto {
+    #[serde(rename = "includeSpent")]
+    pub include_spent: bool,
+    #[serde(rename = "outputType")]
+    pub output_type: Option<OutputTypeDto>,
+}
+
+impl From<AddressOutputsOptionsDto> for AddressOutputsOptions {
+    fn from(value: AddressOutputsOptionsDto) -> Self {
+        Self {
+            include_spent: value.include_spent,
+            output_type: value.output_type.map(|o| o.into()),
+        }
     }
 }
 
@@ -363,6 +397,13 @@ declare_types! {
 
         method getAddressOutputs(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
+            let options: AddressOutputsOptionsDto = match cx.argument_opt(1) {
+                Some(arg) => {
+                    let json = arg.downcast::<JsString>().or_throw(&mut cx)?.value();
+                    serde_json::from_str(&json).expect("invalid options")
+                },
+                None => Default::default(),
+            };
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -371,7 +412,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressOutputs(address.into()),
+                    api: Api::GetAddressOutputs(address.into(), options.into()),
                 };
                 client_task.schedule(cb);
             }

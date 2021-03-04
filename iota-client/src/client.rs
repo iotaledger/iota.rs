@@ -652,7 +652,7 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UTXOInput` in the HashSet.
         for address in addresses {
-            let address_outputs = self.get_address().outputs(&address).await?;
+            let address_outputs = self.get_address().outputs(&address, Default::default()).await?;
             for output in address_outputs.iter() {
                 output_to_query.insert(output.to_owned());
             }

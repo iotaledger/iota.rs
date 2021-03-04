@@ -80,9 +80,9 @@ Adds a list of IOTA nodes from node pool URLs to the client pool.
 Set a network to get default nodes for it. Can be "testnet" or "mainnet".
 Nodes that don't belong to this network are ignored.
 
-| Param       | Type                  | Description      |
-| ----------- | --------------------- | ---------------- |
-| networkName | <code>string</code>   | The network |
+| Param       | Type                | Description |
+| ----------- | ------------------- | ----------- |
+| networkName | <code>string</code> | The network |
 
 **Returns** the client builder instance for chained calls.
 
@@ -299,13 +299,15 @@ Gets the UTXO outputs associated with the given output ids and addresses.
 
 **Returns** a promise resolving to a list of [OutputMetadata](#outputmetadata).
 
-#### getAddressOutputs(address): Promise<string[]>
+#### getAddressOutputs(address[, options]): Promise<string[]>
 
 Gets the UTXO outputs associated with the given address.
 
-| Param   | Type                | Description               |
-| ------- | ------------------- | ------------------------- |
-| address | <code>string</code> | The address Bech32 string |
+| Param                  | Type                                                                   | Description                                           |
+| ---------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| address                | <code>string</code>                                                    | The address Bech32 string                             |
+| [options.includeSpent] | <code>boolean</code>                                                   | Whether the query should include spent outputs or not |
+| [options.outputType]   | <code>'SignatureLockedSingle' \| 'SignatureLockedDustAllowance'</code> | The output type filter                                |
 
 **Returns** a promise resolving to a list of output ids.
 
@@ -381,13 +383,13 @@ Promotes the message associated with the given id.
 
 ### NetworkInfo
 
-| Field       | Type                                          | Description                           |
-| ----------- | --------------------------------------------- | ------------------------------------- |
-| network     | <code>string</code>                           | The network                           |
-| networkId   | <code>number</code>                           | The network hashed                    |
-| bech32HRP   | <code>string</code>                           | Bech32 HRP for this network           |
-| minPowScore | <code>number</code>                           | The network's minimum score for PoW   |
-| localPow    | <code>boolean</code>                          | Whether we are using local PoW or not |
+| Field       | Type                 | Description                           |
+| ----------- | -------------------- | ------------------------------------- |
+| network     | <code>string</code>  | The network                           |
+| networkId   | <code>number</code>  | The network hashed                    |
+| bech32HRP   | <code>string</code>  | Bech32 HRP for this network           |
+| minPowScore | <code>number</code>  | The network's minimum score for PoW   |
+| localPow    | <code>boolean</code> | Whether we are using local PoW or not |
 
 ### TopicSubscriber
 
@@ -500,10 +502,10 @@ Adds an output to the transaction.
 
 Defines the range in which to search for addresses fro custom inputs.
 
-| Param         | Type                | Description        |
-| ------------- | ------------------- | ------------------ |
-| start         | <code>number</code> | The start index |
-| end           | <code>number</code> | The end index    |
+| Param | Type                | Description     |
+| ----- | ------------------- | --------------- |
+| start | <code>number</code> | The start index |
+| end   | <code>number</code> | The end index   |
 
 **Returns** the message submit instance for chained calls.
 
@@ -706,12 +708,12 @@ Gets the metadata of the given message.
 
 ### Message
 
-| Field     | Type                             | Description                                    |
-| --------- | -------------------------------- | ---------------------------------------------- |
-| networkId | <code>number</code>              | Network identifier                             |
-| parents   | <code>string[]</code>              | Message ids of the message references          |
-| payload   | <code>[Payload](#payload)</code> | Message payload                                |
-| nonce     | <code>number</code>              | Message nonce                                  |
+| Field     | Type                             | Description                           |
+| --------- | -------------------------------- | ------------------------------------- |
+| networkId | <code>number</code>              | Network identifier                    |
+| parents   | <code>string[]</code>            | Message ids of the message references |
+| payload   | <code>[Payload](#payload)</code> | Message payload                       |
+| nonce     | <code>number</code>              | Message nonce                         |
 
 #### Payload
 
@@ -778,20 +780,20 @@ Gets the metadata of the given message.
 
 - MilestoneEssence
 
-| Field        | Type                    | Description                                               |
-| ------------ | ----------------------- | --------------------------------------------------------- |
-| index        | <code>number</code>     | Milestone index                                           |
-| timestamp    | <code>number</code>     | Timestamp                                                 |
-| parents      | <code>string[]</code>   | Message ids of the messages the milestone references      |
-| merkle_proof | <code>number[]</code>   | Merkle proof                                              |
-| public_keys  | <code>number[][]</code> | public keys                                               |
+| Field        | Type                    | Description                                          |
+| ------------ | ----------------------- | ---------------------------------------------------- |
+| index        | <code>number</code>     | Milestone index                                      |
+| timestamp    | <code>number</code>     | Timestamp                                            |
+| parents      | <code>string[]</code>   | Message ids of the messages the milestone references |
+| merkle_proof | <code>number[]</code>   | Merkle proof                                         |
+| public_keys  | <code>number[][]</code> | public keys                                          |
 
 ### MessageDto
 
-| Field   | Type                                   | Description                                                                 |
-| ------- | -------------------------------------- | --------------------------------------------------------------------------- |
-| parents | <code>string[] \| undefined</code>     | Message ids of the messages it references. `getTips` is used by default     |
-| payload | <code>[PayloadDto](#payloaddto)</code> | Message payload                                                             |
+| Field   | Type                                   | Description                                                             |
+| ------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| parents | <code>string[] \| undefined</code>     | Message ids of the messages it references. `getTips` is used by default |
+| payload | <code>[PayloadDto](#payloaddto)</code> | Message payload                                                         |
 
 #### PayloadDto
 
@@ -855,17 +857,17 @@ Gets the metadata of the given message.
 
 ### NodeInfo
 
-| Field                    | Type                  | Description                      |
-| ------------------------ | --------------------- | -------------------------------- |
-| name                     | <code>string</code>   | Node name                        |
-| version                  | <code>string</code>   | Node version                     |
-| isHealthy                | <code>boolean</code>  | Node health status               |
-| networkId                | <code>string</code>   | Node network identifier          |
-| bech32HRP                | <code>string</code>   | Bech32 HRP for this network      |
-| latestMilestoneIndex     | <code>number</code>   | Index of the latest milestone    |
-| confirmedMilestoneIndex  | <code>number</code>   | Index of the confirmed milestone |
-| pruningIndex             | <code>number</code>   | Pruning index                    |
-| features                 | <code>string[]</code> | List of node features            |
+| Field                   | Type                  | Description                      |
+| ----------------------- | --------------------- | -------------------------------- |
+| name                    | <code>string</code>   | Node name                        |
+| version                 | <code>string</code>   | Node version                     |
+| isHealthy               | <code>boolean</code>  | Node health status               |
+| networkId               | <code>string</code>   | Node network identifier          |
+| bech32HRP               | <code>string</code>   | Bech32 HRP for this network      |
+| latestMilestoneIndex    | <code>number</code>   | Index of the latest milestone    |
+| confirmedMilestoneIndex | <code>number</code>   | Index of the confirmed milestone |
+| pruningIndex            | <code>number</code>   | Pruning index                    |
+| features                | <code>string[]</code> | List of node features            |
 
 ### OutputMetadata
 

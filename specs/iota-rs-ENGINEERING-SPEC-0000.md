@@ -474,7 +474,7 @@ An [OutputMetadata](#OutputMetadata) that contains various information about the
 Depend on the final calling method, users could get different outputs they need:
 
 * `balance()`: Return confirmed balance of the address.
-* `outputs()`: Return UTXOInput array (transaction IDs with corresponding output index).
+* `outputs([options])`: Return UTXOInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 

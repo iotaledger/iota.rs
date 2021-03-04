@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, MilestoneUTXOChanges,
-    OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UTXOInput,
+    error::Result, AddressOutputsOptions, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto,
+    MilestoneUTXOChanges, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UTXOInput,
 };
 use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
@@ -74,12 +74,15 @@ impl Client {
             })?
             .into())
     }
-    fn get_address_outputs(&self, address: &str) -> Result<Vec<UTXOInput>> {
+    fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UTXOInput>> {
         let rt = tokio::runtime::Runtime::new()?;
         let outputs = rt.block_on(async {
             self.client
                 .get_address()
-                .outputs(&RustBech32Address::from(address))
+                .outputs(
+                    &RustBech32Address::from(address),
+                    options.map(|o| o.into()).unwrap_or_default(),
+                )
                 .await
         })?;
         Ok((*outputs)

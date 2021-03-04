@@ -23,7 +23,11 @@ async fn main() {
     let balance = iota.get_address().balance(&address.into()).await.unwrap();
     println!("The balance of {:?} is {:?}", address, balance);
 
-    let outputs = iota.get_address().outputs(&address.into()).await.unwrap();
+    let outputs = iota
+        .get_address()
+        .outputs(&address.into(), Default::default())
+        .await
+        .unwrap();
     println!("The outputs of {:?} are {:?}", address, outputs);
 
     let output = iota.get_output(&outputs[0]).await.unwrap();

@@ -31,6 +31,7 @@ pub use crypto::slip10::Seed;
 pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
+pub use node::{OutputType, OutputsOptions as AddressOutputsOptions};
 #[cfg(feature = "storage")]
 pub use storage::*;
 pub use url::Url;

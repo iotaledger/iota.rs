@@ -6,7 +6,7 @@ use std::{convert::TryInto, ops::Range, str::FromStr};
 use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
-use iota::{Address, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
+use iota::{Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
 use neon::prelude::*;
 
 pub(crate) enum Api {
@@ -60,7 +60,7 @@ pub(crate) enum Api {
         addresses: Vec<Bech32Address>,
     },
     GetAddressBalance(Bech32Address),
-    GetAddressOutputs(Bech32Address),
+    GetAddressOutputs(Bech32Address, AddressOutputsOptions),
     GetMilestone(u32),
     GetMilestoneUTXOChanges(u32),
     GetReceipts(),
@@ -269,8 +269,8 @@ impl Task for ClientTask {
                     let balance = client.get_address().balance(address).await?;
                     serde_json::to_string(&balance).unwrap()
                 }
-                Api::GetAddressOutputs(address) => {
-                    let output_ids = client.get_address().outputs(address).await?;
+                Api::GetAddressOutputs(address, options) => {
+                    let output_ids = client.get_address().outputs(address, options.clone()).await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {
