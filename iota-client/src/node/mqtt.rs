@@ -42,7 +42,7 @@ impl Topic {
     /// Creates a new topic and checks if it's valid.
     pub fn new<S: Into<String>>(name: S) -> Result<Self> {
         let valid_topics = lazy_static!(
-          ["milestones/latest", "milestones/solid", "messages", "messages/referenced"].to_vec() => Vec<&str>
+          ["milestones/latest", "milestones/confirmed", "messages", "messages/referenced"].to_vec() => Vec<&str>
         );
         let regexes = lazy_static!(
           [
@@ -52,7 +52,7 @@ impl Topic {
             Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").unwrap(),
             // ED25519 address hex
             Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
-            Regex::new(r"messages/indexation/(\.)").unwrap()
+            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").unwrap()
           ].to_vec() => Vec<Regex>
         );
         let name = name.into();
@@ -74,10 +74,16 @@ fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                     true => format!(
                         "{}://{}:{}/mqtt",
                         if node.scheme() == "https" { "wss" } else { "ws" },
-                        node.host_str().unwrap(),
-                        node.port_or_known_default().unwrap()
+                        node.host_str()
+                            .ok_or_else(|| crate::Error::MissingParameter("host".to_string()))?,
+                        node.port_or_known_default()
+                            .ok_or_else(|| crate::Error::MissingParameter("port".to_string()))?
                     ),
-                    false => format!("tcp://{}", node.host_str().unwrap(),),
+                    false => format!(
+                        "tcp://{}",
+                        node.host_str()
+                            .ok_or_else(|| crate::Error::MissingParameter("host".to_string()))?,
+                    ),
                 };
                 let mqtt_options = CreateOptionsBuilder::new()
                     .server_uri(uri)
@@ -113,18 +119,19 @@ fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, client: &mut Mqt
                 crate::async_runtime::spawn(async move {
                     let mqtt_topic_handlers_guard = mqtt_topic_handlers.read().await;
                     if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
-                        let event = match topic.as_str() {
-                            "messages" => {
+                        let event = {
+                            if topic.as_str() == "messages" || topic.contains("messages/indexation/") {
                                 let iota_message = Message::unpack(&mut message.payload()).unwrap();
                                 TopicEvent {
                                     topic,
                                     payload: serde_json::to_string(&iota_message).unwrap(),
                                 }
+                            } else {
+                                TopicEvent {
+                                    topic,
+                                    payload: message.payload_str().to_string(),
+                                }
                             }
-                            _ => TopicEvent {
-                                topic,
-                                payload: message.payload_str().to_string(),
-                            },
                         };
                         for handler in handlers {
                             handler(&event)

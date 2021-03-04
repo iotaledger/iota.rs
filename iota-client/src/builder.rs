@@ -4,8 +4,8 @@
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
 
-use reqwest::Url;
 use tokio::{runtime::Runtime, sync::broadcast::channel};
+use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -14,7 +14,7 @@ use std::{
 };
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
+pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 // Interval in seconds when new tips will be requested during PoW
 const TIPS_INTERVAL: u64 = 15;
@@ -83,7 +83,18 @@ impl ClientBuilder {
 
     /// Adds an IOTA node by its URL.
     pub fn with_node(mut self, url: &str) -> Result<Self> {
-        let url = Url::parse(url).map_err(|_| Error::UrlError)?;
+        let url = Url::parse(url)?;
+        self.nodes.insert(url);
+        Ok(self)
+    }
+
+    /// Adds an IOTA node by its URL with basic authentication
+    pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
+        let mut url = Url::parse(url)?;
+        url.set_username(name)
+            .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+        url.set_password(Some(password))
+            .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
         self.nodes.insert(url);
         Ok(self)
     }
@@ -91,7 +102,7 @@ impl ClientBuilder {
     /// Adds a list of IOTA nodes by their URLs.
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
-            let url = Url::parse(url).map_err(|_| Error::UrlError)?;
+            let url = Url::parse(url)?;
             self.nodes.insert(url);
         }
         Ok(self)
@@ -113,14 +124,9 @@ impl ClientBuilder {
     /// Get node list from the node_pool_urls
     pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let text: String = reqwest::get(pool_url)
-                .await?
-                .text()
-                .await
-                .map_err(|_| Error::NodePoolUrlsError)?;
-            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text)?;
+            let nodes_details: Vec<NodeDetail> = get_ureq_agent(GET_API_TIMEOUT).get(&pool_url).call()?.into_json()?;
             for node_detail in nodes_details {
-                let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
+                let url = Url::parse(&node_detail.node)?;
                 self.nodes.insert(url);
             }
         }
@@ -230,6 +236,14 @@ impl ClientBuilder {
             self.api_timeout.remove(&Api::GetMilestone).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
+            Api::GetBalance,
+            self.api_timeout.remove(&Api::GetBalance).unwrap_or(GET_API_TIMEOUT),
+        );
+        api_timeout.insert(
+            Api::GetMessage,
+            self.api_timeout.remove(&Api::GetMessage).unwrap_or(GET_API_TIMEOUT),
+        );
+        api_timeout.insert(
             Api::GetTips,
             self.api_timeout.remove(&Api::GetTips).unwrap_or(GET_API_TIMEOUT),
         );
@@ -252,7 +266,6 @@ impl ClientBuilder {
             runtime,
             sync,
             sync_kill_sender: sync_kill_sender.map(Arc::new),
-            client: reqwest::Client::new(),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,
             #[cfg(feature = "mqtt")]

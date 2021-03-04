@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto, MilestoneUTXOChanges,
-    OutputResponse, PeerDto, UTXOInput,
+    error::Result, AddressOutputsOptions, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto,
+    MilestoneUTXOChanges, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UTXOInput,
 };
 use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
-    MessageId as RustMessageId, UTXOInput as RustUTXOInput,
+    MessageId as RustMessageId, Parents, UTXOInput as RustUTXOInput,
 };
 use pyo3::prelude::*;
 
@@ -43,12 +43,12 @@ impl Client {
     fn post_message(&self, msg: Message) -> Result<String> {
         let mut msg_builder = RustMessageBuilder::<RustClientMiner>::new()
             .with_network_id(msg.network_id)
-            .with_parents(
+            .with_parents(Parents::new(
                 msg.parents
                     .iter()
                     .map(|m| m.parse::<RustMessageId>().expect("Invalid message id"))
                     .collect::<Vec<RustMessageId>>(),
-            )
+            )?)
             .with_nonce_provider(self.client.get_pow_provider(), 4000f64, None);
         if let Some(payload) = msg.payload {
             msg_builder = msg_builder.with_payload(payload.try_into()?);
@@ -74,12 +74,15 @@ impl Client {
             })?
             .into())
     }
-    fn get_address_outputs(&self, address: &str) -> Result<Vec<UTXOInput>> {
+    fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UTXOInput>> {
         let rt = tokio::runtime::Runtime::new()?;
         let outputs = rt.block_on(async {
             self.client
                 .get_address()
-                .outputs(&RustBech32Address::from(address))
+                .outputs(
+                    &RustBech32Address::from(address),
+                    options.map(|o| o.into()).unwrap_or_default(),
+                )
                 .await
         })?;
         Ok((*outputs)
@@ -123,5 +126,27 @@ impl Client {
         Ok(rt
             .block_on(async { self.client.get_milestone_utxo_changes(index).await })?
             .into())
+    }
+    fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let receipts: Vec<ReceiptDto> = rt
+            .block_on(async { self.client.get_receipts().await })?
+            .into_iter()
+            .map(|r| r.into())
+            .collect();
+        Ok(receipts)
+    }
+    fn get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let receipts: Vec<ReceiptDto> = rt
+            .block_on(async { self.client.get_receipts_migrated_at(index).await })?
+            .into_iter()
+            .map(|r| r.into())
+            .collect();
+        Ok(receipts)
+    }
+    fn get_treasury(&self) -> Result<TreasuryResponse> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt.block_on(async { self.client.get_treasury().await })?.into())
     }
 }

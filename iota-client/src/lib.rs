@@ -21,7 +21,7 @@ pub mod storage;
 pub use bee_message;
 pub use bee_rest_api::{
     self,
-    handlers::api::v1::{balance_ed25519::BalanceForAddressResponse, output::OutputResponse},
+    endpoints::api::v1::{balance_ed25519::BalanceForAddressResponse, output::OutputResponse},
     types::{AddressDto, OutputDto},
 };
 // pub use bee_signing_ext::{self, binary::BIP32Path,};
@@ -31,9 +31,10 @@ pub use crypto::slip10::Seed;
 pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
-pub use reqwest::Url;
+pub use node::{OutputType, OutputsOptions as AddressOutputsOptions};
 #[cfg(feature = "storage")]
 pub use storage::*;
+pub use url::Url;
 
 #[cfg(feature = "mqtt")]
 mod async_runtime {
@@ -57,30 +58,4 @@ mod async_runtime {
         let runtime = RUNTIME.get_or_init(|| Mutex::new(Runtime::new().unwrap()));
         runtime.lock().unwrap().spawn(future);
     }
-}
-
-/// match a response with an expected status code or return the default error variant.
-#[macro_export]
-macro_rules! parse_response {
-    ($response:ident, $expected_status:pat => $ok:block) => {{
-        match $response.status().as_u16() {
-            $expected_status => $ok,
-            status => Err(Error::ResponseError(status, $response.text().await?)),
-        }
-    }};
-}
-
-/// Log info about the request and response.
-#[macro_export]
-macro_rules! log_request {
-    ($method: expr, $url: expr, $response:ident) => {
-        info!(
-            "Request method: {}
-            Request URL: {}
-            Response status: {}",
-            $method,
-            $url,
-            $response.status().as_u16()
-        );
-    };
 }

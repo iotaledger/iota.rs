@@ -15,7 +15,7 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<()> {
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("http://api.lb-0.testnet.chrysalis2.com")?
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")?
         .finish()
         .await?;
 

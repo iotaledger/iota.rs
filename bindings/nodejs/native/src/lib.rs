@@ -24,6 +24,7 @@ type ClientInstanceMap = Arc<RwLock<HashMap<String, Arc<RwLock<Client>>>>>;
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error("`{0}`")]
     Anyhow(#[from] anyhow::Error),

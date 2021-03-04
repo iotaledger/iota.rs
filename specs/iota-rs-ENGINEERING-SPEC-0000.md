@@ -31,6 +31,9 @@
   * [`find_outputs`](#find_outputs)
   * [`get_milestone`](#get_milestone)
   * [`get_milestone_utxo_changes`](#get_milestone_utxo_changes)
+  * [`get_receipts`](#get_receipts)
+  * [`get_receipts_migrated_at`](#get_receipts_migrated_at)
+  * [`get_treasury`](#get_treasury)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -428,7 +431,7 @@ pub struct NodeInfo {
     pub network_id: String,
     pub latest_milestone_index: usize,
     pub min_pow_score: f64,
-    pub solid_milestone_index: usize,
+    pub confirmed_milestone_index: usize,
     pub pruning_index: usize,
     pub features: Vec<String>,
 }
@@ -499,7 +502,7 @@ An [OutputMetadata](#OutputMetadata) that contains various information about the
 Depend on the final calling method, users could get different outputs they need:
 
 * `balance()`: Return confirmed balance of the address.
-* `outputs()`: Return UTXOInput array (transaction IDs with corresponding output index).
+* `outputs([options])`: Return UTXOInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 
@@ -552,7 +555,47 @@ MilestoneUTXOChanges {
     created_outputs: [],
     consumed_outputs: [],
 }
-````
+```
+
+## `get_receipts()`
+
+(`GET /receipts`)
+
+Get all receipts.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_receipts_migrated_at()`
+
+(`GET /receipts/{migratedAt}`)
+
+Get all receipts for a given milestone index.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_treasury()`
+
+(`GET /treasury`)
+
+Get the treasury amount.
+
+### Returns
+
+```Rust
+pub struct TreasuryResponse {
+    #[serde(rename = "milestoneId")]
+    milestone_id: String,
+    amount: u64,
+}
+```
 
 # Objects
 
@@ -800,7 +843,7 @@ A string with the exact MQTT topic to monitor, can have one of the following var
 
 ```
 milestones/latest
-milestones/solid
+milestones/confirmed
 
 messages
 messages/referenced

@@ -177,7 +177,6 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut index = self.initial_address_index.unwrap_or(0);
 
         let bech32_hrp = self.client.get_bech32_hrp().await?;
-
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
 
@@ -288,7 +287,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     // For each address, get the address outputs
                     let mut address_index = index;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
-                        let address_outputs = self.client.get_address().outputs(&address).await?;
+                        let address_outputs = self.client.get_address().outputs(&address, Default::default()).await?;
                         let mut outputs = vec![];
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;
@@ -457,13 +456,13 @@ impl<'a> ClientMessageBuilder<'a> {
                 signature_indexes.insert(index, current_block_index);
             }
         }
-        // TODO overflow check
-        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(essence);
-        for unlock in unlock_blocks {
-            payload_builder = payload_builder.add_unlock_block(unlock);
-        }
 
-        let payload = payload_builder.finish().map_err(|_| Error::TransactionError)?;
+        let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
+        let payload = TransactionPayloadBuilder::new()
+            .with_essence(essence)
+            .with_unlock_blocks(unlock_blocks)
+            .finish()
+            .map_err(|_| Error::TransactionError)?;
         // building message
         let payload = Payload::Transaction(Box::new(payload));
 
@@ -648,7 +647,7 @@ pub fn do_pow(
         message = message.with_payload(p);
     }
     let message = message
-        .with_parents(parent_messages)
+        .with_parents(Parents::new(parent_messages)?)
         .with_nonce_provider(client_miner, min_pow_score, Some(Arc::clone(&done)))
         .finish()
         .map_err(Error::MessageError)?;

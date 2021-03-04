@@ -244,13 +244,14 @@ Gets the balance in the address.
 
 **Returns** the [BalanceForAddressResponse](#balanceforaddressresponse).
 
-#### get_address_outputs(address): list[UTXOInput]
+#### get_address_outputs(address, options (optional)): list[UTXOInput]
 
 Gets the UTXO outputs associated with the given address.
 
-| Param     | Type             | Default                | Description               |
-| --------- | ---------------- | ---------------------- | ------------------------- |
-| [address] | <code>str</code> | <code>undefined</code> | The address Bech32 string |
+| Param     | Type                                                           | Default                | Description               |
+| --------- | -------------------------------------------------------------- | ---------------------- | ------------------------- |
+| [address] | <code>str</code>                                               | <code>undefined</code> | The address Bech32 string |
+| [options] | <code>[[AddressOutputsOptions](#addressoutputsoptions)]</code> | <code>undefined</code> | The query filters         |
 
 **Returns** the list of [UTXOInput](#utxoinput).
 
@@ -284,6 +285,28 @@ Gets the utxo changes by the given milestone index.
 | [index] | <code>int</code> | <code>undefined</code> | The index of the milestone |
 
 **Returns** the [MilestoneUTXOChanges](#milestoneutxochanges).
+
+#### get_receipts(): Vec<ReceiptDto>
+
+Get all receipts.
+
+**Returns** the [ReceiptDto](#ReceiptDto).
+
+#### get_receipts_migrated_at(index): Vec<ReceiptDto>
+
+Get all receipts for a given milestone index.
+
+| Param   | Type             | Default                | Description                |
+| ------- | ---------------- | ---------------------- | -------------------------- |
+| [index] | <code>int</code> | <code>undefined</code> | The index of the milestone |
+
+**Returns** the [ReceiptDto](#ReceiptDto).
+
+#### get_treasury(): TreasuryResponse
+
+Get the treasury amount.
+
+**Returns** the [TreasuryResponse](#TreasuryResponse).
 
 ### High-Level APIs
 
@@ -548,6 +571,28 @@ milestone_utxo_changes = {
     'index': int,
     'created_outputs': list[str],
     'consumed_outputs': list[str]
+}
+```
+
+#### ReceiptDto
+
+A dict with the following key/value pairs.
+
+```python
+receiptDto = {
+    'receipt': Receipt,
+    'milestone_index': int,
+}
+```
+
+#### TreasuryResponse
+
+A dict with the following key/value pairs.
+
+```python
+treasuryResponse = {
+    'milestone_id': str,
+    'amount': int,
 }
 ```
 
@@ -830,7 +875,7 @@ info_response = {
     'network_id': str,
     'bech32_hrp': str,
     'latest_milestone_index': int,
-    'solid_milestone_index': int,
+    'confirmed_milestone_index': int,
     'pruning_index': int,
     'features': list[str],
     'min_pow_score': float,
@@ -924,3 +969,13 @@ metrics_dto = {
     'dropped_packets': int,
 }
 ```
+
+#### AddressOutputsOptions
+
+A dict with the following key/value pairs.
+
+```python
+options = {
+    'include_spent': bool,
+    'output_type': string
+}

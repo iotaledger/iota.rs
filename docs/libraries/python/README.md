@@ -1,4 +1,4 @@
-# IOTA Client Node.js Library
+# IOTA Client Python Library
 
 [![status](https://img.shields.io/badge/Status-Alpha-yellow.svg)](https://github.com/iotaledger/iota.rs)
 

@@ -18,23 +18,23 @@ name = "iota_client"
 # bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 # bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 # bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "8b61a12bc4539b740a93b9adf346a3b526d8759a" }
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "8b61a12bc4539b740a93b9adf346a3b526d8759a" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "8b61a12bc4539b740a93b9adf346a3b526d8759a" }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "acab07e4bcff947c70cde312789a2ef2977c652b" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "acab07e4bcff947c70cde312789a2ef2977c652b" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "acab07e4bcff947c70cde312789a2ef2977c652b" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "527392202e78fa35620a9b30061d5e231a046ea2", features = ["blake2b", "ed25519", "random", "slip10"]}
-reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false }
+ureq = { version = "2.0", features = ["json"] }
+url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0.58"
+serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
-hex = "0.4.2"
+hex = "0.4"
 tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread"] }
 thiserror = "1.0"
 num_cpus = "1.13"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 async-trait = "0.1"
-log = "0.4"
 
 # MQTT
 paho-mqtt = { version = "0.9", optional = true }

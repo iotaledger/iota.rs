@@ -82,10 +82,20 @@ Client.prototype.postMessage = function (message) {
 }
 Client.prototype.getOutput = promisify(Client.prototype.getOutput)
 Client.prototype.findOutputs = promisify(Client.prototype.findOutputs)
-Client.prototype.getAddressOutputs = promisify(Client.prototype.getAddressOutputs)
+const getAddressOutputs = Client.prototype.getAddressOutputs
+Client.prototype.getAddressOutputs = function (address, options) {
+  if (options) {
+    return promisify(getAddressOutputs).apply(this, [address, JSON.stringify(options)])
+  } else {
+    return promisify(getAddressOutputs).apply(this, [address])
+  }
+}
 Client.prototype.getAddressBalance = promisify(Client.prototype.getAddressBalance)
 Client.prototype.getMilestone = promisify(Client.prototype.getMilestone)
 Client.prototype.getMilestoneUTXOChanges = promisify(Client.prototype.getMilestoneUTXOChanges)
+Client.prototype.getReceipts = promisify(Client.prototype.getReceipts)
+Client.prototype.getReceiptsMigratedAt = promisify(Client.prototype.getReceiptsMigratedAt)
+Client.prototype.getTreasury = promisify(Client.prototype.getTreasury)
 Client.prototype.retry = promisify(Client.prototype.retry)
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)

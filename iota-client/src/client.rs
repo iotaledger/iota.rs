@@ -4,23 +4,21 @@
 //! The Client module to connect through HORNET or Bee with API usages
 use crate::{
     api::*,
-    builder::{ClientBuilder, NetworkInfo},
+    builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
     error::*,
-    log_request,
     node::*,
-    parse_response,
 };
 use bee_common::packable::Packable;
-use bee_message::prelude::{Address, Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
+use bee_message::prelude::{Address, Bech32Address, Message, MessageBuilder, MessageId, Parents, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
-    handlers::api::v1::{
+    endpoints::api::v1::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
         milestone::MilestoneResponse as MilestoneResponseDto,
         milestone_utxo_changes::MilestoneUtxoChanges as MilestoneUTXOChanges, output::OutputResponse,
-        tips::TipsResponse,
+        receipt::ReceiptsResponse, tips::TipsResponse, treasury::TreasuryResponse,
     },
-    types::{MessageDto, PeerDto},
+    types::{MessageDto, PeerDto, ReceiptDto},
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
@@ -29,7 +27,6 @@ use crypto::{
 
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
-use reqwest::{IntoUrl, Url};
 #[cfg(feature = "mqtt")]
 use tokio::sync::RwLock as AsyncRwLock;
 use tokio::{
@@ -37,8 +34,8 @@ use tokio::{
     sync::broadcast::{Receiver, Sender},
     time::{sleep, Duration as TokioDuration},
 };
-
-use log::info;
+use ureq::{Agent, AgentBuilder};
+use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -213,6 +210,10 @@ pub enum Api {
     GetOutput,
     /// `get_milestone` API
     GetMilestone,
+    /// `get_message` API
+    GetMessage,
+    /// `get_balance` API
+    GetBalance,
 }
 
 impl FromStr for Api {
@@ -228,6 +229,8 @@ impl FromStr for Api {
             "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
             "GetOutput" => Self::GetOutput,
             "GetMilestone" => Self::GetMilestone,
+            "GetMessage" => Self::GetMessage,
+            "GetBalance" => Self::GetBalance,
             _ => return Err(format!("unknown api kind `{}`", s)),
         };
         Ok(t)
@@ -242,8 +245,6 @@ pub struct Client {
     pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
     /// Flag to stop the node syncing
     pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
-    /// A reqwest Client to make Requests with
-    pub(crate) client: reqwest::Client,
     /// A MQTT client to subscribe/unsubscribe to topics.
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
@@ -261,7 +262,7 @@ pub struct Client {
 impl std::fmt::Debug for Client {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut d = f.debug_struct("Client");
-        d.field("sync", &self.sync).field("client", &self.client);
+        d.field("sync", &self.sync);
         #[cfg(feature = "mqtt")]
         d.field("broker_options", &self.broker_options);
         d.field("network_info", &self.network_info).finish()
@@ -327,7 +328,7 @@ impl Client {
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
         for node_url in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Client::get_node_info(node_url.clone()).await {
+            if let Ok(info) = Client::get_node_info(&node_url.to_string()).await {
                 if info.is_healthy {
                     match network_nodes.get_mut(&info.network_id) {
                         Some(network_id_entry) => {
@@ -441,17 +442,16 @@ impl Client {
     // Node API
     //////////////////////////////////////////////////////////////////////
 
-    fn get_timeout(&self, api: Api) -> Duration {
+    pub(crate) fn get_timeout(&self, api: Api) -> Duration {
         *self.api_timeout.get(&api).unwrap_or(&self.request_timeout)
     }
 
     /// GET /health endpoint
-    pub async fn get_node_health<T: IntoUrl>(url: T) -> Result<bool> {
-        let mut url = url.into_url()?;
+    pub async fn get_node_health(url: &str) -> Result<bool> {
+        let mut url = Url::parse(url)?;
         url.set_path("health");
-        let resp = reqwest::get(url).await?;
-
-        match resp.status().as_u16() {
+        let resp = get_ureq_agent(GET_API_TIMEOUT).get(&url.to_string()).call()?;
+        match resp.status() {
             200 => Ok(true),
             _ => Ok(false),
         }
@@ -461,33 +461,28 @@ impl Client {
     pub async fn get_health(&self) -> Result<bool> {
         let mut url = self.get_node()?;
         url.set_path("health");
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetHealth))
-            .send()
-            .await?;
-
-        match resp.status().as_u16() {
+        let resp = get_ureq_agent(GET_API_TIMEOUT).get(&url.to_string()).call()?;
+        match resp.status() {
             200 => Ok(true),
             _ => Ok(false),
         }
     }
 
     /// GET /api/v1/info endpoint
-    pub async fn get_node_info<T: IntoUrl>(url: T) -> Result<NodeInfo> {
-        let mut url = url.into_url()?;
+    pub async fn get_node_info(url: &str) -> Result<NodeInfo> {
+        let mut url = Url::parse(url)?;
         let path = "api/v1/info";
         url.set_path(path);
-        let resp = reqwest::get(url).await?;
         #[derive(Debug, Serialize, Deserialize)]
-        struct NodeInfoWrapper {
+        struct ResponseWrapper {
             data: NodeInfo,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            Ok(resp.json::<NodeInfoWrapper>().await.unwrap().data)
-        })
+        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
     }
 
     /// GET /api/v1/info endpoint
@@ -495,21 +490,17 @@ impl Client {
         let mut url = self.get_node()?;
         let path = "api/v1/info";
         url.set_path(path);
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetInfo))
-            .send()
-            .await?;
-
         #[derive(Debug, Serialize, Deserialize)]
-        struct NodeInfoWrapper {
+        struct ResponseWrapper {
             data: NodeInfo,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            Ok(resp.json::<NodeInfoWrapper>().await?.data)
-        })
+
+        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetInfo))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
     }
 
     /// GET /api/v1/peers endpoint
@@ -517,21 +508,16 @@ impl Client {
         let mut url = self.get_node()?;
         let path = "api/v1/peers";
         url.set_path(path);
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetPeers))
-            .send()
-            .await?;
-
         #[derive(Debug, Serialize, Deserialize)]
-        struct PeerWrapper {
+        struct ResponseWrapper {
             data: Vec<PeerDto>,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            Ok(resp.json::<PeerWrapper>().await?.data)
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetPeers))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
     }
 
     /// GET /api/v1/tips endpoint
@@ -539,28 +525,22 @@ impl Client {
         let mut url = self.get_node()?;
         let path = "api/v1/tips";
         url.set_path(path);
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetTips))
-            .send()
-            .await?;
-
         #[derive(Debug, Serialize, Deserialize)]
-        struct TipsWrapper {
+        struct ResponseWrapper {
             data: TipsResponse,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let tips_response = resp.json::<TipsWrapper>().await?;
-            let mut tips = Vec::new();
-            for tip in tips_response.data.tip_message_ids {
-                let mut new_tip = [0u8; 32];
-                hex::decode_to_slice(tip, &mut new_tip)?;
-                tips.push(MessageId::from(new_tip));
-            }
-            Ok(tips)
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetTips))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        let mut tips = Vec::new();
+        for tip in resp.data.tip_message_ids {
+            let mut new_tip = [0u8; 32];
+            hex::decode_to_slice(tip, &mut new_tip)?;
+            tips.push(MessageId::from(new_tip));
+        }
+        Ok(tips)
     }
 
     /// POST /api/v1/messages endpoint
@@ -574,15 +554,8 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        let resp = self
-            .client
-            .post(url)
-            .timeout(timeout)
-            .body(message.pack_new())
-            .send()
-            .await?;
         #[derive(Debug, Serialize, Deserialize)]
-        struct MessageIdResponseWrapper {
+        struct ResponseWrapper {
             data: MessageIdWrapper,
         }
         #[derive(Debug, Serialize, Deserialize)]
@@ -590,13 +563,14 @@ impl Client {
             #[serde(rename = "messageId")]
             message_id: String,
         }
-        log_request!("POST", path, resp);
-        parse_response!(resp, 201 => {
-            let message_id = resp.json::<MessageIdResponseWrapper>().await?;
-            let mut message_id_bytes = [0u8; 32];
-            hex::decode_to_slice(message_id.data.message_id, &mut message_id_bytes)?;
-            Ok(MessageId::from(message_id_bytes))
-        })
+        let resp: ResponseWrapper = get_ureq_agent(timeout)
+            .post(&url.to_string())
+            .send_bytes(&message.pack_new())?
+            .into_json()?;
+
+        let mut message_id_bytes = [0u8; 32];
+        hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
+        Ok(MessageId::from(message_id_bytes))
     }
 
     /// POST JSON to /api/v1/messages endpoint
@@ -610,17 +584,9 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        let message = MessageDto::try_from(message).expect("Can't convert message into json");
-        let resp = self
-            .client
-            .post(url)
-            .timeout(timeout)
-            .header("content-type", "application/json; charset=UTF-8")
-            .json(&message)
-            .send()
-            .await?;
+        let message = MessageDto::try_from(message).map_err(crate::Error::DtoError)?;
         #[derive(Debug, Serialize, Deserialize)]
-        struct MessageIdResponseWrapper {
+        struct ResponseWrapper {
             data: MessageIdWrapper,
         }
         #[derive(Debug, Serialize, Deserialize)]
@@ -628,13 +594,14 @@ impl Client {
             #[serde(rename = "messageId")]
             message_id: String,
         }
-        log_request!("POST", path, resp);
-        parse_response!(resp, 201 => {
-            let message_id = resp.json::<MessageIdResponseWrapper>().await?;
-            let mut message_id_bytes = [0u8; 32];
-            hex::decode_to_slice(message_id.data.message_id, &mut message_id_bytes)?;
-            Ok(MessageId::from(message_id_bytes))
-        })
+        let resp: ResponseWrapper = get_ureq_agent(timeout)
+            .post(&url.to_string())
+            .send_json(serde_json::to_value(message)?)?
+            .into_json()?;
+
+        let mut message_id_bytes = [0u8; 32];
+        hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
+        Ok(MessageId::from(message_id_bytes))
     }
 
     /// GET /api/v1/messages/{messageId} endpoint
@@ -652,22 +619,17 @@ impl Client {
             hex::encode(output_id.output_id().index().to_le_bytes())
         );
         url.set_path(path);
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetOutput))
-            .send()
-            .await?;
 
         #[derive(Debug, Serialize, Deserialize)]
-        struct OutputWrapper {
+        struct ResponseWrapper {
             data: OutputResponse,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let output_response = resp.json::<OutputWrapper>().await?;
-            Ok(output_response.data)
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetOutput))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
     }
 
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
@@ -689,7 +651,7 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UTXOInput` in the HashSet.
         for address in addresses {
-            let address_outputs = self.get_address().outputs(&address).await?;
+            let address_outputs = self.get_address().outputs(&address, Default::default()).await?;
             for output in address_outputs.iter() {
                 output_to_query.insert(output.to_owned());
             }
@@ -714,26 +676,24 @@ impl Client {
         let mut url = self.get_node()?;
         let path = &format!("api/v1/milestones/{}", index);
         url.set_path(path);
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetMilestone))
-            .send()
-            .await?;
+
         #[derive(Debug, Serialize, Deserialize)]
-        struct MilestoneWrapper {
+        struct ResponseWrapper {
             data: MilestoneResponseDto,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let milestone = resp.json::<MilestoneWrapper>().await?.data;
-            let mut message_id = [0u8; 32];
-            hex::decode_to_slice(milestone.message_id, &mut message_id)?;
-            Ok(MilestoneResponse {
-                index: milestone.milestone_index,
-                message_id: MessageId::new(message_id),
-                timestamp: milestone.timestamp,
-            })
+
+        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetMilestone))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        let milestone = resp.data;
+        let mut message_id = [0u8; 32];
+        hex::decode_to_slice(milestone.message_id, &mut message_id)?;
+        Ok(MilestoneResponse {
+            index: milestone.milestone_index,
+            message_id: MessageId::new(message_id),
+            timestamp: milestone.timestamp,
         })
     }
 
@@ -743,21 +703,78 @@ impl Client {
         let mut url = self.get_node()?;
         let path = &format!("api/v1/milestones/{}/utxo-changes", index);
         url.set_path(path);
-        let resp = self
-            .client
-            .get(url)
-            .timeout(self.get_timeout(Api::GetMilestone))
-            .send()
-            .await?;
         #[derive(Debug, Serialize, Deserialize)]
-        struct MilestoneUTXOChangesWrapper {
+        struct ResponseWrapper {
             data: MilestoneUTXOChanges,
         }
-        log_request!("GET", path, resp);
-        parse_response!(resp, 200 => {
-            let milestone = resp.json::<MilestoneUTXOChangesWrapper>().await?.data;
-            Ok(milestone)
-        })
+        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetMilestone))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
+    }
+
+    /// GET /api/v1/receipts endpoint
+    /// Get all receipts.
+    pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
+        let mut url = self.get_node()?;
+        let path = &"api/v1/receipts";
+        url.set_path(path);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: ReceiptsResponseWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ReceiptsResponseWrapper {
+            receipts: ReceiptsResponse,
+        }
+        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data.receipts.0)
+    }
+
+    /// GET /api/v1/receipts/{migratedAt} endpoint
+    /// Get the receipts by the given milestone index.
+    pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
+        let mut url = self.get_node()?;
+        let path = &format!("api/v1/receipts/{}", milestone_index);
+        url.set_path(path);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: ReceiptsResponseWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ReceiptsResponseWrapper {
+            receipts: ReceiptsResponse,
+        }
+        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data.receipts.0)
+    }
+
+    /// GET /api/v1/treasury endpoint
+    /// Get the treasury output.
+    pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
+        let mut url = self.get_node()?;
+        let path = "api/v1/treasury";
+        url.set_path(path);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: TreasuryResponse,
+        }
+        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
     }
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
@@ -806,7 +823,7 @@ impl Client {
         let min_pow_score = self.get_min_pow_score().await?;
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
-            .with_parents(vec![*message_id, tips[0]])
+            .with_parents(Parents::new(vec![*message_id, tips[0]])?)
             .with_nonce_provider(self.get_pow_provider(), min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
@@ -922,4 +939,9 @@ pub fn hash_network(network_id_string: &str) -> u64 {
             .try_into()
             .unwrap(),
     )
+}
+
+// Create ureq agent with timeout
+pub(crate) fn get_ureq_agent(timeout: Duration) -> Agent {
+    AgentBuilder::new().timeout_read(timeout).timeout_write(timeout).build()
 }

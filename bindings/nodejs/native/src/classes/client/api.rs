@@ -6,7 +6,9 @@ use std::{convert::TryInto, ops::Range, str::FromStr};
 use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
-use iota::{Address, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
+use iota::{
+    Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Parents, Seed, UTXOInput,
+};
 use neon::prelude::*;
 
 pub(crate) enum Api {
@@ -60,9 +62,12 @@ pub(crate) enum Api {
         addresses: Vec<Bech32Address>,
     },
     GetAddressBalance(Bech32Address),
-    GetAddressOutputs(Bech32Address),
+    GetAddressOutputs(Bech32Address, AddressOutputsOptions),
     GetMilestone(u32),
     GetMilestoneUTXOChanges(u32),
+    GetReceipts(),
+    GetReceiptsMigratedAt(u32),
+    GetTreasury(),
     Retry(MessageId),
     Reattach(MessageId),
     Promote(MessageId),
@@ -224,7 +229,7 @@ impl Task for ClientTask {
                     };
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(client.get_network_id().await?)
-                        .with_parents(parent_msg_ids)
+                        .with_parents(Parents::new(parent_msg_ids)?)
                         .with_nonce_provider(client.get_pow_provider(), 4000f64, None)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
@@ -266,8 +271,8 @@ impl Task for ClientTask {
                     let balance = client.get_address().balance(address).await?;
                     serde_json::to_string(&balance).unwrap()
                 }
-                Api::GetAddressOutputs(address) => {
-                    let output_ids = client.get_address().outputs(address).await?;
+                Api::GetAddressOutputs(address, options) => {
+                    let output_ids = client.get_address().outputs(address, options.clone()).await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {
@@ -277,6 +282,18 @@ impl Task for ClientTask {
                 Api::GetMilestoneUTXOChanges(index) => {
                     let milestone_utxo_changes = client.get_milestone_utxo_changes(*index).await?;
                     serde_json::to_string(&milestone_utxo_changes).unwrap()
+                }
+                Api::GetReceipts() => {
+                    let receipts = client.get_receipts().await?;
+                    serde_json::to_string(&receipts).unwrap()
+                }
+                Api::GetReceiptsMigratedAt(index) => {
+                    let receipts = client.get_receipts_migrated_at(*index).await?;
+                    serde_json::to_string(&receipts).unwrap()
+                }
+                Api::GetTreasury() => {
+                    let treasury = client.get_treasury().await?;
+                    serde_json::to_string(&treasury).unwrap()
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;

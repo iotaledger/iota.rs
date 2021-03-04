@@ -14,7 +14,7 @@ use std::{env, time::Duration};
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Create a client instance builder
-        .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert the node here
         .unwrap()
         .finish()
         .await
