@@ -1,4 +1,4 @@
-# Getting Started with Node.js
+# Getting Started with Python
 
 You can look at https://github.com/iotaledger/iota.rs/blob/dev/bindings/python/README.md for now
 
