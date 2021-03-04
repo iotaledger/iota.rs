@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example balance --release
+
 use iota::{Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we will get the balance of a known address
+/// In this example we will get the account balance of a known seed and the balance and outputs of a known address
 
 #[tokio::main]
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .with_node_sync_disabled()
         .finish()
@@ -38,8 +39,6 @@ async fn main() {
         .outputs(&address.into(), Default::default())
         .await
         .unwrap();
-    println!("The outputs of {:?} are {:?}\n", address, outputs);
 
-    let output = iota.get_output(&outputs[0]).await.unwrap();
-    println!("Output {:?}", output);
+    println!("The outputs of address {:?} are: {:?}\n", address, outputs);
 }

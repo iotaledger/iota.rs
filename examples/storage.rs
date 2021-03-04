@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example storage --release
+
 use iota::{
     storage::{sqlite, StorageAdapter},
     Client,
@@ -11,7 +12,7 @@ use iota::{
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await

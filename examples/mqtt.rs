@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example mqtt --release
+
 use iota::{BrokerOptions, Client, Message, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
@@ -12,7 +13,7 @@ use std::sync::{mpsc::channel, Arc, Mutex};
 async fn main() {
     // Create a client instance
     let mut iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         // to use tcp instead
         .with_mqtt_broker_options(BrokerOptions::new().use_websockets(false))

@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example dust --release
+
 use iota::{Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we send a dust allowance output and dust
+/// In this example we will send a dust allowance output and dust
 
 #[tokio::main]
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await
