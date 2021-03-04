@@ -17,9 +17,9 @@ use bee_rest_api::{
         balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
         milestone::MilestoneResponse as MilestoneResponseDto,
         milestone_utxo_changes::MilestoneUtxoChanges as MilestoneUTXOChanges, output::OutputResponse,
-        tips::TipsResponse,
+        receipt::ReceiptsResponse, tips::TipsResponse, treasury::TreasuryResponse,
     },
-    types::{MessageDto, PeerDto},
+    types::{MessageDto, PeerDto, ReceiptDto},
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
@@ -709,6 +709,68 @@ impl Client {
             data: MilestoneUTXOChanges,
         }
         let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetMilestone))
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data)
+    }
+
+    /// GET /api/v1/receipts endpoint
+    /// Get all receipts.
+    pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
+        let mut url = self.get_node()?;
+        let path = &"api/v1/receipts";
+        url.set_path(path);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: ReceiptsResponseWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ReceiptsResponseWrapper {
+            receipts: ReceiptsResponse,
+        }
+        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data.receipts.0)
+    }
+
+    /// GET /api/v1/receipts/{migratedAt} endpoint
+    /// Get the receipts by the given milestone index.
+    pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
+        let mut url = self.get_node()?;
+        let path = &format!("api/v1/receipts/{}", milestone_index);
+        url.set_path(path);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: ReceiptsResponseWrapper,
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ReceiptsResponseWrapper {
+            receipts: ReceiptsResponse,
+        }
+        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
+            .get(&url.to_string())
+            .call()?
+            .into_json()?;
+
+        Ok(resp.data.receipts.0)
+    }
+
+    /// GET /api/v1/treasury endpoint
+    /// Get the treasury output.
+    pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
+        let mut url = self.get_node()?;
+        let path = "api/v1/treasury";
+        url.set_path(path);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: TreasuryResponse,
+        }
+        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
             .get(&url.to_string())
             .call()?
             .into_json()?;

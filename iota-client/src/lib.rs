@@ -59,18 +59,3 @@ mod async_runtime {
         runtime.lock().unwrap().spawn(future);
     }
 }
-
-/// Log info about the request and response.
-#[macro_export]
-macro_rules! log_request {
-    ($method: expr, $url: expr, $response:ident) => {
-        info!(
-            "Request method: {}
-            Request URL: {}",
-            // Response status: {}",
-            $method,
-            $url,
-            // $response.status().as_u16()
-        );
-    };
-}

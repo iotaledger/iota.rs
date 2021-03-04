@@ -27,7 +27,7 @@ export declare interface Ed25519SignatureUnlockBlock {
 
 export declare interface SignatureUnlockBlock {
   type: 'Signature'
-  data: WotsSignatureUnlockBlock | Ed25519SignatureUnlockBlock
+  data: Ed25519SignatureUnlockBlock
 }
 
 export declare interface ReferenceUnlockBlock {

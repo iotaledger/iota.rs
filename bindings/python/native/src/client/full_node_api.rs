@@ -3,7 +3,7 @@
 
 use crate::client::{
     error::Result, AddressOutputsOptions, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto,
-    MilestoneUTXOChanges, OutputResponse, PeerDto, UTXOInput,
+    MilestoneUTXOChanges, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UTXOInput,
 };
 use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
@@ -126,5 +126,27 @@ impl Client {
         Ok(rt
             .block_on(async { self.client.get_milestone_utxo_changes(index).await })?
             .into())
+    }
+    fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let receipts: Vec<ReceiptDto> = rt
+            .block_on(async { self.client.get_receipts().await })?
+            .into_iter()
+            .map(|r| r.into())
+            .collect();
+        Ok(receipts)
+    }
+    fn get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let receipts: Vec<ReceiptDto> = rt
+            .block_on(async { self.client.get_receipts_migrated_at(index).await })?
+            .into_iter()
+            .map(|r| r.into())
+            .collect();
+        Ok(receipts)
+    }
+    fn get_treasury(&self) -> Result<TreasuryResponse> {
+        let rt = tokio::runtime::Runtime::new()?;
+        Ok(rt.block_on(async { self.client.get_treasury().await })?.into())
     }
 }
