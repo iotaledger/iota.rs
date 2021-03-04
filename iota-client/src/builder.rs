@@ -92,9 +92,9 @@ impl ClientBuilder {
     pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
         let mut url = Url::parse(url)?;
         url.set_username(name)
-            .map_err(|_| crate::Error::UrlAuthError("username".into()))?;
+            .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
         url.set_password(Some(password))
-            .map_err(|_| crate::Error::UrlAuthError("password".into()))?;
+            .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
         self.nodes.insert(url);
         Ok(self)
     }

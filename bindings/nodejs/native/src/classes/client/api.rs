@@ -63,6 +63,9 @@ pub(crate) enum Api {
     GetAddressOutputs(Bech32Address, AddressOutputsOptions),
     GetMilestone(u32),
     GetMilestoneUTXOChanges(u32),
+    GetReceipts(),
+    GetReceiptsMigratedAt(u32),
+    GetTreasury(),
     Retry(MessageId),
     Reattach(MessageId),
     Promote(MessageId),
@@ -277,6 +280,18 @@ impl Task for ClientTask {
                 Api::GetMilestoneUTXOChanges(index) => {
                     let milestone_utxo_changes = client.get_milestone_utxo_changes(*index).await?;
                     serde_json::to_string(&milestone_utxo_changes).unwrap()
+                }
+                Api::GetReceipts() => {
+                    let receipts = client.get_receipts().await?;
+                    serde_json::to_string(&receipts).unwrap()
+                }
+                Api::GetReceiptsMigratedAt(index) => {
+                    let receipts = client.get_receipts_migrated_at(*index).await?;
+                    serde_json::to_string(&receipts).unwrap()
+                }
+                Api::GetTreasury() => {
+                    let treasury = client.get_treasury().await?;
+                    serde_json::to_string(&treasury).unwrap()
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;

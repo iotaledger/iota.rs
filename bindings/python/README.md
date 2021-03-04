@@ -286,6 +286,28 @@ Gets the utxo changes by the given milestone index.
 
 **Returns** the [MilestoneUTXOChanges](#milestoneutxochanges).
 
+#### get_receipts(): Vec<ReceiptDto>
+
+Get all receipts.
+
+**Returns** the [ReceiptDto](#ReceiptDto).
+
+#### get_receipts_migrated_at(index): Vec<ReceiptDto>
+
+Get all receipts for a given milestone index.
+
+| Param   | Type             | Default                | Description                |
+| ------- | ---------------- | ---------------------- | -------------------------- |
+| [index] | <code>int</code> | <code>undefined</code> | The index of the milestone |
+
+**Returns** the [ReceiptDto](#ReceiptDto).
+
+#### get_treasury(): TreasuryResponse
+
+Get the treasury amount.
+
+**Returns** the [TreasuryResponse](#TreasuryResponse).
+
 ### High-Level APIs
 
 #### message(seed (optional), account_index (optional), initial_address_index (optional), inputs (optional), input_range_begin (optional), input_range_end (optional), outputs (optional), dust_allowance_outputs (optional), index (optional), index_raw (optional), data (optional), data_str (optional), parents (optional)): Message
@@ -539,6 +561,28 @@ milestone_utxo_changes = {
     'index': int,
     'created_outputs': list[str],
     'consumed_outputs': list[str]
+}
+```
+
+#### ReceiptDto
+
+A dict with the following key/value pairs.
+
+```python
+receiptDto = {
+    'receipt': Receipt,
+    'milestone_index': int,
+}
+```
+
+#### TreasuryResponse
+
+A dict with the following key/value pairs.
+
+```python
+treasuryResponse = {
+    'milestone_id': str,
+    'amount': int,
 }
 ```
 
