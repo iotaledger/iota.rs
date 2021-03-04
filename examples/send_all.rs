@@ -9,26 +9,29 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example, we get the balance of the first account of the seed and send everything
+/// In this example we get the balance of the first account of the seed and send everything
 // Todo: automatically detect amount of inputs and if > 127 create multiple transactions
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.lb-0.testnet.chrysalis2.com")?
+    // Create a client instance
+    let iota = Client::builder()
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com")?
         .finish()
         .await?;
 
-    // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    println!("This example uses dotenv, which is not safe for use in production.");
+    // This example uses dotenv, which is not safe for use in production
+    // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
-    let seed_1 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?);
 
-    let total_balance = iota.get_balance(&seed_1).with_initial_address_index(0).finish().await?;
-    println!("total_balance {}", total_balance);
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?);
+    let total_balance = iota.get_balance(&seed).with_initial_address_index(0).finish().await?;
+
+    println!("Total balance: {}", total_balance);
+
     let message = iota
         .message()
-        .with_seed(&seed_1)
+        .with_seed(&seed)
         .with_output(
             &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(),
             total_balance,
@@ -36,10 +39,12 @@ async fn main() -> Result<()> {
         .with_initial_address_index(0)
         .finish()
         .await?;
+
     println!(
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
         message.id().0
     );
+
     reattach_promote_until_confirmed(message.id().0, &iota).await;
     Ok(())
 }

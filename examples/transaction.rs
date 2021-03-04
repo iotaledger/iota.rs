@@ -24,19 +24,21 @@ use std::env;
 /// "atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2" (index 2), and check the ledger
 /// inclusion state, which should be "Some(Included)".
 
+const EXPLORER_URL: &str = "https://explorer.iota.org/chrysalis/message/";
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let explorer_url = "https://explorer.iota.org/chrysalis/message/";
-    let iota = Client::builder() // Crate a client instance builder
+    // Create a client instance
+    let iota = Client::builder()
         .with_node("https://api.hornet-0.testnet.chrysalis2.com")? // Insert the node here
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    // Insert your seed in the .env. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    // First address from the seed in the .env is iot1qxt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupxgecea4
-    println!("This example uses dotenv, which is not safe for use in production.");
+    // This example uses dotenv, which is not safe for use in production
+    // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
+
     let seed_1 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
     let seed_2 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?);
 
@@ -51,7 +53,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("First transaction sent: {}{}", explorer_url, message.id().0);
+    println!("First transaction sent: {}{}", EXPLORER_URL, message.id().0);
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let message = iota
@@ -64,7 +66,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Second transaction sent: {}{}", explorer_url, message.id().0);
+    println!("Second transaction sent: {}{}", EXPLORER_URL, message.id().0);
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let message = iota
@@ -76,7 +78,8 @@ async fn main() -> Result<()> {
         )?
         .finish()
         .await?;
-    println!("Third transaction sent: {}{}", explorer_url, message.id().0);
+
+    println!("Third transaction sent: {}{}", EXPLORER_URL, message.id().0);
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 
     let message = iota
@@ -94,13 +97,12 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Last transaction sent: {}{}", explorer_url, message.id().0);
+    println!("Last transaction sent: {}{}", EXPLORER_URL, message.id().0);
     reattach_promote_until_confirmed(message.id().0, &iota).await;
+
     let message_metadata = iota.get_message().metadata(&message.id().0).await;
-    println!(
-        "The ledgerInclusionState: {:?}",
-        message_metadata?.ledger_inclusion_state
-    );
+    println!("Ledger Inclusion State: {:?}", message_metadata?.ledger_inclusion_state);
+
     Ok(())
 }
 
