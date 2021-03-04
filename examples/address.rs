@@ -37,6 +37,7 @@ async fn main() {
         .finish()
         .await
         .unwrap();
+
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate public (false) & internal (true) addresses
@@ -51,5 +52,6 @@ async fn main() {
         .finish()
         .await
         .unwrap();
+
     println!("List of offline generated public addresses:\n{:?}\n", addresses);
 }

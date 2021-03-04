@@ -40,5 +40,5 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("The outputs of address {:?} are: {:?}\n", address, outputs);
+    println!("The outputs of address {:?} are: {:?}", address, outputs);
 }
