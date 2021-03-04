@@ -16,7 +16,7 @@ use std::{env, time::Duration};
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await

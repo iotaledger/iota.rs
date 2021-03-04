@@ -11,7 +11,7 @@ use iota::Client;
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         // .with_node_auth("https://somechrysalisiotanode.com", "name", "password") // Optional authentication
         .unwrap()
         .finish()
