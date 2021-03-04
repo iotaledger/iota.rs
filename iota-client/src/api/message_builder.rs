@@ -647,7 +647,7 @@ pub fn do_pow(
         message = message.with_payload(p);
     }
     let message = message
-        .with_parents(parent_messages)
+        .with_parents(Parents::new(parent_messages)?)
         .with_nonce_provider(client_miner, min_pow_score, Some(Arc::clone(&done)))
         .finish()
         .map_err(Error::MessageError)?;

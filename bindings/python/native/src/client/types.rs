@@ -720,7 +720,7 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
         Ok(MilestonePayloadEssence {
             index: essence.index(),
             timestamp: essence.timestamp(),
-            parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
+            parents: vec![essence.parents().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
             public_keys: essence
                 .public_keys()
@@ -873,7 +873,7 @@ impl TryFrom<RustMessage> for Message {
         Ok(Message {
             message_id: msg.id().0.to_string(),
             network_id: msg.network_id(),
-            parents: msg.parents().iter().map(|m| m.to_string()).collect(),
+            parents: msg.parents().map(|m| m.to_string()).collect(),
             payload,
             nonce: msg.nonce(),
         })

@@ -10,7 +10,7 @@ use crate::{
 };
 
 use bee_common::packable::Packable;
-use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, UTXOInput};
+use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, Parents, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     endpoints::api::v1::{
@@ -824,7 +824,7 @@ impl Client {
         let min_pow_score = self.get_min_pow_score().await?;
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(self.get_network_id().await?)
-            .with_parents(vec![*message_id, tips[0]])
+            .with_parents(Parents::new(vec![*message_id, tips[0]])?)
             .with_nonce_provider(self.get_pow_provider(), min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
