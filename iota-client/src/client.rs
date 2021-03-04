@@ -8,9 +8,8 @@ use crate::{
     error::*,
     node::*,
 };
-
 use bee_common::packable::Packable;
-use bee_message::prelude::{Bech32Address, Message, MessageBuilder, MessageId, Parents, UTXOInput};
+use bee_message::prelude::{Address, Bech32Address, Message, MessageBuilder, MessageId, Parents, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::{
     endpoints::api::v1::{
@@ -906,6 +905,16 @@ impl Client {
             address_balance_pairs.push(balance_response);
         }
         Ok(address_balance_pairs)
+    }
+
+    /// Returns a valid Address parsed from a String.
+    pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
+        Ok(Address::try_from_bech32(address)?)
+    }
+
+    /// Checks if a String address is valid.
+    pub fn is_address_valid(address: &str) -> bool {
+        Address::try_from_bech32(address).is_ok()
     }
 
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be

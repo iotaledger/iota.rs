@@ -307,6 +307,9 @@ impl Client {
             })
             .collect())
     }
+    fn is_address_valid(&self, address: &str) -> bool {
+        iota::Client::is_address_valid(address)
+    }
     fn retry(&self, message_id: String) -> Result<(String, Message)> {
         let rt = tokio::runtime::Runtime::new()?;
         let message_id_message =

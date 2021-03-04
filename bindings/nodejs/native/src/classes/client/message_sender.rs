@@ -140,7 +140,7 @@ declare_types! {
 
         method output(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid address");
+            let address = parse_address(address.as_str()).expect("invalid address");
             let value = cx.argument::<JsNumber>(1)?.value() as u64;
             {
                 let mut this = cx.this();
@@ -154,7 +154,7 @@ declare_types! {
 
         method dustAllowanceOutput(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid address");
+            let address = parse_address(address.as_str()).expect("invalid address");
             let value = cx.argument::<JsNumber>(1)?.value() as u64;
             {
                 let mut this = cx.this();

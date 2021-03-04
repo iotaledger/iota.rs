@@ -20,7 +20,7 @@ $ npm link
 $ cd /path/to/nodejs/project/
 $ npm link iota-client
 ```
-- Using yarn: 
+- Using yarn:
 ```
 $ git clone https://github.com/iotaledger/iota.rs
 $ cd iota.rs/bindings/nodejs
@@ -239,6 +239,16 @@ Get the balance in iotas for the given addresses.
 | addresses | <code>string[]</code> | The list of addresses to search |
 
 **Returns** A promise resolving to the list of `{ address, balance }` pairs.
+
+#### isAddressValid(address: string): boolean
+
+Checks if a given address is valid.
+
+| Param     | Type                  | Description                     |
+| --------- | --------------------- | ------------------------------- |
+| address   | <code>string</code>   | The address Bech32 string       |
+
+**Returns** A boolean.
 
 #### retry(messageId: string): Promise<Message>
 

@@ -14,6 +14,8 @@
   * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
+  * [`parse_bech32_address`](#parse_bech32_address)
+  * [`is_address_valid`](#is_address_valid)
   * [`subscriber`](#subscriber)
   * [`retry`](#retry)
   * [`reattach`](#reattach)
@@ -267,6 +269,32 @@ Following are the steps for implementing this method:
 * Validate _address_ semantics;
 * Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
 * Return the list of Output which contains corresponding pairs of address and balance.
+
+## `parse_bech32_address()`
+
+Returns a valid Address parsed from a String.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+
+### Return
+
+Parsed [Address].
+
+## `is_address_valid()`
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+
+### Return
+
+A boolean showing if the address is valid.
 
 ## `subscriber()`
 
