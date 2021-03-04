@@ -113,18 +113,19 @@ fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, client: &mut Mqt
                 crate::async_runtime::spawn(async move {
                     let mqtt_topic_handlers_guard = mqtt_topic_handlers.read().await;
                     if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
-                        let event = match topic.as_str() {
-                            "messages" => {
+                        let event = {
+                            if topic.as_str() == "messages" || topic.contains("messages/indexation/") {
                                 let iota_message = Message::unpack(&mut message.payload()).unwrap();
                                 TopicEvent {
                                     topic,
                                     payload: serde_json::to_string(&iota_message).unwrap(),
                                 }
+                            } else {
+                                TopicEvent {
+                                    topic,
+                                    payload: message.payload_str().to_string(),
+                                }
                             }
-                            _ => TopicEvent {
-                                topic,
-                                payload: message.payload_str().to_string(),
-                            },
                         };
                         for handler in handlers {
                             handler(&event)
