@@ -21,17 +21,19 @@ use std::env;
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        // .with_node("http://0.0.0.0:14265") // Insert the node here
-        // .unwrap()
+    // Create a client instance
+    let iota = Client::builder()
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .unwrap()
         .finish()
         .await
         .unwrap();
 
-    // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-    println!("This example uses dotenv, which is not safe for use in production.");
+    // This example uses dotenv, which is not safe for use in production
+    // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
+
+    // Seed must contain non-zero balance.
     let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
 
     let message = iota
@@ -60,6 +62,7 @@ async fn main() {
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
         message.id().0
     );
+
     reattach_promote_until_confirmed(message.id().0, &iota).await;
 }
 
