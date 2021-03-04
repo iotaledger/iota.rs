@@ -6,7 +6,9 @@ use std::{convert::TryInto, ops::Range, str::FromStr};
 use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
-use iota::{Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
+use iota::{
+    Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Parents, Seed, UTXOInput,
+};
 use neon::prelude::*;
 
 pub(crate) enum Api {
@@ -224,7 +226,7 @@ impl Task for ClientTask {
                     };
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(client.get_network_id().await?)
-                        .with_parents(parent_msg_ids)
+                        .with_parents(Parents::new(parent_msg_ids)?)
                         .with_nonce_provider(client.get_pow_provider(), 4000f64, None)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
