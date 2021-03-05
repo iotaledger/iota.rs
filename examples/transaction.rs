@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example transaction --release
+
 use iota::{client::Result, Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
-/// In this example, we send 9_000_000 tokens to the following 3 locations, respectively
+
+/// In this example we will send 9_000_000 tokens to the following 3 locations, respectively
 /// First send 10 Mi from the faucet to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
 /// That's the first address of the first seed in the .env.example file
 ///
@@ -19,7 +21,7 @@ use std::env;
 ///   output 2: 3_000_000 tokens atoi1qz0vue67w2e2wjk9jh07s7wfgxmsxgy9ssctn3nntyf9uqd6qs3zsp0k73u
 ///
 ///
-/// Then we send 6_000_000 tokens from the second seed to the first one
+/// Then we will send 6_000_000 tokens from the second seed to the first one
 /// to addresses "atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf" (index 1) and
 /// "atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2" (index 2), and check the ledger
 /// inclusion state, which should be "Some(Included)".
@@ -30,7 +32,7 @@ const EXPLORER_URL: &str = "https://explorer.iota.org/chrysalis/message/";
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com")? // Insert the node here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
         .await?;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example multiple_outputs --release
+
 use iota::{Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::sleep;
@@ -9,7 +10,7 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example, we send 8_800_000 tokens to the following 3 locations, respectively
+/// In this example we will send 8_800_000 tokens to the following 3 locations, respectively
 ///
 /// Address Index (1..4)
 ///   output 0: 3_000_000 tokens atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf
@@ -17,13 +18,13 @@ use std::env;
 ///   output 2: 3_000_000 tokens atoi1qzumqjtucwglfja746vvmr7n54ep88kcu2qvaquqrnx9qs2z8f4t6d7muyq
 ///
 ///
-/// These three addresses belong to second seed in .env.example
+/// Those three addresses belong to second seed in .env.example
 
 #[tokio::main]
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await

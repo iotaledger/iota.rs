@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example send_all --release
+
 use iota::{client::Result, Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::sleep;
@@ -9,14 +10,14 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we get the balance of the first account of the seed and send everything
+/// In this example we will get the balance of the first account of the seed and send everything
 // Todo: automatically detect amount of inputs and if > 127 create multiple transactions
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com")?
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
         .finish()
         .await?;
 

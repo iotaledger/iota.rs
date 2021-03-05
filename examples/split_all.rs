@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example split_all --release
+
 use iota::{client::Result, Client, MessageId, Seed};
 use std::time::Duration;
 use tokio::time::sleep;
@@ -16,7 +17,7 @@ use std::env;
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com")?
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
         .finish()
         .await?;
 
@@ -30,7 +31,7 @@ async fn main() -> Result<()> {
     let total_balance = iota.get_balance(&seed_1).finish().await?;
     let mut available = total_balance;
 
-    println!("total_balance {}", total_balance);
+    println!("Total balance: {}i", total_balance);
 
     let addresses_from_seed_2 = iota
         .get_addresses(&seed_2)
