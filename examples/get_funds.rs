@@ -6,7 +6,6 @@ use iota::{Client, Seed};
 use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
-use ureq;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
