@@ -42,7 +42,7 @@ async fn main() {
         .await
         .unwrap();
     println!("{}", addresses[0]);
-    for i in 0..100 {
+    for i in 0..1 {
         let response: FaucetResponse = ureq::get(&format!(
             "https://faucet.testnet.chrysalis2.com/api?address={}",
             addresses[0]
