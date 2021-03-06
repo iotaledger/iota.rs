@@ -69,7 +69,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn balance(self, address: &Bech32Address) -> Result<BalanceForAddressResponse> {
-        let mut url = self.client.get_node()?;
+        let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/addresses/{}", address);
         url.set_path(path);
 
@@ -89,7 +89,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, address: &Bech32Address, options: OutputsOptions) -> Result<Box<[UTXOInput]>> {
-        let mut url = self.client.get_node()?;
+        let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/addresses/{}/outputs", address);
         url.set_path(path);
         url.set_query(options.into_query().as_deref());

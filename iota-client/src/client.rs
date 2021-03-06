@@ -27,8 +27,7 @@ use crypto::{
 
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
-#[cfg(feature = "mqtt")]
-use tokio::sync::RwLock as AsyncRwLock;
+use tokio::sync::RwLock;
 use tokio::{
     runtime::Runtime,
     sync::broadcast::{Receiver, Sender},
@@ -42,7 +41,7 @@ use std::{
     convert::{TryFrom, TryInto},
     hash::Hash,
     str::FromStr,
-    sync::{atomic::AtomicBool, Arc, RwLock},
+    sync::{atomic::AtomicBool, Arc},
     time::Duration,
 };
 
@@ -249,7 +248,7 @@ pub struct Client {
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
     #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_topic_handlers: Arc<AsyncRwLock<TopicHandlerMap>>,
+    pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
@@ -334,7 +333,7 @@ impl Client {
                         Some(network_id_entry) => {
                             network_id_entry.push((info, node_url.clone()));
                         }
-                        None => match &network_info.read().unwrap().network {
+                        None => match &network_info.read().await.network {
                             Some(id) => {
                                 if info.network_id.contains(id) {
                                     network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
@@ -358,7 +357,7 @@ impl Client {
         }
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             for (info, node_url) in nodes.iter() {
-                let mut client_network_info = network_info.write().unwrap();
+                let mut client_network_info = network_info.write().await;
                 client_network_info.network_id = Some(hash_network(&info.network_id));
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp.clone();
@@ -373,12 +372,12 @@ impl Client {
         }
 
         // Update the sync list
-        *sync.write().unwrap() = synced_nodes;
+        *sync.write().await = synced_nodes;
     }
 
     /// Get a node candidate from the synced node pool.
-    pub(crate) fn get_node(&self) -> Result<Url> {
-        let pool = self.sync.read().unwrap();
+    pub(crate) async fn get_node(&self) -> Result<Url> {
+        let pool = self.sync.read().await;
         Ok(pool.iter().next().ok_or(Error::SyncedNodePoolEmpty)?.clone())
     }
 
@@ -389,23 +388,25 @@ impl Client {
     }
 
     /// Gets the miner to use based on the PoW setting
-    pub fn get_pow_provider(&self) -> ClientMiner {
-        ClientMinerBuilder::new().with_local_pow(self.get_local_pow()).finish()
+    pub async fn get_pow_provider(&self) -> ClientMiner {
+        ClientMinerBuilder::new()
+            .with_local_pow(self.get_local_pow().await)
+            .finish()
     }
 
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
-        let not_synced = { self.network_info.read().unwrap().network_id.is_none() };
+        let not_synced = { self.network_info.read().await.network_id.is_none() };
         if not_synced {
             let info = self.get_info().await?;
             let network_id = hash_network(&info.network_id);
-            let mut client_network_info = self.network_info.write().unwrap();
+            let mut client_network_info = self.network_info.write().await;
             client_network_info.network_id = Some(network_id);
             client_network_info.min_pow_score = info.min_pow_score;
             client_network_info.bech32_hrp = info.bech32_hrp;
         }
-        Ok(self.network_info.read().unwrap().clone())
+        Ok(self.network_info.read().await.clone())
     }
 
     /// returns the bech32_hrp
@@ -419,13 +420,13 @@ impl Client {
     }
 
     /// returns the tips interval
-    pub fn get_tips_interval(&self) -> u64 {
-        self.network_info.read().unwrap().tips_interval
+    pub async fn get_tips_interval(&self) -> u64 {
+        self.network_info.read().await.tips_interval
     }
 
     /// returns the local pow
-    pub fn get_local_pow(&self) -> bool {
-        self.network_info.read().unwrap().local_pow
+    pub async fn get_local_pow(&self) -> bool {
+        self.network_info.read().await.local_pow
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -459,7 +460,7 @@ impl Client {
 
     /// GET /health endpoint
     pub async fn get_health(&self) -> Result<bool> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         url.set_path("health");
         let resp = get_ureq_agent(GET_API_TIMEOUT).get(&url.to_string()).call()?;
         match resp.status() {
@@ -487,7 +488,7 @@ impl Client {
 
     /// GET /api/v1/info endpoint
     pub async fn get_info(&self) -> Result<NodeInfo> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = "api/v1/info";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
@@ -505,7 +506,7 @@ impl Client {
 
     /// GET /api/v1/peers endpoint
     pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = "api/v1/peers";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
@@ -522,7 +523,7 @@ impl Client {
 
     /// GET /api/v1/tips endpoint
     pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = "api/v1/tips";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
@@ -545,11 +546,11 @@ impl Client {
 
     /// POST /api/v1/messages endpoint
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = "api/v1/messages";
         url.set_path(path);
 
-        let timeout = if self.get_local_pow() {
+        let timeout = if self.get_local_pow().await {
             self.get_timeout(Api::PostMessage)
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
@@ -575,11 +576,11 @@ impl Client {
 
     /// POST JSON to /api/v1/messages endpoint
     pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = "api/v1/messages";
         url.set_path(path);
 
-        let timeout = if self.get_local_pow() {
+        let timeout = if self.get_local_pow().await {
             self.get_timeout(Api::PostMessage)
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
@@ -612,7 +613,7 @@ impl Client {
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
     pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputResponse> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = &format!(
             "api/v1/outputs/{}{}",
             output_id.output_id().transaction_id().to_string(),
@@ -673,7 +674,7 @@ impl Client {
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = &format!("api/v1/milestones/{}", index);
         url.set_path(path);
 
@@ -700,7 +701,7 @@ impl Client {
     /// GET /api/v1/milestones/{index}/utxo-changes endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = &format!("api/v1/milestones/{}/utxo-changes", index);
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
@@ -718,7 +719,7 @@ impl Client {
     /// GET /api/v1/receipts endpoint
     /// Get all receipts.
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = &"api/v1/receipts";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
@@ -740,7 +741,7 @@ impl Client {
     /// GET /api/v1/receipts/{migratedAt} endpoint
     /// Get the receipts by the given milestone index.
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = &format!("api/v1/receipts/{}", milestone_index);
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
@@ -762,7 +763,7 @@ impl Client {
     /// GET /api/v1/treasury endpoint
     /// Get the treasury output.
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
-        let mut url = self.get_node()?;
+        let mut url = self.get_node().await?;
         let path = "api/v1/treasury";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
@@ -798,7 +799,7 @@ impl Client {
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_local_pow() {
+        let msg = match self.get_local_pow().await {
             true => reattach_message,
             false => self.get_message().data(&message_id).await?,
         };
@@ -821,16 +822,18 @@ impl Client {
         // Create a new message (zero value message) for which one tip would be the actual message
         let tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
+        let network_id = self.get_network_id().await?;
+        let nonce_provider = self.get_pow_provider().await;
         let promote_message = MessageBuilder::<ClientMiner>::new()
-            .with_network_id(self.get_network_id().await?)
+            .with_network_id(network_id)
             .with_parents(Parents::new(vec![*message_id, tips[0]])?)
-            .with_nonce_provider(self.get_pow_provider(), min_pow_score, None)
+            .with_nonce_provider(nonce_provider, min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
         let message_id = self.post_message(&promote_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_local_pow() {
+        let msg = match self.get_local_pow().await {
             true => promote_message,
             false => self.get_message().data(&message_id).await?,
         };

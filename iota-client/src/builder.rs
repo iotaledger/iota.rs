@@ -4,12 +4,15 @@
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
 
-use tokio::{runtime::Runtime, sync::broadcast::channel};
+use tokio::{
+    runtime::Runtime,
+    sync::{broadcast::channel, RwLock},
+};
 use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, RwLock},
+    sync::Arc,
     time::Duration,
 };
 
