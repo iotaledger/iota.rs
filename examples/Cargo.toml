@@ -10,6 +10,7 @@ tokio = { version = "1.1", features = ["full"] }
 
 # Add "mqtt" to the features of the iota-core import below
 iota-core = { path = "../iota-core", features = ["storage"] }
+iota-crypto = {git = "https://github.com/iotaledger/crypto.rs", rev = "9259a0617ca3b72e2bb2f63d5b7197247f85061c", features = ["bip39", "bip39-en"]}
 hex = "0.4.2"
 dotenv = "0.15.0"
 
@@ -84,3 +85,7 @@ path = "send_all.rs"
 [[example]]
 name = "split_all"
 path = "split_all.rs"
+
+[[example]]
+name = "mnemonic"
+path = "mnemonic.rs"
