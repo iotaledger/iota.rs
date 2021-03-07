@@ -227,10 +227,12 @@ impl Task for ClientTask {
                         }
                         None => client.get_tips().await?,
                     };
+                    let network_id = client.get_network_id().await?;
+                    let nonce_provider = client.get_pow_provider().await;
                     let message = MessageBuilder::<ClientMiner>::new()
-                        .with_network_id(client.get_network_id().await?)
+                        .with_network_id(network_id)
                         .with_parents(Parents::new(parent_msg_ids)?)
-                        .with_nonce_provider(client.get_pow_provider(), 4000f64, None)
+                        .with_nonce_provider(nonce_provider, 4000f64, None)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message = client.post_message(&message).await?;

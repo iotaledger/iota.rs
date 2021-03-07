@@ -497,7 +497,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 let network_id = self.client.get_network_id().await?;
                 do_pow(
                     crate::client::ClientMinerBuilder::new()
-                        .with_local_pow(self.client.get_local_pow())
+                        .with_local_pow(self.client.get_local_pow().await)
                         .finish(),
                     min_pow_score,
                     network_id,
@@ -513,7 +513,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let msg_id = self.client.post_message(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.client.get_local_pow() {
+        let msg = match self.client.get_local_pow().await {
             true => final_message,
             false => self.client.get_message().data(&msg_id).await?,
         };
@@ -584,9 +584,9 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
 /// Does PoW with always new tips
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let done = Arc::new(AtomicBool::new(false));
-    let local_pow = client.get_local_pow();
+    let local_pow = client.get_local_pow().await;
     let min_pow_score = client.get_min_pow_score().await?;
-    let tips_interval = client.get_tips_interval();
+    let tips_interval = client.get_tips_interval().await;
     let network_id = client.get_network_id().await?;
     loop {
         let abort1 = Arc::clone(&done);
