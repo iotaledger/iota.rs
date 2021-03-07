@@ -136,7 +136,7 @@ pub async fn search_address(
         .with_range(range.clone())
         .get_all()
         .await?;
-    let mut index_counter = 0;
+    let mut index_counter = range.start;
     for address_internal in addresses {
         if address_internal.0 == *address {
             return Ok((index_counter, address_internal.1));
@@ -145,5 +145,8 @@ pub async fn search_address(
             index_counter += 1;
         }
     }
-    Err(crate::error::Error::InputAddressNotFound(format!("{:?}", range)))
+    Err(crate::error::Error::InputAddressNotFound(
+        address.to_string(),
+        format!("{:?}", range),
+    ))
 }

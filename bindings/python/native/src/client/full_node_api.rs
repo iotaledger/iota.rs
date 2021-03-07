@@ -41,6 +41,7 @@ impl Client {
         Ok(tips.into_iter().map(|p| p.to_string()).collect())
     }
     fn post_message(&self, msg: Message) -> Result<String> {
+        let rt = tokio::runtime::Runtime::new()?;
         let mut msg_builder = RustMessageBuilder::<RustClientMiner>::new()
             .with_network_id(msg.network_id)
             .with_parents(Parents::new(
@@ -49,12 +50,11 @@ impl Client {
                     .map(|m| m.parse::<RustMessageId>().expect("Invalid message id"))
                     .collect::<Vec<RustMessageId>>(),
             )?)
-            .with_nonce_provider(self.client.get_pow_provider(), 4000f64, None);
+            .with_nonce_provider(rt.block_on(self.client.get_pow_provider()), 4000f64, None);
         if let Some(payload) = msg.payload {
             msg_builder = msg_builder.with_payload(payload.try_into()?);
         }
         let msg = msg_builder.finish()?;
-        let rt = tokio::runtime::Runtime::new()?;
         Ok(rt.block_on(async { self.client.post_message(&msg).await })?.to_string())
     }
     fn get_output(&self, output_id: String) -> Result<OutputResponse> {
