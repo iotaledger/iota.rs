@@ -37,7 +37,7 @@ use tokio::{
     },
     time::{sleep, Duration as TokioDuration},
 };
-#[cfg(feature = "sync")]
+#[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
 
@@ -256,7 +256,7 @@ impl<T: DeserializeOwned> Response<T> {
     }
 }
 
-#[cfg(feature = "sync")]
+#[cfg(all(feature = "sync", not(feature = "async")))]
 impl<T: DeserializeOwned> TryFrom<ureq::Response> for Response<T> {
     type Error = crate::Error;
     fn try_from(response: ureq::Response) -> Result<Self> {
@@ -272,7 +272,7 @@ pub(crate) struct HttpClient {
     client: reqwest::Client,
 }
 
-#[cfg(feature = "sync")]
+#[cfg(all(feature = "sync", not(feature = "async")))]
 pub(crate) struct HttpClient;
 
 #[cfg(feature = "async")]
@@ -326,7 +326,7 @@ impl HttpClient {
     }
 }
 
-#[cfg(feature = "sync")]
+#[cfg(all(feature = "sync", not(feature = "async")))]
 impl HttpClient {
     pub(crate) fn new() -> Self {
         Self {}
