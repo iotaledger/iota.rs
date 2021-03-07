@@ -3,7 +3,7 @@
 
 //! cargo run --example mnemonic --release
 
-use iota::{api::GetAddressesBuilder, Client, Seed};
+use iota::{Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
