@@ -82,7 +82,8 @@ impl<'a> GetAddressBuilder<'a> {
             .http_client
             .get(url.as_str(), self.client.get_timeout(Api::GetBalance))
             .await?
-            .body();
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
@@ -106,7 +107,8 @@ impl<'a> GetAddressBuilder<'a> {
             .http_client
             .get(url.as_str(), self.client.get_timeout(Api::GetOutput))
             .await?
-            .body();
+            .json()
+            .await?;
 
         resp.data
             .output_ids
