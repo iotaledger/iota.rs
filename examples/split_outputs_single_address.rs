@@ -3,11 +3,10 @@
 
 //! cargo run --example split_outputs_single_address --release
 
-use iota::{Client, Essence, MessageId, Output, Payload, Seed, UTXOInput};
-use tokio::time::sleep;
+use iota::{Client, Essence, Output, Payload, Seed, UTXOInput};
 extern crate dotenv;
 use dotenv::dotenv;
-use std::{env, time::Duration};
+use std::env;
 
 /// In this example we will create 100 outputs on a single address
 /// You need to have >=100 Mi on the first address before you run it
@@ -47,7 +46,7 @@ async fn main() {
         message.id().0
     );
 
-    reattach_promote_until_confirmed(message.id().0, &iota).await;
+    let _ = iota.retry_until_included(&message.id().0, None, None).await.unwrap();
 
     // At this point we have 100 Mi on 100 addresses and we will just send it to the final address
     // We use the outputs directly so we don't double spend them
@@ -93,18 +92,6 @@ async fn main() {
         sent_messages.push(message_id);
     }
     for message_id in sent_messages {
-        reattach_promote_until_confirmed(message_id, &iota).await
-    }
-}
-
-async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
-    while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
-        if let Some(state) = metadata.ledger_inclusion_state {
-            println!("Ledger inclusion state: {:?}", state);
-            break;
-        } else if let Ok(msg_id) = iota.reattach(&message_id).await {
-            println!("Reattached or promoted {}", msg_id.0);
-        }
-        sleep(Duration::from_secs(5)).await;
+        let _ = iota.retry_until_included(&message_id, None, None).await.unwrap();
     }
 }

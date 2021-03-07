@@ -97,6 +97,17 @@ Client.prototype.getReceipts = promisify(Client.prototype.getReceipts)
 Client.prototype.getReceiptsMigratedAt = promisify(Client.prototype.getReceiptsMigratedAt)
 Client.prototype.getTreasury = promisify(Client.prototype.getTreasury)
 Client.prototype.retry = promisify(Client.prototype.retry)
+const retryUntilIncluded = Client.prototype.retryUntilIncluded
+Client.prototype.retryUntilIncluded = function (msg_id, interval, maxAttempts) {
+  let params = [msg_id];
+  if (interval) {
+    params.push(interval)
+  }
+  if (maxAttempts) {
+    params.push(maxAttempts)
+  }
+  return promisify(retryUntilIncluded).apply(this, params)
+}
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
 

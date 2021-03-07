@@ -459,6 +459,18 @@ Retries (promotes or reattaches) the message associated with the given id.
 
 **Returns** the message id and the retried [Message](#message).
 
+#### retry_until_included(message_id, interval (optional), max_attempts (optional)): list[(str, Message)]
+
+Retries (promotes or reattaches) the message associated with the given id.
+
+| Param        | Type             | Default                | Description                                            |
+| ------------ | ---------------- | ---------------------- | ------------------------------------------------------ |
+| [message_id] | <code>str</code> | <code>undefined</code> | The message id                                         |
+| interval     | <code>int</code> | <code>5</code>         | The interval in seconds in which we retry the message. |
+| max_attempts  | <code>int</code> | <code>10</code>        | The maximum of attempts we retry the message.          |
+
+**Returns** the message ids and [Message](#message) of reattached messages.
+
 #### reattach(message_id): (str, Message)
 
 Reattaches the message associated with the given id.

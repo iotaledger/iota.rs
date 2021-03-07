@@ -3,9 +3,7 @@
 
 //! cargo run --example message_time --release
 
-use iota::{Client, MessageId};
-use std::time::Duration;
-use tokio::time::sleep;
+use iota::Client;
 
 #[tokio::main]
 async fn main() {
@@ -28,7 +26,7 @@ async fn main() {
     let message_id = message.id().0;
     println!("Message ID: {}", message_id);
 
-    reattach_promote_until_confirmed(&message_id, &iota).await;
+    let _ = iota.retry_until_included(&message_id, None, None).await.unwrap();
 
     let metadata = iota.get_message().metadata(&message_id).await.unwrap();
     match metadata.referenced_by_milestone_index {
@@ -37,16 +35,5 @@ async fn main() {
             println!("Message got referenced by milestone {} at {}", ms_index, ms.timestamp);
         }
         _ => println!("Message is not referenced by a milestone"),
-    }
-}
-
-async fn reattach_promote_until_confirmed(message_id: &MessageId, iota: &Client) {
-    while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
-        if metadata.referenced_by_milestone_index.is_some() {
-            break;
-        } else if let Ok(msg_id) = iota.reattach(&message_id).await {
-            println!("Reattached or promoted {}", msg_id.0);
-        }
-        sleep(Duration::from_secs(5)).await;
     }
 }

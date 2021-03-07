@@ -3,9 +3,7 @@
 
 //! cargo run --example send_all --release
 
-use iota::{client::Result, Client, MessageId, Seed};
-use std::time::Duration;
-use tokio::time::sleep;
+use iota::{client::Result, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -46,18 +44,6 @@ async fn main() -> Result<()> {
         message.id().0
     );
 
-    reattach_promote_until_confirmed(message.id().0, &iota).await;
+    let _ = iota.retry_until_included(&message.id().0, None, None).await.unwrap();
     Ok(())
-}
-
-async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
-    while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
-        if let Some(state) = metadata.ledger_inclusion_state {
-            println!("Leder inclusion state: {:?}", state);
-            break;
-        } else if let Ok(msg_id) = iota.reattach(&message_id).await {
-            println!("Reattached or promoted {}", msg_id.0);
-        }
-        sleep(Duration::from_secs(5)).await;
-    }
 }

@@ -1054,6 +1054,44 @@ impl Client {
             Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
         }
     }
+
+    /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
+    /// milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages
+    pub async fn retry_until_included(
+        &self,
+        message_id: &MessageId,
+        interval: Option<u64>,
+        max_attempts: Option<u64>,
+    ) -> Result<Vec<(MessageId, Message)>> {
+        // Attachments of the Message to check inclusion state
+        let mut message_ids = vec![*message_id];
+        // Reattached Messages that get returned
+        let mut messages_with_id = Vec::new();
+        for _ in 0..max_attempts.unwrap_or(10) {
+            sleep(Duration::from_secs(interval.unwrap_or(5))).await;
+            // Check inclusion state for each attachment
+            let message_ids_len = message_ids.len();
+            for (index, msg_id) in message_ids.clone().iter().enumerate() {
+                let message_metadata = self.get_message().metadata(&msg_id).await?;
+                if message_metadata.ledger_inclusion_state.is_some() {
+                    return Ok(messages_with_id);
+                }
+                // Only reattach or promote latest attachment of the message
+                if index == message_ids_len {
+                    if message_metadata.should_promote.unwrap_or(false) {
+                        // Safe to unwrap since we iterate over it
+                        self.promote_unchecked(&message_ids.last().unwrap()).await?;
+                    } else if message_metadata.should_reattach.unwrap_or(false) {
+                        // Safe to unwrap since we iterate over it
+                        let reattached = self.reattach_unchecked(&message_ids.last().unwrap()).await?;
+                        message_ids.push(reattached.0);
+                        messages_with_id.push(reattached);
+                    }
+                }
+            }
+        }
+        Err(Error::TangleInclusionError(message_id.to_string()))
+    }
 }
 
 /// Hash the network id str from the nodeinfo to an u64 for the messageBuilder
