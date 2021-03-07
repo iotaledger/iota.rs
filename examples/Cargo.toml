@@ -5,14 +5,15 @@ publish = false
 edition = "2018"
 
 [dev-dependencies]
-tokio = { version = "1.1", features = ["full"] }
-# serde_json = "1.0"
-
 # Add "mqtt" to the features of the iota-core import below
 iota-core = { path = "../iota-core", features = ["storage"] }
 iota-crypto = {git = "https://github.com/iotaledger/crypto.rs", rev = "9259a0617ca3b72e2bb2f63d5b7197247f85061c", features = ["bip39", "bip39-en"]}
+tokio = { version = "1.1", features = ["full"] }
 hex = "0.4.2"
 dotenv = "0.15.0"
+serde_json = "1.0"
+serde = "1.0"
+ureq = { version = "2.0", features = ["json"] }
 
 # [[example]]
 # name = "mqtt"
@@ -89,3 +90,12 @@ path = "split_all.rs"
 [[example]]
 name = "mnemonic"
 path = "mnemonic.rs"
+
+[[example]]
+name = "get_funds"
+path = "get_funds.rs"
+
+[[example]]
+name = "split_outputs_single_address"
+path = "split_outputs_single_address.rs"
+

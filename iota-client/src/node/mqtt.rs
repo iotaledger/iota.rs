@@ -65,11 +65,11 @@ impl Topic {
     }
 }
 
-fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
+async fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
     match client.mqtt_client {
         Some(ref c) => Ok(c),
         None => {
-            for node in client.sync.read().unwrap().iter() {
+            for node in client.sync.read().await.iter() {
                 let uri = match client.broker_options.use_ws {
                     true => format!(
                         "{}://{}:{}/mqtt",
@@ -219,7 +219,7 @@ impl<'a> MqttTopicManager<'a> {
         mut self,
         callback: C,
     ) -> Result<()> {
-        let client = get_mqtt_client(&mut self.client)?;
+        let client = get_mqtt_client(&mut self.client).await?;
         let cb = Arc::new(Box::new(callback) as Box<dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static>);
         client.subscribe_many(
             &self.topics.iter().map(|t| t.0.clone()).collect::<Vec<String>>(),

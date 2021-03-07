@@ -4,12 +4,15 @@
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
 
-use tokio::{runtime::Runtime, sync::broadcast::channel};
+use tokio::{
+    runtime::Runtime,
+    sync::{broadcast::channel, RwLock},
+};
 use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, RwLock},
+    sync::Arc,
     time::Duration,
 };
 
@@ -124,7 +127,7 @@ impl ClientBuilder {
     /// Get node list from the node_pool_urls
     pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let nodes_details: Vec<NodeDetail> = get_ureq_agent(GET_API_TIMEOUT).get(&pool_url).call()?.into_json()?;
+            let nodes_details: Vec<NodeDetail> = super::HttpClient::new().get(&pool_url, GET_API_TIMEOUT).await?.body();
             for node_detail in nodes_details {
                 let url = Url::parse(&node_detail.node)?;
                 self.nodes.insert(url);
@@ -275,6 +278,7 @@ impl ClientBuilder {
             network_info,
             request_timeout: self.request_timeout,
             api_timeout,
+            http_client: super::HttpClient::new(),
         };
         Ok(client)
     }
