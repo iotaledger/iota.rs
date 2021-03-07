@@ -29,10 +29,12 @@ use serde_json::Value;
 
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
-use tokio::sync::RwLock;
 use tokio::{
     runtime::Runtime,
-    sync::broadcast::{Receiver, Sender},
+    sync::{
+        broadcast::{Receiver, Sender},
+        RwLock,
+    },
     time::{sleep, Duration as TokioDuration},
 };
 #[cfg(feature = "sync")]
