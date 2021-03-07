@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{get_ureq_agent, Api, Client, Result};
+use crate::{Api, Client, Result};
 use bee_message::{Message, MessageId};
 use bee_rest_api::{
     endpoints::api::v1::{
@@ -36,10 +36,12 @@ impl<'a> GetMessageBuilder<'a> {
         struct ResponseWrapper {
             data: MessagesForIndexResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .client
+            .http_client
+            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
+            .await?
+            .body();
 
         resp.data
             .message_ids
@@ -62,10 +64,12 @@ impl<'a> GetMessageBuilder<'a> {
         struct ResponseWrapper {
             data: MessageDto,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .client
+            .http_client
+            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
+            .await?
+            .body();
 
         Ok(Message::try_from(&resp.data).map_err(crate::Error::DtoError)?)
     }
@@ -80,10 +84,12 @@ impl<'a> GetMessageBuilder<'a> {
         struct ResponseWrapper {
             data: MessageMetadata,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .client
+            .http_client
+            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
+            .await?
+            .body();
 
         Ok(resp.data)
     }
@@ -94,10 +100,12 @@ impl<'a> GetMessageBuilder<'a> {
         let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/messages/{}/raw", message_id);
         url.set_path(path);
-        let resp = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
-            .get(&url.to_string())
-            .call()?
-            .into_string()?;
+        let resp = self
+            .client
+            .http_client
+            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
+            .await?
+            .body();
 
         Ok(resp)
     }
@@ -111,10 +119,12 @@ impl<'a> GetMessageBuilder<'a> {
         struct ResponseWrapper {
             data: MessageChildrenResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetMessage))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .client
+            .http_client
+            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
+            .await?
+            .body();
 
         resp.data
             .children_message_ids

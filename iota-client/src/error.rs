@@ -87,8 +87,17 @@ pub enum Error {
     #[error("Invalid amount of parents, length must be in 1..=8")]
     InvalidParentsAmount,
     /// ureq error
+    #[cfg(feature = "sync")]
     #[error("{0}")]
     UreqError(#[from] ureq::Error),
+    /// Error from RestAPI calls with unexpected status code response
+    #[cfg(feature = "async")]
+    #[error("Response error with status code {0}: {1}")]
+    ResponseError(u16, String),
+    /// ureq error
+    #[cfg(feature = "async")]
+    #[error("{0}")]
+    ReqwestError(#[from] reqwest::Error),
     /// URL error
     #[error("{0}")]
     UrlError(#[from] url::ParseError),

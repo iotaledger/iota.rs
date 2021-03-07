@@ -24,6 +24,8 @@ use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     slip10::Seed,
 };
+use serde::de::DeserializeOwned;
+use serde_json::Value;
 
 #[cfg(feature = "mqtt")]
 use paho_mqtt::Client as MqttClient;
@@ -33,6 +35,7 @@ use tokio::{
     sync::broadcast::{Receiver, Sender},
     time::{sleep, Duration as TokioDuration},
 };
+#[cfg(feature = "sync")]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
 
@@ -236,6 +239,124 @@ impl FromStr for Api {
     }
 }
 
+pub(crate) struct Response<T: DeserializeOwned> {
+    status: u16,
+    body: T,
+}
+
+impl<T: DeserializeOwned> Response<T> {
+    pub(crate) fn status(&self) -> u16 {
+        self.status
+    }
+
+    pub(crate) fn body(self) -> T {
+        self.body
+    }
+}
+
+#[cfg(feature = "sync")]
+impl<T: DeserializeOwned> TryFrom<ureq::Response> for Response<T> {
+    type Error = crate::Error;
+    fn try_from(response: ureq::Response) -> Result<Self> {
+        Ok(Self {
+            status: response.status(),
+            body: response.into_json()?,
+        })
+    }
+}
+
+#[cfg(feature = "async")]
+pub(crate) struct HttpClient {
+    client: reqwest::Client,
+}
+
+#[cfg(feature = "sync")]
+pub(crate) struct HttpClient;
+
+#[cfg(feature = "async")]
+impl HttpClient {
+    pub(crate) fn new() -> Self {
+        Self {
+            client: reqwest::Client::new(),
+        }
+    }
+
+    async fn parse_response<T: DeserializeOwned>(response: reqwest::Response) -> Result<Response<T>> {
+        let status = response.status();
+        if status.is_success() {
+            Ok(Response {
+                status: status.as_u16(),
+                body: response.json().await?,
+            })
+        } else {
+            Err(Error::ResponseError(status.as_u16(), response.text().await?))
+        }
+    }
+
+    pub(crate) async fn get<T: DeserializeOwned>(&self, url: &str, timeout: Duration) -> Result<Response<T>> {
+        Self::parse_response(self.client.get(url).timeout(timeout).send().await?).await
+    }
+
+    pub(crate) async fn post_bytes<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        timeout: Duration,
+        body: &[u8],
+    ) -> Result<Response<T>> {
+        Self::parse_response(
+            self.client
+                .post(url)
+                .timeout(timeout)
+                .body(body.to_vec())
+                .send()
+                .await?,
+        )
+        .await
+    }
+
+    pub(crate) async fn post_json<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        timeout: Duration,
+        json: Value,
+    ) -> Result<Response<T>> {
+        Self::parse_response(self.client.post(url).timeout(timeout).json(&json).send().await?).await
+    }
+}
+
+#[cfg(feature = "sync")]
+impl HttpClient {
+    pub(crate) fn new() -> Self {
+        Self {}
+    }
+
+    pub(crate) async fn get<T: DeserializeOwned>(&self, url: &str, timeout: Duration) -> Result<Response<T>> {
+        Self::get_ureq_agent(timeout).get(url).call()?.try_into()
+    }
+
+    pub(crate) async fn post_bytes<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        timeout: Duration,
+        body: &[u8],
+    ) -> Result<Response<T>> {
+        Self::get_ureq_agent(timeout).post(url).send_bytes(body)?.try_into()
+    }
+
+    pub(crate) async fn post_json<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        timeout: Duration,
+        json: Value,
+    ) -> Result<Response<T>> {
+        Self::get_ureq_agent(timeout).post(url).send_json(json)?.try_into()
+    }
+
+    fn get_ureq_agent(timeout: Duration) -> Agent {
+        AgentBuilder::new().timeout_read(timeout).timeout_write(timeout).build()
+    }
+}
+
 /// An instance of the client using HORNET or Bee URI
 pub struct Client {
     #[allow(dead_code)]
@@ -256,6 +377,8 @@ pub struct Client {
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for each API call.
     pub(crate) api_timeout: HashMap<Api, Duration>,
+    /// HTTP client.
+    pub(crate) http_client: HttpClient,
 }
 
 impl std::fmt::Debug for Client {
@@ -451,7 +574,7 @@ impl Client {
     pub async fn get_node_health(url: &str) -> Result<bool> {
         let mut url = Url::parse(url)?;
         url.set_path("health");
-        let resp = get_ureq_agent(GET_API_TIMEOUT).get(&url.to_string()).call()?;
+        let resp = HttpClient::new().get::<()>(url.as_str(), GET_API_TIMEOUT).await?;
         match resp.status() {
             200 => Ok(true),
             _ => Ok(false),
@@ -462,7 +585,7 @@ impl Client {
     pub async fn get_health(&self) -> Result<bool> {
         let mut url = self.get_node().await?;
         url.set_path("health");
-        let resp = get_ureq_agent(GET_API_TIMEOUT).get(&url.to_string()).call()?;
+        let resp = self.http_client.get::<()>(url.as_str(), GET_API_TIMEOUT).await?;
         match resp.status() {
             200 => Ok(true),
             _ => Ok(false),
@@ -478,10 +601,7 @@ impl Client {
         struct ResponseWrapper {
             data: NodeInfo,
         }
-        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = HttpClient::new().get(url.as_str(), GET_API_TIMEOUT).await?.body();
 
         Ok(resp.data)
     }
@@ -496,10 +616,11 @@ impl Client {
             data: NodeInfo,
         }
 
-        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetInfo))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), self.get_timeout(Api::GetInfo))
+            .await?
+            .body();
 
         Ok(resp.data)
     }
@@ -513,10 +634,11 @@ impl Client {
         struct ResponseWrapper {
             data: Vec<PeerDto>,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetPeers))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), self.get_timeout(Api::GetPeers))
+            .await?
+            .body();
 
         Ok(resp.data)
     }
@@ -530,10 +652,11 @@ impl Client {
         struct ResponseWrapper {
             data: TipsResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetTips))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), self.get_timeout(Api::GetTips))
+            .await?
+            .body();
 
         let mut tips = Vec::new();
         for tip in resp.data.tip_message_ids {
@@ -564,10 +687,11 @@ impl Client {
             #[serde(rename = "messageId")]
             message_id: String,
         }
-        let resp: ResponseWrapper = get_ureq_agent(timeout)
-            .post(&url.to_string())
-            .send_bytes(&message.pack_new())?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .post_bytes(url.as_str(), timeout, &message.pack_new())
+            .await?
+            .body();
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
@@ -595,10 +719,11 @@ impl Client {
             #[serde(rename = "messageId")]
             message_id: String,
         }
-        let resp: ResponseWrapper = get_ureq_agent(timeout)
-            .post(&url.to_string())
-            .send_json(serde_json::to_value(message)?)?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .post_json(url.as_str(), timeout, serde_json::to_value(message)?)
+            .await?
+            .body();
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
@@ -625,10 +750,11 @@ impl Client {
         struct ResponseWrapper {
             data: OutputResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetOutput))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), self.get_timeout(Api::GetOutput))
+            .await?
+            .body();
 
         Ok(resp.data)
     }
@@ -683,10 +809,11 @@ impl Client {
             data: MilestoneResponseDto,
         }
 
-        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetMilestone))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), self.get_timeout(Api::GetMilestone))
+            .await?
+            .body();
 
         let milestone = resp.data;
         let mut message_id = [0u8; 32];
@@ -708,10 +835,11 @@ impl Client {
         struct ResponseWrapper {
             data: MilestoneUTXOChanges,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.get_timeout(Api::GetMilestone))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), self.get_timeout(Api::GetMilestone))
+            .await?
+            .body();
 
         Ok(resp.data)
     }
@@ -730,10 +858,7 @@ impl Client {
         struct ReceiptsResponseWrapper {
             receipts: ReceiptsResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self.http_client.get(url.as_str(), GET_API_TIMEOUT).await?.body();
 
         Ok(resp.data.receipts.0)
     }
@@ -752,10 +877,7 @@ impl Client {
         struct ReceiptsResponseWrapper {
             receipts: ReceiptsResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self.http_client.get(url.as_str(), GET_API_TIMEOUT).await?.body();
 
         Ok(resp.data.receipts.0)
     }
@@ -770,10 +892,7 @@ impl Client {
         struct ResponseWrapper {
             data: TreasuryResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(GET_API_TIMEOUT)
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self.http_client.get(url.as_str(), GET_API_TIMEOUT).await?.body();
 
         Ok(resp.data)
     }
@@ -942,9 +1061,4 @@ pub fn hash_network(network_id_string: &str) -> u64 {
             .try_into()
             .unwrap(),
     )
-}
-
-// Create ureq agent with timeout
-pub(crate) fn get_ureq_agent(timeout: Duration) -> Agent {
-    AgentBuilder::new().timeout_read(timeout).timeout_write(timeout).build()
 }

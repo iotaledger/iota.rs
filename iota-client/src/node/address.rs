@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{get_ureq_agent, Api, Client, Error, Result};
+use crate::{Api, Client, Error, Result};
 
 use bee_message::prelude::{Bech32Address, TransactionId, UTXOInput};
 
@@ -77,10 +77,12 @@ impl<'a> GetAddressBuilder<'a> {
         struct ResponseWrapper {
             data: BalanceForAddressResponse,
         }
-        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetBalance))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .client
+            .http_client
+            .get(url.as_str(), self.client.get_timeout(Api::GetBalance))
+            .await?
+            .body();
 
         Ok(resp.data)
     }
@@ -99,10 +101,12 @@ impl<'a> GetAddressBuilder<'a> {
             data: OutputsForAddressResponse,
         }
 
-        let resp: ResponseWrapper = get_ureq_agent(self.client.get_timeout(Api::GetOutput))
-            .get(&url.to_string())
-            .call()?
-            .into_json()?;
+        let resp: ResponseWrapper = self
+            .client
+            .http_client
+            .get(url.as_str(), self.client.get_timeout(Api::GetOutput))
+            .await?
+            .body();
 
         resp.data
             .output_ids
