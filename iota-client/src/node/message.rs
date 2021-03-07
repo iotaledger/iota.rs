@@ -41,7 +41,8 @@ impl<'a> GetMessageBuilder<'a> {
             .http_client
             .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
             .await?
-            .body();
+            .json()
+            .await?;
 
         resp.data
             .message_ids
@@ -69,7 +70,8 @@ impl<'a> GetMessageBuilder<'a> {
             .http_client
             .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
             .await?
-            .body();
+            .json()
+            .await?;
 
         Ok(Message::try_from(&resp.data).map_err(crate::Error::DtoError)?)
     }
@@ -89,7 +91,8 @@ impl<'a> GetMessageBuilder<'a> {
             .http_client
             .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
             .await?
-            .body();
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
@@ -105,7 +108,8 @@ impl<'a> GetMessageBuilder<'a> {
             .http_client
             .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
             .await?
-            .body();
+            .text()
+            .await?;
 
         Ok(resp)
     }
@@ -124,7 +128,8 @@ impl<'a> GetMessageBuilder<'a> {
             .http_client
             .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
             .await?
-            .body();
+            .json()
+            .await?;
 
         resp.data
             .children_message_ids

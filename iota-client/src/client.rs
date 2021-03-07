@@ -241,29 +241,46 @@ impl FromStr for Api {
     }
 }
 
-pub(crate) struct Response<T: DeserializeOwned> {
-    status: u16,
-    body: T,
-}
+#[cfg(all(feature = "sync", not(feature = "async")))]
+pub(crate) struct Response(ureq::Response);
 
-impl<T: DeserializeOwned> Response<T> {
-    pub(crate) fn status(&self) -> u16 {
-        self.status
-    }
-
-    pub(crate) fn body(self) -> T {
-        self.body
+#[cfg(all(feature = "sync", not(feature = "async")))]
+impl From<ureq::Response> for Response {
+    fn from(response: ureq::Response) -> Self {
+        Self(response)
     }
 }
 
 #[cfg(all(feature = "sync", not(feature = "async")))]
-impl<T: DeserializeOwned> TryFrom<ureq::Response> for Response<T> {
-    type Error = crate::Error;
-    fn try_from(response: ureq::Response) -> Result<Self> {
-        Ok(Self {
-            status: response.status(),
-            body: response.into_json()?,
-        })
+impl Response {
+    pub(crate) fn status(&self) -> u16 {
+        self.0.status()
+    }
+
+    pub(crate) async fn json<T: DeserializeOwned>(self) -> Result<T> {
+        self.0.into_json().map_err(Into::into)
+    }
+
+    pub(crate) async fn text(self) -> Result<String> {
+        self.0.into_string().map_err(Into::into)
+    }
+}
+
+#[cfg(feature = "async")]
+pub(crate) struct Response(reqwest::Response);
+
+#[cfg(feature = "async")]
+impl Response {
+    pub(crate) fn status(&self) -> u16 {
+        self.0.status().as_u16()
+    }
+
+    pub(crate) async fn json<T: DeserializeOwned>(self) -> Result<T> {
+        self.0.json().await.map_err(Into::into)
+    }
+
+    pub(crate) async fn text(self) -> Result<String> {
+        self.0.text().await.map_err(Into::into)
     }
 }
 
@@ -283,28 +300,20 @@ impl HttpClient {
         }
     }
 
-    async fn parse_response<T: DeserializeOwned>(response: reqwest::Response) -> Result<Response<T>> {
+    async fn parse_response(response: reqwest::Response) -> Result<Response> {
         let status = response.status();
         if status.is_success() {
-            Ok(Response {
-                status: status.as_u16(),
-                body: response.json().await?,
-            })
+            Ok(Response(response))
         } else {
             Err(Error::ResponseError(status.as_u16(), response.text().await?))
         }
     }
 
-    pub(crate) async fn get<T: DeserializeOwned>(&self, url: &str, timeout: Duration) -> Result<Response<T>> {
+    pub(crate) async fn get(&self, url: &str, timeout: Duration) -> Result<Response> {
         Self::parse_response(self.client.get(url).timeout(timeout).send().await?).await
     }
 
-    pub(crate) async fn post_bytes<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        timeout: Duration,
-        body: &[u8],
-    ) -> Result<Response<T>> {
+    pub(crate) async fn post_bytes(&self, url: &str, timeout: Duration, body: &[u8]) -> Result<Response> {
         Self::parse_response(
             self.client
                 .post(url)
@@ -316,12 +325,7 @@ impl HttpClient {
         .await
     }
 
-    pub(crate) async fn post_json<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        timeout: Duration,
-        json: Value,
-    ) -> Result<Response<T>> {
+    pub(crate) async fn post_json(&self, url: &str, timeout: Duration, json: Value) -> Result<Response> {
         Self::parse_response(self.client.post(url).timeout(timeout).json(&json).send().await?).await
     }
 }
@@ -332,26 +336,16 @@ impl HttpClient {
         Self {}
     }
 
-    pub(crate) async fn get<T: DeserializeOwned>(&self, url: &str, timeout: Duration) -> Result<Response<T>> {
-        Self::get_ureq_agent(timeout).get(url).call()?.try_into()
+    pub(crate) async fn get(&self, url: &str, timeout: Duration) -> Result<Response> {
+        Ok(Self::get_ureq_agent(timeout).get(url).call()?.into())
     }
 
-    pub(crate) async fn post_bytes<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        timeout: Duration,
-        body: &[u8],
-    ) -> Result<Response<T>> {
-        Self::get_ureq_agent(timeout).post(url).send_bytes(body)?.try_into()
+    pub(crate) async fn post_bytes(&self, url: &str, timeout: Duration, body: &[u8]) -> Result<Response> {
+        Ok(Self::get_ureq_agent(timeout).post(url).send_bytes(body)?.into())
     }
 
-    pub(crate) async fn post_json<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        timeout: Duration,
-        json: Value,
-    ) -> Result<Response<T>> {
-        Self::get_ureq_agent(timeout).post(url).send_json(json)?.try_into()
+    pub(crate) async fn post_json(&self, url: &str, timeout: Duration, json: Value) -> Result<Response> {
+        Ok(Self::get_ureq_agent(timeout).post(url).send_json(json)?.into())
     }
 
     fn get_ureq_agent(timeout: Duration) -> Agent {
@@ -576,8 +570,8 @@ impl Client {
     pub async fn get_node_health(url: &str) -> Result<bool> {
         let mut url = Url::parse(url)?;
         url.set_path("health");
-        let resp = HttpClient::new().get::<()>(url.as_str(), GET_API_TIMEOUT).await?;
-        match resp.status() {
+        let status = HttpClient::new().get(url.as_str(), GET_API_TIMEOUT).await?.status();
+        match status {
             200 => Ok(true),
             _ => Ok(false),
         }
@@ -587,8 +581,8 @@ impl Client {
     pub async fn get_health(&self) -> Result<bool> {
         let mut url = self.get_node().await?;
         url.set_path("health");
-        let resp = self.http_client.get::<()>(url.as_str(), GET_API_TIMEOUT).await?;
-        match resp.status() {
+        let status = self.http_client.get(url.as_str(), GET_API_TIMEOUT).await?.status();
+        match status {
             200 => Ok(true),
             _ => Ok(false),
         }
@@ -603,7 +597,11 @@ impl Client {
         struct ResponseWrapper {
             data: NodeInfo,
         }
-        let resp: ResponseWrapper = HttpClient::new().get(url.as_str(), GET_API_TIMEOUT).await?.body();
+        let resp: ResponseWrapper = HttpClient::new()
+            .get(url.as_str(), GET_API_TIMEOUT)
+            .await?
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
@@ -622,7 +620,8 @@ impl Client {
             .http_client
             .get(url.as_str(), self.get_timeout(Api::GetInfo))
             .await?
-            .body();
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
@@ -640,7 +639,8 @@ impl Client {
             .http_client
             .get(url.as_str(), self.get_timeout(Api::GetPeers))
             .await?
-            .body();
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
@@ -658,7 +658,8 @@ impl Client {
             .http_client
             .get(url.as_str(), self.get_timeout(Api::GetTips))
             .await?
-            .body();
+            .json()
+            .await?;
 
         let mut tips = Vec::new();
         for tip in resp.data.tip_message_ids {
@@ -693,7 +694,8 @@ impl Client {
             .http_client
             .post_bytes(url.as_str(), timeout, &message.pack_new())
             .await?
-            .body();
+            .json()
+            .await?;
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
@@ -725,7 +727,8 @@ impl Client {
             .http_client
             .post_json(url.as_str(), timeout, serde_json::to_value(message)?)
             .await?
-            .body();
+            .json()
+            .await?;
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
@@ -756,7 +759,8 @@ impl Client {
             .http_client
             .get(url.as_str(), self.get_timeout(Api::GetOutput))
             .await?
-            .body();
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
@@ -815,7 +819,8 @@ impl Client {
             .http_client
             .get(url.as_str(), self.get_timeout(Api::GetMilestone))
             .await?
-            .body();
+            .json()
+            .await?;
 
         let milestone = resp.data;
         let mut message_id = [0u8; 32];
@@ -841,7 +846,8 @@ impl Client {
             .http_client
             .get(url.as_str(), self.get_timeout(Api::GetMilestone))
             .await?
-            .body();
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
@@ -860,7 +866,12 @@ impl Client {
         struct ReceiptsResponseWrapper {
             receipts: ReceiptsResponse,
         }
-        let resp: ResponseWrapper = self.http_client.get(url.as_str(), GET_API_TIMEOUT).await?.body();
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), GET_API_TIMEOUT)
+            .await?
+            .json()
+            .await?;
 
         Ok(resp.data.receipts.0)
     }
@@ -879,7 +890,12 @@ impl Client {
         struct ReceiptsResponseWrapper {
             receipts: ReceiptsResponse,
         }
-        let resp: ResponseWrapper = self.http_client.get(url.as_str(), GET_API_TIMEOUT).await?.body();
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), GET_API_TIMEOUT)
+            .await?
+            .json()
+            .await?;
 
         Ok(resp.data.receipts.0)
     }
@@ -894,7 +910,12 @@ impl Client {
         struct ResponseWrapper {
             data: TreasuryResponse,
         }
-        let resp: ResponseWrapper = self.http_client.get(url.as_str(), GET_API_TIMEOUT).await?.body();
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), GET_API_TIMEOUT)
+            .await?
+            .json()
+            .await?;
 
         Ok(resp.data)
     }
