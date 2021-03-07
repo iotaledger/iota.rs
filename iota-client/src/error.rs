@@ -66,7 +66,7 @@ pub enum Error {
     #[error("{0}")]
     Pow(String),
     /// Address not found
-    #[error("Address not found in range {0}, address: {1}")]
+    #[error("Address: {0} not found in range: {1}")]
     InputAddressNotFound(String, String),
     /// Storage adapter not set_path
     #[cfg(feature = "storage")]

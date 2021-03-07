@@ -146,7 +146,7 @@ pub async fn search_address(
         }
     }
     Err(crate::error::Error::InputAddressNotFound(
-        format!("{:?}", range),
         address.to_string(),
+        format!("{:?}", range),
     ))
 }
