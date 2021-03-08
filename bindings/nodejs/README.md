@@ -55,6 +55,18 @@ Adds an IOTA node to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### nodeAuth(url, name, password): ClientBuilder
+
+Adds an IOTA node with basic authentication to the client pool.
+
+| Param    | Type                | Description |
+| -------- | ------------------- | ----------- |
+| url      | <code>string</code> | A node URL  |
+| name     | <code>string</code> | A name      |
+| password | <code>string</code> | A password  |
+
+**Returns** the client builder instance for chained calls.
+
 #### nodes(urls): ClientBuilder
 
 Adds a list of IOTA nodes to the client pool.

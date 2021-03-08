@@ -14,6 +14,7 @@ export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 
 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
+  nodeAuth(url: string, name: string, password: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
   network(network_name: string): ClientBuilder

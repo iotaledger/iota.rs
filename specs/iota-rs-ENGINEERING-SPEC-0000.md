@@ -62,6 +62,7 @@ The data structure to initialize the instance of the Higher level client library
 | - | - | - | - | - |
 | **network** | ✘ | Testnet | &str | Optional, the network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. Nodes that aren't in this network will be ignored. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
+| **node_auth** | ✘ | None | &str, &str, &str | The URL of a node to connect to with name and password for basic authentication; format: `https://node:port`, `name`, `password` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
