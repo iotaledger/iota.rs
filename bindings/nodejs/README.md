@@ -272,6 +272,19 @@ Retries (promotes or reattaches) the message associated with the given id.
 
 **Returns** A promise resolving to the new [Message](#message) instance.
 
+#### retryUntilIncluded(messageId: string[, interval: int, max_attempts: int]): Promise<Message>
+
+Retries (promotes or reattaches) the message associated with the given id until it's included in the Tangle.
+Default interval is 5 seconds and max_attempts is 10.
+
+| Param                  | Type                | Description                                            |
+| ---------------------- | ------------------- | ------------------------------------------------------ |
+| messageId              | <code>string</code> | The id of the message to retry                         |
+| [options.interval]     | <code>int</code>    | The interval in seconds in which we retry the message. |
+| [options.max_attempts] | <code>int</code>    | The maximum of attempts we retry the message.          |
+
+**Returns** the message ids and [Message](#message) of reattached messages.
+
 #### getInfo(): Promise<NodeInfo>
 
 Gets information about the node.

@@ -46,7 +46,7 @@ describe('Client', () => {
   })
 
   it('sends a value transaction and checks output balance', async () => {
-    const depositAddress = 'atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r'
+    const depositAddress = 'atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf'
     const message = await client
       .message()
       .seed(seed)
@@ -65,8 +65,8 @@ describe('Client', () => {
       }
     }
 
-    const depositBalance = await client.getAddressBalance(depositAddress)
-    assert.strictEqual(depositBalance >= 2, true)
+    const addressBalanceObject = await client.getAddressBalance(depositAddress)
+    assert.strictEqual(addressBalanceObject.balance >= 1000000, true)
   })
 
   it('gets an unspent address', async () => {
@@ -84,11 +84,11 @@ describe('Client', () => {
   })
 
   it('get milestone and message', async () => {
-    const milestone = await client.getMilestone(750)
+    const info = await client.getInfo()
+    const milestone = await client.getMilestone(info.confirmedMilestoneIndex)
     assert.strictEqual(typeof milestone, 'object')
     assert.strictEqual('message_id' in milestone, true)
     assertMessageId(milestone.message_id)
-
     const message = await client.getMessage().data(milestone.message_id)
     assertMessage(message)
 

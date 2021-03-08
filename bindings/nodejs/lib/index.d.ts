@@ -76,7 +76,7 @@ export declare interface AddressOutputsOptions {
 }
 
 export declare class Client {
-  networkInfo(): NetworkInfo
+  networkInfo(): Promise<NetworkInfo>
   subscriber(): TopicSubscriber
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
@@ -85,6 +85,7 @@ export declare class Client {
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
   retry(messageId: string): Promise<MessageWrapper>
+  retryUntilIncluded(messageId: string, interval?: number, maxAttempts?: number): Promise<MessageWrapper[]>
 
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<string[]>
@@ -94,7 +95,7 @@ export declare class Client {
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
   getAddressOutputs(address: string, options?: AddressOutputsOptions): Promise<string[]>
-  getAddressBalance(address: string): Promise<number>
+  getAddressBalance(address: string): Promise<AddressBalance>
   isAddressValid(address: string): boolean
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUTXOChanges(index: number): Promise<MilestoneUTXOChanges>

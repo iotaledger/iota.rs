@@ -18,6 +18,7 @@
   * [`is_address_valid`](#is_address_valid)
   * [`subscriber`](#subscriber)
   * [`retry`](#retry)
+  * [`retry_until_included`](#retry_until_included)
   * [`reattach`](#reattach)
   * [`promote`](#promote)
 * [Full node API](#Full-node-API)
@@ -335,6 +336,21 @@ Following are the steps for implementing this method:
 * Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;
 * The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
+
+## `retry_until_included()`
+
+Retries (promotes or reattaches) a message for provided [MessageId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 10. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **message_id**  | ✔ | [&MessageId] | The identifier of message.                    |
+| **interval**    | ✘ | Option<u64>  | The interval in which we retry the message.   |
+| **max_attempts** | ✘ | Option<u64>  | The maximum of attempts we retry the message. |
+
+### Returns:
+
+An array of tuples with the newly reattached `(MessageId,  Message)`.
 
 ## `reattach()`
 

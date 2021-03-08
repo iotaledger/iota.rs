@@ -46,6 +46,9 @@ pub enum Error {
     /// The message cannot be promoted or reattached
     #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
+    /// The message cannot be promoted or reattached
+    #[error("Message ID `{0}` couldn't get included into the Tangle")]
+    TangleInclusionError(String),
     /// Mqtt client error
     #[cfg(feature = "mqtt")]
     #[error("{0}")]
