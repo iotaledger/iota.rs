@@ -148,19 +148,19 @@ impl Client {
     }
 
     /// Creates and returns an Inputs object by generating addresses and fetching their latest balance.
-    /// Spent addresses will be included.
+    /// Spent addresses will be included with the bundlehash(es) that were used to spent from them.
     /// # Parameters
     /// * [`seed`] - An iota seed.
-    /// * [`balance_threshold`] - (Optional) Minimum amount of balance required
+    /// * [`gap_limit`] - (Optional) Amount of addresses to generate each round
     /// * [`start_index`] - (Optional) Key index to start search at. Default is 0.
-    /// * [`security`] - (Optional) Security level. Default is 2.
+    /// * [`security_lvl`] - (Optional) Security level. Default is 2.
     ///
-    /// [`seed`]: ../extended/struct.GetInputsBuilder.html#method.seed
-    /// [`threshold`]: ../extended/struct.GetInputsBuilder.html#method.threshold
-    /// [`index`]: ../extended/struct.GetInputsBuilder.html#method.index
-    /// [`security`]: ../extended/struct.GetInputsBuilder.html#method.security
-    pub fn get_all_inputs(&self) -> GetAllInputsBuilder<'_> {
-        GetAllInputsBuilder::builder(self)
+    /// [`seed`]: ../extended/struct.GetAccountDataBuilder.html#method.seed
+    /// [`with_gap_limit`]: ../extended/struct.GetAccountDataBuilder.html#method.with_gap_limit
+    /// [`with_start_index`]: ../extended/struct.GetAccountDataBuilder.html#method.with_start_index
+    /// [`with_security_lvl`]: ../extended/struct.GetAccountDataBuilder.html#method.with_security_lvl
+    pub fn get_account_data(&self) -> GetAccountDataBuilder<'_> {
+        GetAccountDataBuilder::builder(self)
     }
 
     /// Fetch inclusion states of the given transactions to determine if the transactions are confirmed.

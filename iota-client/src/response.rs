@@ -632,6 +632,21 @@ pub struct Input {
     pub index: u64,
 }
 
+#[derive(Clone, Debug)]
+/// Address can be used as input to spend balance
+pub struct InputData {
+    /// Input address
+    pub address: Address,
+    /// Balance of the address
+    pub balance: u64,
+    /// Index of the address
+    pub index: u64,
+    /// Spent status
+    pub spent: bool,
+    /// Spent bundlehashes
+    pub spent_bundlehashes: Option<Vec<String>>,
+}
+
 /// A transfer could be an input or an output for building a bundle.
 /// input/output transfer depends on value, a negative value for an output transfer, a positive value for an input transfer
 #[derive(Clone, Debug)]

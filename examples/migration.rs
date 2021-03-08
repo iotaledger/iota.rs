@@ -5,6 +5,7 @@
 use anyhow::Result;
 use iota::client::chrysalis2::*;
 use iota::{
+    client::response::Input,
     client::extended::PrepareTransfersBuilder,
     client::Transfer,
     crypto::ternary::Hash,
@@ -16,6 +17,7 @@ use iota::{
     },
 };
 use iota_bundle_miner::{CrackabilityMinerEvent, MinerBuilder, RecovererBuilder};
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io;
 
@@ -45,14 +47,28 @@ async fn main() -> Result<()> {
     while !yes.contains(&user_input.chars().next().unwrap_or('N')) {
         println!("Searching for balance...");
         let more_inputs = iota
-            .get_all_inputs()
+            .get_account_data()
             .with_seed(&tryte_seed)
             .with_security(security_level as u8)
             .with_start_index(address_index)
             .finish()
             .await?;
-        inputs.0 += more_inputs.0;
         inputs.1.extend(more_inputs.1);
+        // Filter duplicates because when it's called another time it could return duplicated entries
+        let mut unique_address_data = HashMap::new();
+        for data in inputs.1{
+            unique_address_data.insert(data.index, data);
+        }
+        inputs.1 = unique_address_data
+            .into_iter()
+            .map(|(_index, data)| data)
+            .collect();
+        // Get total available balance
+        let mut total_balance = 0;
+        for data in &inputs.1 {
+            total_balance += data.balance;
+        }
+        inputs.0 = total_balance;
         println!("{:?}", inputs);
         println!(
             "Is {}i the correct balance? Type Y to continue or N to search for more balance",
@@ -120,6 +136,7 @@ async fn main() -> Result<()> {
         message: None,
         tag: None,
     }];
+    let address_inputs = inputs.1.iter().cloned().map(|i| Input{address: i.address, balance: i.balance, index: i.index}).collect();
 
     // TODO change to true, is false because devnet is broken
     if spent_status.states.contains(&false) {
@@ -128,7 +145,7 @@ async fn main() -> Result<()> {
         let bundle = PrepareTransfersBuilder::new(&iota, Some(&TernarySeed::rand()))
             .security(security_level)
             .transfers(transfer)
-            .inputs(inputs.1.clone())
+            .inputs(address_inputs)
             .build()
             .await?;
         let mut txs = Vec::new();
@@ -283,7 +300,7 @@ async fn main() -> Result<()> {
         let res = iota
             .send(Some(&tryte_seed))
             .with_transfers(transfer)
-            .with_inputs(inputs.1)
+            .with_inputs(address_inputs)
             .with_min_weight_magnitude(9)
             .finish()
             .await?;
