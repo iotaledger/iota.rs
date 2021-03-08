@@ -36,15 +36,14 @@ describe('Client', () => {
   //   addresses.forEach(assertAddress)
   // })
 
-  it('sends an indexation message with the high level API', async () => {
-    const message = await client
-      .message()
-      .index('IOTA.RS TEST')
-      .data(new TextEncoder().encode('MESSAGE'))
-      .submit()
-    await client.retryUntilIncluded(message.messageId, 5, 5)
-    assertMessage(message)
-  })
+  // it('sends an indexation message with the high level API', async () => {
+  //   const message = await client
+  //     .message()
+  //     .index('IOTA.RS TEST')
+  //     .data(new TextEncoder().encode('MESSAGE'))
+  //     .submit()
+  //   assertMessage(message)
+  // })
 
   // it('sends a value transaction and checks output balance', async () => {
   //   const depositAddress = 'atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf'
@@ -107,18 +106,19 @@ describe('Client', () => {
   //   assert.strictEqual(typeof raw, 'string')
   // })
 
-  // it('get address outputs', async () => {
-  //   const outputs = await client.getAddressOutputs('atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
-  //   assert.strictEqual(Array.isArray(outputs), true)
-  //   assert.strictEqual(outputs.length > 0, true)
-  //   assert.strictEqual(typeof outputs[0], 'string')
-  //   assert.strictEqual(outputs[0].length, 68)
+  it('get address outputs', async () => {
+    const outputs = await client.getAddressOutputs('atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
+    console.log("outputs", outputs);
+    assert.strictEqual(Array.isArray(outputs), true)
+    assert.strictEqual(outputs.length > 0, true)
+    assert.strictEqual(typeof outputs[0], 'string')
+    assert.strictEqual(outputs[0].length, 68)
 
-  //   const output = await client.getOutput(outputs[0])
-  //   assert.strictEqual(typeof output, 'object')
-  //   assert.strict('messageId' in output, true)
-  //   assertMessageId(output.messageId)
-  // })
+    const output = await client.getOutput(outputs[0])
+    assert.strictEqual(typeof output, 'object')
+    assert.strict('messageId' in output, true)
+    assertMessageId(output.messageId)
+  })
 
   // it('submits an indexation message and reads it', async () => {
   //   const indexation = {
