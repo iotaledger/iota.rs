@@ -84,11 +84,12 @@ Client.prototype.getOutput = promisify(Client.prototype.getOutput)
 Client.prototype.findOutputs = promisify(Client.prototype.findOutputs)
 const getAddressOutputs = Client.prototype.getAddressOutputs
 Client.prototype.getAddressOutputs = function (address, options) {
-  if (options) {
-    return promisify(getAddressOutputs).apply(this, [address, JSON.stringify(options)])
-  } else {
-    return promisify(getAddressOutputs).apply(this, [address])
+  if (typeof options == 'undefined') {
+    options = {
+      includeSpent: false
+    }
   }
+  return promisify(getAddressOutputs).apply(this, [address, JSON.stringify(options)])
 }
 Client.prototype.getAddressBalance = promisify(Client.prototype.getAddressBalance)
 Client.prototype.getMilestone = promisify(Client.prototype.getMilestone)
