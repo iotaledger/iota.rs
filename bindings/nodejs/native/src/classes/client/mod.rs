@@ -422,12 +422,6 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
-        method isAddressValid(mut cx) -> JsResult<JsBoolean> {
-            let address = cx.argument::<JsString>(0)?.value();
-            let b = cx.boolean(Api::IsAddressValid(address.as_str()));
-            Ok(b)
-        }
-
         method getMilestone(mut cx) {
             let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
 
@@ -550,6 +544,12 @@ declare_types! {
             }
 
             Ok(cx.undefined().upcast())
+        }
+
+        method isAddressValid(mut cx) -> JsResult<JsBoolean> {
+            let address = cx.argument::<JsString>(0)?.value();
+            let b = cx.boolean(Api::IsAddressValid(address.as_str()));
+            Ok(b)
         }
     }
 }
