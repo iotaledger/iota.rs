@@ -220,19 +220,22 @@ declare_types! {
         method retryUntilIncluded(mut cx) {
             let message_id = cx.argument::<JsString>(0)?.value();
             let message_id = MessageId::from_str(message_id.as_str()).expect("invalid message id");
-            let interval: Option<u64> = match cx.argument_opt(1) {
+            let mut next_argument_index = 1;
+            let interval: Option<u64> = match cx.argument_opt(next_argument_index) {
                 Some(arg) => {
+                    next_argument_index += 1;
                     Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as u64)
                 },
                 None => None,
             };
-            let max_attempts: Option<u64> = match cx.argument_opt(2) {
+            let max_attempts: Option<u64> = match cx.argument_opt(next_argument_index) {
                 Some(arg) => {
+                    next_argument_index += 1;
                     Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as u64)
                 },
                 None => None,
             };
-            let cb = cx.argument::<JsFunction>(1)?;
+            let cb = cx.argument::<JsFunction>(next_argument_index)?;
             {
                 let this = cx.this();
                 let guard = cx.lock();
