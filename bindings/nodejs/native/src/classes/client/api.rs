@@ -307,7 +307,9 @@ impl Task for ClientTask {
                     .unwrap()
                 }
                 Api::RetryUntilIncluded(message_id, interval, max_attempts) => {
-                    let messages = client.retry_until_included(message_id, *interval, *max_attempts).await?;
+                    let messages = client
+                        .retry_until_included(message_id, *interval, *max_attempts)
+                        .await?;
                     messages
                         .into_iter()
                         .map(|msg| {
