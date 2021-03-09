@@ -22,7 +22,8 @@ impl Client {
                         .collect(),
                 )
                 .subscribe(move |event| {
-                    // We need to clone it because `callback` has type `Py<PyAny>`, which does not implement the `Copy` trait
+                    // We need to clone it because `callback` has type `Py<PyAny>`,
+                    // which does not implement the `Copy` trait
                     let callback_copy = callback.clone();
                     // Pare the event_string first to reduce the gil blocking period
                     let event_string = serde_json::to_string(&event).unwrap();
