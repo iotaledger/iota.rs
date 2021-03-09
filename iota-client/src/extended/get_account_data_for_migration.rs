@@ -10,7 +10,7 @@ use bee_transaction::bundled::BundledTransactionField;
 use std::collections::HashSet;
 
 /// Builder to get inputs (spent addresses included)
-pub struct GetAccountDataBuilder<'a> {
+pub struct GetAccountDataForMigrationBuilder<'a> {
     client: &'a Client,
     seed: Option<&'a Seed>,
     start_index: u64,
@@ -18,8 +18,8 @@ pub struct GetAccountDataBuilder<'a> {
     security_lvl: u8,
 }
 
-impl<'a> GetAccountDataBuilder<'a> {
-    /// Create a new GetAccountDataBuilder
+impl<'a> GetAccountDataForMigrationBuilder<'a> {
+    /// Create a new GetAccountDataForMigrationBuilder
     pub fn builder(client: &'a Client) -> Self {
         Self {
             client,

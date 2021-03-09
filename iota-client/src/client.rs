@@ -155,12 +155,12 @@ impl Client {
     /// * [`start_index`] - (Optional) Key index to start search at. Default is 0.
     /// * [`security_lvl`] - (Optional) Security level. Default is 2.
     ///
-    /// [`seed`]: ../extended/struct.GetAccountDataBuilder.html#method.seed
-    /// [`with_gap_limit`]: ../extended/struct.GetAccountDataBuilder.html#method.with_gap_limit
-    /// [`with_start_index`]: ../extended/struct.GetAccountDataBuilder.html#method.with_start_index
-    /// [`with_security_lvl`]: ../extended/struct.GetAccountDataBuilder.html#method.with_security_lvl
-    pub fn get_account_data(&self) -> GetAccountDataBuilder<'_> {
-        GetAccountDataBuilder::builder(self)
+    /// [`seed`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.seed
+    /// [`with_gap_limit`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.with_gap_limit
+    /// [`with_start_index`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.with_start_index
+    /// [`with_security_lvl`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.with_security_lvl
+    pub fn get_account_data_for_migration(&self) -> GetAccountDataForMigrationBuilder<'_> {
+        GetAccountDataForMigrationBuilder::builder(self)
     }
 
     /// Fetch inclusion states of the given transactions to determine if the transactions are confirmed.

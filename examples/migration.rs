@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     while !yes.contains(&user_input.chars().next().unwrap_or('N')) {
         println!("Searching for balance...");
         let more_inputs = iota
-            .get_account_data()
+            .get_account_data_for_migration()
             .with_seed(&tryte_seed)
             .with_security(security_level as u8)
             .with_start_index(address_index)
@@ -64,11 +64,7 @@ async fn main() -> Result<()> {
             .map(|(_index, data)| data)
             .collect();
         // Get total available balance
-        let mut total_balance = 0;
-        for data in &inputs.1 {
-            total_balance += data.balance;
-        }
-        inputs.0 = total_balance;
+        inputs.0 = inputs.1.iter().map(|d|d.balance).sum();
         println!("{:?}", inputs);
         println!(
             "Is {}i the correct balance? Type Y to continue or N to search for more balance",
