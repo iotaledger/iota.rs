@@ -205,6 +205,7 @@ impl ClientBuilder {
             let sync_ = sync.clone();
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
+            let nodes = nodes.clone();
             let runtime = std::thread::spawn(move || {
                 let runtime = Runtime::new().unwrap();
                 runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_));
@@ -222,7 +223,7 @@ impl ClientBuilder {
             .expect("failed to init node syncing process");
             (Some(runtime), sync, Some(sync_kill_sender), network_info)
         } else {
-            (None, Arc::new(RwLock::new(nodes)), None, network_info)
+            (None, Arc::new(RwLock::new(nodes.clone())), None, network_info)
         };
 
         let mut api_timeout = HashMap::new();
@@ -271,6 +272,7 @@ impl ClientBuilder {
 
         let client = Client {
             runtime,
+            nodes,
             sync,
             sync_kill_sender: sync_kill_sender.map(Arc::new),
             #[cfg(feature = "mqtt")]
