@@ -117,7 +117,7 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
                     let mut known_bundle_hashes = HashSet::new();
                     for tx in txs_on_spent_addresses {
                         if *tx.value().to_inner() < 0 {
-                            known_bundle_hashes.insert(tx.bundle().clone());
+                            known_bundle_hashes.insert(*tx.bundle());
                         }
                     }
                     let known_bundle_hashes: Vec<String> = known_bundle_hashes
@@ -136,7 +136,7 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
                     } else {
                         spent_bundle_hashes.push(Some(known_bundle_hashes))
                     }
-                } else{
+                } else {
                     // Push None so the order stays correct
                     spent_bundle_hashes.push(None);
                 }
@@ -152,6 +152,7 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
                 found_zero_balance = 0;
                 inputs.push(InputData {
                     address: addresses_with_index[index].1.clone(),
+                    security_lvl: self.security_lvl,
                     balance,
                     index: addresses_with_index[index].0,
                     spent: spent_status.states[index],

@@ -6,7 +6,7 @@ use anyhow::Result;
 use iota::client::chrysalis2::*;
 use iota::{
     client::extended::PrepareTransfersBuilder,
-    client::response::Input,
+    client::response::{Input, InputData},
     client::Transfer,
     crypto::ternary::Hash,
     signing::ternary::{seed::Seed as TernarySeed, wots::WotsSecurityLevel},
@@ -16,7 +16,9 @@ use iota::{
         OutgoingBundleBuilder, Payload, Timestamp,
     },
 };
-use iota_bundle_miner::{CrackabilityMinerEvent, MinerBuilder, RecovererBuilder};
+use iota_bundle_miner::{
+    miner::MinedCrackability, CrackabilityMinerEvent, MinerBuilder, RecovererBuilder,
+};
 use std::collections::HashMap;
 use std::io;
 
@@ -40,7 +42,7 @@ async fn main() -> Result<()> {
     let ed25519_seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
 
     // Get account data
-    let mut inputs = (0, vec![]);
+    let mut account_input_data = (0, vec![]);
     let mut address_index = 0;
     let yes = vec!['Y', 'y'];
     let mut user_input = String::new();
@@ -53,33 +55,34 @@ async fn main() -> Result<()> {
             .with_start_index(address_index)
             .finish()
             .await?;
-        inputs.1.extend(more_inputs.1);
+        account_input_data.1.extend(more_inputs.1);
         // Filter duplicates because when it's called another time it could return duplicated entries
         let mut unique_address_data = HashMap::new();
-        for data in inputs.1 {
+        for data in account_input_data.1 {
             unique_address_data.insert(data.index, data);
         }
-        inputs.1 = unique_address_data
+        account_input_data.1 = unique_address_data
             .into_iter()
             .map(|(_index, data)| data)
             .collect();
         // Get total available balance
-        inputs.0 = inputs.1.iter().map(|d| d.balance).sum();
-        println!("{:?}", inputs);
+        account_input_data.0 = account_input_data.1.iter().map(|d| d.balance).sum();
+        println!("{:?}", account_input_data);
         println!(
             "Is {}i the correct balance? Type Y to continue or N to search for more balance",
-            inputs.0
+            account_input_data.0
         );
         user_input = String::new();
         io::stdin().read_line(&mut user_input).unwrap();
         address_index += 30;
     }
-    // if inputs.0 < 1_000_000 {
+    // if account_input_data.0 < 1_000_000 {
     //     panic!("Balance needs to be > 1_000_000i to do the migration because of the dust protection")
     // }
     println!("Preparing transaction...");
     let mut spent_bundle_hashes = Vec::new();
-    for input in &inputs.1 {
+
+    for input in &account_input_data.1 {
         if let Some(bundle_hashes) = input.spent_bundlehashes.clone() {
             spent_bundle_hashes.extend(bundle_hashes)
         }
@@ -100,11 +103,12 @@ async fn main() -> Result<()> {
 
     let transfer = vec![Transfer {
         address: migration_address,
-        value: inputs.0,
+        value: account_input_data.0,
         message: None,
         tag: None,
     }];
-    let address_inputs = inputs
+
+    let address_inputs = account_input_data
         .1
         .iter()
         .cloned()
@@ -115,7 +119,8 @@ async fn main() -> Result<()> {
         })
         .collect();
 
-    if inputs
+    // Ideally split inputs to have one bundle for each spent address
+    if account_input_data
         .1
         .iter()
         .map(|d| d.spent)
@@ -124,142 +129,22 @@ async fn main() -> Result<()> {
     {
         println!("Mining bundle because of spent addresses, this can take some time...");
         // Provide random seed here, because we can't build a bundle without signed inputs, signature will be replaced later
-        let bundle = PrepareTransfersBuilder::new(&iota, Some(&TernarySeed::rand()))
+        let bundle = PrepareTransfersBuilder::new(&iota, None)
             .security(security_level)
             .transfers(transfer)
             .inputs(address_inputs)
-            .build()
+            .build_unsigned()
             .await?;
-        let mut txs = Vec::new();
-        for i in 0..bundle.len() {
-            txs.push(bundle.get(i).unwrap().clone());
-        }
-        let essence_parts = get_bundle_essence_parts(&txs);
 
-        let mut miner_builder = MinerBuilder::new()
-            .with_offset(0)
-            .with_essences_from_unsigned_bundle(
-                essence_parts
-                    .clone()
-                    .iter()
-                    .map(|t| {
-                        TryteBuf::try_from_str(&(*t).to_string())
-                            .unwrap()
-                            .as_trits()
-                            .encode()
-                    })
-                    .collect::<Vec<TritBuf<T1B1Buf>>>(),
-            )
-            .with_security_level(security_level as usize);
-        // Ledger Nano App rejects bundles that contain a 13 anywhere in the signed fragments
-        miner_builder = match ledger {
-            true => miner_builder.with_num_13_free_fragments(81),
-            false => miner_builder.with_num_13_free_fragments((security_level * 27) as usize),
-        };
-        let miner = miner_builder
-            .with_known_bundle_hashes(
-                spent_bundle_hashes
-                    .clone()
-                    .iter()
-                    .map(|t| {
-                        TryteBuf::try_from_str(&(*t).to_string())
-                            .unwrap()
-                            .as_trits()
-                            .encode()
-                    })
-                    .collect::<Vec<TritBuf<T1B1Buf>>>(),
-            )
-            // use num_cpus::get()? Or not all, because it could lag?
-            .with_worker_count(1)
-            .with_core_thread_count(1)
-            .with_mining_timeout(20)
-            .finish()
-            .unwrap();
+        // Mine bundle essence
+        let mining_result = mine(bundle, security_level, ledger, spent_bundle_hashes, 40)?;
+        println!("Mining info: {:?}", mining_result.0);
+        // let latest_tx_essence_part = mined_info.mined_essence;
 
-        let mut recoverer = RecovererBuilder::new()
-            .with_security_level(security_level as usize)
-            .with_known_bundle_hashes(
-                spent_bundle_hashes
-                    .clone()
-                    .iter()
-                    .map(|t| {
-                        TryteBuf::try_from_str(&(*t).to_string())
-                            .unwrap()
-                            .as_trits()
-                            .encode()
-                    })
-                    .collect::<Vec<TritBuf<T1B1Buf>>>(),
-            )
-            .miner(miner)
-            .finish()
-            .unwrap();
-        // Todo: decide which crackability value is good enough
-        let mined_info = match recoverer.recover() {
-            CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
-            CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
-        };
-        println!("{:?}", mined_info);
-        let latest_tx_essence_part = mined_info.mined_essence;
-
-        // Replace obsolete tag of the last transaction with the mined obsolete_tag
-        let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
-        txs[txs.len() - 1].as_trits_allocated(trits.as_slice_mut());
-        trits
-            .subslice_mut(6804..7047)
-            .copy_from(&latest_tx_essence_part.unwrap());
-        let tx_len = txs.len();
-        txs[tx_len - 1] = BundledTransaction::from_trits(&trits).unwrap();
-
-        // Create final bundle with updated obsolet_tag
-        let mut bundle = OutgoingBundleBuilder::default();
-        for tx in txs.into_iter() {
-            bundle.push(
-                BundledTransactionBuilder::new()
-                    .with_payload(Payload::zeros())
-                    .with_address(tx.address().clone())
-                    .with_value(tx.value().clone())
-                    .with_obsolete_tag(tx.obsolete_tag().clone())
-                    .with_timestamp(tx.timestamp().clone())
-                    .with_index(tx.index().clone())
-                    .with_last_index(tx.last_index().clone())
-                    .with_tag(tx.tag().clone())
-                    .with_attachment_ts(tx.attachment_ts().clone())
-                    .with_bundle(Hash::zeros())
-                    .with_trunk(Hash::zeros())
-                    .with_branch(Hash::zeros())
-                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
-                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
-                    .with_nonce(Nonce::zeros()),
-            )
-        }
-
-        let security = match security_level {
-            1 => WotsSecurityLevel::Low,
-            2 => WotsSecurityLevel::Medium,
-            3 => WotsSecurityLevel::High,
-            _ => panic!("Invalid scurity level"),
-        };
-
-        let inputs: Vec<(usize, Address, WotsSecurityLevel)> = inputs
-            .1
-            .into_iter()
-            .map(|i| (i.index as usize, i.address, security))
-            .collect();
-        // Sign
-        // Todo signing with a Ledger
-        let final_signed_bundle = bundle
-            .seal()
-            .expect("Fail to seal bundle")
-            .sign(&tryte_seed, &inputs[..])
-            .expect("Fail to sign bundle")
-            .attach_local(Hash::zeros(), Hash::zeros())
-            .expect("Fail to attach bundle")
-            .build()
-            .expect("Fail to build bundle");
+        // let trytes = sign_migration_bundle(tryte_seed, bundle, account_input_data)?;
+        let trytes = sign_migration_bundle(tryte_seed, mining_result.1, account_input_data)?;
 
         // Send to Tangle
-        let mut trytes: Vec<BundledTransaction> = final_signed_bundle.into_iter().collect();
-        trytes.reverse();
         let send_trytes = iota
             .send_trytes()
             .with_trytes(trytes)
@@ -337,4 +222,170 @@ fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String> {
         );
     }
     essence_parts
+}
+
+pub fn sign_migration_bundle(
+    tryte_seed: TernarySeed,
+    prepared_bundle: OutgoingBundleBuilder,
+    account_input_data: (u64, Vec<InputData>),
+) -> Result<Vec<BundledTransaction>> {
+    let inputs: Vec<(usize, Address, WotsSecurityLevel)> = account_input_data
+        .1
+        .into_iter()
+        .map(|i| {
+            (
+                i.index as usize,
+                i.address,
+                match i.security_lvl {
+                    1 => WotsSecurityLevel::Low,
+                    2 => WotsSecurityLevel::Medium,
+                    3 => WotsSecurityLevel::High,
+                    _ => panic!("Invalid scurity level"),
+                },
+            )
+        })
+        .collect();
+    // Sign
+    let final_signed_bundle = prepared_bundle
+        .seal()
+        .expect("Fail to seal bundle")
+        .sign(&tryte_seed, &inputs[..])
+        .expect("Fail to sign bundle")
+        .attach_local(Hash::zeros(), Hash::zeros())
+        .expect("Fail to attach bundle")
+        .build()
+        .expect("Fail to build bundle");
+
+    //Reverse for correct order when doing PoW
+    let mut trytes: Vec<BundledTransaction> = final_signed_bundle.into_iter().collect();
+    trytes.reverse();
+    Ok(trytes)
+}
+
+pub fn mine(
+    prepared_bundle: OutgoingBundleBuilder,
+    security_level: u8,
+    ledger: bool,
+    spent_bundle_hashes: Vec<String>,
+    time: u64,
+) -> Result<(MinedCrackability, OutgoingBundleBuilder)> {
+    let bundle = prepared_bundle
+        .seal()
+        .expect("Fail to seal bundle")
+        .sign(&TernarySeed::rand(), &[])
+        .expect("Can't sign bundle")
+        .attach_local(Hash::zeros(), Hash::zeros())
+        .expect("Fail to attach bundle")
+        .build()
+        .expect("Fail to build bundle");
+    let mut txs = Vec::new();
+    for i in 0..bundle.len() {
+        txs.push(bundle.get(i).unwrap().clone());
+    }
+    let essence_parts = get_bundle_essence_parts(&txs);
+    let mut miner_builder = MinerBuilder::new()
+        .with_offset(0)
+        .with_essences_from_unsigned_bundle(
+            essence_parts
+                .clone()
+                .iter()
+                .map(|t| {
+                    TryteBuf::try_from_str(&(*t).to_string())
+                        .unwrap()
+                        .as_trits()
+                        .encode()
+                })
+                .collect::<Vec<TritBuf<T1B1Buf>>>(),
+        )
+        .with_security_level(security_level as usize);
+    // Ledger Nano App rejects bundles that contain a 13 anywhere in the signed fragments
+    miner_builder = match ledger {
+        true => miner_builder.with_num_13_free_fragments(81),
+        false => miner_builder.with_num_13_free_fragments((security_level * 27) as usize),
+    };
+    let miner = miner_builder
+        .with_known_bundle_hashes(
+            spent_bundle_hashes
+                .clone()
+                .iter()
+                .map(|t| {
+                    TryteBuf::try_from_str(&(*t).to_string())
+                        .unwrap()
+                        .as_trits()
+                        .encode()
+                })
+                .collect::<Vec<TritBuf<T1B1Buf>>>(),
+        )
+        // use num_cpus::get()? Or not all, because it could lag?
+        .with_worker_count(1)
+        .with_core_thread_count(1)
+        .with_mining_timeout(time)
+        .finish()
+        .unwrap();
+
+    let mut recoverer = RecovererBuilder::new()
+        .with_security_level(security_level as usize)
+        .with_known_bundle_hashes(
+            spent_bundle_hashes
+                .clone()
+                .iter()
+                .map(|t| {
+                    TryteBuf::try_from_str(&(*t).to_string())
+                        .unwrap()
+                        .as_trits()
+                        .encode()
+                })
+                .collect::<Vec<TritBuf<T1B1Buf>>>(),
+        )
+        .miner(miner)
+        .finish()
+        .unwrap();
+    // Todo: decide which crackability value is good enough
+    let mined_info = match recoverer.recover() {
+        CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
+        CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
+    };
+    let updated_bundle = update_essence_with_mined_essence(
+        txs,
+        mined_info.mined_essence.clone().expect("No essence mined"),
+    )?;
+    Ok((mined_info, updated_bundle))
+}
+
+pub fn update_essence_with_mined_essence(
+    mut prepared_txs: Vec<BundledTransaction>,
+    latest_tx_essence_part: TritBuf<T1B1Buf>,
+) -> Result<OutgoingBundleBuilder> {
+    // Replace obsolete tag of the last transaction with the mined obsolete_tag
+    let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
+    prepared_txs[prepared_txs.len() - 1].as_trits_allocated(trits.as_slice_mut());
+    trits
+        .subslice_mut(6804..7047)
+        .copy_from(&latest_tx_essence_part);
+    let tx_len = prepared_txs.len();
+    prepared_txs[tx_len - 1] = BundledTransaction::from_trits(&trits).unwrap();
+
+    // Create final bundle with updated obsolet_tag
+    let mut bundle = OutgoingBundleBuilder::default();
+    for tx in prepared_txs.into_iter() {
+        bundle.push(
+            BundledTransactionBuilder::new()
+                .with_payload(Payload::zeros())
+                .with_address(tx.address().clone())
+                .with_value(tx.value().clone())
+                .with_obsolete_tag(tx.obsolete_tag().clone())
+                .with_timestamp(tx.timestamp().clone())
+                .with_index(tx.index().clone())
+                .with_last_index(tx.last_index().clone())
+                .with_tag(tx.tag().clone())
+                .with_attachment_ts(tx.attachment_ts().clone())
+                .with_bundle(Hash::zeros())
+                .with_trunk(Hash::zeros())
+                .with_branch(Hash::zeros())
+                .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                .with_nonce(Nonce::zeros()),
+        )
+    }
+    Ok(bundle)
 }
