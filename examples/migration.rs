@@ -81,6 +81,7 @@ async fn main() -> Result<()> {
     // }
     println!("Preparing transaction...");
     let mut spent_bundle_hashes = Vec::new();
+
     for input in &account_input_data.1 {
         if let Some(bundle_hashes) = input.spent_bundlehashes.clone() {
             spent_bundle_hashes.extend(bundle_hashes)
@@ -106,6 +107,7 @@ async fn main() -> Result<()> {
         message: None,
         tag: None,
     }];
+
     let address_inputs = account_input_data
         .1
         .iter()
