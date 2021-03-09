@@ -295,7 +295,7 @@ impl CrackProbabilityLessThanThresholdBuilder {
             self.threshold = 0.99_f64 * self.target_crack_probability;
         }
         CrackProbabilityLessThanThreshold {
-            mined_crack_probability: 1.0_f64, // The init crackability = 1.0
+            mined_crack_probability: std::f64::MAX, // Set the init crackability to be max value.
             threshold: self.threshold,
             num_13_free_fragments: self.num_13_free_fragments,
         }
@@ -382,7 +382,7 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
         if !max_hash[..self.num_13_free_fragments]
             .iter()
             .zip(&target_hash_trit_t3b1_i8[..self.num_13_free_fragments])
-            .map(|(&x, &y)| x > y)
+            .map(|(&x, &y)| x <= y)
             .any(|x| x)
         {
             return Ok(true);
@@ -416,7 +416,7 @@ impl Miner {
 
         let (tx, mut rx) = mpsc::channel(self.worker_count);
         let counters = Arc::new(Mutex::new(vec![0; self.worker_count]));
-        let crackability = Arc::new(Mutex::new(1.0));
+        let crackability = Arc::new(Mutex::new(std::f64::MAX));
         // Use the dummy essence and update in the mining_worker function
         let best_essence = Arc::new(Mutex::new(self.essences_from_unsigned_bundle[0].clone()));
         let mut runtime = Builder::new()

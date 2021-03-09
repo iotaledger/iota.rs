@@ -5,8 +5,8 @@
 use anyhow::Result;
 use iota::client::chrysalis2::*;
 use iota::{
-    client::response::Input,
     client::extended::PrepareTransfersBuilder,
+    client::response::Input,
     client::Transfer,
     crypto::ternary::Hash,
     signing::ternary::{seed::Seed as TernarySeed, wots::WotsSecurityLevel},
@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
         inputs.1.extend(more_inputs.1);
         // Filter duplicates because when it's called another time it could return duplicated entries
         let mut unique_address_data = HashMap::new();
-        for data in inputs.1{
+        for data in inputs.1 {
             unique_address_data.insert(data.index, data);
         }
         inputs.1 = unique_address_data
@@ -64,7 +64,7 @@ async fn main() -> Result<()> {
             .map(|(_index, data)| data)
             .collect();
         // Get total available balance
-        inputs.0 = inputs.1.iter().map(|d|d.balance).sum();
+        inputs.0 = inputs.1.iter().map(|d| d.balance).sum();
         println!("{:?}", inputs);
         println!(
             "Is {}i the correct balance? Type Y to continue or N to search for more balance",
@@ -79,8 +79,8 @@ async fn main() -> Result<()> {
     // }
     println!("Preparing transaction...");
     let mut spent_bundle_hashes = Vec::new();
-    for input in &inputs.1{
-        if let Some(bundle_hashes) = input.spent_bundlehashes.clone(){
+    for input in &inputs.1 {
+        if let Some(bundle_hashes) = input.spent_bundlehashes.clone() {
             spent_bundle_hashes.extend(bundle_hashes)
         }
     }
@@ -104,9 +104,24 @@ async fn main() -> Result<()> {
         message: None,
         tag: None,
     }];
-    let address_inputs = inputs.1.iter().cloned().map(|i| Input{address: i.address, balance: i.balance, index: i.index}).collect();
+    let address_inputs = inputs
+        .1
+        .iter()
+        .cloned()
+        .map(|i| Input {
+            address: i.address,
+            balance: i.balance,
+            index: i.index,
+        })
+        .collect();
 
-    if inputs.1.iter().map(|d| d.spent).collect::<Vec<bool>>().contains(&true) {
+    if inputs
+        .1
+        .iter()
+        .map(|d| d.spent)
+        .collect::<Vec<bool>>()
+        .contains(&true)
+    {
         println!("Mining bundle because of spent addresses, this can take some time...");
         // Provide random seed here, because we can't build a bundle without signed inputs, signature will be replaced later
         let bundle = PrepareTransfersBuilder::new(&iota, Some(&TernarySeed::rand()))
@@ -157,7 +172,7 @@ async fn main() -> Result<()> {
             // use num_cpus::get()? Or not all, because it could lag?
             .with_worker_count(1)
             .with_core_thread_count(1)
-            .with_mining_timeout(40)
+            .with_mining_timeout(20)
             .finish()
             .unwrap();
 
@@ -183,7 +198,7 @@ async fn main() -> Result<()> {
             CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
             CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
         };
-        println!("{:?}",mined_info);
+        println!("{:?}", mined_info);
         let latest_tx_essence_part = mined_info.mined_essence;
 
         // Replace obsolete tag of the last transaction with the mined obsolete_tag
