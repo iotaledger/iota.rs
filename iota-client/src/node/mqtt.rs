@@ -87,7 +87,6 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                 };
                 let mqtt_options = CreateOptionsBuilder::new()
                     .server_uri(uri)
-                    .client_id("")
                     .persistence(PersistenceType::None)
                     .finalize();
                 let mut mqtt_client = MqttClient::new(mqtt_options)?;
