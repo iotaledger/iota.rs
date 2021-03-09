@@ -357,6 +357,8 @@ impl HttpClient {
 pub struct Client {
     #[allow(dead_code)]
     pub(crate) runtime: Option<Runtime>,
+    /// Node pool.
+    pub(crate) nodes: HashSet<Url>,
     /// Node pool of synced IOTA nodes
     pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
     /// Flag to stop the node syncing
@@ -546,6 +548,12 @@ impl Client {
     /// returns the local pow
     pub async fn get_local_pow(&self) -> bool {
         self.network_info.read().await.local_pow
+    }
+
+    /// returns the unsynced nodes.
+    pub async fn unsynced_nodes(&self) -> HashSet<&Url> {
+        let synced = self.sync.read().await;
+        self.nodes.iter().filter(|node| !synced.contains(node)).collect()
     }
 
     ///////////////////////////////////////////////////////////////////////
