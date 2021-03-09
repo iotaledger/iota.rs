@@ -637,6 +637,8 @@ pub struct Input {
 pub struct InputData {
     /// Input address
     pub address: Address,
+    /// Security level
+    pub security_lvl: u8,
     /// Balance of the address
     pub balance: u64,
     /// Index of the address

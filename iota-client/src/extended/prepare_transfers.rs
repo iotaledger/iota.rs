@@ -267,4 +267,178 @@ impl<'a> PrepareTransfersBuilder<'a> {
                 .expect("Fail to build bundle"))
         }
     }
+
+    /// Send PrepareTransfers request without signing
+    pub async fn build_unsigned(self) -> Result<OutgoingBundleBuilder> {
+        let total_output = self.transfers.iter().fold(0, |acc, tx| acc + tx.value);
+        let inputs = if total_output > 0 {
+            match self.inputs {
+                Some(i) => i,
+                None => {
+                    self.client
+                        .get_inputs(self.seed.ok_or(Error::MissingSeed)?)
+                        .index(0)
+                        .security(self.security)
+                        .threshold(total_output)
+                        .generate()
+                        .await?
+                        .1
+                }
+            }
+        } else {
+            Vec::new()
+        };
+        let total_input = inputs.iter().fold(0, |acc, tx| acc + tx.balance);
+
+        let need_remainder = match total_input.cmp(&total_output) {
+            Ordering::Less => return Err(Error::ThresholdNotEnough),
+            Ordering::Greater => true,
+            Ordering::Equal => false,
+        };
+
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let mut bundle = OutgoingBundleBuilder::default();
+        // add transfers
+        for transfer in self.transfers {
+            if let Some(message) = transfer.message {
+                let message: TritBuf<T1B1Buf> = str_to_trytes(&message).as_trits().encode();
+                let mut value = transfer.value as i64;
+                let tag = match transfer.tag {
+                    Some(t) => t,
+                    None => Tag::zeros(),
+                };
+
+                for i in message.chunks(PAYLOAD_TRIT_LEN) {
+                    let mut trits = TritBuf::<T1B1Buf>::zeros(PAYLOAD_TRIT_LEN);
+                    trits.subslice_mut(0..i.len()).copy_from(i);
+                    let payload = Payload::from_inner_unchecked(trits);
+
+                    bundle.push(
+                        TransactionBuilder::new()
+                            .with_payload(payload)
+                            .with_address(transfer.address.clone())
+                            .with_value(Value::from_inner_unchecked(value))
+                            .with_obsolete_tag(Tag::zeros())
+                            .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                            .with_index(Index::from_inner_unchecked(0))
+                            .with_last_index(Index::from_inner_unchecked(0))
+                            // TODO add tag (but probably better to left as is)
+                            .with_tag(tag.clone())
+                            .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                            .with_bundle(Hash::zeros())
+                            .with_trunk(Hash::zeros())
+                            .with_branch(Hash::zeros())
+                            .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                            .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                            .with_nonce(Nonce::zeros()),
+                    );
+                    value = 0;
+                }
+            } else {
+                bundle.push(
+                    TransactionBuilder::new()
+                        .with_payload(Payload::zeros())
+                        .with_address(transfer.address.clone())
+                        .with_value(Value::from_inner_unchecked(transfer.value as i64))
+                        .with_obsolete_tag(Tag::zeros())
+                        .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                        .with_index(Index::from_inner_unchecked(0))
+                        .with_last_index(Index::from_inner_unchecked(0))
+                        // TODO add tag (but probably better to left as is)
+                        .with_tag(Tag::zeros())
+                        .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                        .with_bundle(Hash::zeros())
+                        .with_trunk(Hash::zeros())
+                        .with_branch(Hash::zeros())
+                        .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                        .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                        .with_nonce(Nonce::zeros()),
+                );
+            }
+        }
+
+        // add inputs
+        for input in &inputs {
+            bundle.push(
+                TransactionBuilder::new()
+                    .with_payload(Payload::zeros())
+                    .with_address(input.address.clone())
+                    .with_value(Value::from_inner_unchecked(-(input.balance as i64)))
+                    .with_obsolete_tag(Tag::zeros())
+                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_index(Index::from_inner_unchecked(0))
+                    .with_last_index(Index::from_inner_unchecked(0))
+                    .with_tag(Tag::zeros())
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                    .with_bundle(Hash::zeros())
+                    .with_trunk(Hash::zeros())
+                    .with_branch(Hash::zeros())
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                    .with_nonce(Nonce::zeros()),
+            );
+
+            for _ in 1..self.security {
+                bundle.push(
+                    TransactionBuilder::new()
+                        // TODO add message
+                        .with_payload(Payload::zeros())
+                        .with_address(input.address.clone())
+                        .with_value(Value::from_inner_unchecked(0))
+                        .with_obsolete_tag(Tag::zeros())
+                        .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                        .with_index(Index::from_inner_unchecked(0))
+                        .with_last_index(Index::from_inner_unchecked(0))
+                        // TODO add tag (but probably better to left as is)
+                        .with_tag(Tag::zeros())
+                        .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                        .with_bundle(Hash::zeros())
+                        .with_trunk(Hash::zeros())
+                        .with_branch(Hash::zeros())
+                        .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                        .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                        .with_nonce(Nonce::zeros()),
+                );
+            }
+        }
+
+        // add remainder
+        if need_remainder {
+            let remainder = match self.remainder {
+                Some(r) => r,
+                None => {
+                    self.client
+                        .generate_new_address(self.seed.ok_or(Error::MissingSeed)?)
+                        .security(self.security)
+                        .index(inputs.last().unwrap().index + 1)
+                        .generate()
+                        .await?
+                        .1
+                }
+            };
+
+            bundle.push(
+                TransactionBuilder::new()
+                    .with_payload(Payload::zeros())
+                    .with_address(remainder)
+                    .with_value(Value::from_inner_unchecked(
+                        (total_input - total_output) as i64,
+                    ))
+                    .with_obsolete_tag(Tag::zeros())
+                    .with_timestamp(Timestamp::from_inner_unchecked(timestamp as u64))
+                    .with_index(Index::from_inner_unchecked(0))
+                    .with_last_index(Index::from_inner_unchecked(0))
+                    .with_tag(Tag::zeros())
+                    .with_attachment_ts(Timestamp::from_inner_unchecked(0))
+                    .with_bundle(Hash::zeros())
+                    .with_trunk(Hash::zeros())
+                    .with_branch(Hash::zeros())
+                    .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
+                    .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
+                    .with_nonce(Nonce::zeros()),
+            );
+        }
+        Ok(bundle)
+    }
 }
