@@ -217,6 +217,36 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
+        method retryUntilIncluded(mut cx) {
+            let message_id = cx.argument::<JsString>(0)?.value();
+            let message_id = MessageId::from_str(message_id.as_str()).expect("invalid message id");
+            let interval: Option<u64> = match cx.argument_opt(1) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as u64)
+                },
+                None => None,
+            };
+            let max_attempts: Option<u64> = match cx.argument_opt(2) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as u64)
+                },
+                None => None,
+            };
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::RetryUntilIncluded(message_id, interval, max_attempts),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
         method networkInfo(mut cx) {
             let cb = cx.argument::<JsFunction>(0)?;
             {
@@ -389,7 +419,7 @@ declare_types! {
                 None => Default::default(),
             };
 
-            let cb = cx.argument::<JsFunction>(1)?;
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
             {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -420,12 +450,6 @@ declare_types! {
             }
 
             Ok(cx.undefined().upcast())
-        }
-
-        method isAddressValid(mut cx) -> JsResult<JsBoolean> {
-            let address = cx.argument::<JsString>(0)?.value();
-            let b = cx.boolean(Api::IsAddressValid(address.as_str()));
-            Ok(b)
         }
 
         method getMilestone(mut cx) {
@@ -550,6 +574,12 @@ declare_types! {
             }
 
             Ok(cx.undefined().upcast())
+        }
+
+        method isAddressValid(mut cx) -> JsResult<JsBoolean> {
+            let address = cx.argument::<JsString>(0)?.value();
+            let b = cx.boolean(Api::IsAddressValid(address.as_str()));
+            Ok(b)
         }
     }
 }

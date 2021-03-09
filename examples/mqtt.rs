@@ -2,24 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example mqtt --release
+
 use iota::{BrokerOptions, Client, Message, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
-// To run this example you need to add `features = ["mqtt"]` to the import of iota-core in the Cargo.toml
-// like this: iota-core = { path = "../iota-core", features = ["mqtt"] } and uncomment the mqtt example below
+// To run this example you'll need to add "mqtt" to the features of the iota-core import in Cargo.toml
+// like this: iota-core = { path = "../iota-core", features = ["storage", "mqtt"] }. You'll also need to uncomment the
+// serde_json dependency as well as the mqtt example beneath
 
 #[tokio::main]
 async fn main() {
     // Create a client instance
     let mut iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         // to use tcp instead
         .with_mqtt_broker_options(BrokerOptions::new().use_websockets(false))
         .finish()
         .await
         .unwrap();
-        
+
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
 
@@ -41,7 +43,7 @@ async fn main() {
         })
         .await
         .unwrap();
-        
+
     for _ in 0..10 {
         rx.recv().unwrap();
     }

@@ -176,6 +176,8 @@ Creates a new instance of the Client.
 | --------------------- | -------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [network]             | <code>str</code>                             | <code>undefined</code> | The network                                                                                                                                                       |
 | [node]                | <code>str</code>                             | <code>undefined</code> | A node URL                                                                                                                                                        |
+| [name]                | <code>str</code>                             | <code>undefined</code> | The name for basic authentication                                                                                                                                                    |
+| [password]            | <code>str</code>                             | <code>undefined</code> | The password for basic authentication                                                                                                                                                    |
 | [nodes]               | <code>list[str]</code>                       | <code>undefined</code> | An array of node URLs                                                                                                                                             |
 | [node_sync_interval]  | <code>int</code>                             | <code>undefined</code> | The interval for the node syncing process                                                                                                                         |
 | [node_sync_disabled]  | <code>bool</code>                            | <code>undefined</code> | Disables the node syncing process. Every node will be considered healthy and ready to use                                                                         |
@@ -458,6 +460,18 @@ Retries (promotes or reattaches) the message associated with the given id.
 | [message_id] | <code>str</code> | <code>undefined</code> | The message id |
 
 **Returns** the message id and the retried [Message](#message).
+
+#### retry_until_included(message_id, interval (optional), max_attempts (optional)): list[(str, Message)]
+
+Retries (promotes or reattaches) the message associated with the given id.
+
+| Param        | Type             | Default                | Description                                            |
+| ------------ | ---------------- | ---------------------- | ------------------------------------------------------ |
+| [message_id] | <code>str</code> | <code>undefined</code> | The message id                                         |
+| interval     | <code>int</code> | <code>5</code>         | The interval in seconds in which we retry the message. |
+| max_attempts  | <code>int</code> | <code>10</code>        | The maximum of attempts we retry the message.          |
+
+**Returns** the message ids and [Message](#message) of reattached messages.
 
 #### reattach(message_id): (str, Message)
 

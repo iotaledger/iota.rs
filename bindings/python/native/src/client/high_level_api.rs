@@ -302,6 +302,24 @@ impl Client {
             crate::block_on(async { self.client.retry(&RustMessageId::from_str(&message_id)?).await })?;
         Ok((message_id_message.0.to_string(), message_id_message.1.try_into()?))
     }
+    fn retry_until_included(
+        &self,
+        message_id: String,
+        interval: Option<u64>,
+        max_attempts: Option<u64>,
+    ) -> Result<Vec<(String, Message)>> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let messages = rt.block_on(async {
+            self.client
+                .retry_until_included(&RustMessageId::from_str(&message_id)?, interval, max_attempts)
+                .await
+        })?;
+        let mut res = Vec::new();
+        for msg in messages {
+            res.push((msg.0.to_string(), msg.1.try_into()?));
+        }
+        Ok(res)
+    }
     fn reattach(&self, message_id: String) -> Result<(String, Message)> {
         let message_id_message =
             crate::block_on(async { self.client.reattach(&RustMessageId::from_str(&message_id)?).await })?;

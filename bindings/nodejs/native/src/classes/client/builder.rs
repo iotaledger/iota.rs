@@ -8,6 +8,7 @@ use neon::prelude::*;
 
 pub struct ClientBuilderWrapper {
     nodes: Vec<String>,
+    auth: Option<(String, String, String)>,
     node_pool_urls: Vec<String>,
     network: Option<String>,
     broker_options: Option<BrokerOptions>,
@@ -24,6 +25,7 @@ declare_types! {
         init(_) {
             Ok(ClientBuilderWrapper {
                 nodes: Default::default(),
+                auth: Default::default(),
                 node_pool_urls: Default::default(),
                 network: Default::default(),
                 broker_options: Default::default(),
@@ -43,6 +45,19 @@ declare_types! {
                 let guard = cx.lock();
                 let nodes = &mut this.borrow_mut(&guard).nodes;
                 nodes.push(node_url);
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method nodeAuth(mut cx) {
+            let node_url = cx.argument::<JsString>(0)?.value();
+            let name = cx.argument::<JsString>(1)?.value();
+            let password = cx.argument::<JsString>(2)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let auth = &mut this.borrow_mut(&guard).auth;
+                *auth = Some((node_url, name, password));
             }
             Ok(cx.this().upcast())
         }
@@ -190,6 +205,9 @@ declare_types! {
 
                 for node in &ref_.nodes {
                     builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
+                }
+                if let Some((node, name, password)) = &ref_.auth{
+                    builder = builder.with_node_auth(node, name, password).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
                 }
                 if !&ref_.node_pool_urls.is_empty() {
                     builder = crate::block_on(builder.with_node_pool_urls(&ref_.node_pool_urls)).expect("Problem with node pool url");

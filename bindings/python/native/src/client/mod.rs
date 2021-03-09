@@ -30,6 +30,8 @@ impl Client {
     fn new(
         network: Option<&str>,
         node: Option<&str>,
+        name: Option<&str>,
+        password: Option<&str>,
         nodes: Option<Vec<&str>>,
         node_sync_interval: Option<u64>,
         node_sync_disabled: Option<bool>,
@@ -45,7 +47,11 @@ impl Client {
             client = client.with_network(network);
         }
         if let Some(node) = node {
-            client = client.with_node(node).unwrap();
+            if let (Some(name), Some(password)) = (name, password) {
+                client = client.with_node_auth(node, name, password).unwrap();
+            } else {
+                client = client.with_node(node).unwrap();
+            }
         }
         if let Some(nodes) = nodes {
             client = client.with_nodes(&nodes).unwrap();

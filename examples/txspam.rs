@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example txspam --release
-use iota::{Client, Essence, MessageId, Payload, Seed, UTXOInput};
-use tokio::time::sleep;
+
+use iota::{Client, Essence, Payload, Seed, UTXOInput};
 extern crate dotenv;
 use dotenv::dotenv;
-use std::{env, time::Duration};
+use std::env;
 
 /// In this example we will spam transactions
 /// Send 10 Mi from the faucet to the first address before you run it
@@ -15,7 +15,7 @@ use std::{env, time::Duration};
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await
@@ -46,7 +46,7 @@ async fn main() {
         message.id().0
     );
 
-    reattach_promote_until_confirmed(message.id().0, &iota).await;
+    let _ = iota.retry_until_included(&message.id().0, None, None).await.unwrap();
 
     // At this point we have 10 Mi on 10 addresses and we will just send it to their addresses again
     // Use own outputs directly so we don't double spend them
@@ -78,17 +78,5 @@ async fn main() {
             "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
             message.id().0
         );
-    }
-}
-
-async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
-    while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
-        if let Some(state) = metadata.ledger_inclusion_state {
-            println!("Ledger inclusion state: {:?}", state);
-            break;
-        } else if let Ok(msg_id) = iota.reattach(&message_id).await {
-            println!("Reattached or promoted {}", msg_id.0);
-        }
-        sleep(Duration::from_secs(5)).await;
     }
 }

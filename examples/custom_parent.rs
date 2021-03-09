@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_parent --release
+
 use iota::{Client, MessageId};
 use std::str::FromStr;
 
-/// In this example, we define a custom message parent
-/// Can be used for promoting
+/// In this example we will define a custom message parent which be used for promoting
 
 #[tokio::main]
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await

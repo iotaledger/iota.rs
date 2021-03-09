@@ -1,14 +1,15 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example search_address --release
+//! cargo run --example mnemonic --release
 
-use iota::{api::search_address, Client, Seed};
+use iota::{Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
+// use crypto;
 
-/// In this example we will try to find the index and address type of an address
+/// In this example we will create addresses from a mnemonic defined in .env
 
 #[tokio::main]
 async fn main() {
@@ -22,22 +23,23 @@ async fn main() {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
+    let mut mnemonic_seed = [0u8; 64];
+    crypto::bip39::mnemonic_to_seed(
+        &env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC").unwrap(),
+        &"",
+        &mut mnemonic_seed,
+    );
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+    let seed = Seed::from_bytes(&mnemonic_seed);
 
+    // Generate addresses with custom account index and range
     let addresses = iota
         .get_addresses(&seed)
         .with_account_index(0)
-        .with_range(9..10)
+        .with_range(0..2)
         .finish()
         .await
         .unwrap();
 
-    println!("{:?}", addresses[0]);
-
-    let res = search_address(&seed, iota.get_bech32_hrp().await.unwrap(), 0, 0..10, &addresses[0])
-        .await
-        .unwrap();
-
-    println!("Address index: {}\nIs internal address: {}", res.0, res.1);
+    println!("List of generated public addresses:\n{:?}\n", addresses);
 }

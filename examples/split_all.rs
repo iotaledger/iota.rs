@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example split_all --release
-use iota::{client::Result, Client, MessageId, Seed};
-use std::time::Duration;
-use tokio::time::sleep;
+
+use iota::{client::Result, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -16,7 +15,7 @@ use std::env;
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com")?
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
         .finish()
         .await?;
 
@@ -30,7 +29,7 @@ async fn main() -> Result<()> {
     let total_balance = iota.get_balance(&seed_1).finish().await?;
     let mut available = total_balance;
 
-    println!("total_balance {}", total_balance);
+    println!("Total balance: {}i", total_balance);
 
     let addresses_from_seed_2 = iota
         .get_addresses(&seed_2)
@@ -62,18 +61,6 @@ async fn main() -> Result<()> {
         message.id().0
     );
 
-    reattach_promote_until_confirmed(message.id().0, &iota).await;
+    let _ = iota.retry_until_included(&message.id().0, None, None).await.unwrap();
     Ok(())
-}
-
-async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
-    while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
-        if let Some(state) = metadata.ledger_inclusion_state {
-            println!("Leder inclusion state: {:?}", state);
-            break;
-        } else if let Ok(msg_id) = iota.reattach(&message_id).await {
-            println!("Reattached or promoted {}", msg_id.0);
-        }
-        sleep(Duration::from_secs(5)).await;
-    }
 }

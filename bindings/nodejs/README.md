@@ -55,6 +55,18 @@ Adds an IOTA node to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### nodeAuth(url, name, password): ClientBuilder
+
+Adds an IOTA node with basic authentication to the client pool.
+
+| Param    | Type                | Description |
+| -------- | ------------------- | ----------- |
+| url      | <code>string</code> | A node URL  |
+| name     | <code>string</code> | A name      |
+| password | <code>string</code> | A password  |
+
+**Returns** the client builder instance for chained calls.
+
 #### nodes(urls): ClientBuilder
 
 Adds a list of IOTA nodes to the client pool.
@@ -259,6 +271,19 @@ Retries (promotes or reattaches) the message associated with the given id.
 | messageId | <code>string</code> | The id of the message to retry |
 
 **Returns** A promise resolving to the new [Message](#message) instance.
+
+#### retryUntilIncluded(messageId: string[, interval: int, max_attempts: int]): Promise<Message>
+
+Retries (promotes or reattaches) the message associated with the given id until it's included in the Tangle.
+Default interval is 5 seconds and max_attempts is 10.
+
+| Param                  | Type                | Description                                            |
+| ---------------------- | ------------------- | ------------------------------------------------------ |
+| messageId              | <code>string</code> | The id of the message to retry                         |
+| [options.interval]     | <code>int</code>    | The interval in seconds in which we retry the message. |
+| [options.max_attempts] | <code>int</code>    | The maximum of attempts we retry the message.          |
+
+**Returns** the message ids and [Message](#message) of reattached messages.
 
 #### getInfo(): Promise<NodeInfo>
 

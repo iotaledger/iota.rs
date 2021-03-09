@@ -69,6 +69,7 @@ pub(crate) enum Api {
     GetReceiptsMigratedAt(u32),
     GetTreasury(),
     Retry(MessageId),
+    RetryUntilIncluded(MessageId, Option<u64>, Option<u64>),
     Reattach(MessageId),
     Promote(MessageId),
 }
@@ -227,10 +228,12 @@ impl Task for ClientTask {
                         }
                         None => client.get_tips().await?,
                     };
+                    let network_id = client.get_network_id().await?;
+                    let nonce_provider = client.get_pow_provider().await;
                     let message = MessageBuilder::<ClientMiner>::new()
-                        .with_network_id(client.get_network_id().await?)
+                        .with_network_id(network_id)
                         .with_parents(Parents::new(parent_msg_ids)?)
-                        .with_nonce_provider(client.get_pow_provider(), 4000f64, None)
+                        .with_nonce_provider(nonce_provider, 4000f64, None)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message = client.post_message(&message).await?;
@@ -298,10 +301,25 @@ impl Task for ClientTask {
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
-                        message: message.1,
                         message_id: message.0,
+                        message: message.1,
                     })
                     .unwrap()
+                }
+                Api::RetryUntilIncluded(message_id, interval, max_attempts) => {
+                    let messages = client
+                        .retry_until_included(message_id, *interval, *max_attempts)
+                        .await?;
+                    messages
+                        .into_iter()
+                        .map(|msg| {
+                            serde_json::to_string(&MessageWrapper {
+                                message_id: msg.0,
+                                message: msg.1,
+                            })
+                            .unwrap()
+                        })
+                        .collect()
                 }
                 Api::Reattach(message_id) => {
                     let message = client.reattach(message_id).await?;

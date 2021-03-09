@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example address --release
+
 use iota::{api::GetAddressesBuilder, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we create addresses from a seed defined in .env
+/// In this example we will create addresses from a seed defined in .env
 
 #[tokio::main]
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await
@@ -36,6 +37,7 @@ async fn main() {
         .finish()
         .await
         .unwrap();
+
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate public (false) & internal (true) addresses
@@ -50,5 +52,6 @@ async fn main() {
         .finish()
         .await
         .unwrap();
+
     println!("List of offline generated public addresses:\n{:?}\n", addresses);
 }
