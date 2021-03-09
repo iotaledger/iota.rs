@@ -18,7 +18,6 @@ use iota::{
 };
 use iota_bundle_miner::{CrackabilityMinerEvent, MinerBuilder, RecovererBuilder};
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::io;
 
 /// Migration example
@@ -40,6 +39,7 @@ async fn main() -> Result<()> {
     )?;
     let ed25519_seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
 
+    // Get account data
     let mut inputs = (0, vec![]);
     let mut address_index = 0;
     let yes = vec!['Y', 'y'];
@@ -78,41 +78,13 @@ async fn main() -> Result<()> {
     //     panic!("Balance needs to be > 1_000_000i to do the migration because of the dust protection")
     // }
     println!("Preparing transaction...");
-    // Get spent status of addresses, if spent do bundle mining
-    let input_addresses: Vec<Address> = inputs.1.iter().map(|i| i.address.clone()).collect();
-    let spent_status = iota.were_addresses_spent_from(&input_addresses[..]).await?;
-    println!("spent_status {:?}", spent_status);
-    let mut spent_addresses = Vec::new();
-    for (index, spent) in spent_status.states.iter().enumerate() {
-        //TODO change to *spent is ! because devnet is broken
-        if !*spent {
-            spent_addresses.push(input_addresses[index].clone());
+    let mut spent_bundle_hashes = Vec::new();
+    for input in &inputs.1{
+        if let Some(bundle_hashes) = input.spent_bundlehashes.clone(){
+            spent_bundle_hashes.extend(bundle_hashes)
         }
     }
-    let tx_hashes_on_spent_addresses = iota
-        .find_transactions()
-        .addresses(&spent_addresses)
-        .send()
-        .await?
-        .hashes;
-    let txs_on_spent_addresses = iota.get_trytes(&tx_hashes_on_spent_addresses).await?.trytes;
-    let mut known_bundle_hashes = HashSet::new();
-    for tx in txs_on_spent_addresses {
-        if *tx.value().to_inner() < 0 {
-            known_bundle_hashes.insert(tx.bundle().clone());
-        }
-    }
-    let known_bundle_hashes: Vec<String> = known_bundle_hashes
-        .into_iter()
-        .map(|b| {
-            b.to_inner()
-                .encode::<T3B1Buf>()
-                .iter_trytes()
-                .map(char::from)
-                .collect::<String>()
-        })
-        .collect();
-    println!("bundle_hashes {:?}", known_bundle_hashes);
+    println!("spent_bundle_hashes {:?}", spent_bundle_hashes);
 
     // Create bundle
     let _migration_address = generate_migration_address(ed25519_seed);
@@ -134,8 +106,7 @@ async fn main() -> Result<()> {
     }];
     let address_inputs = inputs.1.iter().cloned().map(|i| Input{address: i.address, balance: i.balance, index: i.index}).collect();
 
-    // TODO change to true, is false because devnet is broken
-    if spent_status.states.contains(&false) {
+    if inputs.1.iter().map(|d| d.spent).collect::<Vec<bool>>().contains(&true) {
         println!("Mining bundle because of spent addresses, this can take some time...");
         // Provide random seed here, because we can't build a bundle without signed inputs, signature will be replaced later
         let bundle = PrepareTransfersBuilder::new(&iota, Some(&TernarySeed::rand()))
@@ -172,7 +143,7 @@ async fn main() -> Result<()> {
         };
         let miner = miner_builder
             .with_known_bundle_hashes(
-                known_bundle_hashes
+                spent_bundle_hashes
                     .clone()
                     .iter()
                     .map(|t| {
@@ -193,7 +164,7 @@ async fn main() -> Result<()> {
         let mut recoverer = RecovererBuilder::new()
             .with_security_level(security_level as usize)
             .with_known_bundle_hashes(
-                known_bundle_hashes
+                spent_bundle_hashes
                     .clone()
                     .iter()
                     .map(|t| {
@@ -212,6 +183,7 @@ async fn main() -> Result<()> {
             CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
             CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
         };
+        println!("{:?}",mined_info);
         let latest_tx_essence_part = mined_info.mined_essence;
 
         // Replace obsolete tag of the last transaction with the mined obsolete_tag
