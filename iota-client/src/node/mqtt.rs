@@ -8,8 +8,8 @@ use crate::{
 use bee_common::packable::Packable;
 use bee_message::Message;
 use paho_mqtt::{
-    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, SslOptions,
-    MQTT_VERSION_3_1_1,
+    Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, PersistenceType,
+    SslOptions, MQTT_VERSION_3_1_1,
 };
 use regex::Regex;
 use tokio::sync::RwLock;
@@ -87,7 +87,8 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                 };
                 let mqtt_options = CreateOptionsBuilder::new()
                     .server_uri(uri)
-                    .client_id("iota.rs")
+                    .client_id("")
+                    .persistence(PersistenceType::None)
                     .finalize();
                 let mut mqtt_client = MqttClient::new(mqtt_options)?;
                 let conn_opts = ConnectOptionsBuilder::new()
