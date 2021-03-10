@@ -10,7 +10,7 @@ tv = dict()
 with open('../../../fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
 
-client = iota_client.Client(node=tv['NODE_URL'])
+client = iota_client.Client(node=tv['MQTT_NODE_URL'])
 
 def test_message():
     message_id_indexation = client.message(
@@ -91,7 +91,12 @@ def test_retry():
 def test_retry_until_included():
     message_id_indexation = client.message(
         index=tv['INDEXATION']['INDEX'][1], data_str=tv['INDEXATION']['DATA_STRING'][0])
-    assert client.retry_until_included(message_id_indexation['message_id'], max_attempts = 1) == []
+    try:
+        client.retry_until_included(message_id_indexation['message_id'], max_attempts = 1)
+        # Should not be able to retry
+        assert False
+    except ValueError as e:
+        assert "couldn't get included into the Tangle" in str(e)
 
 def test_reattach():
     message_id_indexation = client.message(
