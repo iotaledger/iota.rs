@@ -52,7 +52,7 @@ def test_get_address_outputs():
     assert isinstance(outputs, list)
 
 def test_find_outputs():
-    outputs = client.find_outputs(addresses = tv['ADDRESS'])
+    outputs = client.find_outputs(addresses = [tv['ADDRESS'][0]])
     assert isinstance(outputs, list) and 'message_id' in outputs[0]
 
 def test_get_milestone():
