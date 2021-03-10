@@ -111,3 +111,9 @@ jobs:
     - name: Build python binding
       run: cargo build --all --release
       working-directory: bindings/python/native
+
+    - name: Test python binding
+      run: |
+        python -m pip install tox
+        tox -e py
+      working-directory: bindings/python/native
