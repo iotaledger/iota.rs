@@ -6,18 +6,12 @@ use anyhow::Result;
 use iota::client::chrysalis2::*;
 use iota::{
     client::extended::PrepareTransfersBuilder,
-    client::response::{Input, InputData},
+    client::migration::{encode_migration_address, mine, sign_migration_bundle},
+    client::response::Input,
     client::Transfer,
-    crypto::ternary::Hash,
-    signing::ternary::{seed::Seed as TernarySeed, wots::WotsSecurityLevel},
-    ternary::{T1B1Buf, T3B1Buf, TritBuf, TryteBuf},
-    transaction::bundled::{
-        Address, BundledTransaction, BundledTransactionBuilder, BundledTransactionField, Nonce,
-        OutgoingBundleBuilder, Payload, Timestamp,
-    },
-};
-use iota_bundle_miner::{
-    miner::MinedCrackability, CrackabilityMinerEvent, MinerBuilder, RecovererBuilder,
+    signing::ternary::seed::Seed as TernarySeed,
+    ternary::{T1B1Buf, T3B1Buf, TryteBuf},
+    transaction::bundled::{Address, BundledTransactionField},
 };
 use std::collections::HashMap;
 use std::io;
@@ -91,7 +85,7 @@ async fn main() -> Result<()> {
 
     // Create bundle
     let _migration_address = generate_migration_address(ed25519_seed);
-    // placeholder to reuse tokens for testing
+    // overwrite to reuse tokens for testing
     let migration_address = Address::from_inner_unchecked(
         TryteBuf::try_from_str(
             "CHZHKFUCUMRHOFXB9SGEZVYUUXYKEIJ9VX9SLKATMLWQZUQXDWUKLYGZLMYYWHXKKTPQHIOHQMYARINLD",
@@ -119,6 +113,13 @@ async fn main() -> Result<()> {
         })
         .collect();
 
+    let mut prepared_bundle = PrepareTransfersBuilder::new(&iota, None)
+        .security(security_level)
+        .transfers(transfer)
+        .inputs(address_inputs)
+        .build_unsigned()
+        .await?;
+
     // Ideally split inputs to have one bundle for each spent address
     if account_input_data
         .1
@@ -127,62 +128,41 @@ async fn main() -> Result<()> {
         .collect::<Vec<bool>>()
         .contains(&true)
     {
-        println!("Mining bundle because of spent addresses, this can take some time...");
-        // Provide random seed here, because we can't build a bundle without signed inputs, signature will be replaced later
-        let bundle = PrepareTransfersBuilder::new(&iota, None)
-            .security(security_level)
-            .transfers(transfer)
-            .inputs(address_inputs)
-            .build_unsigned()
-            .await?;
-
-        // Mine bundle essence
-        let mining_result = mine(bundle, security_level, ledger, spent_bundle_hashes, 40)?;
+        println!("Mining bundle because of spent addresses, this can take some time..."); //40 seconds in this case
+                                                                                          // Mine bundle essence
+        let mining_result = mine(
+            prepared_bundle,
+            security_level,
+            ledger,
+            spent_bundle_hashes,
+            40,
+        )?;
         println!("Mining info: {:?}", mining_result.0);
-        // let latest_tx_essence_part = mined_info.mined_essence;
-
-        // let trytes = sign_migration_bundle(tryte_seed, bundle, account_input_data)?;
-        let trytes = sign_migration_bundle(tryte_seed, mining_result.1, account_input_data)?;
-
-        // Send to Tangle
-        let send_trytes = iota
-            .send_trytes()
-            .with_trytes(trytes)
-            .with_depth(2)
-            .with_min_weight_magnitude(min_weight_magnitude)
-            .finish()
-            .await?;
-        println!(
-            "Bundle sent: {:?}",
-            send_trytes[0]
-                .bundle()
-                .to_inner()
-                .encode::<T3B1Buf>()
-                .iter_trytes()
-                .map(char::from)
-                .collect::<String>()
-        );
+        prepared_bundle = mining_result.1;
     } else {
         println!("No spent address as input");
-        // No need to do bundle mining, we can sign and send it right away
-        let res = iota
-            .send(Some(&tryte_seed))
-            .with_transfers(transfer)
-            .with_inputs(address_inputs)
-            .with_min_weight_magnitude(9)
-            .finish()
-            .await?;
-        println!(
-            "Bundle sent: {:?}",
-            res[0]
-                .bundle()
-                .to_inner()
-                .encode::<T3B1Buf>()
-                .iter_trytes()
-                .map(char::from)
-                .collect::<String>()
-        );
     }
+    let signed_bundle_trytes =
+        sign_migration_bundle(tryte_seed, prepared_bundle, account_input_data)?;
+
+    // Send to Tangle
+    let send_trytes = iota
+        .send_trytes()
+        .with_trytes(signed_bundle_trytes)
+        .with_depth(2)
+        .with_min_weight_magnitude(min_weight_magnitude)
+        .finish()
+        .await?;
+    println!(
+        "Bundle sent: {:?}",
+        send_trytes[0]
+            .bundle()
+            .to_inner()
+            .encode::<T3B1Buf>()
+            .iter_trytes()
+            .map(char::from)
+            .collect::<String>()
+    );
     Ok(())
 }
 
@@ -196,196 +176,4 @@ fn generate_migration_address(ed25519_seed: &str) -> Result<Address> {
         .finish()
         .unwrap();
     Ok(encode_migration_address(ed25519_address[0]))
-}
-
-// Split each tx in two essence parts, first one is the address and the second one
-// includes value, obsoleteTag, currentIndex, lastIndex and timestamp
-fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String> {
-    let mut essence_parts = Vec::new();
-    for tx in txs {
-        let essence = tx.essence();
-        // address
-        essence_parts.push(
-            essence[0..243]
-                .encode::<T3B1Buf>()
-                .iter_trytes()
-                .map(char::from)
-                .collect::<String>(),
-        );
-        // value, obsoleteTag, currentIndex, lastIndex and timestamp
-        essence_parts.push(
-            essence[243..]
-                .encode::<T3B1Buf>()
-                .iter_trytes()
-                .map(char::from)
-                .collect::<String>(),
-        );
-    }
-    essence_parts
-}
-
-pub fn sign_migration_bundle(
-    tryte_seed: TernarySeed,
-    prepared_bundle: OutgoingBundleBuilder,
-    account_input_data: (u64, Vec<InputData>),
-) -> Result<Vec<BundledTransaction>> {
-    let inputs: Vec<(usize, Address, WotsSecurityLevel)> = account_input_data
-        .1
-        .into_iter()
-        .map(|i| {
-            (
-                i.index as usize,
-                i.address,
-                match i.security_lvl {
-                    1 => WotsSecurityLevel::Low,
-                    2 => WotsSecurityLevel::Medium,
-                    3 => WotsSecurityLevel::High,
-                    _ => panic!("Invalid scurity level"),
-                },
-            )
-        })
-        .collect();
-    // Sign
-    let final_signed_bundle = prepared_bundle
-        .seal()
-        .expect("Fail to seal bundle")
-        .sign(&tryte_seed, &inputs[..])
-        .expect("Fail to sign bundle")
-        .attach_local(Hash::zeros(), Hash::zeros())
-        .expect("Fail to attach bundle")
-        .build()
-        .expect("Fail to build bundle");
-
-    //Reverse for correct order when doing PoW
-    let mut trytes: Vec<BundledTransaction> = final_signed_bundle.into_iter().collect();
-    trytes.reverse();
-    Ok(trytes)
-}
-
-pub fn mine(
-    prepared_bundle: OutgoingBundleBuilder,
-    security_level: u8,
-    ledger: bool,
-    spent_bundle_hashes: Vec<String>,
-    time: u64,
-) -> Result<(MinedCrackability, OutgoingBundleBuilder)> {
-    let bundle = prepared_bundle
-        .seal()
-        .expect("Fail to seal bundle")
-        .sign(&TernarySeed::rand(), &[])
-        .expect("Can't sign bundle")
-        .attach_local(Hash::zeros(), Hash::zeros())
-        .expect("Fail to attach bundle")
-        .build()
-        .expect("Fail to build bundle");
-    let mut txs = Vec::new();
-    for i in 0..bundle.len() {
-        txs.push(bundle.get(i).unwrap().clone());
-    }
-    let essence_parts = get_bundle_essence_parts(&txs);
-    let mut miner_builder = MinerBuilder::new()
-        .with_offset(0)
-        .with_essences_from_unsigned_bundle(
-            essence_parts
-                .clone()
-                .iter()
-                .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
-                        .as_trits()
-                        .encode()
-                })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
-        )
-        .with_security_level(security_level as usize);
-    // Ledger Nano App rejects bundles that contain a 13 anywhere in the signed fragments
-    miner_builder = match ledger {
-        true => miner_builder.with_num_13_free_fragments(81),
-        false => miner_builder.with_num_13_free_fragments((security_level * 27) as usize),
-    };
-    let miner = miner_builder
-        .with_known_bundle_hashes(
-            spent_bundle_hashes
-                .clone()
-                .iter()
-                .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
-                        .as_trits()
-                        .encode()
-                })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
-        )
-        // use num_cpus::get()? Or not all, because it could lag?
-        .with_worker_count(1)
-        .with_core_thread_count(1)
-        .with_mining_timeout(time)
-        .finish()
-        .unwrap();
-
-    let mut recoverer = RecovererBuilder::new()
-        .with_security_level(security_level as usize)
-        .with_known_bundle_hashes(
-            spent_bundle_hashes
-                .clone()
-                .iter()
-                .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
-                        .as_trits()
-                        .encode()
-                })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
-        )
-        .miner(miner)
-        .finish()
-        .unwrap();
-    // Todo: decide which crackability value is good enough
-    let mined_info = match recoverer.recover() {
-        CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
-        CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
-    };
-    let updated_bundle = update_essence_with_mined_essence(
-        txs,
-        mined_info.mined_essence.clone().expect("No essence mined"),
-    )?;
-    Ok((mined_info, updated_bundle))
-}
-
-pub fn update_essence_with_mined_essence(
-    mut prepared_txs: Vec<BundledTransaction>,
-    latest_tx_essence_part: TritBuf<T1B1Buf>,
-) -> Result<OutgoingBundleBuilder> {
-    // Replace obsolete tag of the last transaction with the mined obsolete_tag
-    let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
-    prepared_txs[prepared_txs.len() - 1].as_trits_allocated(trits.as_slice_mut());
-    trits
-        .subslice_mut(6804..7047)
-        .copy_from(&latest_tx_essence_part);
-    let tx_len = prepared_txs.len();
-    prepared_txs[tx_len - 1] = BundledTransaction::from_trits(&trits).unwrap();
-
-    // Create final bundle with updated obsolet_tag
-    let mut bundle = OutgoingBundleBuilder::default();
-    for tx in prepared_txs.into_iter() {
-        bundle.push(
-            BundledTransactionBuilder::new()
-                .with_payload(Payload::zeros())
-                .with_address(tx.address().clone())
-                .with_value(tx.value().clone())
-                .with_obsolete_tag(tx.obsolete_tag().clone())
-                .with_timestamp(tx.timestamp().clone())
-                .with_index(tx.index().clone())
-                .with_last_index(tx.last_index().clone())
-                .with_tag(tx.tag().clone())
-                .with_attachment_ts(tx.attachment_ts().clone())
-                .with_bundle(Hash::zeros())
-                .with_trunk(Hash::zeros())
-                .with_branch(Hash::zeros())
-                .with_attachment_lbts(Timestamp::from_inner_unchecked(std::u64::MIN))
-                .with_attachment_ubts(Timestamp::from_inner_unchecked(std::u64::MAX))
-                .with_nonce(Nonce::zeros()),
-        )
-    }
-    Ok(bundle)
 }
