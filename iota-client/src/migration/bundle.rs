@@ -32,6 +32,12 @@ pub async fn prepare_migration_bundle(
     let migration_address = encode_migration_address(address);
 
     let security_level = inputs[0].security_lvl;
+    let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level);
+    if !same_security_level {
+        return Err(Error::MigrationError(
+            "Not all inputs have the same security level".into(),
+        ));
+    }
 
     let mut address_inputs: Vec<Input> = inputs
         .into_iter()
@@ -71,16 +77,32 @@ pub async fn prepare_migration_bundle(
 pub fn sign_migration_bundle(
     tryte_seed: TernarySeed,
     prepared_bundle: OutgoingBundleBuilder,
-    account_input_data: (u64, Vec<InputData>),
+    inputs: Vec<InputData>,
 ) -> Result<Vec<BundledTransaction>> {
-    let inputs: Vec<(usize, Address, WotsSecurityLevel)> = account_input_data
-        .1
+    let security_level = inputs[0].security_lvl;
+    let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level);
+    if !same_security_level {
+        return Err(Error::MigrationError(
+            "Not all inputs have the same security level".into(),
+        ));
+    }
+
+    let mut address_inputs: Vec<Input> = inputs
+        .into_iter()
+        .map(|i| Input {
+            address: i.address,
+            balance: i.balance,
+            index: i.index,
+        })
+        .collect();
+    address_inputs.dedup();
+    let inputs: Vec<(usize, Address, WotsSecurityLevel)> = address_inputs
         .into_iter()
         .map(|i| {
             (
                 i.index as usize,
                 i.address,
-                match i.security_lvl {
+                match security_level {
                     1 => WotsSecurityLevel::Low,
                     2 => WotsSecurityLevel::Medium,
                     3 => WotsSecurityLevel::High,
