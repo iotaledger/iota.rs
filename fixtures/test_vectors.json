@@ -1,4 +1,5 @@
 {
+    "MESSAGE_ID_LENGTH": 64,
     "NODE_URL": "https://api.lb-0.testnet.chrysalis2.com",
     "NONSECURE_SEED": [
         "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2",
@@ -25,5 +26,8 @@
         "DATA_STRING": [
             "Tangle"
         ]
-    }
+    },
+    "UTXOINPUT": [
+        "00000000000000000000000000000000000000000000000000000000000000000000"
+    ]
 }
