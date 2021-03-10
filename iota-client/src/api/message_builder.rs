@@ -422,19 +422,14 @@ impl<'a> ClientMessageBuilder<'a> {
             outputs_for_essence.push(output);
         }
 
-        // Order inputs and add them to the essence
-        let mut packed_inputs: Vec<Vec<u8>> = inputs_for_essence.into_iter().map(|i| i.pack_new()).collect();
-        packed_inputs.sort_unstable();
         let mut essence = RegularEssence::builder();
-        for input in packed_inputs {
-            essence = essence.add_input(Input::unpack(&mut input.as_slice())?);
-        }
+        // Order inputs and add them to the essence
+        inputs_for_essence.sort_unstable_by_key(|a| a.pack_new());
+        essence = essence.with_inputs(inputs_for_essence);
+
         // Order outputs and add them to the essence
-        let mut packed_outputs: Vec<Vec<u8>> = outputs_for_essence.into_iter().map(|i| i.pack_new()).collect();
-        packed_outputs.sort_unstable();
-        for output in packed_outputs {
-            essence = essence.add_output(Output::unpack(&mut output.as_slice())?);
-        }
+        outputs_for_essence.sort_unstable_by_key(|a| a.pack_new());
+        essence = essence.with_outputs(outputs_for_essence);
 
         // Add indexation_payload if index set
         if let Some(index) = self.index.clone() {
@@ -505,15 +500,11 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         let final_message = match self.parents {
-            Some(parents) => {
+            Some(mut parents) => {
                 // Sort parents
-                let mut packed_parents: Vec<Vec<u8>> = parents.into_iter().map(|i| i.pack_new()).collect();
-                packed_parents.sort_unstable();
-                packed_parents.dedup();
-                let mut sorted_parents: Vec<MessageId> = Vec::new();
-                for parent in packed_parents {
-                    sorted_parents.push(MessageId::unpack(&mut parent.as_slice())?);
-                }
+                parents.dedup();
+                parents.sort_unstable_by_key(|a| a.pack_new());
+
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let network_id = self.client.get_network_id().await?;
                 do_pow(
@@ -523,7 +514,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     min_pow_score,
                     network_id,
                     payload,
-                    sorted_parents,
+                    parents,
                     Arc::new(AtomicBool::new(false)),
                 )?
                 .1

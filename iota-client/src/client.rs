@@ -967,17 +967,12 @@ impl Client {
         let network_id = self.get_network_id().await?;
         let nonce_provider = self.get_pow_provider().await;
         tips.push(*message_id);
-        // Sort parents
-        let mut packed_parents: Vec<Vec<u8>> = tips.into_iter().map(|i| i.pack_new()).collect();
-        packed_parents.sort_unstable();
-        packed_parents.dedup();
-        let mut sorted_parents: Vec<MessageId> = Vec::new();
-        for parent in packed_parents {
-            sorted_parents.push(MessageId::unpack(&mut parent.as_slice())?);
-        }
+        // Sort tips/parents
+        tips.dedup();
+        tips.sort_unstable_by_key(|a| a.pack_new());
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(network_id)
-            .with_parents(Parents::new(sorted_parents)?)
+            .with_parents(Parents::new(tips)?)
             .with_nonce_provider(nonce_provider, min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
