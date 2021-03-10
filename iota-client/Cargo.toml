@@ -29,7 +29,7 @@ bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "d
 slip10 = "0.4"
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "6e67b652dd55df05877f575b9a09ccb5a7006694", features = ["ed25519", "random"]}
 blake2 = "0.9"
-bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "acab07e4bcff947c70cde312789a2ef2977c652b" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 hex = "0.4.2"
 
