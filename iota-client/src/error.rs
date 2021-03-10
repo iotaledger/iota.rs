@@ -38,6 +38,8 @@ pub enum Error {
     CryptoError(crypto::Error),
     /// Crypto.rs error
     Slip10Error(slip10::Error),
+    /// Migration error
+    MigrationError(String),
 }
 
 impl fmt::Display for Error {
@@ -58,6 +60,7 @@ impl fmt::Display for Error {
             Error::ChrysalisAddressError(s) => s.fmt(f),
             Error::CryptoError(e) => e.fmt(f),
             Error::Slip10Error(e) => e.fmt(f),
+            Error::MigrationError(e) => e.fmt(f),
         }
     }
 }

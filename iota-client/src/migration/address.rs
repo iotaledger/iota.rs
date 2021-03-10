@@ -3,7 +3,6 @@
 
 //! Chrsalis migration address
 use crate::{Error, Result};
-
 use bee_crypto::ternary::sponge::{Kerl, Sponge};
 use bee_message::prelude::Ed25519Address;
 use bee_ternary::{b1t6, T1B1Buf, T3B1Buf, Trits, TryteBuf};
@@ -14,6 +13,7 @@ use blake2::{
 };
 
 use core::convert::TryInto;
+
 /// Encode an Ed25519Address to a TryteAddress
 pub fn encode_migration_address(ed25519_address: Ed25519Address) -> TryteAddress {
     // Compute the BLAKE2b-256 hash H of A.

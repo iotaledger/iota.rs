@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! The migration bundle module
-use crate::error::Result;
-use crate::response::InputData;
+use crate::{
+    client::Client,
+    error::{Error, Result},
+    extended::PrepareTransfersBuilder,
+    migration::encode_migration_address,
+    response::{Input, InputData},
+    Transfer,
+};
 
 use bee_crypto::ternary::Hash;
+use bee_message::prelude::Ed25519Address;
 use bee_signing::ternary::{seed::Seed as TernarySeed, wots::WotsSecurityLevel};
 use bee_ternary::{T1B1Buf, T3B1Buf, TritBuf, TryteBuf};
 use bee_transaction::bundled::{
@@ -16,7 +23,51 @@ use iota_bundle_miner::{
     miner::MinedCrackability, CrackabilityMinerEvent, MinerBuilder, RecovererBuilder,
 };
 
-/// Sign a prepared bundle, inpuste need to be the same as when it was prepared
+/// Prepare migration bundle with address and inputs
+pub async fn prepare_migration_bundle(
+    client: &Client,
+    address: Ed25519Address,
+    inputs: Vec<InputData>,
+) -> Result<OutgoingBundleBuilder> {
+    let migration_address = encode_migration_address(address);
+
+    let security_level = inputs[0].security_lvl;
+
+    let mut address_inputs: Vec<Input> = inputs
+        .into_iter()
+        .map(|i| Input {
+            address: i.address,
+            balance: i.balance,
+            index: i.index,
+        })
+        .collect();
+    //Remove possible duplicates
+    address_inputs.dedup();
+
+    let total_value = address_inputs.iter().map(|d| d.balance).sum();
+
+    // Check for dust protection value
+    if total_value > 1_000_000 {
+        return Err(Error::MigrationError(
+            "Input value is < dust protection value (1_000_000 i)".into(),
+        ));
+    }
+    let transfer = vec![Transfer {
+        address: migration_address,
+        value: total_value,
+        message: None,
+        tag: None,
+    }];
+
+    PrepareTransfersBuilder::new(client, None)
+        .security(security_level)
+        .transfers(transfer)
+        .inputs(address_inputs)
+        .build_unsigned()
+        .await
+}
+
+/// Sign a prepared bundle, inputs need to be the same as when it was prepared
 pub fn sign_migration_bundle(
     tryte_seed: TernarySeed,
     prepared_bundle: OutgoingBundleBuilder,
@@ -99,7 +150,6 @@ pub fn mine(
     let miner = miner_builder
         .with_known_bundle_hashes(
             spent_bundle_hashes
-                .clone()
                 .iter()
                 .map(|t| {
                     TryteBuf::try_from_str(&(*t).to_string())
@@ -185,7 +235,7 @@ fn update_essence_with_mined_essence(
 
 // Split each tx in two essence parts, first one is the address and the second one
 // includes value, obsoleteTag, currentIndex, lastIndex and timestamp
-fn get_bundle_essence_parts(txs: &Vec<BundledTransaction>) -> Vec<String> {
+fn get_bundle_essence_parts(txs: &[BundledTransaction]) -> Vec<String> {
     let mut essence_parts = Vec::new();
     for tx in txs {
         let essence = tx.essence();

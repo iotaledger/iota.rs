@@ -621,7 +621,7 @@ impl WereAddressesSpentFromResponseBuilder {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// Address can be used as input to spend balance
 pub struct Input {
     /// Input address
@@ -632,7 +632,7 @@ pub struct Input {
     pub index: u64,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// Address can be used as input to spend balance
 pub struct InputData {
     /// Input address

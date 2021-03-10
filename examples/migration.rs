@@ -3,15 +3,13 @@
 
 //! cargo run --example migration --release
 use anyhow::Result;
-use iota::client::chrysalis2::*;
 use iota::{
-    client::extended::PrepareTransfersBuilder,
-    client::migration::{encode_migration_address, mine, sign_migration_bundle},
-    client::response::Input,
-    client::Transfer,
+    client::migration::{
+        mine, prepare_migration_bundle, sign_migration_bundle, Address as ChrysalisAddress,
+    },
     signing::ternary::seed::Seed as TernarySeed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
-    transaction::bundled::{Address, BundledTransactionField},
+    transaction::bundled::BundledTransactionField,
 };
 use std::collections::HashMap;
 use std::io;
@@ -33,7 +31,8 @@ async fn main() -> Result<()> {
         .as_trits()
         .encode::<T1B1Buf>(),
     )?;
-    let ed25519_seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
+    // Funds will be migrated to this address
+    let bech32_address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 
     // Get account data
     let mut account_input_data = (0, vec![]);
@@ -83,42 +82,17 @@ async fn main() -> Result<()> {
     }
     println!("spent_bundle_hashes {:?}", spent_bundle_hashes);
 
+    //Convert migraton address
+    let new_address = ChrysalisAddress::try_from_bech32(bech32_address)?;
+    let new_converted_address = match new_address {
+        ChrysalisAddress::Ed25519(a) => a,
+        _ => panic!("Unsopported address type"),
+    };
+
     // Create bundle
-    let _migration_address = generate_migration_address(ed25519_seed);
-    // overwrite to reuse tokens for testing
-    let migration_address = Address::from_inner_unchecked(
-        TryteBuf::try_from_str(
-            "CHZHKFUCUMRHOFXB9SGEZVYUUXYKEIJ9VX9SLKATMLWQZUQXDWUKLYGZLMYYWHXKKTPQHIOHQMYARINLD",
-        )
-        .unwrap()
-        .as_trits()
-        .encode(),
-    );
-
-    let transfer = vec![Transfer {
-        address: migration_address,
-        value: account_input_data.0,
-        message: None,
-        tag: None,
-    }];
-
-    let address_inputs = account_input_data
-        .1
-        .iter()
-        .cloned()
-        .map(|i| Input {
-            address: i.address,
-            balance: i.balance,
-            index: i.index,
-        })
-        .collect();
-
-    let mut prepared_bundle = PrepareTransfersBuilder::new(&iota, None)
-        .security(security_level)
-        .transfers(transfer)
-        .inputs(address_inputs)
-        .build_unsigned()
-        .await?;
+    let mut prepared_bundle =
+        prepare_migration_bundle(&iota, new_converted_address, account_input_data.1.clone())
+            .await?;
 
     // Ideally split inputs to have one bundle for each spent address
     if account_input_data
@@ -164,16 +138,4 @@ async fn main() -> Result<()> {
             .collect::<String>()
     );
     Ok(())
-}
-
-// Generate first ed25519 address and convert it to a migration tryte address
-fn generate_migration_address(ed25519_seed: &str) -> Result<Address> {
-    let seed = Seed::from_bytes(&hex::decode(ed25519_seed)?).unwrap();
-
-    let ed25519_address = GetAddressesBuilder::new(&seed)
-        .with_account_index(0)
-        .with_range(0..1)
-        .finish()
-        .unwrap();
-    Ok(encode_migration_address(ed25519_address[0]))
 }

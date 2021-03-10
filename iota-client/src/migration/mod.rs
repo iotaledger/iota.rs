@@ -3,6 +3,7 @@
 
 //! Chrysalis migration module
 
+pub use bee_message::prelude::Address;
 mod address;
 mod bundle;
 pub use address::*;
