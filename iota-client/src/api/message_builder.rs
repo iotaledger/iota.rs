@@ -6,7 +6,7 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
-use crypto::slip10::{Chain, Curve, Seed};
+use crypto::keys::slip10::{Chain, Curve, Seed};
 
 use std::{
     collections::{HashMap, HashSet},

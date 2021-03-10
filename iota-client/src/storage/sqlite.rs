@@ -93,7 +93,7 @@ impl StorageAdapter for SqliteStorageAdapter {
                 &format!("INSERT OR REPLACE INTO {} VALUES (?1, ?2)", self.table_name),
                 params![account_id, data],
             )
-            .map_err(|_| crate::Error::Storage("failed to insert data".into()))?;
+            .map_err(storage_err)?;
         Ok(())
     }
 
@@ -102,9 +102,7 @@ impl StorageAdapter for SqliteStorageAdapter {
         let params = vec![ToSqlOutput::Owned(Value::Text(account_id.to_string()))];
 
         let connection = self.connection.lock().expect("failed to get connection lock");
-        connection
-            .execute(&sql, params)
-            .map_err(|_| crate::Error::Storage("failed to delete data".into()))?;
+        connection.execute(&sql, params).map_err(storage_err)?;
         Ok(())
     }
 }

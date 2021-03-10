@@ -27,7 +27,7 @@ pub use bee_rest_api::{
 // pub use bee_signing_ext::{self, binary::BIP32Path,};
 pub use builder::ClientBuilder;
 pub use client::*;
-pub use crypto::slip10::Seed;
+pub use crypto::keys::slip10::Seed;
 pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;

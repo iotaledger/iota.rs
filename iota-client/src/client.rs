@@ -22,7 +22,7 @@ use bee_rest_api::{
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
-    slip10::Seed,
+    keys::slip10::Seed,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;

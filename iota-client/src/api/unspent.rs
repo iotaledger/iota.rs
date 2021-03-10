@@ -3,7 +3,7 @@
 
 use crate::{Client, Error, Result};
 use bee_message::prelude::Bech32Address;
-use crypto::slip10::Seed;
+use crypto::keys::slip10::Seed;
 
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {
