@@ -140,7 +140,7 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Set 1-8 custom parent message ids
     pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
         if !(1..=8).contains(&parent_ids.len()) {
-            return Err(Error::InvalidParentsAmount);
+            return Err(Error::InvalidParentsAmount(parent_ids.len()));
         }
         self.parents = Some(parent_ids);
         Ok(self)

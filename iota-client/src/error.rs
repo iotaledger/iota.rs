@@ -87,8 +87,8 @@ pub enum Error {
     #[error("{0}")]
     CryptoError(#[from] crypto::Error),
     /// Invalid amount of parents
-    #[error("Invalid amount of parents, length must be in 1..=8")]
-    InvalidParentsAmount,
+    #[error("Invalid amount of parents: {0}, length must be in 1..=8")]
+    InvalidParentsAmount(usize),
     /// ureq error
     #[cfg(feature = "sync")]
     #[error("{0}")]
