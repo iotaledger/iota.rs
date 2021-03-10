@@ -3,6 +3,7 @@
 
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
+use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
@@ -199,9 +200,9 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
 
-        let mut essence = RegularEssence::builder();
         let mut address_index_recorders = Vec::new();
-
+        let mut inputs_for_essence = Vec::new();
+        let mut outputs_for_essence = Vec::new();
         match self.inputs.clone() {
             Some(inputs) => {
                 for input in inputs {
@@ -251,7 +252,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                 UTXOInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
                                     .map_err(|_| Error::TransactionError)?,
                             );
-                            essence = essence.add_input(input.clone());
+                            inputs_for_essence.push(input.clone());
                             address_index_recorders.push(AddressIndexRecorder {
                                 input,
                                 address_index,
@@ -264,9 +265,8 @@ impl<'a> ClientMessageBuilder<'a> {
                                 if remaining_balance < 1_000_000 {
                                     dust_and_allowance_recorders.push((remaining_balance, output_address, true));
                                 }
-                                essence = essence.add_output(
-                                    SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into(),
-                                );
+                                outputs_for_essence
+                                    .push(SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into());
                             }
                         }
                     }
@@ -347,7 +347,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                             )
                                             .map_err(|_| Error::TransactionError)?,
                                         );
-                                        essence = essence.add_input(input.clone());
+                                        inputs_for_essence.push(input.clone());
                                         address_index_recorders.push(AddressIndexRecorder {
                                             input,
                                             address_index,
@@ -364,7 +364,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                                 ));
                                             }
                                             // Output the remaining tokens back to the original address
-                                            essence = essence.add_output(
+                                            outputs_for_essence.push(
                                                 SignatureLockedSingleOutput::new(
                                                     Address::try_from_bech32(address)?,
                                                     remaining_balance,
@@ -419,8 +419,23 @@ impl<'a> ClientMessageBuilder<'a> {
 
         // Build signed transaction payload
         for output in self.outputs.clone() {
-            essence = essence.add_output(output);
+            outputs_for_essence.push(output);
         }
+
+        // Order inputs and add them to the essence
+        let mut packed_inputs: Vec<Vec<u8>> = inputs_for_essence.into_iter().map(|i| i.pack_new()).collect();
+        packed_inputs.sort_unstable();
+        let mut essence = RegularEssence::builder();
+        for input in packed_inputs {
+            essence = essence.add_input(Input::unpack(&mut input.as_slice())?);
+        }
+        // Order outputs and add them to the essence
+        let mut packed_outputs: Vec<Vec<u8>> = outputs_for_essence.into_iter().map(|i| i.pack_new()).collect();
+        packed_outputs.sort_unstable();
+        for output in packed_outputs {
+            essence = essence.add_output(Output::unpack(&mut output.as_slice())?);
+        }
+
         // Add indexation_payload if index set
         if let Some(index) = self.index.clone() {
             let indexation_payload = IndexationPayload::new(&index, &self.data.clone().unwrap_or_default())?;
@@ -490,9 +505,15 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         let final_message = match self.parents {
-            Some(mut parents) => {
-                parents.sort_unstable();
-                parents.dedup();
+            Some(parents) => {
+                // Sort parents
+                let mut packed_parents: Vec<Vec<u8>> = parents.into_iter().map(|i| i.pack_new()).collect();
+                packed_parents.sort_unstable();
+                packed_parents.dedup();
+                let mut sorted_parents: Vec<MessageId> = Vec::new();
+                for parent in packed_parents {
+                    sorted_parents.push(MessageId::unpack(&mut parent.as_slice())?);
+                }
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let network_id = self.client.get_network_id().await?;
                 do_pow(
@@ -502,7 +523,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     min_pow_score,
                     network_id,
                     payload,
-                    parents,
+                    sorted_parents,
                     Arc::new(AtomicBool::new(false)),
                 )?
                 .1

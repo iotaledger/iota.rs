@@ -12,12 +12,9 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "acab07e4bcff947c70cde312789a2ef2977c652b" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "acab07e4bcff947c70cde312789a2ef2977c652b" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "3edeb71205207b04c65d48757403f397d9fe1d2b" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "3edeb71205207b04c65d48757403f397d9fe1d2b" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
-# bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-# bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-features = false }
 
 [dev-dependencies]
