@@ -42,7 +42,6 @@ impl Client {
         tips_interval: Option<u64>,
         mqtt_broker_options: Option<BrokerOptions>,
     ) -> Self {
-        let rt = tokio::runtime::Runtime::new().unwrap();
         let mut client = RustClient::builder();
         if let Some(network) = network {
             client = client.with_network(network);
@@ -66,7 +65,7 @@ impl Client {
             }
         }
         if let Some(node_pool_urls) = node_pool_urls {
-            client = rt.block_on(async { client.with_node_pool_urls(&node_pool_urls).await.unwrap() });
+            client = crate::block_on(async { client.with_node_pool_urls(&node_pool_urls).await.unwrap() });
         }
         if let Some(timeout) = request_timeout {
             client = client.with_request_timeout(Duration::from_millis(timeout));
@@ -100,12 +99,13 @@ impl Client {
                 .use_websockets(broker_options.use_ws);
             client = client.with_mqtt_broker_options(rust_broker_options);
         }
-        let client = rt.block_on(async { client.finish().await.unwrap() });
+        let client = crate::block_on(async { client.finish().await.unwrap() });
 
         // Update the BECH32_HRP
         // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
         //       create the client object.
-        let bech32_hrp = rt.block_on(async { client.get_bech32_hrp().await.unwrap() });
+        let bech32_hrp = crate::block_on(async { client.get_bech32_hrp().await.unwrap() });
+        // Note that mutable static is unsafe and requires unsafe function or block
         unsafe {
             BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
         }
