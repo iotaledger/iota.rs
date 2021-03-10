@@ -970,13 +970,17 @@ impl Client {
     /// Promote a message without checking if it should be promoted
     pub async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Create a new message (zero value message) for which one tip would be the actual message
-        let tips = self.get_tips().await?;
+        let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
         let network_id = self.get_network_id().await?;
         let nonce_provider = self.get_pow_provider().await;
+        tips.push(*message_id);
+        // Sort tips/parents
+        tips.dedup();
+        tips.sort_unstable_by_key(|a| a.pack_new());
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(network_id)
-            .with_parents(Parents::new(vec![*message_id, tips[0]])?)
+            .with_parents(Parents::new(tips)?)
             .with_nonce_provider(nonce_provider, min_pow_score, None)
             .finish()
             .map_err(|_| Error::TransactionError)?;
