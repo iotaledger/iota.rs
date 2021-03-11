@@ -24,10 +24,10 @@ pub enum Error {
     DustError(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
-    MissingParameter(String),
+    MissingParameter(&'static str),
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
-    InvalidParameter(String),
+    InvalidParameter(&'static str),
     /// Found spent output
     #[error("Found spent output.")]
     SpentOutput,

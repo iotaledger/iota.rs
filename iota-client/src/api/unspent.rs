@@ -38,9 +38,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn get(self) -> Result<(Bech32Address, usize)> {
-        let account_index = self
-            .account_index
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let account_index = self.account_index.ok_or(Error::MissingParameter("account index"))?;
 
         let mut index = self.initial_address_index.unwrap_or(0);
 

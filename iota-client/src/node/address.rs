@@ -117,9 +117,9 @@ impl<'a> GetAddressBuilder<'a> {
                 let mut transaction_id = [0u8; 32];
                 hex::decode_to_slice(&s[..64], &mut transaction_id)?;
                 let index = u16::from_le_bytes(
-                    hex::decode(&s[64..]).map_err(|_| Error::InvalidParameter("index".to_string()))?[..]
+                    hex::decode(&s[64..]).map_err(|_| Error::InvalidParameter("index"))?[..]
                         .try_into()
-                        .map_err(|_| Error::InvalidParameter("index".to_string()))?,
+                        .map_err(|_| Error::InvalidParameter("index"))?,
                 );
                 Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
             })
