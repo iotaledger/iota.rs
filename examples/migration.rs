@@ -11,6 +11,7 @@ use iota::{
     signing::ternary::seed::Seed as TernarySeed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
     transaction::bundled::BundledTransactionField,
+    transaction::bundled::BundledTransaction,
 };
 use std::collections::HashMap;
 use std::io;
@@ -100,6 +101,17 @@ async fn main() -> Result<()> {
     //         .await?;
     // let bundle_trytes = get_trytes_from_bundle(bundle_for_trytes);
     // println!("raw txs : {:?}",bundle_trytes);
+    // // Sign trytes somewhere else here
+    // // Convert Tryte Strings back to Transactions
+    // let mut signed_bundle_trytes: Vec<BundledTransaction> = bundle_trytes.into_iter().map(|tx|{
+    //     BundledTransaction::from_trits(&TryteBuf::try_from_str(
+    //         &tx,
+    //     )
+    //     .unwrap()
+    //     .as_trits()).expect("Can't build transaction from String")
+    // }).collect();
+    // // Reverse for correct attachment order
+    // signed_bundle_trytes.reverse();
 
     // Ideally split inputs to have one bundle for each spent address
     if account_input_data
