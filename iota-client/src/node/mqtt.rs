@@ -74,13 +74,13 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&MqttClient> {
                     true => format!(
                         "{}://{}:{}/mqtt",
                         if node.scheme() == "https" { "wss" } else { "ws" },
-                        node.host_str().ok_or_else(|| crate::Error::MissingParameter("host"))?,
+                        node.host_str().ok_or(crate::Error::MissingParameter("host"))?,
                         node.port_or_known_default()
-                            .ok_or_else(|| crate::Error::MissingParameter("port"))?
+                            .ok_or(crate::Error::MissingParameter("port"))?
                     ),
                     false => format!(
                         "tcp://{}",
-                        node.host_str().ok_or_else(|| crate::Error::MissingParameter("host"))?,
+                        node.host_str().ok_or(crate::Error::MissingParameter("host"))?,
                     ),
                 };
                 let mqtt_options = CreateOptionsBuilder::new()
