@@ -8,9 +8,10 @@
 
 1. Run your local Hornet
 - `$ git clone git@github.com:gohornet/hornet.git`
-- checkout `chrysalis-pt2` branch
-- Modify your `create_snapshot_alphanet.sh`, modify Line 14 to `go run ../main.go tool snapgen alphanet1 96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813 snapshots/alphanet1/full_export.bin`
-- `$ ./run_coo_bootstrap.sh `
+- checkout `develop` branch
+- Modify your `create_snapshot_alphanet.sh`, modify Line 14 to `go run "..\main.go" tool snapgen alphanet1 96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813 1000000000 "snapshots\alphanet1\full_export.bin"`
+- Go to `hornet/alphanet`
+- `$ ./run_coo_bootstrap.sh`
 
 2. To build the iota_client python library by yourself, there are two ways.
    - By using the `cargo`
@@ -45,6 +46,14 @@
      - [windows-iota-client-py3.9-wheels](https://github.com/iotaledger/iota.rs/suites/2115209642/artifacts/43080909)
    - **NOTE: Please download the wheel files generated in the commit version you want to use.**
    - `$ pip3 install [THE_DOWNLOADED_WHEEL_FILE]`
+
+## Testing
+- Install [tox](#https://pypi.org/project/tox/)
+  - `$ pip install tox`
+- Build the library
+  - `$ python setup.py install`
+- To test install tox globally and run
+  - `$ tox -e py`
 
 ## Python Example
 ```python
@@ -176,8 +185,8 @@ Creates a new instance of the Client.
 | --------------------- | -------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [network]             | <code>str</code>                             | <code>undefined</code> | The network                                                                                                                                                       |
 | [node]                | <code>str</code>                             | <code>undefined</code> | A node URL                                                                                                                                                        |
-| [name]                | <code>str</code>                             | <code>undefined</code> | The name for basic authentication                                                                                                                                                    |
-| [password]            | <code>str</code>                             | <code>undefined</code> | The password for basic authentication                                                                                                                                                    |
+| [name]                | <code>str</code>                             | <code>undefined</code> | The name for basic authentication                                                                                                                                 |
+| [password]            | <code>str</code>                             | <code>undefined</code> | The password for basic authentication                                                                                                                             |
 | [nodes]               | <code>list[str]</code>                       | <code>undefined</code> | An array of node URLs                                                                                                                                             |
 | [node_sync_interval]  | <code>int</code>                             | <code>undefined</code> | The interval for the node syncing process                                                                                                                         |
 | [node_sync_disabled]  | <code>bool</code>                            | <code>undefined</code> | Disables the node syncing process. Every node will be considered healthy and ready to use                                                                         |
@@ -469,7 +478,7 @@ Retries (promotes or reattaches) the message associated with the given id.
 | ------------ | ---------------- | ---------------------- | ------------------------------------------------------ |
 | [message_id] | <code>str</code> | <code>undefined</code> | The message id                                         |
 | interval     | <code>int</code> | <code>5</code>         | The interval in seconds in which we retry the message. |
-| max_attempts  | <code>int</code> | <code>10</code>        | The maximum of attempts we retry the message.          |
+| max_attempts | <code>int</code> | <code>10</code>        | The maximum of attempts we retry the message.          |
 
 **Returns** the message ids and [Message](#message) of reattached messages.
 
