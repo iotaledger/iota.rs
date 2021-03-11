@@ -422,7 +422,12 @@ impl Client {
         network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
-        let node_sync_interval = TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap());
+        let node_sync_interval = TokioDuration::from_nanos(
+            node_sync_interval
+                .as_nanos()
+                .try_into()
+                .expect("Node sync interval parsing failed."),
+        );
 
         runtime.spawn(async move {
             loop {
@@ -505,7 +510,9 @@ impl Client {
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
         let network_info = self.get_network_info().await?;
-        Ok(network_info.network_id.unwrap())
+        network_info
+            .network_id
+            .ok_or(Error::MissingParameter("Missing network id."))
     }
 
     /// Gets the miner to use based on the PoW setting
@@ -944,7 +951,7 @@ impl Client {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
 
-        let reattach_message = finish_pow(self, Some(message.payload().to_owned().unwrap())).await?;
+        let reattach_message = finish_pow(self, message.payload().to_owned()).await?;
 
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;
@@ -1040,7 +1047,7 @@ impl Client {
 
         // Use `get_message().data()` API to get the `Message`.
         for message_id in message_ids_to_query {
-            let message = self.get_message().data(&message_id).await.unwrap();
+            let message = self.get_message().data(&message_id).await?;
             messages.push(message);
         }
         Ok(messages)
@@ -1132,6 +1139,6 @@ pub fn hash_network(network_id_string: &str) -> u64 {
     u64::from_le_bytes(
         Blake2b256::digest(network_id_string.as_bytes())[0..8]
             .try_into()
-            .unwrap(),
+            .expect("Hashing the network id string failed."),
     )
 }
