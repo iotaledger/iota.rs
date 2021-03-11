@@ -7,6 +7,7 @@ use crate::{
 };
 use bee_common::packable::Packable;
 use bee_message::Message;
+use log::warn;
 use paho_mqtt::{
     Client as MqttClient, ConnectOptionsBuilder, CreateOptionsBuilder, DisconnectOptionsBuilder, PersistenceType,
     SslOptions, MQTT_VERSION_3_1_1,
@@ -46,15 +47,16 @@ impl Topic {
         );
         let regexes = lazy_static!(
           [
-            Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").unwrap(),
-            Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").unwrap(),
+            Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
+            Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
             // bech32 address
-            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").unwrap(),
+            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
             // ED25519 address hex
-            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
-            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").unwrap()
+            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
+            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").expect("regex failed")
           ].to_vec() => Vec<Regex>
         );
+
         let name = name.into();
         if valid_topics.iter().any(|valid| valid == &name) || regexes.iter().any(|re| re.is_match(&name)) {
             let topic = Self(name);
@@ -119,20 +121,33 @@ fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, client: &mut Mqt
                     if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
                         let event = {
                             if topic.as_str() == "messages" || topic.contains("messages/indexation/") {
-                                let iota_message = Message::unpack(&mut message.payload()).unwrap();
-                                TopicEvent {
-                                    topic,
-                                    payload: serde_json::to_string(&iota_message).unwrap(),
+                                match Message::unpack(&mut message.payload()) {
+                                    Ok(iota_message) => match serde_json::to_string(&iota_message) {
+                                        Ok(message) => Ok(TopicEvent {
+                                            topic,
+                                            payload: message,
+                                        }),
+                                        Err(e) => {
+                                            warn!("Parsing iota message failed: {0}", e);
+                                            Err(())
+                                        }
+                                    },
+                                    Err(e) => {
+                                        warn!("Message unpacking failed: {0}", e);
+                                        Err(())
+                                    }
                                 }
                             } else {
-                                TopicEvent {
+                                Ok(TopicEvent {
                                     topic,
                                     payload: message.payload_str().to_string(),
-                                }
+                                })
                             }
                         };
-                        for handler in handlers {
-                            handler(&event)
+                        if let Ok(event) = event {
+                            for handler in handlers {
+                                handler(&event)
+                            }
                         }
                     }
                 });
