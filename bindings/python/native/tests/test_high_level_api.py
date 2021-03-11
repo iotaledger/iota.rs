@@ -92,9 +92,8 @@ def test_retry_until_included():
     message_id_indexation = client.message(
         index=tv['INDEXATION']['INDEX'][1], data_str=tv['INDEXATION']['DATA_STRING'][0])
     try:
-        client.retry_until_included(message_id_indexation['message_id'], max_attempts = 1)
-        # Should not be able to retry
-        assert False
+        result = client.retry_until_included(message_id_indexation['message_id'], max_attempts = 1)
+        assert isinstance(result, list)
     except ValueError as e:
         assert "couldn't get included into the Tangle" in str(e)
 
