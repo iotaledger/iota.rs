@@ -22,7 +22,8 @@ broker_options = {
     'use_ws': False,
 }
 
-client = iota_client.Client(node=tv['MQTT_NODE_URL'], mqtt_broker_options = broker_options)
+client = iota_client.Client(
+    node=tv['MQTT_NODE_URL'], mqtt_broker_options=broker_options)
 
 # The queue to store received events
 q = queue.Queue()
@@ -33,6 +34,7 @@ broker_options = {
     'timeout': 5,
     'use_ws': False,
 }
+
 
 def worker(topics):
     """The worker to process the queued events.
@@ -45,20 +47,24 @@ def worker(topics):
         received_events += 1
         q.task_done()
 
+
 def on_mqtt_event(event):
     """Put the received event to queue.
     """
     q.put(event)
 
+
 def test_mqtt():
-    client.subscribe_topics(['milestones/confirmed','messages'], on_mqtt_event)
-    worker(['milestones/confirmed','messages'])
+    client.subscribe_topics(
+        ['milestones/confirmed', 'messages'], on_mqtt_event)
+    worker(['milestones/confirmed', 'messages'])
     client.disconnect()
     q.queue.clear()
     client.subscribe_topic('messages', on_mqtt_event)
     worker('messages')
     client.disconnect()
-    client.subscribe_topics(['milestones/confirmed','messages'], on_mqtt_event)
-    worker(['milestones/confirmed','messages'])
+    client.subscribe_topics(
+        ['milestones/confirmed', 'messages'], on_mqtt_event)
+    worker(['milestones/confirmed', 'messages'])
     client.unsubscribe()
     client.disconnect()

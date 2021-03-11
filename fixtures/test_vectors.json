@@ -13,7 +13,8 @@
     "INDEXATION": {
         "INDEX": [
             "Hello",
-            "Hi"
+            "Hi",
+            "TEST_INDEX__WITH_FEW_MESSAGES"
         ],
         "DATA": [
             [
@@ -31,5 +32,8 @@
     },
     "UTXOINPUT": [
         "00000000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    "MESSAGE_ID": [
+        "f541e53e98ccffdd94036f08af07f9eb060449ee7838c2279f230acc933de6d8"
     ]
 }

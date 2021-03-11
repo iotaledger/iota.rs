@@ -12,13 +12,16 @@ with open('../../../fixtures/test_vectors.json') as json_file:
 
 client = iota_client.Client(node=tv['MQTT_NODE_URL'])
 
+
 def test_get_health():
     health = client.get_health()
     assert isinstance(health, bool)
 
+
 def test_get_info():
     node_info = client.get_info()
     assert isinstance(node_info, dict) and 'is_healthy' in node_info
+
 
 def test_get_peers():
     try:
@@ -29,31 +32,39 @@ def test_get_peers():
         # Else the error must be access forbidden
         assert "access forbidden, error: forbidden" in str(e)
 
+
 def test_get_tips():
     tips = client.get_tips()
     assert isinstance(tips, list)
+
 
 def test_post_message():
     message = client.message(
         index=tv['INDEXATION']['INDEX'][0], data=tv['INDEXATION']['DATA'][0])
     message_id = client.post_message(message)
-    assert isinstance(message_id, str) and len(message_id) == tv['MESSAGE_ID_LENGTH']
+    assert isinstance(message_id, str) and len(
+        message_id) == tv['MESSAGE_ID_LENGTH']
+
 
 def test_get_output():
     output = client.get_output(tv['UTXOINPUT'][0])
     assert isinstance(output, dict) and 'output' in output
 
+
 def test_get_address_balance():
     balance = client.get_address_balance(tv['ADDRESS'][0])
     assert isinstance(balance, dict) and 'balance' in balance
+
 
 def test_get_address_outputs():
     outputs = client.get_address_outputs(tv['ADDRESS'][0])
     assert isinstance(outputs, list)
 
+
 def test_find_outputs():
-    outputs = client.find_outputs(addresses = [tv['ADDRESS'][0]])
+    outputs = client.find_outputs(addresses=[tv['ADDRESS'][0]])
     assert isinstance(outputs, list) and 'message_id' in outputs[0]
+
 
 def test_get_milestone():
     try:
@@ -64,14 +75,18 @@ def test_get_milestone():
         # Else the error must be milestone not found
         assert "milestone not found" in str(e)
 
+
 def test_get_milestone_utxo_changes():
     try:
         # If the milestone can be found, then a milestone utxo dict should be returned
         milestone_utxo = client.get_milestone_utxo_changes(1000)
-        assert isinstance(milestone_utxo, dict) and 'consumed_outputs' in milestone_utxo
+        assert isinstance(
+            milestone_utxo, dict) and 'consumed_outputs' in milestone_utxo
     except ValueError as e:
         # Else the error must be milestone not found
-        assert "load milestone diff for index" in str(e) and "key not found" in str(e)
+        assert "load milestone diff for index" in str(
+            e) and "key not found" in str(e)
+
 
 def test_get_receipts():
     try:
@@ -82,6 +97,7 @@ def test_get_receipts():
         # Else the error must be access forbidden
         assert "access forbidden, error: forbidden" in str(e)
 
+
 def test_get_receipts_migrated_at():
     try:
         # If the receipts can be accessed, then the list of receipts should return
@@ -91,6 +107,8 @@ def test_get_receipts_migrated_at():
         # Else the error must be access forbidden
         assert "access forbidden, error: forbidden" in str(e)
 
+
 def test_get_treasury():
     treasury_response = client.get_treasury()
-    assert isinstance(treasury_response, dict) and 'milestone_id' in treasury_response
+    assert isinstance(treasury_response,
+                      dict) and 'milestone_id' in treasury_response
