@@ -35,7 +35,7 @@ pub async fn create_migration_bundle(
     let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level);
     if !same_security_level {
         return Err(Error::MigrationError(
-            "Not all inputs have the same security level".into(),
+            "Not all inputs have the same security level",
         ));
     }
 
