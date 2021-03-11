@@ -24,7 +24,7 @@ use iota_bundle_miner::{
 };
 
 /// Prepare migration bundle with address and inputs
-pub async fn prepare_migration_bundle(
+pub async fn create_migration_bundle(
     client: &Client,
     address: Ed25519Address,
     inputs: Vec<InputData>,
@@ -53,11 +53,11 @@ pub async fn prepare_migration_bundle(
     let total_value = address_inputs.iter().map(|d| d.balance).sum();
 
     // Check for dust protection value
-    if total_value > 1_000_000 {
-        return Err(Error::MigrationError(
-            "Input value is < dust protection value (1_000_000 i)".into(),
-        ));
-    }
+    // if total_value < 1_000_000 {
+    //     return Err(Error::MigrationError(
+    //         "Input value is < dust protection value (1_000_000 i)".into(),
+    //     ));
+    // }
     let transfer = vec![Transfer {
         address: migration_address,
         value: total_value,
@@ -79,11 +79,19 @@ pub fn sign_migration_bundle(
     prepared_bundle: OutgoingBundleBuilder,
     inputs: Vec<InputData>,
 ) -> Result<Vec<BundledTransaction>> {
-    let security_level = inputs[0].security_lvl;
-    let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level);
+    let security_level = match inputs[0].security_lvl {
+        1 => WotsSecurityLevel::Low,
+        2 => WotsSecurityLevel::Medium,
+        3 => WotsSecurityLevel::High,
+        _ => panic!("Invalid scurity level"),
+    };
+    // Validate that all inputs have the same security level
+    let same_security_level = inputs
+        .iter()
+        .all(|i| i.security_lvl == inputs[0].security_lvl);
     if !same_security_level {
         return Err(Error::MigrationError(
-            "Not all inputs have the same security level".into(),
+            "Not all inputs have the same security level",
         ));
     }
 
@@ -98,18 +106,7 @@ pub fn sign_migration_bundle(
     address_inputs.dedup();
     let inputs: Vec<(usize, Address, WotsSecurityLevel)> = address_inputs
         .into_iter()
-        .map(|i| {
-            (
-                i.index as usize,
-                i.address,
-                match security_level {
-                    1 => WotsSecurityLevel::Low,
-                    2 => WotsSecurityLevel::Medium,
-                    3 => WotsSecurityLevel::High,
-                    _ => panic!("Invalid scurity level"),
-                },
-            )
-        })
+        .map(|i| (i.index as usize, i.address, security_level))
         .collect();
     // Sign
     let final_signed_bundle = prepared_bundle
@@ -122,8 +119,20 @@ pub fn sign_migration_bundle(
         .build()
         .expect("Fail to build bundle");
 
-    //Reverse for correct order when doing PoW
     let mut trytes: Vec<BundledTransaction> = final_signed_bundle.into_iter().collect();
+    let input_addresses: Vec<Address> = inputs.into_iter().map(|input| input.1).collect();
+    let mut bundle_addresses: Vec<Address> = trytes.iter().map(|tx| tx.address().clone()).collect();
+    bundle_addresses.dedup();
+    // Check if all and only input addresses were used (-1 for the migration address)
+    if input_addresses.len() != bundle_addresses.len()-1{
+        return Err(Error::MigrationError("Input address amount does't match created bundle"));
+    }
+    for address in input_addresses {
+        if !bundle_addresses.contains(&address) {
+            return Err(Error::MigrationError("Not all input addresses in bundle"));
+        }
+    }
+    // Reverse for correct order when doing PoW
     trytes.reverse();
     Ok(trytes)
 }
@@ -214,6 +223,33 @@ pub fn mine(
         mined_info.mined_essence.clone().expect("No essence mined"),
     );
     Ok((mined_info, updated_bundle))
+}
+
+/// Get Trytes from an OutgoingBundleBuilder
+pub fn get_trytes_from_bundle(created_migration_bundle: OutgoingBundleBuilder) -> Vec<String> {
+    let bundle = created_migration_bundle
+        .seal()
+        .expect("Fail to seal bundle")
+        .sign(&TernarySeed::rand(), &[])
+        .expect("Can't sign bundle")
+        .attach_local(Hash::zeros(), Hash::zeros())
+        .expect("Fail to attach bundle")
+        .build()
+        .expect("Fail to build bundle");
+
+    let mut trytes = Vec::new();
+    for i in 0..bundle.len() {
+        let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
+        bundle.get(i).unwrap().as_trits_allocated(&mut trits);
+        trytes.push(
+            trits
+                .encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>(),
+        );
+    }
+    trytes
 }
 
 // Update latest tx essence with mined essence part

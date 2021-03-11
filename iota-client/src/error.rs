@@ -39,7 +39,7 @@ pub enum Error {
     /// Crypto.rs error
     Slip10Error(slip10::Error),
     /// Migration error
-    MigrationError(String),
+    MigrationError(&'static str),
 }
 
 impl fmt::Display for Error {

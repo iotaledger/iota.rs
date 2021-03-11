@@ -5,7 +5,8 @@
 use anyhow::Result;
 use iota::{
     client::migration::{
-        mine, prepare_migration_bundle, sign_migration_bundle, Address as ChrysalisAddress,
+        create_migration_bundle, get_trytes_from_bundle, mine, sign_migration_bundle,
+        Address as ChrysalisAddress,
     },
     signing::ternary::seed::Seed as TernarySeed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
@@ -91,8 +92,14 @@ async fn main() -> Result<()> {
 
     // Create bundle
     let mut prepared_bundle =
-        prepare_migration_bundle(&iota, new_converted_address, account_input_data.1.clone())
-            .await?;
+        create_migration_bundle(&iota, new_converted_address, account_input_data.1.clone()).await?;
+
+    // // Get Trytes as String
+    // let bundle_for_trytes =
+    //     create_migration_bundle(&iota, new_converted_address, account_input_data.1.clone())
+    //         .await?;
+    // let bundle_trytes = get_trytes_from_bundle(bundle_for_trytes);
+    // println!("raw txs : {:?}",bundle_trytes);
 
     // Ideally split inputs to have one bundle for each spent address
     if account_input_data
@@ -109,7 +116,7 @@ async fn main() -> Result<()> {
             security_level,
             ledger,
             spent_bundle_hashes,
-            40,
+            5,
         )?;
         println!("Mining info: {:?}", mining_result.0);
         prepared_bundle = mining_result.1;
