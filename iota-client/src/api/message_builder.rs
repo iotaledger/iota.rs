@@ -7,7 +7,7 @@ use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::{AddressDto, OutputDto};
-use crypto::slip10::{Chain, Curve, Seed};
+use crypto::keys::slip10::{Chain, Curve, Seed};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -141,7 +141,7 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Set 1-8 custom parent message ids
     pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
         if !(1..=8).contains(&parent_ids.len()) {
-            return Err(Error::InvalidParentsAmount);
+            return Err(Error::InvalidParentsAmount(parent_ids.len()));
         }
         self.parents = Some(parent_ids);
         Ok(self)
@@ -151,14 +151,14 @@ impl<'a> ClientMessageBuilder<'a> {
     pub async fn finish(self) -> Result<Message> {
         // Indexation payload requires an indexation tag
         if self.data.is_some() && self.index.is_none() {
-            return Err(Error::MissingParameter(String::from("index")));
+            return Err(Error::MissingParameter("index"));
         }
         if self.inputs.is_some() && self.outputs.is_empty() {
-            return Err(Error::MissingParameter(String::from("output")));
+            return Err(Error::MissingParameter("output"));
         }
         if !self.outputs.is_empty() {
             if self.seed.is_none() {
-                return Err(Error::MissingParameter(String::from("Seed")));
+                return Err(Error::MissingParameter("Seed"));
             }
             // Send message with transaction
             self.finish_transaction().await

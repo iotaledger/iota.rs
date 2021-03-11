@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{Client, Result};
-use crypto::slip10::Seed;
+use crypto::keys::slip10::Seed;
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {

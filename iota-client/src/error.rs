@@ -24,10 +24,10 @@ pub enum Error {
     DustError(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
-    MissingParameter(String),
+    MissingParameter(&'static str),
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
-    InvalidParameter(String),
+    InvalidParameter(&'static str),
     /// Found spent output
     #[error("Found spent output.")]
     SpentOutput,
@@ -42,11 +42,11 @@ pub enum Error {
     FromHexError(#[from] hex::FromHexError),
     /// Message types error
     #[error("{0}")]
-    MessageError(bee_message::Error),
-    /// The message cannot be promoted or reattached
+    MessageError(#[from] bee_message::Error),
+    /// The message doensn't need to be promoted or reattached
     #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
-    /// The message cannot be promoted or reattached
+    /// The message cannot be included into the Tangle
     #[error("Message ID `{0}` couldn't get included into the Tangle")]
     TangleInclusionError(String),
     /// Mqtt client error
@@ -85,10 +85,10 @@ pub enum Error {
     AccountNotFound,
     /// Crypto.rs error
     #[error("{0}")]
-    CryptoError(crypto::Error),
+    CryptoError(#[from] crypto::Error),
     /// Invalid amount of parents
-    #[error("Invalid amount of parents, length must be in 1..=8")]
-    InvalidParentsAmount,
+    #[error("Invalid amount of parents: {0}, length must be in 1..=8")]
+    InvalidParentsAmount(usize),
     /// ureq error
     #[cfg(feature = "sync")]
     #[error("{0}")]
@@ -97,7 +97,7 @@ pub enum Error {
     #[cfg(feature = "async")]
     #[error("Response error with status code {0}: {1}")]
     ResponseError(u16, String),
-    /// ureq error
+    /// reqwest error
     #[cfg(feature = "async")]
     #[error("{0}")]
     ReqwestError(#[from] reqwest::Error),
@@ -110,18 +110,4 @@ pub enum Error {
     /// DTO error
     #[error("failed to convert data: {0}")]
     DtoError(String),
-}
-
-// can't use #[from] on bee_message::Error so manually converting it
-impl From<bee_message::Error> for Error {
-    fn from(error: bee_message::Error) -> Self {
-        Error::MessageError(error)
-    }
-}
-
-// can't use #[from] on crypto::Error so manually converting it
-impl From<crypto::Error> for Error {
-    fn from(error: crypto::Error) -> Self {
-        Error::CryptoError(error)
-    }
 }

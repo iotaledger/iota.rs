@@ -4,7 +4,7 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use crypto::slip10::Seed;
+use crypto::keys::slip10::Seed;
 
 use std::str::FromStr;
 

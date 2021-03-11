@@ -18,7 +18,7 @@ bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "3edeb71205
 bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "3edeb71205207b04c65d48757403f397d9fe1d2b" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
-iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "527392202e78fa35620a9b30061d5e231a046ea2", features = ["blake2b", "ed25519", "random", "slip10"]}
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "61924d5c237254f5a6da0e9ac61cd7e7bb310058", features = ["std", "blake2b", "ed25519", "random", "slip10"]}
 ureq = { version = "2.0", features = ["json"], optional = true }
 reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
 url = "2.2"

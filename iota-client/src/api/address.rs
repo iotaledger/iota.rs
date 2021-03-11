@@ -7,7 +7,7 @@ use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
 use core::convert::TryInto;
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
-    slip10::{Chain, Curve, Seed},
+    keys::slip10::{Chain, Curve, Seed},
 };
 use std::ops::Range;
 
@@ -83,7 +83,7 @@ impl<'a> GetAddressesBuilder<'a> {
             Some(bech32_hrp) => bech32_hrp,
             None => {
                 self.client
-                    .ok_or_else(|| Error::MissingParameter(String::from("Client or bech32_hrp")))?
+                    .ok_or(Error::MissingParameter("Client or bech32_hrp"))?
                     .get_bech32_hrp()
                     .await?
             }
