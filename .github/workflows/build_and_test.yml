@@ -118,6 +118,16 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     
+    - name: Get current date (Windows)
+      if: matrix.os == 'windows-latest'
+      run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    
+    - name: Install OpenSSL (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install openssl --no-progress
+        echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
     - name: Install dependencies for python binding test
       run: |
         python -m pip install --upgrade pip
