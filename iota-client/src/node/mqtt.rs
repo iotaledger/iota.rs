@@ -46,13 +46,13 @@ impl Topic {
         );
         let regexes = lazy_static!(
           [
-            Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").unwrap(),
-            Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").unwrap(),
+            Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata")?,
+            Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})")?,
             // bech32 address
-            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").unwrap(),
+            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs")?,
             // ED25519 address hex
-            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
-            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").unwrap()
+            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs")?,
+            Regex::new(r"messages/indexation/([a-f0-9]{2,128})")?
           ].to_vec() => Vec<Regex>
         );
         let name = name.into();

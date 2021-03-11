@@ -484,7 +484,7 @@ impl Client {
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             for (info, node_url) in nodes.iter() {
                 let mut client_network_info = network_info.write().await;
-                client_network_info.network_id = Some(hash_network(&info.network_id));
+                client_network_info.network_id = hash_network(&info.network_id).ok();
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp.clone();
                 if !client_network_info.local_pow {
@@ -528,9 +528,9 @@ impl Client {
         let not_synced = { self.network_info.read().await.network_id.is_none() };
         if not_synced {
             let info = self.get_info().await?;
-            let network_id = hash_network(&info.network_id);
+            let network_id = hash_network(&info.network_id).ok();
             let mut client_network_info = self.network_info.write().await;
-            client_network_info.network_id = Some(network_id);
+            client_network_info.network_id = network_id;
             client_network_info.min_pow_score = info.min_pow_score;
             client_network_info.bech32_hrp = info.bech32_hrp;
         }
@@ -1135,10 +1135,10 @@ impl Client {
 }
 
 /// Hash the network id str from the nodeinfo to an u64 for the messageBuilder
-pub fn hash_network(network_id_string: &str) -> u64 {
-    u64::from_le_bytes(
-        Blake2b256::digest(network_id_string.as_bytes())[0..8]
-            .try_into()
-            .expect("Hashing the network id string failed."),
-    )
+pub fn hash_network(network_id_string: &str) -> Result<u64> {
+    let bytes = Blake2b256::digest(network_id_string.as_bytes())[0..8]
+        .try_into()
+        .map_err(|_e| Error::Blake2b256Error("Hashing the network id failed."))?;
+
+    Ok(u64::from_le_bytes(bytes))
 }

@@ -120,9 +120,9 @@ fn generate_address(seed: &Seed, account_index: u32, address_index: u32, interna
     // Hash the public key to get the address
     let result = Blake2b256::digest(&public_key)
         .try_into()
-        .expect("Hashing the public key while generating the address failed.");
+        .map_err(|_e| Error::Blake2b256Error("Hashing the public key while generating the address failed."));
 
-    Ok(Address::Ed25519(Ed25519Address::new(result)))
+    Ok(Address::Ed25519(Ed25519Address::new(result?)))
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
