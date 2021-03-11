@@ -10,8 +10,8 @@ use iota::{
     },
     signing::ternary::seed::Seed as TernarySeed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
-    transaction::bundled::BundledTransactionField,
     transaction::bundled::BundledTransaction,
+    transaction::bundled::BundledTransactionField,
 };
 use std::collections::HashMap;
 use std::io;
@@ -24,6 +24,7 @@ async fn main() -> Result<()> {
     let ledger = false;
     let iota = iota::ClientBuilder::new()
         .node("https://nodes.devnet.iota.org")?
+        // .permanode("https://permanode.org")?
         .build()?;
     let tryte_seed = TernarySeed::from_trits(
         TryteBuf::try_from_str(

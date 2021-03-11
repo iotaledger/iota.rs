@@ -19,6 +19,7 @@ pub enum Network {
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
     nodes: Vec<String>,
+    permanode: Option<String>,
     network: Network,
     quorum_size: u8,
     quorum_threshold: u8,
@@ -29,6 +30,7 @@ impl ClientBuilder {
     pub fn new() -> Self {
         Self {
             nodes: Vec::new(),
+            permanode: None,
             network: Network::Mainnet,
             quorum_size: 3,
             quorum_threshold: 50,
@@ -38,6 +40,12 @@ impl ClientBuilder {
     /// Add a Iota node
     pub fn node(mut self, url: &str) -> Result<Self> {
         self.nodes.push(url.to_string());
+        Ok(self)
+    }
+
+    /// Set a Iota permanode
+    pub fn permanode(mut self, url: &str) -> Result<Self> {
+        self.permanode = Some(url.to_string());
         Ok(self)
     }
 
@@ -95,6 +103,7 @@ impl ClientBuilder {
 
         let client = Client {
             pool: Arc::new(RwLock::new(self.nodes.into_iter().collect())),
+            permanode: self.permanode,
             mwm,
             quorum_size,
             quorum_threshold,

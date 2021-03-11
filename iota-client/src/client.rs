@@ -38,6 +38,7 @@ macro_rules! response {
 pub struct Client {
     /// Node pool of IOTA nodes
     pub(crate) pool: Arc<RwLock<HashSet<String>>>,
+    pub(crate) permanode: Option<String>,
     pub(crate) mwm: u8,
     pub(crate) quorum_size: u8,
     pub(crate) quorum_threshold: u8,
@@ -354,7 +355,12 @@ impl Client {
             "hashes": hashes,
         });
 
-        let res: GetTrytesResponseBuilder = response!(self, body);
+        let res: GetTrytesResponseBuilder = match &self.permanode {
+            Some(url) => {
+                response!(client, body, url)
+            }
+            None => response!(self, body),
+        };
         res.build().await
     }
 

@@ -116,7 +116,12 @@ impl<'a> FindTransactionsBuilder<'a> {
         }
 
         let client = self.client;
-        let res: FindTransactionsResponseBuilder = response!(client, body);
+        let res: FindTransactionsResponseBuilder = match &client.permanode {
+            Some(url) => {
+                response!(client, body, url)
+            }
+            None => response!(client, body),
+        };
         res.build().await
     }
 }

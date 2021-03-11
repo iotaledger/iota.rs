@@ -124,8 +124,10 @@ pub fn sign_migration_bundle(
     let mut bundle_addresses: Vec<Address> = trytes.iter().map(|tx| tx.address().clone()).collect();
     bundle_addresses.dedup();
     // Check if all and only input addresses were used (-1 for the migration address)
-    if input_addresses.len() != bundle_addresses.len()-1{
-        return Err(Error::MigrationError("Input address amount does't match created bundle"));
+    if input_addresses.len() != bundle_addresses.len() - 1 {
+        return Err(Error::MigrationError(
+            "Input address amount does't match created bundle",
+        ));
     }
     for address in input_addresses {
         if !bundle_addresses.contains(&address) {
