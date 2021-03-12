@@ -47,6 +47,8 @@ iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 
 And then you can use the library in your code with `iota`.
 
+When using the "MQTT" feature, connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+
 ## API reference
 
 You can read the [API reference](https://docs.rs/iota-core) here, or generate it yourself.

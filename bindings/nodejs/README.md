@@ -27,6 +27,8 @@ $ cd /path/to/nodejs/project/
 $ yarn link iota-client
 ```
 
+Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+
 ## Getting Started
 
 After you linked the library, you can create a `Client` instance and interface with it.

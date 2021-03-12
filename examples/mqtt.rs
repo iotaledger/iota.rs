@@ -6,10 +6,7 @@
 use iota::{Client, Message, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
-// To run this example you'll need to add "mqtt" to the features of the iota-core import in Cargo.toml
-// like this: iota-core = { path = "../iota-core", features = ["storage", "mqtt"] }.
-// You'll also need to uncomment the mqtt example beneath.
-
+// Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
 #[tokio::main]
 async fn main() {
     // Create a client instance

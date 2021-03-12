@@ -1,6 +1,7 @@
 # IOTA Client Python Library
 
 ## Requirements
+
 - Rust 1.45.0+
 - Python 3.6+
 
@@ -47,6 +48,7 @@
    - **NOTE: Please download the wheel files generated in the commit version you want to use.**
    - `$ pip3 install [THE_DOWNLOADED_WHEEL_FILE]`
 
+Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
 ## Testing
 - Install [tox](#https://pypi.org/project/tox/)
   - `$ pip install tox`
