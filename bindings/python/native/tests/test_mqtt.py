@@ -19,7 +19,6 @@ q = queue.Queue()
 broker_options = {
     'automatic_disconnect': True,
     'timeout': 30,
-    'use_ws': False,
 }
 
 client = iota_client.Client(
@@ -32,7 +31,6 @@ q = queue.Queue()
 broker_options = {
     'automatic_disconnect': True,
     'timeout': 5,
-    'use_ws': False,
 }
 
 

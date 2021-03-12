@@ -17,7 +17,7 @@ async fn main() {
         .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         // to use tcp instead
-        .with_mqtt_broker_options(BrokerOptions::new().use_websockets(false))
+        .with_mqtt_broker_options(BrokerOptions::new())
         .finish()
         .await
         .unwrap();
