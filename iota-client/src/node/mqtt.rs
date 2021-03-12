@@ -69,7 +69,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
         Some(ref mut c) => Ok(c),
         None => {
             for node in client.sync.read().await.iter() {
-                let host = node.host_str().unwrap();
+                let host = node.host_str().expect("Can't get host from URL");
                 let mut mqttoptions = MqttOptions::new(host, host, 1883);
                 mqttoptions.set_connection_timeout(client.broker_options.timeout.as_secs());
                 let (_, mut connection) = MqttClient::new(mqttoptions.clone(), 10);
@@ -101,7 +101,7 @@ fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, mut event_loop: 
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
-            .unwrap();
+            .expect("Failed to create Tokio runtime");
         runtime.block_on(async move {
             while let Ok(event) = event_loop.poll().await {
                 let mqtt_topic_handlers = mqtt_topic_handlers.clone();
