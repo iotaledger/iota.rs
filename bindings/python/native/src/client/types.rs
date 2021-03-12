@@ -270,8 +270,6 @@ pub struct BrokerOptions {
     pub automatic_disconnect: bool,
     /// broker timeout in secs
     pub timeout: u64,
-    /// use websockets or not
-    pub use_ws: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
