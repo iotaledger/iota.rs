@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
         .node("https://nodes.devnet.iota.org")?
         .build()?;
     // Get inputs
-    let inputs = iota.get_all_inputs().with_seed(&seed).finish().await?;
+    let inputs = iota.get_inputs(&seed).generate().await?;
     println!("{:?}", inputs);
 
     // Prepare a vector of transfers

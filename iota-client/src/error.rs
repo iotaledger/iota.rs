@@ -38,6 +38,8 @@ pub enum Error {
     CryptoError(crypto::Error),
     /// Crypto.rs error
     Slip10Error(slip10::Error),
+    /// ureq error
+    UreqError(ureq::Error),
     /// Migration error
     MigrationError(&'static str),
 }
@@ -60,6 +62,7 @@ impl fmt::Display for Error {
             Error::ChrysalisAddressError(s) => s.fmt(f),
             Error::CryptoError(e) => e.fmt(f),
             Error::Slip10Error(e) => e.fmt(f),
+            Error::UreqError(e) => e.fmt(f),
             Error::MigrationError(e) => e.fmt(f),
         }
     }
@@ -80,5 +83,11 @@ impl From<crypto::Error> for Error {
 impl From<slip10::Error> for Error {
     fn from(error: slip10::Error) -> Self {
         Error::Slip10Error(error)
+    }
+}
+
+impl From<ureq::Error> for Error {
+    fn from(error: ureq::Error) -> Self {
+        Error::UreqError(error)
     }
 }

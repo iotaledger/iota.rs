@@ -414,7 +414,7 @@ async fn test_send_transfers_no_value() {
             .unwrap(),
         ))
         .with_transfers(transfers)
-        .with_min_weight_magnitude(10)
+        .with_min_weight_magnitude(9)
         .finish()
         .await
         .unwrap();
