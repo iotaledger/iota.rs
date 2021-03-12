@@ -75,7 +75,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 // which means that the mqtt client is ready to be used on this host
                 // if the event loop returns an error, we check the next node
                 let mut got_ack = false;
-                for event in connection.poll().await {
+                while let Ok(event) = connection.poll().await {
                     if let Event::Incoming(incoming) = event {
                         if let Incoming::ConnAck(_) = incoming {
                             got_ack = true;
@@ -96,14 +96,14 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     }
 }
 
-fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, mut connection: EventLoop) {
+fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, mut event_loop: EventLoop) {
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap();
         runtime.block_on(async move {
-            for event in connection.poll().await {
+            while let Ok(event) = event_loop.poll().await {
                 let mqtt_topic_handlers = mqtt_topic_handlers.clone();
                 if let Event::Incoming(Incoming::Publish(p)) = event {
                     let topic = p.topic.clone();
