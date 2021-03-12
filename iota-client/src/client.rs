@@ -387,8 +387,12 @@ impl Drop for Client {
         }
 
         #[cfg(feature = "mqtt")]
-        if self.mqtt_client.is_some() {
-            crate::async_runtime::block_on(self.subscriber().disconnect()).expect("failed to disconnect MQTT");
+        if let Some(mqtt_client) = self.mqtt_client.take() {
+            std::thread::spawn(move || {
+                crate::async_runtime::block_on(mqtt_client.disconnect()).expect("failed to disconnect MQTT");
+            })
+            .join()
+            .unwrap();
         }
     }
 }
