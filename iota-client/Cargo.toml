@@ -13,9 +13,9 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "3edeb71205207b04c65d48757403f397d9fe1d2b" }
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "3edeb71205207b04c65d48757403f397d9fe1d2b" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "3edeb71205207b04c65d48757403f397d9fe1d2b" }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "d379dc3f6d96bca53c32e53feb3e6b7a0a7372b4" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "d379dc3f6d96bca53c32e53feb3e6b7a0a7372b4" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "d379dc3f6d96bca53c32e53feb3e6b7a0a7372b4" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "61924d5c237254f5a6da0e9ac61cd7e7bb310058", features = ["std", "blake2b", "ed25519", "random", "slip10"]}
