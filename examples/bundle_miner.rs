@@ -4,8 +4,8 @@
 //! cargo run --example bundle_miner --release
 use iota::bundle_miner::MinerBuilder;
 use iota::ternary::{T1B1Buf, TritBuf, TryteBuf};
-
-fn main() {
+#[tokio::main]
+async fn main() {
     let known_bundle_hashes =
         vec!["SEYZLVFTIKFROANWJDVJVOU9HZCHSHOZEIKS9CGHNHGCRUJBUEAQPBYWREUEXEAIRDXEWO9H9HXRIWVKB"];
     let essences = vec![
@@ -52,6 +52,6 @@ fn main() {
     let target_crack_probability = None;
     let threshold = None;
     // We can set extra parameters when running the bundle miner to ease of more customized usage.
-    let miner_result = miner.run(target_crack_probability, threshold).unwrap();
+    let miner_result = miner.run(target_crack_probability, threshold).await.unwrap();
     println!("{:?}", miner_result);
 }
