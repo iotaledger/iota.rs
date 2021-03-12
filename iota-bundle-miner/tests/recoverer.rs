@@ -66,9 +66,8 @@ pub fn test_get_crack_probability_security_3() {
     let p_expected = 1.1704004458e-40_f64;
     assert_eq!(true, (p_expected - p_actual).abs() < p_expected * 1e-9);
 }
-
-#[test]
-pub fn test_recoverer_run_security_1() {
+#[tokio::test]
+pub async fn test_recoverer_run_security_1() {
     let known_bundle_hashes =
         vec!["SEYZLVFTIKFROANWJDVJVOU9HZCHSHOZEIKS9CGHNHGCRUJBUEAQPBYWREUEXEAIRDXEWO9H9HXRIWVKB"];
     let essences = vec![
@@ -130,7 +129,7 @@ pub fn test_recoverer_run_security_1() {
         .finish()
         .unwrap();
 
-    if let CrackabilityMinerEvent::MinedCrackability(mined_info) = recoverer.recover() {
+    if let CrackabilityMinerEvent::MinedCrackability(mined_info) = recoverer.recover().await {
         assert_eq!(mined_iteration_expected, mined_info.mined_iteration);
         assert_eq!(
             true,
@@ -142,8 +141,8 @@ pub fn test_recoverer_run_security_1() {
     }
 }
 
-#[test]
-pub fn test_recoverer_run_security_2() {
+#[tokio::test]
+pub async fn test_recoverer_run_security_2() {
     let known_bundle_hashes =
         vec!["SEYZLVFTIKFROANWJDVJVOU9HZCHSHOZEIKS9CGHNHGCRUJBUEAQPBYWREUEXEAIRDXEWO9H9HXRIWVKB"];
     let essences = vec![
@@ -207,7 +206,7 @@ pub fn test_recoverer_run_security_2() {
         .finish()
         .unwrap();
 
-    if let CrackabilityMinerEvent::MinedCrackability(mined_info) = recoverer.recover() {
+    if let CrackabilityMinerEvent::MinedCrackability(mined_info) = recoverer.recover().await {
         assert_eq!(mined_iteration_expected, mined_info.mined_iteration);
         assert_eq!(
             true,
