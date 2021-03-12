@@ -419,9 +419,8 @@ impl Miner {
         let crackability = Arc::new(Mutex::new(std::f64::MAX));
         // Use the dummy essence and update in the mining_worker function
         let best_essence = Arc::new(Mutex::new(self.essences_from_unsigned_bundle[0].clone()));
-        let mut runtime = Builder::new()
-            .threaded_scheduler()
-            .core_threads(self.core_thread_count)
+        let runtime = Builder::new_multi_thread()
+            .worker_threads(self.core_thread_count)
             .thread_name("bundle-miner")
             .thread_stack_size(3 * 1024 * 1024) // TODO: configurable by user
             .enable_time()
@@ -429,7 +428,7 @@ impl Miner {
         let mut abort_handles = Vec::new();
         Ok(runtime.block_on(async {
             for i in 0..self.worker_count {
-                let mut tx_cloned = tx.clone();
+                let tx_cloned = tx.clone();
                 let (abortable_worker, abort_handle) = abortable(mining_worker(
                     self.offset,
                     i,
@@ -453,7 +452,7 @@ impl Miner {
                 abort_handles.push(abort_handle);
             }
             let (abortable_worker, abort_handle) = abortable(timeout_worker(self.mining_timeout));
-            let mut tx_cloned = tx.clone();
+            let tx_cloned = tx.clone();
             tokio::spawn(async move {
                 if abortable_worker.await.is_ok() {
                     tx_cloned
@@ -509,9 +508,8 @@ impl Miner {
         criterion: impl StopMiningCriteria + std::marker::Send + 'static + Copy,
     ) -> MinerEvent {
         let (tx, mut rx) = mpsc::channel(self.worker_count);
-        let mut runtime = Builder::new()
-            .threaded_scheduler()
-            .core_threads(self.core_thread_count)
+        let runtime = Builder::new_multi_thread()
+            .worker_threads(self.core_thread_count)
             .thread_name("miner")
             .thread_stack_size(3 * 1024 * 1024) // TODO: configurable by user
             .enable_time()
@@ -520,7 +518,7 @@ impl Miner {
         let mut abort_handles = Vec::new();
         runtime.block_on(async {
             for i in 0..self.worker_count {
-                let mut tx_cloned = tx.clone();
+                let tx_cloned = tx.clone();
                 let (abortable_worker, abort_handle) =
                     abortable(mining_worker_with_non_crack_probability_stop_criteria(
                         0,
@@ -540,7 +538,7 @@ impl Miner {
                 abort_handles.push(abort_handle);
             }
             let (abortable_worker, abort_handle) = abortable(timeout_worker(self.mining_timeout));
-            let mut tx_cloned = tx.clone();
+            let tx_cloned = tx.clone();
             tokio::spawn(async move {
                 if abortable_worker.await.is_ok() {
                     tx_cloned.send(MinerEvent::Timeout).await.unwrap();
@@ -571,7 +569,7 @@ impl Miner {
 
 /// The timeout worker to terminate the runtime in seconds
 pub async fn timeout_worker(seconds: u64) {
-    time::delay_for(time::Duration::from_secs(seconds)).await;
+    time::sleep(time::Duration::from_secs(seconds)).await;
 }
 
 /// The mining worker, stop when timeout or the criterion is met

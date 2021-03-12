@@ -3,6 +3,7 @@
 
 //! cargo run --example migration_address --release
 use iota::client::chrysalis2::*;
+use iota::client::migration::{add_tryte_checksum, encode_migration_address};
 
 /// In this example we create addresses from a seed
 #[tokio::main]

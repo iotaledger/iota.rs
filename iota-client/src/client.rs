@@ -21,15 +21,15 @@ macro_rules! response {
         ureq::post(&$self.get_node()?)
             .set("Content-Type", "application/json")
             .set("X-IOTA-API-Version", "1")
-            .send_json($body)
-            .into_json_deserialize()?
+            .send_json($body)?
+            .into_json()?
     };
     ($self:ident, $body:ident, $node:ident) => {
         ureq::post($node)
             .set("Content-Type", "application/json")
             .set("X-IOTA-API-Version", "1")
-            .send_json($body)
-            .into_json_deserialize()?
+            .send_json($body)?
+            .into_json()?
     };
 }
 

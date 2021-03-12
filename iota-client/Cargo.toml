@@ -23,7 +23,7 @@ bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = "0.4.12"
-ureq = { version = "1.5.1", features = ["json"] }
+ureq = { version = "2.0", features = ["json"] }
 #chrysalis2
 bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 slip10 = "0.4"
