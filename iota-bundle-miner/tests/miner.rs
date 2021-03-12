@@ -229,8 +229,8 @@ pub fn test_miner_builder() {
         .unwrap();
 }
 
-#[test]
-pub fn test_miner_equal_target_hash_run() {
+#[tokio::test]
+pub async fn test_miner_equal_target_hash_run() {
     let essences = vec![
         "EDIKZYSKVIWNNTMKWUSXKFMYQVIMBNECNYKBG9YVRKUMXNIXSVAKTIDCAHULLLXR9FSQSDDOFOJWKFACD",
         "A99999999999999999999999999999999999999999999999999999999999999999999999C99999999",
@@ -276,6 +276,7 @@ pub fn test_miner_equal_target_hash_run() {
                 .encode(),
             EQUAL_TRAGET_HASH,
         )
+        .await
     {
         assert_eq!(mined_essence, expected_essence);
     } else {
@@ -283,8 +284,8 @@ pub fn test_miner_equal_target_hash_run() {
     }
 }
 
-#[test]
-pub fn test_miner_less_than_max_hash_run() {
+#[tokio::test]
+pub async fn test_miner_less_than_max_hash_run() {
     let essences = vec![
         "EDIKZYSKVIWNNTMKWUSXKFMYQVIMBNECNYKBG9YVRKUMXNIXSVAKTIDCAHULLLXR9FSQSDDOFOJWKFACD",
         "A99999999999999999999999999999999999999999999999999999999999999999999999C99999999",
@@ -330,6 +331,7 @@ pub fn test_miner_less_than_max_hash_run() {
                 .encode(),
             LESS_THAN_MAX_HASH,
         )
+        .await
     {
         assert_eq!(mined_essence, expected_essence);
     } else {

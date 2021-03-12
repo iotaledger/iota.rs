@@ -401,7 +401,7 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
 
 impl Miner {
     /// The minier which returns the best crackability and mined iteration.
-    pub fn run(
+    pub async fn run(
         &mut self,
         target_crack_probability: Option<f64>,
         threshold: Option<f64>,
@@ -419,6 +419,10 @@ impl Miner {
         let crackability = Arc::new(Mutex::new(std::f64::MAX));
         // Use the dummy essence and update in the mining_worker function
         let best_essence = Arc::new(Mutex::new(self.essences_from_unsigned_bundle[0].clone()));
+        let worker_count = self.worker_count;
+        let offset = self.offset;
+        let essences_from_unsigned_bundle = self.essences_from_unsigned_bundle[..].to_vec();
+        let mining_timeout = self.mining_timeout;
         let runtime = Builder::new_multi_thread()
             .worker_threads(self.core_thread_count)
             .thread_name("bundle-miner")
@@ -426,83 +430,88 @@ impl Miner {
             .enable_time()
             .build()?;
         let mut abort_handles = Vec::new();
-        Ok(runtime.block_on(async {
-            for i in 0..self.worker_count {
+        let result = runtime
+            .spawn(async move {
+                for i in 0..worker_count {
+                    let tx_cloned = tx.clone();
+                    let (abortable_worker, abort_handle) = abortable(mining_worker(
+                        offset,
+                        i,
+                        essences_from_unsigned_bundle.to_vec(),
+                        target_hash.clone(),
+                        Arc::clone(&counters),
+                        Arc::clone(&crackability),
+                        Arc::clone(&best_essence),
+                        criterion,
+                    ));
+                    tokio::spawn(async move {
+                        if let Ok(mined_essence) = abortable_worker.await {
+                            tx_cloned
+                                .send(MinerEvent::MinedEssence(
+                                    mined_essence.expect("Cannot get the mined essence"),
+                                ))
+                                .await
+                                .expect("Cannot send the MinedEssence event");
+                        }
+                    });
+                    abort_handles.push(abort_handle);
+                }
+                let (abortable_worker, abort_handle) = abortable(timeout_worker(mining_timeout));
                 let tx_cloned = tx.clone();
-                let (abortable_worker, abort_handle) = abortable(mining_worker(
-                    self.offset,
-                    i,
-                    self.essences_from_unsigned_bundle[..].to_vec(),
-                    target_hash.clone(),
-                    Arc::clone(&counters),
-                    Arc::clone(&crackability),
-                    Arc::clone(&best_essence),
-                    criterion,
-                ));
                 tokio::spawn(async move {
-                    if let Ok(mined_essence) = abortable_worker.await {
+                    if abortable_worker.await.is_ok() {
                         tx_cloned
-                            .send(MinerEvent::MinedEssence(
-                                mined_essence.expect("Cannot get the mined essence"),
-                            ))
+                            .send(MinerEvent::Timeout)
                             .await
-                            .expect("Cannot send the MinedEssence event");
+                            .expect("Cannot send Timeout event");
                     }
                 });
                 abort_handles.push(abort_handle);
-            }
-            let (abortable_worker, abort_handle) = abortable(timeout_worker(self.mining_timeout));
-            let tx_cloned = tx.clone();
-            tokio::spawn(async move {
-                if abortable_worker.await.is_ok() {
-                    tx_cloned
-                        .send(MinerEvent::Timeout)
-                        .await
-                        .expect("Cannot send Timeout event");
-                }
-            });
-            abort_handles.push(abort_handle);
-            if let Some(event) = rx.recv().await {
-                let best_crackability =
-                    *(crackability.lock().expect("Cannot get the crackability"));
-                let mined_iteration = *(counters.lock().expect("Cannot get the counters"))
-                    .iter()
-                    .max()
-                    .expect("Cannot get the maximum iteration from counters");
-                let mined_best_essence = best_essence
-                    .lock()
-                    .expect("Cannot get the best essence")
-                    .clone();
-                match event {
-                    MinerEvent::MinedEssence(essence) => {
-                        for i in abort_handles {
-                            i.abort();
+                if let Some(event) = rx.recv().await {
+                    let best_crackability =
+                        *(crackability.lock().expect("Cannot get the crackability"));
+                    let mined_iteration = *(counters.lock().expect("Cannot get the counters"))
+                        .iter()
+                        .max()
+                        .expect("Cannot get the maximum iteration from counters");
+                    let mined_best_essence = best_essence
+                        .lock()
+                        .expect("Cannot get the best essence")
+                        .clone();
+                    match event {
+                        MinerEvent::MinedEssence(essence) => {
+                            for i in abort_handles {
+                                i.abort();
+                            }
+                            CrackabilityMinerEvent::MinedCrackability(MinedCrackability {
+                                crackability: best_crackability,
+                                mined_essence: Some(essence),
+                                mined_iteration,
+                            })
                         }
-                        CrackabilityMinerEvent::MinedCrackability(MinedCrackability {
-                            crackability: best_crackability,
-                            mined_essence: Some(essence),
-                            mined_iteration,
-                        })
-                    }
-                    MinerEvent::Timeout => {
-                        for i in abort_handles {
-                            i.abort();
+                        MinerEvent::Timeout => {
+                            for i in abort_handles {
+                                i.abort();
+                            }
+                            CrackabilityMinerEvent::Timeout(MinedCrackability {
+                                crackability: best_crackability,
+                                mined_essence: Some(mined_best_essence),
+                                mined_iteration,
+                            })
                         }
-                        CrackabilityMinerEvent::Timeout(MinedCrackability {
-                            crackability: best_crackability,
-                            mined_essence: Some(mined_best_essence),
-                            mined_iteration,
-                        })
                     }
+                } else {
+                    unreachable!();
                 }
-            } else {
-                unreachable!();
-            }
-        }))
+            })
+            .await
+            .unwrap();
+        runtime.shutdown_background();
+        Ok(result)
     }
 
     /// Run the bundle miner with non-crack-probability stop criteria
-    pub fn run_with_with_non_crack_probability_stop_criteria(
+    pub async fn run_with_with_non_crack_probability_stop_criteria(
         &mut self,
         target_hash: TritBuf<T1B1Buf>,
         criterion: impl StopMiningCriteria + std::marker::Send + 'static + Copy,
@@ -516,54 +525,62 @@ impl Miner {
             .build()
             .unwrap();
         let mut abort_handles = Vec::new();
-        runtime.block_on(async {
-            for i in 0..self.worker_count {
+        let worker_count = self.worker_count;
+        let essences_from_unsigned_bundle = self.essences_from_unsigned_bundle[..].to_vec();
+        let mining_timeout = self.mining_timeout;
+        let res = runtime
+            .spawn(async move {
+                for i in 0..worker_count {
+                    let tx_cloned = tx.clone();
+                    let (abortable_worker, abort_handle) =
+                        abortable(mining_worker_with_non_crack_probability_stop_criteria(
+                            0,
+                            i,
+                            essences_from_unsigned_bundle.to_vec(),
+                            target_hash.clone(),
+                            criterion,
+                        ));
+                    tokio::spawn(async move {
+                        if let Ok(mined_essence) = abortable_worker.await {
+                            tx_cloned
+                                .send(MinerEvent::MinedEssence(mined_essence))
+                                .await
+                                .unwrap();
+                        }
+                    });
+                    abort_handles.push(abort_handle);
+                }
+                let (abortable_worker, abort_handle) = abortable(timeout_worker(mining_timeout));
                 let tx_cloned = tx.clone();
-                let (abortable_worker, abort_handle) =
-                    abortable(mining_worker_with_non_crack_probability_stop_criteria(
-                        0,
-                        i,
-                        self.essences_from_unsigned_bundle[..].to_vec(),
-                        target_hash.clone(),
-                        criterion,
-                    ));
                 tokio::spawn(async move {
-                    if let Ok(mined_essence) = abortable_worker.await {
-                        tx_cloned
-                            .send(MinerEvent::MinedEssence(mined_essence))
-                            .await
-                            .unwrap();
+                    if abortable_worker.await.is_ok() {
+                        tx_cloned.send(MinerEvent::Timeout).await.unwrap();
                     }
                 });
                 abort_handles.push(abort_handle);
-            }
-            let (abortable_worker, abort_handle) = abortable(timeout_worker(self.mining_timeout));
-            let tx_cloned = tx.clone();
-            tokio::spawn(async move {
-                if abortable_worker.await.is_ok() {
-                    tx_cloned.send(MinerEvent::Timeout).await.unwrap();
-                }
-            });
-            abort_handles.push(abort_handle);
-            if let Some(event) = rx.recv().await {
-                match event {
-                    MinerEvent::MinedEssence(essence) => {
-                        for i in abort_handles {
-                            i.abort();
+                if let Some(event) = rx.recv().await {
+                    match event {
+                        MinerEvent::MinedEssence(essence) => {
+                            for i in abort_handles {
+                                i.abort();
+                            }
+                            MinerEvent::MinedEssence(essence)
                         }
-                        MinerEvent::MinedEssence(essence)
-                    }
-                    MinerEvent::Timeout => {
-                        for i in abort_handles {
-                            i.abort();
+                        MinerEvent::Timeout => {
+                            for i in abort_handles {
+                                i.abort();
+                            }
+                            MinerEvent::Timeout
                         }
-                        MinerEvent::Timeout
                     }
+                } else {
+                    unreachable!();
                 }
-            } else {
-                unreachable!();
-            }
-        })
+            })
+            .await
+            .unwrap();
+        runtime.shutdown_background();
+        res
     }
 }
 

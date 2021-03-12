@@ -95,11 +95,12 @@ impl RecovererBuilder {
 
 impl Recoverer {
     /// Start running mining workers
-    pub fn recover(&mut self) -> CrackabilityMinerEvent {
+    pub async fn recover(&mut self) -> CrackabilityMinerEvent {
         let target_crackability =
             get_crack_probability(self.security_level, &self.known_bundle_hashes);
         self.miner
             .run(Some(target_crackability), Some(self.threshold))
+            .await
             .unwrap()
     }
 }
