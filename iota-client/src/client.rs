@@ -28,7 +28,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 #[cfg(feature = "mqtt")]
-use paho_mqtt::Client as MqttClient;
+use rumqttc::AsyncClient as MqttClient;
 use tokio::{
     runtime::Runtime,
     sync::{
@@ -84,8 +84,6 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
-    #[serde(default = "default_use_ws")]
-    pub(crate) use_ws: bool,
 }
 
 #[cfg(feature = "mqtt")]
@@ -99,17 +97,11 @@ fn default_broker_timeout() -> Duration {
 }
 
 #[cfg(feature = "mqtt")]
-fn default_use_ws() -> bool {
-    true
-}
-
-#[cfg(feature = "mqtt")]
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
             automatic_disconnect: default_broker_automatic_disconnect(),
             timeout: default_broker_timeout(),
-            use_ws: default_use_ws(),
         }
     }
 }
@@ -130,12 +122,6 @@ impl BrokerOptions {
     /// Sets the timeout used for the MQTT operations.
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
-        self
-    }
-
-    /// Decide if websockets or tcp will be used for the connection
-    pub fn use_websockets(mut self, use_ws: bool) -> Self {
-        self.use_ws = use_ws;
         self
     }
 }
@@ -401,8 +387,12 @@ impl Drop for Client {
         }
 
         #[cfg(feature = "mqtt")]
-        if self.mqtt_client.is_some() {
-            crate::async_runtime::block_on(self.subscriber().disconnect()).expect("failed to disconnect MQTT");
+        if let Some(mqtt_client) = self.mqtt_client.take() {
+            std::thread::spawn(move || {
+                crate::async_runtime::block_on(mqtt_client.disconnect()).expect("failed to disconnect MQTT");
+            })
+            .join()
+            .unwrap();
         }
     }
 }

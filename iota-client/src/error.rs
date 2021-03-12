@@ -52,7 +52,7 @@ pub enum Error {
     /// Mqtt client error
     #[cfg(feature = "mqtt")]
     #[error("{0}")]
-    MqttClientError(#[from] paho_mqtt::errors::Error),
+    MqttClientError(#[from] rumqttc::ClientError),
     /// Invalid MQTT topic.
     #[error("The MQTT topic {0} is invalid")]
     InvalidMqttTopic(String),
