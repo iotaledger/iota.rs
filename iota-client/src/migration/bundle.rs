@@ -140,7 +140,7 @@ pub fn sign_migration_bundle(
 }
 
 /// mine a bundle essence to reveal as least new parts of the signature as possible
-pub fn mine(
+pub async fn mine(
     prepared_bundle: OutgoingBundleBuilder,
     security_level: u8,
     ledger: bool,
@@ -216,7 +216,7 @@ pub fn mine(
         .finish()
         .unwrap();
     // Todo: decide which crackability value is good enough
-    let mined_info = match recoverer.recover() {
+    let mined_info = match recoverer.recover().await {
         CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
         CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
     };
