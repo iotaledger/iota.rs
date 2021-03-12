@@ -76,11 +76,9 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 // if the event loop returns an error, we check the next node
                 let mut got_ack = false;
                 while let Ok(event) = connection.poll().await {
-                    if let Event::Incoming(incoming) = event {
-                        if let Incoming::ConnAck(_) = incoming {
-                            got_ack = true;
-                            break;
-                        }
+                    if let Event::Incoming(Incoming::ConnAck(_)) = event {
+                        got_ack = true;
+                        break;
                     }
                 }
 
