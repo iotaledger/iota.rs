@@ -8,7 +8,9 @@ use crate::{
 use bee_common::packable::Packable;
 use bee_message::Message;
 use regex::Regex;
-use rumqttc::{AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, SubscribeFilter};
+use rumqttc::{
+    AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
+};
 use tokio::sync::RwLock;
 
 use std::{convert::TryFrom, sync::Arc};
@@ -94,41 +96,70 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     }
 }
 
-fn poll_mqtt(mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>, mut event_loop: EventLoop) {
+fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_loop: EventLoop) {
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap();
         runtime.block_on(async move {
-            while let Ok(event) = event_loop.poll().await {
-                let mqtt_topic_handlers = mqtt_topic_handlers.clone();
-                if let Event::Incoming(Incoming::Publish(p)) = event {
-                    let topic = p.topic.clone();
-                    crate::async_runtime::spawn(async move {
-                        let mqtt_topic_handlers_guard = mqtt_topic_handlers.read().await;
-                        if let Some(handlers) = mqtt_topic_handlers_guard.get(&Topic(topic.clone())) {
-                            let event_payload = String::from_utf8_lossy(&*p.payload).to_string();
-                            let event = {
-                                if topic.as_str() == "messages" || topic.contains("messages/indexation/") {
-                                    let mut payload = &*p.payload;
-                                    let iota_message = Message::unpack(&mut payload).unwrap();
-                                    TopicEvent {
-                                        topic,
-                                        payload: serde_json::to_string(&iota_message).unwrap(),
-                                    }
-                                } else {
-                                    TopicEvent {
-                                        topic,
-                                        payload: event_payload,
-                                    }
-                                }
-                            };
-                            for handler in handlers {
-                                handler(&event)
-                            }
+            // rumqttc performs automatic reconnection since we keep running the event loop
+            // but the subscriptions are lost on reconnection, so we need to resubscribe
+            // the `is_subscribed` flag is set to false on event error, so the ConnAck event
+            // can perform the resubscriptions and reset `is_subscribed` to true.
+            // we need the flag since the first ConnAck must be ignored.
+            let mut is_subscribed = true;
+            let handle = event_loop.handle();
+            loop {
+                let event = event_loop.poll().await;
+                let mqtt_topic_handlers_guard = mqtt_topic_handlers_guard.clone();
+                match event {
+                    Ok(Event::Incoming(Incoming::ConnAck(_))) => {
+                        if !is_subscribed {
+                            is_subscribed = true;
+                            // resubscribe topics
+                            let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
+                            let _ = handle
+                                .send(Request::Subscribe(Subscribe::new_many(
+                                    mqtt_topic_handlers
+                                        .keys()
+                                        .map(|t| SubscribeFilter::new(t.0.clone(), QoS::AtLeastOnce))
+                                        .collect::<Vec<SubscribeFilter>>(),
+                                )))
+                                .await;
                         }
-                    });
+                    }
+                    Ok(Event::Incoming(Incoming::Publish(p))) => {
+                        let topic = p.topic.clone();
+                        crate::async_runtime::spawn(async move {
+                            let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
+                            if let Some(handlers) = mqtt_topic_handlers.get(&Topic(topic.clone())) {
+                                let event_payload = String::from_utf8_lossy(&*p.payload).to_string();
+                                let event = {
+                                    if topic.as_str() == "messages" || topic.contains("messages/indexation/") {
+                                        let mut payload = &*p.payload;
+                                        let iota_message = Message::unpack(&mut payload).unwrap();
+                                        TopicEvent {
+                                            topic,
+                                            payload: serde_json::to_string(&iota_message).unwrap(),
+                                        }
+                                    } else {
+                                        TopicEvent {
+                                            topic,
+                                            payload: event_payload,
+                                        }
+                                    }
+                                };
+                                for handler in handlers {
+                                    handler(&event)
+                                }
+                            }
+                        });
+                    }
+                    Err(_) => {
+                        is_subscribed = false;
+                    }
+                    _ => {}
                 }
             }
         });
