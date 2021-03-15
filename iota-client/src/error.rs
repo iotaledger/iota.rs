@@ -110,4 +110,7 @@ pub enum Error {
     /// DTO error
     #[error("failed to convert data: {0}")]
     DtoError(String),
+    /// Blake2b256 Error
+    #[error("{0}")]
+    Blake2b256Error(&'static str),
 }

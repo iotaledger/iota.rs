@@ -31,6 +31,7 @@ thiserror = "1.0"
 num_cpus = "1.13"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 async-trait = "0.1"
+log= "0.4"
 
 # MQTT
 rumqttc = { version = "0.5", optional = true }

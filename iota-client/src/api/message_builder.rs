@@ -519,7 +519,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     Arc::new(AtomicBool::new(false)),
                 )?
                 .1
-                .unwrap()
+                .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
             None => finish_pow(&self.client, payload).await?,
         };
@@ -622,7 +622,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
 
         let threads = vec![pow_thread, time_thread];
         for t in threads {
-            match t.join().unwrap() {
+            match t.join().expect("Failed to join threads.") {
                 Ok(res) => {
                     if res.0 != 0 || !local_pow {
                         if let Some(message) = res.1 {

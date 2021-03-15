@@ -7,6 +7,7 @@ use crate::{
 };
 use bee_common::packable::Packable;
 use bee_message::Message;
+use log::warn;
 use regex::Regex;
 use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
@@ -45,15 +46,16 @@ impl Topic {
         );
         let regexes = lazy_static!(
           [
-            Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").unwrap(),
-            Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").unwrap(),
+            Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
+            Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
             // bech32 address
-            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").unwrap(),
+            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
             // ED25519 address hex
-            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").unwrap(),
-            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").unwrap()
+            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
+            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").expect("regex failed")
           ].to_vec() => Vec<Regex>
         );
+
         let name = name.into();
         if valid_topics.iter().any(|valid| valid == &name) || regexes.iter().any(|re| re.is_match(&name)) {
             let topic = Self(name);
@@ -69,7 +71,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
         Some(ref mut c) => Ok(c),
         None => {
             for node in client.sync.read().await.iter() {
-                let host = node.host_str().unwrap();
+                let host = node.host_str().expect("Can't get host from URL");
                 let mut mqttoptions = MqttOptions::new(host, host, 1883);
                 mqttoptions.set_connection_timeout(client.broker_options.timeout.as_secs());
                 let (_, mut connection) = MqttClient::new(mqttoptions.clone(), 10);
@@ -101,7 +103,7 @@ fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
-            .unwrap();
+            .expect("Failed to create Tokio runtime");
         runtime.block_on(async move {
             // rumqttc performs automatic reconnection since we keep running the event loop
             // but the subscriptions are lost on reconnection, so we need to resubscribe
@@ -134,25 +136,37 @@ fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_
                         crate::async_runtime::spawn(async move {
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic(topic.clone())) {
-                                let event_payload = String::from_utf8_lossy(&*p.payload).to_string();
                                 let event = {
                                     if topic.as_str() == "messages" || topic.contains("messages/indexation/") {
                                         let mut payload = &*p.payload;
-                                        let iota_message = Message::unpack(&mut payload).unwrap();
-                                        TopicEvent {
-                                            topic,
-                                            payload: serde_json::to_string(&iota_message).unwrap(),
+                                        match Message::unpack(&mut payload) {
+                                            Ok(iota_message) => match serde_json::to_string(&iota_message) {
+                                                Ok(message) => Ok(TopicEvent {
+                                                    topic,
+                                                    payload: message,
+                                                }),
+                                                Err(e) => {
+                                                    warn!("Parsing iota message failed: {0}", e);
+                                                    Err(())
+                                                }
+                                            },
+                                            Err(e) => {
+                                                warn!("Message unpacking failed: {0}", e);
+                                                Err(())
+                                            }
                                         }
                                     } else {
-                                        TopicEvent {
+                                        Ok(TopicEvent {
                                             topic,
-                                            payload: event_payload,
-                                        }
+                                            payload: String::from_utf8_lossy(&*p.payload).to_string(),
+                                        })
                                     }
                                 };
-                                for handler in handlers {
-                                    handler(&event)
-                                }
+                                if let Ok(event) = event {
+                                    for handler in handlers {
+                                        handler(&event)
+                                    }
+                                };
                             }
                         });
                     }

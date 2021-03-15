@@ -90,13 +90,13 @@ impl<'a> GetAddressesBuilder<'a> {
         };
         for address_index in self.range {
             let address = generate_address(
-                &self.seed.unwrap(),
+                self.seed.ok_or(Error::MissingParameter("Seed"))?,
                 self.account_index as u32,
                 address_index as u32,
                 false,
             )?;
             let internal_address = generate_address(
-                &self.seed.unwrap(),
+                self.seed.ok_or(Error::MissingParameter("Seed"))?,
                 self.account_index as u32,
                 address_index as u32,
                 true,
@@ -118,9 +118,11 @@ fn generate_address(seed: &Seed, account_index: u32, address_index: u32, interna
         .public_key()
         .to_compressed_bytes();
     // Hash the public key to get the address
-    let result = Blake2b256::digest(&public_key);
+    let result = Blake2b256::digest(&public_key)
+        .try_into()
+        .map_err(|_e| Error::Blake2b256Error("Hashing the public key while generating the address failed."));
 
-    Ok(Address::Ed25519(Ed25519Address::new(result.try_into().unwrap())))
+    Ok(Address::Ed25519(Ed25519Address::new(result?)))
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
