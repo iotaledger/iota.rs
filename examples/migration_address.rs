@@ -21,6 +21,6 @@ async fn main() {
 
     println!(
         "Generated migration address with checksum: {}",
-        add_tryte_checksum(encode_migration_address(ed25519_address[0]))
+        add_tryte_checksum(encode_migration_address(ed25519_address[0]).unwrap()).unwrap()
     );
 }

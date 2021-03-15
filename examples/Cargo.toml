@@ -13,7 +13,6 @@ smol = {version = "0.1.18", features = ["tokio02"] }
 smol-potat = "0.3.1"
 hex = "0.4.2"
 tokio = { version = "1.0", features = ["full"] }
-bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
 
 [[example]]
 name = "generate_new_address"

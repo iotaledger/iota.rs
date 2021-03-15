@@ -16,7 +16,7 @@ name = "iota_client"
 iota-bundle-miner = { path = "../iota-bundle-miner" }
 
 bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "02965e78a5cd43d0fb773771470ab3d891066562" }
-bee-ternary = { version = "0.4.0-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
+bee-ternary = { version = "0.4.1-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 #reqwest = { version = "0.10.6", features = ["json", "rustls-tls", "native-tls-vendored", "blocking"], default-features = false }

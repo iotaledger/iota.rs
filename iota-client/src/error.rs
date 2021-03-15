@@ -42,6 +42,10 @@ pub enum Error {
     UreqError(ureq::Error),
     /// Migration error
     MigrationError(&'static str),
+    /// Ternary b1t6 decode error
+    TernaryDecodeError(bee_ternary::b1t6::DecodeError),
+    /// Bee ternary error
+    BeeTernaryError(bee_ternary::Error),
 }
 
 impl fmt::Display for Error {
@@ -64,6 +68,8 @@ impl fmt::Display for Error {
             Error::Slip10Error(e) => e.fmt(f),
             Error::UreqError(e) => e.fmt(f),
             Error::MigrationError(e) => e.fmt(f),
+            Error::TernaryDecodeError(e) => format!("{:?}", e).fmt(f),
+            Error::BeeTernaryError(e) => e.fmt(f),
         }
     }
 }
@@ -89,5 +95,16 @@ impl From<slip10::Error> for Error {
 impl From<ureq::Error> for Error {
     fn from(error: ureq::Error) -> Self {
         Error::UreqError(error)
+    }
+}
+
+impl From<bee_ternary::b1t6::DecodeError> for Error {
+    fn from(error: bee_ternary::b1t6::DecodeError) -> Self {
+        Error::TernaryDecodeError(error)
+    }
+}
+impl From<bee_ternary::Error> for Error {
+    fn from(error: bee_ternary::Error) -> Self {
+        Error::BeeTernaryError(error)
     }
 }

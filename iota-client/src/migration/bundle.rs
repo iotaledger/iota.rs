@@ -29,7 +29,7 @@ pub async fn create_migration_bundle(
     address: Ed25519Address,
     inputs: Vec<InputData>,
 ) -> Result<OutgoingBundleBuilder> {
-    let migration_address = encode_migration_address(address);
+    let migration_address = encode_migration_address(address)?;
 
     let security_level = inputs[0].security_lvl;
     let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level);

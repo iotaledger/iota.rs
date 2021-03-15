@@ -52,6 +52,9 @@ async fn main() {
     let target_crack_probability = None;
     let threshold = None;
     // We can set extra parameters when running the bundle miner to ease of more customized usage.
-    let miner_result = miner.run(target_crack_probability, threshold).await.unwrap();
+    let miner_result = miner
+        .run(target_crack_probability, threshold)
+        .await
+        .unwrap();
     println!("{:?}", miner_result);
 }
