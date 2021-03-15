@@ -166,6 +166,9 @@ fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_
                                     for handler in handlers {
                                         handler(&event)
                                     }
+                                };
+                                for handler in handlers {
+                                    handler(&event)
                                 }
                             }
                         });
