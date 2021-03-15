@@ -10,10 +10,16 @@
   "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
   "license": "Apache-2.0",
   "dependencies": {
-    "neon-cli": "^0.5.0"
+    "neon-cli": "^0.5.0",
+    "prebuild-install": "^6.0.1"
   },
   "scripts": {
-    "install": "neon build --release",
+    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
+    "build:neon": "neon build --release && node scripts/move-lib.js",
+    "rebuild": "npm run build:neon && node scripts/strip.js",
+    "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
+    "prebuild:electron": "node scripts/electron-prebuild.js",
+    "build:docs": "./node_modules/.bin/jsdoc lib/index.js",
     "test": "mocha ./tests --exclude assertions.js --timeout 0"
   },
   "devDependencies": {
