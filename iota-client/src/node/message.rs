@@ -3,12 +3,9 @@
 
 use crate::{Api, Client, Result};
 use bee_message::{Message, MessageId};
-use bee_rest_api::{
-    endpoints::api::v1::{
-        message_children::MessageChildrenResponse, message_metadata::MessageMetadataResponse as MessageMetadata,
-        messages_find::MessagesForIndexResponse,
-    },
-    types::MessageDto,
+use bee_rest_api::types::{
+    dtos::MessageDto,
+    responses::{MessageChildrenResponse, MessageMetadataResponse as MessageMetadata, MessagesForIndexResponse},
 };
 
 use std::convert::TryFrom;
