@@ -86,14 +86,14 @@ impl ClientBuilder {
 
     /// Adds an IOTA node by its URL.
     pub fn with_node(mut self, url: &str) -> Result<Self> {
-        let url = Url::parse(url)?;
+        let url = validate_url(Url::parse(url)?)?;
         self.nodes.insert(url);
         Ok(self)
     }
 
     /// Adds an IOTA node by its URL with basic authentication
     pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
-        let mut url = Url::parse(url)?;
+        let mut url = validate_url(Url::parse(url)?)?;
         url.set_username(name)
             .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
         url.set_password(Some(password))
@@ -105,7 +105,7 @@ impl ClientBuilder {
     /// Adds a list of IOTA nodes by their URLs.
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
-            let url = Url::parse(url)?;
+            let url = validate_url(Url::parse(url)?)?;
             self.nodes.insert(url);
         }
         Ok(self)
@@ -133,7 +133,7 @@ impl ClientBuilder {
                 .json()
                 .await?;
             for node_detail in nodes_details {
-                let url = Url::parse(&node_detail.node)?;
+                let url = validate_url(Url::parse(&node_detail.node)?)?;
                 self.nodes.insert(url);
             }
         }
@@ -301,4 +301,11 @@ pub struct NodeDetail {
     pub implementation: String,
     /// Enabled PoW
     pub pow: bool,
+}
+
+fn validate_url(url: Url) -> Result<Url> {
+    if url.scheme() != "http" && url.scheme() != "https" {
+        return Err(Error::UrlValidationError(format!("Invalid scheme: {}", url.scheme())));
+    }
+    Ok(url)
 }

@@ -104,6 +104,9 @@ pub enum Error {
     /// URL error
     #[error("{0}")]
     UrlError(#[from] url::ParseError),
+    /// URL validation error
+    #[error("{0}")]
+    UrlValidationError(String),
     /// URL auth error
     #[error("Can't set {0} to URL")]
     UrlAuthError(String),
