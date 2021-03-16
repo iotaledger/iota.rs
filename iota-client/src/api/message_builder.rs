@@ -6,7 +6,7 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
-use bee_rest_api::types::{AddressDto, OutputDto};
+use bee_rest_api::types::dtos::{AddressDto, OutputDto};
 use crypto::keys::slip10::{Chain, Curve, Seed};
 
 use std::{

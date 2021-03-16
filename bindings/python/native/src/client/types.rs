@@ -5,21 +5,11 @@ use crate::client::error::{Error, Result};
 use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota::{
-    bee_rest_api::{
-        endpoints::api::v1::{
-            balance_ed25519::BalanceForAddressResponse as RustBalanceForAddressResponse,
-            info::InfoResponse as RustInfoResponse,
-            message_metadata::{
-                LedgerInclusionStateDto as RustLedgerInclusionStateDto,
-                MessageMetadataResponse as RustMessageMetadataResponse,
-            },
-            milestone_utxo_changes::MilestoneUtxoChanges as RustMilestoneUTXOChanges,
-            output::OutputResponse as RustOutputResponse,
-            treasury::TreasuryResponse as RustTreasuryResponse,
-        },
-        types::{
+    bee_rest_api::types::{
+        dtos::{
             AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, GossipDto as RustgossipDto,
-            HeartbeatDto as RustheartbeatDto, InputDto as RustInputDto, MetricsDto as RustMetricsDto,
+            HeartbeatDto as RustheartbeatDto, InputDto as RustInputDto,
+            LedgerInclusionStateDto as RustLedgerInclusionStateDto, MetricsDto as RustMetricsDto,
             MigratedFundsEntryDto as RustMigratedFundsEntryDto, OutputDto as RustOutputDto,
             PayloadDto as RustPayloadDto, PeerDto as RustPeerDto, ReceiptDto as RustReceiptDto,
             ReceiptPayloadDto as RustReceiptPayloadDto, RelationDto as RustRelationDto,
@@ -27,6 +17,12 @@ use iota::{
             SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
             TreasuryOutputDto as RustTreasuryOutputDto,
             TreasuryTransactionPayloadDto as RustTreasuryTransactionPayloadDto,
+        },
+        responses::{
+            BalanceForAddressResponse as RustBalanceForAddressResponse, InfoResponse as RustInfoResponse,
+            MessageMetadataResponse as RustMessageMetadataResponse,
+            MilestoneUtxoChangesResponse as RustMilestoneUTXOChanges, OutputResponse as RustOutputResponse,
+            TreasuryResponse as RustTreasuryResponse,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,

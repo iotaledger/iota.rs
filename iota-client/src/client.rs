@@ -11,14 +11,13 @@ use crate::{
 use bee_common::packable::Packable;
 use bee_message::prelude::{Address, Bech32Address, Message, MessageBuilder, MessageId, Parents, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
-use bee_rest_api::{
-    endpoints::api::v1::{
-        balance_ed25519::BalanceForAddressResponse, info::InfoResponse as NodeInfo,
-        milestone::MilestoneResponse as MilestoneResponseDto,
-        milestone_utxo_changes::MilestoneUtxoChanges as MilestoneUTXOChanges, output::OutputResponse,
-        receipt::ReceiptsResponse, tips::TipsResponse, treasury::TreasuryResponse,
+use bee_rest_api::types::{
+    dtos::{MessageDto, PeerDto, ReceiptDto},
+    responses::{
+        BalanceForAddressResponse, InfoResponse as NodeInfo, MilestoneResponse as MilestoneResponseDto,
+        MilestoneUtxoChangesResponse as MilestoneUTXOChanges, OutputResponse, ReceiptsResponse, TipsResponse,
+        TreasuryResponse,
     },
-    types::{MessageDto, PeerDto, ReceiptDto},
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
