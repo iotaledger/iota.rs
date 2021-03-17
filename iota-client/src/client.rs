@@ -9,7 +9,9 @@ use crate::{
     node::*,
 };
 use bee_common::packable::Packable;
-use bee_message::prelude::{Address, Bech32Address, Message, MessageBuilder, MessageId, Parents, UTXOInput};
+use bee_message::prelude::{
+    Address, Bech32Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UTXOInput,
+};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::types::{
     dtos::{MessageDto, PeerDto, ReceiptDto},
@@ -926,7 +928,7 @@ impl Client {
 
     /// GET /api/v1/transactions/{transactionId}/included-message
     /// Returns the included message of the transaction.
-    pub async fn get_included_message(&self, transaction_id: u32) -> Result<Message> {
+    pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
         let mut url = self.get_node().await?;
         let path = &format!("api/v1/transactions/{}/included-message", transaction_id);
         url.set_path(path);

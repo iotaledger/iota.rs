@@ -402,7 +402,7 @@ Get the included message of a transaction.
 
 | Param | Type                | Description                |
 | ----- | ------------------- | -------------------------- |
-| index | <code>number</code> | The index of the transaction |
+| index | <code>number[]</code> | The index of the transaction |
 
 **Returns** A promise resolving to the new [Message](#message) instance.
 

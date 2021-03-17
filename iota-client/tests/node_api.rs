@@ -370,7 +370,7 @@ async fn test_get_included_message() {
         .finish()
         .await
         .unwrap()
-        .get_included_message(1)
+        .get_included_message(TransactionId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap())
         .await
         .unwrap();
 

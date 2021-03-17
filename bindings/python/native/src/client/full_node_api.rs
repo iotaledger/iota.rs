@@ -7,7 +7,7 @@ use crate::client::{
 };
 use iota::{
     Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
-    MessageId as RustMessageId, Parents, UTXOInput as RustUTXOInput,
+    MessageId as RustMessageId, Parents, UTXOInput as RustUTXOInput, TransactionId as RustTransactionId
 };
 use pyo3::prelude::*;
 
@@ -128,7 +128,7 @@ impl Client {
     fn get_treasury(&self) -> Result<TreasuryResponse> {
         Ok(crate::block_on(async { self.client.get_treasury().await })?.into())
     }
-    fn get_included_message(&self, transaction_id: u32) -> Result<Message> {
+    fn get_included_message(&self, transaction_id: TransactionId) -> Result<Message> {
         crate::block_on(async { self.client.get_included_message(transaction_id).await })?.try_into()
     }
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    message::prelude::{Address, MessageId, UTXOInput},
+    message::prelude::{Address, MessageId, TransactionId, UTXOInput},
     AddressOutputsOptions, OutputType, Seed,
 };
 use neon::prelude::*;
@@ -541,7 +541,9 @@ declare_types! {
         }
 
         method getIncludedMessage(mut cx) {
-            let transaction_id = cx.argument::<JsNumber>(0)?.value() as u32;
+            let transaction_id = cx.argument::<JsString>(0)?.value();
+            let transaction_id = TransactionId::from_str(transaction_id.as_str()).expect("invalid transaction id");
+
             let cb = cx.argument::<JsFunction>(0)?;
             {
                 let this = cx.this();
