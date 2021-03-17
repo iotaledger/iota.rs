@@ -430,7 +430,7 @@ Finds addresses from the seed regardless of their validity.
 
 **Returns** a list of tuples with type of `(str, int)` as the address and corresponding index in the account.
 
-#### get_balance(seed, account_index (optional), initial_address_index(optional)): int
+#### get_balance(seed, account_index (optional), initial_address_index(optional), gap_limit(optional)): int
 
 Get balance on a given seed and its wallet account index.
 
@@ -439,6 +439,7 @@ Get balance on a given seed and its wallet account index.
 | [seed]                  | <code>str</code> | <code>undefined</code> | The hex-encoded seed to search |
 | [account_index]         | <code>int</code> | <code>undefined</code> | The account index              |
 | [initial_address_index] | <code>int</code> | <code>undefined</code> | The initial address index      |
+| [gap_limit]             | <code>int</code> | <code>undefined</code> | The gap limit                  |
 
 **Returns** the amount of balance.
 

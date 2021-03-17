@@ -59,6 +59,7 @@ export declare class AddressGetter {
 export declare class BalanceGetter {
   accountIndex(index: number): BalanceGetter
   initialAddressIndex(index: number): BalanceGetter
+  gapLimit(gapLimit: number): BalanceGetter
   get(): Promise<number>
 }
 
