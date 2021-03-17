@@ -57,7 +57,7 @@ declare_types! {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let auth = &mut this.borrow_mut(&guard).auth;
-                *auth.replace((node_url, name, password));
+                auth.replace((node_url, name, password));
             }
             Ok(cx.this().upcast())
         }
@@ -112,7 +112,7 @@ declare_types! {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let network = &mut this.borrow_mut(&guard).network;
-                *network.replace(network_name);
+                network.replace(network_name);
             }
             Ok(cx.this().upcast())
         }
