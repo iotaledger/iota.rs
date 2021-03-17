@@ -89,7 +89,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 // if we found a valid mqtt connection, loop it on a separate thread
                 if got_ack {
                     let (mqtt_client, connection) = MqttClient::new(mqttoptions, 10);
-                    client.mqtt_client = Some(mqtt_client);
+                    client.mqtt_client.replace(mqtt_client);
                     poll_mqtt(client.mqtt_topic_handlers.clone(), connection);
                 }
             }

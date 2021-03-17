@@ -94,7 +94,7 @@ impl<'a> GetMessageBuilder<'a> {
         Ok(resp.data)
     }
 
-    /// GET /api/v1/messages/{messageID}/children endpoint
+    /// GET /api/v1/messages/{messageID}/raw endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
     pub async fn raw(self, message_id: &MessageId) -> Result<String> {
         let mut url = self.client.get_node().await?;
@@ -111,6 +111,7 @@ impl<'a> GetMessageBuilder<'a> {
         Ok(resp)
     }
 
+    /// GET /api/v1/messages/{messageID}/children endpoint
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
     pub async fn children(self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
         let mut url = self.client.get_node().await?;
