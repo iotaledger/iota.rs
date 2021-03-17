@@ -211,7 +211,9 @@ impl<'a> ClientMessageBuilder<'a> {
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
                             let (output_amount, output_address) = match output.output {
-                                OutputDto::Treasury(_) => return Err(Error::UnsupportedOutputError),
+                                OutputDto::Treasury(_) => {
+                                    return Err(Error::OutputError("Treasury output is no supported"))
+                                }
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
                                         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
@@ -307,7 +309,9 @@ impl<'a> ClientMessageBuilder<'a> {
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
                             let output_amount = match output.output {
-                                OutputDto::Treasury(_) => return Err(Error::UnsupportedOutputError),
+                                OutputDto::Treasury(_) => {
+                                    return Err(Error::OutputError("Treasury output is no supported"))
+                                }
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
                                         if r.amount < DUST_THRESHOLD {

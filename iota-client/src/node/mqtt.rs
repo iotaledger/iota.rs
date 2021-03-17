@@ -213,11 +213,9 @@ impl<'a> MqttManager<'a> {
             client.disconnect().await?;
             self.client.mqtt_client = None;
 
-            {
-                let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
-                let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
-                mqtt_topic_handlers.clear()
-            }
+            let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
+            let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
+            mqtt_topic_handlers.clear()
         }
 
         Ok(())

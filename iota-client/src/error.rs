@@ -116,7 +116,7 @@ pub enum Error {
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256Error(&'static str),
-    /// Unsupported Output Error
-    #[error("Unsupported Output type")]
-    UnsupportedOutputError,
+    /// Output Error
+    #[error("Output error: {0}")]
+    OutputError(&'static str),
 }
