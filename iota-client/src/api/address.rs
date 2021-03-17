@@ -7,7 +7,7 @@ use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
 use core::convert::TryInto;
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
-    slip10::{Chain, Curve, Seed},
+    keys::slip10::{Chain, Curve, Seed},
 };
 use std::ops::Range;
 
@@ -83,20 +83,20 @@ impl<'a> GetAddressesBuilder<'a> {
             Some(bech32_hrp) => bech32_hrp,
             None => {
                 self.client
-                    .ok_or_else(|| Error::MissingParameter(String::from("Client or bech32_hrp")))?
+                    .ok_or(Error::MissingParameter("Client or bech32_hrp"))?
                     .get_bech32_hrp()
                     .await?
             }
         };
         for address_index in self.range {
             let address = generate_address(
-                &self.seed.unwrap(),
+                self.seed.ok_or(Error::MissingParameter("Seed"))?,
                 self.account_index as u32,
                 address_index as u32,
                 false,
             )?;
             let internal_address = generate_address(
-                &self.seed.unwrap(),
+                self.seed.ok_or(Error::MissingParameter("Seed"))?,
                 self.account_index as u32,
                 address_index as u32,
                 true,
@@ -110,6 +110,7 @@ impl<'a> GetAddressesBuilder<'a> {
 }
 
 fn generate_address(seed: &Seed, account_index: u32, address_index: u32, internal: bool) -> Result<Address> {
+    // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
     let chain = Chain::from_u32_hardened(vec![44, 4218, account_index, internal as u32, address_index]);
     let public_key = seed
         .derive(Curve::Ed25519, &chain)?
@@ -117,9 +118,11 @@ fn generate_address(seed: &Seed, account_index: u32, address_index: u32, interna
         .public_key()
         .to_compressed_bytes();
     // Hash the public key to get the address
-    let result = Blake2b256::digest(&public_key);
+    let result = Blake2b256::digest(&public_key)
+        .try_into()
+        .map_err(|_e| Error::Blake2b256Error("Hashing the public key while generating the address failed."));
 
-    Ok(Address::Ed25519(Ed25519Address::new(result.try_into().unwrap())))
+    Ok(Address::Ed25519(Ed25519Address::new(result?)))
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
@@ -136,7 +139,7 @@ pub async fn search_address(
         .with_range(range.clone())
         .get_all()
         .await?;
-    let mut index_counter = 0;
+    let mut index_counter = range.start;
     for address_internal in addresses {
         if address_internal.0 == *address {
             return Ok((index_counter, address_internal.1));
@@ -145,5 +148,8 @@ pub async fn search_address(
             index_counter += 1;
         }
     }
-    Err(crate::error::Error::InputAddressNotFound(format!("{:?}", range)))
+    Err(crate::error::Error::InputAddressNotFound(
+        address.to_string(),
+        format!("{:?}", range),
+    ))
 }

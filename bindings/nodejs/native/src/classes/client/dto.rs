@@ -4,7 +4,7 @@
 use iota::{
     AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, Essence, IndexationPayload, Input,
     Message, MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
-    RegularEssence, SignatureUnlock, TransactionPayload, UTXOInput, UnlockBlock,
+    RegularEssence, SignatureUnlock, TransactionPayload, UTXOInput, UnlockBlock, UnlockBlocks,
 };
 use serde::{Deserialize, Serialize};
 
@@ -148,10 +148,14 @@ impl TryFrom<MessagePayloadDto> for Payload {
                 let mut transaction = TransactionPayload::builder();
                 transaction = transaction.with_essence(Essence::Regular(transaction_payload.essence.try_into()?));
 
-                let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
-                for unlock_block in unlock_blocks {
-                    transaction = transaction.add_unlock_block(unlock_block.try_into()?);
-                }
+                let unlock_blocks: Result<Vec<UnlockBlock>, crate::Error> = transaction_payload
+                    .unlock_blocks
+                    .into_vec()
+                    .into_iter()
+                    .map(|u| u.try_into())
+                    .collect();
+
+                transaction = transaction.with_unlock_blocks(UnlockBlocks::new(unlock_blocks?)?);
 
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }

@@ -1,6 +1,7 @@
 # IOTA Client Python Library
 
 ## Requirements
+
 - Rust 1.45.0+
 - Python 3.6+
 
@@ -8,9 +9,10 @@
 
 1. Run your local Hornet
 - `$ git clone git@github.com:gohornet/hornet.git`
-- checkout `chrysalis-pt2` branch
-- Modify your `create_snapshot_alphanet.sh`, modify Line 14 to `go run ../main.go tool snapgen alphanet1 96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813 snapshots/alphanet1/full_export.bin`
-- `$ ./run_coo_bootstrap.sh `
+- checkout `develop` branch
+- Modify your `create_snapshot_alphanet.sh`, modify Line 14 to `go run "..\main.go" tool snapgen alphanet1 96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813 1000000000 "snapshots\alphanet1\full_export.bin"`
+- Go to `hornet/alphanet`
+- `$ ./run_coo_bootstrap.sh`
 
 2. To build the iota_client python library by yourself, there are two ways.
    - By using the `cargo`
@@ -45,6 +47,15 @@
      - [windows-iota-client-py3.9-wheels](https://github.com/iotaledger/iota.rs/suites/2115209642/artifacts/43080909)
    - **NOTE: Please download the wheel files generated in the commit version you want to use.**
    - `$ pip3 install [THE_DOWNLOADED_WHEEL_FILE]`
+
+Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+## Testing
+- Install [tox](#https://pypi.org/project/tox/)
+  - `$ pip install tox`
+- Build the library
+  - `$ python setup.py install`
+- To test install tox globally and run
+  - `$ tox -e py`
 
 ## Python Example
 ```python
@@ -176,6 +187,8 @@ Creates a new instance of the Client.
 | --------------------- | -------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [network]             | <code>str</code>                             | <code>undefined</code> | The network                                                                                                                                                       |
 | [node]                | <code>str</code>                             | <code>undefined</code> | A node URL                                                                                                                                                        |
+| [name]                | <code>str</code>                             | <code>undefined</code> | The name for basic authentication                                                                                                                                 |
+| [password]            | <code>str</code>                             | <code>undefined</code> | The password for basic authentication                                                                                                                             |
 | [nodes]               | <code>list[str]</code>                       | <code>undefined</code> | An array of node URLs                                                                                                                                             |
 | [node_sync_interval]  | <code>int</code>                             | <code>undefined</code> | The interval for the node syncing process                                                                                                                         |
 | [node_sync_disabled]  | <code>bool</code>                            | <code>undefined</code> | Disables the node syncing process. Every node will be considered healthy and ready to use                                                                         |
@@ -244,13 +257,14 @@ Gets the balance in the address.
 
 **Returns** the [BalanceForAddressResponse](#balanceforaddressresponse).
 
-#### get_address_outputs(address): list[UTXOInput]
+#### get_address_outputs(address, options (optional)): list[UTXOInput]
 
 Gets the UTXO outputs associated with the given address.
 
-| Param     | Type             | Default                | Description               |
-| --------- | ---------------- | ---------------------- | ------------------------- |
-| [address] | <code>str</code> | <code>undefined</code> | The address Bech32 string |
+| Param     | Type                                                           | Default                | Description               |
+| --------- | -------------------------------------------------------------- | ---------------------- | ------------------------- |
+| [address] | <code>str</code>                                               | <code>undefined</code> | The address Bech32 string |
+| [options] | <code>[[AddressOutputsOptions](#addressoutputsoptions)]</code> | <code>undefined</code> | The query filters         |
 
 **Returns** the list of [UTXOInput](#utxoinput).
 
@@ -284,6 +298,28 @@ Gets the utxo changes by the given milestone index.
 | [index] | <code>int</code> | <code>undefined</code> | The index of the milestone |
 
 **Returns** the [MilestoneUTXOChanges](#milestoneutxochanges).
+
+#### get_receipts(): Vec<ReceiptDto>
+
+Get all receipts.
+
+**Returns** the [ReceiptDto](#ReceiptDto).
+
+#### get_receipts_migrated_at(index): Vec<ReceiptDto>
+
+Get all receipts for a given milestone index.
+
+| Param   | Type             | Default                | Description                |
+| ------- | ---------------- | ---------------------- | -------------------------- |
+| [index] | <code>int</code> | <code>undefined</code> | The index of the milestone |
+
+**Returns** the [ReceiptDto](#ReceiptDto).
+
+#### get_treasury(): TreasuryResponse
+
+Get the treasury amount.
+
+**Returns** the [TreasuryResponse](#TreasuryResponse).
 
 ### High-Level APIs
 
@@ -416,6 +452,16 @@ Get the balance in iotas for the given addresses.
 
 **Returns** the list of [AddressBalancePair](#addressbalancepair).
 
+#### is_address_valid(address): bool
+
+Checks if a given address is valid.
+
+| Param   | Type                | Default                | Description               |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| address | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+
+**Returns** A boolean.
+
 #### retry(message_id): (str, Message)
 
 Retries (promotes or reattaches) the message associated with the given id.
@@ -425,6 +471,18 @@ Retries (promotes or reattaches) the message associated with the given id.
 | [message_id] | <code>str</code> | <code>undefined</code> | The message id |
 
 **Returns** the message id and the retried [Message](#message).
+
+#### retry_until_included(message_id, interval (optional), max_attempts (optional)): list[(str, Message)]
+
+Retries (promotes or reattaches) the message associated with the given id.
+
+| Param        | Type             | Default                | Description                                            |
+| ------------ | ---------------- | ---------------------- | ------------------------------------------------------ |
+| [message_id] | <code>str</code> | <code>undefined</code> | The message id                                         |
+| interval     | <code>int</code> | <code>5</code>         | The interval in seconds in which we retry the message. |
+| max_attempts | <code>int</code> | <code>10</code>        | The maximum of attempts we retry the message.          |
+
+**Returns** the message ids and [Message](#message) of reattached messages.
 
 #### reattach(message_id): (str, Message)
 
@@ -538,6 +596,28 @@ milestone_utxo_changes = {
     'index': int,
     'created_outputs': list[str],
     'consumed_outputs': list[str]
+}
+```
+
+#### ReceiptDto
+
+A dict with the following key/value pairs.
+
+```python
+receiptDto = {
+    'receipt': Receipt,
+    'milestone_index': int,
+}
+```
+
+#### TreasuryResponse
+
+A dict with the following key/value pairs.
+
+```python
+treasuryResponse = {
+    'milestone_id': str,
+    'amount': int,
 }
 ```
 
@@ -793,8 +873,7 @@ A dict with the following key/value pairs.
 ```python
 broker_options = {
     'automatic_disconnect': bool,
-    'timeout': int,
-    'use_ws': bool
+    'timeout': int
 }
 ```
 
@@ -820,7 +899,7 @@ info_response = {
     'network_id': str,
     'bech32_hrp': str,
     'latest_milestone_index': int,
-    'solid_milestone_index': int,
+    'confirmed_milestone_index': int,
     'pruning_index': int,
     'features': list[str],
     'min_pow_score': float,
@@ -914,3 +993,13 @@ metrics_dto = {
     'dropped_packets': int,
 }
 ```
+
+#### AddressOutputsOptions
+
+A dict with the following key/value pairs.
+
+```python
+options = {
+    'include_spent': bool,
+    'output_type': string
+}

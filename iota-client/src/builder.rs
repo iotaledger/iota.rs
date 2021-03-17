@@ -4,17 +4,20 @@
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
 
-use reqwest::Url;
-use tokio::{runtime::Runtime, sync::broadcast::channel};
+use tokio::{
+    runtime::Runtime,
+    sync::{broadcast::channel, RwLock},
+};
+use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, RwLock},
+    sync::Arc,
     time::Duration,
 };
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
+pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 // Interval in seconds when new tips will be requested during PoW
 const TIPS_INTERVAL: u64 = 15;
@@ -83,7 +86,18 @@ impl ClientBuilder {
 
     /// Adds an IOTA node by its URL.
     pub fn with_node(mut self, url: &str) -> Result<Self> {
-        let url = Url::parse(url).map_err(|_| Error::UrlError)?;
+        let url = validate_url(Url::parse(url)?)?;
+        self.nodes.insert(url);
+        Ok(self)
+    }
+
+    /// Adds an IOTA node by its URL with basic authentication
+    pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
+        let mut url = validate_url(Url::parse(url)?)?;
+        url.set_username(name)
+            .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+        url.set_password(Some(password))
+            .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
         self.nodes.insert(url);
         Ok(self)
     }
@@ -91,7 +105,7 @@ impl ClientBuilder {
     /// Adds a list of IOTA nodes by their URLs.
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
-            let url = Url::parse(url).map_err(|_| Error::UrlError)?;
+            let url = validate_url(Url::parse(url)?)?;
             self.nodes.insert(url);
         }
         Ok(self)
@@ -113,14 +127,13 @@ impl ClientBuilder {
     /// Get node list from the node_pool_urls
     pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let text: String = reqwest::get(pool_url)
+            let nodes_details: Vec<NodeDetail> = super::HttpClient::new()
+                .get(&pool_url, GET_API_TIMEOUT)
                 .await?
-                .text()
-                .await
-                .map_err(|_| Error::NodePoolUrlsError)?;
-            let nodes_details: Vec<NodeDetail> = serde_json::from_str(&text)?;
+                .json()
+                .await?;
             for node_detail in nodes_details {
-                let url = Url::parse(&node_detail.node).map_err(|_| Error::UrlError)?;
+                let url = validate_url(Url::parse(&node_detail.node)?)?;
                 self.nodes.insert(url);
             }
         }
@@ -192,8 +205,9 @@ impl ClientBuilder {
             let sync_ = sync.clone();
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
+            let nodes = nodes.clone();
             let runtime = std::thread::spawn(move || {
-                let runtime = Runtime::new().unwrap();
+                let runtime = Runtime::new().expect("Failed to create Tokio runtime");
                 runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_));
                 Client::start_sync_process(
                     &runtime,
@@ -209,7 +223,7 @@ impl ClientBuilder {
             .expect("failed to init node syncing process");
             (Some(runtime), sync, Some(sync_kill_sender), network_info)
         } else {
-            (None, Arc::new(RwLock::new(nodes)), None, network_info)
+            (None, Arc::new(RwLock::new(nodes.clone())), None, network_info)
         };
 
         let mut api_timeout = HashMap::new();
@@ -228,6 +242,14 @@ impl ClientBuilder {
         api_timeout.insert(
             Api::GetMilestone,
             self.api_timeout.remove(&Api::GetMilestone).unwrap_or(GET_API_TIMEOUT),
+        );
+        api_timeout.insert(
+            Api::GetBalance,
+            self.api_timeout.remove(&Api::GetBalance).unwrap_or(GET_API_TIMEOUT),
+        );
+        api_timeout.insert(
+            Api::GetMessage,
+            self.api_timeout.remove(&Api::GetMessage).unwrap_or(GET_API_TIMEOUT),
         );
         api_timeout.insert(
             Api::GetTips,
@@ -250,9 +272,9 @@ impl ClientBuilder {
 
         let client = Client {
             runtime,
+            nodes,
             sync,
             sync_kill_sender: sync_kill_sender.map(Arc::new),
-            client: reqwest::Client::new(),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,
             #[cfg(feature = "mqtt")]
@@ -262,6 +284,7 @@ impl ClientBuilder {
             network_info,
             request_timeout: self.request_timeout,
             api_timeout,
+            http_client: super::HttpClient::new(),
         };
         Ok(client)
     }
@@ -278,4 +301,11 @@ pub struct NodeDetail {
     pub implementation: String,
     /// Enabled PoW
     pub pow: bool,
+}
+
+fn validate_url(url: Url) -> Result<Url> {
+    if url.scheme() != "http" && url.scheme() != "https" {
+        return Err(Error::UrlValidationError(format!("Invalid scheme: {}", url.scheme())));
+    }
+    Ok(url)
 }

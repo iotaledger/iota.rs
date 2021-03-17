@@ -3,10 +3,11 @@
 
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
+use bee_common::packable::Packable;
 use bee_message::prelude::*;
 use bee_pow::providers::ProviderBuilder;
-use bee_rest_api::types::{AddressDto, OutputDto};
-use crypto::slip10::{Chain, Curve, Seed};
+use bee_rest_api::types::dtos::{AddressDto, OutputDto};
+use crypto::keys::slip10::{Chain, Curve, Seed};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -140,7 +141,7 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Set 1-8 custom parent message ids
     pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
         if !(1..=8).contains(&parent_ids.len()) {
-            return Err(Error::InvalidParentsAmount);
+            return Err(Error::InvalidParentsAmount(parent_ids.len()));
         }
         self.parents = Some(parent_ids);
         Ok(self)
@@ -150,14 +151,14 @@ impl<'a> ClientMessageBuilder<'a> {
     pub async fn finish(self) -> Result<Message> {
         // Indexation payload requires an indexation tag
         if self.data.is_some() && self.index.is_none() {
-            return Err(Error::MissingParameter(String::from("index")));
+            return Err(Error::MissingParameter("index"));
         }
         if self.inputs.is_some() && self.outputs.is_empty() {
-            return Err(Error::MissingParameter(String::from("output")));
+            return Err(Error::MissingParameter("output"));
         }
         if !self.outputs.is_empty() {
             if self.seed.is_none() {
-                return Err(Error::MissingParameter(String::from("Seed")));
+                return Err(Error::MissingParameter("Seed"));
             }
             // Send message with transaction
             self.finish_transaction().await
@@ -177,7 +178,6 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut index = self.initial_address_index.unwrap_or(0);
 
         let bech32_hrp = self.client.get_bech32_hrp().await?;
-
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
 
@@ -200,9 +200,9 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
 
-        let mut essence = RegularEssence::builder();
         let mut address_index_recorders = Vec::new();
-
+        let mut inputs_for_essence = Vec::new();
+        let mut outputs_for_essence = Vec::new();
         match self.inputs.clone() {
             Some(inputs) => {
                 for input in inputs {
@@ -241,6 +241,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                 &bech32_address.into(),
                             )
                             .await?;
+                            // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
                             let chain = Chain::from_u32_hardened(vec![
                                 44,
                                 4218,
@@ -252,7 +253,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                 UTXOInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
                                     .map_err(|_| Error::TransactionError)?,
                             );
-                            essence = essence.add_input(input.clone());
+                            inputs_for_essence.push(input.clone());
                             address_index_recorders.push(AddressIndexRecorder {
                                 input,
                                 address_index,
@@ -265,9 +266,8 @@ impl<'a> ClientMessageBuilder<'a> {
                                 if remaining_balance < 1_000_000 {
                                     dust_and_allowance_recorders.push((remaining_balance, output_address, true));
                                 }
-                                essence = essence.add_output(
-                                    SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into(),
-                                );
+                                outputs_for_essence
+                                    .push(SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into());
                             }
                         }
                     }
@@ -288,7 +288,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     // For each address, get the address outputs
                     let mut address_index = index;
                     for (index, (address, internal)) in addresses.iter().enumerate() {
-                        let address_outputs = self.client.get_address().outputs(&address).await?;
+                        let address_outputs = self.client.get_address().outputs(&address, Default::default()).await?;
                         let mut outputs = vec![];
                         for output_id in address_outputs.iter() {
                             let curr_outputs = self.client.get_output(output_id).await?;
@@ -348,7 +348,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                             )
                                             .map_err(|_| Error::TransactionError)?,
                                         );
-                                        essence = essence.add_input(input.clone());
+                                        inputs_for_essence.push(input.clone());
                                         address_index_recorders.push(AddressIndexRecorder {
                                             input,
                                             address_index,
@@ -365,7 +365,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                                 ));
                                             }
                                             // Output the remaining tokens back to the original address
-                                            essence = essence.add_output(
+                                            outputs_for_essence.push(
                                                 SignatureLockedSingleOutput::new(
                                                     Address::try_from_bech32(address)?,
                                                     remaining_balance,
@@ -420,8 +420,18 @@ impl<'a> ClientMessageBuilder<'a> {
 
         // Build signed transaction payload
         for output in self.outputs.clone() {
-            essence = essence.add_output(output);
+            outputs_for_essence.push(output);
         }
+
+        let mut essence = RegularEssence::builder();
+        // Order inputs and add them to the essence
+        inputs_for_essence.sort_unstable_by_key(|a| a.pack_new());
+        essence = essence.with_inputs(inputs_for_essence);
+
+        // Order outputs and add them to the essence
+        outputs_for_essence.sort_unstable_by_key(|a| a.pack_new());
+        essence = essence.with_outputs(outputs_for_essence);
+
         // Add indexation_payload if index set
         if let Some(index) = self.index.clone() {
             let indexation_payload = IndexationPayload::new(&index, &self.data.clone().unwrap_or_default())?;
@@ -457,13 +467,13 @@ impl<'a> ClientMessageBuilder<'a> {
                 signature_indexes.insert(index, current_block_index);
             }
         }
-        // TODO overflow check
-        let mut payload_builder = TransactionPayloadBuilder::new().with_essence(essence);
-        for unlock in unlock_blocks {
-            payload_builder = payload_builder.add_unlock_block(unlock);
-        }
 
-        let payload = payload_builder.finish().map_err(|_| Error::TransactionError)?;
+        let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
+        let payload = TransactionPayloadBuilder::new()
+            .with_essence(essence)
+            .with_unlock_blocks(unlock_blocks)
+            .finish()
+            .map_err(|_| Error::TransactionError)?;
         // building message
         let payload = Payload::Transaction(Box::new(payload));
 
@@ -492,13 +502,15 @@ impl<'a> ClientMessageBuilder<'a> {
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         let final_message = match self.parents {
             Some(mut parents) => {
-                parents.sort_unstable();
+                // Sort parents
                 parents.dedup();
+                parents.sort_unstable_by_key(|a| a.pack_new());
+
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let network_id = self.client.get_network_id().await?;
                 do_pow(
                     crate::client::ClientMinerBuilder::new()
-                        .with_local_pow(self.client.get_local_pow())
+                        .with_local_pow(self.client.get_local_pow().await)
                         .finish(),
                     min_pow_score,
                     network_id,
@@ -507,14 +519,14 @@ impl<'a> ClientMessageBuilder<'a> {
                     Arc::new(AtomicBool::new(false)),
                 )?
                 .1
-                .unwrap()
+                .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
             None => finish_pow(&self.client, payload).await?,
         };
 
         let msg_id = self.client.post_message(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.client.get_local_pow() {
+        let msg = match self.client.get_local_pow().await {
             true => final_message,
             false => self.client.get_message().data(&msg_id).await?,
         };
@@ -585,9 +597,9 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
 /// Does PoW with always new tips
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let done = Arc::new(AtomicBool::new(false));
-    let local_pow = client.get_local_pow();
+    let local_pow = client.get_local_pow().await;
     let min_pow_score = client.get_min_pow_score().await?;
-    let tips_interval = client.get_tips_interval();
+    let tips_interval = client.get_tips_interval().await;
     let network_id = client.get_network_id().await?;
     loop {
         let abort1 = Arc::clone(&done);
@@ -610,7 +622,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
 
         let threads = vec![pow_thread, time_thread];
         for t in threads {
-            match t.join().unwrap() {
+            match t.join().expect("Failed to join threads.") {
                 Ok(res) => {
                     if res.0 != 0 || !local_pow {
                         if let Some(message) = res.1 {
@@ -648,7 +660,7 @@ pub fn do_pow(
         message = message.with_payload(p);
     }
     let message = message
-        .with_parents(parent_messages)
+        .with_parents(Parents::new(parent_messages)?)
         .with_nonce_provider(client_miner, min_pow_score, Some(Arc::clone(&done)))
         .finish()
         .map_err(Error::MessageError)?;

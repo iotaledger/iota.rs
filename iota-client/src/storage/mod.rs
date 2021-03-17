@@ -52,7 +52,7 @@ pub async fn set<P: AsRef<Path>>(storage_path: P, storage: Box<dyn StorageAdapte
 }
 
 /// gets the storage adapter
-pub async fn get(storage_path: &PathBuf) -> crate::Result<StorageHandle> {
+pub async fn get(storage_path: &Path) -> crate::Result<StorageHandle> {
     let instances = INSTANCES.get_or_init(Default::default).read().await;
     if let Some(instance) = instances.get(storage_path) {
         Ok(instance.clone())

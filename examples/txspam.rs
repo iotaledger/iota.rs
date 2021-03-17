@@ -2,29 +2,31 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example txspam --release
-use iota::{Client, Essence, MessageId, Payload, Seed, UTXOInput};
-use tokio::time::sleep;
+
+use iota::{Client, Essence, Payload, Seed, UTXOInput};
 extern crate dotenv;
 use dotenv::dotenv;
-use std::{env, time::Duration};
+use std::env;
 
-/// In this example, we spam transactions
-/// Send 10 Mi from the faucet to the first address before you run this
+/// In this example we will spam transactions
+/// Send 10 Mi from the faucet to the first address before you run it
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Create a client instance builder
-        .with_node("http://api.lb-0.testnet.chrysalis2.com") // Insert the node here
+    // Create a client instance
+    let iota = Client::builder()
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await
         .unwrap();
 
-    println!("This example uses dotenv, which is not safe for use in production.");
+    // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
+
     let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
 
-    // split funds to own addresses
+    // Split funds to own addresses
     let addresses = iota
         .get_addresses(&seed)
         .with_account_index(0)
@@ -43,9 +45,10 @@ async fn main() {
         "First transaction sent: https://explorer.iota.org/chrysalis/message/{}",
         message.id().0
     );
-    reattach_promote_until_confirmed(message.id().0, &iota).await;
-    // At this point we have 10 Mi on 10 addresses and will just send it to their addresses again
 
+    let _ = iota.retry_until_included(&message.id().0, None, None).await.unwrap();
+
+    // At this point we have 10 Mi on 10 addresses and we will just send it to their addresses again
     // Use own outputs directly so we don't double spend them
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
@@ -56,7 +59,7 @@ async fn main() {
                 }
             }
             _ => {
-                panic!("Unexisting essence type");
+                panic!("Non-existing essence type");
             }
         }
     }
@@ -72,20 +75,8 @@ async fn main() {
             .await
             .unwrap();
         println!(
-            "Tx sent: https://explorer.iota.org/chrysalis/message/{}",
+            "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
             message.id().0
         );
-    }
-}
-
-async fn reattach_promote_until_confirmed(message_id: MessageId, iota: &Client) {
-    while let Ok(metadata) = iota.get_message().metadata(&message_id).await {
-        if let Some(state) = metadata.ledger_inclusion_state {
-            println!("Ledger inclusion state: {:?}", state);
-            break;
-        } else if let Ok(msg_id) = iota.reattach(&message_id).await {
-            println!("Reattached or promoted {}", msg_id.0);
-        }
-        sleep(Duration::from_secs(5)).await;
     }
 }

@@ -24,13 +24,12 @@ type ClientInstanceMap = Arc<RwLock<HashMap<String, Arc<RwLock<Client>>>>>;
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error("`{0}`")]
     Anyhow(#[from] anyhow::Error),
     #[error("`{0}`")]
     Client(#[from] iota::client::Error),
-    #[error("`{0}`")]
-    Address(#[from] bech32::Error),
     #[error("`{0}`")]
     Hex(#[from] hex::FromHexError),
     #[error("`{0}`")]

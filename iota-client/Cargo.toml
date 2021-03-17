@@ -13,35 +13,35 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-# bee-rest-api = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-# bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-# bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-# bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "ce3bd4e1b1ba423c8268e435dcc98c90c397379e" }
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "ce3bd4e1b1ba423c8268e435dcc98c90c397379e" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "ce3bd4e1b1ba423c8268e435dcc98c90c397379e" }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "26215e3af88af4c54f460df7cffc39d26fdd6e05"}
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "26215e3af88af4c54f460df7cffc39d26fdd6e05" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "26215e3af88af4c54f460df7cffc39d26fdd6e05" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
-iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "527392202e78fa35620a9b30061d5e231a046ea2", features = ["blake2b", "ed25519", "random", "slip10"]}
-reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false }
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["std", "blake2b", "ed25519", "random", "slip10"]}
+ureq = { version = "2.0", features = ["json"], optional = true }
+reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
+url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0.58"
+serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
-hex = "0.4.2"
-tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread"] }
+hex = "0.4"
+tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread", "rt"] }
 thiserror = "1.0"
 num_cpus = "1.13"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 async-trait = "0.1"
-log = "0.4"
+log= "0.4"
 
 # MQTT
-paho-mqtt = { version = "0.9", optional = true }
+rumqttc = { version = "0.5", optional = true }
 regex = { version = "1.4", optional = true }
 once_cell = { version = "1.5", optional = true }
 futures = { version = "0.3", optional = true }
 
 [features]
-mqtt = ["paho-mqtt", "regex", "once_cell", "futures"]
+default = ["async"]
+sync = ["ureq"]
+async = ["reqwest"]
+mqtt = ["rumqttc", "regex", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]

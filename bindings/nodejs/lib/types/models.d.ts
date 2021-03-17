@@ -6,7 +6,7 @@ export declare interface NodeInfo {
   bech32HRP: string
   minPoWScore: number
   latestMilestoneIndex: number
-  solidMilestoneIndex: number
+  confirmedMilestoneIndex: number
   pruningIndex: number
   features: string[]
 }
@@ -51,6 +51,7 @@ export declare interface BrokerOptions {
 export declare type Address = 'string'
 
 export declare interface AddressBalance {
+  type: number
   address: Address
   balance: number
 }

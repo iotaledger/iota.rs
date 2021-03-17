@@ -82,11 +82,32 @@ Client.prototype.postMessage = function (message) {
 }
 Client.prototype.getOutput = promisify(Client.prototype.getOutput)
 Client.prototype.findOutputs = promisify(Client.prototype.findOutputs)
-Client.prototype.getAddressOutputs = promisify(Client.prototype.getAddressOutputs)
+const getAddressOutputs = Client.prototype.getAddressOutputs
+Client.prototype.getAddressOutputs = function (address, options) {
+  if (typeof options == 'undefined') {
+    options = {
+      includeSpent: false
+    }
+  }
+  return promisify(getAddressOutputs).apply(this, [address, JSON.stringify(options)])
+}
 Client.prototype.getAddressBalance = promisify(Client.prototype.getAddressBalance)
 Client.prototype.getMilestone = promisify(Client.prototype.getMilestone)
 Client.prototype.getMilestoneUTXOChanges = promisify(Client.prototype.getMilestoneUTXOChanges)
+Client.prototype.getReceipts = promisify(Client.prototype.getReceipts)
+Client.prototype.getReceiptsMigratedAt = promisify(Client.prototype.getReceiptsMigratedAt)
+Client.prototype.getTreasury = promisify(Client.prototype.getTreasury)
 Client.prototype.retry = promisify(Client.prototype.retry)
+const retryUntilIncluded = Client.prototype.retryUntilIncluded
+Client.prototype.retryUntilIncluded = function (msg_id, interval, maxAttempts) {
+  if (typeof interval == 'undefined') {
+    interval = 5
+  }
+  if (typeof maxAttempts == 'undefined') {
+    maxAttempts = 10
+  }
+  return promisify(retryUntilIncluded).apply(this, [msg_id, interval, maxAttempts])
+}
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
 

@@ -1,4 +1,4 @@
-# IOTA Clinet Node.js Library
+# IOTA Client Node.js Library
 
 [![status](https://img.shields.io/badge/Status-Alpha-yellow.svg)](https://github.com/iotaledger/iota.rs)
 

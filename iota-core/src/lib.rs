@@ -11,8 +11,8 @@
     unreachable_pub
 )]
 
+pub use crate::bee_message as message;
 pub use bee_common as common;
-pub use bee_message as message;
 pub use bee_pow as pow;
 pub use iota_client as client;
 

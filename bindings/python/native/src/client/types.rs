@@ -5,35 +5,36 @@ use crate::client::error::{Error, Result};
 use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota::{
-    bee_rest_api::{
-        handlers::{
-            balance_ed25519::BalanceForAddressResponse as RustBalanceForAddressResponse,
-            info::InfoResponse as RustInfoResponse,
-            message_metadata::{
-                LedgerInclusionStateDto as RustLedgerInclusionStateDto,
-                MessageMetadataResponse as RustMessageMetadataResponse,
-            },
-            milestone_utxo_changes::MilestoneUtxoChanges as RustMilestoneUTXOChanges,
-            output::OutputResponse as RustOutputResponse,
-        },
-        types::{
+    bee_rest_api::types::{
+        dtos::{
             AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, GossipDto as RustgossipDto,
-            HeartbeatDto as RustheartbeatDto, MetricsDto as RustMetricsDto, OutputDto as RustOutputDto,
-            PeerDto as RustPeerDto, RelationDto as RustRelationDto,
+            HeartbeatDto as RustheartbeatDto, InputDto as RustInputDto,
+            LedgerInclusionStateDto as RustLedgerInclusionStateDto, MetricsDto as RustMetricsDto,
+            MigratedFundsEntryDto as RustMigratedFundsEntryDto, OutputDto as RustOutputDto,
+            PayloadDto as RustPayloadDto, PeerDto as RustPeerDto, ReceiptDto as RustReceiptDto,
+            ReceiptPayloadDto as RustReceiptPayloadDto, RelationDto as RustRelationDto,
             SignatureLockedDustAllowanceOutputDto as RustSignatureLockedDustAllowanceOutputDto,
             SignatureLockedSingleOutputDto as RustSignatureLockedSingleOutputDto,
             TreasuryOutputDto as RustTreasuryOutputDto,
+            TreasuryTransactionPayloadDto as RustTreasuryTransactionPayloadDto,
+        },
+        responses::{
+            BalanceForAddressResponse as RustBalanceForAddressResponse, InfoResponse as RustInfoResponse,
+            MessageMetadataResponse as RustMessageMetadataResponse,
+            MilestoneUtxoChangesResponse as RustMilestoneUTXOChanges, OutputResponse as RustOutputResponse,
+            TreasuryResponse as RustTreasuryResponse,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
     client::MilestoneResponse,
-    Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
-    Essence as RustEssence, IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
-    MilestonePayloadEssence as RustMilestonePayloadEssence, Output as RustOutput, Payload as RustPayload,
-    ReferenceUnlock as RustReferenceUnlock, RegularEssence as RustRegularEssence,
-    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
-    TransactionId as RustTransationId, TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput,
-    UnlockBlock as RustUnlockBlock,
+    Address as RustAddress, AddressOutputsOptions as RustAddressOutputsOptions, Ed25519Address as RustEd25519Address,
+    Ed25519Signature as RustEd25519Signature, Essence as RustEssence, IndexationPayload as RustIndexationPayload,
+    Input as RustInput, Message as RustMessage, MilestonePayloadEssence as RustMilestonePayloadEssence,
+    Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
+    RegularEssence as RustRegularEssence, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
+    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
+    TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
+    UnlockBlocks as RustUnlockBlocks,
 };
 
 use std::{
@@ -92,9 +93,20 @@ pub struct MilestoneUTXOChanges {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct InputDto {
+    pub utxo: Option<UTXOInput>,
+    pub treasury: Option<TreasuryInput>,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct UTXOInput {
     pub transaction_id: Vec<u8>,
     pub index: u16,
+}
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct TreasuryInput {
+    pub kind: u8,
+    pub message_id: String,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -108,9 +120,9 @@ pub struct OutputResponse {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct OutputDto {
-    treasury: Option<TreasuryOutputDto>,
-    signature_locked_single: Option<SignatureLockedSingleOutputDto>,
-    signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutputDto>,
+    pub treasury: Option<TreasuryOutputDto>,
+    pub signature_locked_single: Option<SignatureLockedSingleOutputDto>,
+    pub signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutputDto>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -189,6 +201,12 @@ pub struct Indexation {
     pub data: Vec<u8>,
 }
 
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct ReceiptDto {
+    pub receipt: Receipt,
+    pub milestone_index: u32,
+}
+
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Receipt {
     pub kind: u32,
@@ -200,16 +218,15 @@ pub struct Receipt {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MigratedFundsEntry {
-    tail_transaction_hash: Vec<u8>,
-    address: AddressDto,
-    amount: u64,
+    pub tail_transaction_hash: Vec<u8>,
+    pub output: SignatureLockedSingleOutputDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct TreasuryTransaction {
     pub kind: u32,
-    pub input: Input,
-    pub output: Output,
+    pub input: InputDto,
+    pub output: OutputDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -249,8 +266,6 @@ pub struct BrokerOptions {
     pub automatic_disconnect: bool,
     /// broker timeout in secs
     pub timeout: u64,
-    /// use websockets or not
-    pub use_ws: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -266,7 +281,7 @@ pub struct InfoResponse {
     pub network_id: String,
     pub bech32_hrp: String,
     pub latest_milestone_index: u32,
-    pub solid_milestone_index: u32,
+    pub confirmed_milestone_index: u32,
     pub pruning_index: u32,
     pub features: Vec<String>,
     pub min_pow_score: f64,
@@ -333,6 +348,21 @@ pub struct MetricsDto {
     pub dropped_packets: u64,
 }
 
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct TreasuryResponse {
+    pub milestone_id: String,
+    pub amount: u64,
+}
+
+impl From<RustTreasuryResponse> for TreasuryResponse {
+    fn from(treasury: RustTreasuryResponse) -> Self {
+        Self {
+            milestone_id: treasury.milestone_id,
+            amount: treasury.amount,
+        }
+    }
+}
+
 impl From<RustOutputResponse> for OutputResponse {
     fn from(output: RustOutputResponse) -> Self {
         Self {
@@ -349,12 +379,7 @@ impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
     fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
         Self {
             tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_vec(),
-            address: migrated_funds_entry
-                .address()
-                .clone()
-                .try_into()
-                .expect("Can't convert address"),
-            amount: migrated_funds_entry.amount(),
+            output: migrated_funds_entry.output().clone().into(),
         }
     }
 }
@@ -395,6 +420,17 @@ impl From<RustTreasuryOutputDto> for TreasuryOutputDto {
         Self {
             kind: treasury.kind,
             amount: treasury.amount,
+        }
+    }
+}
+
+impl From<RustSignatureLockedSingleOutput> for SignatureLockedSingleOutputDto {
+    fn from(address: RustSignatureLockedSingleOutput) -> Self {
+        let address_dto: AddressDto = address.address().clone().into();
+        Self {
+            kind: 0,
+            address: address_dto,
+            amount: address.amount(),
         }
     }
 }
@@ -481,7 +517,7 @@ impl From<RustInfoResponse> for InfoResponse {
             network_id: info.network_id,
             bech32_hrp: info.bech32_hrp,
             latest_milestone_index: info.latest_milestone_index,
-            solid_milestone_index: info.solid_milestone_index,
+            confirmed_milestone_index: info.confirmed_milestone_index,
             pruning_index: info.pruning_index,
             features: info.features,
             min_pow_score: info.min_pow_score,
@@ -678,7 +714,7 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
         Ok(MilestonePayloadEssence {
             index: essence.index(),
             timestamp: essence.timestamp(),
-            parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
+            parents: vec![essence.parents().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
             public_keys: essence
                 .public_keys()
@@ -831,7 +867,7 @@ impl TryFrom<RustMessage> for Message {
         Ok(Message {
             message_id: msg.id().0.to_string(),
             network_id: msg.network_id(),
-            parents: msg.parents().iter().map(|m| m.to_string()).collect(),
+            parents: msg.parents().map(|m| m.to_string()).collect(),
             payload,
             nonce: msg.nonce(),
         })
@@ -952,9 +988,10 @@ impl TryFrom<Payload> for RustPayload {
                 transaction.with_essence(RustEssence::Regular(transaction_payload[0].essence.clone().try_into()?));
 
             let unlock_blocks = transaction_payload[0].unlock_blocks.clone();
-            for unlock_block in unlock_blocks {
-                transaction = transaction.add_unlock_block(unlock_block.try_into()?);
-            }
+            let unlock_blocks: Result<Vec<RustUnlockBlock>> =
+                unlock_blocks.to_vec().into_iter().map(|u| u.try_into()).collect();
+
+            transaction = transaction.with_unlock_blocks(RustUnlockBlocks::new(unlock_blocks?)?);
 
             Ok(RustPayload::Transaction(Box::new(transaction.finish()?)))
         } else {
@@ -974,6 +1011,89 @@ impl TryFrom<Payload> for RustPayload {
                     .data,
             )?;
             Ok(RustPayload::Indexation(Box::new(indexation)))
+        }
+    }
+}
+
+impl From<RustReceiptDto> for ReceiptDto {
+    fn from(receipt: RustReceiptDto) -> Self {
+        Self {
+            receipt: receipt.receipt.into(),
+            milestone_index: receipt.milestone_index,
+        }
+    }
+}
+
+impl From<RustReceiptPayloadDto> for Receipt {
+    fn from(receipt: RustReceiptPayloadDto) -> Self {
+        let payload = match receipt.transaction {
+            RustPayloadDto::TreasuryTransaction(payload) => *payload,
+            _ => panic!("Invalid payload"),
+        };
+        Self {
+            kind: receipt.kind,
+            index: receipt.index,
+            last: receipt.last,
+            funds: receipt.funds.into_iter().map(|r| r.into()).collect(),
+            transaction: Payload {
+                transaction: None,
+                milestone: None,
+                indexation: None,
+                receipt: None,
+                treasury_transaction: Some(vec![payload.into()]),
+            },
+        }
+    }
+}
+
+impl From<RustMigratedFundsEntryDto> for MigratedFundsEntry {
+    fn from(receipt: RustMigratedFundsEntryDto) -> Self {
+        Self {
+            tail_transaction_hash: receipt.tail_transaction_hash.to_vec(),
+            output: SignatureLockedSingleOutputDto {
+                kind: 0,
+                address: receipt.address.into(),
+                amount: receipt.amount,
+            },
+        }
+    }
+}
+
+impl From<RustTreasuryTransactionPayloadDto> for TreasuryTransaction {
+    fn from(treasury: RustTreasuryTransactionPayloadDto) -> Self {
+        let treasury_input = match treasury.input {
+            RustInputDto::Treasury(t) => TreasuryInput {
+                kind: t.kind,
+                message_id: t.message_id,
+            },
+            RustInputDto::UTXO(_) => panic!("Invalid type"),
+        };
+        Self {
+            kind: treasury.kind,
+            input: InputDto {
+                utxo: None,
+                treasury: Some(treasury_input),
+            },
+            output: treasury.output.into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct AddressOutputsOptions {
+    include_spent: bool,
+    output_type: Option<String>,
+}
+
+impl From<AddressOutputsOptions> for RustAddressOutputsOptions {
+    fn from(value: AddressOutputsOptions) -> Self {
+        Self {
+            include_spent: value.include_spent,
+            output_type: value.output_type.map(|o| match o.as_str() {
+                "SignatureLockedSingle" => OutputType::SignatureLockedSingle,
+                "SignatureLockedDustAllowance" => OutputType::SignatureLockedDustAllowance,
+                _ => panic!("unexpected output type option"),
+            }),
         }
     }
 }

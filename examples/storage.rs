@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example storage --release
+
 use iota::{
     storage::{sqlite, StorageAdapter},
     Client,
@@ -9,8 +10,9 @@ use iota::{
 
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+    // Create a client instance
+    let iota = Client::builder()
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
         .await
@@ -18,20 +20,22 @@ async fn main() {
 
     let message = iota
         .message()
-        .with_index("Helloo")
+        .with_index("Hello")
         .with_data("Tangle".to_string().as_bytes().to_vec())
         .finish()
         .await
         .unwrap();
 
-    println!("MessageId {}", message.id().0);
+    println!("Message ID: {}", message.id().0);
 
     let path = "./the-storage-path.db";
     let mut storage_adapter = sqlite::SqliteStorageAdapter::new(path, "table_name").unwrap();
+
     storage_adapter
         .set("message_id", message.id().0.to_string())
         .await
         .unwrap();
-    let account = storage_adapter.get("message_id").await.unwrap();
-    println!("{:?}", account);
+
+    let message_id = storage_adapter.get("message_id").await.unwrap();
+    println!("Message ID from storage: {:?}", message_id);
 }

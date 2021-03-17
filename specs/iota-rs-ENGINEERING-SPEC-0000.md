@@ -14,8 +14,11 @@
   * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
+  * [`parse_bech32_address`](#parse_bech32_address)
+  * [`is_address_valid`](#is_address_valid)
   * [`subscriber`](#subscriber)
   * [`retry`](#retry)
+  * [`retry_until_included`](#retry_until_included)
   * [`reattach`](#reattach)
   * [`promote`](#promote)
 * [Full node API](#Full-node-API)
@@ -29,6 +32,9 @@
   * [`find_outputs`](#find_outputs)
   * [`get_milestone`](#get_milestone)
   * [`get_milestone_utxo_changes`](#get_milestone_utxo_changes)
+  * [`get_receipts`](#get_receipts)
+  * [`get_receipts_migrated_at`](#get_receipts_migrated_at)
+  * [`get_treasury`](#get_treasury)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -56,6 +62,7 @@ The data structure to initialize the instance of the Higher level client library
 | - | - | - | - | - |
 | **network** | ✘ | Testnet | &str | Optional, the network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. Nodes that aren't in this network will be ignored. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
+| **node_auth** | ✘ | None | &str, &str, &str | The URL of a node to connect to with name and password for basic authentication; format: `https://node:port`, `name`, `password` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
@@ -64,7 +71,7 @@ The data structure to initialize the instance of the Higher level client library
 | **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
 | **tips_interval** | ✘ | 15 | u64 | Time interval during PoW when new tips get requested. |
-| **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
+| **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used|
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -265,6 +272,32 @@ Following are the steps for implementing this method:
 * Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
 * Return the list of Output which contains corresponding pairs of address and balance.
 
+## `parse_bech32_address()`
+
+Returns a valid Address parsed from a String.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+
+### Return
+
+Parsed [Address].
+
+## `is_address_valid()`
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+
+### Return
+
+A boolean showing if the address is valid.
+
 ## `subscriber()`
 
 Subscribe to a node event [Topic] (MQTT)
@@ -303,6 +336,21 @@ Following are the steps for implementing this method:
 * Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;
 * The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
+
+## `retry_until_included()`
+
+Retries (promotes or reattaches) a message for provided [MessageId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 10. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **message_id**  | ✔ | [&MessageId] | The identifier of message.                    |
+| **interval**    | ✘ | Option<u64>  | The interval in which we retry the message.   |
+| **max_attempts** | ✘ | Option<u64>  | The maximum of attempts we retry the message. |
+
+### Returns:
+
+An array of tuples with the newly reattached `(MessageId,  Message)`.
 
 ## `reattach()`
 
@@ -400,7 +448,7 @@ pub struct NodeInfo {
     pub network_id: String,
     pub latest_milestone_index: usize,
     pub min_pow_score: f64,
-    pub solid_milestone_index: usize,
+    pub confirmed_milestone_index: usize,
     pub pruning_index: usize,
     pub features: Vec<String>,
 }
@@ -471,7 +519,7 @@ An [OutputMetadata](#OutputMetadata) that contains various information about the
 Depend on the final calling method, users could get different outputs they need:
 
 * `balance()`: Return confirmed balance of the address.
-* `outputs()`: Return UTXOInput array (transaction IDs with corresponding output index).
+* `outputs([options])`: Return UTXOInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 
@@ -524,7 +572,47 @@ MilestoneUTXOChanges {
     created_outputs: [],
     consumed_outputs: [],
 }
-````
+```
+
+## `get_receipts()`
+
+(`GET /receipts`)
+
+Get all receipts.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_receipts_migrated_at()`
+
+(`GET /receipts/{migratedAt}`)
+
+Get all receipts for a given milestone index.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_treasury()`
+
+(`GET /treasury`)
+
+Get the treasury amount.
+
+### Returns
+
+```Rust
+pub struct TreasuryResponse {
+    #[serde(rename = "milestoneId")]
+    milestone_id: String,
+    amount: u64,
+}
+```
 
 # Objects
 
@@ -759,8 +847,6 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: std::time::Duration,
-    #[serde(default = "default_use_ws")]
-    pub(crate) use_ws: bool,
 }
 ```
 
@@ -772,7 +858,7 @@ A string with the exact MQTT topic to monitor, can have one of the following var
 
 ```
 milestones/latest
-milestones/solid
+milestones/confirmed
 
 messages
 messages/referenced

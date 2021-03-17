@@ -4,12 +4,11 @@
 // These are E2E test samples, so they are ignored by default.
 
 use bee_message::prelude::*;
-use crypto::slip10::Seed;
+use crypto::keys::slip10::Seed;
 
-use bee_rest_api::types::MessageDto;
-use std::{convert::TryFrom, str::FromStr};
+use std::str::FromStr;
 
-const DEFAULT_NODE_URL: &str = "http://0.0.0.0:14265";
+const DEFAULT_NODE_URL: &str = "https://api.hornet-1.testnet.chrysalis2.com";
 
 // Sends a full message object to the node with already computed nonce. Serves as a test object.
 async fn setup_indexation_message() -> MessageId {
@@ -19,36 +18,30 @@ async fn setup_indexation_message() -> MessageId {
         .finish()
         .await
         .unwrap();
-    let data = r#"
-    {
-        "networkId": "3720706210109972015",
-        "parentMessageIds": [
-            "8c25fdaba5b71e7f36c48ee6cb81863acb8eea687f798b56494dbc419c9e65a8",
-            "abaf5fb4ae5e8738cfb639aeefe083363dd4a4813e180657cc5ddedc187ee0fc",
-            "cda9e19ece953f510953324bcde291022faf29d03f8a51b069164dd639c494ed",
-            "fee998c47715cff74f54c32629ab9b53127d5acce9bb2adc3d462a7a7456c699"
-        ],
-        "payload": {
-            "type": 2,
-            "index": "696f74612e7273",
-            "data": "74657374"
-        },
-        "nonce": "1152921504606863500"
-    }"#;
-    let message = Message::try_from(&serde_json::from_str::<MessageDto>(data).unwrap()).unwrap();
-    client.post_message(&message).await.unwrap()
+
+    client
+        .message()
+        .with_index("iota.rs")
+        .with_data("iota.rs".to_string().as_bytes().to_vec())
+        .finish()
+        .await
+        .unwrap()
+        .id()
+        .0
 }
 
-// Ignored as long as we don't have a realy node pool url, otherwise the tests fail
-// const DEFAULT_NODE_POOL_URLS: &str = "https://nodes.iota.works/api/ssl/live";
-// #[test]
-// fn test_with_node_pool_urls() {
-//     let r = iota_client::Client::builder()
-//         .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
-//         .unwrap()
-//         .finish();
-//     println!("{:#?}", r);
-// }
+const DEFAULT_NODE_POOL_URLS: &str = "https://giftiota.com/nodes.json";
+#[tokio::test]
+#[ignore]
+async fn test_with_node_pool_urls() {
+    let r = iota_client::Client::builder()
+        .with_node_pool_urls(&[DEFAULT_NODE_POOL_URLS.into()])
+        .await
+        .unwrap()
+        .finish()
+        .await;
+    println!("{:#?}", r);
+}
 
 #[tokio::test]
 #[ignore]
@@ -140,7 +133,7 @@ async fn test_get_message_by_index() {
         .await
         .unwrap()
         .get_message()
-        .index("HORNET Spammer")
+        .index("iota.rs")
         .await
         .unwrap();
 
@@ -240,8 +233,9 @@ async fn test_get_address_outputs() {
         .unwrap()
         .get_address()
         .outputs(
-            &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(), /* Insert the address to
-                                                                                         * search for */
+            &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(),
+            Default::default(), /* Insert the address to
+                                 * search for */
         )
         .await
         .unwrap();
@@ -313,6 +307,54 @@ async fn test_get_milestone_utxo_changes() {
         .await
         .unwrap()
         .get_milestone_utxo_changes(3)
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_receipts() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_receipts()
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn get_receipts_migrated_at() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_receipts_migrated_at(3)
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_treasury() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_treasury()
         .await
         .unwrap();
 

@@ -1,0 +1,39 @@
+{
+    "MESSAGE_ID_LENGTH": 64,
+    "NODE_URL": "https://api.lb-0.testnet.chrysalis2.com",
+    "MQTT_NODE_URL": "https://api.hornet-0.testnet.chrysalis2.com",
+    "NONSECURE_SEED": [
+        "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2",
+        "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b3"
+    ],
+    "ADDRESS": [
+        "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+        "invalidxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    ],
+    "INDEXATION": {
+        "INDEX": [
+            "Hello",
+            "Hi",
+            "TEST_INDEX__WITH_FEW_MESSAGES"
+        ],
+        "DATA": [
+            [
+                84,
+                97,
+                110,
+                103,
+                108,
+                101
+            ]
+        ],
+        "DATA_STRING": [
+            "Tangle"
+        ]
+    },
+    "UTXOINPUT": [
+        "00000000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    "MESSAGE_ID": [
+        "f541e53e98ccffdd94036f08af07f9eb060449ee7838c2279f230acc933de6d8"
+    ]
+}

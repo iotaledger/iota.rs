@@ -6,7 +6,9 @@ use std::{convert::TryInto, ops::Range, str::FromStr};
 use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
-use iota::{Address, Bech32Address, ClientMiner, MessageBuilder, MessageId, Seed, UTXOInput};
+use iota::{
+    Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Parents, Seed, UTXOInput,
+};
 use neon::prelude::*;
 
 pub(crate) enum Api {
@@ -60,10 +62,14 @@ pub(crate) enum Api {
         addresses: Vec<Bech32Address>,
     },
     GetAddressBalance(Bech32Address),
-    GetAddressOutputs(Bech32Address),
+    GetAddressOutputs(Bech32Address, AddressOutputsOptions),
     GetMilestone(u32),
     GetMilestoneUTXOChanges(u32),
+    GetReceipts(),
+    GetReceiptsMigratedAt(u32),
+    GetTreasury(),
     Retry(MessageId),
+    RetryUntilIncluded(MessageId, Option<u64>, Option<u64>),
     Reattach(MessageId),
     Promote(MessageId),
 }
@@ -222,10 +228,12 @@ impl Task for ClientTask {
                         }
                         None => client.get_tips().await?,
                     };
+                    let network_id = client.get_network_id().await?;
+                    let nonce_provider = client.get_pow_provider().await;
                     let message = MessageBuilder::<ClientMiner>::new()
-                        .with_network_id(client.get_network_id().await?)
-                        .with_parents(parent_msg_ids)
-                        .with_nonce_provider(client.get_pow_provider(), 4000f64, None)
+                        .with_network_id(network_id)
+                        .with_parents(Parents::new(parent_msg_ids)?)
+                        .with_nonce_provider(nonce_provider, 4000f64, None)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message = client.post_message(&message).await?;
@@ -266,8 +274,8 @@ impl Task for ClientTask {
                     let balance = client.get_address().balance(address).await?;
                     serde_json::to_string(&balance).unwrap()
                 }
-                Api::GetAddressOutputs(address) => {
-                    let output_ids = client.get_address().outputs(address).await?;
+                Api::GetAddressOutputs(address, options) => {
+                    let output_ids = client.get_address().outputs(address, options.clone()).await?;
                     serde_json::to_string(&output_ids).unwrap()
                 }
                 Api::GetMilestone(index) => {
@@ -278,13 +286,40 @@ impl Task for ClientTask {
                     let milestone_utxo_changes = client.get_milestone_utxo_changes(*index).await?;
                     serde_json::to_string(&milestone_utxo_changes).unwrap()
                 }
+                Api::GetReceipts() => {
+                    let receipts = client.get_receipts().await?;
+                    serde_json::to_string(&receipts).unwrap()
+                }
+                Api::GetReceiptsMigratedAt(index) => {
+                    let receipts = client.get_receipts_migrated_at(*index).await?;
+                    serde_json::to_string(&receipts).unwrap()
+                }
+                Api::GetTreasury() => {
+                    let treasury = client.get_treasury().await?;
+                    serde_json::to_string(&treasury).unwrap()
+                }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
-                        message: message.1,
                         message_id: message.0,
+                        message: message.1,
                     })
                     .unwrap()
+                }
+                Api::RetryUntilIncluded(message_id, interval, max_attempts) => {
+                    let messages = client
+                        .retry_until_included(message_id, *interval, *max_attempts)
+                        .await?;
+                    messages
+                        .into_iter()
+                        .map(|msg| {
+                            serde_json::to_string(&MessageWrapper {
+                                message_id: msg.0,
+                                message: msg.1,
+                            })
+                            .unwrap()
+                        })
+                        .collect()
                 }
                 Api::Reattach(message_id) => {
                     let message = client.reattach(message_id).await?;

@@ -10,9 +10,9 @@ use iota::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{
-    AddressBalancePair, BalanceForAddressResponse, BrokerOptions, InfoResponse, Input, Message,
-    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, Output, OutputResponse, PeerDto, UTXOInput,
-    BECH32_HRP,
+    AddressBalancePair, AddressOutputsOptions, BalanceForAddressResponse, BrokerOptions, InfoResponse, Input, Message,
+    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, Output, OutputResponse, PeerDto, ReceiptDto,
+    TreasuryResponse, UTXOInput, BECH32_HRP,
 };
 
 /// Client builder
@@ -30,6 +30,8 @@ impl Client {
     fn new(
         network: Option<&str>,
         node: Option<&str>,
+        name: Option<&str>,
+        password: Option<&str>,
         nodes: Option<Vec<&str>>,
         node_sync_interval: Option<u64>,
         node_sync_disabled: Option<bool>,
@@ -40,13 +42,16 @@ impl Client {
         tips_interval: Option<u64>,
         mqtt_broker_options: Option<BrokerOptions>,
     ) -> Self {
-        let rt = tokio::runtime::Runtime::new().unwrap();
         let mut client = RustClient::builder();
         if let Some(network) = network {
             client = client.with_network(network);
         }
         if let Some(node) = node {
-            client = client.with_node(node).unwrap();
+            if let (Some(name), Some(password)) = (name, password) {
+                client = client.with_node_auth(node, name, password).unwrap();
+            } else {
+                client = client.with_node(node).unwrap();
+            }
         }
         if let Some(nodes) = nodes {
             client = client.with_nodes(&nodes).unwrap();
@@ -60,7 +65,7 @@ impl Client {
             }
         }
         if let Some(node_pool_urls) = node_pool_urls {
-            client = rt.block_on(async { client.with_node_pool_urls(&node_pool_urls).await.unwrap() });
+            client = crate::block_on(async { client.with_node_pool_urls(&node_pool_urls).await.unwrap() });
         }
         if let Some(timeout) = request_timeout {
             client = client.with_request_timeout(Duration::from_millis(timeout));
@@ -90,16 +95,16 @@ impl Client {
         if let Some(broker_options) = mqtt_broker_options {
             let rust_broker_options = RustBrokerOptions::new()
                 .automatic_disconnect(broker_options.automatic_disconnect)
-                .timeout(Duration::from_millis(broker_options.timeout))
-                .use_websockets(broker_options.use_ws);
+                .timeout(Duration::from_secs(broker_options.timeout));
             client = client.with_mqtt_broker_options(rust_broker_options);
         }
-        let client = rt.block_on(async { client.finish().await.unwrap() });
+        let client = crate::block_on(async { client.finish().await.unwrap() });
 
         // Update the BECH32_HRP
         // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
         //       create the client object.
-        let bech32_hrp = rt.block_on(async { client.get_bech32_hrp().await.unwrap() });
+        let bech32_hrp = crate::block_on(async { client.get_bech32_hrp().await.unwrap() });
+        // Note that mutable static is unsafe and requires unsafe function or block
         unsafe {
             BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
         }

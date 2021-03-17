@@ -14,6 +14,7 @@ export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 
 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
+  nodeAuth(url: string, name: string, password: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
   network(network_name: string): ClientBuilder
@@ -69,8 +70,13 @@ export declare interface NetworkInfo {
   localPow: boolean
 }
 
+export declare interface AddressOutputsOptions {
+  includeSpent?: boolean
+  outputType?: { type: 'SignatureLockedSingle' | 'SignatureLockedDustAllowance' }
+}
+
 export declare class Client {
-  networkInfo(): NetworkInfo
+  networkInfo(): Promise<NetworkInfo>
   subscriber(): TopicSubscriber
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
@@ -79,6 +85,7 @@ export declare class Client {
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
   retry(messageId: string): Promise<MessageWrapper>
+  retryUntilIncluded(messageId: string, interval?: number, maxAttempts?: number): Promise<MessageWrapper[]>
 
   getInfo(): Promise<NodeInfo>
   getTips(): Promise<string[]>
@@ -87,10 +94,14 @@ export declare class Client {
   getMessage(): MessageFinder
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
-  getAddressOutputs(address: string): Promise<string[]>
-  getAddressBalance(address: string): Promise<number>
+  getAddressOutputs(address: string, options?: AddressOutputsOptions): Promise<string[]>
+  getAddressBalance(address: string): Promise<AddressBalance>
+  isAddressValid(address: string): boolean
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUTXOChanges(index: number): Promise<MilestoneUTXOChanges>
+  getReceipts(): Promise<Receipts[]>
+  getReceiptsMigratedAt(index: number): Promise<Receipts[]>
+  getTreasury(): Promise<Treasury>
   reattach(messageId: string): Promise<MessageWrapper>
   promote(messageId: string): Promise<MessageWrapper>
 }
