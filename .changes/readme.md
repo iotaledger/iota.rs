@@ -10,8 +10,8 @@ Use the following format:
 
 ```md
 ---
-"tauri.js": patch
-"tauri": minor
+"nodejs-binding": patch
+"python-binding": minor
 ---
 
 Change summary goes here
