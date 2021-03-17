@@ -68,6 +68,7 @@ pub(crate) enum Api {
     GetReceipts(),
     GetReceiptsMigratedAt(u32),
     GetTreasury(),
+    GetIncludedMessage(u32),
     Retry(MessageId),
     RetryUntilIncluded(MessageId, Option<u64>, Option<u64>),
     Reattach(MessageId),
@@ -297,6 +298,10 @@ impl Task for ClientTask {
                 Api::GetTreasury() => {
                     let treasury = client.get_treasury().await?;
                     serde_json::to_string(&treasury).unwrap()
+                }
+                Api::GetIncludedMessage(transaction_id) => {
+                    let message = client.get_included_message(*transaction_id).await?;
+                    serde_json::to_string(&message).unwrap()
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;

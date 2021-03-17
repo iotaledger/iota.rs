@@ -35,6 +35,7 @@
   * [`get_receipts`](#get_receipts)
   * [`get_receipts_migrated_at`](#get_receipts_migrated_at)
   * [`get_treasury`](#get_treasury)
+  * [`get_included_message`](#get_included_message)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -611,6 +612,28 @@ pub struct TreasuryResponse {
     #[serde(rename = "milestoneId")]
     milestone_id: String,
     amount: u64,
+}
+```
+
+## `get_included_message()`
+
+(`GET /transactions/{transactionId}/included-message`)
+
+Get the included message of the transaction.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **transaction_id** | ✔ | [u32] | The identifier of the transaction. |
+
+### Returns
+
+```Rust
+struct Message {
+    parents: Vec<MessageId>,
+    payload: Option<Payload>,
+    nonce: u64,
 }
 ```
 

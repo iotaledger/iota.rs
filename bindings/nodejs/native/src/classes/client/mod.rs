@@ -540,6 +540,23 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
+        method getIncludedMessage(mut cx) {
+            let transaction_id = cx.argument::<JsNumber>(0)?.value() as u32;
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetIncludedMessage(transaction_id),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
         method reattach(mut cx) {
             let message_id = cx.argument::<JsString>(0)?.value();
             let message_id = MessageId::from_str(message_id.as_str()).expect("invalid message id");

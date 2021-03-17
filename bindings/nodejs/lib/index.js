@@ -97,6 +97,8 @@ Client.prototype.getMilestoneUTXOChanges = promisify(Client.prototype.getMilesto
 Client.prototype.getReceipts = promisify(Client.prototype.getReceipts)
 Client.prototype.getReceiptsMigratedAt = promisify(Client.prototype.getReceiptsMigratedAt)
 Client.prototype.getTreasury = promisify(Client.prototype.getTreasury)
+Client.prototype.getIncludedMessage = promisify(Client.prototype.getIncludedMessage)
+
 Client.prototype.retry = promisify(Client.prototype.retry)
 const retryUntilIncluded = Client.prototype.retryUntilIncluded
 Client.prototype.retryUntilIncluded = function (msg_id, interval, maxAttempts) {

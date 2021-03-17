@@ -360,3 +360,19 @@ async fn test_get_treasury() {
 
     println!("{:#?}", r);
 }
+
+#[tokio::test]
+#[ignore]
+async fn test_get_included_message() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .finish()
+        .await
+        .unwrap()
+        .get_included_message(1)
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}

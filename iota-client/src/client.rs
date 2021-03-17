@@ -924,6 +924,25 @@ impl Client {
         Ok(resp.data)
     }
 
+    /// GET /api/v1/transactions/{transactionId}/included-message
+    /// Returns the included message of the transaction.
+    pub async fn get_included_message(&self, transaction_id: u32) -> Result<Message> {
+        let mut url = self.get_node().await?;
+        let path = &format!("api/v1/transactions/{}/included-message", transaction_id);
+        url.set_path(path);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: Message,
+        }
+        let resp: ResponseWrapper = self
+            .http_client
+            .get(url.as_str(), GET_API_TIMEOUT)
+            .await?
+            .json()
+            .await?;
+
+        Ok(resp.data)
+    }
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
     pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {

@@ -128,4 +128,7 @@ impl Client {
     fn get_treasury(&self) -> Result<TreasuryResponse> {
         Ok(crate::block_on(async { self.client.get_treasury().await })?.into())
     }
+    fn get_included_message(&self, transaction_id: u32) -> Result<Message> {
+        crate::block_on(async { self.client.get_included_message(transaction_id).await })?.try_into()
+    }
 }

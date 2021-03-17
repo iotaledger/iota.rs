@@ -396,6 +396,16 @@ Get the treasury amount.
 
 **Returns** a promise resolving to the [Treasury](#Treasury).
 
+#### getIncludedMessage(): Promise<Message>
+
+Get the included message of a transaction.
+
+| Param | Type                | Description                |
+| ----- | ------------------- | -------------------------- |
+| index | <code>number</code> | The index of the transaction |
+
+**Returns** A promise resolving to the new [Message](#message) instance.
+
 #### reattach(messageId): Promise<Message>
 
 Reattaches the message associated with the given id.
