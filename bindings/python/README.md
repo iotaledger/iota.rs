@@ -327,7 +327,7 @@ Get the included message of a transaction.
 
 | Param | Type                | Description                |
 | ----- | ------------------- | -------------------------- |
-| [index] | <code>list[int]</code> | The index of the transaction |
+| [index] | <code>string</code> | The id of the transaction |
 
 **Returns** the new [Message](#message).
 

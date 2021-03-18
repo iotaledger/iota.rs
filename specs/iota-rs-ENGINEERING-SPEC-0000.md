@@ -625,7 +625,7 @@ Get the included message of the transaction.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **transaction_id** | ✔ | [TransactionId] | The identifier of the transaction. |
+| **transaction_id** | ✔ | [TransactionId] | The id of the transaction. |
 
 ### Returns
 

@@ -32,7 +32,7 @@ use iota::{
     Input as RustInput, Message as RustMessage, MilestonePayloadEssence as RustMilestonePayloadEssence,
     Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
     RegularEssence as RustRegularEssence, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransationId,
+    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransactionId,
     TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
     UnlockBlocks as RustUnlockBlocks,
 };
@@ -883,7 +883,7 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
             .iter()
             .map(|input| {
                 RustUTXOInput::new(
-                    RustTransationId::from_str(&input.transaction_id[..]).unwrap_or_else(|_| {
+                    RustTransactionId::from_str(&input.transaction_id[..]).unwrap_or_else(|_| {
                         panic!(
                             "invalid UTXOInput transaction_id: {} with input index {}",
                             input.transaction_id, input.index
