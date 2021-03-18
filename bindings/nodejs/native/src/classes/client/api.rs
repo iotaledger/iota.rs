@@ -302,7 +302,11 @@ impl Task for ClientTask {
                 }
                 Api::GetIncludedMessage(transaction_id) => {
                     let message = client.get_included_message(&*transaction_id).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&MessageWrapper {
+                        message_id: message.id().0,
+                        message,
+                    })
+                    .unwrap()
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;

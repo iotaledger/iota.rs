@@ -112,8 +112,3 @@ def test_get_treasury():
     treasury_response = client.get_treasury()
     assert isinstance(treasury_response,
                       dict) and 'milestone_id' in treasury_response
-
-def test_get_included_message():
-    message_response = client.get_included_message("0000000000000000000000000000000000000000000000000000000000000000")
-    assert isinstance(message_response,
-                      dict) and 'network_id' in message_response
