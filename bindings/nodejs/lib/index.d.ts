@@ -6,14 +6,15 @@ import {
   BrokerOptions,
   Address,
   AddressBalance,
-  Message,
-  MessageDto
+  MessageDto,
+  MessageWrapper
 } from './types'
 
 export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'PostMessageWithRemotePoW' | 'GetOutput' | 'GetMilestone'
 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
+  nodeAuth(url: string, name: string, password: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
   network(network_name: string): ClientBuilder
@@ -30,7 +31,7 @@ export declare class ClientBuilder {
 
 export declare class MessageSender {
   seed(seed: string): MessageSender
-  index(index: string): MessageSender
+  index(index: string | number[] | Uint8Array): MessageSender
   data(data: Uint8Array): MessageSender
   parents(messageIds: string[]): MessageSender
   accountIndex(index: number): MessageSender
@@ -48,9 +49,10 @@ export declare class UnspentAddressGetter {
   get(): Promise<[Address, number]>
 }
 
-export declare class AddressFinder {
-  accountIndex(index: number): AddressFinder
-  range(start: number, end: number): AddressFinder
+export declare class AddressGetter {
+  accountIndex(index: number): AddressGetter
+  range(start: number, end: number): AddressGetter
+  bech32_hrp(bech32_hrp: string): AddressGetter
   get(): [Address, boolean][]
 }
 
@@ -68,34 +70,45 @@ export declare interface NetworkInfo {
   localPow: boolean
 }
 
+export declare interface AddressOutputsOptions {
+  includeSpent?: boolean
+  outputType?: { type: 'SignatureLockedSingle' | 'SignatureLockedDustAllowance' }
+}
+
 export declare class Client {
-  networkInfo(): NetworkInfo
+  networkInfo(): Promise<NetworkInfo>
   subscriber(): TopicSubscriber
-  send(): MessageSender
+  message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
-  findAddresses(seed: string): AddressFinder
-  findMessages(indexationKeys: string[], messageIds: string[]): Promise<Message[]>
+  getAddresses(seed: string): AddressGetter
+  findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
-  retry(messageId: string): Promise<Message>
+  retry(messageId: string): Promise<MessageWrapper>
+  retryUntilIncluded(messageId: string, interval?: number, maxAttempts?: number): Promise<MessageWrapper[]>
 
   getInfo(): Promise<NodeInfo>
-  getTips(): Promise<[string, string]>
+  getTips(): Promise<string[]>
   postMessage(message: MessageDto): Promise<string>
   postMessageWithRemotePow(message: MessageDto): Promise<string>
   getMessage(): MessageFinder
   getOutput(outputId: string): Promise<OutputMetadata>
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
-  getAddressOutputs(address: string): Promise<string[]>
-  getAddressBalance(address: string): Promise<number>
+  getAddressOutputs(address: string, options?: AddressOutputsOptions): Promise<string[]>
+  getAddressBalance(address: string): Promise<AddressBalance>
+  isAddressValid(address: string): boolean
   getMilestone(index: number): Promise<MilestoneMetadata>
-  reattach(messageId: string): Promise<Message>
-  promote(messageId: string): Promise<Message>
+  getMilestoneUTXOChanges(index: number): Promise<MilestoneUTXOChanges>
+  getReceipts(): Promise<Receipts[]>
+  getReceiptsMigratedAt(index: number): Promise<Receipts[]>
+  getTreasury(): Promise<Treasury>
+  reattach(messageId: string): Promise<MessageWrapper>
+  promote(messageId: string): Promise<MessageWrapper>
 }
 
 export declare class MessageFinder {
-  index(index: string): Promise<string[]>
-  data(messageId: string): Promise<Message>
+  index(index: string | number[] | Uint8Array): Promise<string[]>
+  data(messageId: string): Promise<MessageWrapper>
   raw(messageId: string): Promise<string>
   children(messageId: string): Promise<string[]>
   metadata(messageId: string): Promise<MessageMetadata>

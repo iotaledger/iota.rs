@@ -8,11 +8,11 @@ const {
   MessageGetter,
   MessageSender,
   UnspentAddressGetter,
-  AddressFinder,
+  AddressGetter,
   BalanceGetter
 } = require('../native')
 
-function promisify (fn, parse = true) {
+function promisify(fn, parse = true) {
   return function () {
     return new Promise((resolve, reject) => fn.apply(this, [...Array.from(arguments), (err, data) => {
       if (err) {
@@ -42,7 +42,7 @@ TopicSubscriber.prototype.subscribe = function (cb) {
 }
 const unsubscribe = TopicSubscriber.prototype.unsubscribe
 TopicSubscriber.prototype.unsubscribe = function (cb) {
-  return unsubscribe.call(this, cb || function () {})
+  return unsubscribe.call(this, cb || function () { })
 }
 
 const brokerOptionsFn = ClientBuilder.prototype.brokerOptions
@@ -54,32 +54,70 @@ ClientBuilder.prototype.brokerOptions = function (options) {
   return brokerOptionsFn.apply(this, [JSON.stringify(opt)])
 }
 
-const getNetworkInfo = Client.prototype.networkInfo
-Client.prototype.networkInfo = function () {
-  return JSON.parse(getNetworkInfo.apply(this, []))
-}
+Client.prototype.networkInfo = promisify(Client.prototype.networkInfo)
 
 Client.prototype.findMessages = promisify(Client.prototype.findMessages)
 Client.prototype.getAddressBalances = promisify(Client.prototype.getAddressBalances)
 Client.prototype.getInfo = promisify(Client.prototype.getInfo)
+Client.prototype.getPeers = promisify(Client.prototype.getPeers)
 Client.prototype.getTips = promisify(Client.prototype.getTips)
 const postMessage = Client.prototype.postMessage
 Client.prototype.postMessage = function (message) {
-  if (message && message.payload && message.payload.data instanceof Uint8Array) {
-    message.payload.data = Array.from(message.payload.data)
+  if (message && message.payload) {
+    if ('index' in message.payload) {
+      if (typeof message.payload.index === 'string') {
+        message.payload.index = new TextEncoder().encode(message.payload.index)
+      }
+      message.payload.index = Array.from(message.payload.index)
+    }
+
+    if ('data' in message.payload) {
+      if (typeof message.payload.data === 'string') {
+        message.payload.data = new TextEncoder().encode(message.payload.data)
+      }
+      message.payload.data = Array.from(message.payload.data)
+    }
   }
   return promisify(postMessage).apply(this, [JSON.stringify(message)])
 }
 Client.prototype.getOutput = promisify(Client.prototype.getOutput)
 Client.prototype.findOutputs = promisify(Client.prototype.findOutputs)
-Client.prototype.getAddressOutputs = promisify(Client.prototype.getAddressOutputs)
+const getAddressOutputs = Client.prototype.getAddressOutputs
+Client.prototype.getAddressOutputs = function (address, options) {
+  if (typeof options == 'undefined') {
+    options = {
+      includeSpent: false
+    }
+  }
+  return promisify(getAddressOutputs).apply(this, [address, JSON.stringify(options)])
+}
 Client.prototype.getAddressBalance = promisify(Client.prototype.getAddressBalance)
 Client.prototype.getMilestone = promisify(Client.prototype.getMilestone)
+Client.prototype.getMilestoneUTXOChanges = promisify(Client.prototype.getMilestoneUTXOChanges)
+Client.prototype.getReceipts = promisify(Client.prototype.getReceipts)
+Client.prototype.getReceiptsMigratedAt = promisify(Client.prototype.getReceiptsMigratedAt)
+Client.prototype.getTreasury = promisify(Client.prototype.getTreasury)
 Client.prototype.retry = promisify(Client.prototype.retry)
+const retryUntilIncluded = Client.prototype.retryUntilIncluded
+Client.prototype.retryUntilIncluded = function (msg_id, interval, maxAttempts) {
+  if (typeof interval == 'undefined') {
+    interval = 5
+  }
+  if (typeof maxAttempts == 'undefined') {
+    maxAttempts = 10
+  }
+  return promisify(retryUntilIncluded).apply(this, [msg_id, interval, maxAttempts])
+}
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
 
-MessageGetter.prototype.index = promisify(MessageGetter.prototype.index)
+const messageGetterIndexSetter = promisify(MessageGetter.prototype.index)
+MessageGetter.prototype.index = function (index) {
+  if (typeof index === 'string') {
+    index = new TextEncoder().encode(index)
+  }
+  return messageGetterIndexSetter.apply(this, [Array.from(index)])
+}
 MessageGetter.prototype.data = promisify(MessageGetter.prototype.data)
 MessageGetter.prototype.raw = promisify(MessageGetter.prototype.raw, false)
 MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
@@ -88,18 +126,22 @@ MessageGetter.prototype.metadata = promisify(MessageGetter.prototype.metadata)
 MessageSender.prototype.submit = promisify(MessageSender.prototype.submit)
 const messageSenderDataSetter = MessageSender.prototype.data
 MessageSender.prototype.data = function (data) {
-  if (data instanceof Uint8Array) {
-    return messageSenderDataSetter.apply(this, [Array.from(data)])
+  if (typeof data === 'string') {
+    data = new TextEncoder().encode(data)
   }
-  return messageSenderDataSetter.apply(this, [data])
+  return messageSenderDataSetter.apply(this, [Array.from(data)])
+}
+const messageSenderIndexSetter = MessageSender.prototype.index
+MessageSender.prototype.index = function (index) {
+  if (typeof index === 'string') {
+    index = new TextEncoder().encode(index)
+  }
+  return messageSenderIndexSetter.apply(this, [Array.from(index)])
 }
 
 UnspentAddressGetter.prototype.get = promisify(UnspentAddressGetter.prototype.get)
 
-const findAddressesGetter = AddressFinder.prototype.get
-AddressFinder.prototype.get = function () {
-  return JSON.parse(findAddressesGetter.apply(this))
-}
+AddressGetter.prototype.get = promisify(AddressGetter.prototype.get)
 
 BalanceGetter.prototype.get = promisify(BalanceGetter.prototype.get)
 

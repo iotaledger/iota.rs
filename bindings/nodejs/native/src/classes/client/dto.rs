@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, IndexationPayload, Input, Output,
-    OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock, SignatureUnlock,
-    TransactionPayload, TransactionPayloadEssence, UTXOInput, UnlockBlock,
+    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, Essence, IndexationPayload, Input,
+    Message, MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
+    RegularEssence, SignatureUnlock, TransactionPayload, UTXOInput, UnlockBlock, UnlockBlocks,
 };
 use serde::{Deserialize, Serialize};
 
@@ -13,17 +13,24 @@ use std::{
     str::FromStr,
 };
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MessageWrapper {
+    pub message: Message,
+    #[serde(rename = "messageId")]
+    pub message_id: MessageId,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
-pub struct MessageTransactionPayloadEssenceDto {
+pub struct MessageRegularEssenceDto {
     inputs: Box<[String]>,
     outputs: Box<[BeeOutput]>,
     payload: Option<Box<MessagePayloadDto>>,
 }
 
-impl TryFrom<MessageTransactionPayloadEssenceDto> for TransactionPayloadEssence {
+impl TryFrom<MessageRegularEssenceDto> for RegularEssence {
     type Error = crate::Error;
-    fn try_from(value: MessageTransactionPayloadEssenceDto) -> crate::Result<Self> {
-        let mut builder = TransactionPayloadEssence::builder();
+    fn try_from(value: MessageRegularEssenceDto) -> crate::Result<Self> {
+        let mut builder = RegularEssence::builder();
 
         let inputs: Vec<Input> = value
             .inputs
@@ -53,7 +60,7 @@ impl TryFrom<MessageTransactionPayloadEssenceDto> for TransactionPayloadEssence 
             Some(indexation) => builder.with_payload(
                 (*indexation)
                     .try_into()
-                    .expect("Invalid indexation in TransactionPayloadEssenceJson"),
+                    .expect("Invalid indexation in RegularEssenceJson"),
             ),
             _ => builder,
         };
@@ -107,14 +114,14 @@ impl TryFrom<MessageUnlockBlockJsonDto> for UnlockBlock {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MessageTransactionPayloadDto {
-    essence: MessageTransactionPayloadEssenceDto,
+    essence: MessageRegularEssenceDto,
     #[serde(rename = "unlockBlocks")]
     unlock_blocks: Box<[MessageUnlockBlockJsonDto]>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MessageIndexationPayloadDto {
-    index: String,
+    index: Vec<u8>,
     data: Vec<u8>,
 }
 
@@ -139,17 +146,21 @@ impl TryFrom<MessagePayloadDto> for Payload {
         match payload {
             MessagePayloadDto::Transaction(transaction_payload) => {
                 let mut transaction = TransactionPayload::builder();
-                transaction = transaction.with_essence(transaction_payload.essence.try_into()?);
+                transaction = transaction.with_essence(Essence::Regular(transaction_payload.essence.try_into()?));
 
-                let unlock_blocks = transaction_payload.unlock_blocks.into_vec();
-                for unlock_block in unlock_blocks {
-                    transaction = transaction.add_unlock_block(unlock_block.try_into()?);
-                }
+                let unlock_blocks: Result<Vec<UnlockBlock>, crate::Error> = transaction_payload
+                    .unlock_blocks
+                    .into_vec()
+                    .into_iter()
+                    .map(|u| u.try_into())
+                    .collect();
+
+                transaction = transaction.with_unlock_blocks(UnlockBlocks::new(unlock_blocks?)?);
 
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
             MessagePayloadDto::Indexation(indexation_payload) => {
-                let indexation = IndexationPayload::new(indexation_payload.index, &indexation_payload.data).unwrap();
+                let indexation = IndexationPayload::new(&indexation_payload.index, &indexation_payload.data)?;
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
         }
@@ -179,6 +190,7 @@ pub(super) struct OutputMetadataDto {
 impl From<OutputMetadata> for OutputMetadataDto {
     fn from(value: OutputMetadata) -> Self {
         let (output_amount, output_address) = match value.output {
+            BeeOutput::Treasury(t) => (t.amount, "".to_string()),
             BeeOutput::SignatureLockedSingle(r) => match r.address {
                 AddressDto::Ed25519(addr) => (r.amount, addr.address),
             },
@@ -188,8 +200,8 @@ impl From<OutputMetadata> for OutputMetadataDto {
         };
 
         Self {
-            message_id: hex::encode(value.message_id),
-            transaction_id: hex::encode(value.transaction_id),
+            message_id: value.message_id,
+            transaction_id: value.transaction_id,
             output_index: value.output_index,
             is_spent: value.is_spent,
             address: output_address,

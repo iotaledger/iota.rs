@@ -10,7 +10,7 @@ use std::{ops::Range, str::FromStr};
 
 pub struct MessageSender {
     client_id: String,
-    index: Option<String>,
+    index: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
     seed: Option<String>,
@@ -45,7 +45,7 @@ declare_types! {
             let seed = cx.argument::<JsString>(0)?.value();
 
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"));
 
             {
                 let mut this = cx.this();
@@ -58,12 +58,19 @@ declare_types! {
         }
 
         method index(mut cx) {
-            let index = cx.argument::<JsString>(0)?.value();
+            let mut index: Vec<u8> = vec![];
+            let index_js_array = cx.argument::<JsArray>(0)?;
+            let js_index: Vec<Handle<JsValue>> = index_js_array.to_vec(&mut cx)?;
+            for value in js_index {
+                let value: Handle<JsNumber> = value.downcast_or_throw(&mut cx)?;
+                index.push(value.value() as u8);
+            }
+
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let send_index = &mut this.borrow_mut(&guard).index;
-                send_index.replace(index);
+                let index_ = &mut this.borrow_mut(&guard).index;
+                index_.replace(index);
             }
 
             Ok(cx.this().upcast())
@@ -133,7 +140,7 @@ declare_types! {
 
         method output(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid address");
+            let address = parse_address(address.as_str()).expect("invalid address");
             let value = cx.argument::<JsNumber>(1)?.value() as u64;
             {
                 let mut this = cx.this();
@@ -147,7 +154,7 @@ declare_types! {
 
         method dustAllowanceOutput(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid address");
+            let address = parse_address(address.as_str()).expect("invalid address");
             let value = cx.argument::<JsNumber>(1)?.value() as u64;
             {
                 let mut this = cx.this();
@@ -194,7 +201,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::Send {
-                        seed: ref_.seed.as_ref().map(|seed| Seed::from_ed25519_bytes(&hex::decode(&seed).expect("invalid seed hex")).expect("invalid seed")),
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"))),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
                         parents: ref_.parents.clone(),

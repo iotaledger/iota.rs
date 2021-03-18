@@ -1,9 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
-
-use bee_signing_ext::Seed;
+use crate::{Client, Result};
+use crypto::keys::slip10::Seed;
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
@@ -38,39 +37,39 @@ impl<'a> GetBalanceBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn finish(self) -> Result<u64> {
-        let account_index = self
-            .account_index
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let account_index = self.account_index.unwrap_or(0);
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
         // get account balance and check with value
         let mut balance = 0;
+        // Count addresses with zero balances in a row
+        let mut found_zero_balance = 0;
         loop {
             let addresses = self
                 .client
-                .find_addresses(self.seed)
+                .get_addresses(self.seed)
                 .with_account_index(account_index)
                 .with_range(index..index + 20)
-                .get_all()?;
+                .get_all()
+                .await?;
 
-            // TODO we assume all addresses are unspent and valid if balance > 0
-            let mut found_zero_balance = false;
             for (address, _) in addresses {
                 let address_balance = self.client.get_address().balance(&address).await?;
                 match address_balance.balance {
-                    0 => {
-                        found_zero_balance = true;
-                        break;
+                    0 => found_zero_balance += 1,
+                    _ => {
+                        balance += address_balance.balance;
+                        // reset
+                        found_zero_balance = 0;
                     }
-                    _ => balance += address_balance.balance,
                 }
             }
 
-            match found_zero_balance {
-                true => break,
-                false => index += 20,
+            if found_zero_balance >= 20 {
+                break;
             }
+            index += 20;
         }
 
         Ok(balance)

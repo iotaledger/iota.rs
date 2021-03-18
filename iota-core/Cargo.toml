@@ -12,17 +12,17 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
-bee-message = { git = "https://github.com/thibault-martinez/bee.git", branch = "8-parents" }
-bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
-bee-pow = { git = "https://github.com/thibault-martinez/bee.git", branch = "8-parents" }
-# bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "chrysalis-pt-2" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "26215e3af88af4c54f460df7cffc39d26fdd6e05" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "26215e3af88af4c54f460df7cffc39d26fdd6e05" }
+bee-common = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1.1", features = ["macros"] }
 
 [features]
-default = ["mqtt"]
+default = ["iota-client/async"]
+sync = ["iota-client/sync"]
+async = ["iota-client/async"]
 mqtt = ["iota-client/mqtt"]
+storage = ["iota-client/storage"]

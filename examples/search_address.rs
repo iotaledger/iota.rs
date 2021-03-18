@@ -2,36 +2,42 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example search_address --release
+
 use iota::{api::search_address, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we try to find the index of an address from a seed.
+/// In this example we will try to find the index and address type of an address
+
 #[tokio::main]
 async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .with_node("http://0.0.0.0:14265") // Insert the node here
+    // Create a client instance
+    let iota = Client::builder()
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
-    println!("This example uses dotenv, which is not safe for use in production.");
+    // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
-            .unwrap();
 
-    let address = iota
-        .find_addresses(&seed)
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+
+    let addresses = iota
+        .get_addresses(&seed)
         .with_account_index(0)
         .with_range(9..10)
         .finish()
+        .await
         .unwrap();
-    println!("{:?}", address);
-    let res = search_address(&seed, 0, 0..10, &address[0]).unwrap();
-    println!(
-        "Found address with address_index: {}, internal address: {}",
-        res.0, res.1
-    );
+
+    println!("{:?}", addresses[0]);
+
+    let res = search_address(&seed, iota.get_bech32_hrp().await.unwrap(), 0, 0..10, &addresses[0])
+        .await
+        .unwrap();
+
+    println!("Address index: {}\nIs internal address: {}", res.0, res.1);
 }

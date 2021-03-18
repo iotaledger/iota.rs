@@ -1,14 +1,14 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bech32::FromBase32;
 use iota::{
-    message::prelude::{Address, Ed25519Address, MessageId, UTXOInput},
-    Seed,
+    message::prelude::{Address, MessageId, UTXOInput},
+    AddressOutputsOptions, OutputType, Seed,
 };
 use neon::prelude::*;
+use serde::Deserialize;
 
-use std::{convert::TryInto, str::FromStr};
+use std::str::FromStr;
 
 mod builder;
 pub use builder::*;
@@ -27,29 +27,47 @@ pub use message_sender::JsMessageSender;
 mod unspent_address_getter;
 pub use unspent_address_getter::JsUnspentAddressGetter;
 
-mod address_finder;
-pub use address_finder::JsAddressFinder;
+mod address_getter;
+pub use address_getter::JsAddressGetter;
 
 mod balance_getter;
 pub use balance_getter::JsBalanceGetter;
 
-fn parse_bech32_address(address: String) -> crate::Result<Address> {
-    let address_ed25519 = Vec::from_base32(&bech32::decode(&address)?.1)?;
-    let address = Address::Ed25519(Ed25519Address::new(
-        address_ed25519[1..]
-            .try_into()
-            .map_err(|_| anyhow::anyhow!("invalid address length"))?,
-    ));
-    Ok(address)
+/// Parses a bech32 address string.
+fn parse_address(address: &str) -> crate::Result<Address> {
+    Ok(Address::try_from_bech32(address).map_err(|_| anyhow::anyhow!("invalid address"))?)
 }
 
-/// Parses a bech32 address string.
-fn parse_address(address: String) -> crate::Result<Address> {
-    match parse_bech32_address(address.clone()) {
-        Ok(address) => Ok(address),
-        Err(_) => Ok(Address::Ed25519(Ed25519Address::new(
-            hex::decode(address)?.try_into().expect("invalid address length"),
-        ))),
+#[derive(Deserialize)]
+#[serde(tag = "type")]
+pub enum OutputTypeDto {
+    SignatureLockedSingle,
+    SignatureLockedDustAllowance,
+}
+
+impl From<OutputTypeDto> for OutputType {
+    fn from(value: OutputTypeDto) -> Self {
+        match value {
+            OutputTypeDto::SignatureLockedSingle => OutputType::SignatureLockedSingle,
+            OutputTypeDto::SignatureLockedDustAllowance => OutputType::SignatureLockedSingle,
+        }
+    }
+}
+
+#[derive(Default, Deserialize)]
+pub struct AddressOutputsOptionsDto {
+    #[serde(rename = "includeSpent")]
+    pub include_spent: bool,
+    #[serde(rename = "outputType")]
+    pub output_type: Option<OutputTypeDto>,
+}
+
+impl From<AddressOutputsOptionsDto> for AddressOutputsOptions {
+    fn from(value: AddressOutputsOptionsDto) -> Self {
+        Self {
+            include_spent: value.include_spent,
+            output_type: value.output_type.map(|o| o.into()),
+        }
     }
 }
 
@@ -72,7 +90,7 @@ declare_types! {
         // High level API
         ///////////////////////////////////////////////////////////////////////
 
-        method send(mut cx) {
+        method message(mut cx) {
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -87,7 +105,7 @@ declare_types! {
         method getUnspentAddress(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex"));
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -99,10 +117,10 @@ declare_types! {
             Ok(JsUnspentAddressGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
-        method findAddresses(mut cx) {
+        method getAddresses(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex"));
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -111,7 +129,7 @@ declare_types! {
             };
             let client_id = cx.string(client_id);
 
-            Ok(JsAddressFinder::new(&mut cx, vec![client_id, seed])?.upcast())
+            Ok(JsAddressGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
         method findMessages(mut cx) {
@@ -146,7 +164,7 @@ declare_types! {
         method getBalance(mut cx) {
             let seed = cx.argument::<JsString>(0)?;
             // validate the seed
-            Seed::from_ed25519_bytes(&hex::decode(seed.value()).expect("invalid seed hex")).expect("invalid seed");
+            Seed::from_bytes(&hex::decode(seed.value()).expect("invalid seed hex"));
             let client_id = {
                 let this = cx.this();
                 let guard = cx.lock();
@@ -163,7 +181,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(parse_address(address.value()).unwrap_or_else(|_| panic!("invalid address: {}", address.value())));
+                addresses.push(address.value().into());
             }
 
             let cb = cx.argument::<JsFunction>(1)?;
@@ -199,17 +217,49 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
-        method networkInfo(mut cx) {
-            let network_info = {
+        method retryUntilIncluded(mut cx) {
+            let message_id = cx.argument::<JsString>(0)?.value();
+            let message_id = MessageId::from_str(message_id.as_str()).expect("invalid message id");
+            let interval: Option<u64> = match cx.argument_opt(1) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as u64)
+                },
+                None => None,
+            };
+            let max_attempts: Option<u64> = match cx.argument_opt(2) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as u64)
+                },
+                None => None,
+            };
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
+            {
                 let this = cx.this();
                 let guard = cx.lock();
                 let id = &this.borrow(&guard).0;
-                let client = crate::get_client(&id);
-                let client = client.read().unwrap();
-                let info = client.get_network_info();
-                serde_json::to_string(&info).unwrap()
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::RetryUntilIncluded(message_id, interval, max_attempts),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method networkInfo(mut cx) {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetNetworkInfo,
+                };
+                client_task.schedule(cb);
             };
-            Ok(cx.string(network_info).upcast())
+            Ok(cx.undefined().upcast())
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -236,6 +286,22 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: id.clone(),
                     api: Api::GetInfo,
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getPeers(mut cx) {
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetPeers,
                 };
                 client_task.schedule(cb);
             }
@@ -322,8 +388,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                let address = parse_address(address.value()).expect("invalid address");
-                addresses.push(address);
+                addresses.push(address.value().into());
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
@@ -346,16 +411,22 @@ declare_types! {
 
         method getAddressOutputs(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid output id");
+            let options: AddressOutputsOptionsDto = match cx.argument_opt(1) {
+                Some(arg) => {
+                    let json = arg.downcast::<JsString>().or_throw(&mut cx)?.value();
+                    serde_json::from_str(&json).expect("invalid options")
+                },
+                None => Default::default(),
+            };
 
-            let cb = cx.argument::<JsFunction>(1)?;
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
             {
                 let this = cx.this();
                 let guard = cx.lock();
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressOutputs(address),
+                    api: Api::GetAddressOutputs(address.into(), options.into()),
                 };
                 client_task.schedule(cb);
             }
@@ -365,7 +436,6 @@ declare_types! {
 
         method getAddressBalance(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let address = parse_address(address).expect("invalid output id");
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -374,7 +444,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressBalance(address),
+                    api: Api::GetAddressBalance(address.into()),
                 };
                 client_task.schedule(cb);
             }
@@ -383,7 +453,7 @@ declare_types! {
         }
 
         method getMilestone(mut cx) {
-            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u64;
+            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
 
             let cb = cx.argument::<JsFunction>(1)?;
             {
@@ -393,6 +463,76 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: id.clone(),
                     api: Api::GetMilestone(milestone_index),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getMilestoneUTXOChanges(mut cx) {
+            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
+
+            let cb = cx.argument::<JsFunction>(1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetMilestoneUTXOChanges(milestone_index),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getReceipts(mut cx) {
+
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetReceipts(),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getReceiptsMigratedAt(mut cx) {
+            let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
+
+            let cb = cx.argument::<JsFunction>(1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetReceiptsMigratedAt(milestone_index),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getTreasury(mut cx) {
+
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetTreasury(),
                 };
                 client_task.schedule(cb);
             }
@@ -434,6 +574,12 @@ declare_types! {
             }
 
             Ok(cx.undefined().upcast())
+        }
+
+        method isAddressValid(mut cx) -> JsResult<JsBoolean> {
+            let address = cx.argument::<JsString>(0)?.value();
+            let b = cx.boolean(Api::IsAddressValid(address.as_str()));
+            Ok(b)
         }
     }
 }

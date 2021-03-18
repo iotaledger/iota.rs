@@ -62,20 +62,19 @@ impl Task for TopicTask {
             let mut client = client.write().unwrap();
             match self.action {
                 TopicAction::Subscribe => {
-                    client
-                        .subscriber()
-                        .with_topics(self.topics.clone())
-                        .subscribe(move |event| {
-                            let s = sender.lock().unwrap();
-                            let _ = s.send(serde_json::to_string(&event).unwrap());
-                        })
-                        .expect("failed to subscribe to topics");
+                    crate::block_on(
+                        client
+                            .subscriber()
+                            .with_topics(self.topics.clone())
+                            .subscribe(move |event| {
+                                let s = sender.lock().unwrap();
+                                let _ = s.send(serde_json::to_string(&event).unwrap());
+                            }),
+                    )
+                    .expect("failed to subscribe to topics");
                 }
                 TopicAction::Unsubscribe => {
-                    client
-                        .subscriber()
-                        .with_topics(self.topics.clone())
-                        .unsubscribe()
+                    crate::block_on(client.subscriber().with_topics(self.topics.clone()).unsubscribe())
                         .expect("failed to unsbuscribe from topics");
                 }
             }

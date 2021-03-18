@@ -3,7 +3,7 @@
 
 use crate::{Client, Error, Result};
 use bee_message::prelude::Bech32Address;
-use bee_signing_ext::Seed;
+use crypto::keys::slip10::Seed;
 
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {
@@ -38,19 +38,18 @@ impl<'a> GetUnspentAddressBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn get(self) -> Result<(Bech32Address, usize)> {
-        let account_index = self
-            .account_index
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let account_index = self.account_index.ok_or(Error::MissingParameter("account index"))?;
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
         let result = loop {
             let addresses = self
                 .client
-                .find_addresses(self.seed)
+                .get_addresses(self.seed)
                 .with_account_index(account_index)
                 .with_range(index..index + 20)
-                .finish()?;
+                .finish()
+                .await?;
 
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut address = None;

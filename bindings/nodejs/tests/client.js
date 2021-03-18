@@ -2,23 +2,20 @@ const { ClientBuilder } = require('../lib')
 const { assertAddress, assertMessageId, assertMessage } = require('./assertions')
 const assert = require('assert')
 
-const seed = 'b3a9bf35521157aa9c4508ab3a9266e210ae297ff5a4584234c4d9e7d01712e3'
+const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 
 const client = new ClientBuilder()
-  .node('http://localhost:14265')
-  .network('testnet3')
-  // .disableNodeSync()
+  .node('https://api.hornet-1.testnet.chrysalis2.com')
+  .disableNodeSync()
   .brokerOptions({ timeout: 50 })
   .localPow(true)
   .build()
 
 describe('Client', () => {
-  it('gets network info', () => {
-    const info = client.networkInfo()
+  it('gets network info', async () => {
+    const info = await client.networkInfo()
     assert.strictEqual(typeof info, 'object')
     assert.strictEqual(info.localPow, true)
-    assert.deepStrictEqual(info.network, 'testnet3')
-    assert.strictEqual(info.networkId, 18326844446802180000)
     assert.strictEqual(info.bech32HRP, 'atoi')
     assert.strictEqual(info.minPowScore, 4000)
   })
@@ -29,38 +26,37 @@ describe('Client', () => {
     assertMessageId(tips[0])
   })
 
-  it('finds addresses', () => {
-    const addresses = client.findAddresses(seed)
+  it('get addresses', async () => {
+    const addresses = await client.getAddresses(seed)
       .accountIndex(0)
       .range(0, 5)
       .get()
     assert.strictEqual(Array.isArray(addresses), true)
-    assert.strictEqual(addresses.length, 10)
-    addresses.forEach(([address, _internal]) => assertAddress(address))
+    assert.strictEqual(addresses.length, 5)
+    addresses.forEach(assertAddress)
   })
 
   it('sends an indexation message with the high level API', async () => {
     const message = await client
-      .send()
+      .message()
       .index('IOTA.RS TEST')
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
-    console.log("message", message);
     assertMessage(message)
   })
 
   it('sends a value transaction and checks output balance', async () => {
-    const depositAddress = 'iot1q9jyad2efwyq7ldg9u6eqg5krxdqawgcdxvhjlmxrveylrt4fgaqj30s9qj'
+    const depositAddress = 'atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf'
     const message = await client
-      .send()
+      .message()
       .seed(seed)
       .accountIndex(0)
-      .output(depositAddress, 2)
+      .output(depositAddress, 1000000)
       .submit()
     assertMessage(message)
 
     while (true) {
-      const metadata = await client.getMessage().metadata(message.id())
+      const metadata = await client.getMessage().metadata(message.messageId)
       if (metadata.ledgerInclusionState) {
         assert.strictEqual(metadata.ledgerInclusionState, 'included')
         break
@@ -69,8 +65,8 @@ describe('Client', () => {
       }
     }
 
-    const depositBalance = await client.getAddressBalance(depositAddress)
-    assert.strictEqual(depositBalance >= 2, true)
+    const addressBalanceObject = await client.getAddressBalance(depositAddress)
+    assert.strictEqual(addressBalanceObject.balance >= 1000000, true)
   })
 
   it('gets an unspent address', async () => {
@@ -88,30 +84,30 @@ describe('Client', () => {
   })
 
   it('get milestone and message', async () => {
-    const milestone = await client.getMilestone(1)
+    const info = await client.getInfo()
+    const milestone = await client.getMilestone(info.confirmedMilestoneIndex)
     assert.strictEqual(typeof milestone, 'object')
-    assert.strictEqual('messageId' in milestone, true)
-    assertMessageId(milestone.messageId)
-
-    const message = await client.getMessage().data(milestone.messageId)
+    assert.strictEqual('message_id' in milestone, true)
+    assertMessageId(milestone.message_id)
+    const message = await client.getMessage().data(milestone.message_id)
     assertMessage(message)
 
 
-    const children = await client.getMessage().children(milestone.messageId)
+    const children = await client.getMessage().children(milestone.message_id)
     assert.strictEqual(Array.isArray(children), true)
 
-    const metadata = await client.getMessage().metadata(milestone.messageId)
+    const metadata = await client.getMessage().metadata(milestone.message_id)
     assert.strictEqual(typeof metadata, 'object')
     assert.strictEqual('messageId' in metadata, true)
     assertMessageId(metadata.messageId)
-    assert.strictEqual(metadata.messageId, milestone.messageId)
+    assert.strictEqual(metadata.messageId, milestone.message_id)
 
-    const raw = await client.getMessage().raw(milestone.messageId)
+    const raw = await client.getMessage().raw(milestone.message_id)
     assert.strictEqual(typeof raw, 'string')
   })
 
   it('get address outputs', async () => {
-    const outputs = await client.getAddressOutputs('iot1q95jpvtk7cf7c7l9ne50c684jl4n8ya0srm5clpak7qes9ratu0eyf5eyz5')
+    const outputs = await client.getAddressOutputs('atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
     assert.strictEqual(Array.isArray(outputs), true)
     assert.strictEqual(outputs.length > 0, true)
     assert.strictEqual(typeof outputs[0], 'string')
@@ -135,9 +131,9 @@ describe('Client', () => {
 
     const message = await client.getMessage().data(messageId)
     assertMessage(message)
-    assert.strictEqual(message.payload.type, 'Indexation')
-    assert.strictEqual(typeof message.payload.data, 'object')
-    assert.deepStrictEqual(message.payload.data, indexation)
+    assert.strictEqual(message.message.payload.type, 'Indexation')
+    assert.strictEqual(typeof message.message.payload.data, 'object')
+    assert.deepStrictEqual(message.message.payload.data, indexation)
   })
 
   it('gets info', async () => {

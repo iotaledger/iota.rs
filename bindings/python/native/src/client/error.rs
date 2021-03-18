@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{bee_message, bee_signing_ext, error::Error as RustError};
+use iota::{bee_message, error::Error as RustError};
 use pyo3::{exceptions, prelude::*};
 use std::convert::From;
 
@@ -36,14 +36,6 @@ impl From<std::io::Error> for Error {
 
 impl From<bee_message::Error> for Error {
     fn from(err: bee_message::Error) -> Self {
-        Error {
-            error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
-        }
-    }
-}
-
-impl From<bee_signing_ext::binary::Error> for Error {
-    fn from(err: bee_signing_ext::binary::Error) -> Self {
         Error {
             error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
         }

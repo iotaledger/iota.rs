@@ -7,19 +7,23 @@
 * [Introduction](#Introduction)
 * [Builder](#Builder)
 * [General high level API](#General-high-level-API)
-  * [`send`](#send)
+  * [`message`](#message)
   * [`get_message`](#get_message)
   * [`find_messages`](#find_messages)
   * [`get_unspent_address`](#get_unspent_address)
-  * [`find_addresses`](#find_addresses)
+  * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
+  * [`parse_bech32_address`](#parse_bech32_address)
+  * [`is_address_valid`](#is_address_valid)
   * [`subscriber`](#subscriber)
   * [`retry`](#retry)
+  * [`retry_until_included`](#retry_until_included)
   * [`reattach`](#reattach)
   * [`promote`](#promote)
 * [Full node API](#Full-node-API)
   * [`get_health`](#get_health)
+  * [`get_health`](#get_peers)
   * [`get_info`](#get_info)
   * [`get_tips`](#get_tips)
   * [`post_message`](#post_message)
@@ -27,6 +31,10 @@
   * [`get_address`](#get_address)
   * [`find_outputs`](#find_outputs)
   * [`get_milestone`](#get_milestone)
+  * [`get_milestone_utxo_changes`](#get_milestone_utxo_changes)
+  * [`get_receipts`](#get_receipts)
+  * [`get_receipts_migrated_at`](#get_receipts_migrated_at)
+  * [`get_treasury`](#get_treasury)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -52,16 +60,18 @@ The data structure to initialize the instance of the Higher level client library
 
 | Parameter | Required | Default Value | Type | Definition |
 | - | - | - | - | - |
-| **network** | ✘ | Testnet | &str | The network name for example "testnet2" to define the network. If no node url is provided, some default nodes are used for the specified network. |
+| **network** | ✘ | Testnet | &str | Optional, the network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. Nodes that aren't in this network will be ignored. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
+| **node_auth** | ✘ | None | &str, &str, &str | The URL of a node to connect to with name and password for basic authentication; format: `https://node:port`, `name`, `password` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **node_pool_urls** | None | ✘ | &[String] | A list of node_pool_urls from which nodes are added. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
-| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
+| **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |
-| **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used, use_ws: false will try to connect over tcp|
+| **tips_interval** | ✘ | 15 | u64 | Time interval during PoW when new tips get requested. |
+| **mqtt_broker_options** | ✘ | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions] | If not defined the default values will be used|
 
 * Note that there must be at least one node to build the instance successfully.
 
@@ -96,7 +106,7 @@ for node in node_pool_urls{
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
-## `send()`
+## `message()`
 
 A generic send function for easily sending a message.
 
@@ -111,10 +121,9 @@ A generic send function for easily sending a message.
 | **input_range** | ✘ | 0..100 | Range | Custom range to search for the input addresses if custom inputs are provided. |
 | **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
-| **index** | ✘ | None | &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
+| **index** | ✘ | None | &[u8] / &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
 | **parents** | ✘ | None | [MessageId] | 1-8 optional parents [MessageId] to be used. |
-| **network_id** | ✘ | None | u64 | Optional network id, if not set it will be used from the nodeinfo. |
 
 Depending on the provided values this function will create a message with:
 
@@ -147,7 +156,7 @@ Endpoint collection all about GET messages.
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **message_id** | ✔ | [MessageId] | The identifier of message. |
-| **index** | ✔ | str | An indexation key. |
+| **index** | ✔ | &[u8] / &str | An indexation key. |
 
 ### Returns
 
@@ -157,7 +166,7 @@ Depend on the final calling method, users could get different results they need:
 - `data(&MessageId)`: Return a [Message] object.
 - `raw(&MessageId)`: Return the raw data of given message.
 - `children(&MessageId)`: Return the list of [MessageId]s that reference a message by its identifier.
-- `index(&str)` : Return the list of [MessageId]s that have this str as indexation key
+- `index(&[u8] | &str)` : Return the list of [MessageId]s that have this str as indexation key
 
 ## `find_messages()`
 
@@ -167,7 +176,7 @@ Find all messages by provided message IDs.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **indexation_keys** | ✘ | [String] | The index key of the indexation payload. |
+| **indexation_keys** | ✘ | [&[u8] / &str] | The index key of the indexation payload. |
 | **message_ids** | ✘ | [[MessageId]] | The identifier of message. |
 
 ### Returns
@@ -199,7 +208,7 @@ Following are the steps for implementing this method:
 * Repeat the above step till there's an unspent address found;
 * Return the address with corresponding index on the wallet chain;
 
-## `find_addresses()`
+## `get_addresses()`
 
 Return a list of addresses from the seed regardless of their validity.
 
@@ -263,6 +272,32 @@ Following are the steps for implementing this method:
 * Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
 * Return the list of Output which contains corresponding pairs of address and balance.
 
+## `parse_bech32_address()`
+
+Returns a valid Address parsed from a String.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+
+### Return
+
+Parsed [Address].
+
+## `is_address_valid()`
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+
+### Return
+
+A boolean showing if the address is valid.
+
 ## `subscriber()`
 
 Subscribe to a node event [Topic] (MQTT)
@@ -301,6 +336,21 @@ Following are the steps for implementing this method:
 * Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;
 * The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
+
+## `retry_until_included()`
+
+Retries (promotes or reattaches) a message for provided [MessageId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 10. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **message_id**  | ✔ | [&MessageId] | The identifier of message.                    |
+| **interval**    | ✘ | Option<u64>  | The interval in which we retry the message.   |
+| **max_attempts** | ✘ | Option<u64>  | The maximum of attempts we retry the message. |
+
+### Returns:
+
+An array of tuples with the newly reattached `(MessageId,  Message)`.
 
 ## `reattach()`
 
@@ -352,6 +402,30 @@ None
 
 Boolean to indicate if node is healthy.
 
+## `get_peers()`
+
+(`GET /peers`)
+
+Get information about the peers of the node.
+
+### Parameters
+
+None
+
+### Returns
+
+```Rust
+pub struct PeerDto {
+    pub id: String,
+    #[serde(rename = "multiAddresses")]
+    pub multi_addresses: Vec<String>,
+    pub alias: Option<String>,
+    pub relation: RelationDto,
+    pub connected: bool,
+    pub gossip: Option<GossipDto>,
+}
+```
+
 ## `get_info()`
 
 (`GET /api/v1/info`)
@@ -374,7 +448,7 @@ pub struct NodeInfo {
     pub network_id: String,
     pub latest_milestone_index: usize,
     pub min_pow_score: f64,
-    pub solid_milestone_index: usize,
+    pub confirmed_milestone_index: usize,
     pub pruning_index: usize,
     pub features: Vec<String>,
 }
@@ -445,7 +519,7 @@ An [OutputMetadata](#OutputMetadata) that contains various information about the
 Depend on the final calling method, users could get different outputs they need:
 
 * `balance()`: Return confirmed balance of the address.
-* `outputs()`: Return UTXOInput array (transaction IDs with corresponding output index).
+* `outputs([options])`: Return UTXOInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 
@@ -472,11 +546,73 @@ Get the milestone by the given index.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **index** | ✔ | u64 | Index of the milestone. |
+| **index** | ✔ | u32 | Index of the milestone. |
 
 ### Returns
 
 An [Milestone] object.
+
+## `get_milestone_utxo_changes()`
+
+(`GET /milestones/{}/utxo-changes`)
+
+Get all UTXO changes of a given milestone.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **index** | ✔ | u32 | Index of the milestone. |
+
+### Returns
+
+```Rust
+MilestoneUTXOChanges {
+    index: 1,
+    created_outputs: [],
+    consumed_outputs: [],
+}
+```
+
+## `get_receipts()`
+
+(`GET /receipts`)
+
+Get all receipts.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_receipts_migrated_at()`
+
+(`GET /receipts/{migratedAt}`)
+
+Get all receipts for a given milestone index.
+
+### Returns
+
+```Rust
+Vec<ReceiptDto>
+```
+
+## `get_treasury()`
+
+(`GET /treasury`)
+
+Get the treasury amount.
+
+### Returns
+
+```Rust
+pub struct TreasuryResponse {
+    #[serde(rename = "milestoneId")]
+    milestone_id: String,
+    amount: u64,
+}
+```
 
 # Objects
 
@@ -597,7 +733,7 @@ pub struct MessageMetadata {
     /// Should reattach
     pub should_reattach: Option<bool>,
     /// Referenced by milestone index
-    pub referenced_by_milestone_index: Option<u64>,
+    pub referenced_by_milestone_index: Option<u32>,
     /// Ledger inclusion state
     pub ledger_inclusion_state: Option<String>,
 }
@@ -670,7 +806,7 @@ A milestone metadata.
 ```rust
 pub struct MilestoneMetadata {
     /// Milestone index
-    pub milestone_index: u64,
+    pub milestone_index: u32,
     /// Milestone ID
     pub message_id: String,
     /// Timestamp
@@ -711,8 +847,6 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: std::time::Duration,
-    #[serde(default = "default_use_ws")]
-    pub(crate) use_ws: bool,
 }
 ```
 
@@ -724,7 +858,7 @@ A string with the exact MQTT topic to monitor, can have one of the following var
 
 ```
 milestones/latest
-milestones/solid
+milestones/confirmed
 
 messages
 messages/referenced
