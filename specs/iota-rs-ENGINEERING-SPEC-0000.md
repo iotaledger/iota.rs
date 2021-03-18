@@ -887,6 +887,7 @@ messages
 messages/referenced
 messages/indexation/{index}
 messages/{messageId}/metadata
+transactions/{transactionId}/included-message
 
 outputs/{outputId}
 
