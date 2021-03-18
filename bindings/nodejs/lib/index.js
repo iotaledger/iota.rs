@@ -10,7 +10,7 @@ const {
   UnspentAddressGetter,
   AddressGetter,
   BalanceGetter
-} = require('../native')
+} = require('../build/Release')
 
 function promisify(fn, parse = true) {
   return function () {
