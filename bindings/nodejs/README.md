@@ -2,29 +2,15 @@
 
 Node.js binding to the IOTA client library.
 
-## Requirements
-
-`Rust` and `Cargo` are required. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
-
 ## Installation
-
-Currently the package isn't published so you'd need to link it to your project using `npm` or `yarn`.
 
 - Using NPM:
 ```
-$ git clone https://github.com/iotaledger/iota.rs
-$ cd iota.rs/bindings/nodejs
-$ npm link
-$ cd /path/to/nodejs/project/
-$ npm link iota-client
+$ npm i @iota/client
 ```
 - Using yarn:
 ```
-$ git clone https://github.com/iotaledger/iota.rs
-$ cd iota.rs/bindings/nodejs
-$ yarn link
-$ cd /path/to/nodejs/project/
-$ yarn link iota-client
+$ yarn add @iota/client
 ```
 
 Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
@@ -34,11 +20,11 @@ Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of r
 After you linked the library, you can create a `Client` instance and interface with it.
 
 ```javascript
-const { ClientBuilder } = require('iota-client')
+const { ClientBuilder } = require('@iota/client')
 const client = new ClientBuilder()
-  .node('http://localhost:14265')
-  .build()
-client.getTips().then(console.log).catch(console.error)
+    .node('https://api.lb-0.testnet.chrysalis2.com')
+    .build()
+client.getInfo().then(console.log).catch(console.error)
 ```
 
 ## API Reference
