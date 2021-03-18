@@ -43,7 +43,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Provide a client to get the bech32_hrp from the node
     pub fn with_client(mut self, client: &'a Client) -> Self {
-        self.client = Some(client);
+        self.client.replace(client);
         self
     }
 
@@ -61,7 +61,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Set bech32 human readable part (hrp)
     pub fn with_bech32_hrp(mut self, bech32_hrp: String) -> Self {
-        self.bech32_hrp = Some(bech32_hrp);
+        self.bech32_hrp.replace(bech32_hrp);
         self
     }
 

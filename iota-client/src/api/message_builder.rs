@@ -21,6 +21,7 @@ use std::{
 
 const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const ADDRESS_GAP_LIMIT: usize = 20;
+const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Structure for sorting of UnlockBlocks
 // TODO: move the sorting process to the `Message` crate
@@ -64,19 +65,19 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Sets the seed.
     pub fn with_seed(mut self, seed: &'a Seed) -> Self {
-        self.seed = Some(seed);
+        self.seed.replace(seed);
         self
     }
 
     /// Sets the account index.
     pub fn with_account_index(mut self, account_index: usize) -> Self {
-        self.account_index = Some(account_index);
+        self.account_index.replace(account_index);
         self
     }
 
     /// Sets the index of the address to start looking for balance.
     pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
-        self.initial_address_index = Some(initial_address_index);
+        self.initial_address_index.replace(initial_address_index);
         self
     }
 
@@ -108,7 +109,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
     pub fn with_dust_allowance_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
-        if amount < 1_000_000 {
+        if amount < DUST_THRESHOLD {
             return Err(Error::DustError(
                 "Amount for SignatureLockedDustAllowanceOutput needs to be >= 1_000_000".into(),
             ));
@@ -128,13 +129,13 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set indexation to the builder
     pub fn with_index<I: AsRef<[u8]>>(mut self, index: I) -> Self {
-        self.index = Some(index.as_ref().into());
+        self.index.replace(index.as_ref().into());
         self
     }
 
     /// Set data to the builder
     pub fn with_data(mut self, data: Vec<u8>) -> Self {
-        self.data = Some(data);
+        self.data.replace(data);
         self
     }
 
@@ -143,7 +144,7 @@ impl<'a> ClientMessageBuilder<'a> {
         if !(1..=8).contains(&parent_ids.len()) {
             return Err(Error::InvalidParentsAmount(parent_ids.len()));
         }
-        self.parents = Some(parent_ids);
+        self.parents.replace(parent_ids);
         Ok(self)
     }
 
@@ -188,7 +189,7 @@ impl<'a> ClientMessageBuilder<'a> {
             match output {
                 Output::SignatureLockedSingle(x) => {
                     total_to_spend += x.amount();
-                    if x.amount() < 1_000_000 {
+                    if x.amount() < DUST_THRESHOLD {
                         dust_and_allowance_recorders.push((x.amount(), *x.address(), true));
                     }
                 }
@@ -210,12 +211,14 @@ impl<'a> ClientMessageBuilder<'a> {
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
                             let (output_amount, output_address) = match output.output {
-                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
+                                OutputDto::Treasury(_) => {
+                                    return Err(Error::OutputError("Treasury output is no supported"))
+                                }
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
                                         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
                                         // Only add dust
-                                        if r.amount < 1_000_000 {
+                                        if r.amount < DUST_THRESHOLD {
                                             dust_and_allowance_recorders.push((r.amount, output_address, false));
                                         }
                                         (r.amount, output_address)
@@ -263,7 +266,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             // Output the remaining tokens back to the original address
                             if total_already_spent > total_to_spend {
                                 let remaining_balance = total_already_spent - total_to_spend;
-                                if remaining_balance < 1_000_000 {
+                                if remaining_balance < DUST_THRESHOLD {
                                     dust_and_allowance_recorders.push((remaining_balance, output_address, true));
                                 }
                                 outputs_for_essence
@@ -306,10 +309,12 @@ impl<'a> ClientMessageBuilder<'a> {
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
                             let output_amount = match output.output {
-                                OutputDto::Treasury(_) => panic!("Can't be used as input"),
+                                OutputDto::Treasury(_) => {
+                                    return Err(Error::OutputError("Treasury output is no supported"))
+                                }
                                 OutputDto::SignatureLockedSingle(r) => match r.address {
                                     AddressDto::Ed25519(addr) => {
-                                        if r.amount < 1_000_000 {
+                                        if r.amount < DUST_THRESHOLD {
                                             let output_address =
                                                 Address::from(Ed25519Address::from_str(&addr.address)?);
                                             dust_and_allowance_recorders.push((r.amount, output_address, false));
@@ -357,7 +362,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                         });
                                         if total_already_spent > total_to_spend {
                                             let remaining_balance = total_already_spent - total_to_spend;
-                                            if remaining_balance < 1_000_000 {
+                                            if remaining_balance < DUST_THRESHOLD {
                                                 dust_and_allowance_recorders.push((
                                                     remaining_balance,
                                                     Address::try_from_bech32(address)?,
@@ -549,7 +554,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
         match output.2 {
             // add newly created outputs
             true => {
-                if output.0 >= 1_000_000 {
+                if output.0 >= DUST_THRESHOLD {
                     dust_allowance_balance += output.0 as i64;
                 } else {
                     dust_outputs_amount += 1
@@ -557,7 +562,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
             }
             // remove consumed outputs
             false => {
-                if output.0 >= 1_000_000 {
+                if output.0 >= DUST_THRESHOLD {
                     dust_allowance_balance -= output.0 as i64;
                 } else {
                     dust_outputs_amount -= 1;
@@ -575,7 +580,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
                 dust_allowance_balance += d_a_o.amount as i64;
             }
             OutputDto::SignatureLockedSingle(s_o) => {
-                if s_o.amount < 1_000_000 {
+                if s_o.amount < DUST_THRESHOLD {
                     dust_outputs_amount += 1;
                 }
             }

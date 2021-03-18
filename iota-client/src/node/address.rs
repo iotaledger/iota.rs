@@ -9,6 +9,9 @@ use bee_rest_api::types::responses::{BalanceForAddressResponse, OutputsForAddres
 
 use std::convert::TryInto;
 
+const OUTPUT_ID_LENGTH: usize = 68;
+const TRANSACTION_ID_LENGTH: usize = 64;
+
 /// Output type filter.
 #[derive(Clone)]
 pub enum OutputType {
@@ -45,9 +48,10 @@ impl OutputsOptions {
         if let Some(output_type) = self.output_type {
             params.push(format!("type={}", u16::from(output_type)))
         }
-        match params.len() {
-            0 => None,
-            _ => Some(params.join("&")),
+        if params.is_empty() {
+            None
+        } else {
+            Some(params.join("&"))
         }
     }
 }
@@ -112,14 +116,18 @@ impl<'a> GetAddressBuilder<'a> {
             .output_ids
             .iter()
             .map(|s| {
-                let mut transaction_id = [0u8; 32];
-                hex::decode_to_slice(&s[..64], &mut transaction_id)?;
-                let index = u16::from_le_bytes(
-                    hex::decode(&s[64..]).map_err(|_| Error::InvalidParameter("index"))?[..]
-                        .try_into()
-                        .map_err(|_| Error::InvalidParameter("index"))?,
-                );
-                Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
+                if s.len() == OUTPUT_ID_LENGTH {
+                    let mut transaction_id = [0u8; 32];
+                    hex::decode_to_slice(&s[..TRANSACTION_ID_LENGTH], &mut transaction_id)?;
+                    let index = u16::from_le_bytes(
+                        hex::decode(&s[TRANSACTION_ID_LENGTH..]).map_err(|_| Error::InvalidParameter("index"))?[..]
+                            .try_into()
+                            .map_err(|_| Error::InvalidParameter("index"))?,
+                    );
+                    Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
+                } else {
+                    Err(Error::OutputError("Invalid output length from API response"))
+                }
             })
             .collect::<Result<Box<[UTXOInput]>>>()
     }

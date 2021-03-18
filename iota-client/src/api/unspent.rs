@@ -5,6 +5,8 @@ use crate::{Client, Error, Result};
 use bee_message::prelude::Bech32Address;
 use crypto::keys::slip10::Seed;
 
+const ADDRESS_GAP_LIMIT: usize = 20;
+
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {
     client: &'a Client,
@@ -26,13 +28,13 @@ impl<'a> GetUnspentAddressBuilder<'a> {
 
     /// Sets the account index.
     pub fn with_account_index(mut self, account_index: usize) -> Self {
-        self.account_index = Some(account_index);
+        self.account_index.replace(account_index);
         self
     }
 
     /// Sets the index of the address to start looking for balance.
     pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
-        self.initial_address_index = Some(initial_address_index);
+        self.initial_address_index.replace(initial_address_index);
         self
     }
 
@@ -47,7 +49,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .client
                 .get_addresses(self.seed)
                 .with_account_index(account_index)
-                .with_range(index..index + 20)
+                .with_range(index..index + ADDRESS_GAP_LIMIT)
                 .finish()
                 .await?;
 
@@ -57,7 +59,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 let address_balance = self.client.get_address().balance(&a).await?;
                 match address_balance.balance {
                     0 => {
-                        address = Some(a);
+                        address.replace(a);
                         break;
                     }
                     _ => index += 1,

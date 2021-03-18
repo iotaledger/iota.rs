@@ -21,6 +21,8 @@ pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 // Interval in seconds when new tips will be requested during PoW
 const TIPS_INTERVAL: u64 = 15;
+const DEFAULT_MIN_POW: f64 = 4000f64;
+const DEFAULT_BECH32_HRP: &str = "iota";
 
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -67,9 +69,9 @@ impl Default for ClientBuilder {
             network_info: NetworkInfo {
                 network: None,
                 network_id: None,
-                min_pow_score: 4000f64,
+                min_pow_score: DEFAULT_MIN_POW,
                 local_pow: true,
-                bech32_hrp: "iota".into(),
+                bech32_hrp: DEFAULT_BECH32_HRP.into(),
                 tips_interval: TIPS_INTERVAL,
             },
             request_timeout: DEFAULT_REQUEST_TIMEOUT,
@@ -144,7 +146,7 @@ impl ClientBuilder {
     /// Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are
     /// provided.
     pub fn with_network(mut self, network: &str) -> Self {
-        self.network_info.network = Some(network.into());
+        self.network_info.network.replace(network.into());
         self
     }
 
