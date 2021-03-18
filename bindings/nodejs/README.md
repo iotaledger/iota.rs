@@ -677,6 +677,17 @@ Sets the initial address index. Defaults to 0 if the function isn't called.
 
 **Returns** the balance getter instance for chained calls.
 
+#### gapLimit(amount): BalanceGetter
+
+Sets the gapLimit to specify how many addresses will be checked each round. 
+If gap_limit amount of addresses in a row have no balance the BalanceGetter will return. Defaults to 20 if the function isn't called.
+
+| Param | Type                | Description               |
+| ----- | ------------------- | ------------------------- |
+| gap_limit | <code>number</code> | The initial address index |
+
+**Returns** the balance getter instance for chained calls.
+
 #### get(): Promise<number>
 
 Performs the operation.

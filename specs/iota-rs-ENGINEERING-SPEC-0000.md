@@ -237,6 +237,7 @@ Return the balance for a provided seed and its wallet account index.
 | **seed** | ✔ | - | [Seed] | The seed we want to search for. |
 | **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 | **initial_address_index** | ✘ | 0 | usize | Start index from which to generate addresses. Default is 0. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+| **gap_limit** | ✘ | 20 | usize | The gap limit specifies how many addresses will be checked each round. If gap_limit amount of addresses in a row have no balance the function will return. |
 
 ### Return
 

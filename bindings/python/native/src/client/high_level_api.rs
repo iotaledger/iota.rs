@@ -265,6 +265,7 @@ impl Client {
         seed: String,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
+        gap_limit: Option<usize>,
     ) -> Result<u64> {
         let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
         let balance = crate::block_on(async {
@@ -272,6 +273,7 @@ impl Client {
                 .get_balance(&seed)
                 .with_account_index(account_index.unwrap_or(0))
                 .with_initial_address_index(initial_address_index.unwrap_or(0))
+                .with_gap_limit(gap_limit.unwrap_or(20))
                 .finish()
                 .await
         })?;

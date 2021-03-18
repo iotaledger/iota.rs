@@ -44,6 +44,7 @@ pub(crate) enum Api {
         seed: Seed,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
+        gap_limit: Option<usize>,
     },
     GetAddressBalances(Vec<Bech32Address>),
     // Node APIs
@@ -195,6 +196,7 @@ impl Task for ClientTask {
                     seed,
                     account_index,
                     initial_address_index,
+                    gap_limit,
                 } => {
                     let mut getter = client.get_balance(seed);
                     if let Some(account_index) = account_index {
@@ -202,6 +204,9 @@ impl Task for ClientTask {
                     }
                     if let Some(initial_address_index) = initial_address_index {
                         getter = getter.with_initial_address_index(*initial_address_index);
+                    }
+                    if let Some(gap_limit) = gap_limit {
+                        getter = getter.with_gap_limit(*gap_limit);
                     }
                     let balance = getter.finish().await?;
                     serde_json::to_string(&balance).unwrap()
