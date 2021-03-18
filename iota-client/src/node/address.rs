@@ -48,9 +48,10 @@ impl OutputsOptions {
         if let Some(output_type) = self.output_type {
             params.push(format!("type={}", u16::from(output_type)))
         }
-        match params.len() {
-            0 => None,
-            _ => Some(params.join("&")),
+        if params.is_empty() {
+            None
+        } else {
+            Some(params.join("&"))
         }
     }
 }
