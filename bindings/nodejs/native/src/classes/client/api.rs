@@ -7,7 +7,8 @@ use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
 use iota::{
-    Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Parents, Seed, UTXOInput,
+    Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Parents, Seed,
+    TransactionId, UTXOInput,
 };
 use neon::prelude::*;
 
@@ -68,6 +69,7 @@ pub(crate) enum Api {
     GetReceipts(),
     GetReceiptsMigratedAt(u32),
     GetTreasury(),
+    GetIncludedMessage(TransactionId),
     Retry(MessageId),
     RetryUntilIncluded(MessageId, Option<u64>, Option<u64>),
     Reattach(MessageId),
@@ -297,6 +299,14 @@ impl Task for ClientTask {
                 Api::GetTreasury() => {
                     let treasury = client.get_treasury().await?;
                     serde_json::to_string(&treasury).unwrap()
+                }
+                Api::GetIncludedMessage(transaction_id) => {
+                    let message = client.get_included_message(&*transaction_id).await?;
+                    serde_json::to_string(&MessageWrapper {
+                        message_id: message.id().0,
+                        message,
+                    })
+                    .unwrap()
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;

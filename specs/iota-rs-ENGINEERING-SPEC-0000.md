@@ -35,6 +35,7 @@
   * [`get_receipts`](#get_receipts)
   * [`get_receipts_migrated_at`](#get_receipts_migrated_at)
   * [`get_treasury`](#get_treasury)
+  * [`get_included_message`](#get_included_message)
 * [Objects](#Objects)
   * [Network]
   * [Seed]
@@ -614,6 +615,28 @@ pub struct TreasuryResponse {
 }
 ```
 
+## `get_included_message()`
+
+(`GET /transactions/{transactionId}/included-message`)
+
+Get the included message of the transaction.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **transaction_id** | ✔ | [TransactionId] | The id of the transaction. |
+
+### Returns
+
+```Rust
+struct Message {
+    parents: Vec<MessageId>,
+    payload: Option<Payload>,
+    nonce: u64,
+}
+```
+
 # Objects
 
 Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
@@ -864,6 +887,7 @@ messages
 messages/referenced
 messages/indexation/{index}
 messages/{messageId}/metadata
+transactions/{transactionId}/included-message
 
 outputs/{outputId}
 

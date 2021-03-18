@@ -7,7 +7,7 @@ use crate::client::{
 };
 use iota::{
     Bech32Address as RustBech32Address, MessageId as RustMessageId, Seed as RustSeed,
-    TransactionId as RustTransationId, UTXOInput as RustUTXOInput,
+    TransactionId as RustTransactionId, UTXOInput as RustUTXOInput,
 };
 use pyo3::{exceptions, prelude::*};
 use std::{
@@ -52,7 +52,7 @@ impl Client {
         if let Some(inputs) = inputs {
             for input in inputs {
                 send_builder = send_builder.with_input(RustUTXOInput::new(
-                    RustTransationId::from_str(&input.transaction_id[..])?,
+                    RustTransactionId::from_str(&input.transaction_id[..])?,
                     input.index,
                 )?);
             }

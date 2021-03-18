@@ -52,7 +52,8 @@ impl Topic {
             Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
             // ED25519 address hex
             Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
-            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").expect("regex failed")
+            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").expect("regex failed"),
+            Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
           ].to_vec() => Vec<Regex>
         );
 
@@ -137,7 +138,10 @@ fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic(topic.clone())) {
                                 let event = {
-                                    if topic.as_str() == "messages" || topic.contains("messages/indexation/") {
+                                    if topic.as_str() == "messages"
+                                        || topic.contains("messages/indexation/")
+                                        || topic.contains("transactions/")
+                                    {
                                         let mut payload = &*p.payload;
                                         match Message::unpack(&mut payload) {
                                             Ok(iota_message) => match serde_json::to_string(&iota_message) {

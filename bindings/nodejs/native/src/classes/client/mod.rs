@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    message::prelude::{Address, MessageId, UTXOInput},
+    message::prelude::{Address, MessageId, TransactionId, UTXOInput},
     AddressOutputsOptions, OutputType, Seed,
 };
 use neon::prelude::*;
@@ -533,6 +533,25 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: id.clone(),
                     api: Api::GetTreasury(),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method getIncludedMessage(mut cx) {
+            let transaction_id = cx.argument::<JsString>(0)?.value();
+            let transaction_id = TransactionId::from_str(transaction_id.as_str()).expect("invalid transaction id");
+
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::GetIncludedMessage(transaction_id),
                 };
                 client_task.schedule(cb);
             }

@@ -102,6 +102,7 @@ export declare class Client {
   getReceipts(): Promise<Receipts[]>
   getReceiptsMigratedAt(index: number): Promise<Receipts[]>
   getTreasury(): Promise<Treasury>
+  getIncludedMessage(): Promise<MessageWrapper>
   reattach(messageId: string): Promise<MessageWrapper>
   promote(messageId: string): Promise<MessageWrapper>
 }

@@ -321,6 +321,17 @@ Get the treasury amount.
 
 **Returns** the [TreasuryResponse](#TreasuryResponse).
 
+#### get_included_message(): Message
+
+Get the included message of a transaction.
+
+| Param | Type                | Description                |
+| ----- | ------------------- | -------------------------- |
+| [index] | <code>string</code> | The id of the transaction |
+
+**Returns** the new [Message](#message).
+
+
 ### High-Level APIs
 
 #### message(seed (optional), account_index (optional), initial_address_index (optional), inputs (optional), input_range_begin (optional), input_range_end (optional), outputs (optional), dust_allowance_outputs (optional), index (optional), index_raw (optional), data (optional), data_str (optional), parents (optional)): Message
