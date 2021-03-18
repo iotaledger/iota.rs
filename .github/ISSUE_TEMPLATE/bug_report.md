@@ -1,5 +1,5 @@
 ---
-name: Report a bug in wallet.rs
+name: Report a bug in iota.rs
 about: Create a report to help us improve
 title: ""
 labels: c-bug

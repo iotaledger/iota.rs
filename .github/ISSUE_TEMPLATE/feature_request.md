@@ -1,5 +1,5 @@
 ---
-name: Request a feature for wallet.rs
+name: Request a feature for iota.rs
 about: Request a feature
 ---
 
