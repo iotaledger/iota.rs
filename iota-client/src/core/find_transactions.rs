@@ -116,12 +116,40 @@ impl<'a> FindTransactionsBuilder<'a> {
         }
 
         let client = self.client;
-        let res: FindTransactionsResponseBuilder = match &client.permanode {
+        let res: FindTransactionsResponse = match &client.permanode {
             Some(url) => {
-                response!(client, body, url)
+                let body_ = body.clone();
+                let res: FindTransactionsResponseBuilder = response!(client, body_, url);
+                let mut hashes: Vec<Hash> = Vec::new();
+                let mut permanode_response: FindTransactionsResponse = res.build().await?;
+                loop {
+                    hashes.extend(&permanode_response.hashes);
+                    match permanode_response.hints {
+                        None => break,
+                        Some(hints) => {
+                            if hints.paging_state.is_none() {
+                                break;
+                            }
+                            let mut body = json!({
+                                "command": "findTransactions",
+                            });
+                            body["hints"] = json!(vec![hints]);
+                            let res: FindTransactionsResponseBuilder = response!(client, body, url);
+                            permanode_response = res.build().await?;
+                        }
+                    }
+                }
+                FindTransactionsResponse {
+                    hashes,
+                    hints: None,
+                }
             }
-            None => response!(client, body),
+            None => {
+                let res: FindTransactionsResponseBuilder = response!(client, body);
+                res.build().await?
+            }
         };
-        res.build().await
+
+        Ok(res)
     }
 }

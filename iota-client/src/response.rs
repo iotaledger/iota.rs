@@ -169,6 +169,8 @@ pub struct FindTransactionsResponse {
     /// * tags: returns an array of transaction hashes that contain the given value in the tag field.
     /// * approvees: returns an array of transaction hashes that contain the given transactions in their branchTransaction or trunkTransaction fields.
     pub hashes: Vec<Hash>,
+    /// Optional hints for responses of permanodes if not all hashes could be returned in a single request
+    pub(crate) hints: Option<PermanodeHints>,
 }
 
 // TODO: remove this when iota_bundle_preview::Hash implements Serialize
@@ -193,16 +195,33 @@ impl Serialize for FindTransactionsResponse {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub(crate) struct FindTransactionsResponseBuilder {
     hashes: Option<Vec<String>>,
     error: Option<String>,
     exception: Option<String>,
+    hints: Option<Vec<PermanodeHints>>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub(crate) struct PermanodeHints {
+    address: String,
+    timeline: Vec<PermanodeDate>,
+    /// paging_state
+    pub (crate) paging_state: Option<Vec<usize>>,
+    page_size: Option<usize>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub(crate) struct PermanodeDate {
+    year: usize,
+    month: usize,
 }
 
 impl FindTransactionsResponseBuilder {
     pub(crate) async fn build(self) -> Result<FindTransactionsResponse> {
         let mut hashes: Vec<Hash> = Vec::new();
+        let mut hints: Option<PermanodeHints> = None;
         if let Some(exception) = self.exception {
             return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
@@ -217,8 +236,11 @@ impl FindTransactionsResponseBuilder {
                 })
                 .collect::<Vec<Hash>>();
         }
+        if let Some(s) = self.hints {
+            hints.replace(s[0].clone());
+        }
 
-        Ok(FindTransactionsResponse { hashes })
+        Ok(FindTransactionsResponse { hashes, hints })
     }
 }
 
