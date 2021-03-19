@@ -494,13 +494,9 @@ impl From<RustMessageMetadataResponse> for MessageMetadataResponse {
             is_solid: message_metadata_response.is_solid,
             referenced_by_milestone_index: message_metadata_response.referenced_by_milestone_index,
             milestone_index: message_metadata_response.milestone_index,
-            ledger_inclusion_state: {
-                if let Some(state) = message_metadata_response.ledger_inclusion_state {
-                    Some(state.into())
-                } else {
-                    None
-                }
-            },
+            ledger_inclusion_state: message_metadata_response
+                .ledger_inclusion_state
+                .map(|state| state.into()),
             conflict_reason: message_metadata_response.conflict_reason,
             should_promote: message_metadata_response.should_promote,
             should_reattach: message_metadata_response.should_reattach,
@@ -576,10 +572,7 @@ impl From<RustLedgerInclusionStateDto> for LedgerInclusionStateDto {
 
 impl From<RustPeerDto> for PeerDto {
     fn from(peer: RustPeerDto) -> Self {
-        let gossip = match peer.gossip {
-            Some(g) => Some(GossipDto::from(g)),
-            None => None,
-        };
+        let gossip = peer.gossip.map(GossipDto::from);
         Self {
             id: peer.id,
             multi_addresses: peer.multi_addresses,
@@ -714,7 +707,7 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
         Ok(MilestonePayloadEssence {
             index: essence.index(),
             timestamp: essence.timestamp(),
-            parents: vec![essence.parents().map(|m| m.to_string()).collect()],
+            parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
             public_keys: essence
                 .public_keys()
@@ -832,7 +825,7 @@ impl TryFrom<RustMessage> for Message {
                     indexation: None,
                     receipt: Some(vec![Receipt {
                         kind: 3,
-                        index: payload.index(),
+                        index: payload.migrated_at(),
                         last: payload.last(),
                         funds: payload
                             .funds()
@@ -867,7 +860,7 @@ impl TryFrom<RustMessage> for Message {
         Ok(Message {
             message_id: msg.id().0.to_string(),
             network_id: msg.network_id(),
-            parents: msg.parents().map(|m| m.to_string()).collect(),
+            parents: msg.parents().iter().map(|m| m.to_string()).collect(),
             payload,
             nonce: msg.nonce(),
         })
@@ -1032,7 +1025,7 @@ impl From<RustReceiptPayloadDto> for Receipt {
         };
         Self {
             kind: receipt.kind,
-            index: receipt.index,
+            index: receipt.migrated_at,
             last: receipt.last,
             funds: receipt.funds.into_iter().map(|r| r.into()).collect(),
             transaction: Payload {
