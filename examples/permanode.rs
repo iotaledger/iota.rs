@@ -6,7 +6,7 @@
 //! cargo run --example permanode
 //! ```
 use anyhow::Result;
-use iota::ternary::{T1B1Buf, T3B1Buf, TryteBuf};
+use iota::ternary::{TryteBuf};
 use iota::transaction::bundled::{Address, BundledTransactionField};
 
 #[smol_potat::main]
@@ -20,10 +20,9 @@ async fn main() -> Result<()> {
         .encode(),
     );
 
-    // The response of get_new_address is a tuple of an adress with its corresponding index from seed.
     let iota = iota::ClientBuilder::new()
         .node("https://iotanode.us:14267")?
-        .permanode("https://chronicle.iota.org/api")?
+        // .permanode("https://")?
         .build()?;
 
     let res = iota
@@ -32,7 +31,7 @@ async fn main() -> Result<()> {
         .send()
         .await?;
 
-    println!("res len: {:?}", res.hashes.len());
+    println!("Res len: {:?}", res.hashes.len());
 
     Ok(())
 }
