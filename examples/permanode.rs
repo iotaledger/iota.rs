@@ -1,4 +1,4 @@
-//! Get an unused address from a connected node.
+//! Get transaction from a permanode.
 //!
 //! Run with:
 //!
@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     // The response of get_new_address is a tuple of an adress with its corresponding index from seed.
     let iota = iota::ClientBuilder::new()
         .node("https://iotanode.us:14267")?
-        .permanode("https://")?
+        .permanode("https://chronicle.iota.org/api")?
         .build()?;
 
     let res = iota
