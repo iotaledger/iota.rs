@@ -134,8 +134,8 @@ fn poll_mqtt(
                 let mqtt_topic_handlers_guard = mqtt_topic_handlers_guard.clone();
                 match event {
                     Ok(Event::Incoming(Incoming::ConnAck(_))) => {
+                        let _ = event_sender.send(MqttEvent::Connected);
                         if !is_subscribed {
-                            let _ = event_sender.send(MqttEvent::Connected);
                             is_subscribed = true;
                             // resubscribe topics
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
