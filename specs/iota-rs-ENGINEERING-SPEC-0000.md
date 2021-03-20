@@ -871,6 +871,8 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: std::time::Duration,
+    #[serde(rename = "maxReconnectionAttempts", default)]
+    pub(crate) max_reconnection_attempts: usize,
 }
 ```
 

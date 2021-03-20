@@ -3,7 +3,7 @@
 
 //! cargo run --example mqtt --release
 
-use iota::{Client, Message, Topic};
+use iota::{Client, Message, MqttEvent, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 // Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
@@ -19,6 +19,17 @@ async fn main() {
 
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
+
+    let mut event_rx = iota.mqtt_event_receiver();
+    tokio::spawn(async move {
+        while event_rx.changed().await.is_ok() {
+            let event = event_rx.borrow();
+            if *event == MqttEvent::Disconnected {
+                println!("mqtt disconnected");
+                std::process::exit(1);
+            }
+        }
+    });
 
     iota.subscriber()
         .with_topics(vec![

@@ -34,6 +34,7 @@ use tokio::{
     runtime::Runtime,
     sync::{
         broadcast::{Receiver, Sender},
+        watch::{Receiver as WatchReceiver, Sender as WatchSender},
         RwLock,
     },
     time::{sleep, Duration as TokioDuration},
@@ -77,6 +78,16 @@ pub struct TopicEvent {
     pub payload: String,
 }
 
+/// Mqtt events.
+#[cfg(feature = "mqtt")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MqttEvent {
+    /// Client was connected.
+    Connected,
+    /// Client was disconnected.
+    Disconnected,
+}
+
 /// The MQTT broker options.
 #[cfg(feature = "mqtt")]
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -85,6 +96,8 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
+    #[serde(rename = "maxReconnectionAttempts", default)]
+    pub(crate) max_reconnection_attempts: usize,
 }
 
 #[cfg(feature = "mqtt")]
@@ -98,11 +111,17 @@ fn default_broker_timeout() -> Duration {
 }
 
 #[cfg(feature = "mqtt")]
+fn default_max_reconnection_attempts() -> usize {
+    3
+}
+
+#[cfg(feature = "mqtt")]
 impl Default for BrokerOptions {
     fn default() -> Self {
         Self {
             automatic_disconnect: default_broker_automatic_disconnect(),
             timeout: default_broker_timeout(),
+            max_reconnection_attempts: default_max_reconnection_attempts(),
         }
     }
 }
@@ -123,6 +142,12 @@ impl BrokerOptions {
     /// Sets the timeout used for the MQTT operations.
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
+        self
+    }
+
+    /// Sets the maximum number of reconnection attempts.
+    pub fn max_reconnection_attempts(mut self, max_reconnection_attempts: usize) -> Self {
+        self.max_reconnection_attempts = max_reconnection_attempts;
         self
     }
 }
@@ -357,6 +382,8 @@ pub struct Client {
     pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
+    #[cfg(feature = "mqtt")]
+    pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
@@ -562,6 +589,12 @@ impl Client {
     #[cfg(feature = "mqtt")]
     pub fn subscriber(&mut self) -> MqttManager<'_> {
         MqttManager::new(self)
+    }
+
+    /// Returns the mqtt event receiver.
+    #[cfg(feature = "mqtt")]
+    pub fn mqtt_event_receiver(&self) -> WatchReceiver<MqttEvent> {
+        self.mqtt_event_channel.1.clone()
     }
 
     //////////////////////////////////////////////////////////////////////
