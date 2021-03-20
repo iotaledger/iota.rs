@@ -266,6 +266,8 @@ pub struct BrokerOptions {
     pub automatic_disconnect: bool,
     /// broker timeout in secs
     pub timeout: u64,
+    /// max number of attempts to reconnect.
+    pub max_reconnection_attempts: usize,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]

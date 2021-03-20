@@ -885,7 +885,8 @@ A dict with the following key/value pairs.
 ```python
 broker_options = {
     'automatic_disconnect': bool,
-    'timeout': int
+    'timeout': int,
+    'max_reconnection_attempts': int,
 }
 ```
 

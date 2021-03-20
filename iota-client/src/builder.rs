@@ -272,6 +272,9 @@ impl ClientBuilder {
             self.api_timeout.remove(&Api::GetOutput).unwrap_or(GET_API_TIMEOUT),
         );
 
+        #[cfg(feature = "mqtt")]
+        let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
+
         let client = Client {
             runtime,
             nodes,
@@ -283,6 +286,8 @@ impl ClientBuilder {
             mqtt_topic_handlers: Default::default(),
             #[cfg(feature = "mqtt")]
             broker_options: self.broker_options,
+            #[cfg(feature = "mqtt")]
+            mqtt_event_channel: (Arc::new(mqtt_event_tx), mqtt_event_rx),
             network_info,
             request_timeout: self.request_timeout,
             api_timeout,

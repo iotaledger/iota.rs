@@ -95,7 +95,8 @@ impl Client {
         if let Some(broker_options) = mqtt_broker_options {
             let rust_broker_options = RustBrokerOptions::new()
                 .automatic_disconnect(broker_options.automatic_disconnect)
-                .timeout(Duration::from_secs(broker_options.timeout));
+                .timeout(Duration::from_secs(broker_options.timeout))
+                .max_reconnection_attempts(broker_options.max_reconnection_attempts);
             client = client.with_mqtt_broker_options(rust_broker_options);
         }
         let client = crate::block_on(async { client.finish().await.unwrap() });

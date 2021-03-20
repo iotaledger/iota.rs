@@ -43,9 +43,10 @@ export declare interface MilestoneUTXOChanges {
 }
 
 export declare interface BrokerOptions {
-  automaticDisconnect: boolean
+  automaticDisconnect?: boolean
   // timeout in milliseconds
-  timeout: number
+  timeout?: number
+  maxReconnectionAttempts?: number
 }
 
 export declare type Address = 'string'

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    client::{Client, TopicEvent, TopicHandlerMap},
+    client::{BrokerOptions, Client, MqttEvent, TopicEvent, TopicHandlerMap},
     Result,
 };
 use bee_common::packable::Packable;
@@ -12,9 +12,9 @@ use regex::Regex;
 use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
 };
-use tokio::sync::RwLock;
+use tokio::sync::{watch::Sender, RwLock};
 
-use std::{convert::TryFrom, sync::Arc};
+use std::{convert::TryFrom, sync::Arc, time::Instant};
 
 macro_rules! lazy_static {
     ($init:expr => $type:ty) => {{
@@ -68,6 +68,10 @@ impl Topic {
 }
 
 async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
+    // if the client was disconnected, we clear it so we can start over
+    if *client.mqtt_event_receiver().borrow() == MqttEvent::Disconnected {
+        client.mqtt_client = None;
+    }
     match client.mqtt_client {
         Some(ref mut c) => Ok(c),
         None => {
@@ -91,7 +95,12 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 if got_ack {
                     let (mqtt_client, connection) = MqttClient::new(mqttoptions, 10);
                     client.mqtt_client.replace(mqtt_client);
-                    poll_mqtt(client.mqtt_topic_handlers.clone(), connection);
+                    poll_mqtt(
+                        client.mqtt_topic_handlers.clone(),
+                        client.broker_options.clone(),
+                        client.mqtt_event_channel.0.clone(),
+                        connection,
+                    );
                 }
             }
             client.mqtt_client.as_mut().ok_or(crate::Error::MqttConnectionNotFound)
@@ -99,7 +108,12 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     }
 }
 
-fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_loop: EventLoop) {
+fn poll_mqtt(
+    mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>,
+    options: BrokerOptions,
+    event_sender: Arc<Sender<MqttEvent>>,
+    mut event_loop: EventLoop,
+) {
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
@@ -112,12 +126,15 @@ fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_
             // can perform the resubscriptions and reset `is_subscribed` to true.
             // we need the flag since the first ConnAck must be ignored.
             let mut is_subscribed = true;
+            let mut error_instant = Instant::now();
+            let mut connection_failure_count = 0;
             let handle = event_loop.handle();
             loop {
                 let event = event_loop.poll().await;
                 let mqtt_topic_handlers_guard = mqtt_topic_handlers_guard.clone();
                 match event {
                     Ok(Event::Incoming(Incoming::ConnAck(_))) => {
+                        let _ = event_sender.send(MqttEvent::Connected);
                         if !is_subscribed {
                             is_subscribed = true;
                             // resubscribe topics
@@ -175,6 +192,16 @@ fn poll_mqtt(mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>, mut event_
                         });
                     }
                     Err(_) => {
+                        if error_instant.elapsed().as_secs() < 5 {
+                            connection_failure_count += 1;
+                        } else {
+                            connection_failure_count = 1;
+                        }
+                        if connection_failure_count == options.max_reconnection_attempts {
+                            let _ = event_sender.send(MqttEvent::Disconnected);
+                            break;
+                        }
+                        error_instant = Instant::now();
                         is_subscribed = false;
                     }
                     _ => {}
