@@ -89,7 +89,7 @@ async fn main() -> Result<()> {
     let new_address = ChrysalisAddress::try_from_bech32(bech32_address)?;
     let new_converted_address = match new_address {
         ChrysalisAddress::Ed25519(a) => a,
-        _ => panic!("Unsopported address type"),
+        _ => panic!("Unsupported address type"),
     };
 
     // Create bundle
