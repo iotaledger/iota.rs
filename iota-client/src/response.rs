@@ -208,7 +208,7 @@ pub(crate) struct PermanodeHints {
     address: String,
     timeline: Vec<PermanodeDate>,
     /// paging_state
-    pub (crate) paging_state: Option<Vec<usize>>,
+    pub(crate) paging_state: Option<Vec<usize>>,
     page_size: Option<usize>,
 }
 

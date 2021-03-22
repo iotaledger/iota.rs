@@ -6,7 +6,7 @@
 //! cargo run --example permanode
 //! ```
 use anyhow::Result;
-use iota::ternary::{TryteBuf};
+use iota::ternary::TryteBuf;
 use iota::transaction::bundled::{Address, BundledTransactionField};
 
 #[smol_potat::main]

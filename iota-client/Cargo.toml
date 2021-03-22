@@ -33,6 +33,9 @@ bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "217b5944b5
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 hex = "0.4.2"
 
+#quorum
+once_cell = "1.7.2"
+
 #pow
 iota-model = {git = "https://github.com/iotaledger/iota.rs", rev = "0aa7e11b075bea17ae52b1f7dff51f3a13c9d914"}
 num_cpus = "1.10"

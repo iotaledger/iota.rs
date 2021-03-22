@@ -40,6 +40,7 @@ pub struct Client {
     pub(crate) pool: Arc<RwLock<HashSet<String>>>,
     pub(crate) permanode: Option<String>,
     pub(crate) mwm: u8,
+    pub(crate) quorum: bool,
     pub(crate) quorum_size: u8,
     pub(crate) quorum_threshold: u8,
 }

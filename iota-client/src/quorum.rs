@@ -5,10 +5,10 @@ use crate::error::*;
 use crate::response::*;
 use crate::Client;
 
-use bee_transaction::bundled::{Address, BundledTransactionField};
 use bee_crypto::ternary::Hash;
+use bee_ternary::{T3B1Buf, TryteBuf};
+use bee_transaction::bundled::{Address, BundledTransactionField};
 use iota_conversion::Trinary;
-use bee_ternary::TryteBuf;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
@@ -16,29 +16,42 @@ use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
 use once_cell::sync::Lazy;
-use reqwest::Url;
 
-macro_rules! get_synced_nodes {
-    () => {{
+// macro_rules! get_synced_nodes {
+//     () => {{
+//         let time = Quorum::get().time.clone();
+//         let mut time = time.write().expect("Timestamp read poinsened");
+//         if time.elapsed() >= Duration::from_secs(300) {
+//             refresh_synced_nodes().await?;
+//             *time = Instant::now();
+//         }
+//         Quorum::get()
+//             .pool
+//             .clone()
+//             .read()
+//             .expect("Node pool read poinsened")
+//     }};
+// }
+async fn get_synced_nodes(client: &Client) -> Result<RwLock<HashSet<String>>> {
+
         let time = Quorum::get().time.clone();
         let mut time = time.write().expect("Timestamp read poinsened");
         if time.elapsed() >= Duration::from_secs(300) {
-            refresh_synced_nodes().await?;
+            refresh_synced_nodes(client).await?;
             *time = Instant::now();
         }
-        Quorum::get()
-            .pool
-            .clone()
-            .read()
-            .expect("Node pool read poinsened")
-    }};
+        Ok(Quorum::get()
+        .pool
+        .clone()
+        .read()
+        .expect("Node pool read poinsened"))
 }
 
 /// An instance of the client using IRI URI
 #[derive(Debug)]
 pub struct Quorum {
     /// Synced node pool of IOTA nodes for quorum
-    pub(crate) pool: Arc<RwLock<HashSet<Url>>>,
+    pub(crate) pool: Arc<RwLock<HashSet<String>>>,
     /// Quorum threshold
     pub(crate) threshold: AtomicU8,
     /// Minimum nodes quired to satisfy quorum threshold
@@ -62,22 +75,22 @@ impl Quorum {
 }
 
 /// Refresh synced nodes in quorum. This will replace whole set in the quorum pool.
-pub async fn refresh_synced_nodes() -> Result<()> {
+pub async fn refresh_synced_nodes(client: &Client) -> Result<()> {
     let quorum = Quorum::get();
     let body = json!( {
         "command": "getNodeInfo",
     });
     let mut result = HashMap::new();
 
-    for ref_node in Client::get()
+    for url in client
         .pool
         .clone()
         .read()
         .expect("Node pool read poinsened")
         .iter()
     {
-        let node = ref_node.clone();
-        let hash: GetNodeInfoResponse = response!(body, node);
+        let body_ = body.clone();
+        let hash: GetNodeInfoResponse = response!(Client, body_, url);
         let hash = Hash::from_inner_unchecked(
             // TODO missing impl error on Hash
             TryteBuf::try_from_str(&hash.latest_solid_subtangle_milestone)
@@ -87,7 +100,7 @@ pub async fn refresh_synced_nodes() -> Result<()> {
         );
         // TODO Better scope
         let set = result.entry(hash).or_insert(HashSet::new());
-        set.insert(ref_node.clone());
+        set.insert(url.to_string());
     }
 
     let pool = quorum.pool.clone();
@@ -147,8 +160,13 @@ impl GetBalancesBuilder {
     pub fn tips(mut self, tips: &[Hash]) -> Self {
         self.tips = Some(
             tips.iter()
-                .map(|h| h.as_bytes().trytes().unwrap())
-                .collect(),
+            .map(|h| {
+                (*h).encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
+            .collect(),
         );
         self
     }
@@ -166,9 +184,9 @@ impl GetBalancesBuilder {
         }
 
         let mut result = HashMap::new();
-        for node in get_synced_nodes!().iter() {
-            let node = node.clone();
-            let res: GetBalancesResponseBuilder = response!(body, node);
+        for url in get_synced_nodes!().iter() {
+            let body_ = body.clone();
+            let res: GetBalancesResponseBuilder = response!(Client, body_, url);
             let res = res.build().await?;
             let counters = result.entry(res).or_insert(0);
             *counters += 1;
@@ -217,9 +235,14 @@ impl GetInclusionStatesBuilder {
     /// Add list of transaction hashes for which you want to get the inclusion state
     pub fn transactions(mut self, transactions: &[Hash]) -> Self {
         self.transactions = transactions
-            .iter()
-            .map(|h| h.as_bytes().trytes().unwrap())
-            .collect();
+        .iter()
+        .map(|h| {
+            (*h).encode::<T3B1Buf>()
+                .iter_trytes()
+                .map(char::from)
+                .collect::<String>()
+        })
+        .collect();
         self
     }
 
@@ -232,9 +255,9 @@ impl GetInclusionStatesBuilder {
         });
 
         let mut result = HashMap::new();
-        for node in get_synced_nodes!().iter() {
-            let node = node.clone();
-            let res: GetInclusionStatesResponseBuilder = response!(body, node);
+        for url in get_synced_nodes!().iter() {
+            let body_ = body.clone();
+            let res: GetInclusionStatesResponseBuilder = response!(Client, body_, url);
             let res = res.build().await?;
             let counters = result.entry(res).or_insert(0);
             *counters += 1;
@@ -275,9 +298,9 @@ pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
     });
 
     let mut result = HashMap::new();
-    for node in get_synced_nodes!().iter() {
-        let node = node.clone();
-        let hash: GetNodeInfoResponse = response!(body, node);
+    for url in get_synced_nodes!().iter() {
+        let body_ = body.clone();
+        let hash: GetNodeInfoResponse = response!(Client, body_, url);
         let hash = Hash::from_inner_unchecked(
             // TODO missing impl error on Hash
             TryteBuf::try_from_str(&hash.latest_solid_subtangle_milestone)
@@ -319,9 +342,9 @@ pub async fn were_addresses_spent_from(
     });
 
     let mut result = HashMap::new();
-    for node in get_synced_nodes!().iter() {
-        let node = node.clone();
-        let res: WereAddressesSpentFromResponseBuilder = response!(body, node);
+    for url in get_synced_nodes!().iter() {
+        let body_ = body.clone();
+        let res: WereAddressesSpentFromResponseBuilder = response!(Client, body_, url);
         let res = res.build().await?;
         let counters = result.entry(res).or_insert(0);
         *counters += 1;
