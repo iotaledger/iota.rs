@@ -707,7 +707,7 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
     type Error = Error;
     fn try_from(essence: RustMilestonePayloadEssence) -> Result<Self> {
         Ok(MilestonePayloadEssence {
-            index: essence.index(),
+            index: *essence.index(),
             timestamp: essence.timestamp(),
             parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
@@ -827,7 +827,7 @@ impl TryFrom<RustMessage> for Message {
                     indexation: None,
                     receipt: Some(vec![Receipt {
                         kind: 3,
-                        index: payload.migrated_at(),
+                        index: *payload.migrated_at(),
                         last: payload.last(),
                         funds: payload
                             .funds()
