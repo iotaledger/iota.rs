@@ -139,14 +139,13 @@ fn poll_mqtt(
                             is_subscribed = true;
                             // resubscribe topics
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
-                            let _ = handle
-                                .send(Request::Subscribe(Subscribe::new_many(
-                                    mqtt_topic_handlers
-                                        .keys()
-                                        .map(|t| SubscribeFilter::new(t.0.clone(), QoS::AtLeastOnce))
-                                        .collect::<Vec<SubscribeFilter>>(),
-                                )))
-                                .await;
+                            let topics = mqtt_topic_handlers
+                                .keys()
+                                .map(|t| SubscribeFilter::new(t.0.clone(), QoS::AtLeastOnce))
+                                .collect::<Vec<SubscribeFilter>>();
+                            if !topics.is_empty() {
+                                let _ = handle.send(Request::Subscribe(Subscribe::new_many(topics))).await;
+                            }
                         }
                     }
                     Ok(Event::Incoming(Incoming::Publish(p))) => {
