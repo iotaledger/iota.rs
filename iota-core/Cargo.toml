@@ -1,7 +1,7 @@
 [package]
 name = "iota-core"
 version = "0.2.0-alpha.3"
-authors = ["YuWeiWu <wusyong9104@gmail.com>"]
+authors = ["Thoralf Müller <thoralf.mueller@iota.org", "Bing-Yang Lin <bingyang.lin@iota.org>", "Lucas Nogueira <lucas.nogueira@iota.org>"]
 edition = "2018"
 description = "Core library of IOTA"
 license = "Apache-2.0"
