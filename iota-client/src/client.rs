@@ -417,7 +417,9 @@ impl Drop for Client {
         #[cfg(feature = "mqtt")]
         if let Some(mqtt_client) = self.mqtt_client.take() {
             std::thread::spawn(move || {
-                crate::async_runtime::block_on(mqtt_client.disconnect()).expect("failed to disconnect MQTT");
+                // ignore errors in case the event loop was already dropped
+                // .cancel() finishes the event loop right away
+                let _ = crate::async_runtime::block_on(mqtt_client.cancel());
             })
             .join()
             .unwrap();
