@@ -17,34 +17,18 @@ use std::time::{Duration, Instant};
 
 use once_cell::sync::Lazy;
 
-// macro_rules! get_synced_nodes {
-//     () => {{
-//         let time = Quorum::get().time.clone();
-//         let mut time = time.write().expect("Timestamp read poinsened");
-//         if time.elapsed() >= Duration::from_secs(300) {
-//             refresh_synced_nodes().await?;
-//             *time = Instant::now();
-//         }
-//         Quorum::get()
-//             .pool
-//             .clone()
-//             .read()
-//             .expect("Node pool read poinsened")
-//     }};
-// }
-async fn get_synced_nodes(client: &Client) -> Result<RwLock<HashSet<String>>> {
-
-        let time = Quorum::get().time.clone();
-        let mut time = time.write().expect("Timestamp read poinsened");
-        if time.elapsed() >= Duration::from_secs(300) {
-            refresh_synced_nodes(client).await?;
-            *time = Instant::now();
-        }
-        Ok(Quorum::get()
-        .pool
-        .clone()
+async fn get_synced_nodes(client: &Client) -> Result<HashSet<String>> {
+    let time = Quorum::get().time.clone();
+    let mut time = time.write().expect("Timestamp read poinsened");
+    if time.elapsed() >= Duration::from_secs(300) {
+        refresh_synced_nodes(client).await?;
+        *time = Instant::now();
+    }
+    Ok(client
+        .sync
         .read()
-        .expect("Node pool read poinsened"))
+        .expect("Node pool read poinsened")
+        .clone())
 }
 
 /// An instance of the client using IRI URI
@@ -83,7 +67,7 @@ pub async fn refresh_synced_nodes(client: &Client) -> Result<()> {
     let mut result = HashMap::new();
 
     for url in client
-        .pool
+        .sync
         .clone()
         .read()
         .expect("Node pool read poinsened")
@@ -99,7 +83,7 @@ pub async fn refresh_synced_nodes(client: &Client) -> Result<()> {
                 .encode(),
         );
         // TODO Better scope
-        let set = result.entry(hash).or_insert(HashSet::new());
+        let set = result.entry(hash).or_insert_with(HashSet::new);
         set.insert(url.to_string());
     }
 
@@ -160,19 +144,19 @@ impl GetBalancesBuilder {
     pub fn tips(mut self, tips: &[Hash]) -> Self {
         self.tips = Some(
             tips.iter()
-            .map(|h| {
-                (*h).encode::<T3B1Buf>()
-                    .iter_trytes()
-                    .map(char::from)
-                    .collect::<String>()
-            })
-            .collect(),
+                .map(|h| {
+                    (*h).encode::<T3B1Buf>()
+                        .iter_trytes()
+                        .map(char::from)
+                        .collect::<String>()
+                })
+                .collect(),
         );
         self
     }
 
     /// Send getBalances request
-    pub async fn send(self) -> Result<GetBalancesResponse> {
+    pub async fn send(self, client: &Client) -> Result<GetBalancesResponse> {
         let quorum = Quorum::get();
         let mut body = json!({
             "command": "getBalances",
@@ -184,7 +168,7 @@ impl GetBalancesBuilder {
         }
 
         let mut result = HashMap::new();
-        for url in get_synced_nodes!().iter() {
+        for url in get_synced_nodes(client).await?.iter() {
             let body_ = body.clone();
             let res: GetBalancesResponseBuilder = response!(Client, body_, url);
             let res = res.build().await?;
@@ -235,19 +219,19 @@ impl GetInclusionStatesBuilder {
     /// Add list of transaction hashes for which you want to get the inclusion state
     pub fn transactions(mut self, transactions: &[Hash]) -> Self {
         self.transactions = transactions
-        .iter()
-        .map(|h| {
-            (*h).encode::<T3B1Buf>()
-                .iter_trytes()
-                .map(char::from)
-                .collect::<String>()
-        })
-        .collect();
+            .iter()
+            .map(|h| {
+                (*h).encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+            })
+            .collect();
         self
     }
 
     /// Send getInclusionStates request
-    pub async fn send(self) -> Result<GetInclusionStatesResponse> {
+    pub async fn send(self, client: &Client) -> Result<GetInclusionStatesResponse> {
         let quorum = Quorum::get();
         let body = json!({
             "command": "getInclusionStates",
@@ -255,7 +239,7 @@ impl GetInclusionStatesBuilder {
         });
 
         let mut result = HashMap::new();
-        for url in get_synced_nodes!().iter() {
+        for url in get_synced_nodes(client).await?.iter() {
             let body_ = body.clone();
             let res: GetInclusionStatesResponseBuilder = response!(Client, body_, url);
             let res = res.build().await?;
@@ -281,24 +265,24 @@ impl GetInclusionStatesBuilder {
 ///
 /// # Parameters
 /// * [`transactions`] - List of transaction hashes for which you want to get the inclusion state
-pub async fn get_latest_inclusion(transactions: &[Hash]) -> Result<Vec<bool>> {
+pub async fn get_latest_inclusion(transactions: &[Hash], client: &Client) -> Result<Vec<bool>> {
     let states = get_inclusion_states()
         .transactions(transactions)
-        .send()
+        .send(client)
         .await?
         .states;
     Ok(states)
 }
 
 /// Gets latest solid subtangle milestone.
-pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
+pub async fn get_latest_solid_subtangle_milestone(client: &Client) -> Result<Hash> {
     let quorum = Quorum::get();
     let body = json!( {
         "command": "getNodeInfo",
     });
 
     let mut result = HashMap::new();
-    for url in get_synced_nodes!().iter() {
+    for url in get_synced_nodes(client).await?.iter() {
         let body_ = body.clone();
         let hash: GetNodeInfoResponse = response!(Client, body_, url);
         let hash = Hash::from_inner_unchecked(
@@ -330,6 +314,7 @@ pub async fn get_latest_solid_subtangle_milestone() -> Result<Hash> {
 /// * `address` - addresses to check (do not include the checksum)
 pub async fn were_addresses_spent_from(
     addresses: &[Address],
+    client: &Client,
 ) -> Result<WereAddressesSpentFromResponse> {
     let quorum = Quorum::get();
     let addresses: Vec<String> = addresses
@@ -342,7 +327,7 @@ pub async fn were_addresses_spent_from(
     });
 
     let mut result = HashMap::new();
-    for url in get_synced_nodes!().iter() {
+    for url in get_synced_nodes(client).await?.iter() {
         let body_ = body.clone();
         let res: WereAddressesSpentFromResponseBuilder = response!(Client, body_, url);
         let res = res.build().await?;

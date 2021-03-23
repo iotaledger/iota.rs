@@ -3,6 +3,7 @@
 use crate::client::Client;
 use crate::error::*;
 
+use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
 /// Network of the Iota nodes belong to
@@ -113,13 +114,13 @@ impl ClientBuilder {
 
         let client = Client {
             pool: Arc::new(RwLock::new(self.nodes.into_iter().collect())),
+            sync: Arc::new(RwLock::new(HashSet::new())),
             permanode: self.permanode,
             mwm,
             quorum,
             quorum_size,
             quorum_threshold,
         };
-
         Ok(client)
     }
 }

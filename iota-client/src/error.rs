@@ -5,6 +5,7 @@ use std::fmt;
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[warn(clippy::large_enum_variant)]
 #[derive(Debug)]
 /// Error type of the iota client crate.
 pub enum Error {

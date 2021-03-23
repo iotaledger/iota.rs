@@ -11,7 +11,7 @@ use std::collections::HashSet;
 
 /// Builder to get inputs (spent addresses included)
 pub struct GetAccountDataForMigrationBuilder<'a> {
-    client: &'a Client,
+    client: &'a mut Client,
     seed: Option<&'a Seed>,
     start_index: u64,
     gap_limit: u64,
@@ -20,7 +20,7 @@ pub struct GetAccountDataForMigrationBuilder<'a> {
 
 impl<'a> GetAccountDataForMigrationBuilder<'a> {
     /// Create a new GetAccountDataForMigrationBuilder
-    pub fn builder(client: &'a Client) -> Self {
+    pub fn builder(client: &'a mut Client) -> Self {
         Self {
             client,
             seed: None,
@@ -71,6 +71,8 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
         // Count addresses with zero balances in a row
         let mut found_zero_balance = 0;
         let mut index = self.start_index;
+        //sync nodes
+        self.client.sync().await;
         loop {
             let range = index..index + self.gap_limit;
             // Generate addresses
@@ -87,17 +89,28 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
                 .map(|(_, address)| address)
                 .collect();
             // Get balance of the addresses
-            let balance_response = self
-                .client
-                .get_balances()
-                .addresses(&addresses_for_api_calls[..])
-                .send()
-                .await?;
+            let balance_response = if self.client.quorum {
+                crate::quorum::get_balances()
+                    .addresses(&addresses_for_api_calls[..])
+                    .send(self.client)
+                    .await?
+            } else {
+                self.client
+                    .get_balances()
+                    .addresses(&addresses_for_api_calls[..])
+                    .send()
+                    .await?
+            };
+
             // Get spent status of the addresses
-            let spent_status = self
-                .client
-                .were_addresses_spent_from(&addresses_for_api_calls[..])
-                .await?;
+            let spent_status = if self.client.quorum {
+                crate::quorum::were_addresses_spent_from(&addresses_for_api_calls[..], self.client)
+                    .await?
+            } else {
+                self.client
+                    .were_addresses_spent_from(&addresses_for_api_calls[..])
+                    .await?
+            };
             // Find bundle hashes for spent addresses
             let mut spent_bundle_hashes = Vec::new();
             for (index, spent) in spent_status.states.iter().enumerate() {

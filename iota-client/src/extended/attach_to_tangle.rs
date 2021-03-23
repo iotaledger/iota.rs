@@ -38,8 +38,8 @@ const LOW_BITS: u64 =
 /// The PearlDiver struct allows you to start, stop, and check in on
 /// PoW while its working
 ///```rust
-/// use iota_pow::{PearlDiver, PowOptions};
-/// use iota_crypto::{Curl, Sponge};
+/// use iota_client::extended::{PearlDiver, PowOptions};
+/// use bee_crypto::ternary::{Curl, sponge};
 /// use rand::{thread_rng, Rng};
 ///
 /// const HASH_SIZE: usize = 243;
@@ -104,7 +104,7 @@ impl PearlDiver {
     /// you to cancel the proof of work. For this to be useful, you'll probably need
     /// to wrap the PearlDiver in an `Arc`
     ///```rust
-    /// use iota_pow::PearlDiver;
+    /// use iota_client::extended::PearlDiver;
     /// let mut pearl_diver = PearlDiver::new();
     /// // ... start running a pearl diver on another thread ...
     /// pearl_diver.cancel();
