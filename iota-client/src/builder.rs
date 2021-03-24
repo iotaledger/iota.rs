@@ -4,6 +4,7 @@
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
 
+#[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
     sync::{broadcast::channel, RwLock},
@@ -197,11 +198,17 @@ impl ClientBuilder {
                 }
             }
         }
-
+        #[cfg(feature = "wasm")]
+        let network_info = Arc::new(self.network_info);
+        #[cfg(not(feature = "wasm"))]
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.nodes;
+        #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
 
+        #[cfg(feature = "wasm")]
+        let (sync, network_info) = (Arc::new(nodes.clone()), network_info);
+        #[cfg(not(feature = "wasm"))]
         let (runtime, sync, sync_kill_sender, network_info) = if self.node_sync_enabled {
             let sync = Arc::new(RwLock::new(HashSet::new()));
             let sync_ = sync.clone();
@@ -276,9 +283,11 @@ impl ClientBuilder {
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
 
         let client = Client {
+            #[cfg(not(feature = "wasm"))]
             runtime,
             nodes,
             sync,
+            #[cfg(not(feature = "wasm"))]
             sync_kill_sender: sync_kill_sender.map(Arc::new),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,

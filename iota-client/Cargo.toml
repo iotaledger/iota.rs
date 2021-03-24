@@ -26,7 +26,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
-tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread", "rt"] }
+tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread", "rt"], optional = true }
 thiserror = "1.0"
 num_cpus = "1.13"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
@@ -40,8 +40,9 @@ once_cell = { version = "1.5", optional = true }
 futures = { version = "0.3", optional = true }
 
 [features]
-default = ["async"]
+default = ["async", "tokio"]
 sync = ["ureq"]
 async = ["reqwest"]
 mqtt = ["rumqttc", "regex", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
+wasm = []

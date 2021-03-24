@@ -30,6 +30,7 @@ use serde_json::Value;
 
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
+#[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
     sync::{
@@ -322,11 +323,21 @@ impl HttpClient {
     }
 
     pub(crate) async fn get(&self, url: &str, timeout: Duration) -> Result<Response> {
-        Self::parse_response(self.client.get(url).timeout(timeout).send().await?).await
+        #[cfg(feature = "wasm")]
+        {
+            Self::parse_response(self.client.get(url).send().await?).await
+        }
+        #[cfg(not(feature = "wasm"))]
+        {
+            Self::parse_response(self.client.get(url).timeout(timeout).send().await?).await
+        }
     }
 
     pub(crate) async fn post_bytes(&self, url: &str, timeout: Duration, body: &[u8]) -> Result<Response> {
         Self::parse_response(
+            #[cfg(feature = "wasm")]
+            self.client.post(url).body(body.to_vec()).send().await?,
+            #[cfg(not(feature = "wasm"))]
             self.client
                 .post(url)
                 .timeout(timeout)
@@ -338,7 +349,14 @@ impl HttpClient {
     }
 
     pub(crate) async fn post_json(&self, url: &str, timeout: Duration, json: Value) -> Result<Response> {
-        Self::parse_response(self.client.post(url).timeout(timeout).json(&json).send().await?).await
+        #[cfg(feature = "wasm")]
+        {
+            Self::parse_response(self.client.post(url).json(&json).send().await?).await
+        }
+        #[cfg(not(feature = "wasm"))]
+        {
+            Self::parse_response(self.client.post(url).timeout(timeout).json(&json).send().await?).await
+        }
     }
 }
 
@@ -368,12 +386,17 @@ impl HttpClient {
 /// An instance of the client using HORNET or Bee URI
 pub struct Client {
     #[allow(dead_code)]
+    #[cfg(not(feature = "wasm"))]
     pub(crate) runtime: Option<Runtime>,
     /// Node pool.
     pub(crate) nodes: HashSet<Url>,
     /// Node pool of synced IOTA nodes
+    #[cfg(feature = "wasm")]
+    pub(crate) sync: Arc<HashSet<Url>>,
+    #[cfg(not(feature = "wasm"))]
     pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
     /// Flag to stop the node syncing
+    #[cfg(not(feature = "wasm"))]
     pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
     /// A MQTT client to subscribe/unsubscribe to topics.
     #[cfg(feature = "mqtt")]
@@ -384,6 +407,9 @@ pub struct Client {
     pub(crate) broker_options: BrokerOptions,
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
+    #[cfg(feature = "wasm")]
+    pub(crate) network_info: Arc<NetworkInfo>,
+    #[cfg(not(feature = "wasm"))]
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
@@ -406,10 +432,12 @@ impl std::fmt::Debug for Client {
 impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
+        #[cfg(not(feature = "wasm"))]
         if let Some(sender) = self.sync_kill_sender.take() {
             sender.send(()).expect("failed to stop syncing process");
         }
 
+        #[cfg(not(feature = "wasm"))]
         if let Some(runtime) = self.runtime.take() {
             runtime.shutdown_background();
         }
@@ -434,6 +462,7 @@ impl Client {
     }
 
     /// Sync the node lists per node_sync_interval milliseconds
+    #[cfg(not(feature = "wasm"))]
     pub(crate) fn start_sync_process(
         runtime: &Runtime,
         sync: Arc<RwLock<HashSet<Url>>>,
@@ -464,6 +493,7 @@ impl Client {
         });
     }
 
+    #[cfg(not(feature = "wasm"))]
     pub(crate) async fn sync_nodes(
         sync: &Arc<RwLock<HashSet<Url>>>,
         nodes: &HashSet<Url>,
@@ -523,6 +553,9 @@ impl Client {
 
     /// Get a node candidate from the synced node pool.
     pub(crate) async fn get_node(&self) -> Result<Url> {
+        #[cfg(feature = "wasm")]
+        let pool = self.nodes.clone();
+        #[cfg(not(feature = "wasm"))]
         let pool = self.sync.read().await;
         Ok(pool.iter().next().ok_or(Error::SyncedNodePoolEmpty)?.clone())
     }
@@ -545,16 +578,43 @@ impl Client {
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
+        #[cfg(feature = "wasm")]
+        let not_synced = { self.network_info.network_id.is_none() };
+        #[cfg(not(feature = "wasm"))]
         let not_synced = { self.network_info.read().await.network_id.is_none() };
         if not_synced {
             let info = self.get_info().await?;
             let network_id = hash_network(&info.network_id).ok();
-            let mut client_network_info = self.network_info.write().await;
-            client_network_info.network_id = network_id;
-            client_network_info.min_pow_score = info.min_pow_score;
-            client_network_info.bech32_hrp = info.bech32_hrp;
+            #[cfg(feature = "wasm")]
+            {
+                let mut client_network_info = self.network_info.clone();
+                Arc::get_mut(&mut client_network_info).unwrap().network_id = network_id;
+                // *self.network_info.network_id = network_id;
+                Arc::get_mut(&mut client_network_info).unwrap().min_pow_score = info.min_pow_score;
+                // *self.network_info.min_pow_score = info.min_pow_score;
+                Arc::get_mut(&mut client_network_info).unwrap().bech32_hrp = info.bech32_hrp;
+                // *self.network_info.bech32_hrp = info.bech32_hrp;
+            }
+            #[cfg(not(feature = "wasm"))]
+            {
+                let mut client_network_info = self.network_info.write().await;
+                client_network_info.network_id = network_id;
+                client_network_info.min_pow_score = info.min_pow_score;
+                client_network_info.bech32_hrp = info.bech32_hrp;
+            }
         }
-        Ok(self.network_info.read().await.clone())
+        let res = {
+            #[cfg(feature = "wasm")]
+            {
+                let r = self.network_info.clone();
+                Arc::try_unwrap(r).expect("Can't get network info")
+            }
+            #[cfg(not(feature = "wasm"))]
+            {
+                self.network_info.read().await.clone()
+            }
+        };
+        Ok(res)
     }
 
     /// returns the bech32_hrp
@@ -568,16 +628,25 @@ impl Client {
     }
 
     /// returns the tips interval
+    #[cfg(not(feature = "wasm"))]
     pub async fn get_tips_interval(&self) -> u64 {
         self.network_info.read().await.tips_interval
     }
 
     /// returns the local pow
     pub async fn get_local_pow(&self) -> bool {
-        self.network_info.read().await.local_pow
+        #[cfg(feature = "wasm")]
+        {
+            self.network_info.local_pow
+        }
+        #[cfg(not(feature = "wasm"))]
+        {
+            self.network_info.read().await.local_pow
+        }
     }
 
     /// returns the unsynced nodes.
+    #[cfg(not(feature = "wasm"))]
     pub async fn unsynced_nodes(&self) -> HashSet<&Url> {
         let synced = self.sync.read().await;
         self.nodes.iter().filter(|node| !synced.contains(node)).collect()
@@ -995,8 +1064,21 @@ impl Client {
     pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
         let message = self.get_message().data(message_id).await?;
-
-        let reattach_message = finish_pow(self, message.payload().to_owned()).await?;
+        let reattach_message = {
+            #[cfg(feature = "wasm")]
+            {
+                let network_id = self.get_network_id().await?;
+                let mut message_builder = MessageBuilder::<ClientMiner>::new().with_network_id(network_id);
+                if let Some(p) = message.payload().to_owned() {
+                    message_builder = message_builder.with_payload(p)
+                }
+                message_builder.finish().map_err(Error::MessageError)?
+            }
+            #[cfg(not(feature = "wasm"))]
+            {
+                finish_pow(self, message.payload().to_owned()).await?
+            }
+        };
 
         // Post the modified
         let message_id = self.post_message(&reattach_message).await?;
@@ -1153,6 +1235,9 @@ impl Client {
         // Reattached Messages that get returned
         let mut messages_with_id = Vec::new();
         for _ in 0..max_attempts.unwrap_or(10) {
+            #[cfg(feature = "wasm")]
+            std::thread::sleep(Duration::from_secs(interval.unwrap_or(5)));
+            #[cfg(not(feature = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;
             // Check inclusion state for each attachment
             let message_ids_len = message_ids.len();

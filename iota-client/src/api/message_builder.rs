@@ -5,6 +5,8 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
+
+#[cfg(not(feature = "wasm"))]
 use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::dtos::{AddressDto, OutputDto};
 use crypto::keys::slip10::{Chain, Curve, Seed};
@@ -505,6 +507,35 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
+        #[cfg(feature = "wasm")]
+        let final_message = match self.parents {
+            Some(mut parents) => {
+                // Sort parents
+                parents.dedup();
+                parents.sort_unstable_by_key(|a| a.pack_new());
+
+                let network_id = self.client.get_network_id().await?;
+                let mut message = MessageBuilder::<ClientMiner>::new();
+                message = message.with_network_id(network_id);
+                if let Some(p) = payload {
+                    message = message.with_payload(p);
+                }
+                message
+                    .with_parents(Parents::new(parents)?)
+                    .finish()
+                    .map_err(Error::MessageError)?
+            }
+            _ => {
+                let network_id = self.client.get_network_id().await?;
+                let mut message = MessageBuilder::<ClientMiner>::new();
+                message = message.with_network_id(network_id);
+                if let Some(p) = payload {
+                    message = message.with_payload(p);
+                }
+                message.finish().map_err(Error::MessageError)?
+            }
+        };
+        #[cfg(not(feature = "wasm"))]
         let final_message = match self.parents {
             Some(mut parents) => {
                 // Sort parents
@@ -600,6 +631,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
 }
 
 /// Does PoW with always new tips
+#[cfg(not(feature = "wasm"))]
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let done = Arc::new(AtomicBool::new(false));
     let local_pow = client.get_local_pow().await;
