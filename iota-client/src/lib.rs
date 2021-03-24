@@ -16,7 +16,6 @@ pub mod core;
 pub mod error;
 pub mod extended;
 pub mod migration;
-// #[cfg(feature = "quorum")]
 pub mod quorum;
 pub mod response;
 mod util;

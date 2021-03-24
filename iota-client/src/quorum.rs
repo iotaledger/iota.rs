@@ -13,17 +13,11 @@ use iota_conversion::Trinary;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
 use std::sync::{Arc, RwLock};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use once_cell::sync::Lazy;
 
 async fn get_synced_nodes(client: &Client) -> Result<HashSet<String>> {
-    let time = Quorum::get().time.clone();
-    let mut time = time.write().expect("Timestamp read poinsened");
-    if time.elapsed() >= Duration::from_secs(300) {
-        refresh_synced_nodes(client).await?;
-        *time = Instant::now();
-    }
     Ok(client
         .sync
         .read()
@@ -31,11 +25,9 @@ async fn get_synced_nodes(client: &Client) -> Result<HashSet<String>> {
         .clone())
 }
 
-/// An instance of the client using IRI URI
+/// An instance of the client using HORNET URI
 #[derive(Debug)]
 pub struct Quorum {
-    /// Synced node pool of IOTA nodes for quorum
-    pub(crate) pool: Arc<RwLock<HashSet<String>>>,
     /// Quorum threshold
     pub(crate) threshold: AtomicU8,
     /// Minimum nodes quired to satisfy quorum threshold
@@ -48,7 +40,6 @@ impl Quorum {
     /// Get the quorum instance. It will init the instance if it's not created yet.
     pub fn get() -> &'static Quorum {
         static QUORUM: Lazy<Quorum> = Lazy::new(|| Quorum {
-            pool: Arc::new(RwLock::new(HashSet::new())),
             threshold: AtomicU8::new(66),
             min: AtomicUsize::new(0),
             time: Arc::new(RwLock::new(Instant::now())),
@@ -56,49 +47,6 @@ impl Quorum {
 
         &QUORUM
     }
-}
-
-/// Refresh synced nodes in quorum. This will replace whole set in the quorum pool.
-pub async fn refresh_synced_nodes(client: &Client) -> Result<()> {
-    let quorum = Quorum::get();
-    let body = json!( {
-        "command": "getNodeInfo",
-    });
-    let mut result = HashMap::new();
-
-    for url in client
-        .sync
-        .clone()
-        .read()
-        .expect("Node pool read poinsened")
-        .iter()
-    {
-        let body_ = body.clone();
-        let hash: GetNodeInfoResponse = response!(Client, body_, url);
-        let hash = Hash::from_inner_unchecked(
-            // TODO missing impl error on Hash
-            TryteBuf::try_from_str(&hash.latest_solid_subtangle_milestone)
-                .unwrap()
-                .as_trits()
-                .encode(),
-        );
-        // TODO Better scope
-        let set = result.entry(hash).or_insert_with(HashSet::new);
-        set.insert(url.to_string());
-    }
-
-    let pool = quorum.pool.clone();
-    let mut set = pool.write().expect("Node pool write poisened");
-    *set = result
-        .into_iter()
-        .max_by_key(|v| v.1.len())
-        .ok_or(Error::QuorumError)?
-        .1;
-
-    let val = set.len() * quorum.threshold.load(Ordering::Acquire) as usize / 100;
-    quorum.min.store(val, Ordering::Release);
-
-    Ok(())
 }
 
 /// Gets the confirmed balance of an address.

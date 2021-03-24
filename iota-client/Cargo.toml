@@ -48,10 +48,3 @@ anyhow = "1.0.31"
 smol = {version = "0.1.18", features = ["tokio02"] }
 smol-potat = "0.3.3"
 
-#[features]
-#quorum = ["smol"]
-#wasm = ["chrono/wasmbind"]
-
-#[[test]]
-#name = "quorum"
-#required-features = ["quorum"]
