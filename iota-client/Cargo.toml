@@ -24,7 +24,6 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], def
 url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
 tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread", "rt"] }
 thiserror = "1.0"
