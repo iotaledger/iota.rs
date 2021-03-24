@@ -199,7 +199,7 @@ impl ClientBuilder {
             }
         }
         #[cfg(feature = "wasm")]
-        let network_info = Arc::new(self.network_info);
+        let network_info = Arc::new(std::sync::RwLock::new(self.network_info));
         #[cfg(not(feature = "wasm"))]
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.nodes;

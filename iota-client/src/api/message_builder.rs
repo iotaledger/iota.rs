@@ -527,8 +527,9 @@ impl<'a> ClientMessageBuilder<'a> {
             }
             _ => {
                 let network_id = self.client.get_network_id().await?;
+                let tips = self.client.get_tips().await?;
                 let mut message = MessageBuilder::<ClientMiner>::new();
-                message = message.with_network_id(network_id);
+                message = message.with_network_id(network_id).with_parents(Parents::new(tips)?);
                 if let Some(p) = payload {
                     message = message.with_payload(p);
                 }

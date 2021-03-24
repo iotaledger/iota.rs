@@ -408,7 +408,7 @@ pub struct Client {
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
     #[cfg(feature = "wasm")]
-    pub(crate) network_info: Arc<NetworkInfo>,
+    pub(crate) network_info: Arc<std::sync::RwLock<NetworkInfo>>,
     #[cfg(not(feature = "wasm"))]
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
@@ -579,7 +579,13 @@ impl Client {
     /// and if it's the default one, sync it first.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
         #[cfg(feature = "wasm")]
-        let not_synced = { self.network_info.network_id.is_none() };
+        let not_synced = {
+            self.network_info
+                .read()
+                .expect("Couln't read network info")
+                .network_id
+                .is_none()
+        };
         #[cfg(not(feature = "wasm"))]
         let not_synced = { self.network_info.read().await.network_id.is_none() };
         if not_synced {
@@ -587,13 +593,10 @@ impl Client {
             let network_id = hash_network(&info.network_id).ok();
             #[cfg(feature = "wasm")]
             {
-                let mut client_network_info = self.network_info.clone();
-                Arc::get_mut(&mut client_network_info).unwrap().network_id = network_id;
-                // *self.network_info.network_id = network_id;
-                Arc::get_mut(&mut client_network_info).unwrap().min_pow_score = info.min_pow_score;
-                // *self.network_info.min_pow_score = info.min_pow_score;
-                Arc::get_mut(&mut client_network_info).unwrap().bech32_hrp = info.bech32_hrp;
-                // *self.network_info.bech32_hrp = info.bech32_hrp;
+                let mut client_network_info = self.network_info.write().expect("Cannot write network info");
+                client_network_info.network_id = network_id;
+                client_network_info.min_pow_score = info.min_pow_score;
+                client_network_info.bech32_hrp = info.bech32_hrp;
             }
             #[cfg(not(feature = "wasm"))]
             {
@@ -606,8 +609,7 @@ impl Client {
         let res = {
             #[cfg(feature = "wasm")]
             {
-                let r = self.network_info.clone();
-                Arc::try_unwrap(r).expect("Can't get network info")
+                self.network_info.read().expect("Failed to read network info").clone()
             }
             #[cfg(not(feature = "wasm"))]
             {
@@ -637,7 +639,7 @@ impl Client {
     pub async fn get_local_pow(&self) -> bool {
         #[cfg(feature = "wasm")]
         {
-            self.network_info.local_pow
+            self.network_info.read().expect("Failed to read network info").local_pow
         }
         #[cfg(not(feature = "wasm"))]
         {
