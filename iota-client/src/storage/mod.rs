@@ -24,7 +24,6 @@ impl Storage {
         self.inner.id()
     }
     /// Get an account by id
-    #[allow(dead_code)]
     pub async fn get(&mut self, account_id: &str) -> crate::Result<String> {
         self.inner.get(account_id).await
     }
