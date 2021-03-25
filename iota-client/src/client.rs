@@ -18,14 +18,22 @@ use bee_transaction::Vertex;
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
-        ureq::post(&$self.get_node()?)
+        ureq::AgentBuilder::new()
+            .timeout_read(std::time::Duration::from_secs(2))
+            .timeout_write(std::time::Duration::from_secs(2))
+            .build()
+            .post(&$self.get_node()?)
             .set("Content-Type", "application/json")
             .set("X-IOTA-API-Version", "1")
             .send_json($body)?
             .into_json()?
     };
     ($self:ident, $body:ident, $node:ident) => {
-        ureq::post($node)
+        ureq::AgentBuilder::new()
+            .timeout_read(std::time::Duration::from_secs(2))
+            .timeout_write(std::time::Duration::from_secs(2))
+            .build()
+            .post($node)
             .set("Content-Type", "application/json")
             .set("X-IOTA-API-Version", "1")
             .send_json($body)?
