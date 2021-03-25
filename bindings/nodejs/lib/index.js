@@ -93,7 +93,7 @@ Client.prototype.getAddressOutputs = function (address, options) {
 }
 Client.prototype.getAddressBalance = promisify(Client.prototype.getAddressBalance)
 Client.prototype.getMilestone = promisify(Client.prototype.getMilestone)
-Client.prototype.getMilestoneUTXOChanges = promisify(Client.prototype.getMilestoneUTXOChanges)
+Client.prototype.GetMilestoneUtxoChanges = promisify(Client.prototype.GetMilestoneUtxoChanges)
 Client.prototype.getReceipts = promisify(Client.prototype.getReceipts)
 Client.prototype.getReceiptsMigratedAt = promisify(Client.prototype.getReceiptsMigratedAt)
 Client.prototype.getTreasury = promisify(Client.prototype.getTreasury)

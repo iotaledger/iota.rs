@@ -350,7 +350,7 @@ Gets the milestone by the given index.
 
 **Returns** a promise resolving to the [MilestoneMetadata](#milestonemetadata).
 
-#### getMilestoneUTXOChanges(index): Promise<MilestoneUTXOChanges>
+#### GetMilestoneUtxoChanges(index): Promise<MilestoneUTXOChanges>
 
 Gets the utxo changes by the given milestone index.
 
