@@ -270,8 +270,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                 // Keep track of remaining balance, we don't add an output here, because we could have
                                 // multiple inputs from the same address, which would create multiple outputs with the
                                 // same address, which is not allowed
-                                remainder_address_balance =
-                                    (Some(output_address), remaining_balance);
+                                remainder_address_balance = (Some(output_address), remaining_balance);
                             }
                         }
                     }
