@@ -3,7 +3,7 @@
 
 //! cargo run --example split_outputs_single_address --release
 
-use iota::{Client, Essence, Output, Payload, Seed, UTXOInput};
+use iota::{client::Result, Client, Essence, Output, Payload, Seed, UTXOInput};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -12,7 +12,7 @@ use std::env;
 /// You need to have >=100 Mi on the first address before you run it
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
@@ -36,8 +36,8 @@ async fn main() {
         .unwrap();
 
     let mut message_builder = iota.message().with_seed(&seed);
-    for address in &addresses {
-        message_builder = message_builder.with_output(address, 1_000_000).unwrap();
+    for address in addresses {
+        message_builder = message_builder.with_output(&address, 1_000_000).unwrap();
     }
     let message = message_builder.finish().await.unwrap();
 
@@ -76,7 +76,7 @@ async fn main() {
             .with_input(output)
             .with_input_range(1..101)
             .with_output(
-                &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(),
+                "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
                 1_000_000,
             )
             .unwrap()
@@ -92,6 +92,7 @@ async fn main() {
         sent_messages.push(message_id);
     }
     for message_id in sent_messages {
-        let _ = iota.retry_until_included(&message_id, None, None).await.unwrap();
+        let _ = iota.retry_until_included(&message_id, None, None).await?;
     }
+    Ok(())
 }
