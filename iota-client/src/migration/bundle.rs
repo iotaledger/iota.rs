@@ -23,6 +23,9 @@ use iota_bundle_miner::{
     miner::MinedCrackability, CrackabilityMinerEvent, MinerBuilder, RecovererBuilder,
 };
 
+/// Dust protection treshhold: minimum amount of iotas an address needs in Chrysalis
+pub const DUST_THRESHOLD: u64 = 1_000_000;
+
 /// Prepare migration bundle with address and inputs
 pub async fn create_migration_bundle(
     client: &Client,
@@ -30,6 +33,12 @@ pub async fn create_migration_bundle(
     inputs: Vec<InputData>,
 ) -> Result<OutgoingBundleBuilder> {
     let migration_address = encode_migration_address(address)?;
+
+    if inputs.is_empty() {
+        return Err(Error::MigrationError(
+            "No inputs provided",
+        ));
+    }
 
     let security_level = inputs[0].security_lvl;
     let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level);
@@ -53,11 +62,11 @@ pub async fn create_migration_bundle(
     let total_value = address_inputs.iter().map(|d| d.balance).sum();
 
     // Check for dust protection value
-    // if total_value < 1_000_000 {
-    //     return Err(Error::MigrationError(
-    //         "Input value is < dust protection value (1_000_000 i)".into(),
-    //     ));
-    // }
+    if total_value < DUST_THRESHOLD {
+        return Err(Error::MigrationError(
+            "Input value is < dust protection value (1_000_000 i)".into(),
+        ));
+    }
     let transfer = vec![Transfer {
         address: migration_address,
         value: total_value,
@@ -79,6 +88,11 @@ pub fn sign_migration_bundle(
     prepared_bundle: OutgoingBundleBuilder,
     inputs: Vec<InputData>,
 ) -> Result<Vec<BundledTransaction>> {
+    if inputs.is_empty() {
+        return Err(Error::MigrationError(
+            "No inputs provided",
+        ));
+    }
     let security_level = match inputs[0].security_lvl {
         1 => WotsSecurityLevel::Low,
         2 => WotsSecurityLevel::Medium,

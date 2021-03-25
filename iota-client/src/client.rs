@@ -16,11 +16,13 @@ use bee_transaction::bundled::{
 };
 use bee_transaction::Vertex;
 
+pub(crate) const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
+
 macro_rules! response {
     ($self:ident, $body:ident) => {
         ureq::AgentBuilder::new()
-            .timeout_read(std::time::Duration::from_secs(2))
-            .timeout_write(std::time::Duration::from_secs(2))
+            .timeout_read($crate::client::REQUEST_TIMEOUT)
+            .timeout_write($crate::client::REQUEST_TIMEOUT)
             .build()
             .post(&$self.get_node()?)
             .set("Content-Type", "application/json")
@@ -30,8 +32,8 @@ macro_rules! response {
     };
     ($self:ident, $body:ident, $node:ident) => {
         ureq::AgentBuilder::new()
-            .timeout_read(std::time::Duration::from_secs(2))
-            .timeout_write(std::time::Duration::from_secs(2))
+            .timeout_read($crate::client::REQUEST_TIMEOUT)
+            .timeout_write($crate::client::REQUEST_TIMEOUT)
             .build()
             .post($node)
             .set("Content-Type", "application/json")
