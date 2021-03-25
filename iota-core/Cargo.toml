@@ -1,7 +1,7 @@
 [package]
 name = "iota-core"
 version = "0.2.0-alpha.3"
-authors = ["YuWeiWu <wusyong9104@gmail.com>"]
+authors = ["Thoralf Müller <thoralf.mueller@iota.org", "Antony Dikov <antoni.dikov@iota.org>", "Bing-Yang Lin <bingyang.lin@iota.org>", "Lucas Nogueira <lucas.nogueira@iota.org>"]
 edition = "2018"
 description = "Core library of IOTA"
 license = "Apache-2.0"
@@ -12,15 +12,17 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-message = { git = "https://github.com/Thoralf-M/bee.git", branch = "bee-message/-impl-TryFrom-for-Address" }
-bee-signing-ext = { git = "https://github.com/wusyong/bee-p.git", branch = "sign-ext" }
-bee-pow = { git = "https://github.com/Thoralf-M/bee.git", branch = "bee-message/-impl-TryFrom-for-Address" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "517d26ea51c39bdd57443f5cbf9ba02555bd083d" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "517d26ea51c39bdd57443f5cbf9ba02555bd083d" }
+bee-common = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1.1", features = ["macros"] }
 
 [features]
-default = ["mqtt"]
+default = ["iota-client/async"]
+sync = ["iota-client/sync"]
+async = ["iota-client/async"]
 mqtt = ["iota-client/mqtt"]
+storage = ["iota-client/storage"]

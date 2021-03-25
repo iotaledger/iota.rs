@@ -7,7 +7,7 @@ use crate::client::{
 };
 use iota::{
     Bech32Address as RustBech32Address, MessageId as RustMessageId, Seed as RustSeed,
-    TransactionId as RustTransationId, UTXOInput as RustUTXOInput,
+    TransactionId as RustTransactionId, UTXOInput as RustUTXOInput,
 };
 use pyo3::{exceptions, prelude::*};
 use std::{
@@ -18,7 +18,8 @@ use std::{
 /// General high level APIs
 #[pymethods]
 impl Client {
-    fn send(
+    #[allow(clippy::too_many_arguments)]
+    fn message(
         &self,
         seed: Option<String>,
         account_index: Option<usize>,
@@ -29,10 +30,10 @@ impl Client {
         outputs: Option<Vec<Output>>,
         dust_allowance_outputs: Option<Vec<Output>>,
         index: Option<&str>,
+        index_raw: Option<&[u8]>,
         data: Option<Vec<u8>>,
         data_str: Option<String>,
         parents: Option<Vec<&str>>,
-        network_id: Option<u64>,
     ) -> Result<Message> {
         if input_range_begin.is_some() ^ input_range_end.is_some() {
             return Err(Error {
@@ -41,7 +42,7 @@ impl Client {
                 ),
             });
         }
-        let mut send_builder = self.client.send();
+        let mut send_builder = self.client.message();
         if let Some(account_index) = account_index {
             send_builder = send_builder.with_account_index(account_index);
         }
@@ -51,14 +52,16 @@ impl Client {
         if let Some(inputs) = inputs {
             for input in inputs {
                 send_builder = send_builder.with_input(RustUTXOInput::new(
-                    RustTransationId::from_str(&input.transaction_id[..])?,
+                    RustTransactionId::from_str(&input.transaction_id[..])?,
                     input.index,
                 )?);
             }
         }
-        if input_range_begin.is_some() & input_range_end.is_some() {
-            send_builder = send_builder.with_input_range(input_range_begin.unwrap()..input_range_end.unwrap());
+
+        if let (Some(input_range_begin), Some(input_range_end)) = (input_range_begin, input_range_end) {
+            send_builder = send_builder.with_input_range(input_range_begin..input_range_end);
         }
+
         if let Some(outputs) = outputs {
             for output in outputs {
                 send_builder = send_builder.with_output(&output.address[..].into(), output.amount)?;
@@ -70,7 +73,10 @@ impl Client {
             }
         }
         if let Some(index) = index {
-            send_builder = send_builder.with_index(index);
+            send_builder = send_builder.with_index(index.as_bytes());
+        }
+        if let Some(index_raw) = index_raw {
+            send_builder = send_builder.with_index(index_raw);
         }
         if let Some(data) = data {
             send_builder = send_builder.with_data(data);
@@ -85,16 +91,11 @@ impl Client {
             }
             send_builder = send_builder.with_parents(parent_ids)?;
         }
-        if let Some(network_id) = network_id {
-            send_builder = send_builder.with_network_id(network_id);
-        }
-        let rt = tokio::runtime::Runtime::new()?;
         if let Some(seed) = seed {
-            let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
-            rt.block_on(async { send_builder.with_seed(&seed).finish().await })?
-                .try_into()
+            let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
+            crate::block_on(async { send_builder.with_seed(&seed).finish().await })?.try_into()
         } else {
-            rt.block_on(async { send_builder.finish().await })?.try_into()
+            crate::block_on(async { send_builder.finish().await })?.try_into()
         }
     }
     /// Get the message data from the message_id.
@@ -105,15 +106,13 @@ impl Client {
     /// Returns:
     ///     message_metadata (dict): The returned MessageMetadataResponse dict.
     fn get_message_metadata(&self, message_id: &str) -> Result<MessageMetadataResponse> {
-        let rt = tokio::runtime::Runtime::new()?;
-        Ok(rt
-            .block_on(async {
-                self.client
-                    .get_message()
-                    .metadata(&RustMessageId::from_str(message_id)?)
-                    .await
-            })?
-            .into())
+        Ok(crate::block_on(async {
+            self.client
+                .get_message()
+                .metadata(&RustMessageId::from_str(message_id)?)
+                .await
+        })?
+        .into())
     }
     /// Get the message data from the message_id.
     ///
@@ -123,8 +122,7 @@ impl Client {
     /// Returns:
     ///     message (dict): The returned message dict.
     fn get_message_data(&self, message_id: &str) -> Result<Message> {
-        let rt = tokio::runtime::Runtime::new()?;
-        rt.block_on(async {
+        crate::block_on(async {
             self.client
                 .get_message()
                 .data(&RustMessageId::from_str(message_id)?)
@@ -140,8 +138,7 @@ impl Client {
     /// Returns:
     ///     raw (str): The returned message string.
     fn get_message_raw(&self, message_id: &str) -> Result<String> {
-        let rt = tokio::runtime::Runtime::new()?;
-        Ok(rt.block_on(async {
+        Ok(crate::block_on(async {
             self.client
                 .get_message()
                 .raw(&RustMessageId::from_str(message_id)?)
@@ -156,14 +153,13 @@ impl Client {
     /// Returns:
     ///     children ([str]): The returned list of children string.
     fn get_message_children(&self, message_id: &str) -> Result<Vec<String>> {
-        let rt = tokio::runtime::Runtime::new()?;
-        let children = rt.block_on(async {
+        let children = crate::block_on(async {
             self.client
                 .get_message()
                 .children(&RustMessageId::from_str(message_id)?)
                 .await
         })?;
-        Ok(children.into_iter().map(|child| hex::encode(child.as_ref())).collect())
+        Ok(children.iter().map(|child| hex::encode(child.as_ref())).collect())
     }
     /// Get the list of message indices from the message_id.
     ///
@@ -173,9 +169,8 @@ impl Client {
     /// Returns:
     ///     message_indices ([str]): The returned list of message indices.
     fn get_message_index(&self, index: &str) -> Result<Vec<String>> {
-        let rt = tokio::runtime::Runtime::new()?;
-        let indices = rt.block_on(async { self.client.get_message().index(index).await })?;
-        Ok(indices.into_iter().map(|index| hex::encode(index.as_ref())).collect())
+        let indices = crate::block_on(async { self.client.get_message().index(index).await })?;
+        Ok(indices.iter().map(|index| hex::encode(index.as_ref())).collect())
     }
     /// Find all messages by provided message IDs.
     ///
@@ -195,8 +190,7 @@ impl Client {
             .iter()
             .map(|id| RustMessageId::from_str(&id[..]).unwrap())
             .collect();
-        let rt = tokio::runtime::Runtime::new()?;
-        let messages = rt.block_on(async {
+        let messages = crate::block_on(async {
             self.client
                 .find_messages(&indexation_keys.unwrap_or_default()[..], &message_ids[..])
                 .await
@@ -209,9 +203,8 @@ impl Client {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
     ) -> Result<(String, usize)> {
-        let rt = tokio::runtime::Runtime::new()?;
-        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
-        let address_index = rt.block_on(async {
+        let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
+        let address_index = crate::block_on(async {
             self.client
                 .get_unspent_address(&seed)
                 .with_account_index(account_index.unwrap_or(0))
@@ -221,7 +214,7 @@ impl Client {
         })?;
         Ok((address_index.0 .0, address_index.1))
     }
-    fn find_addresses(
+    fn get_addresses(
         &self,
         seed: String,
         account_index: Option<usize>,
@@ -229,7 +222,7 @@ impl Client {
         input_range_end: Option<usize>,
         get_all: Option<bool>,
     ) -> Result<Vec<(String, Option<bool>)>> {
-        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
+        let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
         if input_range_begin.is_some() ^ input_range_end.is_some() {
             return Err(Error {
                 error: PyErr::new::<exceptions::PyValueError, _>(
@@ -237,30 +230,30 @@ impl Client {
                 ),
             });
         }
-        let mut begin: usize = 0;
-        let mut end: usize = 0;
-        if input_range_begin.is_some() & input_range_end.is_some() {
-            begin = input_range_begin.unwrap();
-            end = input_range_end.unwrap();
-        }
+        let begin: usize = input_range_begin.unwrap_or(0);
+        let end: usize = input_range_end.unwrap_or(0);
         if get_all.unwrap_or(false) {
-            let addresses = self
-                .client
-                .find_addresses(&seed)
-                .with_account_index(account_index.unwrap_or(0))
-                .with_range(begin..end)
-                .get_all()?;
+            let addresses = crate::block_on(async {
+                self.client
+                    .get_addresses(&seed)
+                    .with_account_index(account_index.unwrap_or(0))
+                    .with_range(begin..end)
+                    .get_all()
+                    .await
+            })?;
             Ok(addresses
                 .iter()
                 .map(|address_changed| (address_changed.0.to_string(), Some(address_changed.1)))
                 .collect())
         } else {
-            let addresses = self
-                .client
-                .find_addresses(&seed)
-                .with_account_index(account_index.unwrap_or(0))
-                .with_range(begin..end)
-                .finish()?;
+            let addresses = crate::block_on(async {
+                self.client
+                    .get_addresses(&seed)
+                    .with_account_index(account_index.unwrap_or(0))
+                    .with_range(begin..end)
+                    .finish()
+                    .await
+            })?;
             Ok(addresses
                 .iter()
                 .map(|addresses| (addresses.to_string(), None))
@@ -272,27 +265,28 @@ impl Client {
         seed: String,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
+        gap_limit: Option<usize>,
     ) -> Result<u64> {
-        let rt = tokio::runtime::Runtime::new()?;
-        let seed = RustSeed::from_ed25519_bytes(&hex::decode(&seed[..])?)?;
-        let balance = rt.block_on(async {
+        let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
+        let balance = crate::block_on(async {
             self.client
                 .get_balance(&seed)
                 .with_account_index(account_index.unwrap_or(0))
                 .with_initial_address_index(initial_address_index.unwrap_or(0))
+                .with_gap_limit(gap_limit.unwrap_or(20))
                 .finish()
                 .await
         })?;
         Ok(balance)
     }
     fn get_address_balances(&self, addresses: Vec<String>) -> Result<Vec<AddressBalancePair>> {
-        let rt = tokio::runtime::Runtime::new()?;
         let bench32_addresses: Vec<RustBech32Address> = addresses
             .iter()
             .map(|address| RustBech32Address::from(&address[..]))
             .collect();
 
-        let address_balances = rt.block_on(async { self.client.get_address_balances(&bench32_addresses[..]).await })?;
+        let address_balances =
+            crate::block_on(async { self.client.get_address_balances(&bench32_addresses[..]).await })?;
 
         Ok(address_balances
             .iter()
@@ -302,22 +296,40 @@ impl Client {
             })
             .collect())
     }
+    fn is_address_valid(&self, address: &str) -> bool {
+        iota::Client::is_address_valid(address)
+    }
     fn retry(&self, message_id: String) -> Result<(String, Message)> {
-        let rt = tokio::runtime::Runtime::new()?;
         let message_id_message =
-            rt.block_on(async { self.client.retry(&RustMessageId::from_str(&message_id)?).await })?;
+            crate::block_on(async { self.client.retry(&RustMessageId::from_str(&message_id)?).await })?;
         Ok((message_id_message.0.to_string(), message_id_message.1.try_into()?))
     }
-    fn reattach(&self, message_id: String) -> Result<(String, Message)> {
+    fn retry_until_included(
+        &self,
+        message_id: String,
+        interval: Option<u64>,
+        max_attempts: Option<u64>,
+    ) -> Result<Vec<(String, Message)>> {
         let rt = tokio::runtime::Runtime::new()?;
+        let messages = rt.block_on(async {
+            self.client
+                .retry_until_included(&RustMessageId::from_str(&message_id)?, interval, max_attempts)
+                .await
+        })?;
+        let mut res = Vec::new();
+        for msg in messages {
+            res.push((msg.0.to_string(), msg.1.try_into()?));
+        }
+        Ok(res)
+    }
+    fn reattach(&self, message_id: String) -> Result<(String, Message)> {
         let message_id_message =
-            rt.block_on(async { self.client.reattach(&RustMessageId::from_str(&message_id)?).await })?;
+            crate::block_on(async { self.client.reattach(&RustMessageId::from_str(&message_id)?).await })?;
         Ok((message_id_message.0.to_string(), message_id_message.1.try_into()?))
     }
     fn promote(&self, message_id: String) -> Result<(String, Message)> {
-        let rt = tokio::runtime::Runtime::new()?;
         let message_id_message =
-            rt.block_on(async { self.client.promote(&RustMessageId::from_str(&message_id)?).await })?;
+            crate::block_on(async { self.client.promote(&RustMessageId::from_str(&message_id)?).await })?;
         Ok((message_id_message.0.to_string(), message_id_message.1.try_into()?))
     }
 }

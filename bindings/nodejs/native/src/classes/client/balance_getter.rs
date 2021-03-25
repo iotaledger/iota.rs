@@ -11,6 +11,7 @@ pub struct BalanceGetter {
     seed: String,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
+    gap_limit: Option<usize>,
 }
 
 declare_types! {
@@ -23,6 +24,7 @@ declare_types! {
                 seed,
                 account_index: None,
                 initial_address_index: None,
+                gap_limit: None,
             })
         }
 
@@ -50,6 +52,18 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method gapLimit(mut cx) {
+            let amount = cx.argument::<JsNumber>(0)?.value() as usize;
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let gap_limit = &mut this.borrow_mut(&guard).gap_limit;
+                gap_limit.replace(amount);
+            }
+
+            Ok(cx.this().upcast())
+        }
+
         method get(mut cx) {
             let cb = cx.argument::<JsFunction>(0)?;
             {
@@ -59,9 +73,10 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::GetBalance {
-                        seed: Seed::from_ed25519_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")).expect("invalid seed"),
+                        seed: Seed::from_bytes(&hex::decode(&ref_.seed).expect("invalid seed hex")),
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
+                        gap_limit: ref_.gap_limit,
                     },
                 };
                 client_task.schedule(cb);

@@ -18,7 +18,14 @@ declare_types! {
         }
 
         method index(mut cx) {
-            let index = cx.argument::<JsString>(0)?.value();
+            let mut index: Vec<u8> = vec![];
+            let index_js_array = cx.argument::<JsArray>(0)?;
+            let js_index: Vec<Handle<JsValue>> = index_js_array.to_vec(&mut cx)?;
+            for value in js_index {
+                let value: Handle<JsNumber> = value.downcast_or_throw(&mut cx)?;
+                index.push(value.value() as u8);
+            }
+
             let cb = cx.argument::<JsFunction>(1)?;
             {
                 let this = cx.this();

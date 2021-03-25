@@ -3,7 +3,7 @@
 [package]
 name = "iota-core-python"
 version = "0.2.0-alpha.3"
-authors = ["YuWeiWu <wusyong9104@gmail.com>"]
+authors = ["Bing-Yang Lin <bingyang.lin@iota.org>"]
 edition = "2018"
 description = "Core library of IOTA"
 license = "Apache-2.0"
@@ -17,10 +17,12 @@ crate-type = ["cdylib"]
 [dependencies]
 tokio = { version = "1.1", features = ["macros"] }
 hex = "0.4"
-iota-core = { path = "../../../iota-core" }
+iota-core = { path = "../../../iota-core", features = ["mqtt"] }
 dict_derive = "0.3.0"
 serde_json = "1.0"
+once_cell = "1.4"
+futures = "0.3"
 
 [dependencies.pyo3]
 version = "0.13"
-features = ["extension-module", "abi3"]
+features = ["extension-module", "abi3-py36"]

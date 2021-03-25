@@ -4,45 +4,43 @@
 //! cargo run --example dust --release
 use iota::{client::Result, Client, Seed};
 extern crate dotenv;
-use core::convert::TryInto;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example, we send a dust allowance output and dust
+/// In this example we will send a dust allowance output and dust
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert the node here
+    // Create a client instance
+    let iota = Client::builder()
+        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
         .unwrap()
         .finish()
+        .await
         .unwrap();
 
-    println!("This example uses dotenv, which is not safe for use in production.");
+    // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let seed =
-        Seed::from_ed25519_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap())
-            .unwrap();
-    let message_id = iota
-        .send()
+
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+
+    let message = iota
+        .message()
         .with_seed(&seed)
         .with_dust_allowance_output(
-            "atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".try_into()?,
+            &"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
             1_000_000,
         )
         .unwrap()
-        .with_output(
-            "atoi1qx4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337pw23ua".try_into()?,
-            1,
-        )
+        .with_output(&"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", 1)
         .unwrap()
         .finish()
         .await
         .unwrap();
 
     println!(
-        "First transaction sent: http://127.0.0.1:14265/api/v1/messages/{}",
-        message_id.id().0
+        "First transaction sent: https://explorer.iota.org/chrysalis/message/{}",
+        message.id().0
     );
     Ok(())
 }

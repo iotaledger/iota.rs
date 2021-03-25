@@ -1,0 +1,21 @@
+{
+  "gitSiteUrl": "https://github.com/iotaledger/iota.rs/",
+  "pkgManagers": {
+    "javascript": {
+      "version": true,
+      "publish": true
+    }
+  },
+  "packages": {
+    "nodejs-binding": {
+      "path": "./bindings/nodejs",
+      "manager": "javascript",
+      "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
+      "publish": [
+        {
+          "command": "yarn publish --access public --loglevel silly"
+        }
+      ]
+    }
+  }
+}

@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{Client, Error, Result};
-use bee_signing_ext::Seed;
-use std::convert::TryInto;
+
+use crypto::keys::slip10::Seed;
+
+const ADDRESS_GAP_LIMIT: usize = 20;
 
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {
@@ -26,39 +28,38 @@ impl<'a> GetUnspentAddressBuilder<'a> {
 
     /// Sets the account index.
     pub fn with_account_index(mut self, account_index: usize) -> Self {
-        self.account_index = Some(account_index);
+        self.account_index.replace(account_index);
         self
     }
 
     /// Sets the index of the address to start looking for balance.
     pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
-        self.initial_address_index = Some(initial_address_index);
+        self.initial_address_index.replace(initial_address_index);
         self
     }
 
     /// Consume the builder and get the API result
     pub async fn get(self) -> Result<(String, usize)> {
-        let account_index = self
-            .account_index
-            .ok_or_else(|| Error::MissingParameter(String::from("account index")))?;
+        let account_index = self.account_index.ok_or(Error::MissingParameter("account index"))?;
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
         let result = loop {
             let addresses = self
                 .client
-                .find_addresses(self.seed)
+                .get_addresses(self.seed)
                 .with_account_index(account_index)
-                .with_range(index..index + 20)
-                .finish()?;
+                .with_range(index..index + ADDRESS_GAP_LIMIT)
+                .finish()
+                .await?;
 
             // TODO we assume all addresses are unspent and valid if balance > 0
             let mut address = None;
             for a in addresses {
-                let address_balance = self.client.get_address().balance(&a.clone().try_into()?).await?;
+                let address_balance = self.client.get_address().balance(&a).await?;
                 match address_balance.balance {
                     0 => {
-                        address = Some(a);
+                        address.replace(a);
                         break;
                     }
                     _ => index += 1,

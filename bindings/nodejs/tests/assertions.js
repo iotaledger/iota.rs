@@ -2,8 +2,9 @@ const assert = require('assert')
 
 function assertMessage(message) {
   assert.strictEqual(typeof message, 'object')
-  assert.strictEqual('parents' in message, true)
-  assertMessageId(message.parents)
+  assert.strictEqual('parents' in message.message, true)
+  assert.strictEqual('messageId' in message, true)
+  assertMessageId(message.message.parents[0])
 }
 
 function assertMessageId(messageId) {

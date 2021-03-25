@@ -5,10 +5,18 @@ publish = false
 edition = "2018"
 
 [dev-dependencies]
+iota-core = { path = "../iota-core", features = ["storage", "mqtt"] }
+iota-crypto = {git = "https://github.com/iotaledger/crypto.rs", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["bip39", "bip39-en"]}
 tokio = { version = "1.1", features = ["full"] }
-iota-core = { path = "../iota-core"}
 hex = "0.4.2"
 dotenv = "0.15.0"
+serde_json = "1.0"
+serde = "1.0"
+ureq = { version = "2.0", features = ["json"] }
+
+[[example]]
+name = "mqtt"
+path = "mqtt.rs"
 
 [[example]]
 name = "address"
@@ -27,16 +35,16 @@ name = "transaction"
 path = "transaction.rs"
 
 [[example]]
-name = "mqtt"
-path = "mqtt.rs"
-
-[[example]]
 name = "multiple_outputs"
 path = "multiple_outputs.rs"
 
 [[example]]
 name = "custom_inputs"
 path = "custom_inputs.rs"
+
+[[example]]
+name = "custom_payload"
+path = "custom_payload.rs"
 
 [[example]]
 name = "search_address"
@@ -57,3 +65,36 @@ path = "nodeinfo.rs"
 [[example]]
 name = "txspam"
 path = "txspam.rs"
+
+[[example]]
+name = "storage"
+path = "storage.rs"
+
+[[example]]
+name = "peers"
+path = "peers.rs"
+
+[[example]]
+name = "message_time"
+path = "message_time.rs"
+
+[[example]]
+name = "send_all"
+path = "send_all.rs"
+
+[[example]]
+name = "split_all"
+path = "split_all.rs"
+
+[[example]]
+name = "mnemonic"
+path = "mnemonic.rs"
+
+[[example]]
+name = "get_funds"
+path = "get_funds.rs"
+
+[[example]]
+name = "split_outputs_single_address"
+path = "split_outputs_single_address.rs"
+

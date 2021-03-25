@@ -13,7 +13,7 @@ LOCAL_NODE_URL = "http://0.0.0.0:14265"
 # USE THIS INSTEAD
 SEED = os.getenv('MY_IOTA_SEED')
 
-EMPTY_ADDRESS = "atoi1qxekg37zm08epkqvuv0m3tql7asv37y3lqejpjhtlsvujrus2xsl67u0h5f"
+EMPTY_ADDRESS = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r"
 client = iota_client.Client(
     node=LOCAL_NODE_URL, node_sync_disabled=True)
 
@@ -28,9 +28,9 @@ def main():
     print('get_tips()')
     print(f'tips: {client.get_tips()}')
 
-    print('find_addresses')
-    address_changed_list = client.find_addresses(
-        seed=SEED, account_index=0, begin=0, end=10, get_all=True)
+    print('get_addresses')
+    address_changed_list = client.get_addresses(
+        seed=SEED, account_index=0, input_range_begin=0, input_range_end=10, get_all=True)
     print(f'address_changed list: {address_changed_list}')
 
     # Get the (address, changed ) for the first found address
@@ -44,8 +44,8 @@ def main():
     print(f'get_address_outputs() for address {EMPTY_ADDRESS}')
     print(f'outputs(): {client.get_address_outputs(EMPTY_ADDRESS)}')
 
-    print(f'send() 100 tokens to address {EMPTY_ADDRESS}')
-    message_id = client.send(
+    print(f'message() 100 tokens to address {EMPTY_ADDRESS}')
+    message_id = client.message(
         seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['message_id']
     print(f'Token sent with message_id: {message_id}')
     print(f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id}')
@@ -69,8 +69,8 @@ def main():
     children = client.get_message_children(message_id)
     print(f"children: {children}")
 
-    print(f'send() Indexation')
-    message_id_indexation = client.send(
+    print(f'message() Indexation')
+    message_id_indexation = client.message(
         index="Hello", data=[84, 97, 110, 103, 108, 101])
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
@@ -78,8 +78,8 @@ def main():
 
     # Note that in rust we need to specify the parameter type explicitly, so if the user wants
     # to use the utf-8 string as the data, then the `data_str` field can be used.
-    print(f'send() Indexation')
-    message_id_indexation = client.send(
+    print(f'message() Indexation')
+    message_id_indexation = client.message(
         index="Hi", data_str="Tangle")
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
