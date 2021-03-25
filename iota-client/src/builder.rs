@@ -3,6 +3,7 @@
 use crate::client::Client;
 use crate::error::*;
 
+use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
 /// Network of the Iota nodes belong to
@@ -21,6 +22,7 @@ pub struct ClientBuilder {
     nodes: Vec<String>,
     permanode: Option<String>,
     network: Network,
+    quorum: bool,
     quorum_size: u8,
     quorum_threshold: u8,
 }
@@ -32,6 +34,7 @@ impl ClientBuilder {
             nodes: Vec::new(),
             permanode: None,
             network: Network::Mainnet,
+            quorum: false,
             quorum_size: 3,
             quorum_threshold: 50,
         }
@@ -66,6 +69,12 @@ impl ClientBuilder {
     }
 
     /// Quorum size defines how many of nodes will be queried at the same time to check for quorum
+    pub fn quorum(mut self, enabled: bool) -> Self {
+        self.quorum = enabled;
+        self
+    }
+
+    /// Quorum size defines how many of nodes will be queried at the same time to check for quorum
     pub fn quorum_size(mut self, size: u8) -> Self {
         self.quorum_size = size;
         self
@@ -91,6 +100,8 @@ impl ClientBuilder {
             Network::Devnet => 9,
         };
 
+        let quorum = self.quorum;
+
         let quorum_size = match self.nodes.len() {
             1 => 1,
             _ => self.quorum_size,
@@ -103,12 +114,13 @@ impl ClientBuilder {
 
         let client = Client {
             pool: Arc::new(RwLock::new(self.nodes.into_iter().collect())),
+            sync: Arc::new(RwLock::new(HashSet::new())),
             permanode: self.permanode,
             mwm,
+            quorum,
             quorum_size,
             quorum_threshold,
         };
-
         Ok(client)
     }
 }

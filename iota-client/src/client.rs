@@ -5,7 +5,7 @@ use crate::extended::*;
 use crate::response::*;
 use crate::util::tx_trytes;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 
 use bee_crypto::ternary::Hash;
@@ -18,14 +18,22 @@ use bee_transaction::Vertex;
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
-        ureq::post(&$self.get_node()?)
+        ureq::AgentBuilder::new()
+            .timeout_read(std::time::Duration::from_secs(2))
+            .timeout_write(std::time::Duration::from_secs(2))
+            .build()
+            .post(&$self.get_node()?)
             .set("Content-Type", "application/json")
             .set("X-IOTA-API-Version", "1")
             .send_json($body)?
             .into_json()?
     };
     ($self:ident, $body:ident, $node:ident) => {
-        ureq::post($node)
+        ureq::AgentBuilder::new()
+            .timeout_read(std::time::Duration::from_secs(2))
+            .timeout_write(std::time::Duration::from_secs(2))
+            .build()
+            .post($node)
             .set("Content-Type", "application/json")
             .set("X-IOTA-API-Version", "1")
             .send_json($body)?
@@ -38,8 +46,10 @@ macro_rules! response {
 pub struct Client {
     /// Node pool of IOTA nodes
     pub(crate) pool: Arc<RwLock<HashSet<String>>>,
+    pub(crate) sync: Arc<RwLock<HashSet<String>>>,
     pub(crate) permanode: Option<String>,
     pub(crate) mwm: u8,
+    pub(crate) quorum: bool,
     pub(crate) quorum_size: u8,
     pub(crate) quorum_threshold: u8,
 }
@@ -57,19 +67,19 @@ impl Client {
     //     }
     // }
 
-    // pub(crate) async fn sync(&mut self) {
-    //     let mut sync_list: HashMap<u32, Vec<Url>> = HashMap::new();
-    //     for url in &*self.pool.read().unwrap() {
-    //         if let Ok(milestone) = self.get_node_info(url.clone()).await {
-    //             let set = sync_list
-    //                 .entry(milestone.latest_solid_subtangle_milestone_index)
-    //                 .or_insert(Vec::new());
-    //             set.push(url.clone());
-    //         };
-    //     }
-
-    //     *self.sync.write().unwrap() = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
-    // }
+    pub(crate) async fn sync(&mut self) {
+        let mut sync_list: HashMap<u32, Vec<String>> = HashMap::new();
+        for url in &*self.pool.read().unwrap() {
+            if let Ok(milestone) = self.get_node_info(url).await {
+                let set = sync_list
+                    .entry(milestone.latest_solid_subtangle_milestone_index)
+                    .or_insert(Vec::new());
+                set.push(url.clone());
+            };
+        }
+        let synced_nodes = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
+        *self.sync.write().unwrap() = synced_nodes.into_iter().collect();
+    }
 
     /// Add a node to the node pool.
     pub fn add_node(&mut self, uri: &str) -> Result<bool> {
@@ -160,7 +170,7 @@ impl Client {
     /// [`with_gap_limit`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.with_gap_limit
     /// [`with_start_index`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.with_start_index
     /// [`with_security_lvl`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.with_security_lvl
-    pub fn get_account_data_for_migration(&self) -> GetAccountDataForMigrationBuilder<'_> {
+    pub fn get_account_data_for_migration(&mut self) -> GetAccountDataForMigrationBuilder<'_> {
         GetAccountDataForMigrationBuilder::builder(self)
     }
 

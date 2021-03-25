@@ -22,8 +22,11 @@ async fn main() -> Result<()> {
     let security_level: u8 = 2;
     let min_weight_magnitude = 9;
     let ledger = false;
-    let iota = iota::ClientBuilder::new()
-        .node("https://nodes.devnet.iota.org")?
+    let mut iota = iota::ClientBuilder::new()
+        .node("https://wallet1.iota.town:443")?
+        .node("https://nodes.iota.org")?
+        .node("https://hanspetzersnode.at:443")?
+        .quorum(true)
         // .permanode("https://permanode.org")?
         .build()?;
     let tryte_seed = TernarySeed::from_trits(
