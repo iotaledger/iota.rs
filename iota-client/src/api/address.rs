@@ -78,7 +78,6 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Consume the builder and get the vector of public and internal addresses bech32 encoded
     pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
-        // let mut addresses = Vec::new();
         let bech32_hrp = match self.bech32_hrp.clone() {
             Some(bech32_hrp) => bech32_hrp,
             None => {
