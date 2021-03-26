@@ -237,7 +237,9 @@ impl FindTransactionsResponseBuilder {
                 .collect::<Vec<Hash>>();
         }
         if let Some(s) = self.hints {
-            hints.replace(s[0].clone());
+            if let Some(hint) = s.first() {
+                hints.replace(hint.clone());
+            }
         }
 
         Ok(FindTransactionsResponse { hashes, hints })
