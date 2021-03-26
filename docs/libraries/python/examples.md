@@ -2,10 +2,10 @@
 
 > Please note: In is not recommended to store passwords/seeds on host's environment variables or in the source code in a production setup! Please make sure you follow our [backup and security](https://chrysalis.docs.iota.org/guides/backup_security.html) recommendations for production use!
 
-## Client instance
-All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions with IOTA network (Tangle). This object has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node-software/node-software.html) that power IOTA network.
+## Connecting to node(s)
+All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions with IOTA network (Tangle). This class has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node-software/node-software.html) that power IOTA network.
 
-You may be familiar with a fact that in case of IOTA 1.0 network one had to know an address of IOTA node to start participating on the network. It is no longer needed in IOTA 1.5 (Chrysalis) world. The library is designed to automatically choose a starting IOTA node based on the network one would like to participate in: `testnet` or `mainnet`.
+You may be familiar with a fact that in case of IOTA 1.0 network one had to know an address of IOTA node to start participating to the network. It is no longer needed in IOTA 1.5 (Chrysalis) world. The library is designed to automatically choose a starting IOTA node based on the network type one would like to participate in: `testnet` or `mainnet`.
 
 So very simplistic example how to connect to [IOTA testnet](https://chrysalis.docs.iota.org/testnet.html) is the following one:
 
@@ -33,17 +33,74 @@ Output example of `get_info()` function of the `Client` instance:
 }
 ```
 The most important properties:
-* `is_healthy`: indicates whether the node is in sync with the network and so it is safe to use it
-* `bech32_hrp`: it indicates whether the given node is part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](../../welcome.md#iota-15-address-anatomy)
+* `is_healthy`: indicates whether the given node is in sync with the network and so it is safe to use it. Even if a node is up and running it may not be fully prepared to process your API calls properly. The node should be "synced", meaning should be aware of all TXs in the Tangle. It is better to avoid not fully synced nodes. A node healthiness can be alternatively obtained also with a method `Client.get_health()`
+* `bech32_hrp`: it indicates whether the given node is a part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](../../welcome.md#iota-15-address-anatomy)
 
-Needless to say, `Client` class constructor provides several parameters via which one can control the process.
+_Please note, when using node load balancers then mentioned health check may be quite useless since follow-up API calls may be served by different node that may have not been checked. One should be aware of this fact and trust the given load balancer participates only with nodes that are in healthy state. `iota.rs` library additionally supports a management of internal node pool and so features of load balancer can be mimicked locally._
+
+Needless to say, the `Client` class constructor provides several parameters via which the process can be closely managed.
 
 The most common ones:
 * `network`: can be `Testnet` or `Mainnet`. It instructs the library whether to automatically select testnet nodes or mainnet nodes
-* `node`: specify address of actual running IOTA node that should be used to communicate with (format https://node:port), for ex: https://api.lb-0.testnet.chrysalis2.com:443
-* `node_pool_urls`: library also supports a management of pool of nodes and so you can provide a list of nodes and library manages access to them automatically (selecting them based on their sync status)
+* `node`: specify address of actual running IOTA node that should be used to communicate with (in format `https://node:port`), for ex: https://api.lb-0.testnet.chrysalis2.com:443
+* `node_pool_urls`: library also supports a management of pool of nodes. You can provide a list of nodes and library manages access to them automatically (selecting them based on their sync status)
 * `local_pow`: `local_pow==True` (by default) means a `Proof-of-work` is done locally and not remotely
-* `node_sync_disabled`: `node_sync_disabled==False` (by default) means that library checks for sync status of node(s) before use. `node_sync_disabled==True` means library also uses nodes that are not in sync with network. This parameter is usually used if one would like to interact with local test node that is not synced
+* `node_sync_disabled`: `node_sync_disabled==False` (by default) means that library checks for sync status of node(s) periodically before its use. `node_sync_disabled==True` means library also uses nodes that _are not_ in sync with network. This parameter is usually useful if one would like to interact with local test node that is not fully synced. This parameter should not be used in production
 
 If `node_pool_urls` is provided then the library periodically checks in some interval (argument `node_sync_interval`) whether node is in sync or not.
 
+## Generating seed and addresses
+
+Since the IOTA network is permission-less type of network, anybody is able to use it and interact with it. No central authority is required at any stage. So anybody is able to generate own `seed` and then deterministically generate respective private key/address anytime.
+
+> Please note, it is highly recommended to NOT use online seed generators at all. The seed is the only key to the given addresses. Anyone who owns the seed owns also all funds related to respective IOTA addresses (all of them).
+
+We strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds and related addresses. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
+
+IOTA 1.5 (Chrysalis) uses Ed25519 signature scheme and hence IOTA address is usually represented by Bech32 (checksummed base32) format string of 64 characters. `Ed25519` seed is basically a `32-byte (256-bit)` uniformly randomly generated number. In the examples below, the seed is represented by a string of 64 characters using [0-9a-f] alphabet (32 bytes encoded in hex).
+
+Seed can be for example generated using SHA256 algorithm on some random input generated by cryptographically secure pseudo-random generator, such as `os.urandom()`:
+```python
+import os
+import hashlib
+
+rnd_seed = hashlib.sha256(os.urandom(256)).hexdigest()
+print(rnd_seed)
+```
+Seed examples: `4892e2265c45734d07f220294b1697244a8ab5beb38ba9a7d57aeebf36b6e84a`, `37c4aab22a5883595dbc77907c1626c1be39d104df39c5d5708423c0286aea89`, `e94346bce41402155ef120e2525fad2d0bf30b10a89e4b93fd8471df1e6a0981`, etc.
+
+IOTA addresses are then generated via `Client.get_addresses()`:
+
+```python
+address_changed_list = client.get_addresses(
+    seed="b3d7092195c36d47133ff786d4b0a1ef2ee6a0052f6e87b6dc337935c70c531e",
+    account_index=0,
+    input_range_begin=0,
+    input_range_end=10,
+    get_all=True
+)
+print(address_changed_list)
+```
+
+```json
+[('atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86', False),
+ ('atoi1qzfvkkp398v7hhvu89fu88hxctf7snwc9sf3a3nd7msfv77jk7qk2ah07s3', True),
+ ('atoi1qq4t98j5y8wxkaujue99mjwqcp6jvvmsd5lv0755sz7dtjdz3p2lydv76sy', False),
+ ('atoi1qrhzhjxc4z8vpwjt3hafs5xpdng5katqe890p0h95mc0l273j8yzxn7r4hc', True),
+ ('atoi1qputu0yvfvxd7g39wf4rc67e0f0dyhl6enxu9jxnsrjqmemh067tw7qelyc', False),
+ ('atoi1qptg5w2x47qwjf3gpqt3h7d2ey5x7xf8v7qtt29gkxt4mjfjfc28sutvd8a', True),
+ ('atoi1qprvelq9paakh72fgm6j2kf8kexadw3t5xljer9dpsep5c7wx5mjwdxch6z', False),
+ ('atoi1qrwk37tz47ddng9kpxfflkpz5tplcq7ll56v4acam04307xk70l7uf6wg8j', True),
+ ('atoi1qper3zr5xe9x0wqs35ytwh622870g44frkyygdhs0ds8yejle3xujhq7dx3', False),
+ ('atoi1qq6lkr9hucfylqjaqphu0stvk8pcmsx98r7ukuq40asszwmqytlnc058thk', True),
+ ('atoi1qzpn7se3ryhscmqg404pycxzvfpt8v4xn8aul0tqdh00xsncgnxu7na7zjj', False),
+ ('atoi1qz4qqakty9qytw8fk9shelt9lwlvv83s5ggt3wjag9fkgcc74z78w4l86y5', True),
+ ('atoi1qp20uddchglqry0l5qnjg5aln8d5rk2v5l45hwrxv9z0daxs7u6xcsh4077', False),
+ ('atoi1qrlqm2u5txxxnjx22fxq0jfjzk6l4nwnue6ht5pepk65m2f4xmxqynmxu2m', True),
+ ('atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz', False),
+ ('atoi1qrkjennxyl2xcqem6x69ya65sasma33z0ux872k846lqft0s3qf7k6lqpft', True),
+ ('atoi1qr4yuekp30ff7mnnnjwy9tdhynxmlmkpuxf70qurtwudp2zpf3jeyw4uh37', False),
+ ('atoi1qp6m5sz5ayjtccfxapdk5lp4qkheyfg0emzntmulyxzftps730vcul8dmqr', True),
+ ('atoi1qzrwhkzhu67fqltfffwljejawdcghedukpgu9x6tzevwlnq89gmfjtayhgz', False),
+ ('atoi1qpehxcp24z947dgupjqc9ktkn5ylmdxqqnx83m7xlajnf8005756u4n7z77', True)]
+```
