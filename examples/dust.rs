@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example dust --release
-
-use iota::{Client, Seed};
+use iota::{client::Result, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -11,7 +10,7 @@ use std::env;
 /// In this example we will send a dust allowance output and dust
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
@@ -29,14 +28,11 @@ async fn main() {
         .message()
         .with_seed(&seed)
         .with_dust_allowance_output(
-            &"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf".into(),
+            &"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
             1_000_000,
         )
         .unwrap()
-        .with_output(
-            &"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf".into(),
-            1,
-        )
+        .with_output(&"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", 1)
         .unwrap()
         .finish()
         .await
@@ -46,4 +42,5 @@ async fn main() {
         "First transaction sent: https://explorer.iota.org/chrysalis/message/{}",
         message.id().0
     );
+    Ok(())
 }

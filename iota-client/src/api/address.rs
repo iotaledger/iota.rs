@@ -3,7 +3,7 @@
 
 use crate::{Client, Error, Result};
 
-use bee_message::prelude::{Address, Bech32Address, Ed25519Address};
+use bee_message::prelude::{Address, Ed25519Address};
 use core::convert::TryInto;
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
@@ -65,21 +65,20 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
-    /// Consume the builder and get a vector of public Bech32Addresses
-    pub async fn finish(self) -> Result<Vec<Bech32Address>> {
+    /// Consume the builder and get a vector of public addresses bech32 encoded
+    pub async fn finish(self) -> Result<Vec<String>> {
         Ok(self
             .get_all()
             .await?
             .into_iter()
             .filter(|(_, internal)| !internal)
             .map(|(a, _)| a)
-            .collect::<Vec<Bech32Address>>())
+            .collect())
     }
 
-    /// Consume the builder and get the vector of Bech32Addresses
-    pub async fn get_all(self) -> Result<Vec<(Bech32Address, bool)>> {
-        let mut addresses = Vec::new();
-        let bech32_hrp = match self.bech32_hrp {
+    /// Consume the builder and get the vector of public and internal addresses bech32 encoded
+    pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
+        let bech32_hrp = match self.bech32_hrp.clone() {
             Some(bech32_hrp) => bech32_hrp,
             None => {
                 self.client
@@ -88,6 +87,18 @@ impl<'a> GetAddressesBuilder<'a> {
                     .await?
             }
         };
+        let addresses = self
+            .get_all_raw()
+            .await?
+            .into_iter()
+            .map(|(a, b)| (a.to_bech32(&bech32_hrp), b))
+            .collect();
+
+        Ok(addresses)
+    }
+    /// Consume the builder and get the vector of public and internal addresses
+    pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
+        let mut addresses = Vec::new();
         for address_index in self.range {
             let address = generate_address(
                 self.seed.ok_or(Error::MissingParameter("Seed"))?,
@@ -101,8 +112,8 @@ impl<'a> GetAddressesBuilder<'a> {
                 address_index as u32,
                 true,
             )?;
-            addresses.push((Bech32Address(address.to_bech32(&bech32_hrp)), false));
-            addresses.push((Bech32Address(internal_address.to_bech32(&bech32_hrp)), true));
+            addresses.push((address, false));
+            addresses.push((internal_address, true));
         }
 
         Ok(addresses)
@@ -131,17 +142,17 @@ pub async fn search_address(
     bech32_hrp: String,
     account_index: usize,
     range: Range<usize>,
-    address: &Bech32Address,
+    address: &Address,
 ) -> Result<(usize, bool)> {
     let addresses = GetAddressesBuilder::new(&seed)
-        .with_bech32_hrp(bech32_hrp)
+        .with_bech32_hrp(bech32_hrp.clone())
         .with_account_index(account_index)
         .with_range(range.clone())
         .get_all()
         .await?;
     let mut index_counter = range.start;
     for address_internal in addresses {
-        if address_internal.0 == *address {
+        if address_internal.0 == *address.to_bech32(&bech32_hrp) {
             return Ok((index_counter, address_internal.1));
         }
         if !address_internal.1 {
@@ -149,7 +160,7 @@ pub async fn search_address(
         }
     }
     Err(crate::error::Error::InputAddressNotFound(
-        address.to_string(),
+        address.to_bech32(&bech32_hrp),
         format!("{:?}", range),
     ))
 }

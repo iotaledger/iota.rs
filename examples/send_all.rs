@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
         .message()
         .with_seed(&seed)
         .with_output(
-            &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(),
+            "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
             total_balance,
         )?
         .with_initial_address_index(0)

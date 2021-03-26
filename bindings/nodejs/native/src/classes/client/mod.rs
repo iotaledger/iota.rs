@@ -181,7 +181,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(address.value().into());
+                addresses.push(address.value());
             }
 
             let cb = cx.argument::<JsFunction>(1)?;
@@ -388,7 +388,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(address.value().into());
+                addresses.push(address.value());
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
@@ -426,7 +426,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressOutputs(address.into(), options.into()),
+                    api: Api::GetAddressOutputs(address, options.into()),
                 };
                 client_task.schedule(cb);
             }
@@ -444,7 +444,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressBalance(address.into()),
+                    api: Api::GetAddressBalance(address),
                 };
                 client_task.schedule(cb);
             }
