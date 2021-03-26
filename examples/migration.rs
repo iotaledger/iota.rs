@@ -5,12 +5,10 @@
 use anyhow::Result;
 use iota::{
     client::migration::{
-        create_migration_bundle, get_trytes_from_bundle, mine, sign_migration_bundle,
-        Address as ChrysalisAddress,
+        create_migration_bundle, mine, sign_migration_bundle, Address as ChrysalisAddress,
     },
     signing::ternary::seed::Seed as TernarySeed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
-    transaction::bundled::BundledTransaction,
     transaction::bundled::BundledTransactionField,
 };
 use std::collections::HashMap;

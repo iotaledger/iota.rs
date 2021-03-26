@@ -18,11 +18,7 @@ use std::time::Instant;
 use once_cell::sync::Lazy;
 
 async fn get_synced_nodes(client: &Client) -> Result<HashSet<String>> {
-    Ok(client
-        .sync
-        .read()
-        .expect("Node pool read poinsened")
-        .clone())
+    Ok(client.sync.read().await.clone())
 }
 
 /// An instance of the client using HORNET URI

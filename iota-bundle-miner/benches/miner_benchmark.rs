@@ -13,7 +13,7 @@ use tokio::runtime::Runtime;
 
 pub fn obsolete_tag_creation() {
     // Create the runtime
-    let mut rt = Runtime::new().unwrap();
+    let rt = Runtime::new().unwrap();
 
     // Execute the future, blocking the current thread until completion
     rt.block_on(async {
@@ -55,7 +55,7 @@ pub fn obsolete_tag_creation() {
 
 pub fn obsolete_tag_increment() {
     // Create the runtime
-    let mut rt = Runtime::new().unwrap();
+    let rt = Runtime::new().unwrap();
 
     // Execute the future, blocking the current thread until completion
     rt.block_on(async {
@@ -100,7 +100,7 @@ pub fn obsolete_tag_increment() {
 
 pub fn mining_worker() {
     // Create the runtime
-    let mut rt = Runtime::new().unwrap();
+    let rt = Runtime::new().unwrap();
 
     // Execute the future, blocking the current thread until completion
     rt.block_on(async {

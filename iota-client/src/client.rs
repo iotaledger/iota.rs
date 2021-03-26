@@ -6,7 +6,7 @@ use crate::response::*;
 use crate::util::tx_trytes;
 
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use bee_crypto::ternary::Hash;
 use bee_signing::ternary::seed::Seed;
@@ -15,6 +15,7 @@ use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField,
 };
 use bee_transaction::Vertex;
+use tokio::sync::RwLock;
 
 pub(crate) const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 
@@ -24,7 +25,7 @@ macro_rules! response {
             .timeout_read($crate::client::REQUEST_TIMEOUT)
             .timeout_write($crate::client::REQUEST_TIMEOUT)
             .build()
-            .post(&$self.get_node()?)
+            .post(&$self.get_node().await?)
             .set("Content-Type", "application/json")
             .set("X-IOTA-API-Version", "1")
             .send_json($body)?
@@ -71,7 +72,7 @@ impl Client {
 
     pub(crate) async fn sync(&mut self) {
         let mut sync_list: HashMap<u32, Vec<String>> = HashMap::new();
-        for url in &*self.pool.read().unwrap() {
+        for url in &*self.pool.read().await {
             if let Ok(milestone) = self.get_node_info(url).await {
                 let set = sync_list
                     .entry(milestone.latest_solid_subtangle_milestone_index)
@@ -80,25 +81,25 @@ impl Client {
             };
         }
         let synced_nodes = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
-        *self.sync.write().unwrap() = synced_nodes.into_iter().collect();
+        *self.sync.write().await = synced_nodes.into_iter().collect();
     }
 
     /// Add a node to the node pool.
-    pub fn add_node(&mut self, uri: &str) -> Result<bool> {
-        Ok(self.pool.write().unwrap().insert(uri.to_string()))
+    pub async fn add_node(&mut self, uri: &str) -> Result<bool> {
+        Ok(self.pool.write().await.insert(uri.to_string()))
     }
 
     /// Remove a node from the node pool.
-    pub fn remove_node(&mut self, uri: &str) -> Result<bool> {
-        Ok(self.pool.write().unwrap().remove(uri))
+    pub async fn remove_node(&mut self, uri: &str) -> Result<bool> {
+        Ok(self.pool.write().await.remove(uri))
     }
 
-    pub(crate) fn get_node(&self) -> Result<String> {
+    pub(crate) async fn get_node(&self) -> Result<String> {
         // TODO getbalance, isconfirmed and were_addresses_spent_from should do quorum mode
         Ok(self
             .pool
             .read()
-            .unwrap()
+            .await
             .iter()
             .next()
             .ok_or(Error::NodePoolEmpty)?

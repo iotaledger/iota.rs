@@ -35,9 +35,7 @@ pub async fn create_migration_bundle(
     let migration_address = encode_migration_address(address)?;
 
     if inputs.is_empty() {
-        return Err(Error::MigrationError(
-            "No inputs provided",
-        ));
+        return Err(Error::MigrationError("No inputs provided"));
     }
 
     let security_level = inputs[0].security_lvl;
@@ -89,9 +87,7 @@ pub fn sign_migration_bundle(
     inputs: Vec<InputData>,
 ) -> Result<Vec<BundledTransaction>> {
     if inputs.is_empty() {
-        return Err(Error::MigrationError(
-            "No inputs provided",
-        ));
+        return Err(Error::MigrationError("No inputs provided"));
     }
     let security_level = match inputs[0].security_lvl {
         1 => WotsSecurityLevel::Low,
