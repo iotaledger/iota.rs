@@ -99,7 +99,7 @@ export declare class Client {
   getAddressBalance(address: string): Promise<AddressBalance>
   isAddressValid(address: string): boolean
   getMilestone(index: number): Promise<MilestoneMetadata>
-  GetMilestoneUtxoChanges(index: number): Promise<MilestoneUTXOChanges>
+  getMilestoneUtxoChanges(index: number): Promise<MilestoneUTXOChanges>
   getReceipts(): Promise<Receipts[]>
   getReceiptsMigratedAt(index: number): Promise<Receipts[]>
   getTreasury(): Promise<Treasury>

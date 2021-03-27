@@ -470,7 +470,7 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
-        method GetMilestoneUtxoChanges(mut cx) {
+        method getMilestoneUtxoChanges(mut cx) {
             let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
 
             let cb = cx.argument::<JsFunction>(1)?;
