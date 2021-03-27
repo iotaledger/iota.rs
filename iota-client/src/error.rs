@@ -37,6 +37,12 @@ pub enum Error {
     /// Error on Url type conversion
     #[error("Failed to parse node_pool_urls")]
     NodePoolUrlsError,
+    /// Error on quorum
+    #[error("Failed to reach quorum")]
+    QuorumThresholdError,
+    /// Error on API request
+    #[error("Failed to get an answer from a node")]
+    NodeError,
     /// Hex string convert error
     #[error("{0}")]
     FromHexError(#[from] hex::FromHexError),

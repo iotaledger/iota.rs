@@ -367,6 +367,8 @@ impl HttpClient {
 pub struct Client {
     #[allow(dead_code)]
     pub(crate) runtime: Option<Runtime>,
+    /// Node manager
+    pub(crate) node_manager: crate::node_manager::NodeManager,
     /// Node pool.
     pub(crate) nodes: HashSet<Url>,
     /// Node pool of synced IOTA nodes
@@ -647,20 +649,17 @@ impl Client {
 
     /// GET /api/v1/info endpoint
     pub async fn get_info(&self) -> Result<NodeInfo> {
-        let mut url = self.get_node().await?;
         let path = "api/v1/info";
-        url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: NodeInfo,
         }
-
-        let resp: ResponseWrapper = self
-            .http_client
-            .get(url.as_str(), self.get_timeout(Api::GetInfo))
-            .await?
-            .json()
-            .await?;
+        let resp: ResponseWrapper = serde_json::from_str(
+            &self
+                .node_manager
+                .get_request(path, self.get_timeout(Api::GetInfo))
+                .await?,
+        )?;
 
         Ok(resp.data)
     }
