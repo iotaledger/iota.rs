@@ -202,6 +202,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut address_index_recorders = Vec::new();
         let mut inputs_for_essence = Vec::new();
         let mut outputs_for_essence = Vec::new();
+        let mut remainder_address_balance: (Option<Address>, u64) = (None, 0);
         match self.inputs.clone() {
             Some(inputs) => {
                 for input in inputs {
@@ -263,11 +264,10 @@ impl<'a> ClientMessageBuilder<'a> {
                             // Output the remaining tokens back to the original address
                             if total_already_spent > total_to_spend {
                                 let remaining_balance = total_already_spent - total_to_spend;
-                                if remaining_balance < DUST_THRESHOLD {
-                                    dust_and_allowance_recorders.push((remaining_balance, output_address, true));
-                                }
-                                outputs_for_essence
-                                    .push(SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into());
+                                // Keep track of remaining balance, we don't add an output here, because we could have
+                                // multiple inputs from the same address, which would create multiple outputs with the
+                                // same address, which is not allowed
+                                remainder_address_balance = (Some(output_address), remaining_balance);
                             }
                         }
                     }
@@ -399,6 +399,14 @@ impl<'a> ClientMessageBuilder<'a> {
 
         if total_already_spent < total_to_spend {
             return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
+        }
+
+        // Add output from remaining balance of custom inputs if necessary
+        if let Some(address) = remainder_address_balance.0 {
+            if remainder_address_balance.1 < DUST_THRESHOLD {
+                dust_and_allowance_recorders.push((remainder_address_balance.1, address, true));
+            }
+            outputs_for_essence.push(SignatureLockedSingleOutput::new(address, remainder_address_balance.1)?.into());
         }
 
         // Check if we would let dust on an address behind or send new dust, which would make the tx unconfirmable
