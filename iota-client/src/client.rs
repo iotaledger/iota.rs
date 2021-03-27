@@ -369,10 +369,6 @@ pub struct Client {
     pub(crate) runtime: Option<Runtime>,
     /// Node manager
     pub(crate) node_manager: crate::node_manager::NodeManager,
-    /// Node pool.
-    pub(crate) nodes: HashSet<Url>,
-    /// Node pool of synced IOTA nodes
-    pub(crate) sync: Arc<RwLock<HashSet<Url>>>,
     /// Flag to stop the node syncing
     pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
     /// A MQTT client to subscribe/unsubscribe to topics.
@@ -396,7 +392,7 @@ pub struct Client {
 impl std::fmt::Debug for Client {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut d = f.debug_struct("Client");
-        d.field("sync", &self.sync);
+        d.field("node_manager", &self.node_manager);
         #[cfg(feature = "mqtt")]
         d.field("broker_options", &self.broker_options);
         d.field("network_info", &self.network_info).finish()

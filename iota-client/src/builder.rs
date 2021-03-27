@@ -94,6 +94,18 @@ impl ClientBuilder {
         Ok(self)
     }
 
+    /// Adds an IOTA node by its URL to be used as primary node, with optional basic authentication
+    pub fn with_primary_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_primary_node(url, auth_name_passw)?;
+        Ok(self)
+    }
+
+    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional basic authentication
+    pub fn with_primary_pow_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_primary_pow_node(url, auth_name_passw)?;
+        Ok(self)
+    }
+
     /// Adds an IOTA node by its URL with basic authentication
     pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
         self.node_manager_builder = self.node_manager_builder.with_node_auth(url, name, password)?;
@@ -123,6 +135,24 @@ impl ClientBuilder {
     pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         self.node_manager_builder = self.node_manager_builder.with_node_pool_urls(node_pool_urls).await?;
         Ok(self)
+    }
+
+    /// Set if quroum should be used or not
+    pub fn with_quorum(mut self, quorum: bool) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_quorum(quorum);
+        self
+    }
+
+    /// Set amount of nodes which should be used for quorum
+    pub fn with_quorum_size(mut self, quorum_size: usize) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_quorum_size(quorum_size);
+        self
+    }
+
+    /// Set quorum_threshold
+    pub fn with_quorum_threshold(mut self, threshold: usize) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_quorum_threshold(threshold);
+        self
     }
 
     /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
@@ -245,7 +275,7 @@ impl ClientBuilder {
 
         let network_info_ = network_info.read().await.clone();
         let client = Client {
-            node_manager: self.node_manager_builder.build(network_info_).await?,
+            node_manager: self.node_manager_builder.build(network_info_, sync.clone()).await?,
             runtime,
             nodes,
             sync,
@@ -265,17 +295,4 @@ impl ClientBuilder {
         };
         Ok(client)
     }
-}
-
-/// JSON struct for NodeDetail from the node_pool_urls
-#[derive(Debug, Serialize, Deserialize)]
-pub struct NodeDetail {
-    /// Iota node url
-    pub node: String,
-    /// Network id
-    pub network_id: String,
-    /// Implementation name
-    pub implementation: String,
-    /// Enabled PoW
-    pub pow: bool,
 }

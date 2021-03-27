@@ -1,15 +1,21 @@
+// Copyright 2021 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+//! The node manager that takes care of sending requests and quroum if enabled
+
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::{Error, Result};
 
+use tokio::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
 
-// use bee_rest_api::types::body::SuccessBody;
 use std::{
     collections::{HashMap, HashSet},
+    sync::Arc,
     time::Duration,
 };
 
@@ -21,11 +27,27 @@ pub(crate) struct NodeManager {
     nodes: HashSet<Url>,
     sync: bool,
     sync_interval: Duration,
-    synced_nodes: HashSet<Url>,
+    synced_nodes: Arc<RwLock<HashSet<Url>>>,
     quorum: bool,
     quorum_size: usize,
     quorum_threshold: usize,
     http_client: HttpClient,
+}
+
+impl std::fmt::Debug for NodeManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut d = f.debug_struct("NodeManager");
+        d.field("primary_node", &self.primary_node);
+        d.field("primary_pow_node", &self.primary_pow_node);
+        d.field("nodes", &self.nodes);
+        d.field("sync", &self.sync);
+        d.field("sync_interval", &self.sync_interval);
+        d.field("synced_nodes", &self.synced_nodes);
+        d.field("quorum", &self.quorum);
+        d.field("quorum_size", &self.quorum_size);
+        d.field("quorum_threshold", &self.quorum_threshold)        
+        .finish()
+    }
 }
 
 impl NodeManager {
@@ -42,18 +64,20 @@ impl NodeManager {
     // pub (crate) fn get_synced_nodes(&self) -> HashSet<Url> {
     //     self.synced_nodes.clone()
     // }
-    pub(crate) async fn get_request(&self, path: &str, timeout: Duration) -> Result<String> {
-        let mut result = HashMap::new();
-        // todo handle health endpoint with status
-        // sugmit message with local PoW should use primary pow node
-        // Get urls and set path
+    pub(crate) async fn get_urls(&self, path: &str, remote_pow: bool) -> Vec<Url> {
         let mut urls = Vec::new();
+        if remote_pow {
+            if let Some(mut pow_node) = self.primary_pow_node.clone() {
+                pow_node.set_path(path);
+                urls.push(pow_node);
+            }
+        }
         if let Some(mut primary_node) = self.primary_node.clone() {
             primary_node.set_path(path);
             urls.push(primary_node);
         }
         let nodes = if self.sync {
-            self.synced_nodes.clone()
+            self.synced_nodes.read().await.clone()
         } else {
             self.nodes.clone()
         };
@@ -61,6 +85,15 @@ impl NodeManager {
             url.set_path(path);
             urls.push(url);
         }
+        urls
+    }
+
+    pub(crate) async fn get_request(&self, path: &str, timeout: Duration) -> Result<String> {
+        let mut result = HashMap::new();
+        // todo handle health endpoint with status
+        // sugmit message with local PoW should use primary pow node
+        // Get urls and set path
+        let urls = self.get_urls(path, false).await;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
@@ -87,10 +120,49 @@ impl NodeManager {
             Err(Error::QuorumThresholdError)
         }
     }
-    // pub async fn post_request(&self, body: &str, timeout: Duration) -> Result<Response> {}
+    pub(crate) async fn post_request_bytes(
+        &self,
+        path: &str,
+        timeout: Duration,
+        body: &[u8],
+        remote_pow: bool,
+    ) -> Result<String> {
+        let urls = self.get_urls(path, remote_pow).await;
+        // Send requests
+        for url in urls {
+            if let Ok(res) = self.http_client.post_bytes(url.as_str(), timeout, body).await {
+                if let Ok(res_text) = res.text().await {
+                    return Ok(res_text);
+                } else {
+                    print!("Couldn't convert noderesult to text");
+                }
+            }
+        }
+        Err(Error::NodeError)
+    }
+    pub(crate) async fn post_request_json(
+        &self,
+        path: &str,
+        timeout: Duration,
+        json: Value,
+        remote_pow: bool,
+    ) -> Result<String> {
+        let urls = self.get_urls(path, remote_pow).await;
+        // Send requests
+        for url in urls {
+            if let Ok(res) = self.http_client.post_json(url.as_str(), timeout, json.clone()).await {
+                if let Ok(res_text) = res.text().await {
+                    return Ok(res_text);
+                } else {
+                    print!("Couldn't convert noderesult to text");
+                }
+            }
+        }
+        Err(Error::NodeError)
+    }
 }
 
-pub struct NodeManagerBuilder {
+pub(crate) struct NodeManagerBuilder {
     primary_node: Option<Url>,
     primary_pow_node: Option<Url>,
     nodes: HashSet<Url>,
@@ -100,7 +172,6 @@ pub struct NodeManagerBuilder {
     quorum: bool,
     quorum_size: usize,
     quorum_threshold: usize,
-    http_client: HttpClient,
 }
 
 impl NodeManagerBuilder {
@@ -157,7 +228,7 @@ impl NodeManagerBuilder {
     /// Get node list from the node_pool_urls
     pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let nodes_details: Vec<crate::builder::NodeDetail> = super::HttpClient::new()
+            let nodes_details: Vec<NodeDetail> = super::HttpClient::new()
                 .get(&pool_url, crate::builder::GET_API_TIMEOUT)
                 .await?
                 .json()
@@ -173,7 +244,19 @@ impl NodeManagerBuilder {
         self.sync_interval = node_sync_interval;
         self
     }
-    pub(crate) async fn build(mut self, network_info: crate::builder::NetworkInfo) -> Result<NodeManager> {
+    pub(crate) fn with_quorum(mut self, quorum: bool) -> Self {
+        self.quorum = quorum;
+        self
+    }
+    pub(crate) fn with_quorum_size(mut self, quorum_size: usize) -> Self {
+        self.quorum_size = quorum_size;
+        self
+    }
+    pub(crate) fn with_quorum_threshold(mut self, threshold: usize) -> Self {
+        self.quorum_threshold = threshold;
+        self
+    }
+    pub(crate) async fn build(mut self, network_info: crate::builder::NetworkInfo, synced_nodes: Arc<RwLock<HashSet<Url>>>) -> Result<NodeManager> {
         let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
         if self.nodes.is_empty() {
             match network_info.network {
@@ -195,7 +278,7 @@ impl NodeManagerBuilder {
             nodes: self.nodes,
             sync: false,
             sync_interval: self.sync_interval,
-            synced_nodes: HashSet::new(),
+            synced_nodes,
             quorum: false,
             quorum_size: 1,
             quorum_threshold: 1,
@@ -217,7 +300,6 @@ impl Default for NodeManagerBuilder {
             quorum: false,
             quorum_size: 1,
             quorum_threshold: 1,
-            http_client: HttpClient::new(),
         }
     }
 }
@@ -339,4 +421,17 @@ fn validate_url(url: Url) -> Result<Url> {
         return Err(Error::UrlValidationError(format!("Invalid scheme: {}", url.scheme())));
     }
     Ok(url)
+}
+
+/// JSON struct for NodeDetail from the node_pool_urls
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeDetail {
+    /// Iota node url
+    pub node: String,
+    /// Network id
+    pub network_id: String,
+    /// Implementation name
+    pub implementation: String,
+    /// Enabled PoW
+    pub pow: bool,
 }

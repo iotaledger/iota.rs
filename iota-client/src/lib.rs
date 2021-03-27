@@ -14,7 +14,7 @@ pub mod builder;
 pub mod client;
 pub mod error;
 pub mod node;
-mod node_manager;
+pub mod node_manager;
 #[cfg(feature = "storage")]
 #[cfg_attr(docsrs, doc(cfg(feature = "storage")))]
 pub mod storage;
