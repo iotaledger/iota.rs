@@ -180,7 +180,6 @@ impl NodeManager {
         Err(Error::NodeError)
     }
 
-    // <T: DeserializeOwned>(self) -> crate::Result<T>
     pub(crate) async fn post_request_json<T: serde::de::DeserializeOwned>(
         &self,
         path: &str,
