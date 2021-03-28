@@ -62,7 +62,7 @@ pub struct ClientBuilder {
 impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
-            node_manager_builder: crate::node_manager::NodeManagerBuilder::new(),
+            node_manager_builder: crate::node_manager::NodeManager::builder(),
             nodes: HashSet::new(),
             node_sync_interval: NODE_SYNC_INTERVAL,
             node_sync_enabled: true,
@@ -277,8 +277,6 @@ impl ClientBuilder {
         let client = Client {
             node_manager: self.node_manager_builder.build(network_info_, sync.clone()).await?,
             runtime,
-            nodes,
-            sync,
             sync_kill_sender: sync_kill_sender.map(Arc::new),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,
@@ -291,7 +289,6 @@ impl ClientBuilder {
             network_info,
             request_timeout: self.request_timeout,
             api_timeout,
-            http_client: super::HttpClient::new(),
         };
         Ok(client)
     }

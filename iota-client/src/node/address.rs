@@ -71,9 +71,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn balance(self, address: &str) -> Result<BalanceForAddressResponse> {
-        let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/addresses/{}", address);
-        url.set_path(path);
 
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
@@ -81,10 +79,8 @@ impl<'a> GetAddressBuilder<'a> {
         }
         let resp: ResponseWrapper = self
             .client
-            .http_client
-            .get(url.as_str(), self.client.get_timeout(Api::GetBalance))
-            .await?
-            .json()
+            .node_manager
+            .get_request(path, None, self.client.get_timeout(Api::GetBalance))
             .await?;
 
         Ok(resp.data)
@@ -94,11 +90,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Box<[UTXOInput]>> {
-        let mut url = self.client.get_node().await?;
-        let path = &format!("api/v1/addresses/{}/outputs", address);
-        url.set_path(path);
-        url.set_query(options.into_query().as_deref());
-
+        let path = format!("api/v1/addresses/{}/outputs", address);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: OutputsForAddressResponse,
@@ -106,10 +98,12 @@ impl<'a> GetAddressBuilder<'a> {
 
         let resp: ResponseWrapper = self
             .client
-            .http_client
-            .get(url.as_str(), self.client.get_timeout(Api::GetOutput))
-            .await?
-            .json()
+            .node_manager
+            .get_request(
+                &path,
+                options.into_query().as_deref(),
+                self.client.get_timeout(Api::GetOutput),
+            )
             .await?;
 
         resp.data

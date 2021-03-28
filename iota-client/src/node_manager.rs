@@ -24,14 +24,14 @@ const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 pub(crate) struct NodeManager {
     primary_node: Option<Url>,
     primary_pow_node: Option<Url>,
-    nodes: HashSet<Url>,
+    pub(crate) nodes: HashSet<Url>,
     sync: bool,
     sync_interval: Duration,
-    synced_nodes: Arc<RwLock<HashSet<Url>>>,
+    pub(crate) synced_nodes: Arc<RwLock<HashSet<Url>>>,
     quorum: bool,
     quorum_size: usize,
     quorum_threshold: usize,
-    http_client: HttpClient,
+    pub(crate) http_client: HttpClient,
 }
 
 impl std::fmt::Debug for NodeManager {
@@ -45,8 +45,7 @@ impl std::fmt::Debug for NodeManager {
         d.field("synced_nodes", &self.synced_nodes);
         d.field("quorum", &self.quorum);
         d.field("quorum_size", &self.quorum_size);
-        d.field("quorum_threshold", &self.quorum_threshold)        
-        .finish()
+        d.field("quorum_threshold", &self.quorum_threshold).finish()
     }
 }
 
@@ -64,16 +63,18 @@ impl NodeManager {
     // pub (crate) fn get_synced_nodes(&self) -> HashSet<Url> {
     //     self.synced_nodes.clone()
     // }
-    pub(crate) async fn get_urls(&self, path: &str, remote_pow: bool) -> Vec<Url> {
+    pub(crate) async fn get_urls(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Vec<Url> {
         let mut urls = Vec::new();
         if remote_pow {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
                 pow_node.set_path(path);
+                pow_node.set_query(query);
                 urls.push(pow_node);
             }
         }
         if let Some(mut primary_node) = self.primary_node.clone() {
             primary_node.set_path(path);
+            primary_node.set_query(query);
             urls.push(primary_node);
         }
         let nodes = if self.sync {
@@ -83,17 +84,55 @@ impl NodeManager {
         };
         for mut url in nodes {
             url.set_path(path);
+            url.set_query(query);
             urls.push(url);
         }
         urls
     }
 
-    pub(crate) async fn get_request(&self, path: &str, timeout: Duration) -> Result<String> {
+    pub(crate) async fn get_request<T: serde::de::DeserializeOwned>(
+        &self,
+        path: &str,
+        query: Option<&str>,
+        timeout: Duration,
+    ) -> Result<T> {
         let mut result = HashMap::new();
         // todo handle health endpoint with status
         // sugmit message with local PoW should use primary pow node
         // Get urls and set path
-        let urls = self.get_urls(path, false).await;
+        let urls = self.get_urls(path, query, false).await;
+        // Send requests
+        for url in urls {
+            if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
+                if let Ok(res_text) = res.text().await {
+                    let counters = result.entry(res_text).or_insert(0);
+                    *counters += 1;
+                    // Without quorum it's enough if we got one response
+                    if !self.quorum {
+                        break;
+                    }
+                } else {
+                    print!("Couldn't convert noderesult to text");
+                }
+            }
+        }
+
+        let res = result.into_iter().max_by_key(|v| v.1).ok_or(Error::NodeError)?;
+
+        // todo if quorum then only for: balance, outputs(only unspent?), message metadata
+        // Return if quorum is false or check if quorum was reached
+        if !self.quorum || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0) {
+            Ok(serde_json::from_str(&res.0)?)
+        } else {
+            Err(Error::QuorumThresholdError)
+        }
+    }
+    pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
+        let mut result = HashMap::new();
+        // todo handle health endpoint with status
+        // sugmit message with local PoW should use primary pow node
+        // Get urls and set path
+        let urls = self.get_urls(path, query, false).await;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
@@ -120,19 +159,19 @@ impl NodeManager {
             Err(Error::QuorumThresholdError)
         }
     }
-    pub(crate) async fn post_request_bytes(
+    pub(crate) async fn post_request_bytes<T: serde::de::DeserializeOwned>(
         &self,
         path: &str,
         timeout: Duration,
         body: &[u8],
         remote_pow: bool,
-    ) -> Result<String> {
-        let urls = self.get_urls(path, remote_pow).await;
+    ) -> Result<T> {
+        let urls = self.get_urls(path, None, remote_pow).await;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.post_bytes(url.as_str(), timeout, body).await {
                 if let Ok(res_text) = res.text().await {
-                    return Ok(res_text);
+                    return Ok(serde_json::from_str(&res_text)?);
                 } else {
                     print!("Couldn't convert noderesult to text");
                 }
@@ -140,19 +179,21 @@ impl NodeManager {
         }
         Err(Error::NodeError)
     }
-    pub(crate) async fn post_request_json(
+
+    // <T: DeserializeOwned>(self) -> crate::Result<T>
+    pub(crate) async fn post_request_json<T: serde::de::DeserializeOwned>(
         &self,
         path: &str,
         timeout: Duration,
         json: Value,
         remote_pow: bool,
-    ) -> Result<String> {
-        let urls = self.get_urls(path, remote_pow).await;
+    ) -> Result<T> {
+        let urls = self.get_urls(path, None, remote_pow).await;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.post_json(url.as_str(), timeout, json.clone()).await {
                 if let Ok(res_text) = res.text().await {
-                    return Ok(res_text);
+                    return Ok(serde_json::from_str(&res_text)?);
                 } else {
                     print!("Couldn't convert noderesult to text");
                 }
@@ -168,7 +209,6 @@ pub(crate) struct NodeManagerBuilder {
     nodes: HashSet<Url>,
     sync: bool,
     sync_interval: Duration,
-    synced_nodes: HashSet<Url>,
     quorum: bool,
     quorum_size: usize,
     quorum_threshold: usize,
@@ -228,7 +268,7 @@ impl NodeManagerBuilder {
     /// Get node list from the node_pool_urls
     pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let nodes_details: Vec<NodeDetail> = super::HttpClient::new()
+            let nodes_details: Vec<NodeDetail> = crate::node_manager::HttpClient::new()
                 .get(&pool_url, crate::builder::GET_API_TIMEOUT)
                 .await?
                 .json()
@@ -256,7 +296,11 @@ impl NodeManagerBuilder {
         self.quorum_threshold = threshold;
         self
     }
-    pub(crate) async fn build(mut self, network_info: crate::builder::NetworkInfo, synced_nodes: Arc<RwLock<HashSet<Url>>>) -> Result<NodeManager> {
+    pub(crate) async fn build(
+        mut self,
+        network_info: crate::builder::NetworkInfo,
+        synced_nodes: Arc<RwLock<HashSet<Url>>>,
+    ) -> Result<NodeManager> {
         let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
         if self.nodes.is_empty() {
             match network_info.network {
@@ -276,12 +320,12 @@ impl NodeManagerBuilder {
             primary_node: self.primary_node,
             primary_pow_node: self.primary_pow_node,
             nodes: self.nodes,
-            sync: false,
+            sync: self.sync,
             sync_interval: self.sync_interval,
             synced_nodes,
-            quorum: false,
-            quorum_size: 1,
-            quorum_threshold: 1,
+            quorum: self.quorum,
+            quorum_size: self.quorum_size,
+            quorum_threshold: self.quorum_threshold,
             http_client: HttpClient::new(),
         };
         Ok(node_manager)
@@ -296,10 +340,9 @@ impl Default for NodeManagerBuilder {
             nodes: HashSet::new(),
             sync: false,
             sync_interval: NODE_SYNC_INTERVAL,
-            synced_nodes: HashSet::new(),
             quorum: false,
             quorum_size: 1,
-            quorum_threshold: 1,
+            quorum_threshold: 66,
         }
     }
 }

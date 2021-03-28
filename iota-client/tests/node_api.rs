@@ -254,7 +254,7 @@ async fn test_get_output() {
         .unwrap()
         .get_output(
             &UTXOInput::new(
-                TransactionId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
+                TransactionId::from_str("74cc3bc2f7d4aa23725f695d053fab1cb70c833c62320e743b91f9aaf4cd053a").unwrap(),
                 0,
             )
             .unwrap(),
@@ -290,7 +290,7 @@ async fn test_get_milestone() {
         .finish()
         .await
         .unwrap()
-        .get_milestone(3)
+        .get_milestone(216223)
         .await
         .unwrap();
 
@@ -371,7 +371,7 @@ async fn test_get_included_message() {
         .await
         .unwrap()
         .get_included_message(
-            &TransactionId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
+            &TransactionId::from_str("74cc3bc2f7d4aa23725f695d053fab1cb70c833c62320e743b91f9aaf4cd053a").unwrap(),
         )
         .await
         .unwrap();
