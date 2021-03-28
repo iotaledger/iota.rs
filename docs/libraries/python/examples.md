@@ -106,7 +106,7 @@ _Please note, it may have a negative impact on a performance while [account disc
 
 So in case of IOTA 1.5 (Chrysalis), the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The Levels `purpose` and `coin_type` are given, the rest levels are up to developers to integrate.
 
-## Generating addresses with library
+### Generating address(es)
 
 IOTA addresses are generated via `Client.get_addresses()` function that returns a list of tuples with generated addresses. Considering the previous chapter about individual address/key spaces, it becomes quite clear what all used input function arguments are for:
 
@@ -151,11 +151,136 @@ Output example:
 `True` means the given address is a change address (internal). So basically we've got two independent sets of addresses (10 items per each)
 * This behavior is controlled via `get_all` argument. `get_all=False` (default) means to generate only public addresses
 
-IOTA address is represented by a checksumed base 32 string and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/index.html#iota-15-address-anatomy).
+IOTA address is represented by a checksumed base 32 string (Bech32) and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/index.html#iota-15-address-anatomy).
 Just a recap:
 * If an address starts with `atoi` then it means it is related to `testnet`. `iota` stands for mainnet
 * Number `1` at 5<sup>th</sup> position is just a separator
 * The last 6 characters are reserved for a checksum
 
-To quickly validate any address there is a convenience function `Client.is_address_valid()` that returns `bool` value. Needless to say, performing a sanity check of an address before its use is an advisable practice.
+To quickly validate any IOTA address, there is a convenience function `Client.is_address_valid()` that returns `bool` value. Needless to say, performing a sanity check of an address before its use is an advisable practice.
 
+## Checking a balance
+_In Chrysalis testnet there is a faucet service that provides test tokens to any testnet address: https://faucet.testnet.chrysalis2.com/_
+
+There are three common api calls that can be leveraged:
+* `Client.get_address_balance(address: str)`: it expects a single address in Bech32 format and returns `dict` with a balance for the address
+* `Client.get_address_balances(list[str])`: a convenience function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all given addresses
+* `Client.get_balance(seed, account_index (optional), initial_address_index(optional), gap_limit(optional))`: a convenience function that combines `Client.get_addresses()` and `Client.get_address_balances()` api calls. It returns a combined balance for the provided seed and its wallet account index
+
+_Please note: `Client.get_address_balance()` and `Client.get_address_balances()` return address(es) in hex-encoded Ed25519 address format, which is the format returned by underlying node software:_
+
+```python
+import iota_client
+client = iota_client.Client()
+
+print("Return a balance for a single address:")
+print(
+    client.get_address_balance("atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86")
+)
+
+print("Return a balance for the given seed and account_index:")
+print(
+    client.get_balance(
+        seed="b3d7092195c36d47133ff786d4b0a1ef2ee6a0052f6e87b6dc337935c70c531e",
+        account_index=0,
+        initial_address_index=0
+    )
+)
+```
+
+Example of output:
+```json
+Return balance for a single address:
+{
+    'address_type': 0,
+    'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb',
+    'balance': 10000000
+}
+
+Return balance for the given seed and account_index:
+10000000
+```
+* `address_type` indicates type of address. Value 0 denotes a Ed25519 address (currently the default for IOTA 1.5 network)
+
+`Client.get_balance()` performs a several tasks under the hood.
+It starts generating addresses for the provided `seed` and `account_index` from `initial_address_index`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `gap_limit` argument when to stop searching. If `gap_limit` amount of addresses in a row have no balance the function returns result and searching does not continue.
+
+## Outputs
+There are three functions to get `UTXO` outputs (related to the given address):
+* `Client.get_address_outputs(str)`: it expects address in Bech32 format and returns `list[dict]` of transaction_ids and respective indexes
+* `Client.get_output(str)`: it expects `output_id` and returns the UTXO output associated with it
+* `Client.find_outputs(output_ids (optional), addresses (optional))`: it is a bit more general and it searches for UTXO outputs associated with the given `output_ids` and/or `addresses`
+
+The result of `Client.get_address_outputs(str)` is just a list of `transaction_ids` and respective `indexes`:
+```python
+import iota_client
+client = iota_client.Client()
+
+outputs = client.get_address_outputs("atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86")
+for output in outputs:
+    print(f"Output index: {output['index']}; raw transaction id: {output['transaction_id']}")
+    encoded_hex = "".join(f"{i:0>2x}" for i in output["transaction_id"]) + f"{output['index']:0>4x}"
+    print(f"`output_id` encoded in hex: {encoded_hex}")
+```
+
+Output example:
+```plaintext
+Output index: 0; raw transaction id: [162, 44, 186, 6, 103, 201, 34, 203, 177, 248, 189, 202, 249, 112, 178, 168, 129, 204, 214, 232, 142, 47, 204, 229, 3, 116, 222, 42, 172, 124, 55, 114]
+`output_id` encoded in hex: a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c37720000
+```
+* as a result, `UTXO` output is represented by output `index` and `transaction_id`. `transaction_id` is basically a list of 32 `bytes`
+* `index` and `transaction_id` is usually combined into single hex string of 68 characters = 32 * 2 chars (`transaction_id`) + 4 chars (`index`).<br />
+The resulting `output_id` is the same id that is shown in [Tangle Explorer](https://explorer.iota.org/chrysalis/), for instance
+
+Then the function `Client.get_output(str)` can be used to get details about the given `output_id`:
+```python
+import iota_client
+client = iota_client.Client()
+
+print(
+    client.get_output("a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c37720000")
+)
+```
+
+Output example:
+```json
+{'message_id': 'f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b',
+ 'transaction_id': 'a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772',
+ 'output_index': 0,
+ 'is_spent': False,
+ 'output': {'treasury': None,
+  'signature_locked_single': {'kind': 0,
+   'address': {'ed25519': {'kind': 0,
+     'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb'}},
+   'amount': 10000000},
+  'signature_locked_dust_allowance': None}
+}
+```
+
+Function `Client.find_outputs()` is a convenient shortcut combining both mentioned methods in a single call:
+```python
+import iota_client
+client = iota_client.Client()
+
+client.find_outputs(addresses=["atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86"])
+```
+* it supports two arguments, a list of `output_ids` or a list of `addresses`
+
+Output example:
+```json
+{'message_id': 'f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b',
+ 'transaction_id': 'a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772',
+ 'output_index': 0,
+ 'is_spent': False,
+ 'output': {'treasury': None,
+  'signature_locked_single': {'kind': 0,
+   'address': {'ed25519': {'kind': 0,
+     'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb'}},
+   'amount': 10000000},
+  'signature_locked_dust_allowance': None}
+}
+```
+
+
+
+## Messages
