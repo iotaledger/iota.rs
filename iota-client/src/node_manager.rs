@@ -53,16 +53,6 @@ impl NodeManager {
     pub(crate) fn builder() -> NodeManagerBuilder {
         NodeManagerBuilder::new()
     }
-    // pub (crate) async fn sync(&mut self) {}
-    // pub (crate) fn get_primary_node(&self) -> Option<Url> {
-    //     self.primary_node.clone()
-    // }
-    // pub (crate) fn get_nodes(&self) -> HashSet<Url> {
-    //     self.nodes.clone()
-    // }
-    // pub (crate) fn get_synced_nodes(&self) -> HashSet<Url> {
-    //     self.synced_nodes.clone()
-    // }
     pub(crate) async fn get_urls(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Vec<Url> {
         let mut urls = Vec::new();
         if remote_pow {
