@@ -63,11 +63,16 @@ The data structure to initialize the instance of the Higher level client library
 | - | - | - | - | - |
 | **network** | ✘ | Testnet | &str | Optional, the network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. Nodes that aren't in this network will be ignored. |
 | **node** | ✘ | None | &str | The URL of a node to connect to; format: `https://node:port` |
+| **primary_node** | ✘ | None | &str, auth_name_passw: Option<(&str, &str)> | The URL of a node to always connect first to with optional name and password for basic authentication, if multiple nodes are available; format: `https://node:port`, Some("name", "password") |
+| **primary_pow_node** | ✘ | None | &str, auth_name_passw: Option<(&str, &str)> | The URL of a node to always connect first to when submitting a message with remote PoW, if multiple nodes are available. Will override primary_node in that case. With optional name and password for basic authentication; format: `https://node:port`, Some("name", "password") |
 | **node_auth** | ✘ | None | &str, &str, &str | The URL of a node to connect to with name and password for basic authentication; format: `https://node:port`, `name`, `password` |
 | **nodes** | ✘ | None | &[&str] | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **node_pool_urls** | None | ✘ | &[String] | A list of node_pool_urls from which nodes are added. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **quorum** | ✘ | false | bool | Define if quorum should be used for the requests |
+| **quorum_size** | ✘ | 3 | usize | Define how many nodes should be used for quorum |
+| **quorum_threshold** | ✘ | 66 | usize | Define the % of nodes that need to return the same response to accept it |
 | **request_timeout** | ✘ | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it's considered timed out |
 | **api_timeout** | ✘ | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out. |
 | **local_pow** | ✘ | True | bool | If not defined it defaults to local PoW to offload node load times |

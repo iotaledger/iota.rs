@@ -151,6 +151,7 @@ impl ClientBuilder {
 
     /// Set quorum_threshold
     pub fn with_quorum_threshold(mut self, threshold: usize) -> Self {
+        let threshold = if threshold > 100 { 100 } else { threshold };
         self.node_manager_builder = self.node_manager_builder.with_quorum_threshold(threshold);
         self
     }
