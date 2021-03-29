@@ -160,7 +160,7 @@ Just a recap:
 To quickly validate any IOTA address, there is a convenience function `Client.is_address_valid()` that returns `bool` value. Needless to say, performing a sanity check of an address before its use is an advisable practice.
 
 ## Checking a balance
-_In Chrysalis testnet there is a faucet service that provides test tokens to any testnet address: https://faucet.testnet.chrysalis2.com/_
+_In Chrysalis testnet, there is a faucet service that provides test tokens to any testnet address: https://faucet.testnet.chrysalis2.com/_
 
 There are three common api calls that can be leveraged:
 * `Client.get_address_balance(address: str)`: it expects a single address in Bech32 format and returns `dict` with a balance for the address
@@ -205,6 +205,24 @@ Return balance for the given seed and account_index:
 `Client.get_balance()` performs a several tasks under the hood.
 It starts generating addresses for the provided `seed` and `account_index` from `initial_address_index`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `gap_limit` argument when to stop searching. If `gap_limit` amount of addresses in a row have no balance the function returns result and searching does not continue.
 
+
+## Messages, payload and transactions
+Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA 1.5 network. In comparison to original IOTA 1.0, IOTA 1.5 introduced some fundamental changes to the underlying transaction structure. The original concept of transactions and bundles are gone, and has been replaced by a concept of messages and payloads.
+
+`Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle. It can refer up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
+
+TODO: How every message is unique?
+
+`Message` is broadcasted using a binary format, has arbitrary size (up to 35 kB) and it can hold a variable sets of information so called `payloads`. Number of payloads a single message can hold is not given (even a message without any `payload` is completely valid).
+
+`Payload` represents a layer of concern. Some core payloads may change a state of the ledger (transactions), some may provide an extra features to some specific applications leveraging IOTA network and can be completely ignored by IOTA nodes. There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payloads the community agrees on. The outlined structure is very flexible, future-proof, and offer an unmatched network extensibility.
+
+The current IOTA 1.5 network incorporates the following already mentioned core payloads:
+* `SignedTransaction`: payload that describes related `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `message` can be also cryptographically signed
+* `MilestonePayload`: payload that is emitted by Coordinator
+* `IndexationPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data
+
+
 ## Outputs
 There are three functions to get `UTXO` outputs (related to the given address):
 * `Client.get_address_outputs(str)`: it expects address in Bech32 format and returns `list[dict]` of transaction_ids and respective indexes
@@ -228,8 +246,8 @@ Output example:
 Output index: 0; raw transaction id: [162, 44, 186, 6, 103, 201, 34, 203, 177, 248, 189, 202, 249, 112, 178, 168, 129, 204, 214, 232, 142, 47, 204, 229, 3, 116, 222, 42, 172, 124, 55, 114]
 `output_id` encoded in hex: a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c37720000
 ```
-* as a result, `UTXO` output is represented by output `index` and `transaction_id`. `transaction_id` is basically a list of 32 `bytes`
-* `index` and `transaction_id` is usually combined into single hex string of 68 characters = 32 * 2 chars (`transaction_id`) + 4 chars (`index`).<br />
+* as a result, `UTXO` output is represented by output `index` and `transaction_id`. `transaction_id` is basically a list of 32 `bytes`. `index` is 2-bytes (16bits) `uint`
+* `index` and `transaction_id` is usually combined into single hex string of 68 characters = 32 * 2 chars (`transaction_id`; 32 bytes in hex) + 4 chars (`index`; 2 bytes in hex).<br />
 The resulting `output_id` is the same id that is shown in [Tangle Explorer](https://explorer.iota.org/chrysalis/), for instance
 
 Then the function `Client.get_output(str)` can be used to get details about the given `output_id`:
@@ -284,3 +302,64 @@ Output example:
 
 
 ## Messages
+
+
+```python
+import iota_client
+client = iota_client.Client()
+
+client.get_message_data("f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b")
+```
+
+
+Example of message
+```json
+{
+    'message_id': 'f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b',
+    'network_id': 7712883261355838377,
+    'parents': [
+        '4a84bf1d345a441cfdefd0e71d6efe820c1077e5dda9122a09cbf026132d208c',
+        '6e9153884fd1983be4c27c3ccdc69760b4775484eea498ec0707c2ff8901995e',
+        '7ac1407c88007a54d603400b558d5110f2bbf93a68100fb34f0b40cece9d0868',
+        '9ac0fd457998a1b3ddab9c0014f41344475358ad36c64a4b763de3b51f47c09a'
+    ],
+    'payload': {
+        'transaction': [
+            {
+                'essence': {
+                    'inputs': [
+                        {'transaction_id': '4a34274992474d91cf45366425ad1d4df6042cba64f3b6c07d297a2e6b7154a9', 'index': 0}
+                    ],
+                    'outputs': [
+                        {'address': 'atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86', 'amount': 10000000},
+                        {'address': 'atoi1qzdnav0zdgd4grn25cnwcuudtahvlhgh0r349ur749y9l03vadrfurhkxwj', 'amount': 100016136757200}
+                    ],
+                    'payload': {
+                        'transaction': None,
+                        'milestone': None,
+                        'indexation': [
+                            {'index': '54414e474c454b495420464155434554', 'data': []}
+                        ],
+                        'receipt': None,
+                        'treasury_transaction': None
+                    }
+                },
+                'unlock_blocks': [
+                    {
+                        'signature': {
+                            'public_key': [...],
+                            'signature': [...]
+                        },
+                        'reference': None
+                    }
+                ]
+            }
+        ],
+        'milestone': None,
+        'indexation': None,
+        'receipt': None,
+        'treasury_transaction': None
+    },
+    'nonce': 1146102
+}
+```
