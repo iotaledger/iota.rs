@@ -37,9 +37,12 @@ pub enum Error {
     /// Error on Url type conversion
     #[error("Failed to parse node_pool_urls")]
     NodePoolUrlsError,
-    /// Error on quorum
-    #[error("Failed to reach quorum")]
-    QuorumThresholdError,
+    /// Error on reaching quorum
+    #[error("Failed to reach quorum {0} {1}")]
+    QuorumThresholdError(usize, usize),
+    /// Error on quorum because not enough nodes are available
+    #[error("Not enough nodes for quorum {0} {1}")]
+    QuorumPoolSizeError(usize, usize),
     /// Error on API request
     #[error("Failed to get an answer from a node")]
     NodeError,

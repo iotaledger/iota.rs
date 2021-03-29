@@ -16,16 +16,6 @@ use tokio::sync::{watch::Sender, RwLock};
 
 use std::{convert::TryFrom, sync::Arc, time::Instant};
 
-macro_rules! lazy_static {
-    ($init:expr => $type:ty) => {{
-        static mut VALUE: Option<$type> = None;
-        static INIT: std::sync::Once = std::sync::Once::new();
-
-        INIT.call_once(|| unsafe { VALUE = Some($init) });
-        unsafe { VALUE.as_ref() }.expect("failed to get lazy static value")
-    }};
-}
-
 /// A topic.
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct Topic(String);

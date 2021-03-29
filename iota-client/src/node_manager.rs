@@ -8,6 +8,8 @@ use serde_json::Value;
 
 use crate::error::{Error, Result};
 
+use log::warn;
+use regex::Regex;
 use tokio::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
@@ -20,6 +22,8 @@ use std::{
 };
 
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
+const DEFAULT_QUORUM_SIZE: usize = 3;
+const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 
 pub(crate) struct NodeManager {
     primary_node: Option<Url>,
@@ -86,23 +90,49 @@ impl NodeManager {
         query: Option<&str>,
         timeout: Duration,
     ) -> Result<T> {
+        // Endpoints for which quorum will be used if enabled
+        let quorum_regexes = lazy_static!(
+            [
+              Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
+              Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
+              // bech32 address
+              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]").expect("regex failed"),
+              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
+              // ED25519 address hex
+              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
+              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
+              Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
+            ].to_vec() => Vec<Regex>
+        );
+
         let mut result = HashMap::new();
-        // todo handle health endpoint with status
         // sugmit message with local PoW should use primary pow node
         // Get urls and set path
         let urls = self.get_urls(path, query, false).await;
+        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && urls.len() < self.quorum_size {
+            return Err(Error::QuorumPoolSizeError(urls.len(), self.quorum_size));
+        }
+
+        // Track amount of results for quorum
+        let mut result_counter = 0;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
                 if let Ok(res_text) = res.text().await {
                     let counters = result.entry(res_text).or_insert(0);
                     *counters += 1;
+                    result_counter += 1;
                     // Without quorum it's enough if we got one response
-                    if !self.quorum {
+                    if !self.quorum
+                        || result_counter >= self.quorum_size
+                        || !quorum_regexes.iter().any(|re| re.is_match(&path))
+                        // with query we ignore quorum because the nodes can store a different amount of history
+                        || query.is_some()
+                    {
                         break;
                     }
                 } else {
-                    print!("Couldn't convert noderesult to text");
+                    warn!("Couldn't convert noderesult to text");
                 }
             }
         }
@@ -111,43 +141,33 @@ impl NodeManager {
 
         // todo if quorum then only for: balance, outputs(only unspent?), message metadata
         // Return if quorum is false or check if quorum was reached
-        if !self.quorum || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0) {
+        if !self.quorum
+            || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
+            || !quorum_regexes.iter().any(|re| re.is_match(&path))
+            // with query we ignore quorum because the nodes can store a different amount of history
+            || query.is_some()
+        {
             Ok(serde_json::from_str(&res.0)?)
         } else {
-            Err(Error::QuorumThresholdError)
+            Err(Error::QuorumThresholdError(res.1, self.quorum_size))
         }
     }
+    // Only used for api/v1/messages/{messageID}/raw, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
-        let mut result = HashMap::new();
-        // todo handle health endpoint with status
-        // sugmit message with local PoW should use primary pow node
         // Get urls and set path
         let urls = self.get_urls(path, query, false).await;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
                 if let Ok(res_text) = res.text().await {
-                    let counters = result.entry(res_text).or_insert(0);
-                    *counters += 1;
                     // Without quorum it's enough if we got one response
-                    if !self.quorum {
-                        break;
-                    }
+                    return Ok(res_text);
                 } else {
-                    print!("Couldn't convert noderesult to text");
+                    warn!("Couldn't convert noderesult to text");
                 }
             }
         }
-
-        let res = result.into_iter().max_by_key(|v| v.1).ok_or(Error::NodeError)?;
-
-        // todo if quorum then only for: balance, outputs(only unspent?), message metadata
-        // Return if quorum is false or check if quorum was reached
-        if !self.quorum || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0) {
-            Ok(res.0)
-        } else {
-            Err(Error::QuorumThresholdError)
-        }
+        Err(Error::NodeError)
     }
     pub(crate) async fn post_request_bytes<T: serde::de::DeserializeOwned>(
         &self,
@@ -163,7 +183,7 @@ impl NodeManager {
                 if let Ok(res_text) = res.text().await {
                     return Ok(serde_json::from_str(&res_text)?);
                 } else {
-                    print!("Couldn't convert noderesult to text");
+                    warn!("Couldn't convert noderesult to text");
                 }
             }
         }
@@ -184,7 +204,7 @@ impl NodeManager {
                 if let Ok(res_text) = res.text().await {
                     return Ok(serde_json::from_str(&res_text)?);
                 } else {
-                    print!("Couldn't convert noderesult to text");
+                    warn!("Couldn't convert noderesult to text");
                 }
             }
         }
@@ -330,8 +350,8 @@ impl Default for NodeManagerBuilder {
             sync: false,
             sync_interval: NODE_SYNC_INTERVAL,
             quorum: false,
-            quorum_size: 1,
-            quorum_threshold: 66,
+            quorum_size: DEFAULT_QUORUM_SIZE,
+            quorum_threshold: DEFAULT_QUORUM_THRESHOLD,
         }
     }
 }
