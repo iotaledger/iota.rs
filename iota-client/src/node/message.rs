@@ -8,7 +8,7 @@ use bee_rest_api::types::{
     responses::{MessageChildrenResponse, MessageMetadataResponse as MessageMetadata, MessagesForIndexResponse},
 };
 
-use std::convert::TryFrom;
+use std::{convert::TryFrom, ops::Deref};
 
 /// Builder of GET /api/v1/messages/{messageId} endpoint
 pub struct GetMessageBuilder<'a> {
@@ -23,7 +23,7 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages?index={Index} endpoint
     /// Consume the builder and search for messages matching the index
-    pub async fn index<I: AsRef<[u8]>>(self, index: I) -> Result<Box<[MessageId]>> {
+    pub async fn index<I: AsRef<[u8]>>(self, index: I) -> Result<impl Deref<Target = [MessageId]>> {
         let mut url = self.client.get_node().await?;
         let path = "api/v1/messages";
         url.set_path(path);
@@ -113,7 +113,7 @@ impl<'a> GetMessageBuilder<'a> {
 
     /// GET /api/v1/messages/{messageID}/children endpoint
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
-    pub async fn children(self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
+    pub async fn children(self, message_id: &MessageId) -> Result<impl Deref<Target = [MessageId]>> {
         let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/messages/{}/children", message_id);
         url.set_path(path);

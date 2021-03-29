@@ -7,7 +7,7 @@ use bee_message::prelude::{TransactionId, UTXOInput};
 
 use bee_rest_api::types::responses::{BalanceForAddressResponse, OutputsForAddressResponse};
 
-use std::convert::TryInto;
+use std::{convert::TryInto, ops::Deref};
 
 const OUTPUT_ID_LENGTH: usize = 68;
 const TRANSACTION_ID_LENGTH: usize = 64;
@@ -93,7 +93,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get all outputs that use a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Box<[UTXOInput]>> {
+    pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<impl Deref<Target = [UTXOInput]>> {
         let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/addresses/{}/outputs", address);
         url.set_path(path);
