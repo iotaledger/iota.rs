@@ -443,6 +443,10 @@ None
 A Response Object similar to this:
 
 ```rust
+pub struct NodeInfoWrapper {
+    pub nodeinfo: NodeInfo,
+    pub url: String,
+}
 pub struct NodeInfo {
     pub name: String,
     pub version: String,

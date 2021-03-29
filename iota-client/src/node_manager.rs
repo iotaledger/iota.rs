@@ -3,6 +3,8 @@
 
 //! The node manager that takes care of sending requests and quroum if enabled
 
+use bee_rest_api::types::responses::InfoResponse as NodeInfo;
+
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
@@ -119,6 +121,19 @@ impl NodeManager {
         for url in urls {
             if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
                 if let Ok(res_text) = res.text().await {
+                    // Handle nodeinfo extra because we also want to return the url
+                    if path == "api/v1/info" {
+                        #[derive(Debug, Serialize, Deserialize)]
+                        struct ResponseWrapper {
+                            data: NodeInfo,
+                        }
+                        let wrapper = crate::client::NodeInfoWrapper {
+                            nodeinfo: serde_json::from_str::<ResponseWrapper>(&res_text)?.data,
+                            url: format!("{}://{}", url.scheme(), url.host_str().unwrap_or("")),
+                        };
+                        let serde_res = serde_json::to_string(&wrapper)?;
+                        return Ok(serde_json::from_str(&serde_res)?);
+                    }
                     let counters = result.entry(res_text).or_insert(0);
                     *counters += 1;
                     result_counter += 1;

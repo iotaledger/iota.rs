@@ -46,6 +46,15 @@ use std::{
     time::Duration,
 };
 
+/// NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeInfoWrapper {
+    /// The returned nodeinfo
+    pub nodeinfo: NodeInfo,
+    /// The url from the node which returned the nodeinfo
+    pub url: String,
+}
+
 #[derive(Debug, Serialize)]
 /// Milestone data.
 pub struct MilestoneResponse {
@@ -425,7 +434,7 @@ impl Client {
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
         let not_synced = { self.network_info.read().await.network_id.is_none() };
         if not_synced {
-            let info = self.get_info().await?;
+            let info = self.get_info().await?.nodeinfo;
             let network_id = hash_network(&info.network_id).ok();
             let mut client_network_info = self.network_info.write().await;
             client_network_info.network_id = network_id;
@@ -538,18 +547,15 @@ impl Client {
     }
 
     /// GET /api/v1/info endpoint
-    pub async fn get_info(&self) -> Result<NodeInfo> {
+    pub async fn get_info(&self) -> Result<NodeInfoWrapper> {
         let path = "api/v1/info";
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: NodeInfo,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: NodeInfoWrapper = self
             .node_manager
             .get_request(path, None, self.get_timeout(Api::GetInfo))
             .await?;
 
-        Ok(resp.data)
+        Ok(resp)
     }
 
     /// GET /api/v1/peers endpoint
