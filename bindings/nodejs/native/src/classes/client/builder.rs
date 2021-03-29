@@ -9,7 +9,12 @@ use neon::prelude::*;
 pub struct ClientBuilderWrapper {
     nodes: Vec<String>,
     auth: Option<(String, String, String)>,
+    primary_node: Option<(String, Option<(String, String)>)>,
+    primary_pow_node: Option<(String, Option<(String, String)>)>,
     node_pool_urls: Vec<String>,
+    quorum: Option<bool>,
+    quorum_size: Option<usize>,
+    quorum_threshold: Option<usize>,
     network: Option<String>,
     broker_options: Option<BrokerOptions>,
     node_sync_interval: Option<NonZeroU64>,
@@ -26,7 +31,12 @@ declare_types! {
             Ok(ClientBuilderWrapper {
                 nodes: Default::default(),
                 auth: Default::default(),
+                primary_node: Default::default(),
+                primary_pow_node: Default::default(),
                 node_pool_urls: Default::default(),
+                quorum: Default::default(),
+                quorum_size: Default::default(),
+                quorum_threshold: Default::default(),
                 network: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
@@ -58,6 +68,60 @@ declare_types! {
                 let guard = cx.lock();
                 let auth = &mut this.borrow_mut(&guard).auth;
                 auth.replace((node_url, name, password));
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method primaryNode(mut cx) {
+            let node_url = cx.argument::<JsString>(0)?.value();
+            let name: Option<String> = match cx.argument_opt(1) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
+                },
+                None => None,
+            };
+            let password: Option<String> = match cx.argument_opt(2) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
+                },
+                None => None,
+            };
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let primary_node = &mut this.borrow_mut(&guard).primary_node;
+                if let (Some(name), Some(password)) = (name, password){
+                    primary_node.replace((node_url, Some((name, password))));
+                } else {
+                    primary_node.replace((node_url, None));
+                }
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method primaryPowNode(mut cx) {
+            let node_url = cx.argument::<JsString>(0)?.value();
+            let name: Option<String> = match cx.argument_opt(1) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
+                },
+                None => None,
+            };
+            let password: Option<String> = match cx.argument_opt(2) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
+                },
+                None => None,
+            };
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let primary_node = &mut this.borrow_mut(&guard).primary_node;
+                if let (Some(name), Some(password)) = (name, password){
+                    primary_node.replace((node_url, Some((name, password))));
+                } else {
+                    primary_node.replace((node_url, None));
+                }
             }
             Ok(cx.this().upcast())
         }
@@ -103,6 +167,39 @@ declare_types! {
                 }
             }
 
+            Ok(cx.this().upcast())
+        }
+
+        method quorum(mut cx) {
+            let enabled = cx.argument::<JsBoolean>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let quorum = &mut this.borrow_mut(&guard).quorum;
+                quorum.replace(enabled);
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method quorumSize(mut cx) {
+            let size = cx.argument::<JsNumber>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let quorum_size = &mut this.borrow_mut(&guard).quorum_size;
+                quorum_size.replace(size as usize);
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method quorumThreshold(mut cx) {
+            let threshold = cx.argument::<JsNumber>(0)?.value();
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let quorum_threshold = &mut this.borrow_mut(&guard).quorum_threshold;
+                quorum_threshold.replace(threshold as usize);
+            }
             Ok(cx.this().upcast())
         }
 
@@ -209,8 +306,29 @@ declare_types! {
                 if let Some((node, name, password)) = &ref_.auth{
                     builder = builder.with_node_auth(node, name, password).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
                 }
+                if let Some((node, auth)) = &ref_.primary_node{
+                    match auth {
+                        Some(auth) => builder = builder.with_primary_node(node, Some((&auth.0, &auth.1))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
+                        None => builder = builder.with_primary_node(node, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
+                    }
+                }
+                if let Some((node, auth)) = &ref_.primary_pow_node{
+                    match auth {
+                        Some(auth) => builder = builder.with_primary_pow_node(node, Some((&auth.0, &auth.1))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
+                        None => builder = builder.with_primary_pow_node(node, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
+                    }
+                }
                 if !&ref_.node_pool_urls.is_empty() {
                     builder = crate::block_on(builder.with_node_pool_urls(&ref_.node_pool_urls)).expect("Problem with node pool url");
+                }
+                if let Some(enabled) = &ref_.quorum {
+                    builder = builder.with_quorum(*enabled);
+                }
+                if let Some(size) = &ref_.quorum_size {
+                    builder = builder.with_quorum_size(*size);
+                }
+                if let Some(threshold) = &ref_.quorum_threshold {
+                    builder = builder.with_quorum_threshold(*threshold);
                 }
                 if let Some(network_name) = &ref_.network {
                     builder = builder.with_network(network_name);
