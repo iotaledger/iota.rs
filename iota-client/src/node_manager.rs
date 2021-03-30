@@ -117,37 +117,63 @@ impl NodeManager {
 
         // Track amount of results for quorum
         let mut result_counter = 0;
-        // Send requests
-        for url in urls {
-            if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
-                if let Ok(res_text) = res.text().await {
-                    // Handle nodeinfo extra because we also want to return the url
-                    if path == "api/v1/info" {
-                        #[derive(Debug, Serialize, Deserialize)]
-                        struct ResponseWrapper {
-                            data: NodeInfo,
-                        }
-                        let wrapper = crate::client::NodeInfoWrapper {
-                            nodeinfo: serde_json::from_str::<ResponseWrapper>(&res_text)?.data,
-                            url: format!("{}://{}", url.scheme(), url.host_str().unwrap_or("")),
-                        };
-                        let serde_res = serde_json::to_string(&wrapper)?;
-                        return Ok(serde_json::from_str(&serde_res)?);
-                    }
+        // Send requests parallel for quorum
+        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && query.is_none() {
+            let mut tasks = Vec::new();
+            let urls_ = urls.clone();
+            for (index, url) in urls_.into_iter().enumerate() {
+                if index < self.quorum_size {
+                    let client_ = self.http_client.clone();
+                    tasks.push(
+                        async move { tokio::spawn(async move { client_.get(url.as_str(), timeout).await }).await },
+                    );
+                }
+            }
+            for res in futures::future::try_join_all(tasks)
+                .await
+                .expect("failed to sync address")
+            {
+                if let Ok(res_text) = res?.text().await {
                     let counters = result.entry(res_text).or_insert(0);
                     *counters += 1;
                     result_counter += 1;
-                    // Without quorum it's enough if we got one response
-                    if !self.quorum
+                } else {
+                    warn!("Couldn't convert noderesult to text");
+                }
+            }
+        } else {
+            // Send requests
+            for url in urls {
+                if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
+                    if let Ok(res_text) = res.text().await {
+                        // Handle nodeinfo extra because we also want to return the url
+                        if path == "api/v1/info" {
+                            #[derive(Debug, Serialize, Deserialize)]
+                            struct ResponseWrapper {
+                                data: NodeInfo,
+                            }
+                            let wrapper = crate::client::NodeInfoWrapper {
+                                nodeinfo: serde_json::from_str::<ResponseWrapper>(&res_text)?.data,
+                                url: format!("{}://{}", url.scheme(), url.host_str().unwrap_or("")),
+                            };
+                            let serde_res = serde_json::to_string(&wrapper)?;
+                            return Ok(serde_json::from_str(&serde_res)?);
+                        }
+                        let counters = result.entry(res_text).or_insert(0);
+                        *counters += 1;
+                        result_counter += 1;
+                        // Without quorum it's enough if we got one response
+                        if !self.quorum
                         || result_counter >= self.quorum_size
                         || !quorum_regexes.iter().any(|re| re.is_match(&path))
                         // with query we ignore quorum because the nodes can store a different amount of history
                         || query.is_some()
-                    {
-                        break;
+                        {
+                            break;
+                        }
+                    } else {
+                        warn!("Couldn't convert noderesult to text");
                     }
-                } else {
-                    warn!("Couldn't convert noderesult to text");
                 }
             }
         }
@@ -415,6 +441,7 @@ impl Response {
 }
 
 #[cfg(feature = "async")]
+#[derive(Clone)]
 pub(crate) struct HttpClient {
     client: reqwest::Client,
 }

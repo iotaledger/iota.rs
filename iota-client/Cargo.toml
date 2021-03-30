@@ -33,19 +33,19 @@ ureq = { version = "2.0", features = ["json"], optional = true }
 # async
 tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread", "rt"] }
 reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
+futures = { version = "0.3", optional = true }
 
 # MQTT
 rumqttc = { version = "0.5", optional = true }
 # also used for storage
 once_cell = { version = "1.5", optional = true }
-futures = { version = "0.3", optional = true }
 
 #storage
 async-trait = "0.1"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 
 [features]
-default = ["async"]
+default = ["async", "futures"]
 sync = ["ureq"]
 async = ["reqwest"]
 mqtt = ["rumqttc", "once_cell", "futures"]
