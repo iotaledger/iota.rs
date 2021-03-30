@@ -20,7 +20,7 @@ def test_get_health():
 
 def test_get_info():
     node_info = client.get_info()
-    assert isinstance(node_info.nodeinfo, dict) and 'is_healthy' in node_info
+    assert isinstance(node_info, dict) and 'is_healthy' in node_info['nodeinfo']
 
 
 def test_get_peers():
