@@ -44,7 +44,7 @@ pub enum Error {
     #[error("Not enough nodes for quorum {0} {1}")]
     QuorumPoolSizeError(usize, usize),
     /// Error on API request
-    #[error("Failed to get an answer from a node")]
+    #[error("Failed to get an answer from all nodes")]
     NodeError,
     /// Hex string convert error
     #[error("{0}")]
