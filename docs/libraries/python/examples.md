@@ -245,8 +245,10 @@ Simplified analogy:
 
 The key takeaway of the outlined process is the fact that each unique `output` can be spent **only once**. Once the given `output` is spent, can't be used any more and is irrelevant in regards to ledger state. So even if Alice still wants to keep remaining tokens at her fingertips, those tokens have to be moved to completely new `output` that can be for instance still tight to the same Alice's iota address as before.
 
-Every `output` stores also information about an IOTA address to which it belongs to. So addresses and tokens are indirectly coupled via `outputs`.
+Every `output` stores also information about an IOTA address to which it is coupled with. So addresses and tokens are indirectly coupled via `outputs`.
 So basically sum of outputs and their amounts under the given address is a balance of the given address, ie. number of tokens the given address can spent. And sum of all unspent outputs and theirs amounts is equal to the total supply.
+
+Before the chapter is wrapped up, one thing was left unexplained: _"how outputs are being sent and broadcasted to network?"_ `Outputs` are being sent encapsulated in a `message` as a part of `SignedTransaction` payload.
 
 ## Outputs
 There are three functions to get `UTXO` outputs (related to the given address):
@@ -323,11 +325,18 @@ Output example:
   'signature_locked_dust_allowance': None}
 }
 ```
+* `message_id`: refer to the encapsulating message in which the transaction was sent
+* `transaction_id`, `output_index`: refer to the given output within the `SignedTransaction` payload. There may be several different `outputs` involved in a single transaction and so just `transaction_id` is not enough
+* `output`: this section provides details about the iota address to which the given `unspent transaction output` is coupled with
+* `amount`: state an amount of tokens related to the `output`
+* `is_spent`: of course, very important one indicating whether the given `output` is a part of the actual ledger state or not. As mentioned above, if an output was already spent, it is not part of ledger state any more and was replaced by some other `output(s)` in the process
 
+So this is quite interesting part, notice the `output_id` that was used in a function call to get output details is the same as a combination of `transaction_id` and `output index`.
+
+This way a transaction is tightly coupled with `outputs` since `SignedTransaction` is a main vehicle how `outputs` are being created and spent, and altogether everything is encapsulated in a `message`.
 
 
 ## Messages
-
 
 ```python
 import iota_client
