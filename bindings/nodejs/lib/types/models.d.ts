@@ -1,3 +1,7 @@
+export declare interface NodeInfoWrapper {
+  url: string
+  nodeinfo: NodeInfo
+}
 export declare interface NodeInfo {
   name: string
   version: string

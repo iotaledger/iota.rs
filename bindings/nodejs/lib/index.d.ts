@@ -1,5 +1,5 @@
 import {
-  NodeInfo,
+  NodeInfoWrapper,
   MessageMetadata,
   OutputMetadata,
   MilestoneMetadata,
@@ -91,7 +91,7 @@ export declare class Client {
   retry(messageId: string): Promise<MessageWrapper>
   retryUntilIncluded(messageId: string, interval?: number, maxAttempts?: number): Promise<MessageWrapper[]>
 
-  getInfo(): Promise<NodeInfo>
+  getInfo(): Promise<NodeInfoWrapper>
   getTips(): Promise<string[]>
   postMessage(message: MessageDto): Promise<string>
   postMessageWithRemotePow(message: MessageDto): Promise<string>
