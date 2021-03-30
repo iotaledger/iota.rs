@@ -56,7 +56,7 @@ Since the IOTA network is permission-less type of network, anybody is able to us
 
 > We strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds and related addresses. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
 
-IOTA 1.5 (Chrysalis) uses Ed25519 signature scheme and address is usually represented by Bech32 (checksummed base32) format string of 64 characters.
+IOTA 1.5 (Chrysalis) uses `Ed25519` signature scheme and an address is usually represented by Bech32 (checksummed base32) format string of 64 characters.
 
 A root of `Ed25519` signature scheme is basically a `32-byte (256-bit)` uniformly randomly generated seed based on which all private keys and corresponding addresses are generated. In the examples below, the seed is represented by a string of 64 characters using `[0-9a-f]` alphabet (32 bytes encoded in hexadecimal).
 
@@ -91,7 +91,7 @@ m / purpose / coin_type / account / change / address_index
 * `coin_type`: a constant set for each crypto currency. IOTA = 4218, for instance.
 * `account`: account index. Zero-based increasing `int`. This level splits the address/key space into independent branches (ex. user identities) which each has own set of addresses/keys
 * `change`: change index which is `{0, 1}`, also known as `wallet chain`.<br />
-There are two independent chain of addresses/keys. `0` is reserved for public addresses (for coin receival) and `1` is reserved for internal (also known as change) addresses to which transaction change is returned. _In comparison to IOTA 1.0, IOTA 1.5 is totally fine with address reuse, and so it is, technically speaking, totally valid to return transaction change to the same originating address. So it is up to developers whether to leverage it. `iota.rs` library and its sibling `wallet.rs` help with either scenario_
+There are two independent chain of addresses/keys. `0` is reserved for public addresses (for coin receival) and `1` is reserved for internal (also known as change) addresses to which transaction change is returned. _In comparison to IOTA 1.0, IOTA 1.5 is totally fine with address reuse, and so it is, technically speaking, totally valid to return transaction change to the same originating address. So it is up to developers whether to leverage it or not. `iota.rs` library and its sibling `wallet.rs` help with either scenario_
 * `address_index`: address index. Zero-based increasing `int` that indicates an address index
 
 As outlined, there is a quite large address/key space that is secured by a single unique seed. And there are few additional interesting notes:
@@ -207,20 +207,30 @@ It starts generating addresses for the provided `seed` and `account_index` from 
 
 
 ## Messages, payload and transactions
-Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA 1.5 network. In comparison to original IOTA 1.0, IOTA 1.5 introduced some fundamental changes to the underlying transaction structure. The original concept of transactions and bundles are gone, and has been replaced by a concept of messages and payloads.
+Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA 1.5 network. In comparison to original IOTA 1.0, IOTA 1.5 introduced some fundamental changes to the underlying data structure. The original concept of `transactions` and `bundles` is gone, and has been replaced by a concept of `messages` and `payloads`.
 
-`Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle. It can refer up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
+`Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle graph. It can refer to up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
 
 TODO: How every message is unique?
 
-`Message` is broadcasted using a binary format, has arbitrary size (up to 35 kB) and it can hold a variable sets of information so called `payloads`. Number of payloads a single message can hold is not given (even a message without any `payload` is completely valid).
+> IOTA is no longer based on ternary. IOTA 1.5 (Chrysalis) uses binary system to encode and broadcast all underlying data entities
 
-`Payload` represents a layer of concern. Some core payloads may change a state of the ledger (transactions), some may provide an extra features to some specific applications leveraging IOTA network and can be completely ignored by IOTA nodes. There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payloads the community agrees on. The outlined structure is very flexible, future-proof, and offer an unmatched network extensibility.
+`Message` is broadcasted using a binary format, is arbitrary size (up to 35 kB) and it can hold a variable sets of information so called `payloads`. Number of payloads a single message can encapsulate is not given (even a message without any `payload` at all is completely valid).
 
-The current IOTA 1.5 network incorporates the following already mentioned core payloads:
-* `SignedTransaction`: payload that describes related `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `message` can be also cryptographically signed
+`Payload` represents a layer of concern. Some core payloads may change a state of the ledger (transactions) and some may provide extra features to some specific applications and business use cases (ex. indexed data).
+
+There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon. Needless to say, IOTA network ensures the structure of message itself is valid. The outlined structure is very flexible, future-proof, and offer an unmatched network extensibility.
+
+![messages_in_tangle](messages_in_tangle.svg)
+
+The current IOTA 1.5 network incorporates the following core payloads:
+* `SignedTransaction`: payload that describes `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `message` can be also cryptographically signed
 * `MilestonePayload`: payload that is emitted by Coordinator
 * `IndexationPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data
+
+### Unspent Transaction Output (UTXO)
+
+
 
 
 ## Outputs
