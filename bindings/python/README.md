@@ -209,11 +209,11 @@ Gets the node health status.
 
 **Returns** whether the node is healthy.
 
-#### get_info(): InfoResponse
+#### get_info(): NodeInfoWrapper
 
 Gets information about the node.
 
-**Returns** the [InfoResponse](#inforesponse).
+**Returns** the [NodeInfoWrapper](#nodeinfowrapper).
 
 #### get_peers(): list[PeerDto]
 
@@ -900,11 +900,15 @@ ledger_inclusion_state_dto = {
 }
 ```
 
-#### InfoResponse
+#### NodeInfoWrapper
 
 A dict with the following key/value pairs.
 
 ```python
+nodeinfo_wrapper{
+    url: str,
+    nodeinfo: info_response,
+}
 info_response = {
     'name': str,
     'version': str,

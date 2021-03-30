@@ -19,14 +19,14 @@ use iota::{
             TreasuryTransactionPayloadDto as RustTreasuryTransactionPayloadDto,
         },
         responses::{
-            BalanceForAddressResponse as RustBalanceForAddressResponse, InfoResponse as RustInfoResponse,
+            BalanceForAddressResponse as RustBalanceForAddressResponse,
             MessageMetadataResponse as RustMessageMetadataResponse,
             MilestoneUtxoChangesResponse as RustMilestoneUTXOChanges, OutputResponse as RustOutputResponse,
             TreasuryResponse as RustTreasuryResponse,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
-    client::MilestoneResponse,
+    client::{MilestoneResponse, NodeInfoWrapper as RustNodeInfoWrapper},
     Address as RustAddress, AddressOutputsOptions as RustAddressOutputsOptions, Ed25519Address as RustEd25519Address,
     Ed25519Signature as RustEd25519Signature, Essence as RustEssence, IndexationPayload as RustIndexationPayload,
     Input as RustInput, Message as RustMessage, MilestonePayloadEssence as RustMilestonePayloadEssence,
@@ -276,7 +276,13 @@ pub struct LedgerInclusionStateDto {
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct InfoResponse {
+pub struct NodeInfoWrapper {
+    pub nodeinfo: NodeInfo,
+    pub url: String,
+}
+
+#[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct NodeInfo {
     pub name: String,
     pub version: String,
     pub is_healthy: bool,
@@ -506,19 +512,22 @@ impl From<RustMessageMetadataResponse> for MessageMetadataResponse {
     }
 }
 
-impl From<RustInfoResponse> for InfoResponse {
-    fn from(info: RustInfoResponse) -> Self {
-        InfoResponse {
-            name: info.name,
-            version: info.version,
-            is_healthy: info.is_healthy,
-            network_id: info.network_id,
-            bech32_hrp: info.bech32_hrp,
-            latest_milestone_index: info.latest_milestone_index,
-            confirmed_milestone_index: info.confirmed_milestone_index,
-            pruning_index: info.pruning_index,
-            features: info.features,
-            min_pow_score: info.min_pow_score,
+impl From<RustNodeInfoWrapper> for NodeInfoWrapper {
+    fn from(info: RustNodeInfoWrapper) -> Self {
+        NodeInfoWrapper {
+            url: info.url,
+            nodeinfo: NodeInfo {
+                name: info.nodeinfo.name,
+                version: info.nodeinfo.version,
+                is_healthy: info.nodeinfo.is_healthy,
+                network_id: info.nodeinfo.network_id,
+                bech32_hrp: info.nodeinfo.bech32_hrp,
+                latest_milestone_index: info.nodeinfo.latest_milestone_index,
+                confirmed_milestone_index: info.nodeinfo.confirmed_milestone_index,
+                pruning_index: info.nodeinfo.pruning_index,
+                features: info.nodeinfo.features,
+                min_pow_score: info.nodeinfo.min_pow_score,
+            },
         }
     }
 }
