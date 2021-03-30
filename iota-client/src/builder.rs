@@ -71,7 +71,7 @@ impl Default for ClientBuilder {
                 network: None,
                 network_id: None,
                 min_pow_score: DEFAULT_MIN_POW,
-                local_pow: true,
+                local_pow: false,
                 bech32_hrp: DEFAULT_BECH32_HRP.into(),
                 tips_interval: TIPS_INTERVAL,
             },
