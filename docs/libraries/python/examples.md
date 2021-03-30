@@ -219,27 +219,42 @@ TODO: How every message is unique?
 
 `Payload` represents a layer of concern. Some core payloads may change a state of the ledger (transactions) and some may provide extra features to some specific applications and business use cases (ex. indexed data).
 
-There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon. Needless to say, IOTA network ensures the structure of message itself is valid. The outlined structure is very flexible, future-proof, and offer an unmatched network extensibility.
+There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon. Needless to say, IOTA network ensures the outer structure of message itself is valid and definitely aligned with a network consensus protocol, however the inner structure is very flexible, future-proof, and offer an unmatched network extensibility.
 
 ![messages_in_tangle](messages_in_tangle.svg)
 
 The current IOTA 1.5 network incorporates the following core payloads:
 * `SignedTransaction`: payload that describes `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `message` can be also cryptographically signed
 * `MilestonePayload`: payload that is emitted by Coordinator
-* `IndexationPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data
+* `IndexationPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data. The given index can be later used to search the message(s)
 
 ### Unspent Transaction Output (UTXO)
+Originally IOTA used an `account-based model` for tracking individual iota tokens: _each IOTA address holds a number of tokens and aggregated number of tokens from all iota addresses is equal to total supply._
 
+In contrary, IOTA 1.5 uses `unspent transaction output` model, so called `UTXO`. It is based on an idea to track unspent amount of tokens via data structure called `output`.
 
+Simplified analogy:
+* There is 100 tokens recorded in the ledger as `Output A` and this output belongs to Alice. So **initial state of ledger**: `Output A` = 100 tokens
+* Alice sends 20 tokens to Paul, 30 tokens to Linda and keeps 50 tokens at her disposal
+* Her 100 tokens are recorded as `Output A` and so she has to divide (spent) tokens and create three new outputs:<br />`Output B` with 20 tokens that goes to Paul, `Output C` with 30 tokens that goes to Linda and finally `Output D` with the rest 50 tokens that she keep for herself
+* **Original `Output A`** was completely spent and can't be used any more. It has been spent and so **becomes irrelevant** to ledger state
+* **New state of ledger**: `Output B` = 20 tokens, `Output C` = 30 tokens and `Output D` = 50 tokens
+* Total supply remains the same. Just number of outputs differs and some outputs were replaced by other outputs in the process
 
+![utxo](utxo.svg)
+
+The key takeaway of the outlined process is the fact that each unique `output` can be spent **only once**. Once the given `output` is spent, can't be used any more and is irrelevant in regards to ledger state. So even if Alice still wants to keep remaining tokens at her fingertips, those tokens have to be moved to completely new `output` that can be for instance still tight to the same Alice's iota address as before.
+
+Every `output` stores also information about an IOTA address to which it belongs to. So addresses and tokens are indirectly coupled via `outputs`.
+So basically sum of outputs and their amounts under the given address is a balance of the given address, ie. number of tokens the given address can spent. And sum of all unspent outputs and theirs amounts is equal to the total supply.
 
 ## Outputs
 There are three functions to get `UTXO` outputs (related to the given address):
-* `Client.get_address_outputs(str)`: it expects address in Bech32 format and returns `list[dict]` of transaction_ids and respective indexes
+* `Client.get_address_outputs(str)`: it expects address in Bech32 format and returns `list[dict]` of `transaction_ids` and respective `indexes`
 * `Client.get_output(str)`: it expects `output_id` and returns the UTXO output associated with it
 * `Client.find_outputs(output_ids (optional), addresses (optional))`: it is a bit more general and it searches for UTXO outputs associated with the given `output_ids` and/or `addresses`
 
-The result of `Client.get_address_outputs(str)` is just a list of `transaction_ids` and respective `indexes`:
+`Client.get_address_outputs(str)` returns `transaction_ids` and `indexes` in a raw form (in bytes) defined on protocol level and so usually some quick conversion is needed:
 ```python
 import iota_client
 client = iota_client.Client()
@@ -258,7 +273,7 @@ Output index: 0; raw transaction id: [162, 44, 186, 6, 103, 201, 34, 203, 177, 2
 ```
 * as a result, `UTXO` output is represented by output `index` and `transaction_id`. `transaction_id` is basically a list of 32 `bytes`. `index` is 2-bytes (16bits) `uint`
 * `index` and `transaction_id` is usually combined into single hex string of 68 characters = 32 * 2 chars (`transaction_id`; 32 bytes in hex) + 4 chars (`index`; 2 bytes in hex).<br />
-The resulting `output_id` is the same id that is shown in [Tangle Explorer](https://explorer.iota.org/chrysalis/), for instance
+The resulting `output_id` is the unique id of the given `output`
 
 Then the function `Client.get_output(str)` can be used to get details about the given `output_id`:
 ```python
