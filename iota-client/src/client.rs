@@ -410,8 +410,12 @@ impl Client {
 
     /// Get a node candidate from the synced node pool.
     pub(crate) async fn get_node(&self) -> Result<Url> {
-        let pool = self.node_manager.synced_nodes.read().await;
-        Ok(pool.iter().next().ok_or(Error::SyncedNodePoolEmpty)?.clone())
+        let pool = if self.node_manager.sync {
+            self.node_manager.synced_nodes.read().await.clone()
+        } else {
+            self.node_manager.nodes.clone()
+        };
+        Ok(pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)?)
     }
 
     /// Gets the network id of the node we're connecting to.

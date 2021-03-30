@@ -31,7 +31,7 @@ pub(crate) struct NodeManager {
     primary_node: Option<Url>,
     primary_pow_node: Option<Url>,
     pub(crate) nodes: HashSet<Url>,
-    sync: bool,
+    pub(crate) sync: bool,
     sync_interval: Duration,
     pub(crate) synced_nodes: Arc<RwLock<HashSet<Url>>>,
     quorum: bool,

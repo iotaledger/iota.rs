@@ -10,7 +10,7 @@ tv = dict()
 with open('../../../fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
 
-client = iota_client.Client(node=tv['NODE_URL'])
+client = iota_client.Client(nodes_name_password=[[tv['NODE_URL']]])
 message_id_indexation = tv['MESSAGE_ID'][0]
 
 
