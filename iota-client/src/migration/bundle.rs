@@ -60,11 +60,12 @@ pub async fn create_migration_bundle(
     let total_value = address_inputs.iter().map(|d| d.balance).sum();
 
     // Check for dust protection value
-    if total_value < DUST_THRESHOLD {
-        return Err(Error::MigrationError(
-            "Input value is < dust protection value (1_000_000 i)".into(),
-        ));
-    }
+    // Todo enable it again
+    // if total_value < DUST_THRESHOLD {
+    //     return Err(Error::MigrationError(
+    //         "Input value is < dust protection value (1_000_000 i)".into(),
+    //     ));
+    // }
     let transfer = vec![Transfer {
         address: migration_address,
         value: total_value,
