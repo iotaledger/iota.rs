@@ -122,6 +122,9 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
                         .send()
                         .await?
                         .hashes;
+                    if tx_hashes_on_spent_addresses.is_empty() {
+                        continue;
+                    }
                     let txs_on_spent_addresses = self
                         .client
                         .get_trytes(&tx_hashes_on_spent_addresses)
