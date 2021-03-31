@@ -6,7 +6,7 @@ use crate::client::{
     AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output,
 };
 use iota::{
-    MessageId as RustMessageId, Seed as RustSeed, TransactionId as RustTransactionId, UTXOInput as RustUTXOInput,
+    MessageId as RustMessageId, Seed as RustSeed, TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
 };
 use pyo3::{exceptions, prelude::*};
 use std::{
@@ -50,7 +50,7 @@ impl Client {
         }
         if let Some(inputs) = inputs {
             for input in inputs {
-                send_builder = send_builder.with_input(RustUTXOInput::new(
+                send_builder = send_builder.with_input(RustUtxoInput::new(
                     RustTransactionId::from_str(&input.transaction_id[..])?,
                     input.index,
                 )?);
@@ -286,6 +286,7 @@ impl Client {
             .map(|address_balance| AddressBalancePair {
                 address: address_balance.address.clone(),
                 balance: address_balance.balance,
+                dust_allowed: address_balance.dust_allowed,
             })
             .collect())
     }

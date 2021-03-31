@@ -23,7 +23,7 @@ pub use bee_rest_api::{
     self,
     types::{
         dtos::{AddressDto, OutputDto},
-        responses::{BalanceForAddressResponse, OutputResponse},
+        responses::{BalanceAddressResponse, OutputResponse},
     },
 };
 // pub use bee_signing_ext::{self, binary::BIP32Path,};

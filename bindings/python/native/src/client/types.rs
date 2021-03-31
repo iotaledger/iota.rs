@@ -19,10 +19,9 @@ use iota::{
             TreasuryTransactionPayloadDto as RustTreasuryTransactionPayloadDto,
         },
         responses::{
-            BalanceForAddressResponse as RustBalanceForAddressResponse, InfoResponse as RustInfoResponse,
-            MessageMetadataResponse as RustMessageMetadataResponse,
-            MilestoneUtxoChangesResponse as RustMilestoneUTXOChanges, OutputResponse as RustOutputResponse,
-            TreasuryResponse as RustTreasuryResponse,
+            BalanceAddressResponse as RustBalanceAddressResponse, InfoResponse as RustInfoResponse,
+            MessageMetadataResponse as RustMessageMetadataResponse, OutputResponse as RustOutputResponse,
+            TreasuryResponse as RustTreasuryResponse, UtxoChangesResponse as RustMilestoneUTXOChanges,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
@@ -33,8 +32,8 @@ use iota::{
     Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
     RegularEssence as RustRegularEssence, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
     SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransactionId,
-    TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
-    UnlockBlocks as RustUnlockBlocks,
+    TransactionPayload as RustTransactionPayload, UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks,
+    UtxoInput as RustUtxoInput,
 };
 
 use std::{
@@ -62,7 +61,7 @@ pub struct MessageMetadataResponse {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct BalanceForAddressResponse {
+pub struct BalanceAddressResponse {
     // The type of the address (1=Ed25519).
     pub address_type: u8,
     // hex encoded address
@@ -76,6 +75,8 @@ pub struct AddressBalancePair {
     pub address: String,
     /// Balance in the address
     pub balance: u64,
+    /// If dust is allowed on the address
+    pub dust_allowed: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -94,12 +95,12 @@ pub struct MilestoneUTXOChanges {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct InputDto {
-    pub utxo: Option<UTXOInput>,
+    pub utxo: Option<UtxoInput>,
     pub treasury: Option<TreasuryInput>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct UTXOInput {
+pub struct UtxoInput {
     pub transaction_id: Vec<u8>,
     pub index: u16,
 }
@@ -478,9 +479,9 @@ impl From<RustAddress> for AddressDto {
     }
 }
 
-impl From<RustBalanceForAddressResponse> for BalanceForAddressResponse {
-    fn from(balance_for_address_response: RustBalanceForAddressResponse) -> Self {
-        BalanceForAddressResponse {
+impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
+    fn from(balance_for_address_response: RustBalanceAddressResponse) -> Self {
+        BalanceAddressResponse {
             address_type: balance_for_address_response.address_type,
             address: balance_for_address_response.address,
             balance: balance_for_address_response.balance,
@@ -650,7 +651,7 @@ impl TryFrom<RustRegularEssence> for RegularEssence {
                 .iter()
                 .cloned()
                 .map(|input| {
-                    if let RustInput::UTXO(input) = input {
+                    if let RustInput::Utxo(input) = input {
                         Input {
                             transaction_id: input.output_id().transaction_id().to_string(),
                             index: input.output_id().index(),
@@ -877,10 +878,10 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
             .inputs
             .iter()
             .map(|input| {
-                RustUTXOInput::new(
+                RustUtxoInput::new(
                     RustTransactionId::from_str(&input.transaction_id[..]).unwrap_or_else(|_| {
                         panic!(
-                            "invalid UTXOInput transaction_id: {} with input index {}",
+                            "invalid UtxoInput transaction_id: {} with input index {}",
                             input.transaction_id, input.index
                         )
                     }),
@@ -888,7 +889,7 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
                 )
                 .unwrap_or_else(|_| {
                     panic!(
-                        "invalid UTXOInput transaction_id: {} with input index {}",
+                        "invalid UtxoInput transaction_id: {} with input index {}",
                         input.transaction_id, input.index
                     )
                 })

@@ -38,7 +38,7 @@ pub struct ClientMessageBuilder<'a> {
     seed: Option<&'a Seed>,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
-    inputs: Option<Vec<UTXOInput>>,
+    inputs: Option<Vec<UtxoInput>>,
     input_range: Range<usize>,
     outputs: Vec<Output>,
     index: Option<Box<[u8]>>,
@@ -82,7 +82,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Set a custom input(transaction output)
-    pub fn with_input(mut self, input: UTXOInput) -> Self {
+    pub fn with_input(mut self, input: UtxoInput) -> Self {
         self.inputs = match self.inputs {
             Some(mut inputs) => {
                 inputs.push(input);
@@ -250,8 +250,8 @@ impl<'a> ClientMessageBuilder<'a> {
                                 internal as u32,
                                 address_index as u32,
                             ]);
-                            let input = Input::UTXO(
-                                UTXOInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
+                            let input = Input::Utxo(
+                                UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
                                     .map_err(|_| Error::TransactionError)?,
                             );
                             inputs_for_essence.push(input.clone());
@@ -343,8 +343,8 @@ impl<'a> ClientMessageBuilder<'a> {
                                             *internal as u32,
                                             address_index as u32,
                                         ]);
-                                        let input = Input::UTXO(
-                                            UTXOInput::new(
+                                        let input = Input::Utxo(
+                                            UtxoInput::new(
                                                 TransactionId::from_str(&output.transaction_id)?,
                                                 output.output_index,
                                             )
@@ -559,17 +559,22 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
         }
     }
 
-    // If we create a dust allowance and a dust output we can allow it since we can't have more outputs to the same
-    // address in this transaction
-    if dust_outputs_amount > 0 && dust_allowance_balance > 0 {
-        return Ok(());
-    }
-
     let bech32_hrp = client.get_bech32_hrp().await?;
-    // If we only create a single dust output and dust is allowed we don't need to check more outputs
+
     let address_data = client.get_address().balance(&address.to_bech32(&bech32_hrp)).await?;
-    if address_data.dustAllowed && dust_outputs_amount == 1 && dust_allowance_balance >= 0 {
+    // If we create a dust output and a dust allowance output we don't need to check more outputs if the balance/100_000
+    // is < 100 because then we are sure that we didn't reach the max dust outputs
+    if address_data.dust_allowed
+        && dust_outputs_amount == 1
+        && dust_allowance_balance >= 0
+        && address_data.balance / 100_000 < 100
+    {
         return Ok(());
+    } else if !address_data.dust_allowed && dust_outputs_amount == 1 && dust_allowance_balance <= 0 {
+        return Err(Error::DustError(format!(
+            "No dust output allowed on address {}",
+            address.to_bech32(&bech32_hrp)
+        )));
     }
 
     // Check all outputs of the address because we want to consume a dust allowance output and don't know if we are

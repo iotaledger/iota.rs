@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    AddressDto, BalanceForAddressResponse as AddressBalancePair, Ed25519Signature, Essence, IndexationPayload, Input,
+    AddressDto, BalanceAddressResponse as AddressBalancePair, Ed25519Signature, Essence, IndexationPayload, Input,
     Message, MessageId, Output, OutputDto as BeeOutput, OutputResponse as OutputMetadata, Payload, ReferenceUnlock,
-    RegularEssence, SignatureUnlock, TransactionPayload, UTXOInput, UnlockBlock, UnlockBlocks,
+    RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock, UnlockBlocks, UtxoInput,
 };
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +37,7 @@ impl TryFrom<MessageRegularEssenceDto> for RegularEssence {
             .into_vec()
             .into_iter()
             .map(|input| {
-                UTXOInput::from_str(&input)
+                UtxoInput::from_str(&input)
                     .unwrap_or_else(|_| panic!("invalid input: {}", input))
                     .into()
             })
@@ -214,6 +214,7 @@ impl From<OutputMetadata> for OutputMetadataDto {
 pub(super) struct AddressBalanceDto {
     address: String,
     balance: u64,
+    dustAllowed: bool,
 }
 
 impl From<AddressBalancePair> for AddressBalanceDto {
@@ -221,6 +222,7 @@ impl From<AddressBalancePair> for AddressBalanceDto {
         Self {
             address: value.address.to_string(),
             balance: value.balance,
+            dustAllowed: value.dust_allowed,
         }
     }
 }
