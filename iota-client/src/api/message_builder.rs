@@ -550,29 +550,30 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
     let mut dust_outputs_amount: i64 = 0;
 
     // Add outputs from this transaction
-    for output in outputs {
-        match output.2 {
-            // add newly created outputs
-            true => {
-                if output.0 >= DUST_THRESHOLD {
-                    dust_allowance_balance += output.0 as i64;
-                } else {
-                    dust_outputs_amount += 1
-                }
-            }
-            // remove consumed outputs
-            false => {
-                if output.0 >= DUST_THRESHOLD {
-                    dust_allowance_balance -= output.0 as i64;
-                } else {
-                    dust_outputs_amount -= 1;
-                }
-            }
+    for (amount, _, add_outputs) in outputs {
+        let sign = if add_outputs { 1 } else { -1 };
+        if amount >= DUST_THRESHOLD {
+            dust_allowance_balance += sign * amount as i64;
+        } else {
+            dust_outputs_amount += sign;
         }
     }
 
+    // If we create a dust allowance and a dust output we can allow it since we can't have more outputs to the same
+    // address in this transaction
+    if dust_outputs_amount > 0 && dust_allowance_balance > 0 {
+        return Ok(());
+    }
+
     let bech32_hrp = client.get_bech32_hrp().await?;
-    // Get outputs from address and apply values
+    // If we only create a single dust output and dust is allowed we don't need to check more outputs
+    let address_data = client.get_address().balance(&address.to_bech32(&bech32_hrp)).await?;
+    if address_data.dustAllowed && dust_outputs_amount == 1 && dust_allowance_balance >= 0 {
+        return Ok(());
+    }
+
+    // Check all outputs of the address because we want to consume a dust allowance output and don't know if we are
+    // allowed to do that
     let address_outputs_metadata = client.find_outputs(&[], &[address.to_bech32(&bech32_hrp)]).await?;
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
