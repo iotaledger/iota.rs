@@ -381,7 +381,7 @@ impl From<RustOutputResponse> for OutputResponse {
 impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
     fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
         Self {
-            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_vec(),
+            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().as_ref().into(),
             output: migrated_funds_entry.output().clone().into(),
         }
     }
@@ -1062,7 +1062,7 @@ impl From<RustTreasuryTransactionPayloadDto> for TreasuryTransaction {
                 kind: t.kind,
                 message_id: t.message_id,
             },
-            RustInputDto::UTXO(_) => panic!("Invalid type"),
+            RustInputDto::Utxo(_) => panic!("Invalid type"),
         };
         Self {
             kind: treasury.kind,
