@@ -80,8 +80,7 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
                 .with_seed(&seed)
                 .with_security(self.security_lvl)
                 .with_range(range)
-                .finish()
-                .unwrap();
+                .finish()?;
 
             let addresses_for_api_calls: Vec<Address> = addresses_with_index
                 .clone()

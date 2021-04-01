@@ -87,7 +87,7 @@ pub fn add_tryte_checksum(address: TryteAddress) -> Result<String> {
             &[address.to_inner().as_i8_slice(), &[0, 0, 0]].concat(),
             243,
         )?)
-        .unwrap()
+        .map_err(|e| Error::BeeCryptoError(format!("{:?}", e)))?
         .iter_trytes()
         .map(char::from)
         .collect::<String>();

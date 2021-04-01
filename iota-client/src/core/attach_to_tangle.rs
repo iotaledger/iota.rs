@@ -210,8 +210,12 @@ pub fn attach_to_tangle_local(
     result_trytes.reverse();
     let bundled_transaction = result_trytes
         .iter()
-        .map(|tx| Transaction::from_trits(TryteBuf::try_from_str(&tx).unwrap().as_trits()).unwrap())
-        .collect();
+        .map(|tx| {
+            Ok(Transaction::from_trits(
+                TryteBuf::try_from_str(&tx)?.as_trits(),
+            )?)
+        })
+        .collect::<Result<Vec<Transaction>>>()?;
     Ok(AttachToTangleResponse {
         trytes: bundled_transaction,
     })

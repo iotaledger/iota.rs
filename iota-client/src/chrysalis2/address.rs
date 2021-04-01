@@ -31,7 +31,6 @@ pub struct GetAddressesBuilder<'a> {
     seed: &'a Seed,
     account_index: Option<usize>,
     range: Option<Range<usize>>,
-    bech32_hrp: String,
 }
 
 impl<'a> GetAddressesBuilder<'a> {
@@ -41,7 +40,6 @@ impl<'a> GetAddressesBuilder<'a> {
             seed,
             account_index: None,
             range: None,
-            bech32_hrp: "atoi".into(),
         }
     }
 
@@ -54,12 +52,6 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Set range to the builder
     pub fn with_range(mut self, range: Range<usize>) -> Self {
         self.range = Some(range);
-        self
-    }
-
-    /// Set range to the builder
-    pub fn with_bech32_hpr(mut self, bech32_hrp: String) -> Self {
-        self.bech32_hrp = bech32_hrp;
         self
     }
 

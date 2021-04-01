@@ -158,6 +158,11 @@ pub async fn mine(
     spent_bundle_hashes: Vec<String>,
     timeout: u64,
 ) -> Result<(MinedCrackability, OutgoingBundleBuilder)> {
+    if spent_bundle_hashes.is_empty() {
+        return Err(Error::MigrationError(
+            "Can't mine without spent_bundle_hashes",
+        ));
+    }
     let bundle = prepared_bundle
         .seal()
         .expect("Fail to seal bundle")
@@ -169,7 +174,12 @@ pub async fn mine(
         .expect("Fail to build bundle");
     let mut txs = Vec::new();
     for i in 0..bundle.len() {
-        txs.push(bundle.get(i).unwrap().clone());
+        txs.push(
+            bundle
+                .get(i)
+                .expect("Failed to get transaction from bundle")
+                .clone(),
+        );
     }
     let essence_parts = get_bundle_essence_parts(&txs);
     let mut miner_builder = MinerBuilder::new()
@@ -178,12 +188,11 @@ pub async fn mine(
             essence_parts
                 .iter()
                 .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
+                    Ok(TryteBuf::try_from_str(&(*t).to_string())?
                         .as_trits()
-                        .encode()
+                        .encode())
                 })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
+                .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
         )
         .with_security_level(security_level as usize);
     // Ledger Nano App rejects bundles that contain a 13 anywhere in the signed fragments
@@ -196,19 +205,17 @@ pub async fn mine(
             spent_bundle_hashes
                 .iter()
                 .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
+                    Ok(TryteBuf::try_from_str(&(*t).to_string())?
                         .as_trits()
-                        .encode()
+                        .encode())
                 })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
+                .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
         )
         // use num_cpus::get()? Or not all, because it could lag?
         .with_worker_count(1)
         .with_core_thread_count(1)
         .with_mining_timeout(timeout)
-        .finish()
-        .unwrap();
+        .finish()?;
 
     let mut recoverer = RecovererBuilder::new()
         .with_security_level(security_level as usize)
@@ -216,16 +223,14 @@ pub async fn mine(
             spent_bundle_hashes
                 .iter()
                 .map(|t| {
-                    TryteBuf::try_from_str(&(*t).to_string())
-                        .unwrap()
+                    Ok(TryteBuf::try_from_str(&(*t).to_string())?
                         .as_trits()
-                        .encode()
+                        .encode())
                 })
-                .collect::<Vec<TritBuf<T1B1Buf>>>(),
+                .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
         )
         .miner(miner)
-        .finish()
-        .unwrap();
+        .finish()?;
     // Todo: decide which crackability value is good enough
     let mined_info = match recoverer.recover().await {
         CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
@@ -234,7 +239,7 @@ pub async fn mine(
     let updated_bundle = update_essence_with_mined_essence(
         txs,
         mined_info.mined_essence.clone().expect("No essence mined"),
-    );
+    )?;
     Ok((mined_info, updated_bundle))
 }
 
@@ -253,7 +258,10 @@ pub fn get_trytes_from_bundle(created_migration_bundle: OutgoingBundleBuilder) -
     let mut trytes = Vec::new();
     for i in 0..bundle.len() {
         let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
-        bundle.get(i).unwrap().as_trits_allocated(&mut trits);
+        bundle
+            .get(i)
+            .expect("Failed to get transaction from bundle")
+            .as_trits_allocated(&mut trits);
         trytes.push(
             trits
                 .encode::<T3B1Buf>()
@@ -269,7 +277,7 @@ pub fn get_trytes_from_bundle(created_migration_bundle: OutgoingBundleBuilder) -
 fn update_essence_with_mined_essence(
     mut prepared_txs: Vec<BundledTransaction>,
     latest_tx_essence_part: TritBuf<T1B1Buf>,
-) -> OutgoingBundleBuilder {
+) -> Result<OutgoingBundleBuilder> {
     // Replace obsolete tag of the last transaction with the mined obsolete_tag
     let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
     prepared_txs[prepared_txs.len() - 1].as_trits_allocated(trits.as_slice_mut());
@@ -277,7 +285,7 @@ fn update_essence_with_mined_essence(
         .subslice_mut(6804..7047)
         .copy_from(&latest_tx_essence_part);
     let tx_len = prepared_txs.len();
-    prepared_txs[tx_len - 1] = BundledTransaction::from_trits(&trits).unwrap();
+    prepared_txs[tx_len - 1] = BundledTransaction::from_trits(&trits)?;
 
     // Create final bundle with updated obsolet_tag(mined essence part)
     let mut bundle = OutgoingBundleBuilder::default();
@@ -301,7 +309,7 @@ fn update_essence_with_mined_essence(
                 .with_nonce(Nonce::zeros()),
         )
     }
-    bundle
+    Ok(bundle)
 }
 
 // Split each tx in two essence parts, first one is the address and the second one

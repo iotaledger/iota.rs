@@ -5,7 +5,7 @@ use std::fmt;
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[warn(clippy::large_enum_variant)]
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 /// Error type of the iota client crate.
 pub enum Error {
@@ -47,6 +47,12 @@ pub enum Error {
     TernaryDecodeError(bee_ternary::b1t6::DecodeError),
     /// Bee ternary error
     BeeTernaryError(bee_ternary::Error),
+    /// Bundle miner error
+    BundleMinerError(iota_bundle_miner::error::Error),
+    /// Bee transaction error
+    BeeTransactionError(bee_transaction::bundled::BundledTransactionError),
+    /// Bee crypto error
+    BeeCryptoError(String),
 }
 
 impl fmt::Display for Error {
@@ -71,6 +77,9 @@ impl fmt::Display for Error {
             Error::MigrationError(e) => e.fmt(f),
             Error::TernaryDecodeError(e) => format!("{:?}", e).fmt(f),
             Error::BeeTernaryError(e) => e.fmt(f),
+            Error::BundleMinerError(e) => e.fmt(f),
+            Error::BeeTransactionError(e) => format!("{:?}", e).fmt(f),
+            Error::BeeCryptoError(e) => e.fmt(f),
         }
     }
 }
@@ -107,5 +116,15 @@ impl From<bee_ternary::b1t6::DecodeError> for Error {
 impl From<bee_ternary::Error> for Error {
     fn from(error: bee_ternary::Error) -> Self {
         Error::BeeTernaryError(error)
+    }
+}
+impl From<iota_bundle_miner::error::Error> for Error {
+    fn from(error: iota_bundle_miner::error::Error) -> Self {
+        Error::BundleMinerError(error)
+    }
+}
+impl From<bee_transaction::bundled::BundledTransactionError> for Error {
+    fn from(error: bee_transaction::bundled::BundledTransactionError) -> Self {
+        Error::BeeTransactionError(error)
     }
 }

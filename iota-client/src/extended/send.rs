@@ -107,6 +107,7 @@ impl<'a> SendBuilder<'a> {
         let mut send_trytes = self
             .client
             .send_trytes()
+            .with_local_pow(self.local_pow)
             .with_trytes(trytes)
             .with_depth(self.depth)
             .with_min_weight_magnitude(self.min_weight_magnitude);

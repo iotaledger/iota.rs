@@ -76,7 +76,7 @@ impl Client {
             if let Ok(milestone) = self.get_node_info(url).await {
                 let set = sync_list
                     .entry(milestone.latest_solid_subtangle_milestone_index)
-                    .or_insert(Vec::new());
+                    .or_insert_with(Vec::new);
                 set.push(url.clone());
             };
         }
