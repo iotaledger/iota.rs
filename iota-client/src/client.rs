@@ -410,6 +410,9 @@ impl Client {
 
     /// Get a node candidate from the synced node pool.
     pub(crate) async fn get_node(&self) -> Result<Url> {
+        if let Some(primary_node) = &self.node_manager.primary_node {
+            return Ok(primary_node.clone());
+        }
         let pool = if self.node_manager.sync {
             self.node_manager.synced_nodes.read().await.clone()
         } else {

@@ -116,11 +116,11 @@ declare_types! {
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let primary_node = &mut this.borrow_mut(&guard).primary_node;
+                let primary_pow_node = &mut this.borrow_mut(&guard).primary_pow_node;
                 if let (Some(name), Some(password)) = (name, password){
-                    primary_node.replace((node_url, Some((name, password))));
+                    primary_pow_node.replace((node_url, Some((name, password))));
                 } else {
-                    primary_node.replace((node_url, None));
+                    primary_pow_node.replace((node_url, None));
                 }
             }
             Ok(cx.this().upcast())

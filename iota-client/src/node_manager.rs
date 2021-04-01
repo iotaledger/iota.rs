@@ -28,7 +28,7 @@ const DEFAULT_QUORUM_SIZE: usize = 3;
 const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 
 pub(crate) struct NodeManager {
-    primary_node: Option<Url>,
+    pub(crate) primary_node: Option<Url>,
     primary_pow_node: Option<Url>,
     pub(crate) nodes: HashSet<Url>,
     pub(crate) sync: bool,
@@ -368,7 +368,7 @@ impl NodeManagerBuilder {
         synced_nodes: Arc<RwLock<HashSet<Url>>>,
     ) -> Result<NodeManager> {
         let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
-        if self.nodes.is_empty() {
+        if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {
                 Some(ref network) => match network.to_lowercase().as_str() {
                     "testnet" | "devnet" | "test" | "dev" => {
@@ -380,6 +380,11 @@ impl NodeManagerBuilder {
                     self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                 }
             }
+        }
+
+        // Return error if we don't have a node
+        if self.nodes.is_empty() && self.primary_node.is_none() {
+            return Err(Error::MissingParameter("Node"));
         }
 
         let node_manager = NodeManager {
