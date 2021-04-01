@@ -19,8 +19,10 @@ use std::{
     },
 };
 
-const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const ADDRESS_GAP_LIMIT: usize = 20;
+// https://github.com/GalRogozinski/protocol-rfcs/blob/dust/text/0032-dust-protection/0032-dust-protection.md
+const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
+const DUST_DIVISOR: i64 = 100_000;
 const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Structure for sorting of UnlockBlocks
@@ -567,7 +569,7 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
     if address_data.dust_allowed
         && dust_outputs_amount == 1
         && dust_allowance_balance >= 0
-        && address_data.balance / 100_000 < 100
+        && address_data.balance as i64 / DUST_DIVISOR < MAX_ALLOWED_DUST_OUTPUTS
     {
         return Ok(());
     } else if !address_data.dust_allowed && dust_outputs_amount == 1 && dust_allowance_balance <= 0 {
@@ -596,7 +598,7 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
 
     // Here dust_allowance_balance and dust_outputs_amount should be as if this transaction gets confirmed
     // Max allowed dust outputs is 100
-    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, MAX_ALLOWED_DUST_OUTPUTS);
+    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / DUST_DIVISOR, MAX_ALLOWED_DUST_OUTPUTS);
     if dust_outputs_amount > allowed_dust_amount {
         return Err(Error::DustError(format!(
             "No dust output allowed on address {}",
