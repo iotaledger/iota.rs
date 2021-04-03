@@ -26,7 +26,6 @@ pub use bee_rest_api::{
         responses::{BalanceForAddressResponse, OutputResponse},
     },
 };
-// pub use bee_signing_ext::{self, binary::BIP32Path,};
 pub use builder::ClientBuilder;
 pub use client::*;
 pub use crypto::keys::slip10::Seed;
