@@ -19,13 +19,9 @@ pub mod node;
 pub mod storage;
 
 pub use bee_message;
-pub use bee_rest_api::{
-    self,
-    types::{
-        dtos::{AddressDto, OutputDto},
-        responses::{BalanceForAddressResponse, OutputResponse},
-    },
-};
+pub use bee_rest_api;
+pub use bee_common as common;
+pub use bee_pow as pow;
 pub use builder::ClientBuilder;
 pub use client::*;
 pub use crypto::keys::slip10::Seed;
