@@ -4,7 +4,7 @@
 use iota::{
     bee_rest_api::types::{
         dtos::{AddressDto, OutputDto as BeeOutput},
-        responses::{BalanceForAddressResponse as AddressBalancePair, OutputResponse as OutputMetadata},
+        responses::{BalanceAddressResponse as AddressBalancePair, OutputResponse as OutputMetadata},
     },
     Ed25519Signature, Essence, IndexationPayload, Input, Message, MessageId, Output, Payload, ReferenceUnlock,
     RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock, UnlockBlocks, UtxoInput,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, AddressOutputsOptions, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto,
+    error::Result, AddressOutputsOptions, BalanceAddressResponse, Client, InfoResponse, Message, MilestoneDto,
     MilestoneUTXOChanges, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UtxoInput,
 };
 use iota::{
@@ -55,7 +55,7 @@ impl Client {
     fn get_output(&self, output_id: String) -> Result<OutputResponse> {
         Ok(crate::block_on(async { self.client.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
     }
-    fn get_address_balance(&self, address: &str) -> Result<BalanceForAddressResponse> {
+    fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
         Ok(crate::block_on(async { self.client.get_address().balance(&String::from(address)).await })?.into())
     }
     fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UtxoInput>> {

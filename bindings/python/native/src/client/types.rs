@@ -19,10 +19,9 @@ use iota::{
             TreasuryTransactionPayloadDto as RustTreasuryTransactionPayloadDto,
         },
         responses::{
-            BalanceForAddressResponse as RustBalanceForAddressResponse, InfoResponse as RustInfoResponse,
-            MessageMetadataResponse as RustMessageMetadataResponse,
-            MilestoneUtxoChangesResponse as RustMilestoneUTXOChanges, OutputResponse as RustOutputResponse,
-            TreasuryResponse as RustTreasuryResponse,
+            BalanceAddressResponse as RustBalanceAddressResponse, InfoResponse as RustInfoResponse,
+            MessageMetadataResponse as RustMessageMetadataResponse, OutputResponse as RustOutputResponse,
+            TreasuryResponse as RustTreasuryResponse, UtxoChangesResponse as RustMilestoneUTXOChanges,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
@@ -62,7 +61,7 @@ pub struct MessageMetadataResponse {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct BalanceForAddressResponse {
+pub struct BalanceAddressResponse {
     // The type of the address (1=Ed25519).
     pub address_type: u8,
     // hex encoded address
@@ -380,7 +379,7 @@ impl From<RustOutputResponse> for OutputResponse {
 impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
     fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
         Self {
-            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_vec(),
+            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().as_ref().into(),
             output: migrated_funds_entry.output().clone().into(),
         }
     }
@@ -478,9 +477,9 @@ impl From<RustAddress> for AddressDto {
     }
 }
 
-impl From<RustBalanceForAddressResponse> for BalanceForAddressResponse {
-    fn from(balance_for_address_response: RustBalanceForAddressResponse) -> Self {
-        BalanceForAddressResponse {
+impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
+    fn from(balance_for_address_response: RustBalanceAddressResponse) -> Self {
+        BalanceAddressResponse {
             address_type: balance_for_address_response.address_type,
             address: balance_for_address_response.address,
             balance: balance_for_address_response.balance,
@@ -650,7 +649,7 @@ impl TryFrom<RustRegularEssence> for RegularEssence {
                 .iter()
                 .cloned()
                 .map(|input| {
-                    if let RustInput::UTXO(input) = input {
+                    if let RustInput::Utxo(input) = input {
                         Input {
                             transaction_id: input.output_id().transaction_id().to_string(),
                             index: input.output_id().index(),
@@ -1061,7 +1060,7 @@ impl From<RustTreasuryTransactionPayloadDto> for TreasuryTransaction {
                 kind: t.kind,
                 message_id: t.message_id,
             },
-            RustInputDto::UTXO(_) => panic!("Invalid type"),
+            RustInputDto::Utxo(_) => panic!("Invalid type"),
         };
         Self {
             kind: treasury.kind,
