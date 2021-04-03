@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    message::prelude::{Address, MessageId, TransactionId, UTXOInput},
+    message::prelude::{Address, MessageId, TransactionId, UtxoInput},
     AddressOutputsOptions, OutputType, Seed,
 };
 use neon::prelude::*;
@@ -357,7 +357,7 @@ declare_types! {
 
         method getOutput(mut cx) {
             let output_id = cx.argument::<JsString>(0)?.value();
-            let output_id = UTXOInput::from_str(output_id.as_str()).expect("invalid output id");
+            let output_id = UtxoInput::from_str(output_id.as_str()).expect("invalid output id");
             let cb = cx.argument::<JsFunction>(1)?;
             {
                 let this = cx.this();
@@ -379,7 +379,7 @@ declare_types! {
             let mut outputs = vec![];
             for js_output_id in js_output_ids {
                 let output_id: Handle<JsString> = js_output_id.downcast_or_throw(&mut cx)?;
-                let output_id = UTXOInput::from_str(output_id.value().as_str()).expect("invalid output id");
+                let output_id = UtxoInput::from_str(output_id.value().as_str()).expect("invalid output id");
                 outputs.push(output_id);
             }
 

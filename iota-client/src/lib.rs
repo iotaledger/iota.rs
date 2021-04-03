@@ -18,10 +18,10 @@ pub mod node;
 #[cfg_attr(docsrs, doc(cfg(feature = "storage")))]
 pub mod storage;
 
-pub use bee_message;
-pub use bee_rest_api;
 pub use bee_common as common;
+pub use bee_message;
 pub use bee_pow as pow;
+pub use bee_rest_api;
 pub use builder::ClientBuilder;
 pub use client::*;
 pub use crypto::keys::slip10::Seed;

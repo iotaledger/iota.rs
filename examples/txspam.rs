@@ -3,7 +3,7 @@
 
 //! cargo run --example txspam --release
 
-use iota::{client::Result, Client, Essence, Payload, Seed, UTXOInput};
+use iota::{client::Result, Client, Essence, Payload, Seed, UtxoInput};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
         match tx.essence() {
             Essence::Regular(essence) => {
                 for (index, _output) in essence.outputs().iter().enumerate() {
-                    initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
+                    initial_outputs.push(UtxoInput::new(tx.id(), index as u16).unwrap());
                 }
             }
             _ => {

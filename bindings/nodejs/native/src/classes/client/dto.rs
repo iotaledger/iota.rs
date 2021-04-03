@@ -7,7 +7,7 @@ use iota::{
         responses::{BalanceForAddressResponse as AddressBalancePair, OutputResponse as OutputMetadata},
     },
     Ed25519Signature, Essence, IndexationPayload, Input, Message, MessageId, Output, Payload, ReferenceUnlock,
-    RegularEssence, SignatureUnlock, TransactionPayload, UTXOInput, UnlockBlock, UnlockBlocks,
+    RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock, UnlockBlocks, UtxoInput,
 };
 use serde::{Deserialize, Serialize};
 
@@ -40,7 +40,7 @@ impl TryFrom<MessageRegularEssenceDto> for RegularEssence {
             .into_vec()
             .into_iter()
             .map(|input| {
-                UTXOInput::from_str(&input)
+                UtxoInput::from_str(&input)
                     .unwrap_or_else(|_| panic!("invalid input: {}", input))
                     .into()
             })

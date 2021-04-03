@@ -33,8 +33,8 @@ use iota::{
     Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
     RegularEssence as RustRegularEssence, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
     SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransactionId,
-    TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
-    UnlockBlocks as RustUnlockBlocks,
+    TransactionPayload as RustTransactionPayload, UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks,
+    UtxoInput as RustUtxoInput,
 };
 
 use std::{
@@ -94,12 +94,12 @@ pub struct MilestoneUTXOChanges {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct InputDto {
-    pub utxo: Option<UTXOInput>,
+    pub utxo: Option<UtxoInput>,
     pub treasury: Option<TreasuryInput>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct UTXOInput {
+pub struct UtxoInput {
     pub transaction_id: Vec<u8>,
     pub index: u16,
 }
@@ -877,10 +877,10 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
             .inputs
             .iter()
             .map(|input| {
-                RustUTXOInput::new(
+                RustUtxoInput::new(
                     RustTransactionId::from_str(&input.transaction_id[..]).unwrap_or_else(|_| {
                         panic!(
-                            "invalid UTXOInput transaction_id: {} with input index {}",
+                            "invalid UtxoInput transaction_id: {} with input index {}",
                             input.transaction_id, input.index
                         )
                     }),
@@ -888,7 +888,7 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
                 )
                 .unwrap_or_else(|_| {
                     panic!(
-                        "invalid UTXOInput transaction_id: {} with input index {}",
+                        "invalid UtxoInput transaction_id: {} with input index {}",
                         input.transaction_id, input.index
                     )
                 })
