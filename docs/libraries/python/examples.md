@@ -1,6 +1,6 @@
 # Examples
 
-> Please note: In is not recommended to store passwords/seeds on host's environment variables or in the source code in a production setup! Please make sure you follow our [backup and security](https://chrysalis.docs.iota.org/guides/backup_security.html) recommendations for production use!
+> Please note: It is not recommended to store passwords/seeds on host's environment variables or in the source code in a production setup! Please make sure you follow our [backup and security](https://chrysalis.docs.iota.org/guides/backup_security.html) recommendations for production use!
 
 ## Connecting to node(s)
 All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions with IOTA network (Tangle). This class has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node-software/node-software.html) that power IOTA network.
@@ -213,13 +213,15 @@ Before we continue, let's introduce some additional terms that describe an unit 
 
 TODO: How every message is unique?
 
-> IOTA is no longer based on ternary. IOTA 1.5 (Chrysalis) uses binary system to encode and broadcast all underlying data entities
+> IOTA is no longer based on ternary. IOTA 1.5 (Chrysalis) uses binary to encode and broadcast all underlying data entities
 
 `Message` is broadcasted using a binary format, is arbitrary size (up to 35 kB) and it can hold a variable sets of information so called `payloads`. Number of payloads a single message can encapsulate is not given (even a message without any `payload` at all is completely valid).
 
-`Payload` represents a layer of concern. Some core payloads may change a state of the ledger (transactions) and some may provide extra features to some specific applications and business use cases (ex. indexed data).
+`Payload` represents a layer of concern. Some payloads may change a state of the ledger (ex. `transactions`) and some may provide extra features to some specific applications and business use cases (ex. `indexed data`).
 
-There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon. Needless to say, IOTA network ensures the outer structure of message itself is valid and definitely aligned with a network consensus protocol, however the inner structure is very flexible, future-proof, and offer an unmatched network extensibility.
+There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon.
+
+Needless to say, IOTA network ensures the outer structure of message itself is valid and definitely aligned with a network consensus protocol, however the inner structure is very flexible, future-proof, and offer an unmatched network extensibility.
 
 ![messages_in_tangle](messages_in_tangle.svg)
 
@@ -229,7 +231,7 @@ The current IOTA 1.5 network incorporates the following core payloads:
 * `IndexationPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data. The given index can be later used to search the message(s)
 
 ### Unspent Transaction Output (UTXO)
-Originally IOTA used an `account-based model` for tracking individual iota tokens: _each IOTA address holds a number of tokens and aggregated number of tokens from all iota addresses is equal to total supply._
+Originally, the IOTA used an `account-based model` for tracking individual iota tokens: _each IOTA address holds a number of tokens and aggregated number of tokens from all iota addresses is equal to total supply._
 
 In contrary, IOTA 1.5 uses `unspent transaction output` model, so called `UTXO`. It is based on an idea to track unspent amount of tokens via data structure called `output`.
 
@@ -335,13 +337,144 @@ Output example:
 
 So this is quite interesting part, notice the `output_id` that was used in a function call to get output details is the same as a combination of `transaction_id` and `output index`.
 
-This way a transaction is tightly coupled with `outputs` since `SignedTransaction` is a main vehicle how `outputs` are being created and spent, and altogether everything is encapsulated in a `message`.
+This way a transaction is tightly coupled with `outputs` since `SignedTransaction` payload is a main vehicle how `outputs` are being created and spent, and altogether everything is encapsulated in a `message`.
 
 ## Messages
-As mentioned above, `message` is an encapsulating data structure that is being actually broadcasted across network. It is an atomic unit that is accepted/rejected as a whole.
+As mentioned above, the `message` is encapsulating data structure that is being actually broadcasted across network. It is an atomic unit that is accepted/rejected as a whole.
 
+There is a convenient function `Client.message()` that prepares a message instance and sends it over a network. It accepts wide range of input parameters and can help with any kind of message type to be broadcasted.
 
+The simplest message that can be broadcasted is a message without any particular payload:
 
+```python
+import iota_client
+client = iota_client.Client()
+
+message = client.message()
+print(message)
+```
+
+Output example:
+```json
+{'message_id': 'e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086',
+ 'network_id': 7712883261355838377,
+ 'parents': ['0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7',
+  '0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9',
+  '20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977',
+  'da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c'],
+ 'payload': None,
+ 'nonce': 2305843009213869242}
+```
+* `message_id` is an unique id that refers to the given message in network
+* as mentioned above, every message in the Tangle should refer to up to 8 other messages, those are indicated via section `parents`
+* no actual `payload` was given
+* `nonce` refer to a result of proof-of-work
+
+Once a message is broadcasted, there are two main function that can be used to read all information about the given message from the Tangle (`Client.get_message_data()` and `Client.get_message_metadata()`):
+```python
+import iota_client
+client = iota_client.Client()
+
+message = client.get_message_data("e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086")
+message_meta = client.get_message_metadata("e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086")
+
+print("Message meta data:")
+print(message_meta)
+print("Message data:")
+print(message)
+```
+
+Output example:
+```json
+Message meta data:
+{'message_id': 'e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086',
+ 'parent_message_ids': ['0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7',
+  '0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9',
+  '20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977',
+  'da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c'],
+ 'is_solid': True,
+ 'referenced_by_milestone_index': 284866,
+ 'milestone_index': None,
+ 'ledger_inclusion_state': {'state': 'NoTransaction'},
+ 'conflict_reason': None,
+ 'should_promote': None,
+ 'should_reattach': None}
+
+Message data:
+ {'message_id': 'e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086',
+ 'network_id': 7712883261355838377,
+ 'parents': ['0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7',
+  '0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9',
+  '20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977',
+  'da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c'],
+ 'payload': None,
+ 'nonce': 2305843009213869242}
+```
+* `Client.get_message_metadata` provides information how the given message fits to network structures such as `ledger_inclusion_state`, etc.
+* `Client.get_message_data` provides all data that relates to the given message and its payload(s)
+
+### IndexationPayload
+`IndexationPayload` is a payload type that can be used to attach an arbitrary data to a message and its `index`, so at least an index and data (as `list[bytes]`) should be provided in order to send the payload:
+
+```python
+import iota_client
+client = iota_client.Client()
+
+# encoding utf string into list of bytes
+some_utf_data = "some utf based data".encode("utf8")
+
+message = client.message(
+    index="some_data_index", data=some_utf_data
+)
+print(message)
+```
+
+Output example:
+```json
+{'message_id': '8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9',
+ 'network_id': 7712883261355838377,
+ 'parents': ['3719d308ae14b7ef1ed5a3a1604228e97587b9da487db10bc6e4a4f800083da0',
+  '4431e2f776db888488728e0aa34c94975e65d6fa74893aa675172af6b9f37257',
+  '8f9fa84954c58bcfc9acc33ca827b4ea35c2caae88db736399a031120e85eebf',
+  'f63d416de97e6a9fd1314fbbbbb263f30dff260f3075f9a65e7dfe1f2cc56ce3'],
+ 'payload': {'transaction': None,
+  'milestone': None,
+  'indexation': [{'index': '736f6d655f646174615f696e646578',
+    'data': [115,
+     111,
+     109,
+     101,
+     32,
+     117,
+     116,
+     102,
+     32,
+     98,
+     97,
+     115,
+     101,
+     100,
+     32,
+     100,
+     97,
+     116,
+     97]}],
+  'receipt': None,
+  'treasury_transaction': None},
+ 'nonce': 6917529027641573188}
+```
+* Feel free to check the given message using its `message_id` in [Tangle explorer](https://explorer.iota.org/chrysalis/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
+* In comparison to an empty message sent in the previous chapter, the `payload` section looks more interesting
+* There are three payloads prepared (`transaction`, `milestone` and `indexation`) however only `indexation` payload is leveraged
+* `index` was encoded to `list[bytes]` in hex (no hash algorithm) and the resulting string is additional way how to search for a set of indexed messages with the same index key via [Tangle explorer](https://explorer.iota.org/chrysalis/indexed/736f6d655f646174615f696e646578) or `Client.find_messages()` API
+* `data` contains an arbitrary data encoded in bytes
+* In comparison to IOTA 1.0, please note there is no IOTA address involved while sending pure data messages via network in case of IOTA 1.5. Such messages are referenced using `message_id` or `index` key
+* IOTA addresses are part of `UTXO` data structure that is sent using `SignedTransaction` payload explained below
+
+### SignedTransaction
+`SignedTransaction` is a payload type that is used to send information regarding `UTXO` (Unspent Transaction Output).
+
+As mentioned above, this core payload changes the ledger state as old `outputs` are being spent (replaced) and new `outputs` are being created:
 
 ```python
 import iota_client
@@ -349,7 +482,6 @@ client = iota_client.Client()
 
 client.get_message_data("f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b")
 ```
-
 
 Example of message
 ```json
@@ -402,3 +534,78 @@ Example of message
     'nonce': 1146102
 }
 ```
+
+Each `transaction` includes the following set of information:
+* `inputs`: list of valid `outputs` that should be used to fund the given operation. Those outputs will be spent and once the message is confirmed, those outputs are not valid anymore. Outputs are uniquely referenced via `transaction_id` and inner `index`. At least one output has to be given with enough balance to source all `outputs`
+* `outputs`: list of IOTA address(es) and related amount(s) the input `outputs` should be split among. Based on this information, new `UTXO` entities (outputs) are being created
+* `unlock_blocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only valid seed owner is able to correctly sign the given transaction and proofs ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblock_block` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to existing signature
+* `payload`: each `SignedTransaction` can include additional payload(s) such as `IndexationPayload`, etc. Meaning, any value-based messages can also contain arbitrary data
+
+Sending value-based messages is also very straightforward process.
+
+As a minimum, it needs a valid seed, output addresses and amount. The method finds valid output(s) that can be used to fund the given amount(s), the unspent amount is sent to the same address:
+
+```python
+import iota_client
+client = iota_client.Client()
+
+message = client.message(
+    seed='b3d7092195c36d47133ff786d4b0a1ef2ee6a0052f6e87b6dc337935c70c531e',
+    outputs=[
+        {'address': 'atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz', 'amount': 1_000_000}
+    ]
+)
+print(message)
+```
+
+Output example:
+```json
+{
+    'message_id': '7c47db1c4555348c260d91e90cc10fd66c2e73a84ec24bf9533e440f6d945d42',
+    'network_id': 7712883261355838377,
+    'parents': [
+        '0ec0cd3c0303845980981bf7cc72371a8cd6e38c15924a2950fb15c5ecf4a53b',
+        '4011f7724f96b6e39cdf9987ee650c0552d4fc63c09dd72b9be30a3cc7b53806',
+        '5730d5bd607c6125130df30204c995db5edcbd16c4ab150946dffac37ace26f9',
+        '8c1982682dbfa0abdd8772e38d044dbfcbea5ebb99bbe7174c07d81adda62419'
+    ],
+    'payload': {
+        'transaction': [
+            {
+                'essence': {
+                    'inputs': [
+                        {'transaction_id': 'a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772', 'index': 0}
+                    ],
+                    'outputs': [
+                        {'address': 'atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz', 'amount': 1000000},
+                        {'address': 'atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86', 'amount': 9000000}
+                    ],
+                    'payload': None
+                },
+                'unlock_blocks': [
+                    {'signature': {
+                        'public_key': [
+                        243,...<trimmed>
+                        ],
+                        'signature': [
+                                64,...<trimmed>
+                            ]
+                        },
+                        'reference': None
+                    }
+                ]
+            }
+        ],
+        'milestone': None,
+        'indexation': None,
+        'receipt': None,
+        'treasury_transaction': None
+    },
+    'nonce': 9223372036854802939
+}
+```
+
+#### Dust protection
+Please note, there is also implemented a [dust protection](https://chrysalis.docs.iota.org/guides/dev_guide.html#dust-protection) mechanism in the network protocol to avoid malicious actors to spam network in order to decrease node performance while keeping track of unspent amount (`UTXO`):
+> "... microtransaction below 1Mi of IOTA tokens [can be sent] to another address if there is already at least 1Mi on that address"
+That's why we did send 1Mi in the given example to comply with the protection."
