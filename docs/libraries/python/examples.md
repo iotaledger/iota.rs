@@ -211,8 +211,6 @@ Before we continue, let's introduce some additional terms that describe an unit 
 
 `Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle graph. It can refer to up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
 
-TODO: How every message is unique?
-
 > IOTA is no longer based on ternary. IOTA 1.5 (Chrysalis) uses binary to encode and broadcast all underlying data entities
 
 `Message` is broadcasted using a binary format, is arbitrary size (up to 35 kB) and it can hold a variable sets of information so called `payloads`. Number of payloads a single message can encapsulate is not given (even a message without any `payload` at all is completely valid).
