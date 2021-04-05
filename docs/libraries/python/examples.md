@@ -243,7 +243,9 @@ Simplified analogy:
 
 ![utxo](utxo.svg)
 
-The key takeaway of the outlined process is the fact that each unique `output` can be spent **only once**. Once the given `output` is spent, can't be used any more and is irrelevant in regards to ledger state. So even if Alice still wants to keep remaining tokens at her fingertips, those tokens have to be moved to completely new `output` that can be for instance still tight to the same Alice's iota address as before.
+The key takeaway of the outlined process is the fact that each unique `output` can be spent **only once**. Once the given `output` is spent, can't be used any more and is irrelevant in regards to ledger state.
+
+So even if Alice still wants to keep remaining tokens at her fingertips, those tokens have to be moved to completely new `output` that can be for instance still tight to the same Alice's iota address as before.
 
 Every `output` stores also information about an IOTA address to which it is coupled with. So addresses and tokens are indirectly coupled via `outputs`.
 So basically sum of outputs and their amounts under the given address is a balance of the given address, ie. number of tokens the given address can spent. And sum of all unspent outputs and theirs amounts is equal to the total supply.
@@ -335,8 +337,11 @@ So this is quite interesting part, notice the `output_id` that was used in a fun
 
 This way a transaction is tightly coupled with `outputs` since `SignedTransaction` is a main vehicle how `outputs` are being created and spent, and altogether everything is encapsulated in a `message`.
 
-
 ## Messages
+As mentioned above, `message` is an encapsulating data structure that is being actually broadcasted across network. It is an atomic unit that is accepted/rejected as a whole.
+
+
+
 
 ```python
 import iota_client
