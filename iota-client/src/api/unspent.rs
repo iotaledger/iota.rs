@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{Client, Error, Result};
-use bee_message::prelude::Bech32Address;
+
 use crypto::keys::slip10::Seed;
 
 const ADDRESS_GAP_LIMIT: usize = 20;
@@ -39,7 +39,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn get(self) -> Result<(Bech32Address, usize)> {
+    pub async fn get(self) -> Result<(String, usize)> {
         let account_index = self.account_index.ok_or(Error::MissingParameter("account index"))?;
 
         let mut index = self.initial_address_index.unwrap_or(0);

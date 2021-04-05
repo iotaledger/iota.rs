@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_inputs --release
-
-use iota::{Client, Seed};
+use iota::{client::error::Result, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -12,7 +11,7 @@ use std::env;
 /// This address belongs to the first seed in .env.example
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
@@ -35,7 +34,6 @@ async fn main() {
         .outputs(&addresses[0], Default::default())
         .await
         .unwrap();
-
     println!("{:?}", outputs);
 
     let message = iota
@@ -44,7 +42,7 @@ async fn main() {
         .with_input(outputs[0].clone())
         //.with_input_range(20..25)
         .with_output(
-            &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(),
+            "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
             1_000_000,
         )
         .unwrap()
@@ -56,4 +54,5 @@ async fn main() {
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
         message.id().0
     );
+    Ok(())
 }

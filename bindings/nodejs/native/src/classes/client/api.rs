@@ -7,8 +7,7 @@ use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
 use iota::{
-    Address, AddressOutputsOptions, Bech32Address, ClientMiner, MessageBuilder, MessageId, Parents, Seed,
-    TransactionId, UTXOInput,
+    Address, AddressOutputsOptions, ClientMiner, MessageBuilder, MessageId, Parents, Seed, TransactionId, UTXOInput,
 };
 use neon::prelude::*;
 
@@ -46,7 +45,7 @@ pub(crate) enum Api {
         initial_address_index: Option<usize>,
         gap_limit: Option<usize>,
     },
-    GetAddressBalances(Vec<Bech32Address>),
+    GetAddressBalances(Vec<String>),
     // Node APIs
     GetInfo,
     GetNetworkInfo,
@@ -61,12 +60,12 @@ pub(crate) enum Api {
     GetOutput(UTXOInput),
     FindOutputs {
         outputs: Vec<UTXOInput>,
-        addresses: Vec<Bech32Address>,
+        addresses: Vec<String>,
     },
-    GetAddressBalance(Bech32Address),
-    GetAddressOutputs(Bech32Address, AddressOutputsOptions),
+    GetAddressBalance(String),
+    GetAddressOutputs(String, AddressOutputsOptions),
     GetMilestone(u32),
-    GetMilestoneUTXOChanges(u32),
+    GetMilestoneUtxoChanges(u32),
     GetReceipts(),
     GetReceiptsMigratedAt(u32),
     GetTreasury(),
@@ -129,11 +128,11 @@ impl Task for ClientTask {
                     }
                     let bech32_hrp = client.get_bech32_hrp().await?;
                     for output in outputs {
-                        sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
+                        sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)?;
                     }
                     for output in dust_allowance_outputs {
-                        sender = sender
-                            .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp).into(), output.1)?;
+                        sender =
+                            sender.with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)?;
                     }
                     let message = sender.finish().await?;
                     serde_json::to_string(&MessageWrapper {
@@ -289,7 +288,7 @@ impl Task for ClientTask {
                     let milestone = client.get_milestone(*index).await?;
                     serde_json::to_string(&milestone).unwrap()
                 }
-                Api::GetMilestoneUTXOChanges(index) => {
+                Api::GetMilestoneUtxoChanges(index) => {
                     let milestone_utxo_changes = client.get_milestone_utxo_changes(*index).await?;
                     serde_json::to_string(&milestone_utxo_changes).unwrap()
                 }

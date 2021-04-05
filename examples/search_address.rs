@@ -6,7 +6,7 @@
 use iota::{api::search_address, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
-use std::env;
+use std::{convert::TryInto, env};
 
 /// In this example we will try to find the index and address type of an address
 
@@ -35,9 +35,15 @@ async fn main() {
 
     println!("{:?}", addresses[0]);
 
-    let res = search_address(&seed, iota.get_bech32_hrp().await.unwrap(), 0, 0..10, &addresses[0])
-        .await
-        .unwrap();
+    let res = search_address(
+        &seed,
+        iota.get_bech32_hrp().await.unwrap(),
+        0,
+        0..10,
+        &addresses[0].clone().try_into().unwrap(),
+    )
+    .await
+    .unwrap();
 
     println!("Address index: {}\nIs internal address: {}", res.0, res.1);
 }

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example transaction --release
-
 use iota::{client::Result, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;

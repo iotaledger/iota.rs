@@ -9,9 +9,7 @@ use crate::{
     node::*,
 };
 use bee_common::packable::Packable;
-use bee_message::prelude::{
-    Address, Bech32Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UTXOInput,
-};
+use bee_message::prelude::{Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UTXOInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::types::{
     dtos::{MessageDto, PeerDto, ReceiptDto},
@@ -808,11 +806,7 @@ impl Client {
 
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
-    pub async fn find_outputs(
-        &self,
-        outputs: &[UTXOInput],
-        addresses: &[Bech32Address],
-    ) -> Result<Vec<OutputResponse>> {
+    pub async fn find_outputs(&self, outputs: &[UTXOInput], addresses: &[String]) -> Result<Vec<OutputResponse>> {
         let mut output_metadata = Vec::<OutputResponse>::new();
         // Use a `HashSet` to prevent duplicate output.
         let mut output_to_query = HashSet::<UTXOInput>::new();
@@ -1107,7 +1101,7 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed or security level needed to do this
     /// since we are only checking and already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[Bech32Address]) -> Result<Vec<BalanceForAddressResponse>> {
+    pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceForAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
             let balance_response = self.get_address().balance(&address).await?;

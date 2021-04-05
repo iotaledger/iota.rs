@@ -99,23 +99,21 @@ impl<'a> ClientMessageBuilder<'a> {
         self
     }
 
-    /// Set a transfer to the builder, address needs to be Bech32 encoded
-    pub fn with_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
-        let address = Address::try_from_bech32(&address.to_string())?;
-        let output = SignatureLockedSingleOutput::new(address, amount)?.into();
+    /// Set a transfer to the builder
+    pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
+        let output = SignatureLockedSingleOutput::new(Address::from_str(address)?, amount)?.into();
         self.outputs.push(output);
         Ok(self)
     }
 
     /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
-    pub fn with_dust_allowance_output(mut self, address: &Bech32Address, amount: u64) -> Result<Self> {
+    pub fn with_dust_allowance_output(mut self, address: &str, amount: u64) -> Result<Self> {
         if amount < DUST_THRESHOLD {
             return Err(Error::DustError(
                 "Amount for SignatureLockedDustAllowanceOutput needs to be >= 1_000_000".into(),
             ));
         }
-        let address = Address::try_from_bech32(&address.to_string())?;
-        let output = SignatureLockedDustAllowanceOutput::new(address, amount)?.into();
+        let output = SignatureLockedDustAllowanceOutput::new(Address::from_str(address)?, amount)?.into();
         self.outputs.push(output);
         Ok(self)
     }
@@ -204,6 +202,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut address_index_recorders = Vec::new();
         let mut inputs_for_essence = Vec::new();
         let mut outputs_for_essence = Vec::new();
+        let mut remainder_address_balance: (Option<Address>, u64) = (None, 0);
         match self.inputs.clone() {
             Some(inputs) => {
                 for input in inputs {
@@ -235,13 +234,12 @@ impl<'a> ClientMessageBuilder<'a> {
                             total_already_spent += output_amount;
                             // Note that we need to sign the original address, i.e., `path/index`,
                             // instead of `path/index/_offset` or `path/_offset`.
-                            let bech32_address = output_address.to_bech32(&bech32_hrp);
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 bech32_hrp.clone(),
                                 account_index,
                                 self.input_range.clone(),
-                                &bech32_address.into(),
+                                &output_address,
                             )
                             .await?;
                             // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
@@ -266,11 +264,10 @@ impl<'a> ClientMessageBuilder<'a> {
                             // Output the remaining tokens back to the original address
                             if total_already_spent > total_to_spend {
                                 let remaining_balance = total_already_spent - total_to_spend;
-                                if remaining_balance < DUST_THRESHOLD {
-                                    dust_and_allowance_recorders.push((remaining_balance, output_address, true));
-                                }
-                                outputs_for_essence
-                                    .push(SignatureLockedSingleOutput::new(output_address, remaining_balance)?.into());
+                                // Keep track of remaining balance, we don't add an output here, because we could have
+                                // multiple inputs from the same address, which would create multiple outputs with the
+                                // same address, which is not allowed
+                                remainder_address_balance = (Some(output_address), remaining_balance);
                             }
                         }
                     }
@@ -404,6 +401,14 @@ impl<'a> ClientMessageBuilder<'a> {
             return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
         }
 
+        // Add output from remaining balance of custom inputs if necessary
+        if let Some(address) = remainder_address_balance.0 {
+            if remainder_address_balance.1 < DUST_THRESHOLD {
+                dust_and_allowance_recorders.push((remainder_address_balance.1, address, true));
+            }
+            outputs_for_essence.push(SignatureLockedSingleOutput::new(address, remainder_address_balance.1)?.into());
+        }
+
         // Check if we would let dust on an address behind or send new dust, which would make the tx unconfirmable
         let mut single_addresses = HashSet::new();
         for dust_or_allowance in &dust_and_allowance_recorders {
@@ -415,12 +420,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .cloned()
                 .filter(|d| d.1 == address)
                 .collect();
-            is_dust_allowed(
-                &self.client,
-                address.to_bech32(&bech32_hrp).into(),
-                created_or_consumed_outputs,
-            )
-            .await?;
+            is_dust_allowed(&self.client, address, created_or_consumed_outputs).await?;
         }
 
         // Build signed transaction payload
@@ -543,7 +543,7 @@ impl<'a> ClientMessageBuilder<'a> {
 // Calculate the outputs on this address after this transaction gets confirmed so we know if we can send dust or
 // dust allowance outputs (as input), the bool in the outputs defines if we consume this output (false) or create a new
 // one (true)
-async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
+async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, Address, bool)>) -> Result<()> {
     // balance of all dust allowance outputs
     let mut dust_allowance_balance: i64 = 0;
     // Amount of dust outputs
@@ -571,8 +571,9 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
         }
     }
 
+    let bech32_hrp = client.get_bech32_hrp().await?;
     // Get outputs from address and apply values
-    let address_outputs_metadata = client.find_outputs(&[], &[address.clone()]).await?;
+    let address_outputs_metadata = client.find_outputs(&[], &[address.to_bech32(&bech32_hrp)]).await?;
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
             OutputDto::Treasury(_) => {}
@@ -593,7 +594,7 @@ async fn is_dust_allowed(client: &Client, address: Bech32Address, outputs: Vec<(
     if dust_outputs_amount > allowed_dust_amount {
         return Err(Error::DustError(format!(
             "No dust output allowed on address {}",
-            address
+            address.to_bech32(&bech32_hrp)
         )));
     }
     Ok(())
