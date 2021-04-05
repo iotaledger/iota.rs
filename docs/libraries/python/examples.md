@@ -3,7 +3,7 @@
 > Please note: It is not recommended to store passwords/seeds on host's environment variables or in the source code in a production setup! Please make sure you follow our [backup and security](https://chrysalis.docs.iota.org/guides/backup_security.html) recommendations for production use!
 
 ## Connecting to node(s)
-All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions with IOTA network (Tangle). This class has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node-software/node-software.html) that power IOTA network.
+All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions over IOTA network (Tangle). This class has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node-software/node-software.html) that power IOTA network.
 
 You may be familiar with a fact that in case of IOTA 1.0 network one had to know an address of IOTA node to start participating to the network. It is no longer needed in IOTA 1.5 (Chrysalis) world. The library is designed to automatically choose a starting IOTA node based on the network type one would like to participate in: `testnet` or `mainnet`.
 
@@ -35,6 +35,7 @@ The most important properties:
 _Please note, when using node load balancers then mentioned health check may be quite useless since follow-up API calls may be served by different node behind the load balancer that may have not been actually checked. One should be aware of this fact and trust the given load balancer participates only with nodes that are in healthy state. `iota.rs` library additionally supports a management of internal node pool and so load-balancer-like behavior can be mimicked using this feature locally._
 
 Needless to say, the `Client` class constructor provides several parameters via which the process can be closely managed.
+
 The most common ones:
 * `network`: can be `Testnet` or `Mainnet`. It instructs the library whether to automatically select testnet nodes or mainnet nodes
 * `node`: specify address of actual running IOTA node that should be used to communicate with (in format `https://node:port`), for ex: https://api.lb-0.testnet.chrysalis2.com:443
@@ -46,13 +47,13 @@ If `node_pool_urls` is provided then the library periodically checks in some int
 
 ## Generating seed and addresses
 
-Since the IOTA network is permission-less type of network, anybody is able to use it and interact with it. No central authority is required at any stage. So anybody is able to generate own `seed` and then deterministically generate respective private key/address.
+Since the IOTA network is permission-less type of network, anybody is able to use it and interact with it. No central authority is required at any stage. So anybody is able to generate own `seed` and then deterministically generate respective private keys/addresses.
 
 > Please note, it is highly recommended to NOT use online seed generators at all. The seed is the only key to the given addresses. Anyone who owns the seed owns also all funds related to respective IOTA addresses (all of them).
 
-> We strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds and related addresses. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
+> We strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
 
-IOTA 1.5 (Chrysalis) uses `Ed25519` signature scheme and an address is usually represented by Bech32 (checksummed base32) format string of 64 characters.
+IOTA 1.5 (Chrysalis) uses `Ed25519` signature scheme and address is usually represented by Bech32 (checksummed base32) format string of 64 characters.
 
 A root of `Ed25519` signature scheme is basically a `32-byte (256-bit)` uniformly randomly generated seed based on which all private keys and corresponding addresses are generated. In the examples below, the seed is represented by a string of 64 characters using `[0-9a-f]` alphabet (32 bytes encoded in hexadecimal).
 
@@ -86,7 +87,9 @@ m / purpose / coin_type / account / change / address_index
 There are two independent chain of addresses/keys. `0` is reserved for public addresses (for coin receival) and `1` is reserved for internal (also known as change) addresses to which transaction change is returned. _In comparison to IOTA 1.0, IOTA 1.5 is totally fine with address reuse, and so it is, technically speaking, totally valid to return transaction change to the same originating address. So it is up to developers whether to leverage it or not. `iota.rs` library and its sibling `wallet.rs` help with either scenario_
 * `address_index`: address index. Zero-based increasing `int` that indicates an address index
 
-As outlined, there is a quite large address/key space that is secured by a single unique seed. And there are few additional interesting notes:
+As outlined, there is a quite large address/key space that is secured by a single unique seed.
+
+And there are few additional interesting notes:
 * Each level defines a completely different subtree (subspace) of addresses/keys and those are never mixed up
 * The hierarchy is ready to "absorb" addresses/keys for many different coins at the same time (`coin_type`), and all those coins are secured by the same seed.<br />(So basically any BIP32/44-compliant wallet is potentially able to manage any BIP32/44-compliant coin(s))
 * There may be also other `purposes` in the future however let's consider a single purpose as of now. The constant `44` stands for BIP44
@@ -96,11 +99,13 @@ _Please note, it may have a negative impact on a performance while [account disc
 
 ![address_generation](address_generation.svg)
 
-So in case of IOTA 1.5 (Chrysalis), the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The Levels `purpose` and `coin_type` are given, the rest levels are up to developers to integrate.
+So in case of IOTA 1.5 (Chrysalis), the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The levels `purpose` and `coin_type` are given, the rest levels are up to developers to integrate.
 
 ### Generating address(es)
 
-IOTA addresses are generated via `Client.get_addresses()` function that returns a list of tuples with generated addresses. Considering the previous chapter about individual address/key spaces, it becomes quite clear what all used input function arguments are for:
+IOTA addresses are generated via `Client.get_addresses()` function that returns a list of tuples with generated addresses. Considering the previous chapter about individual address/key spaces, it becomes quite clear what all used input function arguments are for.
+
+The whole process is deterministic which means the output is the same as long as the seed is the same:
 
 ```python
 {{#include ../../../bindings/python/examples/03_generate_addresses.py}}
@@ -129,7 +134,7 @@ Output example:
  ('atoi1qzrwhkzhu67fqltfffwljejawdcghedukpgu9x6tzevwlnq89gmfjtayhgz', False),
  ('atoi1qpehxcp24z947dgupjqc9ktkn5ylmdxqqnx83m7xlajnf8005756u4n7z77', True)]
 ```
-* Each tuple contains `address` and `bool` indicating the given address is a `change` address or not.<br />
+* Each tuple contains `address` and `bool` value indicating the given address is a `change` address or not.<br />
 `True` means the given address is a change address (internal). So basically we've got two independent sets of addresses (10 items per each)
 * This behavior is controlled via `get_all` argument. `get_all=False` (default) means to generate only public addresses
 
@@ -172,9 +177,10 @@ Return balance for the given seed and account_index:
 `Client.get_balance()` performs a several tasks under the hood.
 It starts generating addresses for the provided `seed` and `account_index` from `initial_address_index`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `gap_limit` argument when to stop searching. If `gap_limit` amount of addresses in a row have no balance the function returns result and searching does not continue.
 
-
 ## Messages, payload and transactions
-Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA 1.5 network. In comparison to original IOTA 1.0, IOTA 1.5 introduced some fundamental changes to the underlying data structure. The original concept of `transactions` and `bundles` is gone, and has been replaced by a concept of `messages` and `payloads`.
+Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA 1.5 network.
+
+In comparison to original IOTA 1.0, IOTA 1.5 introduced some fundamental changes to the underlying data structure. The original concept of `transactions` and `bundles` is gone, and has been replaced by a concept of `messages` and `payloads`.
 
 `Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle graph. It can refer to up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
 
@@ -210,12 +216,12 @@ Simplified analogy:
 
 ![utxo](utxo.svg)
 
-The key takeaway of the outlined process is the fact that each unique `output` can be spent **only once**. Once the given `output` is spent, can't be used any more and is irrelevant in regards to ledger state.
+The key takeaway of the outlined process is the fact that each unique `output` can be spent **only once**. Once the given `output` is spent, can't be used any more and is irrelevant in regards to the ledger state.
 
 So even if Alice still wants to keep remaining tokens at her fingertips, those tokens have to be moved to completely new `output` that can be for instance still tight to the same Alice's iota address as before.
 
 Every `output` stores also information about an IOTA address to which it is coupled with. So addresses and tokens are indirectly coupled via `outputs`.
-So basically sum of outputs and their amounts under the given address is a balance of the given address, ie. number of tokens the given address can spent. And sum of all unspent outputs and theirs amounts is equal to the total supply.
+So basically sum of outputs and their amounts under the given address is a balance of the given address, ie. the number of tokens the given address can spend. And sum of all unspent outputs and theirs amounts is equal to the total supply.
 
 Before the chapter is wrapped up, one thing was left unexplained: _"how outputs are being sent and broadcasted to network?"_ `Outputs` are being sent encapsulated in a `message` as a part of `SignedTransaction` payload.
 
@@ -223,7 +229,7 @@ Before the chapter is wrapped up, one thing was left unexplained: _"how outputs 
 There are three functions to get `UTXO` outputs (related to the given address):
 * `Client.get_address_outputs(str)`: it expects address in Bech32 format and returns `list[dict]` of `transaction_ids` and respective `indexes`
 * `Client.get_output(str)`: it expects `output_id` and returns the UTXO output associated with it
-* `Client.find_outputs(output_ids (optional), addresses (optional))`: it is a bit more general and it searches for UTXO outputs associated with the given `output_ids` and/or `addresses`
+* `Client.find_outputs(output_ids (optional), addresses (optional))`: it is a bit more general and it searches for `UTXO` outputs associated with the given `output_ids` and/or `addresses`
 
 `Client.get_address_outputs(str)` returns `transaction_ids` and `indexes` in a raw form (in bytes) defined on protocol level and so usually some quick conversion is needed:
 ```python
@@ -259,7 +265,7 @@ Output example:
 }
 ```
 
-Function `Client.find_outputs()` is a convenient shortcut combining both mentioned methods in a single call:
+A function `Client.find_outputs()` is a convenient shortcut combining both mentioned methods in a single call:
 ```python
 {{#include ../../../bindings/python/examples/05c_find_outputs.py}}
 ```
@@ -312,11 +318,11 @@ Output example:
  'nonce': 2305843009213869242}
 ```
 * `message_id` is an unique id that refers to the given message in network
-* as mentioned above, every message in the Tangle should refer to up to 8 other messages, those are indicated via section `parents`
-* no actual `payload` was given
+* as mentioned above, every message in the Tangle should refer to up to 8 other messages, those are indicated in the section `parents`
+* no actual `payload` was given in this example message (`payload=None`)
 * `nonce` refer to a result of proof-of-work
 
-Once a message is broadcasted, there are two main function that can be used to read all information about the given message from the Tangle (`Client.get_message_data()` and `Client.get_message_metadata()`):
+Once a message is broadcasted, there are two main functions that can be used to read all information about the given message from the Tangle (`Client.get_message_data()` and `Client.get_message_metadata()`):
 ```python
 {{#include ../../../bindings/python/examples/07_get_message_data.py}}
 ```
@@ -351,7 +357,7 @@ Message data:
 * `Client.get_message_data` provides all data that relates to the given message and its payload(s)
 
 ### IndexationPayload
-`IndexationPayload` is a payload type that can be used to attach an arbitrary data to a message and its `index`, so at least an index and data (as `list[bytes]`) should be provided in order to send the payload:
+`IndexationPayload` is a payload type that can be used to attach an arbitrary `data` and key `index` to a message. At least `index` should be provided in order to send the given payload. Data part (as `list[bytes]`) is optional one:
 
 ```python
 {{#include ../../../bindings/python/examples/08_data_message.py}}
@@ -391,16 +397,16 @@ Output example:
   'treasury_transaction': None},
  'nonce': 6917529027641573188}
 ```
-* Feel free to check the given message using its `message_id` in [Tangle explorer](https://explorer.iota.org/chrysalis/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
+* Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/chrysalis/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
 * In comparison to an empty message sent in the previous chapter, the `payload` section looks more interesting
-* There are three payloads prepared (`transaction`, `milestone` and `indexation`) however only `indexation` payload is leveraged
-* `index` was encoded to `list[bytes]` in hex (no hash algorithm) and the resulting string is additional way how to search for a set of indexed messages with the same index key via [Tangle explorer](https://explorer.iota.org/chrysalis/indexed/736f6d655f646174615f696e646578) or `Client.find_messages()` API
+* There are three payloads prepared (`transaction`, `milestone` and `indexation`) however only `indexation` payload is leveraged this time
+* `index` was simply encoded to `list[bytes]` in hex (no hash algorithm) and the resulting string can be leveraged as an additional way how to search for a set of indexed messages with the same key index via [Tangle explorer](https://explorer.iota.org/chrysalis/indexed/736f6d655f646174615f696e646578) or `Client.find_messages()` API call
 * `data` contains an arbitrary data encoded in bytes
-* In comparison to IOTA 1.0, please note there is no IOTA address involved while sending pure data messages via network in case of IOTA 1.5. Such messages are referenced using `message_id` or `index` key
+* In comparison to IOTA 1.0, please note there is no IOTA address involved while sending data messages via network in case of IOTA 1.5. Such messages are referenced using `message_id` or key `index`
 * IOTA addresses are part of `UTXO` data structure that is sent using `SignedTransaction` payload explained below
 
 ### SignedTransaction
-`SignedTransaction` is a payload type that is used to send information regarding `UTXO` (Unspent Transaction Output).
+`SignedTransaction` is a payload type that is used to transfer value-based messages as `UTXO` (Unspent Transaction Output).
 
 As mentioned above, this core payload changes the ledger state as old `outputs` are being spent (replaced) and new `outputs` are being created:
 
@@ -411,7 +417,7 @@ client = iota_client.Client()
 client.get_message_data("f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b")
 ```
 
-Example of message
+Example of a message with `SignedTransaction` payload:
 ```json
 {
     'message_id': 'f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b',
@@ -464,14 +470,14 @@ Example of message
 ```
 
 Each `transaction` includes the following set of information:
-* `inputs`: list of valid `outputs` that should be used to fund the given operation. Those outputs will be spent and once the message is confirmed, those outputs are not valid anymore. Outputs are uniquely referenced via `transaction_id` and inner `index`. At least one output has to be given with enough balance to source all `outputs`
+* `inputs`: list of valid `outputs` that should be used to fund the given message. Those `outputs` will be spent and once the message is confirmed, those outputs are not valid anymore. Outputs are uniquely referenced via `transaction_id` and inner `index`. At least one output has to be given with enough balance to source all `outputs` of the given message
 * `outputs`: list of IOTA address(es) and related amount(s) the input `outputs` should be split among. Based on this information, new `UTXO` entities (outputs) are being created
-* `unlock_blocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only valid seed owner is able to correctly sign the given transaction and proofs ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblock_block` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to existing signature
-* `payload`: each `SignedTransaction` can include additional payload(s) such as `IndexationPayload`, etc. Meaning, any value-based messages can also contain arbitrary data
+* `unlock_blocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only valid seed owner is able to correctly sign the given transaction and proofs the ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblock_block` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to existing signature
+* `payload`: each `SignedTransaction` can include additional payload(s) such as `IndexationPayload`, etc. Meaning, any value-based messages can also contain arbitrary data and its key index. It is also an example how individual payloads can be encapsulated on different levels of concern
 
 Sending value-based messages is also very straightforward process.
 
-As a minimum, it needs a valid seed, output addresses and amount. The method finds valid output(s) that can be used to fund the given amount(s), the unspent amount is sent to the same address:
+As a minimum, it needs a valid seed, output addresses and amount. The method finds valid output(s) that can be used to fund the given amount(s) and the unspent amount is sent to the same address:
 
 ```python
 {{#include ../../../bindings/python/examples/09_transaction.py}}
@@ -523,6 +529,8 @@ Output example:
     'nonce': 9223372036854802939
 }
 ```
+
+> We recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
 
 #### Dust protection
 Please note, there is also implemented a [dust protection](https://chrysalis.docs.iota.org/guides/dev_guide.html#dust-protection) mechanism in the network protocol to avoid malicious actors to spam network in order to decrease node performance while keeping track of unspent amount (`UTXO`):
