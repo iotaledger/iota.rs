@@ -15,7 +15,7 @@ $ yarn add @iota/client
 
 ## Requirements
 
-If there is no prebuildt binary available for your system you need `Rust` and `Cargo`, to build it yourself. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+If there is no prebuilt binary available for your system you need `Rust` and `Cargo`, to build it yourself. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
 ## Getting Started
 
