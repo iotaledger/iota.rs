@@ -52,6 +52,8 @@ export declare interface MilestoneEssence {
   timestamp: string
   parents: string[]
   merkle_proof: number[]
+  next_pow_score: number
+  next_pow_score_milestone_index: number
   public_keys: number[]
 }
 

@@ -822,13 +822,15 @@ Gets the metadata of the given message.
 
 - MilestoneEssence
 
-| Field        | Type                    | Description                                          |
-| ------------ | ----------------------- | ---------------------------------------------------- |
-| index        | <code>number</code>     | Milestone index                                      |
-| timestamp    | <code>number</code>     | Timestamp                                            |
-| parents      | <code>string[]</code>   | Message ids of the messages the milestone references |
-| merkle_proof | <code>number[]</code>   | Merkle proof                                         |
-| public_keys  | <code>number[][]</code> | public keys                                          |
+| Field                          | Type                    | Description                                              |
+| ------------------------------ | ----------------------- | -------------------------------------------------------- |
+| index                          | <code>number</code>     | Milestone index                                          |
+| timestamp                      | <code>number</code>     | Timestamp                                                |
+| parents                        | <code>string[]</code>   | Message ids of the messages the milestone references     |
+| merkle_proof                   | <code>number[]</code>   | Merkle proof                                             |
+| next_pow_score                 | <code>number</code>     | Next PoW score                                           |
+| next_pow_score_milestone_index | <code>number</code>     | Milestone index at which the next_pow_score will be used |
+| public_keys                    | <code>number[][]</code> | public keys                                              |
 
 ### MessageDto
 

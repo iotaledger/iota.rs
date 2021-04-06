@@ -803,6 +803,8 @@ milestone_payload_essence = {
     'timestamp': int,
     'parents': list[str],
     'merkle_proof': list[int],
+    'next_pow_score': int,
+    'next_pow_score_milestone_index': int,
     'public_keys': list[list[int]]
 }
 ```
