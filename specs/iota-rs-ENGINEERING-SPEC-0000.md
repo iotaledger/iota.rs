@@ -118,7 +118,7 @@ A generic send function for easily sending a message.
 | **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for transactions |
 | **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 | **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
-| **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
+| **input** | ✘ | None | UtxoInput | Users can manually select their UtxoInputs instead of having automatically selected inputs. |
 | **input_range** | ✘ | 0..100 | Range | Custom range to search for the input addresses if custom inputs are provided. |
 | **output** | ✘ | None | address: &[String],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
@@ -500,7 +500,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✔ | UTXOInput | Identifier of the output. |
+| **output_id** | ✔ | UtxoInput | Identifier of the output. |
 
 ### Returns
 
@@ -521,7 +521,7 @@ An [OutputMetadata](#OutputMetadata) that contains various information about the
 Depend on the final calling method, users could get different outputs they need:
 
 * `balance()`: Return confirmed balance of the address.
-* `outputs([options])`: Return UTXOInput array (transaction IDs with corresponding output index).
+* `outputs([options])`: Return UtxoInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 
@@ -531,7 +531,7 @@ Find all outputs based on the requests criteria.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
+| **output_id** | ✘ | [UtxoInput] | The identifier of output. |
 | **addresses** | ✘ | [[String]] | The Bech32 encoded address. |
 
 ### Returns
@@ -706,7 +706,7 @@ struct TransactionPayloadEssence {
 }
 
 enum Input {
-    UTXO(UTXOInput(OutputId)),
+    UTXO(UtxoInput(OutputId)),
 }
 
 struct OutputId {
