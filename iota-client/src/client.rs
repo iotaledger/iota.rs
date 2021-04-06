@@ -9,7 +9,9 @@ use crate::{
     node::*,
 };
 use bee_common::packable::Packable;
-use bee_message::prelude::{Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput};
+use bee_message::prelude::{
+    Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput,
+};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::types::{
     dtos::{MessageDto, PeerDto, ReceiptDto},
@@ -1107,6 +1109,25 @@ impl Client {
             address_balance_pairs.push(balance_response);
         }
         Ok(address_balance_pairs)
+    }
+
+    /// Transforms bech32 to hex
+    pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
+        let address = Address::try_from_bech32(bech32)?;
+        if let Address::Ed25519(ed) = address {
+            return Ok(ed.to_string());
+        }
+
+        Err(crate::Error::FailedToParseBech32ToHex)
+    }
+
+    /// Transforms hex to bech32
+    pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        let address: Ed25519Address = hex.parse::<Ed25519Address>()?;
+        match bech32_hrp {
+            Some(hrp) => Ok(Address::Ed25519(address).to_bech32(hrp)),
+            None => Ok(Address::Ed25519(address).to_bech32(self.get_bech32_hrp().await?.as_str())),
+        }
     }
 
     /// Returns a valid Address parsed from a String.
