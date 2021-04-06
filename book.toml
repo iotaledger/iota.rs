@@ -9,6 +9,8 @@ title = "IOTA Client Library"
 default-theme = "IOTA"
 git-repository-url = "https://github.com/iotaledger/iota.rs"
 git-repository-icon = "fa-github"
+theme = "./docs/theme"
+additional-css = ["./docs/theme/css/custom/header.css"]
 
 [output.html.playpen]
 editable = false
