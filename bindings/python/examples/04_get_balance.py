@@ -1,4 +1,11 @@
+import os
 import iota_client
+
+# Get the seed from environment variable
+IOTA_SEED_SECRET = os.getenv('IOTA_SEED_SECRET')
+if not IOTA_SEED_SECRET:
+    raise Exception("Please define environment variable called `IOTA_SEED_SECRET`")
+
 client = iota_client.Client()
 
 print("Return a balance for a single address:")
@@ -9,7 +16,7 @@ print(
 print("Return a balance for the given seed and account_index:")
 print(
     client.get_balance(
-        seed="b3d7092195c36d47133ff786d4b0a1ef2ee6a0052f6e87b6dc337935c70c531e",
+        seed=IOTA_SEED_SECRET,
         account_index=0,
         initial_address_index=0
     )

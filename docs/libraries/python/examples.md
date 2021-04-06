@@ -105,6 +105,8 @@ So in case of IOTA 1.5 (Chrysalis), the derivation path of address/key space is 
 
 IOTA addresses are generated via `Client.get_addresses()` function that returns a list of tuples with generated addresses. Considering the previous chapter about individual address/key spaces, it becomes quite clear what all used input function arguments are for.
 
+_Please note: for the examples outlined below, an example seed `b3d7092195c36d47133ff786d4b0a1ef2ee6a0052f6e87b6dc337935c70c531e` was used via environment variable called `IOTA_SEED_SECRET`. This seed serves for training purposes only._
+
 The whole process is deterministic which means the output is the same as long as the seed is the same:
 
 ```python
