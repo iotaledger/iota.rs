@@ -13,7 +13,9 @@ $ npm i @iota/client
 $ yarn add @iota/client
 ```
 
-Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+## Requirements
+
+If there is no prebuilt binary available for your system you need `Rust` and `Cargo`, to build it yourself. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
 ## Getting Started
 
@@ -26,6 +28,8 @@ const client = new ClientBuilder()
     .build()
 client.getInfo().then(console.log).catch(console.error)
 ```
+
+Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
 
 ## API Reference
 

@@ -38,7 +38,7 @@ pub struct ClientMessageBuilder<'a> {
     seed: Option<&'a Seed>,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
-    inputs: Option<Vec<UTXOInput>>,
+    inputs: Option<Vec<UtxoInput>>,
     input_range: Range<usize>,
     outputs: Vec<Output>,
     index: Option<Box<[u8]>>,
@@ -82,7 +82,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Set a custom input(transaction output)
-    pub fn with_input(mut self, input: UTXOInput) -> Self {
+    pub fn with_input(mut self, input: UtxoInput) -> Self {
         self.inputs = match self.inputs {
             Some(mut inputs) => {
                 inputs.push(input);
@@ -250,8 +250,8 @@ impl<'a> ClientMessageBuilder<'a> {
                                 internal as u32,
                                 address_index as u32,
                             ]);
-                            let input = Input::UTXO(
-                                UTXOInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
+                            let input = Input::Utxo(
+                                UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
                                     .map_err(|_| Error::TransactionError)?,
                             );
                             inputs_for_essence.push(input.clone());
@@ -343,8 +343,8 @@ impl<'a> ClientMessageBuilder<'a> {
                                             *internal as u32,
                                             address_index as u32,
                                         ]);
-                                        let input = Input::UTXO(
-                                            UTXOInput::new(
+                                        let input = Input::Utxo(
+                                            UtxoInput::new(
                                                 TransactionId::from_str(&output.transaction_id)?,
                                                 output.output_index,
                                             )

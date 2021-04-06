@@ -12,13 +12,7 @@ homepage = "https://iota.org"
 name = "iota"
 
 [dependencies]
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "517d26ea51c39bdd57443f5cbf9ba02555bd083d" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "517d26ea51c39bdd57443f5cbf9ba02555bd083d" }
-bee-common = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-features = false }
-
-[dev-dependencies]
-tokio = { version = "1.1", features = ["macros"] }
 
 [features]
 default = ["iota-client/async"]

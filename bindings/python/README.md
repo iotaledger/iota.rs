@@ -247,7 +247,7 @@ Gets the UTXO outputs associated with the given output id.
 
 **Returns** the OutputResponse[#outputresponse].
 
-#### get_address_balance(address): BalanceForAddressResponse
+#### get_address_balance(address): BalanceAddressResponse
 
 Gets the balance in the address.
 
@@ -255,9 +255,9 @@ Gets the balance in the address.
 | --------- | ---------------------- | ---------------------- | ------------------------- |
 | [address] | <code>list[str]</code> | <code>undefined</code> | The address Bech32 string |
 
-**Returns** the [BalanceForAddressResponse](#balanceforaddressresponse).
+**Returns** the [BalanceAddressResponse](#balanceaddressresponse).
 
-#### get_address_outputs(address, options (optional)): list[UTXOInput]
+#### get_address_outputs(address, options (optional)): list[UtxoInput]
 
 Gets the UTXO outputs associated with the given address.
 
@@ -266,7 +266,7 @@ Gets the UTXO outputs associated with the given address.
 | [address] | <code>str</code>                                               | <code>undefined</code> | The address Bech32 string |
 | [options] | <code>[[AddressOutputsOptions](#addressoutputsoptions)]</code> | <code>undefined</code> | The query filters         |
 
-**Returns** the list of [UTXOInput](#utxoinput).
+**Returns** the list of [UtxoInput](#utxoinput).
 
 #### find_outputs(output_ids (optional), addresses (optional)): list[OutputResponse]
 
@@ -564,7 +564,7 @@ message_metadata_response = {
 
 Please refer to [LedgerInclusionStateDto](#ledgerinclusionstatedto) for the details of this type.
 
-#### BalanceForAddressResponse
+#### BalanceAddressResponse
 
 A dict with the following key/value pairs.
 
@@ -633,7 +633,7 @@ treasuryResponse = {
 }
 ```
 
-#### UTXOInput
+#### UtxoInput
 
 A dict with the following key/value pairs.
 

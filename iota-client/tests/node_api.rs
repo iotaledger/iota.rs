@@ -253,7 +253,7 @@ async fn test_get_output() {
         .await
         .unwrap()
         .get_output(
-            &UTXOInput::new(
+            &UtxoInput::new(
                 TransactionId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
                 0,
             )
