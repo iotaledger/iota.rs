@@ -595,6 +595,36 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
+        method bech32ToHex(mut cx) -> JsResult<JsString> {
+            let bech32 = cx.argument::<JsString>(0)?.value();
+            let res = cx.string(Api::Bech32ToHex(bech32.as_str()));
+            Ok(res)
+        }
+
+        method hexToBech32(mut cx) -> JsResult<JsBoolean> {
+            let hex = cx.argument::<JsString>(0)?.value();
+            let bech32_hrp: Option<String> = match cx.argument_opt(1) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value());
+                },
+                None => Default::default(),
+            };
+
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::HexToBech32(hex.as_str(), bech32_hrp),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
         method isAddressValid(mut cx) -> JsResult<JsBoolean> {
             let address = cx.argument::<JsString>(0)?.value();
             let b = cx.boolean(Api::IsAddressValid(address.as_str()));

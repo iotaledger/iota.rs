@@ -299,6 +299,7 @@ Returns a parsed bech32 String from hex.
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
 | **hex** | ✔ | [String] | Hex encoded address. |
+| **bech32_hrp** | ✔ | [Option<String>] | Optional bech32 hrp. |
 
 ### Return
 
