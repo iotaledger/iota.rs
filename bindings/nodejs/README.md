@@ -242,6 +242,27 @@ Get the balance in iotas for the given addresses.
 
 **Returns** A promise resolving to the list of `{ address, balance }` pairs.
 
+#### bech32ToHex(bech32)
+
+Returns a parsed hex String from bech32.
+
+| Param   | Type                | Description               |
+| ------- | ------------------- | ------------------------- |
+| bech32  | <code>string</code> | The address Bech32 string |
+
+**Returns** A String
+
+#### hexToBech32(hex, bech32_hrp (optional))
+
+Returns a parsed bech32 String from hex.
+
+| Param       | Type                | Description               |
+| ----------- | ------------------- | ------------------------- |
+| bech32      | <code>string</code> | The address Bech32 string |
+| bech32_hrp  | <code>string</code> | The Bech32 hrp string     |
+
+**Returns** A String
+
 #### isAddressValid(address: string): boolean
 
 Checks if a given address is valid.
@@ -669,7 +690,7 @@ Sets the initial address index. Defaults to 0 if the function isn't called.
 
 #### gapLimit(amount): BalanceGetter
 
-Sets the gapLimit to specify how many addresses will be checked each round. 
+Sets the gapLimit to specify how many addresses will be checked each round.
 If gap_limit amount of addresses in a row have no balance the BalanceGetter will return. Defaults to 20 if the function isn't called.
 
 | Param | Type                | Description               |

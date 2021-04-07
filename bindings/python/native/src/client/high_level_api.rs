@@ -289,6 +289,14 @@ impl Client {
             })
             .collect())
     }
+    fn bech32_to_hex(&self, hex: &str) -> Result<String> {
+        Ok(iota::Client::bech32_to_hex(hex)?)
+    }
+    fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
+        Ok(crate::block_on(async {
+            self.client.hex_to_bech32(hex, bech32_hrp).await
+        })?)
+    }
     fn is_address_valid(&self, address: &str) -> bool {
         iota::Client::is_address_valid(address)
     }
