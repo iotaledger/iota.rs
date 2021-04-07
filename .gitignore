@@ -6,3 +6,4 @@ Cargo.lock
 .DS_Store
 book
 .env
+*.ipynb

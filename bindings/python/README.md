@@ -804,6 +804,8 @@ milestone_payload_essence = {
     'timestamp': int,
     'parents': list[str],
     'merkle_proof': list[int],
+    'next_pow_score': int,
+    'next_pow_score_milestone_index': int,
     'public_keys': list[list[int]]
 }
 ```
@@ -912,6 +914,11 @@ info_response = {
     'is_healthy': bool,
     'network_id': str,
     'bech32_hrp': str,
+    'min_pow_score': float,
+    'messages_per_second': float,
+    'referenced_messages_per_second': float,
+    'referenced_rate': float,
+    'latest_milestone_timestamp': u64,
     'latest_milestone_index': int,
     'confirmed_milestone_index': int,
     'pruning_index': int,
