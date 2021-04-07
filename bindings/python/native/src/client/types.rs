@@ -19,10 +19,9 @@ use iota::{
             TreasuryTransactionPayloadDto as RustTreasuryTransactionPayloadDto,
         },
         responses::{
-            BalanceForAddressResponse as RustBalanceForAddressResponse, InfoResponse as RustInfoResponse,
-            MessageMetadataResponse as RustMessageMetadataResponse,
-            MilestoneUtxoChangesResponse as RustMilestoneUTXOChanges, OutputResponse as RustOutputResponse,
-            TreasuryResponse as RustTreasuryResponse,
+            BalanceAddressResponse as RustBalanceAddressResponse, InfoResponse as RustInfoResponse,
+            MessageMetadataResponse as RustMessageMetadataResponse, OutputResponse as RustOutputResponse,
+            TreasuryResponse as RustTreasuryResponse, UtxoChangesResponse as RustMilestoneUTXOChanges,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
@@ -33,8 +32,8 @@ use iota::{
     Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
     RegularEssence as RustRegularEssence, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
     SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransactionId,
-    TransactionPayload as RustTransactionPayload, UTXOInput as RustUTXOInput, UnlockBlock as RustUnlockBlock,
-    UnlockBlocks as RustUnlockBlocks,
+    TransactionPayload as RustTransactionPayload, UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks,
+    UtxoInput as RustUtxoInput,
 };
 
 use std::{
@@ -62,7 +61,7 @@ pub struct MessageMetadataResponse {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct BalanceForAddressResponse {
+pub struct BalanceAddressResponse {
     // The type of the address (1=Ed25519).
     pub address_type: u8,
     // hex encoded address
@@ -94,12 +93,12 @@ pub struct MilestoneUTXOChanges {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct InputDto {
-    pub utxo: Option<UTXOInput>,
+    pub utxo: Option<UtxoInput>,
     pub treasury: Option<TreasuryInput>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
-pub struct UTXOInput {
+pub struct UtxoInput {
     pub transaction_id: Vec<u8>,
     pub index: u16,
 }
@@ -192,6 +191,8 @@ pub struct MilestonePayloadEssence {
     pub timestamp: u64,
     pub parents: Vec<String>,
     pub merkle_proof: [u8; MILESTONE_MERKLE_PROOF_LENGTH],
+    pub next_pow_score: u32,
+    pub next_pow_score_milestone_index: u32,
     pub public_keys: Vec<[u8; MILESTONE_PUBLIC_KEY_LENGTH]>,
 }
 
@@ -282,11 +283,15 @@ pub struct InfoResponse {
     pub is_healthy: bool,
     pub network_id: String,
     pub bech32_hrp: String,
+    pub min_pow_score: f64,
+    pub messages_per_second: f64,
+    pub referenced_messages_per_second: f64,
+    pub referenced_rate: f64,
+    pub latest_milestone_timestamp: u64,
     pub latest_milestone_index: u32,
     pub confirmed_milestone_index: u32,
     pub pruning_index: u32,
     pub features: Vec<String>,
-    pub min_pow_score: f64,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -380,7 +385,7 @@ impl From<RustOutputResponse> for OutputResponse {
 impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
     fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
         Self {
-            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_vec(),
+            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().as_ref().into(),
             output: migrated_funds_entry.output().clone().into(),
         }
     }
@@ -478,9 +483,9 @@ impl From<RustAddress> for AddressDto {
     }
 }
 
-impl From<RustBalanceForAddressResponse> for BalanceForAddressResponse {
-    fn from(balance_for_address_response: RustBalanceForAddressResponse) -> Self {
-        BalanceForAddressResponse {
+impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
+    fn from(balance_for_address_response: RustBalanceAddressResponse) -> Self {
+        BalanceAddressResponse {
             address_type: balance_for_address_response.address_type,
             address: balance_for_address_response.address,
             balance: balance_for_address_response.balance,
@@ -514,11 +519,15 @@ impl From<RustInfoResponse> for InfoResponse {
             is_healthy: info.is_healthy,
             network_id: info.network_id,
             bech32_hrp: info.bech32_hrp,
+            min_pow_score: info.min_pow_score,
+            messages_per_second: info.messages_per_second,
+            referenced_messages_per_second: info.referenced_messages_per_second,
+            referenced_rate: info.referenced_rate,
+            latest_milestone_timestamp: info.latest_milestone_timestamp,
             latest_milestone_index: info.latest_milestone_index,
             confirmed_milestone_index: info.confirmed_milestone_index,
             pruning_index: info.pruning_index,
             features: info.features,
-            min_pow_score: info.min_pow_score,
         }
     }
 }
@@ -650,7 +659,7 @@ impl TryFrom<RustRegularEssence> for RegularEssence {
                 .iter()
                 .cloned()
                 .map(|input| {
-                    if let RustInput::UTXO(input) = input {
+                    if let RustInput::Utxo(input) = input {
                         Input {
                             transaction_id: input.output_id().transaction_id().to_string(),
                             index: input.output_id().index(),
@@ -711,6 +720,8 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
             timestamp: essence.timestamp(),
             parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
+            next_pow_score: essence.next_pow_score(),
+            next_pow_score_milestone_index: essence.next_pow_score_milestone_index(),
             public_keys: essence
                 .public_keys()
                 .iter()
@@ -877,10 +888,10 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
             .inputs
             .iter()
             .map(|input| {
-                RustUTXOInput::new(
+                RustUtxoInput::new(
                     RustTransactionId::from_str(&input.transaction_id[..]).unwrap_or_else(|_| {
                         panic!(
-                            "invalid UTXOInput transaction_id: {} with input index {}",
+                            "invalid UtxoInput transaction_id: {} with input index {}",
                             input.transaction_id, input.index
                         )
                     }),
@@ -888,7 +899,7 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
                 )
                 .unwrap_or_else(|_| {
                     panic!(
-                        "invalid UTXOInput transaction_id: {} with input index {}",
+                        "invalid UtxoInput transaction_id: {} with input index {}",
                         input.transaction_id, input.index
                     )
                 })
@@ -1061,7 +1072,7 @@ impl From<RustTreasuryTransactionPayloadDto> for TreasuryTransaction {
                 kind: t.kind,
                 message_id: t.message_id,
             },
-            RustInputDto::UTXO(_) => panic!("Invalid type"),
+            RustInputDto::Utxo(_) => panic!("Invalid type"),
         };
         Self {
             kind: treasury.kind,

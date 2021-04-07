@@ -118,9 +118,9 @@ A generic send function for easily sending a message.
 | **seed** | ✘ | None | [Seed] | The seed of the account we are going to spend, only needed for transactions |
 | **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 | **initial_address_index** | ✘ | 0 | usize | The index from where to start looking for balance. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
-| **input** | ✘ | None | UTXOInput | Users can manually select their UTXOInputs instead of having automatically selected inputs. |
+| **input** | ✘ | None | UtxoInput | Users can manually select their UtxoInputs instead of having automatically selected inputs. |
 | **input_range** | ✘ | 0..100 | Range | Custom range to search for the input addresses if custom inputs are provided. |
-| **output** | ✘ | None | address: &[Bech32Address],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
+| **output** | ✘ | None | address: &[String],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded. |
 | **output_hex** | ✘ | None | address: &str,<br />amount: u64 | Address to send to and amount to send. Address needs to be hex encoded. |
 | **index** | ✘ | None | &[u8] / &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
 | **data** | ✘ | None | Vec<u8> | Optional data for the indexation payload. |
@@ -198,7 +198,7 @@ Return a valid unspent public Bech32 encoded address.
 
 ### Return
 
-Return a tuple with type of `(Bech32Address, usize)` as the address and corresponding index in the account.
+Return a tuple with type of `(String, usize)` as the address and corresponding index in the account.
 
 ### Implementation Details
 
@@ -220,11 +220,11 @@ Return a list of addresses from the seed regardless of their validity.
 | **seed** | ✔ | None | [Seed] | The seed we want to search for. |
 | **account_index** | ✘ | 0 | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 | **range** | ✘ | None | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20) |
-| **get_all** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([Bech32Address], bool)>, where the bool is indicating whether it's a change address|
+| **get_all** | ✘ | ✘ | ✘ | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([String], bool)>, where the bool is indicating whether it's a change address|
 
 ### Return
 
-Vec<[Bech32Address]>, with the public addresses
+Vec<[String]>, with the public addresses
 
 ## `get_balance()`
 
@@ -260,7 +260,7 @@ Return the balance in iota for the given addresses; No seed or security level ne
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **addresses** | ✔ | [[Bech32Address]] | List of Bech32 encoded addresses. |
+| **addresses** | ✔ | [[String]] | List of Bech32 encoded addresses. |
 
 ### Return
 
@@ -282,7 +282,7 @@ Returns a valid Address parsed from a String.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+| **address** | ✔ | [String] | Bech32 encoded address. |
 
 ### Return
 
@@ -294,7 +294,7 @@ Parsed [Address].
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **address** | ✔ | [Bech32Address] | Bech32 encoded address. |
+| **address** | ✔ | [String] | Bech32 encoded address. |
 
 ### Return
 
@@ -450,6 +450,10 @@ pub struct NodeInfo {
     pub network_id: String,
     pub latest_milestone_index: usize,
     pub min_pow_score: f64,
+    pub messages_per_second: f64,
+    pub referenced_messages_per_second: f64,
+    pub referenced_rate: f64,
+    pub latest_milestone_timestamp: u64,
     pub confirmed_milestone_index: usize,
     pub pruning_index: usize,
     pub features: Vec<String>,
@@ -500,7 +504,7 @@ Get the producer of the output, the corresponding address, amount and spend stat
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✔ | UTXOInput | Identifier of the output. |
+| **output_id** | ✔ | UtxoInput | Identifier of the output. |
 
 ### Returns
 
@@ -514,14 +518,14 @@ An [OutputMetadata](#OutputMetadata) that contains various information about the
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **address** | ✔ | [Bech32Address] | The address to search for. |
+| **address** | ✔ | [String] | The address to search for. |
 
 ### Returns
 
 Depend on the final calling method, users could get different outputs they need:
 
 * `balance()`: Return confirmed balance of the address.
-* `outputs([options])`: Return UTXOInput array (transaction IDs with corresponding output index).
+* `outputs([options])`: Return UtxoInput array (transaction IDs with corresponding output index).
 
 ## `find_outputs()`
 
@@ -531,8 +535,8 @@ Find all outputs based on the requests criteria.
 
 | Parameter | Required | Type | Definition |
 | - | - | - | - |
-| **output_id** | ✘ | [UTXOInput] | The identifier of output. |
-| **addresses** | ✘ | [[Bech32Address]] | The Bech32 encoded address. |
+| **output_id** | ✘ | [UtxoInput] | The identifier of output. |
+| **addresses** | ✘ | [[String]] | The Bech32 encoded address. |
 
 ### Returns
 
@@ -706,7 +710,7 @@ struct TransactionPayloadEssence {
 }
 
 enum Input {
-    UTXO(UTXOInput(OutputId)),
+    UTXO(UtxoInput(OutputId)),
 }
 
 struct OutputId {
@@ -786,16 +790,6 @@ pub struct OutputMetadata {
 }
 ```
 
-## `Bech32Address`
-
-[Bech32Address]: #Bech32Address
-
-Wrapper type to be used in most cases where an address is involved.
-
-```Rust
-pub struct Bech32Address(pub String);
-```
-
 ## `Address`
 
 [Address]: #Address
@@ -814,8 +808,8 @@ pub enum Address {
 
 ```Rust
 pub struct AddressBalancePair {
-    /// Address
-    pub address: Bech32Address,
+    /// Address, bech32 encoded
+    pub address: String,
     /// Balance in the address
     pub balance: u64,
 }

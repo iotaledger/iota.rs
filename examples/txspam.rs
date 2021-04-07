@@ -3,7 +3,7 @@
 
 //! cargo run --example txspam --release
 
-use iota::{Client, Essence, Payload, Seed, UTXOInput};
+use iota::{client::Result, Client, Essence, Payload, Seed, UtxoInput};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -12,7 +12,7 @@ use std::env;
 /// Send 10 Mi from the faucet to the first address before you run it
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
@@ -55,7 +55,7 @@ async fn main() {
         match tx.essence() {
             Essence::Regular(essence) => {
                 for (index, _output) in essence.outputs().iter().enumerate() {
-                    initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
+                    initial_outputs.push(UtxoInput::new(tx.id(), index as u16).unwrap());
                 }
             }
             _ => {
@@ -64,12 +64,12 @@ async fn main() {
         }
     }
 
-    for (index, address) in addresses.iter().enumerate() {
+    for (index, address) in addresses.into_iter().enumerate() {
         let message = iota
             .message()
             .with_seed(&seed)
             .with_input(initial_outputs[index].clone())
-            .with_output(address, 1_000_000)
+            .with_output(&address, 1_000_000)
             .unwrap()
             .finish()
             .await
@@ -79,4 +79,5 @@ async fn main() {
             message.id().0
         );
     }
+    Ok(())
 }

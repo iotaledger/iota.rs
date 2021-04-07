@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    message::prelude::{Address, MessageId, TransactionId, UTXOInput},
+    message::prelude::{Address, MessageId, TransactionId, UtxoInput},
     AddressOutputsOptions, OutputType, Seed,
 };
 use neon::prelude::*;
@@ -181,7 +181,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(address.value().into());
+                addresses.push(address.value());
             }
 
             let cb = cx.argument::<JsFunction>(1)?;
@@ -357,7 +357,7 @@ declare_types! {
 
         method getOutput(mut cx) {
             let output_id = cx.argument::<JsString>(0)?.value();
-            let output_id = UTXOInput::from_str(output_id.as_str()).expect("invalid output id");
+            let output_id = UtxoInput::from_str(output_id.as_str()).expect("invalid output id");
             let cb = cx.argument::<JsFunction>(1)?;
             {
                 let this = cx.this();
@@ -379,7 +379,7 @@ declare_types! {
             let mut outputs = vec![];
             for js_output_id in js_output_ids {
                 let output_id: Handle<JsString> = js_output_id.downcast_or_throw(&mut cx)?;
-                let output_id = UTXOInput::from_str(output_id.value().as_str()).expect("invalid output id");
+                let output_id = UtxoInput::from_str(output_id.value().as_str()).expect("invalid output id");
                 outputs.push(output_id);
             }
 
@@ -388,7 +388,7 @@ declare_types! {
             let mut addresses = vec![];
             for js_address in js_addresses {
                 let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
-                addresses.push(address.value().into());
+                addresses.push(address.value());
             }
 
             let cb = cx.argument::<JsFunction>(2)?;
@@ -426,7 +426,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressOutputs(address.into(), options.into()),
+                    api: Api::GetAddressOutputs(address, options.into()),
                 };
                 client_task.schedule(cb);
             }
@@ -444,7 +444,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetAddressBalance(address.into()),
+                    api: Api::GetAddressBalance(address),
                 };
                 client_task.schedule(cb);
             }
@@ -470,7 +470,7 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
-        method getMilestoneUTXOChanges(mut cx) {
+        method getMilestoneUtxoChanges(mut cx) {
             let milestone_index = cx.argument::<JsNumber>(0)?.value() as u32;
 
             let cb = cx.argument::<JsFunction>(1)?;
@@ -480,7 +480,7 @@ declare_types! {
                 let id = &this.borrow(&guard).0;
                 let client_task = ClientTask {
                     client_id: id.clone(),
-                    api: Api::GetMilestoneUTXOChanges(milestone_index),
+                    api: Api::GetMilestoneUtxoChanges(milestone_index),
                 };
                 client_task.schedule(cb);
             }

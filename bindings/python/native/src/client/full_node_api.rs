@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, AddressOutputsOptions, BalanceForAddressResponse, Client, InfoResponse, Message, MilestoneDto,
-    MilestoneUTXOChanges, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UTXOInput,
+    error::Result, AddressOutputsOptions, BalanceAddressResponse, Client, InfoResponse, Message, MilestoneDto,
+    MilestoneUTXOChanges, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UtxoInput,
 };
 use iota::{
-    Bech32Address as RustBech32Address, ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder,
-    MessageId as RustMessageId, Parents, TransactionId as RustTransactionId, UTXOInput as RustUTXOInput,
+    ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder, MessageId as RustMessageId, Parents,
+    TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
 };
 use pyo3::prelude::*;
 
@@ -53,31 +53,22 @@ impl Client {
         Ok(crate::block_on(async { self.client.post_message(&msg).await })?.to_string())
     }
     fn get_output(&self, output_id: String) -> Result<OutputResponse> {
-        Ok(crate::block_on(async { self.client.get_output(&RustUTXOInput::from_str(&output_id)?).await })?.into())
+        Ok(crate::block_on(async { self.client.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
     }
-    fn get_address_balance(&self, address: &str) -> Result<BalanceForAddressResponse> {
-        Ok(crate::block_on(async {
-            self.client
-                .get_address()
-                .balance(&RustBech32Address::from(address))
-                .await
-        })?
-        .into())
+    fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
+        Ok(crate::block_on(async { self.client.get_address().balance(&String::from(address)).await })?.into())
     }
-    fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UTXOInput>> {
+    fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UtxoInput>> {
         let outputs = crate::block_on(async {
             self.client
                 .get_address()
-                .outputs(
-                    &RustBech32Address::from(address),
-                    options.map(|o| o.into()).unwrap_or_default(),
-                )
+                .outputs(&String::from(address), options.map(|o| o.into()).unwrap_or_default())
                 .await
         })?;
         Ok((*outputs)
             .to_vec()
             .iter()
-            .map(|output| UTXOInput {
+            .map(|output| UtxoInput {
                 transaction_id: output.output_id().transaction_id().as_ref().to_vec(),
                 index: output.output_id().index(),
             })
@@ -88,15 +79,15 @@ impl Client {
         output_ids: Option<Vec<String>>,
         addresses: Option<Vec<String>>,
     ) -> Result<Vec<OutputResponse>> {
-        let output_ids: Vec<RustUTXOInput> = output_ids
+        let output_ids: Vec<RustUtxoInput> = output_ids
             .unwrap_or_default()
             .iter()
-            .map(|input| RustUTXOInput::from_str(input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
+            .map(|input| RustUtxoInput::from_str(input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
             .collect();
-        let addresses: Vec<RustBech32Address> = addresses
+        let addresses: Vec<String> = addresses
             .unwrap_or_default()
             .iter()
-            .map(|address| RustBech32Address::from(&address[..]))
+            .map(|address| String::from(&address[..]))
             .collect();
         let output_metadata_vec =
             crate::block_on(async { self.client.find_outputs(&output_ids[..], &addresses[..]).await })?;

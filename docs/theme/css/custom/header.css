@@ -1,0 +1,12 @@
+.logo-wrapper {
+    /* transform: translateX(-50%); */
+    margin-top: 60px;
+    margin-bottom: -50px;
+
+}
+
+#logo {
+    display: block;
+    margin: auto;
+    height: 30px;
+}

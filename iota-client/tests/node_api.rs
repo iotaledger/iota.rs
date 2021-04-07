@@ -215,7 +215,7 @@ async fn test_get_address_balance() {
         .await
         .unwrap()
         .get_address()
-        .balance(&"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into())
+        .balance(&"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r")
         .await
         .unwrap();
 
@@ -233,7 +233,7 @@ async fn test_get_address_outputs() {
         .unwrap()
         .get_address()
         .outputs(
-            &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".into(),
+            &"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
             Default::default(), /* Insert the address to
                                  * search for */
         )
@@ -253,7 +253,7 @@ async fn test_get_output() {
         .await
         .unwrap()
         .get_output(
-            &UTXOInput::new(
+            &UtxoInput::new(
                 TransactionId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
                 0,
             )

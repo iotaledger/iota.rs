@@ -6,12 +6,11 @@ use crate::client::{
     AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output,
 };
 use iota::{
-    Bech32Address as RustBech32Address, MessageId as RustMessageId, Seed as RustSeed,
-    TransactionId as RustTransactionId, UTXOInput as RustUTXOInput,
+    MessageId as RustMessageId, Seed as RustSeed, TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
 };
 use pyo3::{exceptions, prelude::*};
 use std::{
-    convert::{From, Into, TryInto},
+    convert::{Into, TryInto},
     str::FromStr,
 };
 
@@ -51,7 +50,7 @@ impl Client {
         }
         if let Some(inputs) = inputs {
             for input in inputs {
-                send_builder = send_builder.with_input(RustUTXOInput::new(
+                send_builder = send_builder.with_input(RustUtxoInput::new(
                     RustTransactionId::from_str(&input.transaction_id[..])?,
                     input.index,
                 )?);
@@ -64,12 +63,12 @@ impl Client {
 
         if let Some(outputs) = outputs {
             for output in outputs {
-                send_builder = send_builder.with_output(&output.address[..].into(), output.amount)?;
+                send_builder = send_builder.with_output(&output.address[..], output.amount)?;
             }
         }
         if let Some(dust_allowance_outputs) = dust_allowance_outputs {
             for output in dust_allowance_outputs {
-                send_builder = send_builder.with_dust_allowance_output(&output.address[..].into(), output.amount)?;
+                send_builder = send_builder.with_dust_allowance_output(&output.address[..], output.amount)?;
             }
         }
         if let Some(index) = index {
@@ -212,7 +211,7 @@ impl Client {
                 .get()
                 .await
         })?;
-        Ok((address_index.0 .0, address_index.1))
+        Ok((address_index.0, address_index.1))
     }
     fn get_addresses(
         &self,
@@ -280,13 +279,7 @@ impl Client {
         Ok(balance)
     }
     fn get_address_balances(&self, addresses: Vec<String>) -> Result<Vec<AddressBalancePair>> {
-        let bench32_addresses: Vec<RustBech32Address> = addresses
-            .iter()
-            .map(|address| RustBech32Address::from(&address[..]))
-            .collect();
-
-        let address_balances =
-            crate::block_on(async { self.client.get_address_balances(&bench32_addresses[..]).await })?;
+        let address_balances = crate::block_on(async { self.client.get_address_balances(&addresses[..]).await })?;
 
         Ok(address_balances
             .iter()
