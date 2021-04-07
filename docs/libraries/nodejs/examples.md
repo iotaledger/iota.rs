@@ -1,5 +1,3 @@
 # Examples
 
-> TODO
-
-You can look into https://github.com/iotaledger/iota.rs/blob/dev/bindings/nodejs/tests/client.js for now
+You can look into [the tests](https://github.com/iotaledger/iota.rs/blob/dev/bindings/nodejs/tests/client.js) until the full documentation is available.

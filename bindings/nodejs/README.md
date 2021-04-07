@@ -13,7 +13,9 @@ $ npm i @iota/client
 $ yarn add @iota/client
 ```
 
-Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+## Requirements
+
+If there is no prebuilt binary available for your system you need `Rust` and `Cargo`, to build it yourself. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
 ## Getting Started
 
@@ -26,6 +28,8 @@ const client = new ClientBuilder()
     .build()
 client.getInfo().then(console.log).catch(console.error)
 ```
+
+Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
 
 ## API Reference
 
@@ -822,13 +826,15 @@ Gets the metadata of the given message.
 
 - MilestoneEssence
 
-| Field        | Type                    | Description                                          |
-| ------------ | ----------------------- | ---------------------------------------------------- |
-| index        | <code>number</code>     | Milestone index                                      |
-| timestamp    | <code>number</code>     | Timestamp                                            |
-| parents      | <code>string[]</code>   | Message ids of the messages the milestone references |
-| merkle_proof | <code>number[]</code>   | Merkle proof                                         |
-| public_keys  | <code>number[][]</code> | public keys                                          |
+| Field                          | Type                    | Description                                              |
+| ------------------------------ | ----------------------- | -------------------------------------------------------- |
+| index                          | <code>number</code>     | Milestone index                                          |
+| timestamp                      | <code>number</code>     | Timestamp                                                |
+| parents                        | <code>string[]</code>   | Message ids of the messages the milestone references     |
+| merkle_proof                   | <code>number[]</code>   | Merkle proof                                             |
+| next_pow_score                 | <code>number</code>     | Next PoW score                                           |
+| next_pow_score_milestone_index | <code>number</code>     | Milestone index at which the next_pow_score will be used |
+| public_keys                    | <code>number[][]</code> | public keys                                              |
 
 ### MessageDto
 
