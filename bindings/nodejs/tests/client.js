@@ -39,7 +39,7 @@ describe('Client', () => {
   it('convert address', async () => {
     const address = "atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"
     let hexAddress = client.bech32ToHex(address)
-    let bech32Address = client.hexToBech32(hexAddress, "atoi")
+    let bech32Address = await client.hexToBech32(hexAddress, "atoi")
     assert.strictEqual(address, bech32Address)
   })
 
