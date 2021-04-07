@@ -36,6 +36,13 @@ describe('Client', () => {
     addresses.forEach(assertAddress)
   })
 
+  it('convert address', async () => {
+    const address = "atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"
+    let hexAddress = client.bech32ToHex(address)
+    let bech32Address = client.hexToBech32(hexAddress, "atoi")
+    assert.strictEqual(address, bech32Address)
+  })
+
   it('sends an indexation message with the high level API', async () => {
     const message = await client
       .message()

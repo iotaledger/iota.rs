@@ -81,7 +81,7 @@ export declare class Client {
   subscriber(): TopicSubscriber
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
-  getAddresses(seed: string): AddressGetter
+  getAddresses(seed: string): Promise<AddressGetter>
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
