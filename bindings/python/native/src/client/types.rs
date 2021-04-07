@@ -191,6 +191,8 @@ pub struct MilestonePayloadEssence {
     pub timestamp: u64,
     pub parents: Vec<String>,
     pub merkle_proof: [u8; MILESTONE_MERKLE_PROOF_LENGTH],
+    pub next_pow_score: u32,
+    pub next_pow_score_milestone_index: u32,
     pub public_keys: Vec<[u8; MILESTONE_PUBLIC_KEY_LENGTH]>,
 }
 
@@ -281,11 +283,15 @@ pub struct InfoResponse {
     pub is_healthy: bool,
     pub network_id: String,
     pub bech32_hrp: String,
+    pub min_pow_score: f64,
+    pub messages_per_second: f64,
+    pub referenced_messages_per_second: f64,
+    pub referenced_rate: f64,
+    pub latest_milestone_timestamp: u64,
     pub latest_milestone_index: u32,
     pub confirmed_milestone_index: u32,
     pub pruning_index: u32,
     pub features: Vec<String>,
-    pub min_pow_score: f64,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -513,11 +519,15 @@ impl From<RustInfoResponse> for InfoResponse {
             is_healthy: info.is_healthy,
             network_id: info.network_id,
             bech32_hrp: info.bech32_hrp,
+            min_pow_score: info.min_pow_score,
+            messages_per_second: info.messages_per_second,
+            referenced_messages_per_second: info.referenced_messages_per_second,
+            referenced_rate: info.referenced_rate,
+            latest_milestone_timestamp: info.latest_milestone_timestamp,
             latest_milestone_index: info.latest_milestone_index,
             confirmed_milestone_index: info.confirmed_milestone_index,
             pruning_index: info.pruning_index,
             features: info.features,
-            min_pow_score: info.min_pow_score,
         }
     }
 }
@@ -710,6 +720,8 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
             timestamp: essence.timestamp(),
             parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
+            next_pow_score: essence.next_pow_score(),
+            next_pow_score_milestone_index: essence.next_pow_score_milestone_index(),
             public_keys: essence
                 .public_keys()
                 .iter()
