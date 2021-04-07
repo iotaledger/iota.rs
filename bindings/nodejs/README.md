@@ -905,17 +905,22 @@ Gets the metadata of the given message.
 
 ### NodeInfo
 
-| Field                   | Type                  | Description                      |
-| ----------------------- | --------------------- | -------------------------------- |
-| name                    | <code>string</code>   | Node name                        |
-| version                 | <code>string</code>   | Node version                     |
-| isHealthy               | <code>boolean</code>  | Node health status               |
-| networkId               | <code>string</code>   | Node network identifier          |
-| bech32HRP               | <code>string</code>   | Bech32 HRP for this network      |
-| latestMilestoneIndex    | <code>number</code>   | Index of the latest milestone    |
-| confirmedMilestoneIndex | <code>number</code>   | Index of the confirmed milestone |
-| pruningIndex            | <code>number</code>   | Pruning index                    |
-| features                | <code>string[]</code> | List of node features            |
+| Field                          | Type                  | Description                                       |
+| ------------------------------ | --------------------- | ------------------------------------------------- |
+| name                           | <code>string</code>   | Node name                                         |
+| version                        | <code>string</code>   | Node version                                      |
+| isHealthy                      | <code>boolean</code>  | Node health status                                |
+| networkId                      | <code>string</code>   | Node network identifier                           |
+| bech32HRP                      | <code>string</code>   | Bech32 HRP for this network                       |
+| min_pow_score                  | <code>number</code>   | Min PoW score                                     |
+| messages_per_second            | <code>number</code>   | Network stats: Messages per second in the network |
+| referenced_messages_per_second | <code>number</code>   | Network stats: Referenced messages per second     |
+| referenced_rate                | <code>number</code>   | Network stats: referenced rate                    |
+| latest_milestone_timestamp     | <code>number</code>   | Timestamp of the latest milestone                 |
+| latestMilestoneIndex           | <code>number</code>   | Index of the latest milestone                     |
+| confirmedMilestoneIndex        | <code>number</code>   | Index of the confirmed milestone                  |
+| pruningIndex                   | <code>number</code>   | Pruning index                                     |
+| features                       | <code>string[]</code> | List of node features                             |
 
 ### OutputMetadata
 
