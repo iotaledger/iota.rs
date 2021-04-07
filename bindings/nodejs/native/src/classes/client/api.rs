@@ -5,8 +5,9 @@ use std::{convert::TryInto, ops::Range, str::FromStr};
 
 use super::MessageDto;
 
-use crate::classes::client::dto::MessageWrapper;
+use crate::classes::client::dto::{AddressBalanceDto, MessageWrapper, OutputMetadataDto};
 use iota::{
+    bee_rest_api::types::dtos::{AddressDto, OutputDto as BeeOutput},
     Address, AddressOutputsOptions, ClientMiner, MessageBuilder, MessageId, Parents, Seed, TransactionId, UtxoInput,
 };
 use neon::prelude::*;
@@ -212,8 +213,15 @@ impl Task for ClientTask {
                 }
                 Api::GetAddressBalances(bech32_addresses) => {
                     let balances = client.get_address_balances(&bech32_addresses[..]).await?;
-                    let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
-                    serde_json::to_string(&balances)?
+                    let mut bech32_balances = Vec::new();
+                    for balance in balances {
+                        bech32_balances.push(AddressBalanceDto {
+                            address: client.hex_to_bech32(&balance.address.to_string(), None).await?,
+                            balance: balance.balance,
+                            dust_allowed: balance.dust_allowed,
+                        })
+                    }
+                    serde_json::to_string(&bech32_balances)?
                 }
                 // Node APIs
                 Api::GetInfo => serde_json::to_string(&client.get_info().await?)?,
@@ -267,17 +275,55 @@ impl Task for ClientTask {
                 }
                 Api::GetOutput(id) => {
                     let output = client.get_output(id).await?;
-                    let output: super::OutputMetadataDto = output.into();
-                    serde_json::to_string(&output)?
+                    let (output_amount, output_address) = match output.output {
+                        BeeOutput::Treasury(t) => (t.amount, "".to_string()),
+                        BeeOutput::SignatureLockedSingle(r) => match r.address {
+                            AddressDto::Ed25519(addr) => (r.amount, addr.address),
+                        },
+                        BeeOutput::SignatureLockedDustAllowance(r) => match r.address {
+                            AddressDto::Ed25519(addr) => (r.amount, addr.address),
+                        },
+                    };
+                    serde_json::to_string(&OutputMetadataDto {
+                        message_id: output.message_id,
+                        transaction_id: output.transaction_id,
+                        output_index: output.output_index,
+                        is_spent: output.is_spent,
+                        address: client.hex_to_bech32(&output_address.to_string(), None).await?,
+                        amount: output_amount,
+                    })?
                 }
                 Api::FindOutputs { outputs, addresses } => {
                     let outputs = client.find_outputs(outputs, &addresses[..]).await?;
-                    let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
-                    serde_json::to_string(&outputs)?
+                    let mut bech32_outputs = Vec::new();
+                    for output in outputs {
+                        let (output_amount, output_address) = match output.output {
+                            BeeOutput::Treasury(t) => (t.amount, "".to_string()),
+                            BeeOutput::SignatureLockedSingle(r) => match r.address {
+                                AddressDto::Ed25519(addr) => (r.amount, addr.address),
+                            },
+                            BeeOutput::SignatureLockedDustAllowance(r) => match r.address {
+                                AddressDto::Ed25519(addr) => (r.amount, addr.address),
+                            },
+                        };
+                        bech32_outputs.push(OutputMetadataDto {
+                            message_id: output.message_id,
+                            transaction_id: output.transaction_id,
+                            output_index: output.output_index,
+                            is_spent: output.is_spent,
+                            address: client.hex_to_bech32(&output_address.to_string(), None).await?,
+                            amount: output_amount,
+                        })
+                    }
+                    serde_json::to_string(&bech32_outputs)?
                 }
                 Api::GetAddressBalance(address) => {
                     let balance = client.get_address().balance(address).await?;
-                    serde_json::to_string(&balance)?
+                    serde_json::to_string(&AddressBalanceDto {
+                        address: client.hex_to_bech32(&balance.address.to_string(), None).await?,
+                        balance: balance.balance,
+                        dust_allowed: balance.dust_allowed,
+                    })?
                 }
                 Api::GetAddressOutputs(address, options) => {
                     let output_ids = client.get_address().outputs(address, options.clone()).await?;
