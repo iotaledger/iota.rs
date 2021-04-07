@@ -7,8 +7,7 @@ use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
 use iota::{
-    Address, AddressOutputsOptions, Client, ClientMiner, MessageBuilder, MessageId, Parents, Seed, TransactionId,
-    UtxoInput,
+    Address, AddressOutputsOptions, ClientMiner, MessageBuilder, MessageId, Parents, Seed, TransactionId, UtxoInput,
 };
 use neon::prelude::*;
 
@@ -75,9 +74,7 @@ pub(crate) enum Api {
     RetryUntilIncluded(MessageId, Option<u64>, Option<u64>),
     Reattach(MessageId),
     Promote(MessageId),
-    Bech32ToHex(String),
     HexToBech32(String, Option<String>),
-    IsAddressValid(String),
 }
 
 pub(crate) struct ClientTask {
@@ -348,18 +345,10 @@ impl Task for ClientTask {
                         message_id: message.0,
                     })?
                 }
-                Api::Bech32ToHex(bech32) => {
-                    let hex = Client::bech32_to_hex(bech32)?;
-                    serde_json::to_string(&hex)?
-                }
                 Api::HexToBech32(hex, bech32_hrp) => {
                     let opt = bech32_hrp.as_ref().map(|opt| opt.as_str());
                     let bech32 = client.hex_to_bech32(hex, opt).await?;
                     serde_json::to_string(&bech32)?
-                }
-                Api::IsAddressValid(address) => {
-                    let is_valid = Client::is_address_valid(address);
-                    serde_json::to_string(&is_valid)?
                 }
             };
             Ok(res)
