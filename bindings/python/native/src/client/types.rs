@@ -191,6 +191,8 @@ pub struct MilestonePayloadEssence {
     pub timestamp: u64,
     pub parents: Vec<String>,
     pub merkle_proof: [u8; MILESTONE_MERKLE_PROOF_LENGTH],
+    pub next_pow_score: u32,
+    pub next_pow_score_milestone_index: u32,
     pub public_keys: Vec<[u8; MILESTONE_PUBLIC_KEY_LENGTH]>,
 }
 
@@ -710,6 +712,8 @@ impl TryFrom<RustMilestonePayloadEssence> for MilestonePayloadEssence {
             timestamp: essence.timestamp(),
             parents: vec![essence.parents().iter().map(|m| m.to_string()).collect()],
             merkle_proof: essence.merkle_proof().try_into()?,
+            next_pow_score: essence.next_pow_score(),
+            next_pow_score_milestone_index: essence.next_pow_score_milestone_index(),
             public_keys: essence
                 .public_keys()
                 .iter()
