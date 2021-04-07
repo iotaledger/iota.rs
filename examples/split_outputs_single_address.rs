@@ -3,7 +3,7 @@
 
 //! cargo run --example split_outputs_single_address --release
 
-use iota::{client::Result, Client, Essence, Output, Payload, Seed, UTXOInput};
+use iota::{client::Result, Client, Essence, Output, Payload, Seed, UtxoInput};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -58,7 +58,7 @@ async fn main() -> Result<()> {
                     // Only include 1 Mi outputs, otherwise it fails for the remainder address
                     if let Output::SignatureLockedSingle(output) = output {
                         if output.amount() == 1_000_000 {
-                            initial_outputs.push(UTXOInput::new(tx.id(), index as u16).unwrap());
+                            initial_outputs.push(UtxoInput::new(tx.id(), index as u16).unwrap());
                         }
                     }
                 }

@@ -13,7 +13,9 @@ $ npm i @iota/client
 $ yarn add @iota/client
 ```
 
-Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+## Requirements
+
+If there is no prebuilt binary available for your system you need `Rust` and `Cargo`, to build it yourself. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
 ## Getting Started
 
@@ -26,6 +28,8 @@ const client = new ClientBuilder()
     .build()
 client.getInfo().then(console.log).catch(console.error)
 ```
+
+Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
 
 ## API Reference
 
@@ -856,13 +860,15 @@ Gets the metadata of the given message.
 
 - MilestoneEssence
 
-| Field        | Type                    | Description                                          |
-| ------------ | ----------------------- | ---------------------------------------------------- |
-| index        | <code>number</code>     | Milestone index                                      |
-| timestamp    | <code>number</code>     | Timestamp                                            |
-| parents      | <code>string[]</code>   | Message ids of the messages the milestone references |
-| merkle_proof | <code>number[]</code>   | Merkle proof                                         |
-| public_keys  | <code>number[][]</code> | public keys                                          |
+| Field                          | Type                    | Description                                              |
+| ------------------------------ | ----------------------- | -------------------------------------------------------- |
+| index                          | <code>number</code>     | Milestone index                                          |
+| timestamp                      | <code>number</code>     | Timestamp                                                |
+| parents                        | <code>string[]</code>   | Message ids of the messages the milestone references     |
+| merkle_proof                   | <code>number[]</code>   | Merkle proof                                             |
+| next_pow_score                 | <code>number</code>     | Next PoW score                                           |
+| next_pow_score_milestone_index | <code>number</code>     | Milestone index at which the next_pow_score will be used |
+| public_keys                    | <code>number[][]</code> | public keys                                              |
 
 ### MessageDto
 
@@ -940,17 +946,22 @@ Gets the metadata of the given message.
 
 ### NodeInfo
 
-| Field                   | Type                  | Description                      |
-| ----------------------- | --------------------- | -------------------------------- |
-| name                    | <code>string</code>   | Node name                        |
-| version                 | <code>string</code>   | Node version                     |
-| isHealthy               | <code>boolean</code>  | Node health status               |
-| networkId               | <code>string</code>   | Node network identifier          |
-| bech32HRP               | <code>string</code>   | Bech32 HRP for this network      |
-| latestMilestoneIndex    | <code>number</code>   | Index of the latest milestone    |
-| confirmedMilestoneIndex | <code>number</code>   | Index of the confirmed milestone |
-| pruningIndex            | <code>number</code>   | Pruning index                    |
-| features                | <code>string[]</code> | List of node features            |
+| Field                          | Type                  | Description                                       |
+| ------------------------------ | --------------------- | ------------------------------------------------- |
+| name                           | <code>string</code>   | Node name                                         |
+| version                        | <code>string</code>   | Node version                                      |
+| isHealthy                      | <code>boolean</code>  | Node health status                                |
+| networkId                      | <code>string</code>   | Node network identifier                           |
+| bech32HRP                      | <code>string</code>   | Bech32 HRP for this network                       |
+| min_pow_score                  | <code>number</code>   | Min PoW score                                     |
+| messages_per_second            | <code>number</code>   | Network stats: Messages per second in the network |
+| referenced_messages_per_second | <code>number</code>   | Network stats: Referenced messages per second     |
+| referenced_rate                | <code>number</code>   | Network stats: referenced rate                    |
+| latest_milestone_timestamp     | <code>number</code>   | Timestamp of the latest milestone                 |
+| latestMilestoneIndex           | <code>number</code>   | Index of the latest milestone                     |
+| confirmedMilestoneIndex        | <code>number</code>   | Index of the confirmed milestone                  |
+| pruningIndex                   | <code>number</code>   | Pruning index                                     |
+| features                       | <code>string[]</code> | List of node features                             |
 
 ### OutputMetadata
 

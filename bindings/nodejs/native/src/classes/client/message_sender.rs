@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{Address, MessageId, Seed, TransactionId, UTXOInput};
+use iota::{Address, MessageId, Seed, TransactionId, UtxoInput};
 use neon::prelude::*;
 
 use super::{parse_address, Api, ClientTask};
@@ -16,7 +16,7 @@ pub struct MessageSender {
     seed: Option<String>,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
-    inputs: Vec<UTXOInput>,
+    inputs: Vec<UtxoInput>,
     input_range: Range<usize>,
     outputs: Vec<(Address, u64)>,
     dust_allowance_outputs: Vec<(Address, u64)>,
@@ -174,7 +174,7 @@ declare_types! {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let inputs = &mut this.borrow_mut(&guard).inputs;
-                inputs.push(UTXOInput::new(transaction_id, index).expect("invalid UTXO input"));
+                inputs.push(UtxoInput::new(transaction_id, index).expect("invalid UTXO input"));
             }
 
             Ok(cx.this().upcast())

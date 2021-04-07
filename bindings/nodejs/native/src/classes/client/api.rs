@@ -7,7 +7,7 @@ use super::MessageDto;
 
 use crate::classes::client::dto::MessageWrapper;
 use iota::{
-    Address, AddressOutputsOptions, ClientMiner, MessageBuilder, MessageId, Parents, Seed, TransactionId, UTXOInput,
+    Address, AddressOutputsOptions, ClientMiner, MessageBuilder, MessageId, Parents, Seed, TransactionId, UtxoInput,
 };
 use neon::prelude::*;
 
@@ -20,7 +20,7 @@ pub(crate) enum Api {
         parents: Option<Vec<MessageId>>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
-        inputs: Vec<UTXOInput>,
+        inputs: Vec<UtxoInput>,
         outputs: Vec<(Address, u64)>,
         dust_allowance_outputs: Vec<(Address, u64)>,
     },
@@ -57,9 +57,9 @@ pub(crate) enum Api {
     GetMessageMetadata(MessageId),
     GetRawMessage(MessageId),
     GetMessageChildren(MessageId),
-    GetOutput(UTXOInput),
+    GetOutput(UtxoInput),
     FindOutputs {
-        outputs: Vec<UTXOInput>,
+        outputs: Vec<UtxoInput>,
         addresses: Vec<String>,
     },
     GetAddressBalance(String),

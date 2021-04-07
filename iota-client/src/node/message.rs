@@ -5,7 +5,7 @@ use crate::{Api, Client, Result};
 use bee_message::{Message, MessageId};
 use bee_rest_api::types::{
     dtos::MessageDto,
-    responses::{MessageChildrenResponse, MessageMetadataResponse as MessageMetadata, MessagesForIndexResponse},
+    responses::{MessageChildrenResponse, MessageMetadataResponse as MessageMetadata, MessagesFindResponse},
 };
 
 use std::convert::TryFrom;
@@ -27,7 +27,7 @@ impl<'a> GetMessageBuilder<'a> {
         let path = "api/v1/messages";
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
-            data: MessagesForIndexResponse,
+            data: MessagesFindResponse,
         }
         let resp: ResponseWrapper = self
             .client

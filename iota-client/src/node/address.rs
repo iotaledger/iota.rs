@@ -3,9 +3,9 @@
 
 use crate::{Api, Client, Error, Result};
 
-use bee_message::prelude::{TransactionId, UTXOInput};
+use bee_message::prelude::{TransactionId, UtxoInput};
 
-use bee_rest_api::types::responses::{BalanceForAddressResponse, OutputsForAddressResponse};
+use bee_rest_api::types::responses::{BalanceAddressResponse, OutputsAddressResponse};
 
 use std::convert::TryInto;
 
@@ -70,12 +70,12 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get the balance of a given Bech32 encoded address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn balance(self, address: &str) -> Result<BalanceForAddressResponse> {
+    pub async fn balance(self, address: &str) -> Result<BalanceAddressResponse> {
         let path = &format!("api/v1/addresses/{}", address);
 
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
-            data: BalanceForAddressResponse,
+            data: BalanceAddressResponse,
         }
         let resp: ResponseWrapper = self
             .client
@@ -89,11 +89,11 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get all outputs that use a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Box<[UTXOInput]>> {
+    pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Box<[UtxoInput]>> {
         let path = format!("api/v1/addresses/{}/outputs", address);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
-            data: OutputsForAddressResponse,
+            data: OutputsAddressResponse,
         }
 
         let resp: ResponseWrapper = self
@@ -118,11 +118,11 @@ impl<'a> GetAddressBuilder<'a> {
                             .try_into()
                             .map_err(|_| Error::InvalidParameter("index"))?,
                     );
-                    Ok(UTXOInput::new(TransactionId::new(transaction_id), index)?)
+                    Ok(UtxoInput::new(TransactionId::new(transaction_id), index)?)
                 } else {
                     Err(Error::OutputError("Invalid output length from API response"))
                 }
             })
-            .collect::<Result<Box<[UTXOInput]>>>()
+            .collect::<Result<Box<[UtxoInput]>>>()
     }
 }

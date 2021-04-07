@@ -9,14 +9,13 @@ use crate::{
     node::*,
 };
 use bee_common::packable::Packable;
-use bee_message::prelude::{Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UTXOInput};
+use bee_message::prelude::{Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput};
 use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
 use bee_rest_api::types::{
     dtos::{MessageDto, PeerDto, ReceiptDto},
     responses::{
-        BalanceForAddressResponse, InfoResponse as NodeInfo, MilestoneResponse as MilestoneResponseDto,
-        MilestoneUtxoChangesResponse as MilestoneUTXOChanges, OutputResponse, ReceiptsResponse, TipsResponse,
-        TreasuryResponse,
+        BalanceAddressResponse, InfoResponse as NodeInfo, MilestoneResponse as MilestoneResponseDto, OutputResponse,
+        ReceiptsResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
 use crypto::{
@@ -671,7 +670,7 @@ impl Client {
 
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output_id: &UTXOInput) -> Result<OutputResponse> {
+    pub async fn get_output(&self, output_id: &UtxoInput) -> Result<OutputResponse> {
         let path = &format!(
             "api/v1/outputs/{}{}",
             output_id.output_id().transaction_id().to_string(),
@@ -692,18 +691,18 @@ impl Client {
 
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
-    pub async fn find_outputs(&self, outputs: &[UTXOInput], addresses: &[String]) -> Result<Vec<OutputResponse>> {
+    pub async fn find_outputs(&self, outputs: &[UtxoInput], addresses: &[String]) -> Result<Vec<OutputResponse>> {
         let mut output_metadata = Vec::<OutputResponse>::new();
         // Use a `HashSet` to prevent duplicate output.
-        let mut output_to_query = HashSet::<UTXOInput>::new();
+        let mut output_to_query = HashSet::<UtxoInput>::new();
 
-        // Collect the `UTXOInput` in the HashSet.
+        // Collect the `UtxoInput` in the HashSet.
         for output in outputs {
             output_to_query.insert(output.to_owned());
         }
 
         // Use `get_address()` API to get the address outputs first,
-        // then collect the `UTXOInput` in the HashSet.
+        // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
             let address_outputs = self.get_address().outputs(&address, Default::default()).await?;
             for output in address_outputs.iter() {
@@ -949,7 +948,7 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed or security level needed to do this
     /// since we are only checking and already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceForAddressResponse>> {
+    pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
             let balance_response = self.get_address().balance(&address).await?;

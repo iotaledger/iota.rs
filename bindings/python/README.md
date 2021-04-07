@@ -247,7 +247,7 @@ Gets the UTXO outputs associated with the given output id.
 
 **Returns** the OutputResponse[#outputresponse].
 
-#### get_address_balance(address): BalanceForAddressResponse
+#### get_address_balance(address): BalanceAddressResponse
 
 Gets the balance in the address.
 
@@ -255,9 +255,9 @@ Gets the balance in the address.
 | --------- | ---------------------- | ---------------------- | ------------------------- |
 | [address] | <code>list[str]</code> | <code>undefined</code> | The address Bech32 string |
 
-**Returns** the [BalanceForAddressResponse](#balanceforaddressresponse).
+**Returns** the [BalanceAddressResponse](#balanceaddressresponse).
 
-#### get_address_outputs(address, options (optional)): list[UTXOInput]
+#### get_address_outputs(address, options (optional)): list[UtxoInput]
 
 Gets the UTXO outputs associated with the given address.
 
@@ -266,7 +266,7 @@ Gets the UTXO outputs associated with the given address.
 | [address] | <code>str</code>                                               | <code>undefined</code> | The address Bech32 string |
 | [options] | <code>[[AddressOutputsOptions](#addressoutputsoptions)]</code> | <code>undefined</code> | The query filters         |
 
-**Returns** the list of [UTXOInput](#utxoinput).
+**Returns** the list of [UtxoInput](#utxoinput).
 
 #### find_outputs(output_ids (optional), addresses (optional)): list[OutputResponse]
 
@@ -564,7 +564,7 @@ message_metadata_response = {
 
 Please refer to [LedgerInclusionStateDto](#ledgerinclusionstatedto) for the details of this type.
 
-#### BalanceForAddressResponse
+#### BalanceAddressResponse
 
 A dict with the following key/value pairs.
 
@@ -633,7 +633,7 @@ treasuryResponse = {
 }
 ```
 
-#### UTXOInput
+#### UtxoInput
 
 A dict with the following key/value pairs.
 
@@ -803,6 +803,8 @@ milestone_payload_essence = {
     'timestamp': int,
     'parents': list[str],
     'merkle_proof': list[int],
+    'next_pow_score': int,
+    'next_pow_score_milestone_index': int,
     'public_keys': list[list[int]]
 }
 ```
@@ -915,6 +917,11 @@ info_response = {
     'is_healthy': bool,
     'network_id': str,
     'bech32_hrp': str,
+    'min_pow_score': float,
+    'messages_per_second': float,
+    'referenced_messages_per_second': float,
+    'referenced_rate': float,
+    'latest_milestone_timestamp': u64,
     'latest_milestone_index': int,
     'confirmed_milestone_index': int,
     'pruning_index': int,
