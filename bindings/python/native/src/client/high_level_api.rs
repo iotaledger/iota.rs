@@ -284,8 +284,10 @@ impl Client {
         Ok(address_balances
             .iter()
             .map(|address_balance| AddressBalancePair {
-                address: address_balance.address.clone(),
+                address: crate::block_on(async { self.client.hex_to_bech32(&address_balance.address, None).await })
+                    .unwrap_or_else(|_| panic!("invalid bech32 address: {}", address_balance.address)),
                 balance: address_balance.balance,
+                dust_allowed: address_balance.dust_allowed,
             })
             .collect())
     }

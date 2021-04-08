@@ -67,6 +67,7 @@ pub struct BalanceAddressResponse {
     // hex encoded address
     pub address: String,
     pub balance: u64,
+    pub dust_allowed: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -75,6 +76,8 @@ pub struct AddressBalancePair {
     pub address: String,
     /// Balance in the address
     pub balance: u64,
+    /// This address is dust allowed or not
+    pub dust_allowed: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -146,7 +149,7 @@ pub struct TreasuryOutputDto {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct AddressDto {
-    ed25519: Ed25519AddressDto,
+    pub ed25519: Ed25519AddressDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -489,6 +492,7 @@ impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
             address_type: balance_for_address_response.address_type,
             address: balance_for_address_response.address,
             balance: balance_for_address_response.balance,
+            dust_allowed: balance_for_address_response.dust_allowed,
         }
     }
 }
