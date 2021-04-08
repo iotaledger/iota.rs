@@ -4,7 +4,7 @@
 //! The seed module
 use crate::error::Result;
 use bee_common_derive::{SecretDebug, SecretDisplay};
-use crypto::ed25519::{SecretKey, SECRET_KEY_LENGTH};
+use crypto::signatures::ed25519::{SecretKey, SECRET_KEY_LENGTH};
 use slip10::{derive_key_from_path, BIP32Path, Curve};
 use std::convert::TryInto;
 

@@ -27,9 +27,9 @@ ureq = { version = "2.0", features = ["json"] }
 #chrysalis2
 bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 slip10 = "0.4"
-iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "6e67b652dd55df05877f575b9a09ccb5a7006694", features = ["ed25519", "random"]}
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "5fea3481907da9bb333a31012aab0df01009cb37", features = ["ed25519", "random"]}
 blake2 = "0.9"
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "217b5944b5e17fe5800955d212cfe8dddd992482" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "28d5d866405ded9fe03bdd140113cff6a4d4deab" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 hex = "0.4.2"
 tokio = { version = "1.4", features = ["sync"] }
