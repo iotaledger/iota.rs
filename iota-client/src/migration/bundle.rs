@@ -200,6 +200,13 @@ pub async fn mine(
         true => miner_builder.with_num_13_free_fragments(81),
         false => miner_builder.with_num_13_free_fragments((security_level * 27) as usize),
     };
+    // Use one worker less than we have cores or 1 if there is only one core
+    let mut worker_count = num_cpus::get();
+    if worker_count > 1 {
+        worker_count -= 1;
+    } else {
+        worker_count = 1;
+    }
     let miner = miner_builder
         .with_known_bundle_hashes(
             spent_bundle_hashes
@@ -211,8 +218,7 @@ pub async fn mine(
                 })
                 .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
         )
-        // use num_cpus::get()? Or not all, because it could lag?
-        .with_worker_count(1)
+        .with_worker_count(worker_count)
         .with_core_thread_count(1)
         .with_mining_timeout(timeout)
         .finish()?;
