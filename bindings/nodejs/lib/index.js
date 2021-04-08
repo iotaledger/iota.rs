@@ -112,6 +112,7 @@ Client.prototype.retryUntilIncluded = function (msg_id, interval, maxAttempts) {
 }
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
+Client.prototype.hexToBech32 = promisify(Client.prototype.hexToBech32)
 
 const messageGetterIndexSetter = promisify(MessageGetter.prototype.index)
 MessageGetter.prototype.index = function (index) {

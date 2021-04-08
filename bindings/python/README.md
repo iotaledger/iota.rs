@@ -464,6 +464,27 @@ Get the balance in iotas for the given addresses.
 
 **Returns** the list of [AddressBalancePair](#addressbalancepair).
 
+#### bech32_to_hex(bech32)
+
+Returns a parsed hex String from bech32.
+
+| Param   | Type                | Default                | Description               |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| bech32  | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+
+**Returns** A String
+
+#### hex_to_bech32(hex, bech32_hrp (optional))
+
+Returns a parsed bech32 String from hex.
+
+| Param       | Type                | Default                | Description               |
+| ----------- | ------------------- | ---------------------- | ------------------------- |
+| bech32      | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| bech32_hrp  | <code>string</code> | <code>undefined</code> | The Bech32 hrp string     |
+
+**Returns** A String
+
 #### is_address_valid(address): bool
 
 Checks if a given address is valid.
