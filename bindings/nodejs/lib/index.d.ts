@@ -84,7 +84,7 @@ export declare class Client {
   subscriber(): TopicSubscriber
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
-  getAddresses(seed: string): AddressGetter
+  getAddresses(seed: string): Promise<AddressGetter>
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
@@ -100,6 +100,8 @@ export declare class Client {
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
   getAddressOutputs(address: string, options?: AddressOutputsOptions): Promise<string[]>
   getAddressBalance(address: string): Promise<AddressBalance>
+  bech32ToHex(address: string): string
+  hexToBech32(address: string, bech32_hrp?: string): Promise<string>
   isAddressValid(address: string): boolean
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUtxoChanges(index: number): Promise<MilestoneUTXOChanges>

@@ -255,7 +255,7 @@ Gets the balance in the address.
 | --------- | ---------------------- | ---------------------- | ------------------------- |
 | [address] | <code>list[str]</code> | <code>undefined</code> | The address Bech32 string |
 
-**Returns** the [BalanceAddressResponse](#balanceaddressresponse).
+**Returns** the [BalanceAddressResponse](#BalanceAddressResponse).
 
 #### get_address_outputs(address, options (optional)): list[UtxoInput]
 
@@ -266,7 +266,7 @@ Gets the UTXO outputs associated with the given address.
 | [address] | <code>str</code>                                               | <code>undefined</code> | The address Bech32 string |
 | [options] | <code>[[AddressOutputsOptions](#addressoutputsoptions)]</code> | <code>undefined</code> | The query filters         |
 
-**Returns** the list of [UtxoInput](#utxoinput).
+**Returns** the list of [UtxoInput](#UtxoInput).
 
 #### find_outputs(output_ids (optional), addresses (optional)): list[OutputResponse]
 
@@ -464,6 +464,27 @@ Get the balance in iotas for the given addresses.
 
 **Returns** the list of [AddressBalancePair](#addressbalancepair).
 
+#### bech32_to_hex(bech32)
+
+Returns a parsed hex String from bech32.
+
+| Param   | Type                | Default                | Description               |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| bech32  | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+
+**Returns** A String
+
+#### hex_to_bech32(hex, bech32_hrp (optional))
+
+Returns a parsed bech32 String from hex.
+
+| Param       | Type                | Default                | Description               |
+| ----------- | ------------------- | ---------------------- | ------------------------- |
+| bech32      | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| bech32_hrp  | <code>string</code> | <code>undefined</code> | The Bech32 hrp string     |
+
+**Returns** A String
+
 #### is_address_valid(address): bool
 
 Checks if a given address is valid.
@@ -584,6 +605,7 @@ A dict with the following key/value pairs.
 address_balance_pair = {
     'address': str,
     'balance': int
+    'dust_allowed': bool
 }
 ```
 

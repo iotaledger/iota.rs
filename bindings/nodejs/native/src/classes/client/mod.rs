@@ -3,7 +3,7 @@
 
 use iota::{
     message::prelude::{Address, MessageId, TransactionId, UtxoInput},
-    AddressOutputsOptions, OutputType, Seed,
+    AddressOutputsOptions, Client, OutputType, Seed,
 };
 use neon::prelude::*;
 use serde::Deserialize;
@@ -595,10 +595,40 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
-        method isAddressValid(mut cx) -> JsResult<JsBoolean> {
+        method bech32ToHex(mut cx) {
+            let bech32 = cx.argument::<JsString>(0)?.value();
+            let hex = Client::bech32_to_hex(bech32.as_str()).unwrap();
+            Ok(cx.string(hex).upcast())
+        }
+
+        method hexToBech32(mut cx) {
+            let hex = cx.argument::<JsString>(0)?.value();
+            let bech32_hrp: Option<String> = match cx.argument_opt(1) {
+                Some(arg) => {
+                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
+                },
+                None => Default::default(),
+            };
+
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::HexToBech32(hex, bech32_hrp),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method isAddressValid(mut cx) {
             let address = cx.argument::<JsString>(0)?.value();
-            let b = cx.boolean(Api::IsAddressValid(address.as_str()));
-            Ok(b)
+            let is_valid = Client::is_address_valid(address.as_str());
+            Ok(cx.boolean(is_valid).upcast())
         }
     }
 }

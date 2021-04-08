@@ -14,6 +14,8 @@
   * [`get_addresses`](#get_addresses)
   * [`get_balance`](#get_balance)
   * [`get_address_balances`](#get_address_balances)
+  * [`bech32_to_hex`](#bech32_to_hex)
+  * [`hex_to_bech32`](#hex_to_bech32)
   * [`parse_bech32_address`](#parse_bech32_address)
   * [`is_address_valid`](#is_address_valid)
   * [`subscriber`](#subscriber)
@@ -278,6 +280,35 @@ Following are the steps for implementing this method:
 * Validate _address_ semantics;
 * Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
 * Return the list of Output which contains corresponding pairs of address and balance.
+
+## `bech32_to_hex()`
+
+Returns a parsed hex String from bech32.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **bech32** | ✔ | [String] | Bech32 encoded address. |
+
+### Return
+
+Parsed [String].
+
+## `hex_to_bech32()`
+
+Returns a parsed bech32 String from hex.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **hex** | ✔ | [String] | Hex encoded address. |
+| **bech32_hrp** | ✔ | [Option<String>] | Optional bech32 hrp. |
+
+### Return
+
+Parsed [String].
 
 ## `parse_bech32_address()`
 
@@ -821,6 +852,8 @@ pub struct AddressBalancePair {
     pub address: String,
     /// Balance in the address
     pub balance: u64,
+    /// If dust is allowed on the address
+    pub dust_allowed: bool,
 }
 ```
 

@@ -36,11 +36,19 @@ pub enum Error {
     Panic(String),
     #[error("`{0}`")]
     Message(iota::message::Error),
+    #[error("`{0}`")]
+    SerdeJson(serde_json::Error),
 }
 
 impl From<iota::message::Error> for Error {
     fn from(error: iota::message::Error) -> Self {
         Self::Message(error)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Self {
+        Self::SerdeJson(error)
     }
 }
 
