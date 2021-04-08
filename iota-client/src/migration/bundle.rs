@@ -219,7 +219,7 @@ pub async fn mine(
                 .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
         )
         .with_worker_count(worker_count)
-        .with_core_thread_count(1)
+        .with_core_thread_count(worker_count)
         .with_mining_timeout(timeout)
         .finish()?;
 
