@@ -192,4 +192,13 @@ pub(crate) struct AddressBalanceDto {
     pub address: String,
     pub balance: u64,
     pub dust_allowed: bool,
+
+impl From<AddressBalancePair> for AddressBalanceDto {
+    fn from(value: AddressBalancePair) -> Self {
+        Self {
+            address: value.address.to_string(),
+            balance: value.balance,
+            dust_allowed: value.dust_allowed,
+        }
+    }
 }

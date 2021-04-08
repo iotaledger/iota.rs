@@ -76,7 +76,7 @@ pub struct AddressBalancePair {
     pub address: String,
     /// Balance in the address
     pub balance: u64,
-    /// This address is dust allowed or not
+    /// If dust is allowed on the address
     pub dust_allowed: bool,
 }
 

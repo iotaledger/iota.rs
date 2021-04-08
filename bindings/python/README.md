@@ -255,7 +255,7 @@ Gets the balance in the address.
 | --------- | ---------------------- | ---------------------- | ------------------------- |
 | [address] | <code>list[str]</code> | <code>undefined</code> | The address Bech32 string |
 
-**Returns** the [BalanceAddressResponse](#balanceaddressresponse).
+**Returns** the [BalanceAddressResponse](#BalanceAddressResponse).
 
 #### get_address_outputs(address, options (optional)): list[UtxoInput]
 
@@ -266,7 +266,7 @@ Gets the UTXO outputs associated with the given address.
 | [address] | <code>str</code>                                               | <code>undefined</code> | The address Bech32 string |
 | [options] | <code>[[AddressOutputsOptions](#addressoutputsoptions)]</code> | <code>undefined</code> | The query filters         |
 
-**Returns** the list of [UtxoInput](#utxoinput).
+**Returns** the list of [UtxoInput](#UtxoInput).
 
 #### find_outputs(output_ids (optional), addresses (optional)): list[OutputResponse]
 
@@ -605,6 +605,7 @@ A dict with the following key/value pairs.
 address_balance_pair = {
     'address': str,
     'balance': int
+    'dust_allowed': bool
 }
 ```
 

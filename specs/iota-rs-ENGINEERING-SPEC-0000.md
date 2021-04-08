@@ -843,6 +843,8 @@ pub struct AddressBalancePair {
     pub address: String,
     /// Balance in the address
     pub balance: u64,
+    /// If dust is allowed on the address
+    pub dust_allowed: bool,
 }
 ```
 

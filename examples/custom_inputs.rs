@@ -14,26 +14,20 @@ use std::env;
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
-        .unwrap()
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
 
-    let addresses = iota.get_addresses(&seed).with_range(0..1).finish().await.unwrap();
+    let addresses = iota.get_addresses(&seed).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
 
-    let outputs = iota
-        .get_address()
-        .outputs(&addresses[0], Default::default())
-        .await
-        .unwrap();
+    let outputs = iota.get_address().outputs(&addresses[0], Default::default()).await?;
     println!("{:?}", outputs);
 
     let message = iota
@@ -44,11 +38,9 @@ async fn main() -> Result<()> {
         .with_output(
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
             1_000_000,
-        )
-        .unwrap()
+        )?
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     println!(
         "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",

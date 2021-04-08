@@ -56,7 +56,7 @@ export declare interface BrokerOptions {
 export declare type Address = 'string'
 
 export declare interface AddressBalance {
-  type: number
   address: Address
   balance: number
+  dust_allowed: boolean
 }
