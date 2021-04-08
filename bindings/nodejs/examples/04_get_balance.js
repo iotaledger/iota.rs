@@ -1,11 +1,11 @@
 async function run(){
-    const { ClientBuilder } = require('@iota/client')
+    const { ClientBuilder } = require('@iota/client');
 
     // Get the seed from environment variable
-    const IOTA_SEED_SECRET = process.env.IOTA_SEED_SECRET
+    const IOTA_SEED_SECRET = process.env.IOTA_SEED_SECRET;
 
     // client will connect to testnet by default
-    const client = new ClientBuilder().build()
+    const client = new ClientBuilder().build();
 
     console.log(
         client.getAddressBalance("atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86")
