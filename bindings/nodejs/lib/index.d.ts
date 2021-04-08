@@ -1,5 +1,5 @@
 import {
-  NodeInfo,
+  NodeInfoWrapper,
   MessageMetadata,
   OutputMetadata,
   MilestoneMetadata,
@@ -15,9 +15,12 @@ export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
   nodeAuth(url: string, name: string, password: string): ClientBuilder
+  primaryNode(url: string, name?: string, password?: string): ClientBuilder
+  primaryPowNode(url: string, name?: string, password?: string): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
   network(network_name: string): ClientBuilder
+  quorum(enabled: boolean): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
   brokerOptions(options: BrokerOptions): ClientBuilder
@@ -53,7 +56,7 @@ export declare class AddressGetter {
   accountIndex(index: number): AddressGetter
   range(start: number, end: number): AddressGetter
   bech32_hrp(bech32_hrp: string): AddressGetter
-  get(): [Address, boolean][]
+  get(): Promise<[Address, boolean][]>
 }
 
 export declare class BalanceGetter {
@@ -81,14 +84,14 @@ export declare class Client {
   subscriber(): TopicSubscriber
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
-  getAddresses(seed: string): AddressGetter
+  getAddresses(seed: string): Promise<AddressGetter>
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
   retry(messageId: string): Promise<MessageWrapper>
   retryUntilIncluded(messageId: string, interval?: number, maxAttempts?: number): Promise<MessageWrapper[]>
 
-  getInfo(): Promise<NodeInfo>
+  getInfo(): Promise<NodeInfoWrapper>
   getTips(): Promise<string[]>
   postMessage(message: MessageDto): Promise<string>
   postMessageWithRemotePow(message: MessageDto): Promise<string>
@@ -97,6 +100,8 @@ export declare class Client {
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
   getAddressOutputs(address: string, options?: AddressOutputsOptions): Promise<string[]>
   getAddressBalance(address: string): Promise<AddressBalance>
+  bech32ToHex(address: string): string
+  hexToBech32(address: string, bech32_hrp?: string): Promise<string>
   isAddressValid(address: string): boolean
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUtxoChanges(index: number): Promise<MilestoneUTXOChanges>

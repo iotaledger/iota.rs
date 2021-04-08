@@ -75,6 +75,10 @@ name = "peers"
 path = "peers.rs"
 
 [[example]]
+name = "quorum"
+path = "quorum.rs"
+
+[[example]]
 name = "message_time"
 path = "message_time.rs"
 

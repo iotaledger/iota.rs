@@ -19,8 +19,6 @@ bee-pow = { git = "https://github.com/iotaledger/bee.git", rev = "e8cafb6591ec0c
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["std", "blake2b", "ed25519", "random", "slip10"]}
-ureq = { version = "2.0", features = ["json"], optional = true }
-reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
 url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -28,20 +26,28 @@ hex = "0.4"
 tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread", "rt"], optional = true }
 thiserror = "1.0"
 num_cpus = "1.13"
-rusqlite = { version = "0.24", features = ["bundled"], optional = true }
-async-trait = "0.1"
 log= "0.4"
+regex = "1.4"
+
+# sync
+ureq = { version = "2.0", features = ["json"], optional = true }
+# async
+reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
+futures = { version = "0.3", optional = true }
 
 # MQTT
 rumqttc = { version = "0.5", optional = true }
-regex = { version = "1.4", optional = true }
+# also used for storage
 once_cell = { version = "1.5", optional = true }
-futures = { version = "0.3", optional = true }
+
+#storage
+async-trait = "0.1"
+rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 
 [features]
-default = ["async", "tokio"]
+default = ["async", "tokio", "futures"]
 sync = ["ureq"]
 async = ["reqwest"]
-mqtt = ["rumqttc", "regex", "once_cell", "futures"]
+mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
 wasm = []

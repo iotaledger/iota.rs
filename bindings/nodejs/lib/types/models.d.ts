@@ -1,3 +1,7 @@
+export declare interface NodeInfoWrapper {
+  url: string
+  nodeinfo: NodeInfo
+}
 export declare interface NodeInfo {
   name: string
   version: string
@@ -56,7 +60,7 @@ export declare interface BrokerOptions {
 export declare type Address = 'string'
 
 export declare interface AddressBalance {
-  type: number
   address: Address
   balance: number
+  dust_allowed: boolean
 }

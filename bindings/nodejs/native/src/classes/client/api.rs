@@ -74,6 +74,7 @@ pub(crate) enum Api {
     RetryUntilIncluded(MessageId, Option<u64>, Option<u64>),
     Reattach(MessageId),
     Promote(MessageId),
+    HexToBech32(String, Option<String>),
 }
 
 pub(crate) struct ClientTask {
@@ -90,7 +91,7 @@ impl Task for ClientTask {
     fn perform(&self) -> Result<Self::Output, Self::Error> {
         crate::block_on(crate::convert_async_panics(|| async move {
             let client = crate::get_client(&self.client_id);
-            let client = client.read().unwrap();
+            let client = client.read().expect("Failed to read client");
             let res = match &self.api {
                 // High level API
                 Api::Send {
@@ -138,8 +139,7 @@ impl Task for ClientTask {
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
                         message,
-                    })
-                    .unwrap()
+                    })?
                 }
                 Api::GetUnspentAddress {
                     seed,
@@ -154,7 +154,7 @@ impl Task for ClientTask {
                         getter = getter.with_initial_address_index(*initial_address_index);
                     }
                     let (address, index) = getter.get().await?;
-                    serde_json::to_string(&(address, index)).unwrap()
+                    serde_json::to_string(&(address, index))?
                 }
                 Api::GetAddresses {
                     seed,
@@ -175,7 +175,7 @@ impl Task for ClientTask {
                     }
 
                     let addresses = getter.finish().await?;
-                    serde_json::to_string(&addresses).unwrap()
+                    serde_json::to_string(&addresses)?
                 }
                 Api::FindMessages {
                     indexation_keys,
@@ -189,7 +189,7 @@ impl Task for ClientTask {
                             message,
                         })
                         .collect();
-                    serde_json::to_string(&message_wrappers).unwrap()
+                    serde_json::to_string(&message_wrappers)?
                 }
                 Api::GetBalance {
                     seed,
@@ -208,20 +208,20 @@ impl Task for ClientTask {
                         getter = getter.with_gap_limit(*gap_limit);
                     }
                     let balance = getter.finish().await?;
-                    serde_json::to_string(&balance).unwrap()
+                    serde_json::to_string(&balance)?
                 }
                 Api::GetAddressBalances(bech32_addresses) => {
                     let balances = client.get_address_balances(&bech32_addresses[..]).await?;
                     let balances: Vec<super::AddressBalanceDto> = balances.into_iter().map(|b| b.into()).collect();
-                    serde_json::to_string(&balances).unwrap()
+                    serde_json::to_string(&balances)?
                 }
                 // Node APIs
-                Api::GetInfo => serde_json::to_string(&client.get_info().await?).unwrap(),
-                Api::GetNetworkInfo => serde_json::to_string(&client.get_network_info().await?).unwrap(),
-                Api::GetPeers => serde_json::to_string(&client.get_peers().await?).unwrap(),
+                Api::GetInfo => serde_json::to_string(&client.get_info().await?)?,
+                Api::GetNetworkInfo => serde_json::to_string(&client.get_network_info().await?)?,
+                Api::GetPeers => serde_json::to_string(&client.get_peers().await?)?,
                 Api::GetTips => {
                     let tips = client.get_tips().await?;
-                    serde_json::to_string(&tips).unwrap()
+                    serde_json::to_string(&tips)?
                 }
                 Api::PostMessage(message) => {
                     let parent_msg_ids = match message.parents.as_ref() {
@@ -243,82 +243,79 @@ impl Task for ClientTask {
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message = client.post_message(&message).await?;
-                    serde_json::to_string(&message).unwrap()
+                    serde_json::to_string(&message)?
                 }
                 Api::GetMessagesByIndexation(index) => {
                     let messages = client.get_message().index(index).await?;
-                    serde_json::to_string(&messages).unwrap()
+                    serde_json::to_string(&messages)?
                 }
                 Api::GetMessage(id) => {
                     let message = client.get_message().data(&id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
                         message,
-                    })
-                    .unwrap()
+                    })?
                 }
                 Api::GetMessageMetadata(id) => {
                     let metadata = client.get_message().metadata(&id).await?;
-                    serde_json::to_string(&metadata).unwrap()
+                    serde_json::to_string(&metadata)?
                 }
                 Api::GetRawMessage(id) => client.get_message().raw(&id).await?,
                 Api::GetMessageChildren(id) => {
                     let messages = client.get_message().children(&id).await?;
-                    serde_json::to_string(&messages).unwrap()
+                    serde_json::to_string(&messages)?
                 }
                 Api::GetOutput(id) => {
                     let output = client.get_output(id).await?;
                     let output: super::OutputMetadataDto = output.into();
-                    serde_json::to_string(&output).unwrap()
+                    serde_json::to_string(&output)?
                 }
                 Api::FindOutputs { outputs, addresses } => {
                     let outputs = client.find_outputs(outputs, &addresses[..]).await?;
                     let outputs: Vec<super::OutputMetadataDto> = outputs.into_iter().map(|o| o.into()).collect();
-                    serde_json::to_string(&outputs).unwrap()
+                    serde_json::to_string(&outputs)?
                 }
                 Api::GetAddressBalance(address) => {
                     let balance = client.get_address().balance(address).await?;
-                    serde_json::to_string(&balance).unwrap()
+                    serde_json::to_string(&balance)?
                 }
                 Api::GetAddressOutputs(address, options) => {
                     let output_ids = client.get_address().outputs(address, options.clone()).await?;
-                    serde_json::to_string(&output_ids).unwrap()
+                    serde_json::to_string(&output_ids)?
                 }
                 Api::GetMilestone(index) => {
                     let milestone = client.get_milestone(*index).await?;
-                    serde_json::to_string(&milestone).unwrap()
+                    serde_json::to_string(&milestone)?
                 }
                 Api::GetMilestoneUtxoChanges(index) => {
                     let milestone_utxo_changes = client.get_milestone_utxo_changes(*index).await?;
-                    serde_json::to_string(&milestone_utxo_changes).unwrap()
+                    serde_json::to_string(&milestone_utxo_changes)?
                 }
                 Api::GetReceipts() => {
                     let receipts = client.get_receipts().await?;
-                    serde_json::to_string(&receipts).unwrap()
+                    serde_json::to_string(&receipts)?
                 }
                 Api::GetReceiptsMigratedAt(index) => {
                     let receipts = client.get_receipts_migrated_at(*index).await?;
-                    serde_json::to_string(&receipts).unwrap()
+                    serde_json::to_string(&receipts)?
                 }
                 Api::GetTreasury() => {
                     let treasury = client.get_treasury().await?;
-                    serde_json::to_string(&treasury).unwrap()
+                    serde_json::to_string(&treasury)?
                 }
                 Api::GetIncludedMessage(transaction_id) => {
                     let message = client.get_included_message(&*transaction_id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
                         message,
-                    })
-                    .unwrap()
+                    })?
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.0,
                         message: message.1,
-                    })
-                    .unwrap()
+                    })?
                 }
                 Api::RetryUntilIncluded(message_id, interval, max_attempts) => {
                     let messages = client
@@ -331,25 +328,27 @@ impl Task for ClientTask {
                                 message_id: msg.0,
                                 message: msg.1,
                             })
-                            .unwrap()
                         })
-                        .collect()
+                        .collect::<Result<String, serde_json::Error>>()?
                 }
                 Api::Reattach(message_id) => {
                     let message = client.reattach(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message: message.1,
                         message_id: message.0,
-                    })
-                    .unwrap()
+                    })?
                 }
                 Api::Promote(message_id) => {
                     let message = client.promote(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message: message.1,
                         message_id: message.0,
-                    })
-                    .unwrap()
+                    })?
+                }
+                Api::HexToBech32(hex, bech32_hrp) => {
+                    let opt = bech32_hrp.as_ref().map(|opt| opt.as_str());
+                    let bech32 = client.hex_to_bech32(hex, opt).await?;
+                    serde_json::to_string(&bech32)?
                 }
             };
             Ok(res)

@@ -10,7 +10,7 @@ tv = dict()
 with open('../../../fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
 
-client = iota_client.Client(node=tv['NODE_URL'])
+client = iota_client.Client(nodes_name_password=[[tv['NODE_URL']]])
 
 
 def test_get_health():
@@ -20,7 +20,7 @@ def test_get_health():
 
 def test_get_info():
     node_info = client.get_info()
-    assert isinstance(node_info, dict) and 'is_healthy' in node_info
+    assert isinstance(node_info, dict) and 'is_healthy' in node_info['nodeinfo']
 
 
 def test_get_peers():

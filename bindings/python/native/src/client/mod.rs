@@ -10,9 +10,9 @@ use iota::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{
-    AddressBalancePair, AddressOutputsOptions, BalanceAddressResponse, BrokerOptions, InfoResponse, Input, Message,
-    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, Output, OutputResponse, PeerDto, ReceiptDto,
-    TreasuryResponse, UtxoInput, BECH32_HRP,
+    AddressBalancePair, AddressOutputsOptions, BalanceAddressResponse, BrokerOptions, Input, Message,
+    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, NodeInfoWrapper, Output, OutputResponse, PeerDto,
+    ReceiptDto, TreasuryResponse, UtxoInput, BECH32_HRP,
 };
 
 /// Client builder
@@ -29,13 +29,15 @@ impl Client {
     /// The constructor of the client instance.
     fn new(
         network: Option<&str>,
-        node: Option<&str>,
-        name: Option<&str>,
-        password: Option<&str>,
-        nodes: Option<Vec<&str>>,
+        primary_node_name_password: Option<Vec<&str>>,
+        primary_pow_node_name_password: Option<Vec<&str>>,
+        nodes_name_password: Option<Vec<Vec<&str>>>,
         node_sync_interval: Option<u64>,
         node_sync_disabled: Option<bool>,
         node_pool_urls: Option<Vec<String>>,
+        quorum: Option<bool>,
+        quorum_size: Option<usize>,
+        quorum_threshold: Option<usize>,
         request_timeout: Option<u64>,
         api_timeout: Option<HashMap<&str, u64>>,
         local_pow: Option<bool>,
@@ -46,15 +48,43 @@ impl Client {
         if let Some(network) = network {
             client = client.with_network(network);
         }
-        if let Some(node) = node {
-            if let (Some(name), Some(password)) = (name, password) {
-                client = client.with_node_auth(node, name, password).unwrap();
-            } else {
-                client = client.with_node(node).unwrap();
+        if let Some(node_name_password) = primary_node_name_password {
+            if node_name_password.len() == 1 {
+                client = client.with_primary_node(node_name_password[0], None).unwrap();
+            }
+            if node_name_password.len() == 3 {
+                client = client
+                    .with_primary_node(
+                        node_name_password[0],
+                        Some((node_name_password[1], node_name_password[2])),
+                    )
+                    .unwrap();
             }
         }
-        if let Some(nodes) = nodes {
-            client = client.with_nodes(&nodes).unwrap();
+        if let Some(node_name_password) = primary_pow_node_name_password {
+            if node_name_password.len() == 1 {
+                client = client.with_primary_node(node_name_password[0], None).unwrap();
+            }
+            if node_name_password.len() == 3 {
+                client = client
+                    .with_primary_pow_node(
+                        node_name_password[0],
+                        Some((node_name_password[1], node_name_password[2])),
+                    )
+                    .unwrap();
+            }
+        }
+        if let Some(nodes_name_password) = nodes_name_password {
+            for node_name_password in nodes_name_password {
+                if node_name_password.len() == 1 {
+                    client = client.with_node(node_name_password[0]).unwrap();
+                }
+                if node_name_password.len() == 3 {
+                    client = client
+                        .with_node_auth(node_name_password[0], node_name_password[1], node_name_password[2])
+                        .unwrap();
+                }
+            }
         }
         if let Some(node_sync_interval) = node_sync_interval {
             client = client.with_node_sync_interval(Duration::from_millis(node_sync_interval));
@@ -66,6 +96,15 @@ impl Client {
         }
         if let Some(node_pool_urls) = node_pool_urls {
             client = crate::block_on(async { client.with_node_pool_urls(&node_pool_urls).await.unwrap() });
+        }
+        if let Some(enabled) = quorum {
+            client = client.with_quorum(enabled);
+        }
+        if let Some(quorum_size) = quorum_size {
+            client = client.with_quorum_size(quorum_size);
+        }
+        if let Some(quorum_threshold) = quorum_threshold {
+            client = client.with_quorum_threshold(quorum_threshold);
         }
         if let Some(timeout) = request_timeout {
             client = client.with_request_timeout(Duration::from_millis(timeout));

@@ -24,21 +24,19 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages?index={Index} endpoint
     /// Consume the builder and search for messages matching the index
     pub async fn index<I: AsRef<[u8]>>(self, index: I) -> Result<Box<[MessageId]>> {
-        let mut url = self.client.get_node().await?;
         let path = "api/v1/messages";
-        url.set_path(path);
-        url.set_query(Some(&format!("index={}", hex::encode(index))));
-
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessagesFindResponse,
         }
         let resp: ResponseWrapper = self
             .client
-            .http_client
-            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
-            .await?
-            .json()
+            .node_manager
+            .get_request(
+                &path,
+                Some(&format!("index={}", hex::encode(index))),
+                self.client.get_timeout(Api::GetMessage),
+            )
             .await?;
 
         resp.data
@@ -55,19 +53,15 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID} endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
     pub async fn data(self, message_id: &MessageId) -> Result<Message> {
-        let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/messages/{}", message_id);
-        url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageDto,
         }
         let resp: ResponseWrapper = self
             .client
-            .http_client
-            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
-            .await?
-            .json()
+            .node_manager
+            .get_request(path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
         Ok(Message::try_from(&resp.data).map_err(crate::Error::DtoError)?)
@@ -76,19 +70,15 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
     pub async fn metadata(self, message_id: &MessageId) -> Result<MessageMetadata> {
-        let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/messages/{}/metadata", message_id);
-        url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageMetadata,
         }
         let resp: ResponseWrapper = self
             .client
-            .http_client
-            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
-            .await?
-            .json()
+            .node_manager
+            .get_request(&path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
         Ok(resp.data)
@@ -97,15 +87,11 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID}/raw endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
     pub async fn raw(self, message_id: &MessageId) -> Result<String> {
-        let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/messages/{}/raw", message_id);
-        url.set_path(path);
         let resp = self
             .client
-            .http_client
-            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
-            .await?
-            .text()
+            .node_manager
+            .get_request_text(&path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
         Ok(resp)
@@ -114,19 +100,15 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID}/children endpoint
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
     pub async fn children(self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
-        let mut url = self.client.get_node().await?;
         let path = &format!("api/v1/messages/{}/children", message_id);
-        url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageChildrenResponse,
         }
         let resp: ResponseWrapper = self
             .client
-            .http_client
-            .get(url.as_str(), self.client.get_timeout(Api::GetMessage))
-            .await?
-            .json()
+            .node_manager
+            .get_request(&path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
         resp.data

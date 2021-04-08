@@ -49,12 +49,13 @@ pub struct NetworkInfo {
 
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
+    node_manager_builder: crate::node_manager::NodeManagerBuilder,
     nodes: HashSet<Url>,
     node_sync_interval: Duration,
     node_sync_enabled: bool,
     #[cfg(feature = "mqtt")]
     broker_options: BrokerOptions,
-    network_info: NetworkInfo,
+    pub(crate) network_info: NetworkInfo,
     request_timeout: Duration,
     api_timeout: HashMap<Api, Duration>,
 }
@@ -62,6 +63,7 @@ pub struct ClientBuilder {
 impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
+            node_manager_builder: crate::node_manager::NodeManager::builder(),
             nodes: HashSet::new(),
             node_sync_interval: NODE_SYNC_INTERVAL,
             node_sync_enabled: true,
@@ -89,58 +91,70 @@ impl ClientBuilder {
 
     /// Adds an IOTA node by its URL.
     pub fn with_node(mut self, url: &str) -> Result<Self> {
-        let url = validate_url(Url::parse(url)?)?;
-        self.nodes.insert(url);
+        self.node_manager_builder = self.node_manager_builder.with_node(url)?;
+        Ok(self)
+    }
+
+    /// Adds an IOTA node by its URL to be used as primary node, with optional basic authentication
+    pub fn with_primary_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_primary_node(url, auth_name_passw)?;
+        Ok(self)
+    }
+
+    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional basic authentication
+    pub fn with_primary_pow_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_primary_pow_node(url, auth_name_passw)?;
         Ok(self)
     }
 
     /// Adds an IOTA node by its URL with basic authentication
     pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
-        let mut url = validate_url(Url::parse(url)?)?;
-        url.set_username(name)
-            .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-        url.set_password(Some(password))
-            .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
-        self.nodes.insert(url);
+        self.node_manager_builder = self.node_manager_builder.with_node_auth(url, name, password)?;
         Ok(self)
     }
 
     /// Adds a list of IOTA nodes by their URLs.
     pub fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
-        for url in urls {
-            let url = validate_url(Url::parse(url)?)?;
-            self.nodes.insert(url);
-        }
+        self.node_manager_builder = self.node_manager_builder.with_nodes(urls)?;
         Ok(self)
     }
 
     /// Set the node sync interval
     pub fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
-        self.node_sync_interval = node_sync_interval;
+        self.node_manager_builder = self.node_manager_builder.with_node_sync_interval(node_sync_interval);
         self
     }
 
     /// Disables the node syncing process.
     /// Every node will be considered healthy and ready to use.
     pub fn with_node_sync_disabled(mut self) -> Self {
-        self.node_sync_enabled = false;
+        self.node_manager_builder = self.node_manager_builder.with_node_sync_disabled();
         self
     }
 
     /// Get node list from the node_pool_urls
     pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
-        for pool_url in node_pool_urls {
-            let nodes_details: Vec<NodeDetail> = super::HttpClient::new()
-                .get(&pool_url, GET_API_TIMEOUT)
-                .await?
-                .json()
-                .await?;
-            for node_detail in nodes_details {
-                let url = validate_url(Url::parse(&node_detail.node)?)?;
-                self.nodes.insert(url);
-            }
-        }
+        self.node_manager_builder = self.node_manager_builder.with_node_pool_urls(node_pool_urls).await?;
         Ok(self)
+    }
+
+    /// Set if quroum should be used or not
+    pub fn with_quorum(mut self, quorum: bool) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_quorum(quorum);
+        self
+    }
+
+    /// Set amount of nodes which should be used for quorum
+    pub fn with_quorum_size(mut self, quorum_size: usize) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_quorum_size(quorum_size);
+        self
+    }
+
+    /// Set quorum_threshold
+    pub fn with_quorum_threshold(mut self, threshold: usize) -> Self {
+        let threshold = if threshold > 100 { 100 } else { threshold };
+        self.node_manager_builder = self.node_manager_builder.with_quorum_threshold(threshold);
+        self
     }
 
     /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
@@ -184,23 +198,6 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
-        let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
-        if self.nodes.is_empty() {
-            match self.network_info.network {
-                Some(ref network) => match network.to_lowercase().as_str() {
-                    "testnet" | "devnet" | "test" | "dev" => {
-                        self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
-                    }
-                    _ => return Err(Error::SyncedNodePoolEmpty),
-                },
-                _ => {
-                    self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
-                }
-            }
-        }
-        #[cfg(feature = "wasm")]
-        let network_info = Arc::new(std::sync::RwLock::new(self.network_info));
-        #[cfg(not(feature = "wasm"))]
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.nodes;
         #[cfg(not(feature = "wasm"))]
@@ -282,12 +279,10 @@ impl ClientBuilder {
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
 
+        let network_info_ = network_info.read().await.clone();
         let client = Client {
-            #[cfg(not(feature = "wasm"))]
+            node_manager: self.node_manager_builder.build(network_info_, sync.clone()).await?,
             runtime,
-            nodes,
-            sync,
-            #[cfg(not(feature = "wasm"))]
             sync_kill_sender: sync_kill_sender.map(Arc::new),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,
@@ -300,28 +295,7 @@ impl ClientBuilder {
             network_info,
             request_timeout: self.request_timeout,
             api_timeout,
-            http_client: super::HttpClient::new(),
         };
         Ok(client)
     }
-}
-
-/// JSON struct for NodeDetail from the node_pool_urls
-#[derive(Debug, Serialize, Deserialize)]
-pub struct NodeDetail {
-    /// Iota node url
-    pub node: String,
-    /// Network id
-    pub network_id: String,
-    /// Implementation name
-    pub implementation: String,
-    /// Enabled PoW
-    pub pow: bool,
-}
-
-fn validate_url(url: Url) -> Result<Url> {
-    if url.scheme() != "http" && url.scheme() != "https" {
-        return Err(Error::UrlValidationError(format!("Invalid scheme: {}", url.scheme())));
-    }
-    Ok(url)
 }

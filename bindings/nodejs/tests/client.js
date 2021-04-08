@@ -36,6 +36,13 @@ describe('Client', () => {
     addresses.forEach(assertAddress)
   })
 
+  it('convert address', async () => {
+    const address = "atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"
+    let hexAddress = client.bech32ToHex(address)
+    let bech32Address = await client.hexToBech32(hexAddress, "atoi")
+    assert.strictEqual(address, bech32Address)
+  })
+
   it('sends an indexation message with the high level API', async () => {
     const message = await client
       .message()
@@ -85,7 +92,7 @@ describe('Client', () => {
 
   it('get milestone and message', async () => {
     const info = await client.getInfo()
-    const milestone = await client.getMilestone(info.confirmedMilestoneIndex)
+    const milestone = await client.getMilestone(info.nodeinfo.confirmedMilestoneIndex)
     assert.strictEqual(typeof milestone, 'object')
     assert.strictEqual('message_id' in milestone, true)
     assertMessageId(milestone.message_id)
@@ -138,8 +145,8 @@ describe('Client', () => {
 
   it('gets info', async () => {
     const info = await client.getInfo()
-    assert.strictEqual(typeof info, 'object')
-    assert.strictEqual('name' in info, true)
-    assert.strictEqual(info.name, 'HORNET')
+    assert.strictEqual(typeof info.nodeinfo, 'object')
+    assert.strictEqual('name' in info.nodeinfo, true)
+    assert.strictEqual(info.nodeinfo.name, 'HORNET')
   })
 })

@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?);
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
     let total_balance = iota.get_balance(&seed).with_initial_address_index(0).finish().await?;
 
     println!("Total balance: {}", total_balance);

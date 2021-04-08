@@ -57,6 +57,30 @@ Adds an IOTA node with basic authentication to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### primaryNode(url, [, name, password]): ClientBuilder
+
+Add a node to always connect first to with optional name and password for basic authentication.
+
+| Param    | Type                | Description |
+| -------- | ------------------- | ----------- |
+| url      | <code>string</code> | A node URL  |
+| name     | <code>string</code> | A name      |
+| password | <code>string</code> | A password  |
+
+**Returns** the client builder instance for chained calls.
+
+#### primaryPowNode(url, [, name, password]): ClientBuilder
+
+Add a node to always connect first to when using remote PoW with optional name and password for basic authentication. Will overwrite the primary node for this case.
+
+| Param    | Type                | Description |
+| -------- | ------------------- | ----------- |
+| url      | <code>string</code> | A node URL  |
+| name     | <code>string</code> | A name      |
+| password | <code>string</code> | A password  |
+
+**Returns** the client builder instance for chained calls.
+
 #### nodes(urls): ClientBuilder
 
 Adds a list of IOTA nodes to the client pool.
@@ -85,6 +109,16 @@ Nodes that don't belong to this network are ignored.
 | Param       | Type                | Description |
 | ----------- | ------------------- | ----------- |
 | networkName | <code>string</code> | The network |
+
+**Returns** the client builder instance for chained calls.
+
+#### quorum(enabled): ClientBuilder
+
+Defines how many of nodes will be queried at the same time to check for quorum.
+
+| Param    | Type                 | Description                            |
+| -------- | -------------------- | -------------------------------------- |
+| enabled  | <code>boolean</code> | Define if quourm should be used or not |
 
 **Returns** the client builder instance for chained calls.
 
@@ -242,6 +276,27 @@ Get the balance in iotas for the given addresses.
 
 **Returns** A promise resolving to the list of `{ address, balance }` pairs.
 
+#### bech32ToHex(bech32)
+
+Returns a parsed hex String from bech32.
+
+| Param   | Type                | Description               |
+| ------- | ------------------- | ------------------------- |
+| bech32  | <code>string</code> | The address Bech32 string |
+
+**Returns** A String
+
+#### hexToBech32(hex, bech32_hrp (optional))
+
+Returns a parsed bech32 String from hex.
+
+| Param       | Type                | Description               |
+| ----------- | ------------------- | ------------------------- |
+| bech32      | <code>string</code> | The address Bech32 string |
+| bech32_hrp  | <code>string</code> | The Bech32 hrp string     |
+
+**Returns** A String
+
 #### isAddressValid(address: string): boolean
 
 Checks if a given address is valid.
@@ -275,11 +330,11 @@ Default interval is 5 seconds and max_attempts is 10.
 
 **Returns** the message ids and [Message](#message) of reattached messages.
 
-#### getInfo(): Promise<NodeInfo>
+#### getInfo(): Promise<NodeInfoWrapper>
 
 Gets information about the node.
 
-**Returns** a promise resolving to the [NodeInfo](#nodeinfo) object.
+**Returns** a promise resolving to the [NodeInfoWrapper](#nodeinfowrapper) object.
 
 #### getTips(): Promise<[string, string]>
 
@@ -336,7 +391,7 @@ Gets the UTXO outputs associated with the given address.
 
 **Returns** a promise resolving to a list of output ids.
 
-#### getAddressBalance(address): Promise<number>
+#### getAddressBalance(address): Promise<AddressBalance>
 
 Gets the balance of the given address.
 
@@ -669,7 +724,7 @@ Sets the initial address index. Defaults to 0 if the function isn't called.
 
 #### gapLimit(amount): BalanceGetter
 
-Sets the gapLimit to specify how many addresses will be checked each round. 
+Sets the gapLimit to specify how many addresses will be checked each round.
 If gap_limit amount of addresses in a row have no balance the BalanceGetter will return. Defaults to 20 if the function isn't called.
 
 | Param | Type                | Description               |
@@ -891,6 +946,14 @@ Gets the metadata of the given message.
 | index | <code>string</code>     | Indexation key  |
 | data  | <code>Uint8Array</code> | Indexation data |
 
+##### AddressBalance
+
+| Field        | Type                 | Description            |
+| ------------ | -------------------- | ---------------------- |
+| address      | <code>string</code>  | Bech32 encoded address |
+| balance      | <code>number</code>  | Address balance        |
+| dustAllowed  | <code>boolean</code> | Dust allowed           |
+
 ### MessageMetadata
 
 | Field                      | Type                              | Description                                               |
@@ -902,6 +965,13 @@ Gets the metadata of the given message.
 | shouldReattach             | <code>boolean \| undefined</code> | Indicates whether the message should be reattached or not |
 | referencedByMilestoneIndex | <code>number \| undefined</code>  | Index of the milestone that references this message       |
 | ledgerInclusionState       | <code>string \| undefined</code>  | Ledger inclusion state                                    |
+
+### NodeInfoWrapper
+
+| Field    | Type                  | Description |
+| -------- | --------------------- | ----------- |
+| url      | <code>string</code>   | Node url    |
+| nodeinfo | <code>NodeInfo</code>   | NodeInfo    |
 
 ### NodeInfo
 
