@@ -3,7 +3,7 @@
 
 use crate::client::{
     error::Result, AddressOutputsOptions, BalanceAddressResponse, Client, Message, MilestoneDto, MilestoneUTXOChanges,
-    OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UtxoInput,
+    NodeInfoWrapper, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UtxoInput,
 };
 use iota::{
     ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder, MessageId as RustMessageId, Parents,

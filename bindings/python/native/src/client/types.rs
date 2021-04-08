@@ -19,10 +19,9 @@ use iota::{
             TreasuryTransactionPayloadDto as RustTreasuryTransactionPayloadDto,
         },
         responses::{
-            BalanceForAddressResponse as RustBalanceForAddressResponse,
-            MessageMetadataResponse as RustMessageMetadataResponse,
-            MilestoneUtxoChangesResponse as RustMilestoneUTXOChanges, OutputResponse as RustOutputResponse,
-            TreasuryResponse as RustTreasuryResponse,
+            BalanceAddressResponse as RustBalanceAddressResponse,
+            MessageMetadataResponse as RustMessageMetadataResponse, OutputResponse as RustOutputResponse,
+            TreasuryResponse as RustTreasuryResponse, UtxoChangesResponse as RustUtxoChangesResponse,
         },
     },
     builder::NetworkInfo as RustNetworkInfo,
@@ -525,20 +524,20 @@ impl From<RustNodeInfoWrapper> for NodeInfoWrapper {
         NodeInfoWrapper {
             url: info.url,
             nodeinfo: NodeInfo {
-                name: info.name,
-                version: info.version,
-                is_healthy: info.is_healthy,
-                network_id: info.network_id,
-                bech32_hrp: info.bech32_hrp,
-                min_pow_score: info.min_pow_score,
-                messages_per_second: info.messages_per_second,
-                referenced_messages_per_second: info.referenced_messages_per_second,
-                referenced_rate: info.referenced_rate,
-                latest_milestone_timestamp: info.latest_milestone_timestamp,
-                latest_milestone_index: info.latest_milestone_index,
-                confirmed_milestone_index: info.confirmed_milestone_index,
-                pruning_index: info.pruning_index,
-                features: info.features,
+                name: info.nodeinfo.name,
+                version: info.nodeinfo.version,
+                is_healthy: info.nodeinfo.is_healthy,
+                network_id: info.nodeinfo.network_id,
+                bech32_hrp: info.nodeinfo.bech32_hrp,
+                min_pow_score: info.nodeinfo.min_pow_score,
+                messages_per_second: info.nodeinfo.messages_per_second,
+                referenced_messages_per_second: info.nodeinfo.referenced_messages_per_second,
+                referenced_rate: info.nodeinfo.referenced_rate,
+                latest_milestone_timestamp: info.nodeinfo.latest_milestone_timestamp,
+                latest_milestone_index: info.nodeinfo.latest_milestone_index,
+                confirmed_milestone_index: info.nodeinfo.confirmed_milestone_index,
+                pruning_index: info.nodeinfo.pruning_index,
+                features: info.nodeinfo.features,
             },
         }
     }
@@ -567,8 +566,8 @@ impl From<MilestoneResponse> for MilestoneDto {
     }
 }
 
-impl From<RustMilestoneUTXOChanges> for MilestoneUTXOChanges {
-    fn from(milestone_utxo_changes: RustMilestoneUTXOChanges) -> Self {
+impl From<RustUtxoChangesResponse> for MilestoneUTXOChanges {
+    fn from(milestone_utxo_changes: RustUtxoChangesResponse) -> Self {
         Self {
             index: milestone_utxo_changes.index,
             created_outputs: milestone_utxo_changes.created_outputs,
