@@ -57,6 +57,30 @@ Adds an IOTA node with basic authentication to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
+#### primaryNode(url, [, name, password]): ClientBuilder
+
+Add a node to always connect first to with optional name and password for basic authentication.
+
+| Param    | Type                | Description |
+| -------- | ------------------- | ----------- |
+| url      | <code>string</code> | A node URL  |
+| name     | <code>string</code> | A name      |
+| password | <code>string</code> | A password  |
+
+**Returns** the client builder instance for chained calls.
+
+#### primaryPowNode(url, [, name, password]): ClientBuilder
+
+Add a node to always connect first to when using remote PoW with optional name and password for basic authentication. Will overwrite the primary node for this case.
+
+| Param    | Type                | Description |
+| -------- | ------------------- | ----------- |
+| url      | <code>string</code> | A node URL  |
+| name     | <code>string</code> | A name      |
+| password | <code>string</code> | A password  |
+
+**Returns** the client builder instance for chained calls.
+
 #### nodes(urls): ClientBuilder
 
 Adds a list of IOTA nodes to the client pool.
@@ -85,6 +109,16 @@ Nodes that don't belong to this network are ignored.
 | Param       | Type                | Description |
 | ----------- | ------------------- | ----------- |
 | networkName | <code>string</code> | The network |
+
+**Returns** the client builder instance for chained calls.
+
+#### quorum(enabled): ClientBuilder
+
+Defines how many of nodes will be queried at the same time to check for quorum.
+
+| Param    | Type                 | Description                            |
+| -------- | -------------------- | -------------------------------------- |
+| enabled  | <code>boolean</code> | Define if quourm should be used or not |
 
 **Returns** the client builder instance for chained calls.
 
@@ -296,11 +330,11 @@ Default interval is 5 seconds and max_attempts is 10.
 
 **Returns** the message ids and [Message](#message) of reattached messages.
 
-#### getInfo(): Promise<NodeInfo>
+#### getInfo(): Promise<NodeInfoWrapper>
 
 Gets information about the node.
 
-**Returns** a promise resolving to the [NodeInfo](#nodeinfo) object.
+**Returns** a promise resolving to the [NodeInfoWrapper](#nodeinfowrapper) object.
 
 #### getTips(): Promise<[string, string]>
 
@@ -931,6 +965,13 @@ Gets the metadata of the given message.
 | shouldReattach             | <code>boolean \| undefined</code> | Indicates whether the message should be reattached or not |
 | referencedByMilestoneIndex | <code>number \| undefined</code>  | Index of the milestone that references this message       |
 | ledgerInclusionState       | <code>string \| undefined</code>  | Ledger inclusion state                                    |
+
+### NodeInfoWrapper
+
+| Field    | Type                  | Description |
+| -------- | --------------------- | ----------- |
+| url      | <code>string</code>   | Node url    |
+| nodeinfo | <code>NodeInfo</code>   | NodeInfo    |
 
 ### NodeInfo
 

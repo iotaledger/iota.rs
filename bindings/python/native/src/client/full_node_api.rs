@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::{
-    error::Result, AddressOutputsOptions, BalanceAddressResponse, Client, InfoResponse, Message, MilestoneDto,
-    MilestoneUTXOChanges, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UtxoInput,
+    error::Result, AddressOutputsOptions, BalanceAddressResponse, Client, Message, MilestoneDto, MilestoneUTXOChanges,
+    NodeInfoWrapper, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UtxoInput,
 };
 use iota::{
     ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder, MessageId as RustMessageId, Parents,
@@ -22,7 +22,7 @@ impl Client {
     fn get_health(&self) -> Result<bool> {
         Ok(crate::block_on(async { self.client.get_health().await })?)
     }
-    fn get_info(&self) -> Result<InfoResponse> {
+    fn get_info(&self) -> Result<NodeInfoWrapper> {
         Ok(crate::block_on(async { self.client.get_info().await })?.into())
     }
     fn get_peers(&self) -> Result<Vec<PeerDto>> {

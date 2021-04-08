@@ -16,16 +16,6 @@ use tokio::sync::{watch::Sender, RwLock};
 
 use std::{convert::TryFrom, sync::Arc, time::Instant};
 
-macro_rules! lazy_static {
-    ($init:expr => $type:ty) => {{
-        static mut VALUE: Option<$type> = None;
-        static INIT: std::sync::Once = std::sync::Once::new();
-
-        INIT.call_once(|| unsafe { VALUE = Some($init) });
-        unsafe { VALUE.as_ref() }.expect("failed to get lazy static value")
-    }};
-}
-
 /// A topic.
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct Topic(String);
@@ -75,7 +65,12 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     match client.mqtt_client {
         Some(ref mut c) => Ok(c),
         None => {
-            for node in client.sync.read().await.iter() {
+            let nodes = if client.node_manager.sync {
+                client.node_manager.synced_nodes.read().await.clone()
+            } else {
+                client.node_manager.nodes.clone()
+            };
+            for node in nodes.iter() {
                 let host = node.host_str().expect("Can't get host from URL");
                 let mut mqttoptions = MqttOptions::new(host, host, 1883);
                 mqttoptions.set_connection_timeout(client.broker_options.timeout.as_secs());

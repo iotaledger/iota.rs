@@ -23,7 +23,7 @@ broker_options = {
 }
 
 client = iota_client.Client(
-    node=tv['MQTT_NODE_URL'], mqtt_broker_options=broker_options)
+    nodes_name_password=[[tv['MQTT_NODE_URL']]], mqtt_broker_options=broker_options)
 
 # The queue to store received events
 q = queue.Queue()
