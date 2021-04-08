@@ -357,7 +357,7 @@ Gets the UTXO outputs associated with the given address.
 
 **Returns** a promise resolving to a list of output ids.
 
-#### getAddressBalance(address): Promise<number>
+#### getAddressBalance(address): Promise<AddressBalance>
 
 Gets the balance of the given address.
 
@@ -911,6 +911,14 @@ Gets the metadata of the given message.
 | ----- | ----------------------- | --------------- |
 | index | <code>string</code>     | Indexation key  |
 | data  | <code>Uint8Array</code> | Indexation data |
+
+##### AddressBalance
+
+| Field        | Type                 | Description            |
+| ------------ | -------------------- | ---------------------- |
+| address      | <code>string</code>  | Bech32 encoded address |
+| balance      | <code>number</code>  | Address balance        |
+| dustAllowed  | <code>boolean</code> | Dust allowed           |
 
 ### MessageMetadata
 

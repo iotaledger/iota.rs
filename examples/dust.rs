@@ -13,16 +13,14 @@ use std::env;
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
-        .unwrap()
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
 
     let message = iota
         .message()
@@ -30,13 +28,10 @@ async fn main() -> Result<()> {
         .with_dust_allowance_output(
             &"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
             1_000_000,
-        )
-        .unwrap()
-        .with_output(&"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", 1)
-        .unwrap()
+        )?
+        .with_output(&"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", 1)?
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     println!(
         "First transaction sent: https://explorer.iota.org/chrysalis/message/{}",

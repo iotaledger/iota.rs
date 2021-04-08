@@ -217,6 +217,8 @@ impl From<OutputMetadata> for OutputMetadataDto {
 pub(super) struct AddressBalanceDto {
     address: String,
     balance: u64,
+    #[serde(rename = "dustAllowed")]
+    dust_allowed: bool,
 }
 
 impl From<AddressBalancePair> for AddressBalanceDto {
@@ -224,6 +226,7 @@ impl From<AddressBalancePair> for AddressBalanceDto {
         Self {
             address: value.address.to_string(),
             balance: value.balance,
+            dust_allowed: value.dust_allowed,
         }
     }
 }

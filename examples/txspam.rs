@@ -15,16 +15,14 @@ use std::env;
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
-        .unwrap()
+        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
 
     // Split funds to own addresses
     let addresses = iota
@@ -32,21 +30,20 @@ async fn main() -> Result<()> {
         .with_account_index(0)
         .with_range(0..10)
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     let mut message_builder = iota.message().with_seed(&seed);
     for address in &addresses {
-        message_builder = message_builder.with_output(address, 1_000_000).unwrap();
+        message_builder = message_builder.with_output(address, 1_000_000)?;
     }
-    let message = message_builder.finish().await.unwrap();
+    let message = message_builder.finish().await?;
 
     println!(
         "First transaction sent: https://explorer.iota.org/chrysalis/message/{}",
         message.id().0
     );
 
-    let _ = iota.retry_until_included(&message.id().0, None, None).await.unwrap();
+    let _ = iota.retry_until_included(&message.id().0, None, None).await?;
 
     // At this point we have 10 Mi on 10 addresses and we will just send it to their addresses again
     // Use own outputs directly so we don't double spend them
@@ -55,7 +52,7 @@ async fn main() -> Result<()> {
         match tx.essence() {
             Essence::Regular(essence) => {
                 for (index, _output) in essence.outputs().iter().enumerate() {
-                    initial_outputs.push(UtxoInput::new(tx.id(), index as u16).unwrap());
+                    initial_outputs.push(UtxoInput::new(tx.id(), index as u16)?);
                 }
             }
             _ => {
@@ -69,11 +66,9 @@ async fn main() -> Result<()> {
             .message()
             .with_seed(&seed)
             .with_input(initial_outputs[index].clone())
-            .with_output(&address, 1_000_000)
-            .unwrap()
+            .with_output(&address, 1_000_000)?
             .finish()
-            .await
-            .unwrap();
+            .await?;
         println!(
             "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
             message.id().0

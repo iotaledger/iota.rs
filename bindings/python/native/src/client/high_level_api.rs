@@ -286,6 +286,7 @@ impl Client {
             .map(|address_balance| AddressBalancePair {
                 address: address_balance.address.clone(),
                 balance: address_balance.balance,
+                dust_allowed: address_balance.dust_allowed,
             })
             .collect())
     }

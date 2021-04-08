@@ -19,8 +19,10 @@ use std::{
     },
 };
 
-const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const ADDRESS_GAP_LIMIT: usize = 20;
+// https://github.com/GalRogozinski/protocol-rfcs/blob/dust/text/0032-dust-protection/0032-dust-protection.md
+const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
+const DUST_DIVISOR: i64 = 100_000;
 const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Structure for sorting of UnlockBlocks
@@ -550,29 +552,35 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
     let mut dust_outputs_amount: i64 = 0;
 
     // Add outputs from this transaction
-    for output in outputs {
-        match output.2 {
-            // add newly created outputs
-            true => {
-                if output.0 >= DUST_THRESHOLD {
-                    dust_allowance_balance += output.0 as i64;
-                } else {
-                    dust_outputs_amount += 1
-                }
-            }
-            // remove consumed outputs
-            false => {
-                if output.0 >= DUST_THRESHOLD {
-                    dust_allowance_balance -= output.0 as i64;
-                } else {
-                    dust_outputs_amount -= 1;
-                }
-            }
+    for (amount, _, add_outputs) in outputs {
+        let sign = if add_outputs { 1 } else { -1 };
+        if amount >= DUST_THRESHOLD {
+            dust_allowance_balance += sign * amount as i64;
+        } else {
+            dust_outputs_amount += sign;
         }
     }
 
     let bech32_hrp = client.get_bech32_hrp().await?;
-    // Get outputs from address and apply values
+
+    let address_data = client.get_address().balance(&address.to_bech32(&bech32_hrp)).await?;
+    // If we create a dust output and a dust allowance output we don't need to check more outputs if the balance/100_000
+    // is < 100 because then we are sure that we didn't reach the max dust outputs
+    if address_data.dust_allowed
+        && dust_outputs_amount == 1
+        && dust_allowance_balance >= 0
+        && address_data.balance as i64 / DUST_DIVISOR < MAX_ALLOWED_DUST_OUTPUTS
+    {
+        return Ok(());
+    } else if !address_data.dust_allowed && dust_outputs_amount == 1 && dust_allowance_balance <= 0 {
+        return Err(Error::DustError(format!(
+            "No dust output allowed on address {}",
+            address.to_bech32(&bech32_hrp)
+        )));
+    }
+
+    // Check all outputs of the address because we want to consume a dust allowance output and don't know if we are
+    // allowed to do that
     let address_outputs_metadata = client.find_outputs(&[], &[address.to_bech32(&bech32_hrp)]).await?;
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
@@ -590,7 +598,7 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
 
     // Here dust_allowance_balance and dust_outputs_amount should be as if this transaction gets confirmed
     // Max allowed dust outputs is 100
-    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / 100_000, MAX_ALLOWED_DUST_OUTPUTS);
+    let allowed_dust_amount = std::cmp::min(dust_allowance_balance / DUST_DIVISOR, MAX_ALLOWED_DUST_OUTPUTS);
     if dust_outputs_amount > allowed_dust_amount {
         return Err(Error::DustError(format!(
             "No dust output allowed on address {}",
