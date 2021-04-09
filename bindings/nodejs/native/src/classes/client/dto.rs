@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota::{
-    bee_rest_api::types::{
-        dtos::{AddressDto, OutputDto as BeeOutput},
-        responses::{BalanceAddressResponse as AddressBalancePair, OutputResponse as OutputMetadata},
-    },
-    Ed25519Signature, Essence, IndexationPayload, Input, Message, MessageId, Output, Payload, ReferenceUnlock,
-    RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock, UnlockBlocks, UtxoInput,
+    bee_rest_api::types::dtos::OutputDto as BeeOutput, Ed25519Signature, Essence, IndexationPayload, Input, Message,
+    MessageId, Output, Payload, ReferenceUnlock, RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock,
+    UnlockBlocks, UtxoInput,
 };
 use serde::{Deserialize, Serialize};
 
@@ -171,62 +168,28 @@ impl TryFrom<MessagePayloadDto> for Payload {
 }
 
 #[derive(Serialize)]
-pub(super) struct OutputMetadataDto {
+pub(crate) struct OutputMetadataDto {
     /// Message ID of the output
     #[serde(rename = "messageId")]
-    message_id: String,
+    pub message_id: String,
     /// Transaction ID of the output
     #[serde(rename = "transactionId")]
-    transaction_id: String,
+    pub transaction_id: String,
     /// Output index.
     #[serde(rename = "outputIndex")]
-    output_index: u16,
+    pub output_index: u16,
     /// Spend status of the output
     #[serde(rename = "isSpent")]
-    is_spent: bool,
+    pub is_spent: bool,
     /// Corresponding address
-    address: String,
+    pub address: String,
     /// Balance amount
-    amount: u64,
-}
-
-impl From<OutputMetadata> for OutputMetadataDto {
-    fn from(value: OutputMetadata) -> Self {
-        let (output_amount, output_address) = match value.output {
-            BeeOutput::Treasury(t) => (t.amount, "".to_string()),
-            BeeOutput::SignatureLockedSingle(r) => match r.address {
-                AddressDto::Ed25519(addr) => (r.amount, addr.address),
-            },
-            BeeOutput::SignatureLockedDustAllowance(r) => match r.address {
-                AddressDto::Ed25519(addr) => (r.amount, addr.address),
-            },
-        };
-
-        Self {
-            message_id: value.message_id,
-            transaction_id: value.transaction_id,
-            output_index: value.output_index,
-            is_spent: value.is_spent,
-            address: output_address,
-            amount: output_amount,
-        }
-    }
+    pub amount: u64,
 }
 
 #[derive(Serialize)]
-pub(super) struct AddressBalanceDto {
-    address: String,
-    balance: u64,
-    #[serde(rename = "dustAllowed")]
-    dust_allowed: bool,
-}
-
-impl From<AddressBalancePair> for AddressBalanceDto {
-    fn from(value: AddressBalancePair) -> Self {
-        Self {
-            address: value.address.to_string(),
-            balance: value.balance,
-            dust_allowed: value.dust_allowed,
-        }
-    }
+pub(crate) struct AddressBalanceDto {
+    pub address: String,
+    pub balance: u64,
+    pub dust_allowed: bool,
 }
