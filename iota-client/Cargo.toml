@@ -27,7 +27,6 @@ tokio = { version = "1.1", features = ["macros", "sync", "rt-multi-thread", "rt"
 thiserror = "1.0"
 num_cpus = "1.13"
 log= "0.4"
-regex = "1.4"
 
 # sync
 ureq = { version = "2.0", features = ["json"], optional = true }
@@ -37,6 +36,7 @@ futures = { version = "0.3", optional = true }
 
 # MQTT
 rumqttc = { version = "0.5", optional = true }
+regex = { version = "1.4", optional = true }
 # also used for storage
 once_cell = { version = "1.5", optional = true }
 
@@ -48,6 +48,6 @@ rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 default = ["async", "tokio", "futures"]
 sync = ["ureq"]
 async = ["reqwest", "futures"]
-mqtt = ["rumqttc", "once_cell", "futures"]
+mqtt = ["rumqttc", "once_cell", "futures", "regex"]
 storage = ["rusqlite", "once_cell"]
 wasm = []

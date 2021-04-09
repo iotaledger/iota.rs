@@ -11,8 +11,10 @@ use serde_json::Value;
 use crate::error::{Error, Result};
 
 use log::warn;
-use regex::Regex;
+#[cfg(not(feature = "wasm"))]
 use tokio::sync::RwLock;
+#[cfg(feature = "wasm")]
+use std::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
@@ -93,25 +95,13 @@ impl NodeManager {
         timeout: Duration,
     ) -> Result<T> {
         // Endpoints for which quorum will be used if enabled
-        let quorum_regexes = lazy_static!(
-            [
-              Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
-              Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
-              // bech32 address
-              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]").expect("regex failed"),
-              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
-              // ED25519 address hex
-              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
-              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
-              Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
-            ].to_vec() => Vec<Regex>
-        );
+        let quorum_endpoints = vec!["/metadata", "addresses/", "outputs/", "transactions/"];
 
         let mut result = HashMap::new();
         // sugmit message with local PoW should use primary pow node
         // Get urls and set path
         let urls = self.get_urls(path, query, false).await;
-        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && urls.len() < self.quorum_size {
+        if self.quorum && quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) && urls.len() < self.quorum_size {
             return Err(Error::QuorumPoolSizeError(urls.len(), self.quorum_size));
         }
 
@@ -119,7 +109,12 @@ impl NodeManager {
         let mut result_counter = 0;
         let mut error = None;
         // Send requests parallel for quorum
-        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && query.is_none() {
+        #[cfg(feature = "wasm")]
+        let wasm = true;
+        #[cfg(not(feature = "wasm"))]
+        let wasm = false;
+        #[cfg(not(feature = "wasm"))]
+        if !wasm && self.quorum && quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) && query.is_none() {
             let mut tasks = Vec::new();
             let urls_ = urls.clone();
             for (index, url) in urls_.into_iter().enumerate() {
@@ -174,7 +169,7 @@ impl NodeManager {
                             // Without quorum it's enough if we got one response
                             if !self.quorum
                             || result_counter >= self.quorum_size
-                            || !quorum_regexes.iter().any(|re| re.is_match(&path))
+                            || !quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) 
                             // with query we ignore quorum because the nodes can store a different amount of history
                             || query.is_some()
                             {
@@ -200,7 +195,7 @@ impl NodeManager {
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
             || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
-            || !quorum_regexes.iter().any(|re| re.is_match(&path))
+            || !quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) 
             // with query we ignore quorum because the nodes can store a different amount of history
             || query.is_some()
         {
