@@ -9,12 +9,12 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::{Error, Result};
-
 use log::warn;
-#[cfg(not(feature = "wasm"))]
-use tokio::sync::RwLock;
+use regex::Regex;
 #[cfg(feature = "wasm")]
 use std::sync::RwLock;
+#[cfg(not(feature = "wasm"))]
+use tokio::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
@@ -35,6 +35,8 @@ pub(crate) struct NodeManager {
     pub(crate) nodes: HashSet<Url>,
     pub(crate) sync: bool,
     sync_interval: Duration,
+    // #[cfg(feature = "wasm")]
+    // pub(crate) synced_nodes: Arc<HashSet<Url>>,
     pub(crate) synced_nodes: Arc<RwLock<HashSet<Url>>>,
     quorum: bool,
     quorum_size: usize,
@@ -76,7 +78,14 @@ impl NodeManager {
             urls.push(primary_node);
         }
         let nodes = if self.sync {
-            self.synced_nodes.read().await.clone()
+            #[cfg(not(feature = "wasm"))]
+            {
+                self.synced_nodes.read().await.clone()
+            }
+            #[cfg(feature = "wasm")]
+            {
+                self.nodes.clone()
+            }
         } else {
             self.nodes.clone()
         };
@@ -95,13 +104,24 @@ impl NodeManager {
         timeout: Duration,
     ) -> Result<T> {
         // Endpoints for which quorum will be used if enabled
-        let quorum_endpoints = vec!["/metadata", "addresses/", "outputs/", "transactions/"];
-
-        let mut result = HashMap::new();
-        // sugmit message with local PoW should use primary pow node
+        let quorum_regexes = lazy_static!(
+            [
+              Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
+              Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
+              // bech32 address
+              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]").expect("regex failed"),
+              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
+              // ED25519 address hex
+              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
+              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
+              Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
+            ].to_vec() => Vec<Regex>
+        );
+        let mut result: HashMap<String, usize> = HashMap::new();
+        // submit message with local PoW should use primary pow node
         // Get urls and set path
         let urls = self.get_urls(path, query, false).await;
-        if self.quorum && quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) && urls.len() < self.quorum_size {
+        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && urls.len() < self.quorum_size {
             return Err(Error::QuorumPoolSizeError(urls.len(), self.quorum_size));
         }
 
@@ -114,7 +134,7 @@ impl NodeManager {
         #[cfg(not(feature = "wasm"))]
         let wasm = false;
         #[cfg(not(feature = "wasm"))]
-        if !wasm && self.quorum && quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) && query.is_none() {
+        if !wasm && self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && query.is_none() {
             let mut tasks = Vec::new();
             let urls_ = urls.clone();
             for (index, url) in urls_.into_iter().enumerate() {
@@ -169,7 +189,7 @@ impl NodeManager {
                             // Without quorum it's enough if we got one response
                             if !self.quorum
                             || result_counter >= self.quorum_size
-                            || !quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) 
+                            || !quorum_regexes.iter().any(|re| re.is_match(&path)) 
                             // with query we ignore quorum because the nodes can store a different amount of history
                             || query.is_some()
                             {
@@ -195,7 +215,7 @@ impl NodeManager {
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
             || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
-            || !quorum_endpoints.iter().any(|endpoint| path.contains(endpoint)) 
+            || !quorum_regexes.iter().any(|re| re.is_match(&path))
             // with query we ignore quorum because the nodes can store a different amount of history
             || query.is_some()
         {
@@ -483,23 +503,33 @@ impl HttpClient {
     }
 
     pub(crate) async fn get(&self, url: &str, timeout: Duration) -> Result<Response> {
-        Self::parse_response(self.client.get(url).timeout(timeout).send().await?).await
+        let mut request_builder = self.client.get(url);
+        #[cfg(not(feature = "wasm"))]
+        {
+            request_builder = request_builder.timeout(timeout)
+        }
+        let response = request_builder.send().await?;
+        Self::parse_response(response).await
     }
 
     pub(crate) async fn post_bytes(&self, url: &str, timeout: Duration, body: &[u8]) -> Result<Response> {
-        Self::parse_response(
-            self.client
-                .post(url)
-                .timeout(timeout)
-                .body(body.to_vec())
-                .send()
-                .await?,
-        )
-        .await
+        let mut request_builder = self.client.post(url);
+        #[cfg(not(feature = "wasm"))]
+        {
+            request_builder = request_builder.timeout(timeout)
+        }
+        let response = request_builder.body(body.to_vec()).send().await?;
+        Self::parse_response(response).await
     }
 
     pub(crate) async fn post_json(&self, url: &str, timeout: Duration, json: Value) -> Result<Response> {
-        Self::parse_response(self.client.post(url).timeout(timeout).json(&json).send().await?).await
+        let mut request_builder = self.client.post(url);
+        #[cfg(not(feature = "wasm"))]
+        {
+            request_builder = request_builder.timeout(timeout)
+        }
+        let response = request_builder.json(&json).send().await?;
+        Self::parse_response(response).await
     }
 }
 

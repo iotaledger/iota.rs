@@ -425,7 +425,14 @@ impl Client {
             return Ok(primary_node.clone());
         }
         let pool = if self.node_manager.sync {
-            self.node_manager.synced_nodes.read().await.clone()
+            #[cfg(not(feature = "wasm"))]
+            {
+                self.node_manager.synced_nodes.read().await.clone()
+            }
+            #[cfg(feature = "wasm")]
+            {
+                self.node_manager.nodes.clone()
+            }
         } else {
             self.node_manager.nodes.clone()
         };
