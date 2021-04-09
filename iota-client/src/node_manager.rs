@@ -189,7 +189,7 @@ impl NodeManager {
                             // Without quorum it's enough if we got one response
                             if !self.quorum
                             || result_counter >= self.quorum_size
-                            || !quorum_regexes.iter().any(|re| re.is_match(&path)) 
+                            || !quorum_regexes.iter().any(|re| re.is_match(&path))
                             // with query we ignore quorum because the nodes can store a different amount of history
                             || query.is_some()
                             {
