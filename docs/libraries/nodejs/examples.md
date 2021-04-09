@@ -5,7 +5,7 @@
 ## Connecting to node(s)
 All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions over IOTA network (Tangle). This class has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node-software/node-software.html) that power IOTA network.
 
-In `nodejs` binding, the `Client` instance is initialized and optionally configured via call chaining of `ClientBuilder` helper class.
+In `nodejs` binding, the `Client` instance is instantiated and optionally configured via chaining calls of `ClientBuilder` helper class.
 
 You may be familiar with a fact that in case of IOTA 1.0 network one had to know an address of IOTA node to start participating to the network. It is no longer needed in IOTA 1.5 (Chrysalis) world. The library is designed to automatically choose a starting IOTA node based on the network type one would like to participate in: `testnet` or `mainnet`.
 
@@ -32,7 +32,7 @@ Output example of `getInfo()` function of the `ClientBuilder` instance:
 ```
 The most important properties:
 * `isHealthy`: indicates whether the given node is in sync with the network and so it is safe to use it. Even if a node is up and running it may not be fully prepared to process your API calls properly. The node should be "synced", meaning should be aware of all TXs in the Tangle. It is better to avoid not fully synced nodes
-* `bech32HRP`: it indicates whether the given node is a part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](../../welcome.md#iota-15-address-anatomy)
+* `bech32HRP`: indicates whether the given node is a part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](../../welcome.md#iota-15-address-anatomy)
 
 _Please note, when using node load balancers then mentioned health check may be quite useless since follow-up API calls may be served by different node behind the load balancer that may have not been actually checked. One should be aware of this fact and trust the given load balancer participates only with nodes that are in healthy state. `iota.rs` library additionally supports a management of internal node pool and so load-balancer-like behavior can be mimicked using this feature locally._
 
@@ -105,42 +105,39 @@ So in case of IOTA 1.5 (Chrysalis), the derivation path of address/key space is 
 
 ### Generating address(es)
 
-IOTA addresses are generated via `Client.get_addresses()` function that returns a list of tuples with generated addresses. Considering the previous chapter about individual address/key spaces, it becomes quite clear what all used input function arguments are for.
+IOTA addresses are generated via `AddressGetter` helper class by calling `Client.getAddresses()` function and respective chaining calls that returns a list of tuples with generated addresses. Considering the previous chapter about individual address/key spaces, it becomes quite clear what all used input function arguments are for.
 
 _Please note: for the examples outlined below, an example seed `b3d7092195c36d47133ff786d4b0a1ef2ee6a0052f6e87b6dc337935c70c531e` was used via environment variable called `IOTA_SEED_SECRET`. This seed serves for training purposes only._
 
 The whole process is deterministic which means the output is the same as long as the seed is the same:
 
-```python
-{{#include ../../../bindings/python/examples/03_generate_addresses.py}}
+```javascript
+{{#include ../../../bindings/nodejs/examples/03_generate_addresses.js}}
 ```
 
-Output example:
+Output example (TODO: DOUBLECHECK OUTPUT):
 ```json
-[('atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86', False),
- ('atoi1qzfvkkp398v7hhvu89fu88hxctf7snwc9sf3a3nd7msfv77jk7qk2ah07s3', True),
- ('atoi1qq4t98j5y8wxkaujue99mjwqcp6jvvmsd5lv0755sz7dtjdz3p2lydv76sy', False),
- ('atoi1qrhzhjxc4z8vpwjt3hafs5xpdng5katqe890p0h95mc0l273j8yzxn7r4hc', True),
- ('atoi1qputu0yvfvxd7g39wf4rc67e0f0dyhl6enxu9jxnsrjqmemh067tw7qelyc', False),
- ('atoi1qptg5w2x47qwjf3gpqt3h7d2ey5x7xf8v7qtt29gkxt4mjfjfc28sutvd8a', True),
- ('atoi1qprvelq9paakh72fgm6j2kf8kexadw3t5xljer9dpsep5c7wx5mjwdxch6z', False),
- ('atoi1qrwk37tz47ddng9kpxfflkpz5tplcq7ll56v4acam04307xk70l7uf6wg8j', True),
- ('atoi1qper3zr5xe9x0wqs35ytwh622870g44frkyygdhs0ds8yejle3xujhq7dx3', False),
- ('atoi1qq6lkr9hucfylqjaqphu0stvk8pcmsx98r7ukuq40asszwmqytlnc058thk', True),
- ('atoi1qzpn7se3ryhscmqg404pycxzvfpt8v4xn8aul0tqdh00xsncgnxu7na7zjj', False),
- ('atoi1qz4qqakty9qytw8fk9shelt9lwlvv83s5ggt3wjag9fkgcc74z78w4l86y5', True),
- ('atoi1qp20uddchglqry0l5qnjg5aln8d5rk2v5l45hwrxv9z0daxs7u6xcsh4077', False),
- ('atoi1qrlqm2u5txxxnjx22fxq0jfjzk6l4nwnue6ht5pepk65m2f4xmxqynmxu2m', True),
- ('atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz', False),
- ('atoi1qrkjennxyl2xcqem6x69ya65sasma33z0ux872k846lqft0s3qf7k6lqpft', True),
- ('atoi1qr4yuekp30ff7mnnnjwy9tdhynxmlmkpuxf70qurtwudp2zpf3jeyw4uh37', False),
- ('atoi1qp6m5sz5ayjtccfxapdk5lp4qkheyfg0emzntmulyxzftps730vcul8dmqr', True),
- ('atoi1qzrwhkzhu67fqltfffwljejawdcghedukpgu9x6tzevwlnq89gmfjtayhgz', False),
- ('atoi1qpehxcp24z947dgupjqc9ktkn5ylmdxqqnx83m7xlajnf8005756u4n7z77', True)]
+['atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86',
+ ('atoi1qzfvkkp398v7hhvu89fu88hxctf7snwc9sf3a3nd7msfv77jk7qk2ah07s3',
+ ('atoi1qq4t98j5y8wxkaujue99mjwqcp6jvvmsd5lv0755sz7dtjdz3p2lydv76sy',
+ ('atoi1qrhzhjxc4z8vpwjt3hafs5xpdng5katqe890p0h95mc0l273j8yzxn7r4hc',
+ ('atoi1qputu0yvfvxd7g39wf4rc67e0f0dyhl6enxu9jxnsrjqmemh067tw7qelyc',
+ ('atoi1qptg5w2x47qwjf3gpqt3h7d2ey5x7xf8v7qtt29gkxt4mjfjfc28sutvd8a',
+ ('atoi1qprvelq9paakh72fgm6j2kf8kexadw3t5xljer9dpsep5c7wx5mjwdxch6z',
+ ('atoi1qrwk37tz47ddng9kpxfflkpz5tplcq7ll56v4acam04307xk70l7uf6wg8j',
+ ('atoi1qper3zr5xe9x0wqs35ytwh622870g44frkyygdhs0ds8yejle3xujhq7dx3',
+ ('atoi1qq6lkr9hucfylqjaqphu0stvk8pcmsx98r7ukuq40asszwmqytlnc058thk',
+ ('atoi1qzpn7se3ryhscmqg404pycxzvfpt8v4xn8aul0tqdh00xsncgnxu7na7zjj',
+ ('atoi1qz4qqakty9qytw8fk9shelt9lwlvv83s5ggt3wjag9fkgcc74z78w4l86y5',
+ ('atoi1qp20uddchglqry0l5qnjg5aln8d5rk2v5l45hwrxv9z0daxs7u6xcsh4077',
+ ('atoi1qrlqm2u5txxxnjx22fxq0jfjzk6l4nwnue6ht5pepk65m2f4xmxqynmxu2m',
+ ('atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz',
+ ('atoi1qrkjennxyl2xcqem6x69ya65sasma33z0ux872k846lqft0s3qf7k6lqpft',
+ ('atoi1qr4yuekp30ff7mnnnjwy9tdhynxmlmkpuxf70qurtwudp2zpf3jeyw4uh37',
+ ('atoi1qp6m5sz5ayjtccfxapdk5lp4qkheyfg0emzntmulyxzftps730vcul8dmqr',
+ ('atoi1qzrwhkzhu67fqltfffwljejawdcghedukpgu9x6tzevwlnq89gmfjtayhgz',
+ ('atoi1qpehxcp24z947dgupjqc9ktkn5ylmdxqqnx83m7xlajnf8005756u4n7z77']
 ```
-* Each tuple contains `address` and `bool` value indicating the given address is a `change` address or not.<br />
-`True` means the given address is a change address (internal). So basically we've got two independent sets of addresses (10 items per each)
-* This behavior is controlled via `get_all` argument. `get_all=False` (default) means to generate only public addresses
 
 IOTA address is represented by a checksumed base 32 string (Bech32) and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/index.html#iota-15-address-anatomy).
 Just a recap:
@@ -148,38 +145,34 @@ Just a recap:
 * Number `1` at 5<sup>th</sup> position is just a separator
 * The last 6 characters are reserved for a checksum
 
-To quickly validate any IOTA address, there is a convenience function `Client.is_address_valid()` that returns `bool` value. Needless to say, performing a sanity check of an address before its use is an advisable practice.
+To quickly validate any IOTA address, there is a convenience function `Client.isAddressValid()` that returns `bool` value. Needless to say, performing a sanity check of an address before its use is an advisable practice.
 
 ## Checking a balance
 _In Chrysalis testnet, there is a faucet service that provides test tokens to any testnet address: https://faucet.testnet.chrysalis2.com/_
 
 There are three common api calls that can be leveraged:
-* `Client.get_address_balance(address: str)`: it expects a single address in Bech32 format and returns `dict` with a balance for the address
-* `Client.get_address_balances(list[str])`: a convenience function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all given addresses
-* `Client.get_balance(seed, account_index (optional), initial_address_index(optional), gap_limit(optional))`: a convenience function that combines `Client.get_addresses()` and `Client.get_address_balances()` api calls. It returns a combined balance for the provided seed and its wallet account index
+* `Client.getAddressBalance(str)`: it expects a single address in Bech32 format and returns `dict` with a balance for the address
+* `Client.getAddressBalances([])`: a convenience function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all given addresses
+* `Client.getBalance(seed)`: a convenience helper `BalanceGetter` class that combines `Client.getAddresses()` and `Client.getAddressBalance()` api calls. It returns a combined balance for the provided `seed` and optional chaining calls `.accountIndex(index)`, `.initialAddressIndex(index)` and `.gapLimit(amount)`
 
-_Please note: `Client.get_address_balance()` and `Client.get_address_balances()` return address(es) in hex-encoded Ed25519 address format, which is the format returned by underlying node software:_
-
-```python
-{{#include ../../../bindings/python/examples/04_get_balance.py}}
+```javascript
+{{#include ../../../bindings/nodejs/examples/04_get_balance.js}}
 ```
 
 Example of output:
 ```json
-Return balance for a single address:
 {
     'address_type': 0,
     'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb',
     'balance': 10000000
 }
 
-Return balance for the given seed and account_index:
 10000000
 ```
 * `address_type` indicates type of address. Value 0 denotes a Ed25519 address (currently the default for IOTA 1.5 network)
 
-`Client.get_balance()` performs a several tasks under the hood.
-It starts generating addresses for the provided `seed` and `account_index` from `initial_address_index`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `gap_limit` argument when to stop searching. If `gap_limit` amount of addresses in a row have no balance the function returns result and searching does not continue.
+`Client.getBalance(seed)` performs a several tasks under the hood.
+It starts generating addresses for the provided `seed` and `.accountIndex` from `.initialAddressIndex(index)`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `.gapLimit(amount)` argument when to stop searching. If `.gapLimit` amount of addresses in a row have no balance the function returns result and searching does not continue.
 
 ## Messages, payload and transactions
 Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA 1.5 network.
