@@ -17,7 +17,7 @@ use bee_transaction::bundled::{
 use bee_transaction::Vertex;
 use tokio::sync::RwLock;
 
-pub(crate) const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
+pub(crate) const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
 
 macro_rules! response {
     ($self:ident, $body:ident) => {
