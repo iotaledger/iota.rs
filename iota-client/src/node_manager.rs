@@ -35,8 +35,6 @@ pub(crate) struct NodeManager {
     pub(crate) nodes: HashSet<Url>,
     pub(crate) sync: bool,
     sync_interval: Duration,
-    // #[cfg(feature = "wasm")]
-    // pub(crate) synced_nodes: Arc<HashSet<Url>>,
     pub(crate) synced_nodes: Arc<RwLock<HashSet<Url>>>,
     quorum: bool,
     quorum_size: usize,

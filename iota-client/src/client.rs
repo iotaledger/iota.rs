@@ -27,7 +27,7 @@ use crypto::{
 
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
-#[cfg(not(feature = "wasm"))]
+#[cfg(any(feature = "mqtt", not(feature = "wasm")))]
 use tokio::{
     runtime::Runtime,
     sync::{
