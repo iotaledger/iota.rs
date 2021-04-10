@@ -11,14 +11,13 @@ use bee_pow::providers::ProviderBuilder;
 use bee_rest_api::types::dtos::{AddressDto, OutputDto};
 use crypto::keys::slip10::{Chain, Curve, Seed};
 
+#[cfg(not(feature = "wasm"))]
+use std::sync::atomic::Ordering;
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
     str::FromStr,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+    sync::{atomic::AtomicBool, Arc},
 };
 
 const ADDRESS_GAP_LIMIT: usize = 20;
@@ -686,6 +685,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     }
 }
 
+#[cfg(not(feature = "wasm"))]
 fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
     done.swap(true, Ordering::Relaxed);

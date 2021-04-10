@@ -21,6 +21,7 @@ use std::{
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
+#[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 // Interval in seconds when new tips will be requested during PoW
 const TIPS_INTERVAL: u64 = 15;
@@ -53,7 +54,9 @@ pub struct NetworkInfo {
 pub struct ClientBuilder {
     node_manager_builder: crate::node_manager::NodeManagerBuilder,
     nodes: HashSet<Url>,
+    #[cfg(not(feature = "wasm"))]
     node_sync_interval: Duration,
+    #[cfg(not(feature = "wasm"))]
     node_sync_enabled: bool,
     #[cfg(feature = "mqtt")]
     broker_options: BrokerOptions,
@@ -67,7 +70,9 @@ impl Default for ClientBuilder {
         Self {
             node_manager_builder: crate::node_manager::NodeManager::builder(),
             nodes: HashSet::new(),
+            #[cfg(not(feature = "wasm"))]
             node_sync_interval: NODE_SYNC_INTERVAL,
+            #[cfg(not(feature = "wasm"))]
             node_sync_enabled: true,
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
