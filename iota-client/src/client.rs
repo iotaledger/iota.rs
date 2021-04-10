@@ -28,13 +28,14 @@ use crypto::{
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
 #[cfg(any(feature = "mqtt", not(feature = "wasm")))]
+use tokio::sync::{
+    watch::{Receiver as WatchReceiver, Sender as WatchSender},
+    RwLock,
+};
+#[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
-    sync::{
-        broadcast::{Receiver, Sender},
-        watch::{Receiver as WatchReceiver, Sender as WatchSender},
-        RwLock,
-    },
+    sync::broadcast::{Receiver, Sender},
     time::{sleep, Duration as TokioDuration},
 };
 use url::Url;
