@@ -18,18 +18,25 @@ So very simplistic example how to connect to [IOTA testnet](https://chrysalis.do
 Output example of `getInfo()` function of the `ClientBuilder` instance:
 ```json
 {
-   "name":"HORNET",
-   "version":"0.6.0-alpha",
-   "isHealthy":true,
-   "network_id":"testnet6",
-   "bech32HRP":"atoi",
-   "latestMilestoneIndex":192448,
-   "confirmedMilestoneIndex":192448,
-   "pruningIndex":174931,
-   "features":[
-      "PoW"
-   ],
-   "min_pow_score":4000.0
+   "nodeinfo":{
+      "name":"HORNET",
+      "version":"0.6.0-alpha",
+      "isHealthy":true,
+      "networkId":"migration",
+      "bech32HRP":"atoi",
+      "minPoWScore":100,
+      "messagesPerSecond":4.2,
+      "referencedMessagesPerSecond":4.1,
+      "referencedRate":97.61904761904762,
+      "latestMilestoneTimestamp":1618139001,
+      "latestMilestoneIndex":7092,
+      "confirmedMilestoneIndex":7092,
+      "pruningIndex":0,
+      "features":[
+         "PoW"
+      ]
+   },
+   "url":"https://api.lb-0.testnet.chrysalis2.com"
 }
 ```
 The most important properties:
