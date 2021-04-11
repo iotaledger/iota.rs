@@ -1,4 +1,4 @@
-async function run(){
+async function run() {
     const { ClientBuilder } = require('@iota/client');
 
     // Get the seed from environment variable
@@ -16,9 +16,7 @@ async function run(){
         .initialAddressIndex(0)
         .get();
 
-    console.log(
-        balance
-    );
+    console.log(balance);
 }
 
 run()
