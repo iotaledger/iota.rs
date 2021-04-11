@@ -47,6 +47,11 @@ The most common ones:
 
 If `.nodePoolUrls(urls)` is provided then the library periodically checks in some interval (call `.nodeSyncInterval(interval)`) whether node is in sync or not.
 
+Example of use of additional initialization chaining calls, such as leveraging a custom node:
+```javascript
+{{#include ../../../bindings/nodejs/examples/01b_get_info.js}}
+```
+
 ## Generating seed and addresses
 
 Since the IOTA network is permission-less type of network, anybody is able to use it and interact with it. No central authority is required at any stage. So anybody is able to generate own `seed` and then deterministically generate respective private keys/addresses.
