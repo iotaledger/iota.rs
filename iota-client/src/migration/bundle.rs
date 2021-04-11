@@ -157,6 +157,7 @@ pub async fn mine(
     ledger: bool,
     spent_bundle_hashes: Vec<String>,
     timeout: u64,
+    offset: i64,
 ) -> Result<(MinedCrackability, OutgoingBundleBuilder)> {
     if spent_bundle_hashes.is_empty() {
         return Err(Error::MigrationError(
@@ -183,7 +184,7 @@ pub async fn mine(
     }
     let essence_parts = get_bundle_essence_parts(&txs);
     let mut miner_builder = MinerBuilder::new()
-        .with_offset(0)
+        .with_offset(offset)
         .with_essences_from_unsigned_bundle(
             essence_parts
                 .iter()

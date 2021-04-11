@@ -131,6 +131,7 @@ async fn main() -> Result<()> {
             ledger,
             spent_bundle_hashes,
             5,
+            0,
         )
         .await?;
         println!("Mining info: {:?}", mining_result.0);
