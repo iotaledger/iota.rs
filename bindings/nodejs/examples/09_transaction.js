@@ -1,5 +1,7 @@
-async function run(){
-    const { ClientBuilder } = require('@iota/client');
+async function run() {
+    const {
+        ClientBuilder
+    } = require('@iota/client');
 
     // Get the seed from environment variable
     const IOTA_SEED_SECRET = process.env.IOTA_SEED_SECRET;
@@ -9,12 +11,10 @@ async function run(){
 
     const messageId = await client.messageSender()
         .seed(IOTA_SEED_SECRET)
-        .output("atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz", 1000000)
+        .output('atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz', 1000000)
         .submit();
 
-    console.log(
-        messageId
-    );
+    console.log(messageId);
 }
 
 run()
