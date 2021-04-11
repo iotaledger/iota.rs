@@ -561,6 +561,29 @@ As a minimum, it needs a valid seed, output addresses and amount. The method fin
 
 Output example:
 ```json
+{
+   "message_id":"7c47db1c4555348c260d91e90cc10fd66c2e73a84ec24bf9533e440f6d945d42",
+   "network_id":7712883261355838377,
+   "parents":[
+      "0ec0cd3c0303845980981bf7cc72371a8cd6e38c15924a2950fb15c5ecf4a53b",
+      "4011f7724f96b6e39cdf9987ee650c0552d4fc63c09dd72b9be30a3cc7b53806",
+      "5730d5bd607c6125130df30204c995db5edcbd16c4ab150946dffac37ace26f9",
+      "8c1982682dbfa0abdd8772e38d044dbfcbea5ebb99bbe7174c07d81adda62419"
+   ],
+   "payload":{
+      "transaction":[
+         {
+            "essence":{
+               "inputs":[
+                  {
+                     "transaction_id":"a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772",
+                     "index":0
+                  }
+               ],
+               "outputs":[
+                  {
+                     "address":"atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz",
+                     "amount":1000000
                   },
                   {
                      "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
@@ -573,12 +596,10 @@ Output example:
                {
                   "signature":{
                      "public_key":[
-                        243,
-                        "...<trimmed>"
+                        "..."
                      ],
                      "signature":[
-                        64,
-                        "...<trimmed>"
+                        "..."
                      ]
                   },
                   "reference":"None"
