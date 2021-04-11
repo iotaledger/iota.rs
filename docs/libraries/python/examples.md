@@ -167,7 +167,7 @@ Example of output:
 Return balance for a single address:
 {
     'address_type': 0,
-    'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb',
+    'address': 'atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86',
     'balance': 10000000
 }
 
