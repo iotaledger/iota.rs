@@ -18,16 +18,18 @@ So very simplistic example how to connect to [IOTA testnet](https://chrysalis.do
 Output example of `getInfo()` function of the `ClientBuilder` instance:
 ```json
 {
-    'name': 'HORNET',
-    'version': '0.6.0-alpha',
-    'isHealthy': True,
-    'network_id': 'testnet6',
-    'bech32HRP': 'atoi',
-    'latestMilestoneIndex': 192448,
-    'confirmedMilestoneIndex': 192448,
-    'pruningIndex': 174931,
-    'features': ['PoW'],
-    'min_pow_score': 4000.0
+   "name":"HORNET",
+   "version":"0.6.0-alpha",
+   "isHealthy":true,
+   "network_id":"testnet6",
+   "bech32HRP":"atoi",
+   "latestMilestoneIndex":192448,
+   "confirmedMilestoneIndex":192448,
+   "pruningIndex":174931,
+   "features":[
+      "PoW"
+   ],
+   "min_pow_score":4000.0
 }
 ```
 The most important properties:
@@ -169,14 +171,16 @@ There are three common api calls that can be leveraged:
 Example of output:
 ```json
 {
-    'address_type': 0,
-    'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb',
-    'balance': 10000000
+   "address_type":0,
+   "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
+   "balance":10000000,
+   "dust_allowed":false
 }
 
 10000000
 ```
 * `address_type` indicates type of address. Value 0 denotes a Ed25519 address (currently the default for IOTA 1.5 network)
+* `dust_allowed` indicates whether the given address is allowed to accepts a dust due to [dust protection mechanism](https://chrysalis.docs.iota.org/guides/dev_guide.html#dust-protection)
 
 `Client.getBalance(seed)` performs a several tasks under the hood.
 It starts generating addresses for the provided `seed` and `.accountIndex` from `.initialAddressIndex(index)`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `.gapLimit(amount)` argument when to stop searching. If `.gapLimit` amount of addresses in a row have no balance the function returns result and searching does not continue.
@@ -246,16 +250,25 @@ Then the function `Client.getOutput(str)` can be used to get metadata about the 
 
 Output example:
 ```json
-{'message_id': 'f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b',
- 'transaction_id': 'a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772',
- 'output_index': 0,
- 'is_spent': False,
- 'output': {'treasury': None,
-  'signature_locked_single': {'kind': 0,
-   'address': {'ed25519': {'kind': 0,
-     'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb'}},
-   'amount': 10000000},
-  'signature_locked_dust_allowance': None}
+{
+   "message_id":"f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b",
+   "transaction_id":"a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772",
+   "output_index":0,
+   "is_spent":false,
+   "output":{
+      "treasury":"None",
+      "signature_locked_single":{
+         "kind":0,
+         "address":{
+            "ed25519":{
+               "kind":0,
+               "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86"
+            }
+         },
+         "amount":10000000
+      },
+      "signature_locked_dust_allowance":"None"
+   }
 }
 ```
 
@@ -267,17 +280,28 @@ A function `Client.findOutputs()` is a convenient shortcut combining both mentio
 
 Output example:
 ```json
-{'message_id': 'f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b',
- 'transaction_id': 'a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772',
- 'output_index': 0,
- 'is_spent': False,
- 'output': {'treasury': None,
-  'signature_locked_single': {'kind': 0,
-   'address': {'ed25519': {'kind': 0,
-     'address': '4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb'}},
-   'amount': 10000000},
-  'signature_locked_dust_allowance': None}
-}
+[
+   {
+      "message_id":"7c47db1c4555348c260d91e90cc10fd66c2e73a84ec24bf9533e440f6d945d42",
+      "transaction_id":"c3f416b4394dd6e49354444d53e3c33f1169f25889ad7bc1c2ea83e35e291d5c",
+      "output_index":1,
+      "is_spent":false,
+      "output":{
+         "treasury":"None",
+         "signature_locked_single":{
+            "kind":0,
+            "address":{
+               "ed25519":{
+                  "kind":0,
+                  "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86"
+               }
+            },
+            "amount":9000000
+         },
+         "signature_locked_dust_allowance":"None"
+      }
+   }
+]
 ```
 * `message_id`: refer to the encapsulating message in which the transaction was sent
 * `transaction_id`, `output_index`: refer to the given output within the `SignedTransaction` payload. There may be several different `outputs` involved in a single transaction and so just `transaction_id` is not enough
@@ -314,28 +338,38 @@ Once a message is broadcasted, there is `MessageFinder` helper class instantiate
 Output example:
 ```json
 Message meta data:
-{'message_id': 'e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086',
- 'parent_message_ids': ['0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7',
-  '0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9',
-  '20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977',
-  'da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c'],
- 'is_solid': True,
- 'referenced_by_milestone_index': 284866,
- 'milestone_index': None,
- 'ledger_inclusion_state': {'state': 'NoTransaction'},
- 'conflict_reason': None,
- 'should_promote': None,
- 'should_reattach': None}
+{
+   "message_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
+   "parent_message_ids":[
+      "0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7",
+      "0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9",
+      "20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977",
+      "da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c"
+   ],
+   "is_solid":true,
+   "referenced_by_milestone_index":284866,
+   "milestone_index":"None",
+   "ledger_inclusion_state":{
+      "state":"NoTransaction"
+   },
+   "conflict_reason":"None",
+   "should_promote":"None",
+   "should_reattach":"None"
+}
 
 Message data:
- {'message_id': 'e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086',
- 'network_id': 7712883261355838377,
- 'parents': ['0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7',
-  '0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9',
-  '20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977',
-  'da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c'],
- 'payload': None,
- 'nonce': 2305843009213869242}
+{
+   "message_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
+   "network_id":7712883261355838377,
+   "parents":[
+      "0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7",
+      "0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9",
+      "20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977",
+      "da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c"
+   ],
+   "payload":"None",
+   "nonce":2305843009213869242
+}
 ```
 * `Client.getMessage().metadata()` provides information how the given message fits to network structures such as `ledger_inclusion_state`, etc.
 * `Client.getMessage().data()` provides all data that relates to the given message and its payload(s)
@@ -379,52 +413,69 @@ run()
 Example of a message with `SignedTransaction` payload:
 ```json
 {
-    'message_id': 'f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b',
-    'network_id': 7712883261355838377,
-    'parents': [
-        '4a84bf1d345a441cfdefd0e71d6efe820c1077e5dda9122a09cbf026132d208c',
-        '6e9153884fd1983be4c27c3ccdc69760b4775484eea498ec0707c2ff8901995e',
-        '7ac1407c88007a54d603400b558d5110f2bbf93a68100fb34f0b40cece9d0868',
-        '9ac0fd457998a1b3ddab9c0014f41344475358ad36c64a4b763de3b51f47c09a'
-    ],
-    'payload': {
-        'transaction': [
-            {
-                'essence': {
-                    'inputs': [
-                        {'transaction_id': '4a34274992474d91cf45366425ad1d4df6042cba64f3b6c07d297a2e6b7154a9', 'index': 0}
-                    ],
-                    'outputs': [
-                        {'address': 'atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86', 'amount': 10000000},
-                        {'address': 'atoi1qzdnav0zdgd4grn25cnwcuudtahvlhgh0r349ur749y9l03vadrfurhkxwj', 'amount': 100016136757200}
-                    ],
-                    'payload': {
-                        'transaction': None,
-                        'milestone': None,
-                        'indexation': [
-                            {'index': '54414e474c454b495420464155434554', 'data': []}
-                        ],
-                        'receipt': None,
-                        'treasury_transaction': None
-                    }
-                },
-                'unlock_blocks': [
-                    {
-                        'signature': {
-                            'public_key': [...],
-                            'signature': [...]
-                        },
-                        'reference': None
-                    }
-                ]
-            }
-        ],
-        'milestone': None,
-        'indexation': None,
-        'receipt': None,
-        'treasury_transaction': None
-    },
-    'nonce': 1146102
+   "message_id":"f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b",
+   "network_id":7712883261355838377,
+   "parents":[
+      "4a84bf1d345a441cfdefd0e71d6efe820c1077e5dda9122a09cbf026132d208c",
+      "6e9153884fd1983be4c27c3ccdc69760b4775484eea498ec0707c2ff8901995e",
+      "7ac1407c88007a54d603400b558d5110f2bbf93a68100fb34f0b40cece9d0868",
+      "9ac0fd457998a1b3ddab9c0014f41344475358ad36c64a4b763de3b51f47c09a"
+   ],
+   "payload":{
+      "transaction":[
+         {
+            "essence":{
+               "inputs":[
+                  {
+                     "transaction_id":"4a34274992474d91cf45366425ad1d4df6042cba64f3b6c07d297a2e6b7154a9",
+                     "index":0
+                  }
+               ],
+               "outputs":[
+                  {
+                     "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
+                     "amount":10000000
+                  },
+                  {
+                     "address":"atoi1qzdnav0zdgd4grn25cnwcuudtahvlhgh0r349ur749y9l03vadrfurhkxwj",
+                     "amount":100016136757200
+                  }
+               ],
+               "payload":{
+                  "transaction":"None",
+                  "milestone":"None",
+                  "indexation":[
+                     {
+                        "index":"54414e474c454b495420464155434554",
+                        "data":[
+                        ]
+                     }
+                  ],
+                  "receipt":"None",
+                  "treasury_transaction":"None"
+               }
+            },
+            "unlock_blocks":[
+               {
+                  "signature":{
+                     "public_key":[
+                        ...
+                     ],
+                     "signature":[
+                        ...
+                     ]
+                  },
+                  "reference":"None"
+               }
+            ]
+         }
+      ],
+      "milestone":"None",
+      "indexation":"None",
+      "receipt":"None",
+      "treasury_transaction":"None"
+   },
+   "nonce":1146102
 }
 ```
 
