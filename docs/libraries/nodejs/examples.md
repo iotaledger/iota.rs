@@ -440,11 +440,11 @@ Example of a message with `SignedTransaction` payload:
                ],
                "outputs":[
                   {
-                     "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
+                     "address":"4b55799d1930fa049e2f656e1ca6e8d28b4bd55873fa6503293c6e45c14e2bfb",
                      "amount":10000000
                   },
                   {
-                     "address":"atoi1qzdnav0zdgd4grn25cnwcuudtahvlhgh0r349ur749y9l03vadrfurhkxwj",
+                     "address":"9b3eb1e26a1b540e6aa626ec738d5f6ecfdd1778e352f07ea9485fbe2ceb469e",
                      "amount":100016136757200
                   }
                ],
