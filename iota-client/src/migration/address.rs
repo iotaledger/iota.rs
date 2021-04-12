@@ -21,10 +21,11 @@ pub fn encode_migration_address(ed25519_address: Ed25519Address) -> Result<Tryte
     let mut hasher =
         VarBlake2b::new(32).map_err(|_| Error::MigrationError("Invalid output size"))?;
     hasher.update(ed25519_address);
-    let mut result: [u8; 32] = [0; 32];
+    let mut result: Option<[u8; 32]> = None;
     hasher.finalize_variable(|res| {
-        result = res.try_into().expect("Can't convert hash result");
+        result = res.try_into().ok();
     });
+    let result: [u8; 32] = result.ok_or(Error::MigrationError("Couldn't convert hash result"))?;
     // Append the first 4 bytes of H to A, resulting in 36 bytes.
     let trytes = b1t6::encode::<T1B1Buf>(&[ed25519_address.as_ref(), &result[0..4]].concat())
         .iter_trytes()
@@ -65,10 +66,11 @@ pub fn decode_migration_address(tryte_address: TryteAddress) -> Result<Ed25519Ad
     let mut hasher =
         VarBlake2b::new(32).map_err(|_| Error::MigrationError("Invalid output size"))?;
     hasher.update(&ed25519_address_bytes[0..32]);
-    let mut result: [u8; 32] = [0; 32];
+    let mut result: Option<[u8; 32]> = None;
     hasher.finalize_variable(|res| {
-        result = res.try_into().expect("Can't convert hash result");
+        result = res.try_into().ok();
     });
+    let result: [u8; 32] = result.ok_or(Error::MigrationError("Couldn't convert hash result"))?;
     //Check that H matches the first 4 bytes of the BLAKE2b-256 hash of A.
     if ed25519_address_bytes[32..36] != result[0..4] {
         return Err(Error::ChrysalisAddressError(
