@@ -101,7 +101,7 @@ async fn main() -> Result<()> {
     // let bundle_for_trytes =
     //     create_migration_bundle(&iota, new_converted_address, account_input_data.1.clone())
     //         .await?;
-    // let bundle_trytes = get_trytes_from_bundle(bundle_for_trytes);
+    // let bundle_trytes = get_trytes_from_bundle(bundle_for_trytes)?;
     // println!("raw txs : {:?}",bundle_trytes);
     // // Sign trytes somewhere else here
     // // Convert Tryte Strings back to Transactions

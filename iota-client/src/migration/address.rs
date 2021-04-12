@@ -15,9 +15,11 @@ use blake2::{
 use core::convert::TryInto;
 
 /// Encode an Ed25519Address to a TryteAddress
+// https://hackmd.io/@iota-protocol/rkO-r1qAv#Generating-the-81-tryte-migration-address
 pub fn encode_migration_address(ed25519_address: Ed25519Address) -> Result<TryteAddress> {
     // Compute the BLAKE2b-256 hash H of A.
-    let mut hasher = VarBlake2b::new(32).expect("Invalid output size");
+    let mut hasher =
+        VarBlake2b::new(32).map_err(|_| Error::MigrationError("Invalid output size"))?;
     hasher.update(ed25519_address);
     let mut result: [u8; 32] = [0; 32];
     hasher.finalize_variable(|res| {
@@ -38,6 +40,7 @@ pub fn encode_migration_address(ed25519_address: Ed25519Address) -> Result<Tryte
 }
 
 /// Decode a TryteAddress to an Ed25519Address
+// https://hackmd.io/@iota-protocol/rkO-r1qAv#Decoding-the-81-tryte-migration-address
 pub fn decode_migration_address(tryte_address: TryteAddress) -> Result<Ed25519Address> {
     let tryte_string = tryte_address
         .to_inner()
@@ -59,7 +62,8 @@ pub fn decode_migration_address(tryte_address: TryteAddress) -> Result<Ed25519Ad
     let ed25519_address_bytes = b1t6::decode(&tryte_address.to_inner().subslice(24..240))?;
 
     //The first 32 bytes of the result are called A and the last 4 bytes H.
-    let mut hasher = VarBlake2b::new(32).expect("Invalid output size");
+    let mut hasher =
+        VarBlake2b::new(32).map_err(|_| Error::MigrationError("Invalid output size"))?;
     hasher.update(&ed25519_address_bytes[0..32]);
     let mut result: [u8; 32] = [0; 32];
     hasher.finalize_variable(|res| {
@@ -75,7 +79,7 @@ pub fn decode_migration_address(tryte_address: TryteAddress) -> Result<Ed25519Ad
     Ok(Ed25519Address::new(
         ed25519_address_bytes[0..32]
             .try_into()
-            .expect("slice with incorrect length"),
+            .map_err(|_| Error::MigrationError("address slice has an incorrect length"))?,
     ))
 }
 
@@ -106,11 +110,9 @@ pub fn add_tryte_checksum(address: TryteAddress) -> Result<String> {
 
 /// Get seed checksum
 pub fn get_seed_checksum(seed: String) -> Result<String> {
-    let seed_trytes = TryteBuf::try_from_str(
-        &seed,
-    )?
-    .as_trits()
-    .encode::<T1B1Buf>();
+    let seed_trytes = TryteBuf::try_from_str(&seed)?
+        .as_trits()
+        .encode::<T1B1Buf>();
     let mut kerl = Kerl::new();
     let hash = kerl
         .digest(Trits::try_from_raw(
@@ -126,7 +128,8 @@ pub fn get_seed_checksum(seed: String) -> Result<String> {
 
 #[test]
 fn test_seed_checksum() {
-    let seed = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string();
+    let seed = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        .to_string();
     let checksum = get_seed_checksum(seed).unwrap();
     assert_eq!(checksum, "JUY");
 }

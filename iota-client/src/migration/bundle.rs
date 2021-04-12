@@ -39,33 +39,35 @@ pub async fn create_migration_bundle(
     }
 
     let security_level = inputs[0].security_lvl;
-    let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level);
-    if !same_security_level {
-        return Err(Error::MigrationError(
-            "Not all inputs have the same security level",
-        ));
+    let mut address_inputs = Vec::new();
+    let mut total_value = 0;
+    for input in inputs {
+        if input.security_lvl != security_level {
+            return Err(Error::MigrationError(
+                "Not all inputs have the same security level",
+            ));
+        }
+        let new_input = Input {
+            address: input.address,
+            balance: input.balance,
+            index: input.index,
+        };
+        //Remove possible duplicates
+        if address_inputs
+            .binary_search_by(|input: &Input| input.index.cmp(&new_input.index))
+            .is_err()
+        {
+            total_value += new_input.balance;
+            address_inputs.push(new_input)
+        }
     }
 
-    let mut address_inputs: Vec<Input> = inputs
-        .into_iter()
-        .map(|i| Input {
-            address: i.address,
-            balance: i.balance,
-            index: i.index,
-        })
-        .collect();
-    //Remove possible duplicates
-    address_inputs.dedup();
-
-    let total_value = address_inputs.iter().map(|d| d.balance).sum();
-
     // Check for dust protection value
-    // Todo enable it again
-    // if total_value < DUST_THRESHOLD {
-    //     return Err(Error::MigrationError(
-    //         "Input value is < dust protection value (1_000_000 i)".into(),
-    //     ));
-    // }
+    if total_value < DUST_THRESHOLD {
+        return Err(Error::MigrationError(
+            "Input value is < dust protection value (1_000_000 i)",
+        ));
+    }
     let transfer = vec![Transfer {
         address: migration_address,
         value: total_value,
@@ -90,16 +92,15 @@ pub fn sign_migration_bundle(
     if inputs.is_empty() {
         return Err(Error::MigrationError("No inputs provided"));
     }
-    let security_level = match inputs[0].security_lvl {
+    let security_level_u8 = inputs[0].security_lvl;
+    let security_level = match security_level_u8 {
         1 => WotsSecurityLevel::Low,
         2 => WotsSecurityLevel::Medium,
         3 => WotsSecurityLevel::High,
-        _ => panic!("Invalid scurity level"),
+        _ => return Err(Error::MigrationError("Invalid security level provided")),
     };
     // Validate that all inputs have the same security level
-    let same_security_level = inputs
-        .iter()
-        .all(|i| i.security_lvl == inputs[0].security_lvl);
+    let same_security_level = inputs.iter().all(|i| i.security_lvl == security_level_u8);
     if !same_security_level {
         return Err(Error::MigrationError(
             "Not all inputs have the same security level",
@@ -121,14 +122,10 @@ pub fn sign_migration_bundle(
         .collect();
     // Sign
     let final_signed_bundle = prepared_bundle
-        .seal()
-        .expect("Fail to seal bundle")
-        .sign(&tryte_seed, &inputs[..])
-        .expect("Fail to sign bundle")
-        .attach_local(Hash::zeros(), Hash::zeros())
-        .expect("Fail to attach bundle")
-        .build()
-        .expect("Fail to build bundle");
+        .seal()?
+        .sign(&tryte_seed, &inputs[..])?
+        .attach_local(Hash::zeros(), Hash::zeros())?
+        .build()?;
 
     let mut trytes: Vec<BundledTransaction> = final_signed_bundle.into_iter().collect();
     let input_addresses: Vec<Address> = inputs.into_iter().map(|input| input.1).collect();
@@ -165,23 +162,15 @@ pub async fn mine(
         ));
     }
     let bundle = prepared_bundle
-        .seal()
-        .expect("Fail to seal bundle")
-        .sign(&TernarySeed::rand(), &[])
-        .expect("Can't sign bundle")
-        .attach_local(Hash::zeros(), Hash::zeros())
-        .expect("Fail to attach bundle")
-        .build()
-        .expect("Fail to build bundle");
-    let mut txs = Vec::new();
-    for i in 0..bundle.len() {
-        txs.push(
-            bundle
-                .get(i)
-                .expect("Failed to get transaction from bundle")
-                .clone(),
-        );
+        .seal()?
+        .sign(&TernarySeed::rand(), &[])?
+        .attach_local(Hash::zeros(), Hash::zeros())?
+        .build()?;
+    let mut txs = Vec::with_capacity(bundle.len());
+    for tx in bundle {
+        txs.push(tx)
     }
+
     let essence_parts = get_bundle_essence_parts(&txs);
     let mut miner_builder = MinerBuilder::new()
         .with_offset(offset)
@@ -245,30 +234,28 @@ pub async fn mine(
     };
     let updated_bundle = update_essence_with_mined_essence(
         txs,
-        mined_info.mined_essence.clone().expect("No essence mined"),
+        mined_info
+            .mined_essence
+            .clone()
+            .ok_or(Error::MigrationError("Couldn't get mined_essence"))?,
     )?;
     Ok((mined_info, updated_bundle))
 }
 
 /// Get Trytes from an OutgoingBundleBuilder
-pub fn get_trytes_from_bundle(created_migration_bundle: OutgoingBundleBuilder) -> Vec<String> {
+pub fn get_trytes_from_bundle(
+    created_migration_bundle: OutgoingBundleBuilder,
+) -> Result<Vec<String>> {
     let bundle = created_migration_bundle
-        .seal()
-        .expect("Fail to seal bundle")
-        .sign(&TernarySeed::rand(), &[])
-        .expect("Can't sign bundle")
-        .attach_local(Hash::zeros(), Hash::zeros())
-        .expect("Fail to attach bundle")
-        .build()
-        .expect("Fail to build bundle");
+        .seal()?
+        .sign(&TernarySeed::rand(), &[])?
+        .attach_local(Hash::zeros(), Hash::zeros())?
+        .build()?;
 
-    let mut trytes = Vec::new();
-    for i in 0..bundle.len() {
+    let mut trytes = Vec::with_capacity(bundle.len());
+    for tx in bundle {
         let mut trits = TritBuf::<T1B1Buf>::zeros(8019);
-        bundle
-            .get(i)
-            .expect("Failed to get transaction from bundle")
-            .as_trits_allocated(&mut trits);
+        tx.as_trits_allocated(&mut trits);
         trytes.push(
             trits
                 .encode::<T3B1Buf>()
@@ -277,7 +264,7 @@ pub fn get_trytes_from_bundle(created_migration_bundle: OutgoingBundleBuilder) -
                 .collect::<String>(),
         );
     }
-    trytes
+    Ok(trytes)
 }
 
 // Update latest tx essence with mined essence part

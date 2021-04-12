@@ -591,6 +591,7 @@ pub async fn timeout_worker(seconds: u64) {
 
 /// The mining worker, stop when timeout or the criterion is met
 /// Return the mined essence for the last transaction
+#[allow(clippy::too_many_arguments)]
 pub async fn mining_worker(
     increment: i64,
     worker_id: usize,

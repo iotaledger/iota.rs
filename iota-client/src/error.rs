@@ -51,6 +51,8 @@ pub enum Error {
     BundleMinerError(iota_bundle_miner::error::Error),
     /// Bee transaction error
     BeeTransactionError(bee_transaction::bundled::BundledTransactionError),
+    /// Bee bundled transaction error
+    BeeOutgoingBundleError(bee_transaction::bundled::OutgoingBundleBuilderError),
     /// Bee crypto error
     BeeCryptoError(String),
 }
@@ -79,6 +81,7 @@ impl fmt::Display for Error {
             Error::BeeTernaryError(e) => e.fmt(f),
             Error::BundleMinerError(e) => e.fmt(f),
             Error::BeeTransactionError(e) => format!("{:?}", e).fmt(f),
+            Error::BeeOutgoingBundleError(e) => format!("{:?}", e).fmt(f),
             Error::BeeCryptoError(e) => e.fmt(f),
         }
     }
@@ -126,5 +129,10 @@ impl From<iota_bundle_miner::error::Error> for Error {
 impl From<bee_transaction::bundled::BundledTransactionError> for Error {
     fn from(error: bee_transaction::bundled::BundledTransactionError) -> Self {
         Error::BeeTransactionError(error)
+    }
+}
+impl From<bee_transaction::bundled::OutgoingBundleBuilderError> for Error {
+    fn from(error: bee_transaction::bundled::OutgoingBundleBuilderError) -> Self {
+        Error::BeeOutgoingBundleError(error)
     }
 }
