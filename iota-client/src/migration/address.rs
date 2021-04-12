@@ -104,6 +104,33 @@ pub fn add_tryte_checksum(address: TryteAddress) -> Result<String> {
     ))
 }
 
+/// Get seed checksum
+pub fn get_seed_checksum(seed: String) -> Result<String> {
+    let seed_trytes = TryteBuf::try_from_str(
+        &seed,
+    )?
+    .as_trits()
+    .encode::<T1B1Buf>();
+    let mut kerl = Kerl::new();
+    let hash = kerl
+        .digest(Trits::try_from_raw(
+            &[seed_trytes.as_i8_slice(), &[0, 0, 0]].concat(),
+            243,
+        )?)
+        .map_err(|e| Error::BeeCryptoError(format!("{:?}", e)))?
+        .iter_trytes()
+        .map(char::from)
+        .collect::<String>();
+    Ok(hash[78..81].to_string())
+}
+
+#[test]
+fn test_seed_checksum() {
+    let seed = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string();
+    let checksum = get_seed_checksum(seed).unwrap();
+    assert_eq!(checksum, "JUY");
+}
+
 #[test]
 fn test_migration_address() {
     let ed25519_address = Ed25519Address::new(
