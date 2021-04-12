@@ -7,9 +7,7 @@ All features of `iota.rs` library are accessible via an instance of `Client` cla
 
 In `nodejs` binding, the `Client` instance is instantiated and optionally configured via chaining calls of `ClientBuilder` helper class.
 
-You may be familiar with a fact that in case of IOTA 1.0 network one had to know an address of IOTA node to start participating to the network. It is no longer needed in IOTA 1.5 (Chrysalis) world. The library is designed to automatically choose a starting IOTA node based on the network type one would like to participate in: `testnet` or `mainnet`.
-
-So very simplistic example how to connect to [IOTA testnet](https://chrysalis.docs.iota.org/testnet.html) is the following one:
+The library is designed to automatically choose a starting IOTA node based on the network type one would like to participate in: `testnet` or `mainnet`. So very simplistic example how to connect to [IOTA testnet](https://chrysalis.docs.iota.org/testnet.html) is the following one:
 
 ```javascript
 {{#include ../../../bindings/nodejs/examples/01_get_info.js}}
@@ -69,7 +67,7 @@ Since the IOTA network is permission-less type of network, anybody is able to us
 
 > We strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
 
-IOTA 1.5 (Chrysalis) uses `Ed25519` signature scheme and address is usually represented by Bech32 (checksummed base32) format string of 64 characters.
+IOTA uses `Ed25519` signature scheme and address is usually represented by Bech32 (checksummed base32) format string of 64 characters.
 
 A root of `Ed25519` signature scheme is basically a `32-byte (256-bit)` uniformly randomly generated seed based on which all private keys and corresponding addresses are generated. In the examples below, the seed is represented by a string of 64 characters using `[0-9a-f]` alphabet (32 bytes encoded in hexadecimal).
 
@@ -100,7 +98,7 @@ m / purpose / coin_type / account / change / address_index
 * `coin_type`: a constant set for each crypto currency. IOTA = 4218, for instance.
 * `account`: account index. Zero-based increasing `int`. This level splits the address/key space into independent branches (ex. user identities) which each has own set of addresses/keys
 * `change`: change index which is `{0, 1}`, also known as `wallet chain`.<br />
-There are two independent chain of addresses/keys. `0` is reserved for public addresses (for coin receival) and `1` is reserved for internal (also known as change) addresses to which transaction change is returned. _In comparison to IOTA 1.0, IOTA 1.5 is totally fine with address reuse, and so it is, technically speaking, totally valid to return transaction change to the same originating address. So it is up to developers whether to leverage it or not. `iota.rs` library and its sibling `wallet.rs` help with either scenario_
+There are two independent chain of addresses/keys. `0` is reserved for public addresses (for coin receival) and `1` is reserved for internal (also known as change) addresses to which transaction change is returned. _IOTA is totally fine with address reuse, and so it is, technically speaking, totally valid to return transaction change to the same originating address. So it is up to developers whether to leverage it or not. `iota.rs` library and its sibling `wallet.rs` help with either scenario_
 * `address_index`: address index. Zero-based increasing `int` that indicates an address index
 
 As outlined, there is a quite large address/key space that is secured by a single unique seed.
@@ -115,7 +113,7 @@ _Please note, it may have a negative impact on a performance while [account disc
 
 ![address_generation](address_generation.svg)
 
-So in case of IOTA 1.5 (Chrysalis), the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The levels `purpose` and `coin_type` are given, the rest levels are up to developers to integrate.
+So in case of IOTA, the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The levels `purpose` and `coin_type` are given, the rest levels are up to developers to integrate.
 
 ### Generating address(es)
 
@@ -153,7 +151,7 @@ Output example:
  'atoi1qpehxcp24z947dgupjqc9ktkn5ylmdxqqnx83m7xlajnf8005756u4n7z77']
 ```
 
-IOTA address is represented by a checksumed base 32 string (Bech32) and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/index.html#iota-15-address-anatomy).
+IOTA address is represented by a checksumed base 32 string (Bech32) and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/dev_guide.html#iota-15-address-anatomy).
 Just a recap:
 * If an address starts with `atoi` then it means it is related to `testnet`. `iota` stands for mainnet
 * Number `1` at 5<sup>th</sup> position is just a separator
@@ -193,9 +191,7 @@ Example of output:
 It starts generating addresses for the provided `seed` and `.accountIndex` from `.initialAddressIndex(index)`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `.gapLimit(amount)` argument when to stop searching. If `.gapLimit` amount of addresses in a row have no balance the function returns result and searching does not continue.
 
 ## Messages, payload and transactions
-Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA 1.5 network.
-
-In comparison to original IOTA 1.0, IOTA 1.5 introduced some fundamental changes to the underlying data structure. The original concept of `transactions` and `bundles` is gone, and has been replaced by a concept of `messages` and `payloads`.
+Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA network. IOTA is based on a concept of `messages` and `payloads`.
 
 `Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle graph. It can refer to up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
 
@@ -211,15 +207,13 @@ Needless to say, IOTA network ensures the outer structure of message itself is v
 
 ![messages_in_tangle](messages_in_tangle.svg)
 
-The current IOTA 1.5 network incorporates the following core payloads:
+The current IOTA network incorporates the following core payloads:
 * `SignedTransaction`: payload that describes `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `message` can be also cryptographically signed
 * `MilestonePayload`: payload that is emitted by Coordinator
 * `IndexationPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data. The given index can be later used to search the message(s)
 
 ### Unspent Transaction Output (UTXO)
-Originally, the IOTA used an `account-based model` for tracking individual iota tokens: _each IOTA address holds a number of tokens and aggregated number of tokens from all iota addresses is equal to total supply._
-
-In contrary, IOTA 1.5 uses `unspent transaction output` model, so called `UTXO`. It is based on an idea to track unspent amount of tokens via data structure called `output`.
+IOTA uses `unspent transaction output` model, so called `UTXO`. It is based on an idea to track unspent amount of tokens via data structure called `output`.
 
 Simplified analogy:
 * There is 100 tokens recorded in the ledger as `Output A` and this output belongs to Alice. So **initial state of ledger**: `Output A` = 100 tokens
@@ -395,7 +389,7 @@ Output example:
 * Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/chrysalis/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
 * There are three payloads prepared (`transaction`, `milestone` and `indexation`) however only `indexation` payload is leveraged this time
 * `data` contains an arbitrary data encoded in bytes
-* In comparison to IOTA 1.0, please note there is no IOTA address involved while sending data messages via network in case of IOTA 1.5. Such messages are referenced using `message_id` or key `index`
+* Please note there is no IOTA address involved while sending data messages. Such messages are referenced using `message_id` or key `index`
 * IOTA addresses are part of `UTXO` data structure that is sent using `SignedTransaction` payload explained below
 
 ### SignedTransaction
