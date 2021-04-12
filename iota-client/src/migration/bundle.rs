@@ -186,10 +186,11 @@ pub async fn mine(
         )
         .with_security_level(security_level as usize);
     // Ledger Nano App rejects bundles that contain a 13 anywhere in the signed fragments
-    miner_builder = match ledger {
-        true => miner_builder.with_num_13_free_fragments(81),
-        false => miner_builder.with_num_13_free_fragments((security_level * 27) as usize),
+    let with_num_13_free_fragments = match ledger {
+        true => 81,
+        false => (security_level * 27) as usize,
     };
+    miner_builder = miner_builder.with_num_13_free_fragments(with_num_13_free_fragments);
     // Use one worker less than we have cores or 1 if there is only one core
     let mut worker_count = num_cpus::get();
     if worker_count > 1 {
