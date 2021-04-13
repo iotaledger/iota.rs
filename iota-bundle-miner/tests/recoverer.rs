@@ -129,7 +129,7 @@ pub async fn test_recoverer_run_security_1() {
         .finish()
         .unwrap();
 
-    if let CrackabilityMinerEvent::MinedCrackability(mined_info) = recoverer.recover().await {
+    if let CrackabilityMinerEvent::MinerInfo(mined_info) = recoverer.recover().await {
         assert_eq!(mined_iteration_expected, mined_info.mined_iteration);
         assert_eq!(
             true,
@@ -206,7 +206,7 @@ pub async fn test_recoverer_run_security_2() {
         .finish()
         .unwrap();
 
-    if let CrackabilityMinerEvent::MinedCrackability(mined_info) = recoverer.recover().await {
+    if let CrackabilityMinerEvent::MinerInfo(mined_info) = recoverer.recover().await {
         assert_eq!(mined_iteration_expected, mined_info.mined_iteration);
         assert_eq!(
             true,

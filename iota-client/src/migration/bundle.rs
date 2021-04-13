@@ -19,9 +19,7 @@ use bee_transaction::bundled::{
     Address, BundledTransaction, BundledTransactionBuilder, BundledTransactionField, Nonce,
     OutgoingBundleBuilder, Payload, Timestamp,
 };
-use iota_bundle_miner::{
-    miner::MinedCrackability, CrackabilityMinerEvent, MinerBuilder, RecovererBuilder,
-};
+use iota_bundle_miner::{miner::MinerInfo, CrackabilityMinerEvent, MinerBuilder, RecovererBuilder};
 
 /// Dust protection treshhold: minimum amount of iotas an address needs in Chrysalis
 pub const DUST_THRESHOLD: u64 = 1_000_000;
@@ -155,7 +153,7 @@ pub async fn mine(
     spent_bundle_hashes: Vec<String>,
     timeout: u64,
     offset: i64,
-) -> Result<(MinedCrackability, OutgoingBundleBuilder)> {
+) -> Result<(MinerInfo, OutgoingBundleBuilder)> {
     if spent_bundle_hashes.is_empty() {
         return Err(Error::MigrationError(
             "Can't mine without spent_bundle_hashes",
@@ -230,8 +228,7 @@ pub async fn mine(
         .finish()?;
     // Todo: decide which crackability value is good enough
     let mined_info = match recoverer.recover().await {
-        CrackabilityMinerEvent::MinedCrackability(mined_info) => mined_info,
-        CrackabilityMinerEvent::Timeout(mined_info) => mined_info,
+        CrackabilityMinerEvent::MinerInfo(mined_info) => mined_info,
     };
     let updated_bundle = update_essence_with_mined_essence(
         txs,

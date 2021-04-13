@@ -55,16 +55,16 @@ pub enum MinerEvent {
 }
 
 #[derive(Debug)]
-pub struct MinedCrackability {
+pub struct MinerInfo {
     pub crackability: f64,
     pub mined_essence: Option<TritBuf<T1B1Buf>>,
     pub mined_iteration: usize,
+    pub timeout: bool,
 }
 
 #[derive(Debug)]
 pub enum CrackabilityMinerEvent {
-    MinedCrackability(MinedCrackability),
-    Timeout(MinedCrackability),
+    MinerInfo(MinerInfo),
 }
 
 /// TODO: Remove this when they are explosed to public in bee_transaction
@@ -483,20 +483,22 @@ impl Miner {
                             for i in abort_handles {
                                 i.abort();
                             }
-                            CrackabilityMinerEvent::MinedCrackability(MinedCrackability {
+                            CrackabilityMinerEvent::MinerInfo(MinerInfo {
                                 crackability: best_crackability,
                                 mined_essence: Some(essence),
                                 mined_iteration,
+                                timeout: false,
                             })
                         }
                         MinerEvent::Timeout => {
                             for i in abort_handles {
                                 i.abort();
                             }
-                            CrackabilityMinerEvent::Timeout(MinedCrackability {
+                            CrackabilityMinerEvent::MinerInfo(MinerInfo {
                                 crackability: best_crackability,
                                 mined_essence: Some(mined_best_essence),
                                 mined_iteration,
+                                timeout: true,
                             })
                         }
                     }
