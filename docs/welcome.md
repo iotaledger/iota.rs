@@ -10,7 +10,7 @@ Example of tasks that `iota.rs` is able to help with:
 > Please note: there is also available `wallet.rs` library that contains all the logic to safely build wallets or integrations that require value-based IOTA transfers. We strongly recommend to leverage [wallet.rs library](https://wallet-lib.docs.iota.org/) in case one is more focused on IOTA value-based transfers since it integrates the best security practices including our [stronghold enclave](https://blog.iota.org/iota-stronghold-6ce55d311d7c/).
 
 ## Changes from IOTA 1.0 to 1.5
-For an overview of all significant changes in the protocol, please see [Chrysalis documentation](https://chrysalis.docs.iota.org/guides/index.html#overall-changes-from-iota-10-to-15-chrysalis-in-a-nutshell).
+For an overview of all significant changes in the protocol, please see [Chrysalis documentation](https://chrysalis.docs.iota.org/guides/index.html).
 
 ## Warning
 This library is in active development. The library targets the Chrysalis testnet and does not work with current IOTA mainnet.
