@@ -20,7 +20,8 @@ def test_get_health():
 
 def test_get_info():
     node_info = client.get_info()
-    assert isinstance(node_info, dict) and 'is_healthy' in node_info['nodeinfo']
+    assert isinstance(
+        node_info, dict) and 'is_healthy' in node_info['nodeinfo']
 
 
 def test_get_peers():
@@ -30,7 +31,7 @@ def test_get_peers():
         assert isinstance(peers, list)
     except ValueError as e:
         # Else the error must be access forbidden
-        assert "access forbidden, error: forbidden" in str(e)
+        assert "Forbidden" in str(e)
 
 
 def test_get_tips():
@@ -95,7 +96,7 @@ def test_get_receipts():
         assert isinstance(receipt, list)
     except ValueError as e:
         # Else the error must be access forbidden
-        assert "access forbidden, error: forbidden" in str(e)
+        assert "Forbidden" in str(e)
 
 
 def test_get_receipts_migrated_at():
@@ -105,7 +106,7 @@ def test_get_receipts_migrated_at():
         assert isinstance(receipts, list)
     except ValueError as e:
         # Else the error must be access forbidden
-        assert "access forbidden, error: forbidden" in str(e)
+        assert "Forbidden" in str(e)
 
 
 def test_get_treasury():
