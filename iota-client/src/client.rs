@@ -940,8 +940,8 @@ impl Client {
         let nonce_provider = self.get_pow_provider().await;
         tips.push(*message_id);
         // Sort tips/parents
-        tips.dedup();
         tips.sort_unstable_by_key(|a| a.pack_new());
+        tips.dedup();
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(network_id)
             .with_parents(Parents::new(tips)?)

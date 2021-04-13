@@ -512,8 +512,8 @@ impl<'a> ClientMessageBuilder<'a> {
         let final_message = match self.parents {
             Some(mut parents) => {
                 // Sort parents
-                parents.dedup();
                 parents.sort_unstable_by_key(|a| a.pack_new());
+                parents.dedup();
 
                 let network_id = self.client.get_network_id().await?;
                 let mut message = MessageBuilder::<ClientMiner>::new();
@@ -541,8 +541,8 @@ impl<'a> ClientMessageBuilder<'a> {
         let final_message = match self.parents {
             Some(mut parents) => {
                 // Sort parents
-                parents.dedup();
                 parents.sort_unstable_by_key(|a| a.pack_new());
+                parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let network_id = self.client.get_network_id().await?;
