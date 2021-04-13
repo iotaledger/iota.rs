@@ -58,7 +58,7 @@ pub struct NodeInfoWrapper {
     pub url: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone, Copy)]
 /// Milestone data.
 pub struct MilestoneResponse {
     /// Milestone index.

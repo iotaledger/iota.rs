@@ -67,6 +67,7 @@ pub struct BalanceAddressResponse {
     // hex encoded address
     pub address: String,
     pub balance: u64,
+    pub dust_allowed: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -148,7 +149,7 @@ pub struct TreasuryOutputDto {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct AddressDto {
-    ed25519: Ed25519AddressDto,
+    pub ed25519: Ed25519AddressDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -221,7 +222,7 @@ pub struct Receipt {
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct MigratedFundsEntry {
-    pub tail_transaction_hash: Vec<u8>,
+    pub tail_transaction_hash: String,
     pub output: SignatureLockedSingleOutputDto,
 }
 
@@ -393,7 +394,7 @@ impl From<RustOutputResponse> for OutputResponse {
 impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
     fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
         Self {
-            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().as_ref().into(),
+            tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_string(),
             output: migrated_funds_entry.output().clone().into(),
         }
     }
@@ -497,6 +498,7 @@ impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
             address_type: balance_for_address_response.address_type,
             address: balance_for_address_response.address,
             balance: balance_for_address_response.balance,
+            dust_allowed: balance_for_address_response.dust_allowed,
         }
     }
 }
@@ -1066,11 +1068,11 @@ impl From<RustReceiptPayloadDto> for Receipt {
 impl From<RustMigratedFundsEntryDto> for MigratedFundsEntry {
     fn from(receipt: RustMigratedFundsEntryDto) -> Self {
         Self {
-            tail_transaction_hash: receipt.tail_transaction_hash.to_vec(),
+            tail_transaction_hash: receipt.tail_transaction_hash,
             output: SignatureLockedSingleOutputDto {
                 kind: 0,
                 address: receipt.address.into(),
-                amount: receipt.amount,
+                amount: receipt.deposit,
             },
         }
     }
@@ -1081,7 +1083,7 @@ impl From<RustTreasuryTransactionPayloadDto> for TreasuryTransaction {
         let treasury_input = match treasury.input {
             RustInputDto::Treasury(t) => TreasuryInput {
                 kind: t.kind,
-                message_id: t.message_id,
+                message_id: t.milestone_id,
             },
             RustInputDto::Utxo(_) => panic!("Invalid type"),
         };

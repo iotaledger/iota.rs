@@ -40,7 +40,7 @@ pub struct NetworkInfo {
     #[serde(rename = "bech32HRP")]
     pub bech32_hrp: String,
     /// Mininum proof of work score
-    #[serde(rename = "minPowScore")]
+    #[serde(rename = "minPoWScore")]
     pub min_pow_score: f64,
     /// Local proof of work
     #[serde(rename = "localPow")]

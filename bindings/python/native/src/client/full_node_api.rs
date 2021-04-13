@@ -53,10 +53,22 @@ impl Client {
         Ok(crate::block_on(async { self.client.post_message(&msg).await })?.to_string())
     }
     fn get_output(&self, output_id: String) -> Result<OutputResponse> {
-        Ok(crate::block_on(async { self.client.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
+        let mut result: OutputResponse =
+            crate::block_on(async { self.client.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into();
+        if let Some(ref mut output) = result.output.signature_locked_single {
+            output.address.ed25519.address =
+                crate::block_on(async { self.client.hex_to_bech32(&output.address.ed25519.address, None).await })?;
+        } else if let Some(ref mut output) = result.output.signature_locked_dust_allowance {
+            output.address.ed25519.address =
+                crate::block_on(async { self.client.hex_to_bech32(&output.address.ed25519.address, None).await })?;
+        }
+        Ok(result)
     }
     fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
-        Ok(crate::block_on(async { self.client.get_address().balance(&String::from(address)).await })?.into())
+        let mut result: BalanceAddressResponse =
+            crate::block_on(async { self.client.get_address().balance(&String::from(address)).await })?.into();
+        result.address = crate::block_on(async { self.client.hex_to_bech32(&result.address, None).await })?;
+        Ok(result)
     }
     fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UtxoInput>> {
         let outputs = crate::block_on(async {
@@ -93,7 +105,21 @@ impl Client {
             crate::block_on(async { self.client.find_outputs(&output_ids[..], &addresses[..]).await })?;
         Ok(output_metadata_vec
             .into_iter()
-            .map(|metadata| metadata.into())
+            .map(|metadata| {
+                let mut response: OutputResponse = metadata.into();
+                if let Some(ref mut output) = response.output.signature_locked_single {
+                    output.address.ed25519.address = crate::block_on(async {
+                        self.client.hex_to_bech32(&output.address.ed25519.address, None).await
+                    })
+                    .unwrap_or_else(|_| panic!("invalid bech32 address: {}", output.address.ed25519.address));
+                } else if let Some(ref mut output) = response.output.signature_locked_dust_allowance {
+                    output.address.ed25519.address = crate::block_on(async {
+                        self.client.hex_to_bech32(&output.address.ed25519.address, None).await
+                    })
+                    .unwrap_or_else(|_| panic!("invalid bech32 address: {}", output.address.ed25519.address));
+                }
+                response
+            })
             .collect())
     }
     fn get_milestone(&self, index: u32) -> Result<MilestoneDto> {
