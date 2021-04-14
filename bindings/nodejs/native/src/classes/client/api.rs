@@ -247,7 +247,7 @@ impl Task for ClientTask {
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(network_id)
                         .with_parents(Parents::new(parent_msg_ids)?)
-                        .with_nonce_provider(nonce_provider, 4000f64, None)
+                        .with_nonce_provider(nonce_provider, 4000f64)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message = client.post_message(&message).await?;

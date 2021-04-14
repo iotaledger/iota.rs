@@ -10,6 +10,9 @@ This library is in active development. The library targets the Chrysalis testnet
 
 If you want to get involved in discussions about this library, or you're looking for support, go to the #clients-discussion channel on [Discord](https://discord.iota.org).
 
+## Changes from IOTA 1.0 to 1.5
+For an overview of all significant changes in the protocol, please see [Chrysalis documentation](https://chrysalis.docs.iota.org/guides/index.html).
+
 ## Overview
 
 - [Getting Started]()

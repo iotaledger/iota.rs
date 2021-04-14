@@ -5,19 +5,15 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
-
 #[cfg(not(feature = "wasm"))]
-use bee_pow::providers::ProviderBuilder;
+use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
 use bee_rest_api::types::dtos::{AddressDto, OutputDto};
 use crypto::keys::slip10::{Chain, Curve, Seed};
 
-#[cfg(not(feature = "wasm"))]
-use std::sync::atomic::Ordering;
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
     str::FromStr,
-    sync::{atomic::AtomicBool, Arc},
 };
 
 const ADDRESS_GAP_LIMIT: usize = 20;
@@ -554,7 +550,6 @@ impl<'a> ClientMessageBuilder<'a> {
                     network_id,
                     payload,
                     parents,
-                    Arc::new(AtomicBool::new(false)),
                 )?
                 .1
                 .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
@@ -642,27 +637,27 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
 /// Does PoW with always new tips
 #[cfg(not(feature = "wasm"))]
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
-    let done = Arc::new(AtomicBool::new(false));
     let local_pow = client.get_local_pow().await;
     let min_pow_score = client.get_min_pow_score().await?;
     let tips_interval = client.get_tips_interval().await;
     let network_id = client.get_network_id().await?;
     loop {
-        let abort1 = Arc::clone(&done);
-        let abort2 = Arc::clone(&done);
+        let cancel = MinerCancel::new();
+        let cancel_2 = cancel.clone();
         let payload_ = payload.clone();
         let parent_messages = client.get_tips().await?;
-        let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, &abort1)));
+        println!("{:?}", parent_messages);
+        let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
                 crate::client::ClientMinerBuilder::new()
                     .with_local_pow(local_pow)
+                    .with_cancel(cancel_2)
                     .finish(),
                 min_pow_score,
                 network_id,
                 payload_,
                 parent_messages,
-                abort2,
             )
         });
 
@@ -675,7 +670,6 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
                             return Ok(message);
                         }
                     }
-                    done.swap(false, Ordering::Relaxed);
                 }
                 Err(err) => {
                     return Err(err);
@@ -686,9 +680,9 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
 }
 
 #[cfg(not(feature = "wasm"))]
-fn pow_timeout(after_seconds: u64, done: &AtomicBool) -> (u64, Option<Message>) {
+fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
-    done.swap(true, Ordering::Relaxed);
+    cancel.trigger();
     (0, None)
 }
 
@@ -699,7 +693,6 @@ pub fn do_pow(
     network_id: u64,
     payload: Option<Payload>,
     parent_messages: Vec<MessageId>,
-    done: Arc<AtomicBool>,
 ) -> Result<(u64, Option<Message>)> {
     let mut message = MessageBuilder::<ClientMiner>::new();
     message = message.with_network_id(network_id);
@@ -708,7 +701,7 @@ pub fn do_pow(
     }
     let message = message
         .with_parents(Parents::new(parent_messages)?)
-        .with_nonce_provider(client_miner, min_pow_score, Some(Arc::clone(&done)))
+        .with_nonce_provider(client_miner, min_pow_score)
         .finish()
         .map_err(Error::MessageError)?;
     Ok((message.nonce(), Some(message)))

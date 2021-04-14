@@ -12,7 +12,10 @@ use bee_common::packable::Packable;
 use bee_message::prelude::{
     Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput,
 };
-use bee_pow::providers::{MinerBuilder, Provider as PowProvider, ProviderBuilder as PowProviderBuilder};
+use bee_pow::providers::{
+    miner::{MinerBuilder, MinerCancel},
+    NonceProvider, NonceProviderBuilder,
+};
 use bee_rest_api::types::{
     dtos::{MessageDto, PeerDto, ReceiptDto},
     responses::{
@@ -45,7 +48,7 @@ use std::{
     convert::{TryFrom, TryInto},
     hash::Hash,
     str::FromStr,
-    sync::{atomic::AtomicBool, Arc},
+    sync::Arc,
     time::Duration,
 };
 
@@ -162,6 +165,7 @@ impl BrokerOptions {
 #[derive(Default)]
 pub struct ClientMinerBuilder {
     local_pow: bool,
+    cancel: MinerCancel,
 }
 
 impl ClientMinerBuilder {
@@ -170,9 +174,14 @@ impl ClientMinerBuilder {
         self.local_pow = value;
         self
     }
+    /// Set cancel miner
+    pub fn with_cancel(mut self, cancel: MinerCancel) -> Self {
+        self.cancel = cancel;
+        self
+    }
 }
 
-impl PowProviderBuilder for ClientMinerBuilder {
+impl NonceProviderBuilder for ClientMinerBuilder {
     type Provider = ClientMiner;
 
     fn new() -> Self {
@@ -182,6 +191,7 @@ impl PowProviderBuilder for ClientMinerBuilder {
     fn finish(self) -> ClientMiner {
         ClientMiner {
             local_pow: self.local_pow,
+            cancel: self.cancel,
         }
     }
 }
@@ -189,23 +199,20 @@ impl PowProviderBuilder for ClientMinerBuilder {
 /// The miner used for PoW
 pub struct ClientMiner {
     local_pow: bool,
+    cancel: MinerCancel,
 }
 
-impl PowProvider for ClientMiner {
+impl NonceProvider for ClientMiner {
     type Builder = ClientMinerBuilder;
     type Error = crate::Error;
 
-    fn nonce(
-        &self,
-        bytes: &[u8],
-        target_score: f64,
-        done: Option<Arc<AtomicBool>>,
-    ) -> std::result::Result<u64, Self::Error> {
+    fn nonce(&self, bytes: &[u8], target_score: f64) -> std::result::Result<u64, Self::Error> {
         if self.local_pow {
             MinerBuilder::new()
                 .with_num_workers(num_cpus::get())
+                .with_cancel(self.cancel.clone())
                 .finish()
-                .nonce(bytes, target_score, done)
+                .nonce(bytes, target_score)
                 .map_err(|e| crate::Error::Pow(e.to_string()))
         } else {
             Ok(0)
@@ -937,15 +944,15 @@ impl Client {
         let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
         let network_id = self.get_network_id().await?;
-        let nonce_provider = self.get_pow_provider().await;
         tips.push(*message_id);
         // Sort tips/parents
         tips.sort_unstable_by_key(|a| a.pack_new());
         tips.dedup();
+
         let promote_message = MessageBuilder::<ClientMiner>::new()
             .with_network_id(network_id)
             .with_parents(Parents::new(tips)?)
-            .with_nonce_provider(nonce_provider, min_pow_score, None)
+            .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
