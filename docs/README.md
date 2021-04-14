@@ -17,7 +17,6 @@ cargo install mdbook
 be sure, you're in the right directory.
 
 ```bash
-cd docs
 mdbook serve
 ```
 

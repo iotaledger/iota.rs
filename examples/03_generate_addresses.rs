@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example address --release
+//! cargo run --example 03_generate_addresses --release
 
 use iota::{api::GetAddressesBuilder, Client, Seed};
 extern crate dotenv;
