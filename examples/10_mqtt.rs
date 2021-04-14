@@ -3,7 +3,7 @@
 
 //! cargo run --example 10_mqtt --release
 
-use iota::{Client, Message, MqttEvent, Topic, Result};
+use iota::{Client, Message, MqttEvent, Result, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 // Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.

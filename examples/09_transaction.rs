@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
     let seed_1 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
-    
+
     let message = iota
         .message()
         .with_seed(&seed_1)
@@ -34,6 +34,9 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Transaction sent: https://explorer.iota.org/chrysalis/message/{}", message.id().0);
+    println!(
+        "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
+        message.id().0
+    );
     Ok(())
 }

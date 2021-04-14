@@ -55,10 +55,6 @@ name = "10_mqtt"
 path = "10_mqtt.rs"
 
 [[example]]
-name = "mqtt"
-path = "mqtt.rs"
-
-[[example]]
 name = "indexation"
 path = "indexation.rs"
 

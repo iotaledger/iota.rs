@@ -21,8 +21,11 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Message sent https://explorer.iota.org/chrysalis/message/{}\n", message.id().0);
-    
+    println!(
+        "Message sent https://explorer.iota.org/chrysalis/message/{}\n",
+        message.id().0
+    );
+
     let fetched_message_ids = iota.get_message().index("Hello").await.unwrap();
     println!("Messages with Hello index: {:?}", fetched_message_ids);
     Ok(())
