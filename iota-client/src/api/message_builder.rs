@@ -5,6 +5,7 @@ use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
 use bee_message::prelude::*;
+#[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
 use bee_rest_api::types::dtos::{AddressDto, OutputDto};
 use crypto::keys::slip10::{Chain, Curve, Seed};
@@ -503,11 +504,41 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
+        #[cfg(feature = "wasm")]
         let final_message = match self.parents {
             Some(mut parents) => {
                 // Sort parents
-                parents.dedup();
                 parents.sort_unstable_by_key(|a| a.pack_new());
+                parents.dedup();
+
+                let network_id = self.client.get_network_id().await?;
+                let mut message = MessageBuilder::<ClientMiner>::new();
+                message = message.with_network_id(network_id);
+                if let Some(p) = payload {
+                    message = message.with_payload(p);
+                }
+                message
+                    .with_parents(Parents::new(parents)?)
+                    .finish()
+                    .map_err(Error::MessageError)?
+            }
+            _ => {
+                let network_id = self.client.get_network_id().await?;
+                let tips = self.client.get_tips().await?;
+                let mut message = MessageBuilder::<ClientMiner>::new();
+                message = message.with_network_id(network_id).with_parents(Parents::new(tips)?);
+                if let Some(p) = payload {
+                    message = message.with_payload(p);
+                }
+                message.finish().map_err(Error::MessageError)?
+            }
+        };
+        #[cfg(not(feature = "wasm"))]
+        let final_message = match self.parents {
+            Some(mut parents) => {
+                // Sort parents
+                parents.sort_unstable_by_key(|a| a.pack_new());
+                parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let network_id = self.client.get_network_id().await?;
@@ -604,6 +635,7 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
 }
 
 /// Does PoW with always new tips
+#[cfg(not(feature = "wasm"))]
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let local_pow = client.get_local_pow().await;
     let min_pow_score = client.get_min_pow_score().await?;
@@ -647,6 +679,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     }
 }
 
+#[cfg(not(feature = "wasm"))]
 fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
     cancel.trigger();

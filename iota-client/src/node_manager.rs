@@ -9,9 +9,11 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::{Error, Result};
-
 use log::warn;
 use regex::Regex;
+#[cfg(feature = "wasm")]
+use std::sync::RwLock;
+#[cfg(not(feature = "wasm"))]
 use tokio::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
@@ -74,7 +76,14 @@ impl NodeManager {
             urls.push(primary_node);
         }
         let nodes = if self.sync {
-            self.synced_nodes.read().await.clone()
+            #[cfg(not(feature = "wasm"))]
+            {
+                self.synced_nodes.read().await.clone()
+            }
+            #[cfg(feature = "wasm")]
+            {
+                self.nodes.clone()
+            }
         } else {
             self.nodes.clone()
         };
@@ -106,9 +115,8 @@ impl NodeManager {
               Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
             ].to_vec() => Vec<Regex>
         );
-
-        let mut result = HashMap::new();
-        // sugmit message with local PoW should use primary pow node
+        let mut result: HashMap<String, usize> = HashMap::new();
+        // submit message with local PoW should use primary pow node
         // Get urls and set path
         let urls = self.get_urls(path, query, false).await;
         if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && urls.len() < self.quorum_size {
@@ -119,33 +127,40 @@ impl NodeManager {
         let mut result_counter = 0;
         let mut error = None;
         // Send requests parallel for quorum
-        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && query.is_none() {
-            let mut tasks = Vec::new();
-            let urls_ = urls.clone();
-            for (index, url) in urls_.into_iter().enumerate() {
-                if index < self.quorum_size {
-                    let client_ = self.http_client.clone();
-                    tasks.push(
-                        async move { tokio::spawn(async move { client_.get(url.as_str(), timeout).await }).await },
-                    );
-                }
-            }
-            for res in futures::future::try_join_all(tasks)
-                .await
-                .expect("failed to sync address")
+        #[cfg(feature = "wasm")]
+        let wasm = true;
+        #[cfg(not(feature = "wasm"))]
+        let wasm = false;
+        if !wasm && self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && query.is_none() {
+            #[cfg(not(feature = "wasm"))]
             {
-                match res {
-                    Ok(res) => {
-                        if let Ok(res_text) = res.text().await {
-                            let counters = result.entry(res_text).or_insert(0);
-                            *counters += 1;
-                            result_counter += 1;
-                        } else {
-                            warn!("Couldn't convert noderesult to text");
-                        }
+                let mut tasks = Vec::new();
+                let urls_ = urls.clone();
+                for (index, url) in urls_.into_iter().enumerate() {
+                    if index < self.quorum_size {
+                        let client_ = self.http_client.clone();
+                        tasks.push(async move {
+                            tokio::spawn(async move { client_.get(url.as_str(), timeout).await }).await
+                        });
                     }
-                    Err(err) => {
-                        error.replace(err);
+                }
+                for res in futures::future::try_join_all(tasks)
+                    .await
+                    .expect("failed to sync address")
+                {
+                    match res {
+                        Ok(res) => {
+                            if let Ok(res_text) = res.text().await {
+                                let counters = result.entry(res_text).or_insert(0);
+                                *counters += 1;
+                                result_counter += 1;
+                            } else {
+                                warn!("Couldn't convert noderesult to text");
+                            }
+                        }
+                        Err(err) => {
+                            error.replace(err);
+                        }
                     }
                 }
             }
@@ -487,24 +502,34 @@ impl HttpClient {
         }
     }
 
-    pub(crate) async fn get(&self, url: &str, timeout: Duration) -> Result<Response> {
-        Self::parse_response(self.client.get(url).timeout(timeout).send().await?).await
+    pub(crate) async fn get(&self, url: &str, _timeout: Duration) -> Result<Response> {
+        #[cfg(not(feature = "wasm"))]
+        let response = self.client.get(url).timeout(_timeout).send().await?;
+        #[cfg(feature = "wasm")]
+        let response = self.client.get(url).send().await?;
+        Self::parse_response(response).await
     }
 
-    pub(crate) async fn post_bytes(&self, url: &str, timeout: Duration, body: &[u8]) -> Result<Response> {
-        Self::parse_response(
-            self.client
-                .post(url)
-                .timeout(timeout)
-                .body(body.to_vec())
-                .send()
-                .await?,
-        )
-        .await
+    pub(crate) async fn post_bytes(&self, url: &str, _timeout: Duration, body: &[u8]) -> Result<Response> {
+        #[cfg(not(feature = "wasm"))]
+        let response = self
+            .client
+            .post(url)
+            .timeout(_timeout)
+            .body(body.to_vec())
+            .send()
+            .await?;
+        #[cfg(feature = "wasm")]
+        let response = self.client.post(url).body(body.to_vec()).send().await?;
+        Self::parse_response(response).await
     }
 
-    pub(crate) async fn post_json(&self, url: &str, timeout: Duration, json: Value) -> Result<Response> {
-        Self::parse_response(self.client.post(url).timeout(timeout).json(&json).send().await?).await
+    pub(crate) async fn post_json(&self, url: &str, _timeout: Duration, json: Value) -> Result<Response> {
+        #[cfg(not(feature = "wasm"))]
+        let response = self.client.post(url).timeout(_timeout).json(&json).send().await?;
+        #[cfg(feature = "wasm")]
+        let response = self.client.post(url).json(&json).send().await?;
+        Self::parse_response(response).await
     }
 }
 

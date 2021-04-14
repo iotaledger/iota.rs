@@ -4,12 +4,15 @@
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
 
+#[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
     sync::{broadcast::channel, RwLock},
 };
 use url::Url;
 
+#[cfg(feature = "wasm")]
+use std::sync::RwLock;
 use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
@@ -18,6 +21,7 @@ use std::{
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
+#[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 // Interval in seconds when new tips will be requested during PoW
 const TIPS_INTERVAL: u64 = 15;
@@ -50,7 +54,9 @@ pub struct NetworkInfo {
 pub struct ClientBuilder {
     node_manager_builder: crate::node_manager::NodeManagerBuilder,
     nodes: HashSet<Url>,
+    #[cfg(not(feature = "wasm"))]
     node_sync_interval: Duration,
+    #[cfg(not(feature = "wasm"))]
     node_sync_enabled: bool,
     #[cfg(feature = "mqtt")]
     broker_options: BrokerOptions,
@@ -64,7 +70,9 @@ impl Default for ClientBuilder {
         Self {
             node_manager_builder: crate::node_manager::NodeManager::builder(),
             nodes: HashSet::new(),
+            #[cfg(not(feature = "wasm"))]
             node_sync_interval: NODE_SYNC_INTERVAL,
+            #[cfg(not(feature = "wasm"))]
             node_sync_enabled: true,
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
@@ -72,7 +80,10 @@ impl Default for ClientBuilder {
                 network: None,
                 network_id: None,
                 min_pow_score: DEFAULT_MIN_POW,
+                #[cfg(not(feature = "wasm"))]
                 local_pow: true,
+                #[cfg(feature = "wasm")]
+                local_pow: false,
                 bech32_hrp: DEFAULT_BECH32_HRP.into(),
                 tips_interval: TIPS_INTERVAL,
             },
@@ -199,8 +210,12 @@ impl ClientBuilder {
     pub async fn finish(mut self) -> Result<Client> {
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.nodes;
+        #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
 
+        #[cfg(feature = "wasm")]
+        let (sync, network_info) = (Arc::new(std::sync::RwLock::new(nodes.clone())), network_info);
+        #[cfg(not(feature = "wasm"))]
         let (runtime, sync, sync_kill_sender, network_info) = if self.node_sync_enabled {
             let sync = Arc::new(RwLock::new(HashSet::new()));
             let sync_ = sync.clone();
@@ -273,11 +288,15 @@ impl ClientBuilder {
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
-
+        #[cfg(not(feature = "wasm"))]
         let network_info_ = network_info.read().await.clone();
+        #[cfg(feature = "wasm")]
+        let network_info_ = network_info.read().expect("Can't read network info").clone();
         let client = Client {
             node_manager: self.node_manager_builder.build(network_info_, sync.clone()).await?,
+            #[cfg(not(feature = "wasm"))]
             runtime,
+            #[cfg(not(feature = "wasm"))]
             sync_kill_sender: sync_kill_sender.map(Arc::new),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,
