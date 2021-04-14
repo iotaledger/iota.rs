@@ -501,6 +501,31 @@ Please note, there is also implemented a [dust protection](https://chrysalis.doc
 > "... microtransaction below 1Mi of IOTA tokens [can be sent] to another address if there is already at least 1Mi on that address"
 That's why we did send 1Mi in the given example to comply with the protection."
 
+
+## Listening to MQTT
+IOTA node(s) provides [Message Queuing Telemetry Transport](https://en.wikipedia.org/wiki/MQTT) (MQTT) layer, if enabled, which is a lightweight publish-subscribe network protocol that provides information about events that is being triggered by IOTA network.
+
+`iota.rs` client library supports asynchronous event listeners that can be listened to, and continuously receive MQTT events based on a `topic`, which can be:
+* milestones/latest
+* milestones/confirmed
+* messages
+* messages/referenced
+* messages/indexation/{index}
+* messages/{messageId}/metadata
+* transactions/{transactionId}/included-message
+* outputs/{outputId}
+* addresses/{address}/outputs
+* addresses/ed25519/{address}/outputs
+
+The listener is reachable via instance of `Client.TopicSubscriber` object that is returned from `Client.subscriber()` function.
+
+It offers several chaining calls:
+* `.topic(str)` / `.topics(str[])`: a topic or list of topics that should trigger a provided callback
+* `.subscribe(cb)`: it subscribes the listener to a callback function that is being triggered every time the given topic(s) is noticed
+* `.unsubscribe(cb)`: it unsubscribes the listener from the given topics. Once unsubscribed, then the given callback function is executed in a form `(err, message) => {}`
+
 ```javascript
 {{#include ../../../bindings/nodejs/examples/10_mqtt.js}}
 ```
+
+Please note: IOTA node has to have enabled MQTT layer. There is a set of test nodes available that have MQTT enabled. See [testnet chapter](https://chrysalis.docs.iota.org/testnet.html) for more information
