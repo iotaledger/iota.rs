@@ -500,3 +500,7 @@ As a minimum, it needs a valid seed, output addresses and amount. The method fin
 Please note, there is also implemented a [dust protection](https://chrysalis.docs.iota.org/guides/dev_guide.html#dust-protection) mechanism in the network protocol to avoid malicious actors to spam network in order to decrease node performance while keeping track of unspent amount (`UTXO`):
 > "... microtransaction below 1Mi of IOTA tokens [can be sent] to another address if there is already at least 1Mi on that address"
 That's why we did send 1Mi in the given example to comply with the protection."
+
+```javascript
+{{#include ../../../bindings/nodejs/examples/10_mqtt.js}}
+```
