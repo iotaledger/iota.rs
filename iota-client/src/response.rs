@@ -452,6 +452,25 @@ pub struct GetNodeInfoResponse {
     pub transactions_to_request: u32,
 }
 
+/// GetTipInfo response.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct GetTipInfoResponse {
+    /// Confirmed flag.
+    #[serde(default)]
+    pub confirmed: bool,
+    /// Confliting flag.
+    #[serde(default)]
+    pub conflicting: bool,
+    /// Should promote?
+    #[serde(rename = "shouldPromote")]
+    #[serde(default)]
+    pub should_promote: bool,
+    /// Should reattach?
+    #[serde(rename = "shouldReattach")]
+    #[serde(default)]
+    pub should_reattach: bool,
+}
+
 /// getTips Response Type
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetTipsResponse {

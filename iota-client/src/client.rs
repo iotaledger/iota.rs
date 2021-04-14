@@ -321,6 +321,21 @@ impl Client {
         Ok(res)
     }
 
+    /// Get tip info.
+    pub async fn get_tip_info(&self, hash: &Hash) -> Result<GetTipInfoResponse> {
+        let body = json!( {
+            "command": "getTipInfo",
+            "tailTransaction": hash.encode::<T3B1Buf>()
+                    .iter_trytes()
+                    .map(char::from)
+                    .collect::<String>()
+        });
+
+        let res = response!(self, body);
+
+        Ok(res)
+    }
+
     /// Gets a node's API configuration settings.
     pub async fn get_node_api_configuration(
         &self,
