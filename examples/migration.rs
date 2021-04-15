@@ -19,11 +19,8 @@ use std::io;
 async fn main() -> Result<()> {
     let security_level: u8 = 2;
     let min_weight_magnitude = 9;
-    let ledger = false;
     let mut iota = iota::ClientBuilder::new()
-        .node("https://wallet1.iota.town:443")?
-        .node("https://nodes.iota.org")?
-        .node("https://hanspetzersnode.at:443")?
+        .node("https://nodes.devnet.iota.org")?
         .quorum(true)
         // .permanode("https://permanode.org")?
         .build()?;
@@ -128,7 +125,6 @@ async fn main() -> Result<()> {
         let mining_result = mine(
             prepared_bundle,
             security_level,
-            ledger,
             spent_bundle_hashes,
             5,
             0,
@@ -143,16 +139,16 @@ async fn main() -> Result<()> {
         sign_migration_bundle(tryte_seed, prepared_bundle, account_input_data.1)?;
 
     // Send to Tangle
-    let send_trytes = iota
-        .send_trytes()
-        .with_trytes(signed_bundle_trytes)
-        .with_depth(2)
-        .with_min_weight_magnitude(min_weight_magnitude)
-        .finish()
-        .await?;
+    // let send_trytes = iota
+    //     .send_trytes()
+    //     .with_trytes(signed_bundle_trytes)
+    //     .with_depth(2)
+    //     .with_min_weight_magnitude(min_weight_magnitude)
+    //     .finish()
+    //     .await?;
     println!(
         "Bundle sent: {:?}",
-        send_trytes[0]
+        signed_bundle_trytes[0]
             .bundle()
             .to_inner()
             .encode::<T3B1Buf>()

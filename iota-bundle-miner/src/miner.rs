@@ -362,16 +362,18 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
         let mined_hash_trit_t3b1 = TritBuf::<T3B1Buf>::from_i8s(mined_hash.as_i8_slice())?;
         let mined_hash_trit_t3b1_i8 = mined_hash_trit_t3b1.as_i8_slice();
 
-        let target_hash_trit_t3b1 = TritBuf::<T3B1Buf>::from_i8s(target_hash.as_i8_slice())?;
-        let target_hash_trit_t3b1_i8 = target_hash_trit_t3b1.as_i8_slice();
-
-        // We are only interested in hashes not containing 'M'
-        if mined_hash_trit_t3b1_i8[..self.num_13_free_fragments]
+        // We are only interested in hashes not containing 'M' in the normalized bundle hash because
+        // bee-transaction does the same when a bundle is build and changes the obsolet tag otherwise, which would
+        // make the whole mining useless and the ledger also ignores bundles with 13 in the normalized bundle hash
+        if mined_hash_trit_t3b1_i8
             .iter()
             .any(|&i| i == MAX_TRYTE_VALUE)
         {
             return Ok(false);
         }
+
+        let target_hash_trit_t3b1 = TritBuf::<T3B1Buf>::from_i8s(target_hash.as_i8_slice())?;
+        let target_hash_trit_t3b1_i8 = target_hash_trit_t3b1.as_i8_slice();
 
         // Calculate the max hash
         let max_hash = get_the_max_tryte_values(
@@ -393,7 +395,7 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
         // Calculate the crackability
         let p = get_crack_probability(
             self.num_13_free_fragments / HASH_CHUNK_LEN,
-            &(vec![mined_hash.clone(), target_hash.clone()]),
+            &[mined_hash.clone(), target_hash.clone()],
         );
 
         // The deprecated version of calculating the crack_probability
@@ -635,17 +637,6 @@ pub async fn mining_worker(
     }
     let mut mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
     while !criterion.judge(&mined_hash, &target_hash)? {
-        last_essence = increase_essense(last_essence).await?;
-        mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
-        task::yield_now().await;
-        // Update the counter
-        {
-            let mut num = match counters.lock() {
-                Ok(num) => num,
-                Err(_) => return Err(Error::CounterPoisonError),
-            };
-            (*num)[worker_id] += 1;
-        }
         // Update current best crackability
         {
             let mut current_best_crackability = match crackability.lock() {
@@ -657,6 +648,17 @@ pub async fn mining_worker(
                 let mut current_best_essence = best_essence.lock().unwrap();
                 *current_best_essence = last_essence.clone();
             }
+        }
+        last_essence = increase_essense(last_essence).await?;
+        mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
+        task::yield_now().await;
+        // Update the counter
+        {
+            let mut num = match counters.lock() {
+                Ok(num) => num,
+                Err(_) => return Err(Error::CounterPoisonError),
+            };
+            (*num)[worker_id] += 1;
         }
     }
     // Finalize the best crackability

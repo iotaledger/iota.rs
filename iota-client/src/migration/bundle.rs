@@ -61,11 +61,11 @@ pub async fn create_migration_bundle(
     }
 
     // Check for dust protection value
-    if total_value < DUST_THRESHOLD {
-        return Err(Error::MigrationError(
-            "Input value is < dust protection value (1_000_000 i)",
-        ));
-    }
+    // if total_value < DUST_THRESHOLD {
+    //     return Err(Error::MigrationError(
+    //         "Input value is < dust protection value (1_000_000 i)",
+    //     ));
+    // }
     let transfer = vec![Transfer {
         address: migration_address,
         value: total_value,
@@ -149,7 +149,6 @@ pub fn sign_migration_bundle(
 pub async fn mine(
     prepared_bundle: OutgoingBundleBuilder,
     security_level: u8,
-    ledger: bool,
     spent_bundle_hashes: Vec<String>,
     timeout: u64,
     offset: i64,
@@ -183,12 +182,7 @@ pub async fn mine(
                 .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
         )
         .with_security_level(security_level as usize);
-    // Ledger Nano App rejects bundles that contain a 13 anywhere in the signed fragments
-    let with_num_13_free_fragments = match ledger {
-        true => 81,
-        false => (security_level * 27) as usize,
-    };
-    miner_builder = miner_builder.with_num_13_free_fragments(with_num_13_free_fragments);
+    miner_builder = miner_builder.with_num_13_free_fragments((security_level * 27) as usize);
     // Use one worker less than we have cores or 1 if there is only one core
     let mut worker_count = num_cpus::get();
     if worker_count > 1 {
@@ -226,10 +220,7 @@ pub async fn mine(
         )
         .miner(miner)
         .finish()?;
-    // Todo: decide which crackability value is good enough
-    let mined_info = match recoverer.recover().await {
-        CrackabilityMinerEvent::MinerInfo(mined_info) => mined_info,
-    };
+    let CrackabilityMinerEvent::MinerInfo(mined_info) = recoverer.recover().await;
     let updated_bundle = update_essence_with_mined_essence(
         txs,
         mined_info
