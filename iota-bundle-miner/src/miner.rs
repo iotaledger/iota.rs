@@ -4,7 +4,7 @@
 use crate::constant::{HASH_CHUNK_LEN, MAX_TRYTE_VALUE, TRITS82_BE_U32};
 use crate::error::{Error, Result};
 use crate::helper::{get_max_normalized_bundle_hash, get_the_max_tryte_values};
-use crate::success;
+use crate::recoverer::get_crack_probability;
 use bee_crypto::ternary::{
     bigint::{binary_representation::U32Repr, endianness::BigEndian, I384, T242, T243},
     sponge::{Kerl, Sponge},
@@ -114,6 +114,7 @@ impl Default for MinerBuilder {
     }
 }
 
+#[allow(dead_code)]
 pub struct Miner {
     /// Bundle hashes from previous spends.
     known_bundle_hashes: Vec<TritBuf<T1B1Buf>>,
@@ -126,6 +127,7 @@ pub struct Miner {
     essences_from_unsigned_bundle: Vec<TritBuf<T1B1Buf>>,
 
     /// Bundle security level (usually 2).
+    // Note that this `security_level` field is deprecated, because we remain the full target_hash now.
     security_level: usize,
 
     /// The number of bundle fragments that should not contain a 13 (starting from bundle fragment at index 0).
@@ -387,11 +389,19 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
         {
             return Ok(true);
         }
-        let mut p = 1.0_f64;
-        for i in 0..(self.num_13_free_fragments / HASH_CHUNK_LEN) {
-            p *=
-                success(&max_hash[i * HASH_CHUNK_LEN..i * HASH_CHUNK_LEN + HASH_CHUNK_LEN].to_vec())
-        }
+
+        // Calculate the crackability
+        let p = get_crack_probability(
+            self.num_13_free_fragments / HASH_CHUNK_LEN,
+            &(vec![mined_hash.clone(), target_hash.clone()]),
+        );
+
+        // The deprecated version of calculating the crack_probability
+        // let mut p = 1.0_f64;
+        // for i in 0..(self.num_13_free_fragments / HASH_CHUNK_LEN) {
+        //     p *=
+        //         success(&max_hash[i * HASH_CHUNK_LEN..i * HASH_CHUNK_LEN + HASH_CHUNK_LEN].to_vec())
+        // }
         if self.mined_crack_probability > p {
             self.mined_crack_probability = p;
         }
@@ -406,8 +416,9 @@ impl Miner {
         target_crack_probability: Option<f64>,
         threshold: Option<f64>,
     ) -> Result<CrackabilityMinerEvent> {
-        let target_hash =
-            get_max_normalized_bundle_hash(&self.known_bundle_hashes, self.security_level);
+        // Note that in order to use use `get_crack_probability` directly in thd judge(),
+        // we need to remain the full target_hash with the security_level 3
+        let target_hash = get_max_normalized_bundle_hash(&self.known_bundle_hashes, 3);
         let criterion = CrackProbabilityLessThanThresholdBuilder::new()
             .with_target_crack_probability(target_crack_probability.unwrap_or(0.0))
             .with_threshold(threshold.unwrap_or(0.0))
@@ -614,7 +625,6 @@ pub async fn mining_worker(
 
     // Note that we check the last essence with `zero` incresement first
     // While in the go-lang version the first checked essence hash `one` incresement
-    let mut mined_hash = last_essence.clone();
     // Update the counter
     {
         let mut num = match counters.lock() {
@@ -623,6 +633,7 @@ pub async fn mining_worker(
         };
         (*num)[worker_id] += 1;
     }
+    let mut mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
     while !criterion.judge(&mined_hash, &target_hash)? {
         last_essence = increase_essense(last_essence).await?;
         mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
@@ -676,7 +687,7 @@ pub async fn mining_worker_with_non_crack_probability_stop_criteria(
 
     // Note that we check the last essence with `zero` incresement first
     // While in the go-lang version the first checked essence hash `one` incresement
-    let mut mined_hash = last_essence.clone();
+    let mut mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
     while !criterion.judge(&mined_hash, &target_hash).unwrap() {
         last_essence = increase_essense(last_essence).await.unwrap();
         task::yield_now().await;

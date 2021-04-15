@@ -6,6 +6,47 @@ use iota_bundle_miner::{
     miner::{CrackabilityMinerEvent, MinerBuilder},
     recoverer::{get_crack_probability, RecovererBuilder},
 };
+use std::fs::File;
+use std::io::BufReader;
+
+extern crate serde;
+extern crate serde_json;
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct CrackabilityTestCase {
+    hash: String,
+    score: f64,
+    security: usize,
+}
+
+#[test]
+pub fn test_get_crack_probability_by_generated_patterns() {
+    // Read the test vector
+    let file = File::open("./tests/crackability.json").unwrap();
+    let reader = BufReader::new(file);
+    let test_vector: Vec<CrackabilityTestCase> = serde_json::from_reader(reader).unwrap();
+
+    for pattern in test_vector {
+        let hashes_tests = vec![pattern.hash];
+        let p_expected = pattern.score;
+        let security_level = pattern.security;
+
+        let hashes_trit_i8_test = hashes_tests
+            .clone()
+            .iter()
+            .map(|t| {
+                TryteBuf::try_from_str(&(*t).to_string())
+                    .unwrap()
+                    .as_trits()
+                    .encode()
+            })
+            .collect::<Vec<TritBuf<T1B1Buf>>>();
+        let p_actual = get_crack_probability(security_level, &hashes_trit_i8_test);
+        println!("p_actual: {:?}, p_expected: {:?}", p_actual, p_expected);
+        assert_eq!(true, (p_expected - p_actual).abs() < p_expected * 1e-9);
+    }
+}
 
 #[test]
 pub fn test_get_crack_probability_security_1() {
