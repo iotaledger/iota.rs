@@ -6,7 +6,7 @@ edition = "2018"
 
 [dev-dependencies]
 iota-core = { path = "../iota-core", features = ["storage", "mqtt"] }
-iota-crypto = {git = "https://github.com/iotaledger/crypto.rs", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["bip39", "bip39-en"]}
+iota-crypto = {git = "https://github.com/iotaledger/crypto.rs", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["bip39", "bip39-en", "random"]}
 tokio = { version = "1.1", features = ["full"] }
 hex = "0.4.2"
 dotenv = "0.15.0"
@@ -15,16 +15,44 @@ serde = "1.0"
 ureq = { version = "2.0", features = ["json"] }
 
 [[example]]
-name = "mqtt"
-path = "mqtt.rs"
+name = "01_get_info"
+path = "01_get_info.rs"
 
 [[example]]
-name = "address"
-path = "address.rs"
+name = "02_generate_seed"
+path = "02_generate_seed.rs"
 
 [[example]]
-name = "balance"
-path = "balance.rs"
+name = "03_generate_addresses"
+path = "03_generate_addresses.rs"
+
+[[example]]
+name = "04_get_balance"
+path = "04_get_balance.rs"
+
+[[example]]
+name = "05_get_address_outputs"
+path = "05_get_address_outputs.rs"
+
+[[example]]
+name = "06_simple_message"
+path = "06_simple_message.rs"
+
+[[example]]
+name = "07_get_message_metadata"
+path = "07_get_message_metadata.rs"
+
+[[example]]
+name = "08_data_message"
+path = "08_data_message.rs"
+
+[[example]]
+name = "09_transaction"
+path = "09_transaction.rs"
+
+[[example]]
+name = "10_mqtt"
+path = "10_mqtt.rs"
 
 [[example]]
 name = "indexation"
@@ -57,10 +85,6 @@ path = "custom_parent.rs"
 [[example]]
 name = "dust"
 path = "dust.rs"
-
-[[example]]
-name = "nodeinfo"
-path = "nodeinfo.rs"
 
 [[example]]
 name = "txspam"

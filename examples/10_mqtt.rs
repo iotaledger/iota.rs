@@ -1,21 +1,19 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example mqtt --release
+//! cargo run --example 10_mqtt --release
 
-use iota::{Client, Message, MqttEvent, Topic};
+use iota::{Client, Message, MqttEvent, Result, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 // Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let mut iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com") // Insert your node URL here
-        .unwrap()
+        .with_node("https://api.hornet-0.testnet.chrysalis2.com")?
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
@@ -57,4 +55,5 @@ async fn main() {
     iota.subscriber().disconnect().await.unwrap();
     // alternatively
     // iota.subscriber().unsubscribe().unwrap();
+    Ok(())
 }

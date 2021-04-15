@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example balance --release
+//! cargo run --example 04_get_balance --release
 
 use iota::{Client, Seed};
 extern crate dotenv;
