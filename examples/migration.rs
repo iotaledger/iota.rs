@@ -122,14 +122,8 @@ async fn main() -> Result<()> {
     {
         println!("Mining bundle because of spent addresses, this can take some time..."); //40 seconds in this case
                                                                                           // Mine bundle essence
-        let mining_result = mine(
-            prepared_bundle,
-            security_level,
-            spent_bundle_hashes,
-            5,
-            0,
-        )
-        .await?;
+        let mining_result =
+            mine(prepared_bundle, security_level, spent_bundle_hashes, 5, 0).await?;
         println!("Mining info: {:?}", mining_result.0);
         prepared_bundle = mining_result.1;
     } else {

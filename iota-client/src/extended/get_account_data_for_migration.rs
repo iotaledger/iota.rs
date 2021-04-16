@@ -122,6 +122,7 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
                         .await?
                         .hashes;
                     if tx_hashes_on_spent_addresses.is_empty() {
+                        spent_bundle_hashes.push(None);
                         continue;
                     }
                     let txs_on_spent_addresses = self
