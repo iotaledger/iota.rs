@@ -82,7 +82,8 @@ impl TryFrom<MessageSignatureUnlockDto> for SignatureUnlock {
     fn try_from(value: MessageSignatureUnlockDto) -> crate::Result<Self> {
         let mut public_key = [0u8; 32];
         hex::decode_to_slice(value.public_key, &mut public_key)?;
-        let signature = hex::decode(value.signature)?.into_boxed_slice();
+        let mut signature = [0u8; 64];
+        hex::decode_to_slice(value.signature, &mut signature)?;
         Ok(Ed25519Signature::new(public_key, signature).into())
     }
 }

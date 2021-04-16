@@ -13,11 +13,10 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "b8d2a9a06a89322819b6c12b8d27821b6e893cfa", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "b8d2a9a06a89322819b6c12b8d27821b6e893cfa", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "3e7938048174570b1acb555d1cf36b69ee46d70b", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev", default-features = false }
 bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev"  }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-crypto = { git = "https://github.com/iotaledger/bee.git", rev = "c42171ff33c80cc2efb183e244dc79b7f58d9ac4" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["std", "blake2b", "ed25519", "random", "slip10"]}
 url = "2.2"
 serde = { version = "1.0", features = ["derive"] }

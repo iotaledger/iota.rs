@@ -466,7 +466,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 // The block should sign the entire transaction essence part of the transaction payload
                 let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
                 unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
-                    public_key, signature,
+                    public_key, *signature,
                 ))));
                 signature_indexes.insert(index, current_block_index);
             }
@@ -646,7 +646,6 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         let cancel_2 = cancel.clone();
         let payload_ = payload.clone();
         let parent_messages = client.get_tips().await?;
-        println!("{:?}", parent_messages);
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
