@@ -14,7 +14,7 @@ name = "iota_client"
 
 [dependencies]
 bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "3e7938048174570b1acb555d1cf36b69ee46d70b", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev"  }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs.git", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["std", "blake2b", "ed25519", "random", "slip10"]}
