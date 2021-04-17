@@ -427,7 +427,7 @@ impl Miner {
             .with_num_13_free_fragments(self.num_13_free_fragments)
             .finish();
 
-        let (tx, mut rx) = mpsc::channel(self.worker_count);
+        let (tx, mut rx) = mpsc::channel(self.worker_count + 2);
         let counters = Arc::new(Mutex::new(vec![0; self.worker_count]));
         let crackability = Arc::new(Mutex::new(std::f64::MAX));
         // Use the dummy essence and update in the mining_worker function
@@ -531,7 +531,7 @@ impl Miner {
         target_hash: TritBuf<T1B1Buf>,
         criterion: impl StopMiningCriteria + std::marker::Send + 'static + Copy,
     ) -> MinerEvent {
-        let (tx, mut rx) = mpsc::channel(self.worker_count);
+        let (tx, mut rx) = mpsc::channel(self.worker_count + 2);
         let runtime = Builder::new_multi_thread()
             .worker_threads(self.core_thread_count)
             .thread_name("miner")
