@@ -119,6 +119,7 @@ impl<'a> FindTransactionsBuilder<'a> {
         let res: FindTransactionsResponse = match &client.permanode {
             Some(url) => {
                 let body_ = body.clone();
+                let body2 = body.clone();
                 let res: FindTransactionsResponseBuilder = response!(client, body_, url);
                 let mut hashes: Vec<Hash> = Vec::new();
                 let mut permanode_response: FindTransactionsResponse = res.build().await?;
@@ -139,9 +140,15 @@ impl<'a> FindTransactionsBuilder<'a> {
                         }
                     }
                 }
-                FindTransactionsResponse {
-                    hashes,
-                    hints: None,
+                // fallback to normal node if permanode didn't return anything
+                if hashes.is_empty() {
+                    let res: FindTransactionsResponseBuilder = response!(client, body2);
+                    res.build().await?
+                } else {
+                    FindTransactionsResponse {
+                        hashes,
+                        hints: None,
+                    }
                 }
             }
             None => {
@@ -149,7 +156,6 @@ impl<'a> FindTransactionsBuilder<'a> {
                 res.build().await?
             }
         };
-
         Ok(res)
     }
 }

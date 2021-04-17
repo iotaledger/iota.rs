@@ -382,14 +382,30 @@ impl Client {
             "command": "getTrytes",
             "hashes": hashes,
         });
-
         let res: GetTrytesResponseBuilder = match &self.permanode {
             Some(url) => {
-                response!(client, body, url)
+                let body_ = body.clone();
+                // Wrapper function so we can handle the result from the response! macro
+                fn get_perma_response(
+                    _client: &Client,
+                    body: serde_json::Value,
+                    url: &str,
+                ) -> Result<GetTrytesResponseBuilder> {
+                    let res: GetTrytesResponseBuilder = response!(_client, body, url);
+                    Ok(res)
+                }
+                match get_perma_response(self, body, url) {
+                    Ok(res) => res,
+                    Err(_) => {
+                        // Send request to a normal node in case the permanode failed
+                        let res: GetTrytesResponseBuilder = response!(self, body_);
+                        res
+                    }
+                }
             }
             None => response!(self, body),
         };
-        res.build().await
+        res.build()
     }
 
     /// Sends transaction trytes to a node.

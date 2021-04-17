@@ -607,21 +607,21 @@ pub(crate) struct GetTrytesResponseBuilder {
 }
 
 impl GetTrytesResponseBuilder {
-    pub(crate) async fn build(self) -> Result<GetTrytesResponse> {
+    pub(crate) fn build(self) -> Result<GetTrytesResponse> {
         let mut trytes = Vec::new();
         if let Some(exception) = self.exception {
             return Err(Error::ResponseError(exception));
         } else if let Some(error) = self.error {
             return Err(Error::ResponseError(error));
         } else if let Some(s) = self.trytes {
-            s.iter().for_each(|x| {
-                trytes.push(
-                    Transaction::from_trits(TryteBuf::try_from_str(&x).unwrap().as_trits())
-                        .unwrap(),
-                )
-            });
+            for x in s {
+                trytes.push(Transaction::from_trits(
+                    TryteBuf::try_from_str(&x)
+                        .map_err(|_| Error::ResponseError("Couldn't get TryteBuf".to_string()))?
+                        .as_trits(),
+                )?)
+            }
         }
-
         Ok(GetTrytesResponse { trytes })
     }
 }

@@ -20,13 +20,13 @@ async fn main() -> Result<()> {
     let security_level: u8 = 2;
     let min_weight_magnitude = 9;
     let mut iota = iota::ClientBuilder::new()
-        .node("https://nodes.devnet.iota.org")?
+        .node("https://nodes-migration3-legacy.iota.cafe/")?
         .quorum(true)
-        // .permanode("https://permanode.org")?
+        .permanode("http://permanode.migration3.iota.cafe:4000/api")?
         .build()?;
     let tryte_seed = TernarySeed::from_trits(
         TryteBuf::try_from_str(
-            "TRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEEDTRYTESEED",
+            "XESHMOUWHUYSALIQEBZBRXEDETEJLRPD9GFUCEAKDZICLRIPLFAXITAMMFMAFEMYUKGTI9INMGANCE9SD",
         )
         .unwrap()
         .as_trits()
