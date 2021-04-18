@@ -316,7 +316,9 @@ impl StopMiningCriteria for LessThanMaxHash {
         mined_hash: &TritBuf<T1B1Buf>,
         bundle_hashes: &Vec<TritBuf<T1B1Buf>>,
     ) -> Result<bool> {
-        let target_hash = &bundle_hashes[0];
+        let target_hash = TritBuf::<T3B1Buf>::from_i8s(
+            crate::helper::get_max_normalized_bundle_hash(bundle_hashes, 3).as_i8_slice(),
+        )?;
         // Get the i8 slices from the mined bundle hash
         let mined_bundle_hash_i8 = TritBuf::<T3B1Buf>::from_i8s(mined_hash.as_i8_slice())?
             .as_i8_slice()
@@ -360,9 +362,6 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
         mined_hash: &TritBuf<T1B1Buf>,
         spent_bundle_hashes: &Vec<TritBuf<T1B1Buf>>,
     ) -> Result<bool> {
-        // println!("mined_hash = {:?}", sync_trit_buf_to_string(mined_hash));
-        // println!("target_hash = {:?}", sync_trit_buf_to_string(target_hash));
-
         let mined_hash_trit_t3b1 = TritBuf::<T3B1Buf>::from_i8s(mined_hash.as_i8_slice())?;
         let mined_hash_trit_t3b1_i8 = mined_hash_trit_t3b1.as_i8_slice();
 
