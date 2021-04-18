@@ -10,7 +10,7 @@ name = "iota_bundle_miner"
 [dependencies]
 bee-ternary = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-transaction = { git = "https://github.com/Alex6323/bee-p.git" }
+bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "02965e78a5cd43d0fb773771470ab3d891066562" }
 bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 tokio = { version = "1.4", features = ["rt", "rt-multi-thread", "sync", "time", "macros"] }
 futures = { version = "0.3"}
