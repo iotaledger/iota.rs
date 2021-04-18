@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
         .build()?;
     let tryte_seed = TernarySeed::from_trits(
         TryteBuf::try_from_str(
-            "XESHMOUWHUYSALIQEBZBRXEDETEJLRPD9GFUCEAKDZICLRIPLFAXITAMMFMAFEMYUKGTI9INMGANCE9SD",
+            "VNRONDDCZLB9JZXFSCUPCMKBNDKJFLDTMYBURXWTG9RSDWZVYNUUEFSFNQZKSFRVJFNFNEMRFVZUSSVUW",
         )
         .unwrap()
         .as_trits()

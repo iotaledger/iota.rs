@@ -1,9 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::constant::{HASH_CHUNK_LEN, MAX_TRYTE_VALUE, TRITS82_BE_U32};
+use crate::constant::{HASH_CHUNK_LEN, TRITS82_BE_U32};
 use crate::error::{Error, Result};
-use crate::helper::{get_max_normalized_bundle_hash, get_the_max_tryte_values};
 use crate::recoverer::get_crack_probability;
 use bee_crypto::ternary::{
     bigint::{binary_representation::U32Repr, endianness::BigEndian, I384, T242, T243},
@@ -230,7 +229,7 @@ pub trait StopMiningCriteria {
     fn judge(
         &mut self,
         mined_hash: &TritBuf<T1B1Buf>,
-        target_hash: &TritBuf<T1B1Buf>,
+        bundle_hashes: &Vec<TritBuf<T1B1Buf>>,
     ) -> Result<bool>;
 }
 
@@ -315,8 +314,9 @@ impl StopMiningCriteria for LessThanMaxHash {
     fn judge(
         &mut self,
         mined_hash: &TritBuf<T1B1Buf>,
-        target_hash: &TritBuf<T1B1Buf>,
+        bundle_hashes: &Vec<TritBuf<T1B1Buf>>,
     ) -> Result<bool> {
+        let target_hash = &bundle_hashes[0];
         // Get the i8 slices from the mined bundle hash
         let mined_bundle_hash_i8 = TritBuf::<T3B1Buf>::from_i8s(mined_hash.as_i8_slice())?
             .as_i8_slice()
@@ -346,8 +346,9 @@ impl StopMiningCriteria for EqualTargetHash {
     fn judge(
         &mut self,
         mined_hash: &TritBuf<T1B1Buf>,
-        target_hash: &TritBuf<T1B1Buf>,
+        bundle_hashes: &Vec<TritBuf<T1B1Buf>>,
     ) -> Result<bool> {
+        let target_hash = &bundle_hashes[0];
         Ok(mined_hash == target_hash)
     }
 }
@@ -357,53 +358,19 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
     fn judge(
         &mut self,
         mined_hash: &TritBuf<T1B1Buf>,
-        target_hash: &TritBuf<T1B1Buf>,
+        spent_bundle_hashes: &Vec<TritBuf<T1B1Buf>>,
     ) -> Result<bool> {
-        let mined_hash_trit_t3b1 = TritBuf::<T3B1Buf>::from_i8s(mined_hash.as_i8_slice())?;
-        let mined_hash_trit_t3b1_i8 = mined_hash_trit_t3b1.as_i8_slice();
-
-        // We are only interested in hashes not containing 'M' in the normalized bundle hash because
-        // bee-transaction does the same when a bundle is build and changes the obsolet tag otherwise, which would
-        // make the whole mining useless and the ledger also ignores bundles with 13 in the normalized bundle hash
-        if mined_hash_trit_t3b1_i8
-            .iter()
-            .any(|&i| i == MAX_TRYTE_VALUE)
-        {
-            return Ok(false);
-        }
-
-        let target_hash_trit_t3b1 = TritBuf::<T3B1Buf>::from_i8s(target_hash.as_i8_slice())?;
-        let target_hash_trit_t3b1_i8 = target_hash_trit_t3b1.as_i8_slice();
-
-        // Calculate the max hash
-        let max_hash = get_the_max_tryte_values(
-            mined_hash_trit_t3b1_i8.to_vec(),
-            target_hash_trit_t3b1_i8.to_vec(),
-        );
-
-        // Terminate early if we found an optimal bundle
-        // Return true when each tryte of max hash <= the corresponding tryte of the target hash
-        if !max_hash[..self.num_13_free_fragments]
-            .iter()
-            .zip(&target_hash_trit_t3b1_i8[..self.num_13_free_fragments])
-            .map(|(&x, &y)| x <= y)
-            .any(|x| x)
-        {
-            return Ok(true);
-        }
+        // println!("mined_hash = {:?}", sync_trit_buf_to_string(mined_hash));
+        // println!("target_hash = {:?}", sync_trit_buf_to_string(target_hash));
 
         // Calculate the crackability
+        let mut bundle_hashes_to_calculate_crackability = spent_bundle_hashes.clone();
+        bundle_hashes_to_calculate_crackability.push(mined_hash.clone());
         let p = get_crack_probability(
             self.num_13_free_fragments / HASH_CHUNK_LEN,
-            &[mined_hash.clone(), target_hash.clone()],
+            &bundle_hashes_to_calculate_crackability,
         );
 
-        // The deprecated version of calculating the crack_probability
-        // let mut p = 1.0_f64;
-        // for i in 0..(self.num_13_free_fragments / HASH_CHUNK_LEN) {
-        //     p *=
-        //         success(&max_hash[i * HASH_CHUNK_LEN..i * HASH_CHUNK_LEN + HASH_CHUNK_LEN].to_vec())
-        // }
         if self.mined_crack_probability > p {
             self.mined_crack_probability = p;
         }
@@ -420,7 +387,7 @@ impl Miner {
     ) -> Result<CrackabilityMinerEvent> {
         // Note that in order to use use `get_crack_probability` directly in thd judge(),
         // we need to remain the full target_hash with the security_level 3
-        let target_hash = get_max_normalized_bundle_hash(&self.known_bundle_hashes, 3);
+        let known_bundle_hashes = self.known_bundle_hashes.clone();
         let criterion = CrackProbabilityLessThanThresholdBuilder::new()
             .with_target_crack_probability(target_crack_probability.unwrap_or(0.0))
             .with_threshold(threshold.unwrap_or(0.0))
@@ -451,7 +418,7 @@ impl Miner {
                         offset,
                         i,
                         essences_from_unsigned_bundle.to_vec(),
-                        target_hash.clone(),
+                        known_bundle_hashes.clone(),
                         Arc::clone(&counters),
                         Arc::clone(&crackability),
                         Arc::clone(&best_essence),
@@ -611,7 +578,7 @@ pub async fn mining_worker(
     increment: i64,
     worker_id: usize,
     mut essences: Vec<TritBuf<T1B1Buf>>,
-    target_hash: TritBuf<T1B1Buf>,
+    known_bundle_hashes: Vec<TritBuf<T1B1Buf>>,
     counters: Arc<Mutex<Vec<usize>>>,
     crackability: Arc<Mutex<f64>>,
     best_essence: Arc<Mutex<TritBuf<T1B1Buf>>>,
@@ -636,7 +603,7 @@ pub async fn mining_worker(
         (*num)[worker_id] += 1;
     }
     let mut mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
-    while !criterion.judge(&mined_hash, &target_hash)? {
+    while !criterion.judge(&mined_hash, &known_bundle_hashes)? {
         // Update current best crackability
         {
             let mut current_best_crackability = match crackability.lock() {
@@ -690,7 +657,10 @@ pub async fn mining_worker_with_non_crack_probability_stop_criteria(
     // Note that we check the last essence with `zero` incresement first
     // While in the go-lang version the first checked essence hash `one` incresement
     let mut mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
-    while !criterion.judge(&mined_hash, &target_hash).unwrap() {
+    while !criterion
+        .judge(&mined_hash, &vec![target_hash.clone()])
+        .unwrap()
+    {
         last_essence = increase_essense(last_essence).await.unwrap();
         task::yield_now().await;
         mined_hash = absorb_and_get_normalized_bundle_hash(kerl.clone(), &last_essence).await;
@@ -782,4 +752,14 @@ pub async fn create_obsolete_tag(increment: i64, worker_id: i32) -> TritBuf<T1B1
     }
     .await;
     async { TritBuf::<T1B1Buf>::from_i8s(output).unwrap() }.await
+}
+
+/// Cast TritBuf to String for verification usage and ease of observation
+pub fn sync_trit_buf_to_string(trit_buf: &TritBuf<T1B1Buf>) -> String {
+    TritBuf::<T3B1Buf>::from_i8s(trit_buf.as_i8_slice())
+        .unwrap()
+        .as_trytes()
+        .iter()
+        .map(|t| char::from(*t))
+        .collect::<String>()
 }

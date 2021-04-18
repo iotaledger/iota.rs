@@ -153,14 +153,14 @@ pub fn test_equal_target_hash_criterion() {
         true,
         LESS_THAN_MAX_HASH
             .clone()
-            .judge(&mined_hash_trit_buf, &target_hash_true_trit_buf)
+            .judge(&mined_hash_trit_buf, &vec![target_hash_true_trit_buf])
             .unwrap()
     );
     assert_eq!(
         false,
         LESS_THAN_MAX_HASH
             .clone()
-            .judge(&mined_hash_trit_buf, &target_hash_false_trit_buf)
+            .judge(&mined_hash_trit_buf, &vec![target_hash_false_trit_buf])
             .unwrap()
     );
 }
@@ -187,14 +187,14 @@ pub fn test_less_than_max_hash_criterion() {
         true,
         LESS_THAN_MAX_HASH
             .clone()
-            .judge(&mined_hash_trit_buf, &max_hash_true_trit_buf)
+            .judge(&mined_hash_trit_buf, &vec![max_hash_true_trit_buf])
             .unwrap()
     );
     assert_eq!(
         false,
         LESS_THAN_MAX_HASH
             .clone()
-            .judge(&mined_hash_trit_buf, &max_hash_false_trit_buf)
+            .judge(&mined_hash_trit_buf, &vec![max_hash_false_trit_buf])
             .unwrap()
     );
 }

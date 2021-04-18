@@ -11,6 +11,12 @@ use bee_ternary::{t3b1::T3B1Buf, T1B1Buf, TritBuf};
 
 /// CrackProbability estimates the probability that an attacker can successfully crack the given hashes.
 pub fn get_crack_probability(security_level: usize, bundle_hashes: &[TritBuf<T1B1Buf>]) -> f64 {
+    // for hash in bundle_hashes {
+    //     println!(
+    //         "Hash to calculate probability: {:?}",
+    //         sync_trit_buf_to_string(hash)
+    //     );
+    // }
     let max_hash = TritBuf::<T3B1Buf>::from_i8s(
         get_max_normalized_bundle_hash(bundle_hashes, security_level).as_i8_slice(),
     )
