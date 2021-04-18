@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::constant::{HASH_CHUNK_LEN, TRITS82_BE_U32};
+use crate::constant::{HASH_CHUNK_LEN, MAX_TRYTE_VALUE, TRITS82_BE_U32};
 use crate::error::{Error, Result};
 use crate::recoverer::get_crack_probability;
 use bee_crypto::ternary::{
@@ -362,6 +362,19 @@ impl StopMiningCriteria for CrackProbabilityLessThanThreshold {
     ) -> Result<bool> {
         // println!("mined_hash = {:?}", sync_trit_buf_to_string(mined_hash));
         // println!("target_hash = {:?}", sync_trit_buf_to_string(target_hash));
+
+        let mined_hash_trit_t3b1 = TritBuf::<T3B1Buf>::from_i8s(mined_hash.as_i8_slice())?;
+        let mined_hash_trit_t3b1_i8 = mined_hash_trit_t3b1.as_i8_slice();
+
+        // We are only interested in hashes not containing 'M' in the normalized bundle hash because
+        // bee-transaction does the same when a bundle is build and changes the obsolet tag otherwise, which would
+        // make the whole mining useless and the ledger also ignores bundles with 13 in the normalized bundle hash
+        if mined_hash_trit_t3b1_i8
+            .iter()
+            .any(|&i| i == MAX_TRYTE_VALUE)
+        {
+            return Ok(false);
+        }
 
         // Calculate the crackability
         let mut bundle_hashes_to_calculate_crackability = spent_bundle_hashes.clone();
