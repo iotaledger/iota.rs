@@ -57,3 +57,7 @@ path = "bundle_miner.rs"
 [[example]]
 name = "permanode"
 path = "permanode.rs"
+
+[[example]]
+name = "crackability"
+path = "crackability.rs"
