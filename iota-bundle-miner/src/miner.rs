@@ -316,9 +316,10 @@ impl StopMiningCriteria for LessThanMaxHash {
         mined_hash: &TritBuf<T1B1Buf>,
         bundle_hashes: &Vec<TritBuf<T1B1Buf>>,
     ) -> Result<bool> {
-        let target_hash = TritBuf::<T3B1Buf>::from_i8s(
-            crate::helper::get_max_normalized_bundle_hash(bundle_hashes, 3).as_i8_slice(),
-        )?;
+        if bundle_hashes.len() > 1 {
+            return Err(crate::error::Error::MoreThanOneTargetHash);
+        }
+        let target_hash = &bundle_hashes[0];
         // Get the i8 slices from the mined bundle hash
         let mined_bundle_hash_i8 = TritBuf::<T3B1Buf>::from_i8s(mined_hash.as_i8_slice())?
             .as_i8_slice()

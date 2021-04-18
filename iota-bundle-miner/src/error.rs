@@ -41,6 +41,9 @@ pub enum Error {
     /// The miner should be set for recoverer.
     #[error("The miner of the recoverer should be set")]
     MinerInRecovererNotSet,
+    /// Only the target hash is allowed for LessThanMaxHash.
+    #[error("There can only be one target hash")]
+    MoreThanOneTargetHash,
 }
 
 impl std::convert::From<()> for Error {
