@@ -1,7 +1,7 @@
 use crate::error::Result;
-use bee_crypto::ternary::Hash;
 use bee_ternary::{T3B1Buf, TryteBuf};
 use bee_transaction::bundled::BundledTransaction as Transaction;
+use crypto::hashes::ternary::Hash;
 
 use crate::response::{AttachToTangleResponse, AttachToTangleResponseBuilder};
 use crate::util::tx_trytes;

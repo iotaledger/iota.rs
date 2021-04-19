@@ -5,9 +5,9 @@ use crate::error::*;
 use crate::response::*;
 use crate::Client;
 
-use bee_crypto::ternary::Hash;
 use bee_ternary::{T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{Address, BundledTransactionField};
+use crypto::hashes::ternary::Hash;
 use iota_conversion::Trinary;
 
 use std::collections::{HashMap, HashSet};

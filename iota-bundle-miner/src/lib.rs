@@ -1,6 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#![allow(deprecated)]
+
 pub mod constant;
 pub mod error;
 pub mod helper;

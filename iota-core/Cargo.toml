@@ -10,9 +10,8 @@ license = "Apache-2.0"
 name = "iota"
 
 [dependencies]
-bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "02965e78a5cd43d0fb773771470ab3d891066562" }
-bee-ternary = { version = "0.4.2-alpha", git = "https://github.com/iotaledger/bee.git", branch = "dev", features = ["serde1"] }
-bee-signing = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-crypto = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "cf47287dbb37861668d378ea3ae3b8c0f2852566" }
+bee-ternary = { version = "0.4.2-alpha", features = ["serde1"] }
+iota-crypto = { version = "0.5.0", features = ["ed25519", "random", "wots_deprecated_do_not_use", "kerl_deprecated_do_not_use"] }
 iota-client = { version = "0.5.0-alpha", path = "../iota-client" }
 iota-bundle-miner = { version = "0.1.0-alpha.0", path = "../iota-bundle-miner"}

@@ -1,12 +1,13 @@
 use std::cmp::Ordering;
 
-use bee_crypto::ternary::Hash;
-use bee_signing::ternary::{seed::Seed, wots::WotsSecurityLevel};
 use bee_ternary::{T1B1Buf, TritBuf};
 use bee_transaction::bundled::{
     Address, Bundle, BundledTransactionBuilder as TransactionBuilder, BundledTransactionField,
     Index, Nonce, OutgoingBundleBuilder, Payload, Tag, Timestamp, Value, PAYLOAD_TRIT_LEN,
 };
+use crypto::hashes::ternary::Hash;
+use crypto::keys::ternary::seed::Seed;
+use crypto::keys::ternary::wots::WotsSecurityLevel;
 
 use crate::error::*;
 use crate::response::{Input, Transfer};

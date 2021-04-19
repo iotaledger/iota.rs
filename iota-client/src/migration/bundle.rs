@@ -11,14 +11,15 @@ use crate::{
     Transfer,
 };
 
-use bee_crypto::ternary::Hash;
 use bee_message::prelude::Ed25519Address;
-use bee_signing::ternary::{seed::Seed as TernarySeed, wots::WotsSecurityLevel};
 use bee_ternary::{T1B1Buf, T3B1Buf, TritBuf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction, BundledTransactionBuilder, BundledTransactionField, Nonce,
     OutgoingBundleBuilder, Payload, Timestamp,
 };
+use crypto::hashes::ternary::Hash;
+use crypto::keys::ternary::seed::Seed as TernarySeed;
+use crypto::keys::ternary::wots::WotsSecurityLevel;
 use iota_bundle_miner::{miner::MinerInfo, CrackabilityMinerEvent, MinerBuilder, RecovererBuilder};
 
 /// Dust protection treshhold: minimum amount of iotas an address needs in Chrysalis
@@ -158,9 +159,16 @@ pub async fn mine(
             "Can't mine without spent_bundle_hashes",
         ));
     }
+    let just_because_we_need_one = TernarySeed::from_trits(
+        TryteBuf::try_from_str(
+            "999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+        )?
+        .as_trits()
+        .encode::<T1B1Buf>(),
+    )?;
     let bundle = prepared_bundle
         .seal()?
-        .sign(&TernarySeed::rand(), &[])?
+        .sign(&just_because_we_need_one, &[])?
         .attach_local(Hash::zeros(), Hash::zeros())?
         .build()?;
     let mut txs = Vec::with_capacity(bundle.len());
@@ -235,9 +243,16 @@ pub async fn mine(
 pub fn get_trytes_from_bundle(
     created_migration_bundle: OutgoingBundleBuilder,
 ) -> Result<Vec<String>> {
+    let just_because_we_need_one = TernarySeed::from_trits(
+        TryteBuf::try_from_str(
+            "999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+        )?
+        .as_trits()
+        .encode::<T1B1Buf>(),
+    )?;
     let bundle = created_migration_bundle
         .seal()?
-        .sign(&TernarySeed::rand(), &[])?
+        .sign(&just_because_we_need_one, &[])?
         .attach_local(Hash::zeros(), Hash::zeros())?
         .build()?;
 

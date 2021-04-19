@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::constant::MESSAGE_FRAGMENT_LENGTH;
-use bee_signing::ternary::wots::normalize;
 use bee_ternary::{t3b1::T3B1Buf, T1B1Buf, TritBuf, Trits, T3B1};
+use crypto::signatures::ternary::wots::normalize;
 
 /// Get the maximum bundle hash by selecting the max trytes from all input bundle hashes
 pub fn get_max_normalized_bundle_hash(

@@ -1,10 +1,9 @@
 use crate::error::*;
-use bee_crypto::ternary::{
-    sponge::{Kerl, Sponge},
-    Hash,
-};
 use bee_ternary::{T1B1Buf, TritBuf};
 use bee_transaction::bundled::{BundledTransaction as Transaction, BundledTransactionField};
+use crypto::hashes::ternary::kerl::Kerl;
+use crypto::hashes::ternary::Hash;
+use crypto::hashes::ternary::Sponge;
 
 use crate::Client;
 

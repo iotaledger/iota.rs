@@ -3,7 +3,6 @@
 
 //! Chrsalis migration address
 use crate::{Error, Result};
-use bee_crypto::ternary::sponge::{Kerl, Sponge};
 use bee_message::prelude::Ed25519Address;
 use bee_ternary::{b1t6, T1B1Buf, T3B1Buf, Trits, TryteBuf};
 use bee_transaction::bundled::{Address as TryteAddress, BundledTransactionField};
@@ -11,6 +10,8 @@ use blake2::{
     digest::{Update, VariableOutput},
     VarBlake2b,
 };
+use crypto::hashes::ternary::kerl::Kerl;
+use crypto::hashes::ternary::Sponge;
 
 use core::convert::TryInto;
 

@@ -1,7 +1,7 @@
 use crate::error::Result;
-use bee_crypto::ternary::Hash;
 use bee_ternary::T3B1Buf;
 use bee_transaction::bundled::{Address, BundledTransactionField};
+use crypto::hashes::ternary::Hash;
 
 use crate::response::{GetBalancesResponse, GetBalancesResponseBuilder};
 use crate::Client;

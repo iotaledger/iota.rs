@@ -1,7 +1,9 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_crypto::ternary::bigint::{binary_representation::U32Repr, endianness::BigEndian, I384};
+use crypto::hashes::ternary::kerl::bigint::{
+    binary_representation::U32Repr, endianness::BigEndian, I384,
+};
 
 // constants
 pub const HASH_CHUNK_LEN: usize = 27;

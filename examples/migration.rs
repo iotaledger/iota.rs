@@ -7,7 +7,7 @@ use iota::{
     client::migration::{
         create_migration_bundle, mine, sign_migration_bundle, Address as ChrysalisAddress,
     },
-    signing::ternary::seed::Seed as TernarySeed,
+    crypto::keys::ternary::seed::Seed as TernarySeed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
     transaction::bundled::BundledTransactionField,
 };
@@ -18,7 +18,7 @@ use std::io;
 #[tokio::main]
 async fn main() -> Result<()> {
     let security_level: u8 = 2;
-    let min_weight_magnitude = 9;
+    let _min_weight_magnitude = 9;
     let mut iota = iota::ClientBuilder::new()
         .node("https://nodes-migration3-legacy.iota.cafe/")?
         .quorum(true)
@@ -31,7 +31,8 @@ async fn main() -> Result<()> {
         .unwrap()
         .as_trits()
         .encode::<T1B1Buf>(),
-    )?;
+    )
+    .unwrap();
     // Funds will be migrated to this address
     let bech32_address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 
@@ -137,7 +138,7 @@ async fn main() -> Result<()> {
     //     .send_trytes()
     //     .with_trytes(signed_bundle_trytes)
     //     .with_depth(2)
-    //     .with_min_weight_magnitude(min_weight_magnitude)
+    //     .with_min_weight_magnitude(_min_weight_magnitude)
     //     .finish()
     //     .await?;
     println!(

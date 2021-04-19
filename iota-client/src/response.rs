@@ -1,11 +1,11 @@
 //! Response types
 use crate::error::*;
-use bee_crypto::ternary::Hash;
 use bee_ternary::{T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField, Tag,
 };
 use bee_transaction::Vertex;
+use crypto::hashes::ternary::Hash;
 use serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 
 // TODO: remove this struct once iota_bundle_preview::Transaction implements Serialize
