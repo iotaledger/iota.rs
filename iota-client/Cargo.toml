@@ -23,12 +23,12 @@ serde_json = "1.0"
 chrono = "0.4.12"
 ureq = { version = "2.0", features = ["json"] }
 #chrysalis2
-bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-common-derive = "0.1.1-alpha"
 slip10 = "0.4"
 iota-crypto = { version = "0.5.0", features = ["ed25519", "random", "wots_deprecated_do_not_use", "kerl_deprecated_do_not_use"] }
 blake2 = "0.9"
-bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "25d05419389acdd2fbd9371976c7c3460685d5a0" }
-bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-message = "0.1.1"
+bee-common = "0.4.1"
 hex = "0.4.2"
 tokio = { version = "1.4", features = ["sync"] }
 
