@@ -35,7 +35,7 @@ pub use bee_pow as pow;
 pub use bee_rest_api;
 pub use builder::ClientBuilder;
 pub use client::*;
-pub use crypto::keys::slip10::Seed;
+pub use crypto::{self, keys::slip10::Seed};
 pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;

@@ -3,7 +3,7 @@
 
 //! cargo run --example 02_generate_seed --release
 
-use crypto::signatures::ed25519::SecretKey;
+use iota::crypto::signatures::ed25519::SecretKey;
 
 /// In this example we will generate a seed
 
