@@ -556,7 +556,8 @@ impl HttpClient {
     }
 }
 
-fn validate_url(url: Url) -> Result<Url> {
+/// Validates if the url starts with http or https
+pub fn validate_url(url: Url) -> Result<Url> {
     if url.scheme() != "http" && url.scheme() != "https" {
         return Err(Error::UrlValidationError(format!("Invalid scheme: {}", url.scheme())));
     }

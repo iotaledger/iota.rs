@@ -379,7 +379,7 @@ impl Client {
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
         for node_url in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Client::get_node_info(&node_url.to_string()).await {
+            if let Ok(info) = Client::get_node_info(&node_url.to_string(), None).await {
                 if info.is_healthy {
                     match network_nodes.get_mut(&info.network_id) {
                         Some(network_id_entry) => {
@@ -600,8 +600,15 @@ impl Client {
     }
 
     /// GET /api/v1/info endpoint
-    pub async fn get_node_info(url: &str) -> Result<NodeInfo> {
-        let mut url = Url::parse(url)?;
+    pub async fn get_node_info(url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<NodeInfo> {
+        let mut url = crate::node_manager::validate_url(Url::parse(url)?)?;
+        if let Some((name, password)) = auth_name_passw {
+            url.set_username(name)
+                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+            url.set_password(Some(password))
+                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+        }
+
         let path = "api/v1/info";
         url.set_path(path);
         #[derive(Debug, Serialize, Deserialize)]
