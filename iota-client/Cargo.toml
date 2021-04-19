@@ -15,7 +15,7 @@ name = "iota_client"
 [dependencies]
 iota-bundle-miner = { path = "../iota-bundle-miner" }
 
-bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "5955b30e01f3b9bf742a5e967c0e08bf5244fd75" }
+bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "cf47287dbb37861668d378ea3ae3b8c0f2852566" }
 bee-ternary = { version = "0.4.2-alpha", features = ["serde1"] }
 #reqwest = { version = "0.10.6", features = ["json", "rustls-tls", "native-tls-vendored", "blocking"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
@@ -25,7 +25,7 @@ ureq = { version = "2.0", features = ["json"] }
 #chrysalis2
 bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 slip10 = "0.4"
-iota-crypto = { git = "https://github.com/thibault-martinez/crypto.rs", branch = "wots", features = ["ed25519", "random", "kerl_deprecated_do_not_use", "wots_deprecated_do_not_use" ] }
+iota-crypto = { version = "0.5.0", features = ["ed25519", "random", "wots_deprecated_do_not_use", "kerl_deprecated_do_not_use"] }
 blake2 = "0.9"
 bee-message = { git = "https://github.com/iotaledger/bee.git", rev = "25d05419389acdd2fbd9371976c7c3460685d5a0" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }

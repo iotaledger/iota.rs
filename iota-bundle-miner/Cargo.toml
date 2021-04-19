@@ -9,8 +9,8 @@ name = "iota_bundle_miner"
 
 [dependencies]
 bee-ternary = { version = "0.4.2-alpha", features = ["serde1"] }
-iota-crypto = { git = "https://github.com/thibault-martinez/crypto.rs", rev = "03b3966eea016f6013d65734a2a24a3566cb0db4", features = ["kerl_deprecated_do_not_use", "wots_deprecated_do_not_use"] }
-bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "5955b30e01f3b9bf742a5e967c0e08bf5244fd75" }
+iota-crypto = { version = "0.5.0", features = ["wots_deprecated_do_not_use", "kerl_deprecated_do_not_use"] }
+bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "cf47287dbb37861668d378ea3ae3b8c0f2852566" }
 tokio = { version = "1.4", features = ["rt", "rt-multi-thread", "sync", "time", "macros"] }
 futures = { version = "0.3"}
 criterion = "0.3"
