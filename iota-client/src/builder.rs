@@ -20,7 +20,7 @@ use std::{
 };
 
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_millis(2000);
+pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_millis(10000);
 #[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 // Interval in seconds when new tips will be requested during PoW
