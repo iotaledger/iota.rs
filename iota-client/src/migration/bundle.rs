@@ -62,11 +62,11 @@ pub async fn create_migration_bundle(
     }
 
     // Check for dust protection value
-    // if total_value < DUST_THRESHOLD {
-    //     return Err(Error::MigrationError(
-    //         "Input value is < dust protection value (1_000_000 i)",
-    //     ));
-    // }
+    if total_value < DUST_THRESHOLD {
+        return Err(Error::MigrationError(
+            "Input value is < dust protection value (1_000_000 i)",
+        ));
+    }
     let transfer = vec![Transfer {
         address: migration_address,
         value: total_value,
