@@ -1,7 +1,7 @@
 use crate::error::Result;
-use bee_crypto::ternary::Hash;
-use bee_signing::ternary::seed::Seed;
 use bee_transaction::bundled::{Address, BundledTransaction as Transaction};
+use crypto::hashes::ternary::Hash;
+use crypto::keys::ternary::seed::Seed;
 
 use crate::response::{Input, Transfer};
 use crate::Client;

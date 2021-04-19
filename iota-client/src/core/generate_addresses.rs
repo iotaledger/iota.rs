@@ -1,11 +1,11 @@
 use crate::error::{Error, Result};
-use bee_crypto::ternary::sponge::Kerl;
-use bee_signing::ternary::{
-    seed::Seed,
-    wots::{WotsSecurityLevel, WotsSpongePrivateKeyGeneratorBuilder},
-    PrivateKey, PrivateKeyGenerator, PublicKey,
-};
 use bee_transaction::bundled::{Address, BundledTransactionField};
+use crypto::hashes::ternary::kerl::Kerl;
+use crypto::keys::ternary::seed::Seed;
+use crypto::keys::ternary::wots::sponge::WotsSpongePrivateKeyGeneratorBuilder;
+use crypto::keys::ternary::wots::WotsSecurityLevel;
+use crypto::keys::ternary::PrivateKeyGenerator;
+use crypto::signatures::ternary::{PrivateKey, PublicKey};
 use std::ops::Range;
 
 /// Builder to construct GetAddress

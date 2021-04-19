@@ -6,7 +6,7 @@
 //! cargo run --example generate_new_address
 //! ```
 use anyhow::Result;
-use iota::signing::ternary::seed::Seed;
+use iota::crypto::keys::ternary::seed::Seed;
 use iota::ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use iota::transaction::bundled::BundledTransactionField;
 

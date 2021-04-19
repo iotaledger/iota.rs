@@ -1,5 +1,5 @@
 use crate::error::*;
-use bee_signing::ternary::seed::Seed;
+use crypto::keys::ternary::seed::Seed;
 
 use crate::response::Input;
 use crate::Client;

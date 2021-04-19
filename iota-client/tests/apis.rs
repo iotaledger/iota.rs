@@ -1,9 +1,9 @@
 mod common;
 use crate::common::*;
-use bee_crypto::ternary::*;
-use bee_signing::ternary::seed::Seed;
 use bee_ternary::*;
 use bee_transaction::bundled::*;
+use crypto::hashes::ternary::Hash;
+use crypto::keys::ternary::seed::Seed;
 use iota_client::response::*;
 
 #[smol_potat::test]

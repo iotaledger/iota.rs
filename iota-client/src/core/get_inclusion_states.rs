@@ -1,6 +1,6 @@
 use crate::error::Result;
-use bee_crypto::ternary::Hash;
 use bee_ternary::T3B1Buf;
+use crypto::hashes::ternary::Hash;
 
 use crate::response::{GetInclusionStatesResponse, GetInclusionStatesResponseBuilder};
 use crate::Client;

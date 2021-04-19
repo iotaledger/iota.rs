@@ -55,6 +55,8 @@ pub enum Error {
     BeeOutgoingBundleError(bee_transaction::bundled::OutgoingBundleBuilderError),
     /// Bee crypto error
     BeeCryptoError(String),
+    /// Crypto ternary error
+    CryptoTernaryError(crypto::keys::ternary::seed::Error),
 }
 
 impl fmt::Display for Error {
@@ -83,6 +85,7 @@ impl fmt::Display for Error {
             Error::BeeTransactionError(e) => format!("{:?}", e).fmt(f),
             Error::BeeOutgoingBundleError(e) => format!("{:?}", e).fmt(f),
             Error::BeeCryptoError(e) => e.fmt(f),
+            Error::CryptoTernaryError(e) => format!("{:?}", e).fmt(f),
         }
     }
 }
@@ -134,5 +137,10 @@ impl From<bee_transaction::bundled::BundledTransactionError> for Error {
 impl From<bee_transaction::bundled::OutgoingBundleBuilderError> for Error {
     fn from(error: bee_transaction::bundled::OutgoingBundleBuilderError) -> Self {
         Error::BeeOutgoingBundleError(error)
+    }
+}
+impl From<crypto::keys::ternary::seed::Error> for Error {
+    fn from(error: crypto::keys::ternary::seed::Error) -> Self {
+        Error::CryptoTernaryError(error)
     }
 }

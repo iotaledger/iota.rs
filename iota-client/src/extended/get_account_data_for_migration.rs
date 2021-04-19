@@ -2,10 +2,10 @@ use crate::core::AddressBuilder;
 use crate::error::*;
 use crate::response::InputData;
 use crate::Client;
-use bee_signing::ternary::seed::Seed;
 use bee_ternary::T3B1Buf;
 use bee_transaction::bundled::Address;
 use bee_transaction::bundled::BundledTransactionField;
+use crypto::keys::ternary::seed::Seed;
 
 use std::collections::HashSet;
 

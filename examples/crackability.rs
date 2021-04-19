@@ -7,7 +7,7 @@ use iota::{
     client::migration::{
         create_migration_bundle, mine, sign_migration_bundle, Address as ChrysalisAddress,
     },
-    signing::ternary::seed::Seed as TernarySeed,
+    crypto::keys::ternary::seed::Seed as TernarySeed,
     ternary::{T1B1Buf, T3B1Buf, TritBuf, TryteBuf},
     transaction::bundled::BundledTransactionField,
 };
@@ -31,7 +31,8 @@ async fn main() -> Result<()> {
         .unwrap()
         .as_trits()
         .encode::<T1B1Buf>(),
-    )?;
+    )
+    .unwrap();
     // Funds will be migrated to this address
     let bech32_address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 

@@ -8,13 +8,13 @@ use crate::util::tx_trytes;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use bee_crypto::ternary::Hash;
-use bee_signing::ternary::seed::Seed;
 use bee_ternary::{T1B1Buf, T3B1Buf, TryteBuf};
 use bee_transaction::bundled::{
     Address, BundledTransaction as Transaction, BundledTransactionField,
 };
 use bee_transaction::Vertex;
+use crypto::hashes::ternary::Hash;
+use crypto::keys::ternary::seed::Seed;
 use tokio::sync::RwLock;
 
 pub(crate) const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);

@@ -4,13 +4,14 @@
 use crate::constant::{HASH_CHUNK_LEN, MAX_TRYTE_VALUE, TRITS82_BE_U32};
 use crate::error::{Error, Result};
 use crate::recoverer::get_crack_probability;
-use bee_crypto::ternary::{
-    bigint::{binary_representation::U32Repr, endianness::BigEndian, I384, T242, T243},
-    sponge::{Kerl, Sponge},
-};
-use bee_signing::ternary::wots::normalize;
 use bee_ternary::{t3b1::T3B1Buf, Btrit, T1B1Buf, TritBuf};
 use bee_transaction::bundled::TAG_TRIT_LEN;
+use crypto::hashes::ternary::kerl::bigint::{
+    binary_representation::U32Repr, endianness::BigEndian, I384, T242, T243,
+};
+use crypto::hashes::ternary::kerl::Kerl;
+use crypto::hashes::ternary::Sponge;
+use crypto::signatures::ternary::wots::normalize;
 use futures::future::abortable;
 use std::{
     convert::TryFrom,

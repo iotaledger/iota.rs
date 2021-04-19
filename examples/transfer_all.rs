@@ -8,7 +8,7 @@
 use anyhow::Result;
 use iota::{
     client::Transfer,
-    signing::ternary::seed::Seed,
+    crypto::keys::ternary::seed::Seed,
     ternary::{T1B1Buf, T3B1Buf, TryteBuf},
     transaction::bundled::{Address, BundledTransactionField},
 };
