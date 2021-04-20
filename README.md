@@ -51,7 +51,7 @@ When using the "MQTT" feature, connecting to a MQTT broker using raw ip doesn't 
 
 ## API reference
 
-You can read the [API reference](https://docs.rs/iota-core) here, or generate it yourself.
+You can read the [API reference](https://client-lib.docs.iota.org/docs/doc/iota_client/index.html) here, or generate it yourself.
 
 If you'd like to explore the implementation in more depth, the following command generates docs for the whole crate, including private modules:
 
