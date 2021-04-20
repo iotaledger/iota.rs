@@ -709,7 +709,7 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        let message = MessageDto::try_from(message).map_err(crate::Error::DtoError)?;
+        let message = MessageDto::from(message);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageIdWrapper,
@@ -891,7 +891,7 @@ impl Client {
             data: MessageDto,
         }
         let resp: ResponseWrapper = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
-        Ok(Message::try_from(&resp.data).map_err(crate::Error::DtoError)?)
+        Ok(Message::try_from(&resp.data)?)
     }
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.

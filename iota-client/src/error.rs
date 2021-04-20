@@ -52,6 +52,9 @@ pub enum Error {
     /// Message types error
     #[error("{0}")]
     MessageError(#[from] bee_message::Error),
+    /// Bee rest api error
+    #[error("{0}")]
+    BeeRestApiError(#[from] bee_rest_api::types::error::Error),
     /// The message doensn't need to be promoted or reattached
     #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
@@ -119,9 +122,6 @@ pub enum Error {
     /// URL auth error
     #[error("Can't set {0} to URL")]
     UrlAuthError(String),
-    /// DTO error
-    #[error("failed to convert data: {0}")]
-    DtoError(String),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256Error(&'static str),

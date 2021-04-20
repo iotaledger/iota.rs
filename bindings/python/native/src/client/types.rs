@@ -442,7 +442,7 @@ impl From<RustTreasuryOutputDto> for TreasuryOutputDto {
 
 impl From<RustSignatureLockedSingleOutput> for SignatureLockedSingleOutputDto {
     fn from(address: RustSignatureLockedSingleOutput) -> Self {
-        let address_dto: AddressDto = address.address().clone().into();
+        let address_dto: AddressDto = (*address.address()).into();
         Self {
             kind: 0,
             address: address_dto,
