@@ -3,7 +3,7 @@
 
 //! cargo run --example mnemonic --release
 
-use iota::{Client, Seed};
+use iota::{crypto::keys::bip39::mnemonic_to_seed, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -24,7 +24,7 @@ async fn main() {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
     let mut mnemonic_seed = [0u8; 64];
-    crypto::keys::bip39::mnemonic_to_seed(
+    mnemonic_to_seed(
         &env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC").unwrap(),
         &"",
         &mut mnemonic_seed,

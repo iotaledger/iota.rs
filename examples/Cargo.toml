@@ -6,7 +6,6 @@ edition = "2018"
 
 [dev-dependencies]
 iota-core = { path = "../iota-core", features = ["storage", "mqtt"] }
-iota-crypto = {git = "https://github.com/iotaledger/crypto.rs", rev = "b849861b86c3f7357b7477de4253b7352b363627", features = ["bip39", "bip39-en", "random"]}
 tokio = { version = "1.1", features = ["full"] }
 hex = "0.4.2"
 dotenv = "0.15.0"
