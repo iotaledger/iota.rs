@@ -4,14 +4,12 @@ async function run() {
     // client will connect to testnet by default
     const client = new ClientBuilder().build();
 
-    const indexation = {
-        index: 'IOTA.RS BINDING - NODE.JS',
-        data: new TextEncoder().encode('some utf based data')
-    };
+    const message = await client.message()
+        .index('IOTA.RS BINDING - NODE.JS')
+        .data('some utf based data')
+        .submit();
 
-    const messageId = await client.postMessage({
-        payload: indexation
-    });
+    console.log(message);
 }
 
 run()
