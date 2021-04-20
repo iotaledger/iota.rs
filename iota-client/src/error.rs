@@ -122,9 +122,6 @@ pub enum Error {
     /// URL auth error
     #[error("Can't set {0} to URL")]
     UrlAuthError(String),
-    /// DTO error
-    #[error("failed to convert data: {0}")]
-    DtoError(String),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256Error(&'static str),
