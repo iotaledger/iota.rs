@@ -52,6 +52,9 @@ pub enum Error {
     /// Message types error
     #[error("{0}")]
     MessageError(#[from] bee_message::Error),
+    /// Bee rest api error
+    #[error("{0}")]
+    BeeRestApiError(#[from] bee_rest_api::types::error::Error),
     /// The message doensn't need to be promoted or reattached
     #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),

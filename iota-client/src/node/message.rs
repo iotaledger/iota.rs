@@ -64,7 +64,7 @@ impl<'a> GetMessageBuilder<'a> {
             .get_request(path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
-        Ok(Message::try_from(&resp.data).map_err(crate::Error::DtoError)?)
+        Ok(Message::try_from(&resp.data)?)
     }
 
     /// GET /api/v1/messages/{messageID}/metadata endpoint

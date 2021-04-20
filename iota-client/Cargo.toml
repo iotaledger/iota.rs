@@ -13,7 +13,7 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "3e7938048174570b1acb555d1cf36b69ee46d70b", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee.git", rev = "ae445ef2d640fdbdd1d788b690fde992d1241a60", default-features = false }
 bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev"  }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
