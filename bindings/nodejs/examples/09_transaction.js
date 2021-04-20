@@ -9,12 +9,12 @@ async function run() {
     // client will connect to testnet by default
     const client = new ClientBuilder().build();
 
-    const messageId = await client.send()
+    const message = await client.message()
         .seed(IOTA_SEED_SECRET)
         .output('atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz', 1000000)
         .submit();
 
-    console.log(messageId);
+    console.log(message);
 }
 
 run()

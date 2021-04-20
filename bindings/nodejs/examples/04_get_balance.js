@@ -8,7 +8,7 @@ async function run() {
     const client = new ClientBuilder().build();
 
     console.log(
-        client.getAddressBalance("atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86")
+        await client.getAddressBalance("atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86")
     );
 
     const balance = await client.getBalance(IOTA_SEED_SECRET)
