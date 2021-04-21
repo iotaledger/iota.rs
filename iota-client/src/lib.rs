@@ -1,7 +1,26 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Provides access to the Iota Client API
+//! A general purpose IOTA client library for interaction with the IOTA network (Tangle)
+//!
+//! High-level functions are accessible via the [`Client`][client::Client].
+//!
+//! ## Sending a message with an indexation payload
+//!  ```rust
+//! let iota = Client::builder()
+//!    .with_node("https://api.lb-0.testnet.chrysalis2.com")?
+//!    .finish()
+//!    .await?;
+//!
+//! let message = iota
+//!    .message()
+//!    .with_index("Hello")
+//!    .with_data("Tangle".as_bytes().to_vec())
+//!    .finish()
+//!    .await?;
+//!
+//! println!("Message sent {}", message.id().0);
+//! ```
 
 #![deny(unused_extern_crates)]
 #![warn(missing_docs, rust_2018_idioms, unreachable_pub)]

@@ -16,7 +16,7 @@ use tokio::sync::{watch::Sender, RwLock};
 
 use std::{convert::TryFrom, sync::Arc, time::Instant};
 
-/// A topic.
+/// A MQTT topic.
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct Topic(String);
 

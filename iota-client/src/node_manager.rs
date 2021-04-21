@@ -29,6 +29,8 @@ const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 const DEFAULT_QUORUM_SIZE: usize = 3;
 const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 
+// Nodemanger, takes care of selecting node(s) for requests until a result is returned or if quorum
+// is enabled it will send the requests for some endpoints to multiple nodes and compares the results
 pub(crate) struct NodeManager {
     pub(crate) primary_node: Option<Url>,
     primary_pow_node: Option<Url>,
@@ -211,7 +213,6 @@ impl NodeManager {
             .max_by_key(|v| v.1)
             .ok_or_else(|| error.unwrap_or(Error::NodeError))?;
 
-        // todo if quorum then only for: balance, outputs(only unspent?), message metadata
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
             || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
