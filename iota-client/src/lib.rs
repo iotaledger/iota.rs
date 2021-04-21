@@ -6,7 +6,7 @@
 //! High-level functions are accessible via the [`Client`][client::Client].
 //!
 //! ## Sending a message with an indexation payload
-//!  ```rust
+//!  ```compile_fail
 //! let iota = Client::builder()
 //!    .with_node("https://api.lb-0.testnet.chrysalis2.com")?
 //!    .finish()
