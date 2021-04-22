@@ -7,7 +7,10 @@ use bee_common::packable::Packable;
 use bee_message::prelude::*;
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
-use bee_rest_api::types::dtos::{AddressDto, OutputDto};
+use bee_rest_api::types::{
+    dtos::{AddressDto, OutputDto},
+    responses::OutputResponse,
+};
 use crypto::keys::slip10::{Chain, Curve, Seed};
 
 use std::{
@@ -17,6 +20,8 @@ use std::{
 };
 
 const ADDRESS_GAP_LIMIT: usize = 20;
+// The gap limit is 20 and use reference 40 here because there's public and internal addresses
+const ADDRESS_BREAK_POINT: u64 = 40;
 // https://github.com/GalRogozinski/protocol-rfcs/blob/dust/text/0032-dust-protection/0032-dust-protection.md
 const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const DUST_DIVISOR: i64 = 100_000;
@@ -169,6 +174,54 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
+    fn create_address_index_recorder(
+        account_index: usize,
+        address_index: usize,
+        internal: bool,
+        output: &OutputResponse,
+    ) -> Result<AddressIndexRecorder> {
+        // Note that we need to sign the original address, i.e., `path/index`,
+        // instead of `path/index/_offset` or `path/_offset`.
+
+        // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+        let chain = Chain::from_u32_hardened(vec![
+            44,
+            4218,
+            account_index as u32,
+            internal as u32,
+            address_index as u32,
+        ]);
+        let input = Input::Utxo(
+            UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
+                .map_err(|_| Error::TransactionError)?,
+        );
+
+        Ok(AddressIndexRecorder {
+            input,
+            address_index,
+            chain,
+            internal,
+        })
+    }
+
+    fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, bool)> {
+        match output {
+            OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
+            OutputDto::SignatureLockedSingle(ref r) => match &r.address {
+                AddressDto::Ed25519(addr) => {
+                    let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                    Ok((r.amount, output_address, true))
+                }
+            },
+            OutputDto::SignatureLockedDustAllowance(ref r) => match &r.address {
+                AddressDto::Ed25519(addr) => {
+                    let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+                    Ok((r.amount, output_address, false))
+                }
+            },
+        }
+    }
+
     /// Consume the builder and get the API result
     pub async fn finish_transaction(self) -> Result<Message> {
         let account_index = self.account_index.unwrap_or(0);
@@ -208,31 +261,13 @@ impl<'a> ClientMessageBuilder<'a> {
                     // Only add unspent outputs
                     if let Ok(output) = self.client.get_output(&input).await {
                         if !output.is_spent {
-                            let (output_amount, output_address) = match output.output {
-                                OutputDto::Treasury(_) => {
-                                    return Err(Error::OutputError("Treasury output is no supported"))
-                                }
-                                OutputDto::SignatureLockedSingle(r) => match r.address {
-                                    AddressDto::Ed25519(addr) => {
-                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-                                        // Only add dust
-                                        if r.amount < DUST_THRESHOLD {
-                                            dust_and_allowance_recorders.push((r.amount, output_address, false));
-                                        }
-                                        (r.amount, output_address)
-                                    }
-                                },
-                                OutputDto::SignatureLockedDustAllowance(r) => match r.address {
-                                    AddressDto::Ed25519(addr) => {
-                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-                                        dust_and_allowance_recorders.push((r.amount, output_address, false));
-                                        (r.amount, output_address)
-                                    }
-                                },
-                            };
+                            let (output_amount, output_address, check_treshold) =
+                                ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+                            if !check_treshold || output_amount < DUST_THRESHOLD {
+                                dust_and_allowance_recorders.push((output_amount, output_address, false));
+                            }
+
                             total_already_spent += output_amount;
-                            // Note that we need to sign the original address, i.e., `path/index`,
-                            // instead of `path/index/_offset` or `path/_offset`.
                             let (address_index, internal) = search_address(
                                 &self.seed.expect("No seed"),
                                 bech32_hrp.clone(),
@@ -241,25 +276,15 @@ impl<'a> ClientMessageBuilder<'a> {
                                 &output_address,
                             )
                             .await?;
-                            // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-                            let chain = Chain::from_u32_hardened(vec![
-                                44,
-                                4218,
-                                account_index as u32,
-                                internal as u32,
-                                address_index as u32,
-                            ]);
-                            let input = Input::Utxo(
-                                UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
-                                    .map_err(|_| Error::TransactionError)?,
-                            );
-                            inputs_for_essence.push(input.clone());
-                            address_index_recorders.push(AddressIndexRecorder {
-                                input,
+
+                            let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                                account_index,
                                 address_index,
-                                chain,
                                 internal,
-                            });
+                                &output,
+                            )?;
+                            inputs_for_essence.push(address_index_record.input.clone());
+                            address_index_recorders.push(address_index_record);
                             // Output the remaining tokens back to the original address
                             if total_already_spent > total_to_spend {
                                 let remaining_balance = total_already_spent - total_to_spend;
@@ -304,76 +329,42 @@ impl<'a> ClientMessageBuilder<'a> {
                             empty_address_count += 1;
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
-                            let output_amount = match output.output {
-                                OutputDto::Treasury(_) => {
-                                    return Err(Error::OutputError("Treasury output is no supported"))
-                                }
-                                OutputDto::SignatureLockedSingle(r) => match r.address {
-                                    AddressDto::Ed25519(addr) => {
-                                        if r.amount < DUST_THRESHOLD {
-                                            let output_address =
-                                                Address::from(Ed25519Address::from_str(&addr.address)?);
-                                            dust_and_allowance_recorders.push((r.amount, output_address, false));
+                            let (output_amount, output_address, check_treshold) =
+                                ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+                            if !check_treshold || output_amount < DUST_THRESHOLD {
+                                dust_and_allowance_recorders.push((output_amount, output_address, false));
+                            }
+
+                            if output.is_spent {
+                                return Err(Error::SpentOutput);
+                            } else {
+                                if total_already_spent < total_to_spend {
+                                    total_already_spent += output_amount;
+                                    let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                                        account_index,
+                                        address_index,
+                                        *internal,
+                                        &output,
+                                    )?;
+                                    inputs_for_essence.push(address_index_record.input.clone());
+                                    address_index_recorders.push(address_index_record);
+                                    if total_already_spent > total_to_spend {
+                                        let remaining_balance = total_already_spent - total_to_spend;
+                                        if remaining_balance < DUST_THRESHOLD {
+                                            dust_and_allowance_recorders.push((
+                                                remaining_balance,
+                                                Address::try_from_bech32(address)?,
+                                                true,
+                                            ));
                                         }
-                                        r.amount
-                                    }
-                                },
-                                OutputDto::SignatureLockedDustAllowance(r) => match r.address {
-                                    AddressDto::Ed25519(addr) => {
-                                        let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-                                        dust_and_allowance_recorders.push((r.amount, output_address, false));
-                                        r.amount
-                                    }
-                                },
-                            };
-                            match output.is_spent {
-                                true => {
-                                    return Err(Error::SpentOutput);
-                                }
-                                false => {
-                                    if total_already_spent < total_to_spend {
-                                        total_already_spent += output_amount;
-                                        // Note that we need to sign the original address, i.e., `path/index`,
-                                        // instead of `path/index/_offset` or `path/_offset`.
-                                        let chain = Chain::from_u32_hardened(vec![
-                                            44,
-                                            4218,
-                                            account_index as u32,
-                                            *internal as u32,
-                                            address_index as u32,
-                                        ]);
-                                        let input = Input::Utxo(
-                                            UtxoInput::new(
-                                                TransactionId::from_str(&output.transaction_id)?,
-                                                output.output_index,
-                                            )
-                                            .map_err(|_| Error::TransactionError)?,
+                                        // Output the remaining tokens back to the original address
+                                        outputs_for_essence.push(
+                                            SignatureLockedSingleOutput::new(
+                                                Address::try_from_bech32(address)?,
+                                                remaining_balance,
+                                            )?
+                                            .into(),
                                         );
-                                        inputs_for_essence.push(input.clone());
-                                        address_index_recorders.push(AddressIndexRecorder {
-                                            input,
-                                            address_index,
-                                            chain,
-                                            internal: *internal,
-                                        });
-                                        if total_already_spent > total_to_spend {
-                                            let remaining_balance = total_already_spent - total_to_spend;
-                                            if remaining_balance < DUST_THRESHOLD {
-                                                dust_and_allowance_recorders.push((
-                                                    remaining_balance,
-                                                    Address::try_from_bech32(address)?,
-                                                    true,
-                                                ));
-                                            }
-                                            // Output the remaining tokens back to the original address
-                                            outputs_for_essence.push(
-                                                SignatureLockedSingleOutput::new(
-                                                    Address::try_from_bech32(address)?,
-                                                    remaining_balance,
-                                                )?
-                                                .into(),
-                                            );
-                                        }
                                     }
                                 }
                             }
@@ -388,8 +379,8 @@ impl<'a> ClientMessageBuilder<'a> {
                         }
                     }
                     index += ADDRESS_GAP_LIMIT;
-                    // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-                    if empty_address_count == 40 {
+
+                    if empty_address_count == ADDRESS_BREAK_POINT {
                         break;
                     }
                 }
