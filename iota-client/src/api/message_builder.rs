@@ -295,9 +295,9 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
             }
             None => {
+                // Reset the empty_address_count for each run of output address searching
+                let mut empty_address_count: u64 = 0;
                 'input_selection: loop {
-                    // Reset the empty_address_count for each run of output address searching
-                    let mut empty_address_count: u64 = 0;
                     // Get the addresses in the BIP path/index ~ path/index+20
                     let addresses = self
                         .client
@@ -326,6 +326,9 @@ impl<'a> ClientMessageBuilder<'a> {
                         if outputs.is_empty() {
                             // Accumulate the empty_address_count for each run of output address searching
                             empty_address_count += 1;
+                        } else {
+                            // Reset counter if there is an output
+                            empty_address_count += 0;
                         }
                         for (_offset, output) in outputs.into_iter().enumerate() {
                             let (output_amount, output_address, check_treshold) =
@@ -336,39 +339,40 @@ impl<'a> ClientMessageBuilder<'a> {
 
                             if output.is_spent {
                                 return Err(Error::SpentOutput);
-                            } else {
-                                if total_already_spent < total_to_spend {
-                                    total_already_spent += output_amount;
-                                    let address_index_record = ClientMessageBuilder::create_address_index_recorder(
-                                        account_index,
-                                        address_index,
-                                        *internal,
-                                        &output,
-                                    )?;
-                                    inputs_for_essence.push(address_index_record.input.clone());
-                                    address_index_recorders.push(address_index_record);
-                                    if total_already_spent > total_to_spend {
-                                        let remaining_balance = total_already_spent - total_to_spend;
-                                        if remaining_balance < DUST_THRESHOLD {
-                                            dust_and_allowance_recorders.push((
-                                                remaining_balance,
-                                                Address::try_from_bech32(address)?,
-                                                true,
-                                            ));
-                                        }
-                                        // Output the remaining tokens back to the original address
-                                        outputs_for_essence.push(
-                                            SignatureLockedSingleOutput::new(
-                                                Address::try_from_bech32(address)?,
-                                                remaining_balance,
-                                            )?
-                                            .into(),
-                                        );
+                            } else if total_already_spent < total_to_spend {
+                                total_already_spent += output_amount;
+                                let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                                    account_index,
+                                    address_index,
+                                    *internal,
+                                    &output,
+                                )?;
+                                inputs_for_essence.push(address_index_record.input.clone());
+                                address_index_recorders.push(address_index_record);
+                                if total_already_spent > total_to_spend {
+                                    let remaining_balance = total_already_spent - total_to_spend;
+                                    if remaining_balance < DUST_THRESHOLD {
+                                        dust_and_allowance_recorders.push((
+                                            remaining_balance,
+                                            Address::try_from_bech32(address)?,
+                                            true,
+                                        ));
                                     }
+                                    // Output the remaining tokens back to the original address
+                                    outputs_for_essence.push(
+                                        SignatureLockedSingleOutput::new(
+                                            Address::try_from_bech32(address)?,
+                                            remaining_balance,
+                                        )?
+                                        .into(),
+                                    );
                                 }
                             }
                         }
-                        if total_already_spent >= total_to_spend {
+                        // Break if we have enough funds and don't create dust for the remainder
+                        if total_already_spent == total_to_spend
+                            || total_already_spent as i64 - total_to_spend as i64 >= DUST_THRESHOLD as i64
+                        {
                             break 'input_selection;
                         }
                         // if we just processed an even index, increase the address index
