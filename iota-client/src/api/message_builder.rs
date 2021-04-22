@@ -336,35 +336,33 @@ impl<'a> ClientMessageBuilder<'a> {
 
                             if output.is_spent {
                                 return Err(Error::SpentOutput);
-                            } else {
-                                if total_already_spent < total_to_spend {
-                                    total_already_spent += output_amount;
-                                    let address_index_record = ClientMessageBuilder::create_address_index_recorder(
-                                        account_index,
-                                        address_index,
-                                        *internal,
-                                        &output,
-                                    )?;
-                                    inputs_for_essence.push(address_index_record.input.clone());
-                                    address_index_recorders.push(address_index_record);
-                                    if total_already_spent > total_to_spend {
-                                        let remaining_balance = total_already_spent - total_to_spend;
-                                        if remaining_balance < DUST_THRESHOLD {
-                                            dust_and_allowance_recorders.push((
-                                                remaining_balance,
-                                                Address::try_from_bech32(address)?,
-                                                true,
-                                            ));
-                                        }
-                                        // Output the remaining tokens back to the original address
-                                        outputs_for_essence.push(
-                                            SignatureLockedSingleOutput::new(
-                                                Address::try_from_bech32(address)?,
-                                                remaining_balance,
-                                            )?
-                                            .into(),
-                                        );
+                            } else if total_already_spent < total_to_spend {
+                                total_already_spent += output_amount;
+                                let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                                    account_index,
+                                    address_index,
+                                    *internal,
+                                    &output,
+                                )?;
+                                inputs_for_essence.push(address_index_record.input.clone());
+                                address_index_recorders.push(address_index_record);
+                                if total_already_spent > total_to_spend {
+                                    let remaining_balance = total_already_spent - total_to_spend;
+                                    if remaining_balance < DUST_THRESHOLD {
+                                        dust_and_allowance_recorders.push((
+                                            remaining_balance,
+                                            Address::try_from_bech32(address)?,
+                                            true,
+                                        ));
                                     }
+                                    // Output the remaining tokens back to the original address
+                                    outputs_for_essence.push(
+                                        SignatureLockedSingleOutput::new(
+                                            Address::try_from_bech32(address)?,
+                                            remaining_balance,
+                                        )?
+                                        .into(),
+                                    );
                                 }
                             }
                         }
