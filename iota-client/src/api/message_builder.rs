@@ -19,9 +19,6 @@ use std::{
     str::FromStr,
 };
 
-const ADDRESS_GAP_LIMIT: usize = 20;
-// The gap limit is 20 and use reference 40 here because there's public and internal addresses
-const ADDRESS_BREAK_POINT: u64 = 40;
 // https://github.com/GalRogozinski/protocol-rfcs/blob/dust/text/0032-dust-protection/0032-dust-protection.md
 const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const DUST_DIVISOR: i64 = 100_000;
@@ -306,7 +303,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         .client
                         .get_addresses(self.seed.expect("No seed"))
                         .with_account_index(account_index)
-                        .with_range(index..index + ADDRESS_GAP_LIMIT)
+                        .with_range(index..index + super::ADDRESS_GAP_LIMIT)
                         .get_all()
                         .await?;
                     // For each address, get the address outputs
@@ -320,10 +317,12 @@ impl<'a> ClientMessageBuilder<'a> {
                                 outputs.push(curr_outputs);
                             }
                         }
-                        // If there are more than 20 (gap limit) consecutive empty addresses, then we stop looking
-                        // up the addresses belonging to the seed. Note that we don't really count the exact 20
-                        // consecutive empty addresses, which is unnecessary. We just need to check the address range,
-                        // [k*20, k*20 + 20), where k is natural number, and to see if the outputs are all empty.
+                        // If there are more than 20 (ADDRESS_GAP_LIMIT) consecutive empty addresses, then we stop
+                        // looking up the addresses belonging to the seed. Note that we don't
+                        // really count the exact 20 consecutive empty addresses, which is
+                        // unnecessary. We just need to check the address range,
+                        // (index * ADDRESS_GAP_LIMIT, index * ADDRESS_GAP_LIMIT + ADDRESS_GAP_LIMIT), where index is
+                        // natural number, and to see if the outputs are all empty.
                         if outputs.is_empty() {
                             // Accumulate the empty_address_count for each run of output address searching
                             empty_address_count += 1;
@@ -378,9 +377,9 @@ impl<'a> ClientMessageBuilder<'a> {
                             address_index += 1;
                         }
                     }
-                    index += ADDRESS_GAP_LIMIT;
-
-                    if empty_address_count == ADDRESS_BREAK_POINT {
+                    index += super::ADDRESS_GAP_LIMIT;
+                    // The gap limit is 20 and use reference 40 here because there's public and internal addresses
+                    if empty_address_count == (super::ADDRESS_GAP_LIMIT * 2) as u64 {
                         break;
                     }
                 }

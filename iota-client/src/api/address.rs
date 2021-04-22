@@ -26,7 +26,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
             client: None,
             seed: None,
             account_index: 0,
-            range: 0..20,
+            range: 0..super::ADDRESS_GAP_LIMIT,
             bech32_hrp: None,
         }
     }

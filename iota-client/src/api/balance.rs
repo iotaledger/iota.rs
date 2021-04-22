@@ -4,7 +4,6 @@
 use crate::{Client, Result};
 use crypto::keys::slip10::Seed;
 
-const DEFAULT_GAP_LIMIT: usize = 20;
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
     client: &'a Client,
@@ -22,7 +21,7 @@ impl<'a> GetBalanceBuilder<'a> {
             seed,
             account_index: 0,
             initial_address_index: 0,
-            gap_limit: DEFAULT_GAP_LIMIT,
+            gap_limit: super::ADDRESS_GAP_LIMIT,
         }
     }
 
@@ -73,8 +72,8 @@ impl<'a> GetBalanceBuilder<'a> {
                     }
                 }
             }
-
-            if found_zero_balance >= self.gap_limit {
+            // The gap limit is 20 and use reference 40 here because there's public and internal addresses
+            if found_zero_balance >= self.gap_limit * 2 {
                 break;
             }
             index += self.gap_limit;

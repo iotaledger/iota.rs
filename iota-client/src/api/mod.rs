@@ -12,3 +12,5 @@ pub use address::*;
 pub use balance::*;
 pub use message_builder::*;
 pub use unspent::*;
+
+const ADDRESS_GAP_LIMIT: usize = 20;
