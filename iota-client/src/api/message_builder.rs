@@ -297,8 +297,6 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut total_already_spent = 0;
         let account_index = self.account_index.unwrap_or(0);
         let mut index = self.initial_address_index.unwrap_or(0);
-
-        // Reset the empty_address_count for each run of output address searching
         let mut empty_address_count: u64 = 0;
         'input_selection: loop {
             // Get the addresses in the BIP path/index ~ path/index+20
