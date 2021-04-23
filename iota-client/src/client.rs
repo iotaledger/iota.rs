@@ -52,6 +52,8 @@ use std::{
     time::Duration,
 };
 
+const RESPONSE_MAX_OUTPUTS: usize = 1000;
+
 /// NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeInfoWrapper {
@@ -779,6 +781,23 @@ impl Client {
             let address_outputs = self.get_address().outputs(&address, Default::default()).await?;
             for output in address_outputs.iter() {
                 output_to_query.insert(output.to_owned());
+            }
+            // 1000 is the max amount of outputs we get from the node, so if we reach that limit we maybe don't get all
+            // outputs and that's why we additionally only request dust allowance outputs
+            if address_outputs.len() == RESPONSE_MAX_OUTPUTS {
+                let address_dust_allowance_outputs = self
+                    .get_address()
+                    .outputs(
+                        &address,
+                        OutputsOptions {
+                            include_spent: false,
+                            output_type: Some(OutputType::SignatureLockedDustAllowance),
+                        },
+                    )
+                    .await?;
+                for output in address_dust_allowance_outputs.iter() {
+                    output_to_query.insert(output.to_owned());
+                }
             }
         }
 

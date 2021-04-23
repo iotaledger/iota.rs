@@ -28,9 +28,6 @@ pub enum Error {
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
     InvalidParameter(&'static str),
-    /// Found spent output
-    #[error("Found spent output.")]
-    SpentOutput,
     /// No node available in the synced node pool
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
