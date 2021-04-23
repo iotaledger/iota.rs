@@ -220,26 +220,25 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     async fn get_custom_inputs(
-        client: &Client,
-        seed: &Seed,
-        input_range: Range<usize>,
-        account_index: usize,
+        &self,
         inputs: &[UtxoInput],
         total_to_spend: u64,
+        dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
     ) -> Result<(
-        Vec<(u64, Address, bool)>,
         Vec<Input>,
+        Vec<Output>,
         Vec<AddressIndexRecorder>,
         (Option<Address>, u64),
+        u64,
     )> {
-        let mut dust_and_allowance_recorders = Vec::new();
         let mut inputs_for_essence = Vec::new();
         let mut address_index_recorders = Vec::new();
         let mut remainder_address_balance: (Option<Address>, u64) = (None, 0);
         let mut total_already_spent = 0;
+        let account_index = self.account_index.unwrap_or(0);
         for input in inputs {
             // Only add unspent outputs
-            if let Ok(output) = client.get_output(&input).await {
+            if let Ok(output) = self.client.get_output(&input).await {
                 if !output.is_spent {
                     let (output_amount, output_address, check_treshold) =
                         ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
@@ -248,9 +247,15 @@ impl<'a> ClientMessageBuilder<'a> {
                     }
 
                     total_already_spent += output_amount;
-                    let bech32_hrp = client.get_bech32_hrp().await?;
-                    let (address_index, internal) =
-                        search_address(seed, bech32_hrp, account_index, input_range.clone(), &output_address).await?;
+                    let bech32_hrp = self.client.get_bech32_hrp().await?;
+                    let (address_index, internal) = search_address(
+                        self.seed.ok_or(crate::Error::MissingParameter("seed"))?,
+                        bech32_hrp,
+                        account_index,
+                        self.input_range.clone(),
+                        &output_address,
+                    )
+                    .await?;
 
                     let address_index_record = ClientMessageBuilder::create_address_index_recorder(
                         account_index,
@@ -272,19 +277,134 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
         Ok((
-            dust_and_allowance_recorders,
             inputs_for_essence,
+            vec![],
             address_index_recorders,
             remainder_address_balance,
+            total_already_spent,
+        ))
+    }
+
+    async fn get_inputs(
+        &self,
+        total_to_spend: u64,
+        dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
+    ) -> Result<(
+        Vec<Input>,
+        Vec<Output>,
+        Vec<AddressIndexRecorder>,
+        (Option<Address>, u64),
+        u64,
+    )> {
+        let mut inputs_for_essence = Vec::new();
+        let mut outputs_for_essence = Vec::new();
+        let mut address_index_recorders = Vec::new();
+        let mut total_already_spent = 0;
+        let account_index = self.account_index.unwrap_or(0);
+        let mut index = self.initial_address_index.unwrap_or(0);
+
+        // Reset the empty_address_count for each run of output address searching
+        let mut empty_address_count: u64 = 0;
+        'input_selection: loop {
+            // Get the addresses in the BIP path/index ~ path/index+20
+            let addresses = self
+                .client
+                .get_addresses(self.seed.ok_or(crate::Error::MissingParameter("seed"))?)
+                .with_account_index(account_index)
+                .with_range(index..index + super::ADDRESS_GAP_LIMIT)
+                .get_all()
+                .await?;
+            // For each address, get the address outputs
+            let mut address_index = index;
+            for (index, (address, internal)) in addresses.iter().enumerate() {
+                let address_outputs = self.client.get_address().outputs(&address, Default::default()).await?;
+                let mut outputs = vec![];
+                for output_id in address_outputs.iter() {
+                    let curr_outputs = self.client.get_output(output_id).await?;
+                    if !curr_outputs.is_spent {
+                        outputs.push(curr_outputs);
+                    }
+                }
+                // If there are more than 20 (ADDRESS_GAP_LIMIT) consecutive empty addresses, then we stop
+                // looking up the addresses belonging to the seed. Note that we don't
+                // really count the exact 20 consecutive empty addresses, which is
+                // unnecessary. We just need to check the address range,
+                // (index * ADDRESS_GAP_LIMIT, index * ADDRESS_GAP_LIMIT + ADDRESS_GAP_LIMIT), where index is
+                // natural number, and to see if the outputs are all empty.
+                if outputs.is_empty() {
+                    // Accumulate the empty_address_count for each run of output address searching
+                    empty_address_count += 1;
+                } else {
+                    // Reset counter if there is an output
+                    empty_address_count = 0;
+                }
+                for (_offset, output) in outputs.into_iter().enumerate() {
+                    let (output_amount, output_address, check_treshold) =
+                        ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+                    if !check_treshold || output_amount < DUST_THRESHOLD {
+                        dust_and_allowance_recorders.push((output_amount, output_address, false));
+                    }
+
+                    if output.is_spent {
+                        return Err(Error::SpentOutput);
+                    } else if total_already_spent < total_to_spend {
+                        total_already_spent += output_amount;
+                        let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                            account_index,
+                            address_index,
+                            *internal,
+                            &output,
+                        )?;
+                        inputs_for_essence.push(address_index_record.input.clone());
+                        address_index_recorders.push(address_index_record);
+                        if total_already_spent > total_to_spend {
+                            let remaining_balance = total_already_spent - total_to_spend;
+                            if remaining_balance < DUST_THRESHOLD {
+                                dust_and_allowance_recorders.push((
+                                    remaining_balance,
+                                    Address::try_from_bech32(address)?,
+                                    true,
+                                ));
+                            }
+                            // Output the remaining tokens back to the original address
+                            outputs_for_essence.push(
+                                SignatureLockedSingleOutput::new(
+                                    Address::try_from_bech32(address)?,
+                                    remaining_balance,
+                                )?
+                                .into(),
+                            );
+                        }
+                    }
+                }
+                // Break if we have enough funds and don't create dust for the remainder
+                if total_already_spent == total_to_spend || total_already_spent >= total_to_spend + DUST_THRESHOLD {
+                    break 'input_selection;
+                }
+                // if we just processed an even index, increase the address index
+                // (because the list has public and internal addresses)
+                if index % 2 == 1 {
+                    address_index += 1;
+                }
+            }
+            index += super::ADDRESS_GAP_LIMIT;
+            // The gap limit is 20 and use reference 40 here because there's public and internal addresses
+            if empty_address_count == (super::ADDRESS_GAP_LIMIT * 2) as u64 {
+                break;
+            }
+        }
+
+        Ok((
+            inputs_for_essence,
+            outputs_for_essence,
+            address_index_recorders,
+            (None, 0),
+            total_already_spent,
         ))
     }
 
     /// Consume the builder and get the API result
     pub async fn finish_transaction(self) -> Result<Message> {
-        let account_index = self.account_index.unwrap_or(0);
-
-        let mut index = self.initial_address_index.unwrap_or(0);
-
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
 
@@ -307,122 +427,24 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
 
-        let mut inputs_for_essence = Vec::new();
-        let mut outputs_for_essence = Vec::new();
-        let mut address_index_recorders = Vec::new();
-        let mut remainder_address_balance: (Option<Address>, u64) = (None, 0);
-        if let Some(inputs) = &self.inputs {
-            // dust_and_allowance_recorders, inputs_for_essence, address_index_recorders, remainder_address_balance
-            let (
-                dust_and_allowance_recorders_,
-                inputs_for_essence_,
-                address_index_recorders_,
-                remainder_address_balance_,
-            ) = ClientMessageBuilder::get_custom_inputs(
-                self.client,
-                self.seed.ok_or(crate::Error::MissingParameter("seed"))?,
-                self.input_range.clone(),
-                account_index,
-                inputs,
-                total_to_spend,
-            )
-            .await?;
-            dust_and_allowance_recorders = dust_and_allowance_recorders_;
-            inputs_for_essence = inputs_for_essence_;
-            address_index_recorders = address_index_recorders_;
-            remainder_address_balance = remainder_address_balance_;
-        } else {
-            // Reset the empty_address_count for each run of output address searching
-            let mut empty_address_count: u64 = 0;
-            'input_selection: loop {
-                // Get the addresses in the BIP path/index ~ path/index+20
-                let addresses = self
-                    .client
-                    .get_addresses(self.seed.expect("No seed"))
-                    .with_account_index(account_index)
-                    .with_range(index..index + super::ADDRESS_GAP_LIMIT)
-                    .get_all()
-                    .await?;
-                // For each address, get the address outputs
-                let mut address_index = index;
-                for (index, (address, internal)) in addresses.iter().enumerate() {
-                    let address_outputs = self.client.get_address().outputs(&address, Default::default()).await?;
-                    let mut outputs = vec![];
-                    for output_id in address_outputs.iter() {
-                        let curr_outputs = self.client.get_output(output_id).await?;
-                        if !curr_outputs.is_spent {
-                            outputs.push(curr_outputs);
-                        }
-                    }
-                    // If there are more than 20 (ADDRESS_GAP_LIMIT) consecutive empty addresses, then we stop
-                    // looking up the addresses belonging to the seed. Note that we don't
-                    // really count the exact 20 consecutive empty addresses, which is
-                    // unnecessary. We just need to check the address range,
-                    // (index * ADDRESS_GAP_LIMIT, index * ADDRESS_GAP_LIMIT + ADDRESS_GAP_LIMIT), where index is
-                    // natural number, and to see if the outputs are all empty.
-                    if outputs.is_empty() {
-                        // Accumulate the empty_address_count for each run of output address searching
-                        empty_address_count += 1;
-                    } else {
-                        // Reset counter if there is an output
-                        empty_address_count = 0;
-                    }
-                    for (_offset, output) in outputs.into_iter().enumerate() {
-                        let (output_amount, output_address, check_treshold) =
-                            ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
-                        if !check_treshold || output_amount < DUST_THRESHOLD {
-                            dust_and_allowance_recorders.push((output_amount, output_address, false));
-                        }
-
-                        if output.is_spent {
-                            return Err(Error::SpentOutput);
-                        } else if total_already_spent < total_to_spend {
-                            total_already_spent += output_amount;
-                            let address_index_record = ClientMessageBuilder::create_address_index_recorder(
-                                account_index,
-                                address_index,
-                                *internal,
-                                &output,
-                            )?;
-                            inputs_for_essence.push(address_index_record.input.clone());
-                            address_index_recorders.push(address_index_record);
-                            if total_already_spent > total_to_spend {
-                                let remaining_balance = total_already_spent - total_to_spend;
-                                if remaining_balance < DUST_THRESHOLD {
-                                    dust_and_allowance_recorders.push((
-                                        remaining_balance,
-                                        Address::try_from_bech32(address)?,
-                                        true,
-                                    ));
-                                }
-                                // Output the remaining tokens back to the original address
-                                outputs_for_essence.push(
-                                    SignatureLockedSingleOutput::new(
-                                        Address::try_from_bech32(address)?,
-                                        remaining_balance,
-                                    )?
-                                    .into(),
-                                );
-                            }
-                        }
-                    }
-                    // Break if we have enough funds and don't create dust for the remainder
-                    if total_already_spent == total_to_spend || total_already_spent >= total_to_spend + DUST_THRESHOLD {
-                        break 'input_selection;
-                    }
-                    // if we just processed an even index, increase the address index
-                    // (because the list has public and internal addresses)
-                    if index % 2 == 1 {
-                        address_index += 1;
-                    }
-                }
-                index += super::ADDRESS_GAP_LIMIT;
-                // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-                if empty_address_count == (super::ADDRESS_GAP_LIMIT * 2) as u64 {
-                    break;
-                }
+        let (
+            mut inputs_for_essence,
+            mut outputs_for_essence,
+            mut address_index_recorders,
+            remainder_address_balance,
+            total_spent_till_now,
+        ) = match &self.inputs {
+            Some(inputs) => {
+                self.get_custom_inputs(inputs, total_to_spend, dust_and_allowance_recorders.as_mut())
+                    .await?
             }
-        }
+            None => {
+                self.get_inputs(total_to_spend, dust_and_allowance_recorders.as_mut())
+                    .await?
+            }
+        };
+
+        total_already_spent += total_spent_till_now;
 
         if total_already_spent < total_to_spend {
             return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
