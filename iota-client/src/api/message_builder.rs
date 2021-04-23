@@ -224,14 +224,9 @@ impl<'a> ClientMessageBuilder<'a> {
         inputs: &[UtxoInput],
         total_to_spend: u64,
         dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
-    ) -> Result<(
-        Vec<Input>,
-        Vec<Output>,
-        Vec<AddressIndexRecorder>,
-        (Option<Address>, u64),
-        u64,
-    )> {
+    ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
         let mut inputs_for_essence = Vec::new();
+        let mut outputs_for_essence = Vec::new();
         let mut address_index_recorders = Vec::new();
         let mut remainder_address_balance: (Option<Address>, u64) = (None, 0);
         let mut total_already_spent = 0;
@@ -276,26 +271,26 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
             }
         }
-        Ok((
-            inputs_for_essence,
-            vec![],
-            address_index_recorders,
-            remainder_address_balance,
-            total_already_spent,
-        ))
+        // Add output from remaining balance of custom inputs if necessary
+        if let Some(address) = remainder_address_balance.0 {
+            if remainder_address_balance.1 < DUST_THRESHOLD {
+                dust_and_allowance_recorders.push((remainder_address_balance.1, address, true));
+            }
+            outputs_for_essence.push(SignatureLockedSingleOutput::new(address, remainder_address_balance.1)?.into());
+        }
+
+        if total_already_spent < total_to_spend {
+            return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
+        }
+
+        Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
     }
 
     async fn get_inputs(
         &self,
         total_to_spend: u64,
         dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
-    ) -> Result<(
-        Vec<Input>,
-        Vec<Output>,
-        Vec<AddressIndexRecorder>,
-        (Option<Address>, u64),
-        u64,
-    )> {
+    ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
         let mut inputs_for_essence = Vec::new();
         let mut outputs_for_essence = Vec::new();
         let mut address_index_recorders = Vec::new();
@@ -394,13 +389,11 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
 
-        Ok((
-            inputs_for_essence,
-            outputs_for_essence,
-            address_index_recorders,
-            (None, 0),
-            total_already_spent,
-        ))
+        if total_already_spent < total_to_spend {
+            return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
+        }
+
+        Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
     }
 
     /// Consume the builder and get the API result
@@ -410,7 +403,6 @@ impl<'a> ClientMessageBuilder<'a> {
 
         // Calculate the total tokens to spend
         let mut total_to_spend = 0;
-        let mut total_already_spent = 0;
         for output in &self.outputs {
             match output {
                 Output::SignatureLockedSingle(x) => {
@@ -427,13 +419,7 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
 
-        let (
-            mut inputs_for_essence,
-            mut outputs_for_essence,
-            mut address_index_recorders,
-            remainder_address_balance,
-            total_spent_till_now,
-        ) = match &self.inputs {
+        let (mut inputs_for_essence, mut outputs_for_essence, mut address_index_recorders) = match &self.inputs {
             Some(inputs) => {
                 self.get_custom_inputs(inputs, total_to_spend, dust_and_allowance_recorders.as_mut())
                     .await?
@@ -443,20 +429,6 @@ impl<'a> ClientMessageBuilder<'a> {
                     .await?
             }
         };
-
-        total_already_spent += total_spent_till_now;
-
-        if total_already_spent < total_to_spend {
-            return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
-        }
-
-        // Add output from remaining balance of custom inputs if necessary
-        if let Some(address) = remainder_address_balance.0 {
-            if remainder_address_balance.1 < DUST_THRESHOLD {
-                dust_and_allowance_recorders.push((remainder_address_balance.1, address, true));
-            }
-            outputs_for_essence.push(SignatureLockedSingleOutput::new(address, remainder_address_balance.1)?.into());
-        }
 
         // Check if we would let dust on an address behind or send new dust, which would make the tx unconfirmable
         let mut single_addresses = HashSet::new();
