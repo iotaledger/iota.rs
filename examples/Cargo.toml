@@ -66,6 +66,14 @@ name = "multiple_outputs"
 path = "multiple_outputs.rs"
 
 [[example]]
+name = "consolidation"
+path = "consolidation.rs"
+
+[[example]]
+name = "create_max_dust"
+path = "create_max_dust.rs"
+
+[[example]]
 name = "custom_inputs"
 path = "custom_inputs.rs"
 
