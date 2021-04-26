@@ -675,8 +675,8 @@ impl Client {
     /// POST /api/v1/messages endpoint
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
         let path = "api/v1/messages";
-
-        let timeout = if self.get_local_pow().await {
+        let local_pow = self.get_local_pow().await;
+        let timeout = if local_pow {
             self.get_timeout(Api::PostMessage)
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
@@ -692,7 +692,7 @@ impl Client {
         }
         let resp: ResponseWrapper = self
             .node_manager
-            .post_request_bytes(path, timeout, &message.pack_new(), self.get_local_pow().await)
+            .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
             .await?;
 
         let mut message_id_bytes = [0u8; 32];
@@ -703,8 +703,8 @@ impl Client {
     /// POST JSON to /api/v1/messages endpoint
     pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
         let path = "api/v1/messages";
-
-        let timeout = if self.get_local_pow().await {
+        let local_pow = self.get_local_pow().await;
+        let timeout = if local_pow {
             self.get_timeout(Api::PostMessage)
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
@@ -722,12 +722,7 @@ impl Client {
 
         let resp: ResponseWrapper = self
             .node_manager
-            .post_request_json(
-                path,
-                timeout,
-                serde_json::to_value(message)?,
-                self.get_local_pow().await,
-            )
+            .post_request_json(path, timeout, serde_json::to_value(message)?, local_pow)
             .await?;
 
         let mut message_id_bytes = [0u8; 32];
