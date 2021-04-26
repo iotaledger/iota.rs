@@ -371,8 +371,8 @@ impl<'a> ClientMessageBuilder<'a> {
                     if !check_treshold || output_amount < DUST_THRESHOLD {
                         dust_and_allowance_recorders.push((output_amount, output_address, false));
                     }
-
-                    if !output.is_spent && total_already_spent < total_to_spend {
+                    
+                    if total_already_spent < total_to_spend {
                         total_already_spent += output_amount;
                         let address_index_record = ClientMessageBuilder::create_address_index_recorder(
                             account_index,
