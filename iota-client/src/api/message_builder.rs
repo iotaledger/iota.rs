@@ -304,7 +304,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .client
                 .get_addresses(self.seed.ok_or(crate::Error::MissingParameter("seed"))?)
                 .with_account_index(account_index)
-                .with_range(gap_index..gap_index + super::ADDRESS_GAP_LIMIT)
+                .with_range(gap_index..gap_index + super::ADDRESS_GAP_RANGE)
                 .get_all()
                 .await?;
             // For each address, get the address outputs
@@ -318,11 +318,11 @@ impl<'a> ClientMessageBuilder<'a> {
                         outputs.push(curr_outputs);
                     }
                 }
-                // If there are more than 20 (ADDRESS_GAP_LIMIT) consecutive empty addresses, then we stop
+                // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
                 // looking up the addresses belonging to the seed. Note that we don't
                 // really count the exact 20 consecutive empty addresses, which is
                 // unnecessary. We just need to check the address range,
-                // (index * ADDRESS_GAP_LIMIT, index * ADDRESS_GAP_LIMIT + ADDRESS_GAP_LIMIT), where index is
+                // (index * ADDRESS_GAP_RANGE, index * ADDRESS_GAP_RANGE + ADDRESS_GAP_RANGE), where index is
                 // natural number, and to see if the outputs are all empty.
                 if outputs.is_empty() {
                     // Accumulate the empty_address_count for each run of output address searching
@@ -378,9 +378,9 @@ impl<'a> ClientMessageBuilder<'a> {
                     address_index += 1;
                 }
             }
-            gap_index += super::ADDRESS_GAP_LIMIT;
+            gap_index += super::ADDRESS_GAP_RANGE;
             // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-            if empty_address_count >= (super::ADDRESS_GAP_LIMIT * 2) as u64 {
+            if empty_address_count >= (super::ADDRESS_GAP_RANGE * 2) as u64 {
                 break;
             }
         }

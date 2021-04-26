@@ -47,7 +47,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .client
                 .get_addresses(self.seed)
                 .with_account_index(account_index)
-                .with_range(index..index + super::ADDRESS_GAP_LIMIT)
+                .with_range(index..index + super::ADDRESS_GAP_RANGE)
                 .finish()
                 .await?;
 

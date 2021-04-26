@@ -21,7 +21,7 @@ impl<'a> GetBalanceBuilder<'a> {
             seed,
             account_index: 0,
             initial_address_index: 0,
-            gap_limit: super::ADDRESS_GAP_LIMIT,
+            gap_limit: super::ADDRESS_GAP_RANGE,
         }
     }
 
