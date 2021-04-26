@@ -30,10 +30,10 @@ use iota::{
     Ed25519Signature as RustEd25519Signature, Essence as RustEssence, IndexationPayload as RustIndexationPayload,
     Input as RustInput, Message as RustMessage, MilestonePayloadEssence as RustMilestonePayloadEssence,
     Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
-    RegularEssence as RustRegularEssence, SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-    SignatureUnlock as RustSignatureUnlock, TransactionId as RustTransactionId,
-    TransactionPayload as RustTransactionPayload, UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks,
-    UtxoInput as RustUtxoInput,
+    RegularEssence as RustRegularEssence, SignatureLockedDustAllowanceOutput as RustSignatureLockedDustAllowanceOutput,
+    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
+    TransactionId as RustTransactionId, TransactionPayload as RustTransactionPayload, UnlockBlock as RustUnlockBlock,
+    UnlockBlocks as RustUnlockBlocks, UtxoInput as RustUtxoInput,
 };
 
 use std::{
@@ -236,12 +236,30 @@ pub struct TreasuryTransaction {
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct RegularEssence {
     pub inputs: Vec<Input>,
-    pub outputs: Vec<Output>,
+    pub outputs: Vec<TransactionOutput>,
     pub payload: Option<Payload>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
 pub struct Output {
+    pub address: String,
+    pub amount: u64,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct TransactionOutput {
+    pub signature_locked_single: Option<SignatureLockedSingleOutput>,
+    pub signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutput>,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct SignatureLockedSingleOutput {
+    pub address: String,
+    pub amount: u64,
+}
+
+#[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+pub struct SignatureLockedDustAllowanceOutput {
     pub address: String,
     pub amount: u64,
 }
@@ -686,13 +704,22 @@ impl TryFrom<RustRegularEssence> for RegularEssence {
                 .outputs()
                 .iter()
                 .cloned()
-                .map(|output| {
-                    if let RustOutput::SignatureLockedSingle(output) = output {
-                        Output {
+                .map(|output| match output {
+                    RustOutput::SignatureLockedSingle(output) => TransactionOutput {
+                        signature_locked_single: Some(SignatureLockedSingleOutput {
                             address: unsafe { output.address().to_bech32(BECH32_HRP) },
                             amount: output.amount(),
-                        }
-                    } else {
+                        }),
+                        signature_locked_dust_allowance: None,
+                    },
+                    RustOutput::SignatureLockedDustAllowance(output) => TransactionOutput {
+                        signature_locked_single: None,
+                        signature_locked_dust_allowance: Some(SignatureLockedDustAllowanceOutput {
+                            address: unsafe { output.address().to_bech32(BECH32_HRP) },
+                            amount: output.amount(),
+                        }),
+                    },
+                    _ => {
                         unreachable!()
                     }
                 })
@@ -927,22 +954,48 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
             .outputs
             .iter()
             .map(|output| {
-                RustSignatureLockedSingleOutput::new(
-                    RustAddress::from(RustEd25519Address::from_str(&output.address[..]).unwrap_or_else(|_| {
-                        panic!(
-                            "invalid SignatureLockedSingleOutput with output address: {}",
-                            output.address
+                let mut converted_output = None;
+                if let Some(output) = &output.signature_locked_single {
+                    converted_output = Some(
+                        RustSignatureLockedSingleOutput::new(
+                            RustAddress::from(RustEd25519Address::from_str(&output.address[..]).unwrap_or_else(|_| {
+                                panic!(
+                                    "invalid SignatureLockedSingleOutput with output address: {}",
+                                    output.address
+                                )
+                            })),
+                            output.amount,
                         )
-                    })),
-                    output.amount,
-                )
-                .unwrap_or_else(|_| {
-                    panic!(
-                        "invalid SignatureLockedSingleOutput with output address: {}",
-                        output.address
+                        .unwrap_or_else(|_| {
+                            panic!(
+                                "invalid SignatureLockedSingleOutput with output address: {}",
+                                output.address
+                            )
+                        })
+                        .into(),
                     )
-                })
-                .into()
+                }
+                if let Some(output) = &output.signature_locked_dust_allowance {
+                    converted_output = Some(
+                        RustSignatureLockedDustAllowanceOutput::new(
+                            RustAddress::from(RustEd25519Address::from_str(&output.address[..]).unwrap_or_else(|_| {
+                                panic!(
+                                    "invalid SignatureLockedSingleOutput with output address: {}",
+                                    output.address
+                                )
+                            })),
+                            output.amount,
+                        )
+                        .unwrap_or_else(|_| {
+                            panic!(
+                                "invalid SignatureLockedDustAllowanceOutput with output address: {}",
+                                output.address
+                            )
+                        })
+                        .into(),
+                    )
+                }
+                converted_output.unwrap_or_else(|| panic!("Invalid output type"))
             })
             .collect();
         for output in outputs {
