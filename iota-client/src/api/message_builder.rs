@@ -286,7 +286,7 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
     }
 
-    async fn get_inputs(
+    async fn select_inputs(
         &self,
         total_to_spend: u64,
         dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
@@ -296,7 +296,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut address_index_recorders = Vec::new();
         let mut total_already_spent = 0;
         let account_index = self.account_index.unwrap_or(0);
-        let mut index = self.initial_address_index.unwrap_or(0);
+        let mut gap_index = self.initial_address_index.unwrap_or(0);
         let mut empty_address_count: u64 = 0;
         'input_selection: loop {
             // Get the addresses in the BIP path/index ~ path/index+20
@@ -304,11 +304,11 @@ impl<'a> ClientMessageBuilder<'a> {
                 .client
                 .get_addresses(self.seed.ok_or(crate::Error::MissingParameter("seed"))?)
                 .with_account_index(account_index)
-                .with_range(index..index + super::ADDRESS_GAP_LIMIT)
+                .with_range(gap_index..gap_index + super::ADDRESS_GAP_LIMIT)
                 .get_all()
                 .await?;
             // For each address, get the address outputs
-            let mut address_index = index;
+            let mut address_index = gap_index;
             for (index, (address, internal)) in addresses.iter().enumerate() {
                 let address_outputs = self.client.get_address().outputs(&address, Default::default()).await?;
                 let mut outputs = vec![];
@@ -378,9 +378,9 @@ impl<'a> ClientMessageBuilder<'a> {
                     address_index += 1;
                 }
             }
-            index += super::ADDRESS_GAP_LIMIT;
+            gap_index += super::ADDRESS_GAP_LIMIT;
             // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-            if empty_address_count == (super::ADDRESS_GAP_LIMIT * 2) as u64 {
+            if empty_address_count >= (super::ADDRESS_GAP_LIMIT * 2) as u64 {
                 break;
             }
         }
@@ -421,7 +421,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     .await?
             }
             None => {
-                self.get_inputs(total_to_spend, dust_and_allowance_recorders.as_mut())
+                self.select_inputs(total_to_spend, dust_and_allowance_recorders.as_mut())
                     .await?
             }
         };
