@@ -1,6 +1,9 @@
 import {
   NodeInfoWrapper,
   MessageMetadata,
+  MilestoneUTXOChanges,
+  Receipts,
+  Treasury,
   OutputMetadata,
   MilestoneMetadata,
   BrokerOptions,
@@ -35,7 +38,7 @@ export declare class ClientBuilder {
 export declare class MessageSender {
   seed(seed: string): MessageSender
   index(index: string | number[] | Uint8Array): MessageSender
-  data(data: Uint8Array): MessageSender
+  data(data: string | Uint8Array): MessageSender
   parents(messageIds: string[]): MessageSender
   accountIndex(index: number): MessageSender
   initialAddressIndex(index: number): MessageSender
@@ -43,7 +46,7 @@ export declare class MessageSender {
   inputRange(start: number, end: number): MessageSender
   output(address: string, value: number): MessageSender
   dustAllowanceOutput(address: string, value: number): MessageSender
-  submit(): Promise<string>
+  submit(): Promise<MessageWrapper>
 }
 
 export declare class UnspentAddressGetter {
@@ -56,7 +59,7 @@ export declare class AddressGetter {
   accountIndex(index: number): AddressGetter
   range(start: number, end: number): AddressGetter
   bech32_hrp(bech32_hrp: string): AddressGetter
-  get(): Promise<[Address, boolean][]>
+  get(): Promise<Address[]>
 }
 
 export declare class BalanceGetter {
@@ -84,7 +87,7 @@ export declare class Client {
   subscriber(): TopicSubscriber
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
-  getAddresses(seed: string): Promise<AddressGetter>
+  getAddresses(seed: string): AddressGetter
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>

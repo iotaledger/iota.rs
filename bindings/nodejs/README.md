@@ -533,7 +533,17 @@ Sets the message indexation. This field is required for indexation payloads.
 
 | Param | Type                | Description    |
 | ----- | ------------------- | -------------- |
-| index | <code>string</code> | The indexation |
+| index | <code>string | number[] | Uint8Array</code> | The indexation |
+
+**Returns** the message submit instance for chained calls.
+
+#### data(data): MessageSender
+
+Sets the indexation data.
+
+| Param | Type                    | Description        |
+| ----- | ----------------------- | ------------------ |
+| data  | <code>string | Uint8Array</code> | The message's data |
 
 **Returns** the message submit instance for chained calls.
 
@@ -544,16 +554,6 @@ Sets the transaction account seed. This field is required for transaction payloa
 | Param | Type                | Description                                  |
 | ----- | ------------------- | -------------------------------------------- |
 | seed  | <code>string</code> | The hex-encoded seed of the account to spend |
-
-**Returns** the message submit instance for chained calls.
-
-#### data(data): MessageSender
-
-Sets the indexation data.
-
-| Param | Type                    | Description        |
-| ----- | ----------------------- | ------------------ |
-| data  | <code>Uint8Array</code> | The message's data |
 
 **Returns** the message submit instance for chained calls.
 
@@ -631,7 +631,7 @@ Sets the initial address index to search for balance. Defaults to 0 if the funct
 
 **Returns** the message submit instance for chained calls.
 
-#### submit(): Promise<string>
+#### submit(): Promise<MessageWrapper>
 
 Submits the message.
 
@@ -815,6 +815,13 @@ Gets the metadata of the given message.
 | parents   | <code>string[]</code>            | Message ids of the message references |
 | payload   | <code>[Payload](#payload)</code> | Message payload                       |
 | nonce     | <code>number</code>              | Message nonce                         |
+
+### MessageWrapper
+
+| Field     | Type                 | Description    |
+| --------- | -------------------- | -------------- |
+| message   | <code>Message</code> | Message        |
+| messageId | <code>string</code>  | The message id |
 
 #### Payload
 
