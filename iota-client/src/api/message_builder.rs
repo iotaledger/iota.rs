@@ -3,7 +3,6 @@
 
 use crate::{
     api::address::search_address,
-    node::{OutputType, OutputsOptions},
     Client, ClientMiner, Error, Result,
 };
 
@@ -35,6 +34,16 @@ struct AddressIndexRecorder {
     address_index: usize,
     chain: Chain,
     internal: bool,
+}
+
+#[derive(Debug, Clone)]
+struct OutputWrapper {
+    output: OutputResponse,
+    address_index: usize,
+    internal: bool,
+    amount: u64,
+    address: bee_message::address::Address,
+    check_treshold: bool,
 }
 
 /// Builder of send API
@@ -290,12 +299,13 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
     }
 
-    async fn select_inputs(
+    async fn get_inputs(
         &self,
         total_to_spend: u64,
         dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
-        let mut availabe_inputs = Vec::new();
+        let mut outputs = Vec::new();
+        let mut dust_outputs = Vec::new();
         let mut inputs_for_essence = Vec::new();
         let mut outputs_for_essence = Vec::new();
         let mut address_index_recorders = Vec::new();
@@ -315,70 +325,54 @@ impl<'a> ClientMessageBuilder<'a> {
             // For each address, get the address outputs
             let mut address_index = gap_index;
             for (index, (address, internal)) in addresses.iter().enumerate() {
-                let mut signature_locked_outputs = self
-                    .client
-                    .get_address()
-                    .outputs(
-                        &address,
-                        OutputsOptions {
-                            include_spent: false,
-                            output_type: Some(OutputType::SignatureLockedSingle),
-                        },
-                    )
-                    .await?;
-                let dust_allowance_outputs = self
-                    .client
-                    .get_address()
-                    .outputs(
-                        &address,
-                        OutputsOptions {
-                            include_spent: false,
-                            output_type: Some(OutputType::SignatureLockedDustAllowance),
-                        },
-                    )
-                    .await?;
-                let all_outputs = [signature_locked_outputs, dust_allowance_outputs].concat();
-                for output_id in all_outputs.iter() {
-                    let curr_output = self.client.get_output(output_id).await?;
-                    if !curr_output.is_spent {
-                        availabe_inputs.push((address_index, curr_output));
-                        // input_selection(availabe_inputs, total_to_spend)
-                        // fn input_selection() {
-                        // 1. sort all inputs so we get signature locked inputs first
-                        // 2. sort signature locked inputs based on amount so we get highest amount first
-                        // 3. loop over signature locked inputs and add them
-
-                        //     unimplemented!()
-                        // }
+                let address_outputs = self.client.get_address().outputs(&address, Default::default()).await?;
+                for output_id in address_outputs.iter() {
+                    let output = self.client.get_output(output_id).await?;
+                    if !output.is_spent {
+                        let (amount, address, check_treshold) =
+                            ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+                        if !check_treshold || amount < DUST_THRESHOLD {
+                            dust_and_allowance_recorders.push((amount, address, false));
+                        }
+                        let output_wrapper = OutputWrapper {
+                            output,
+                            address_index,
+                            internal: *internal,
+                            amount,
+                            address,
+                            check_treshold,
+                        };
+                        match output_wrapper.output.output {
+                            OutputDto::SignatureLockedSingle(_) => outputs.push(output_wrapper),
+                            OutputDto::SignatureLockedDustAllowance(_) => dust_outputs.push(output_wrapper),
+                            OutputDto::Treasury(_) => {}
+                        };
                     }
                 }
+
                 // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
                 // looking up the addresses belonging to the seed. Note that we don't
                 // really count the exact 20 consecutive empty addresses, which is
                 // unnecessary. We just need to check the address range,
                 // (index * ADDRESS_GAP_RANGE, index * ADDRESS_GAP_RANGE + ADDRESS_GAP_RANGE), where index is
                 // natural number, and to see if the outputs are all empty.
-                if all_outputs.is_empty() {
+                if outputs.is_empty() {
                     // Accumulate the empty_address_count for each run of output address searching
                     empty_address_count += 1;
                 } else {
                     // Reset counter if there is an output
                     empty_address_count = 0;
                 }
-                for (_offset, output) in all_outputs.into_iter().enumerate() {
-                    let (output_amount, output_address, check_treshold) =
-                        ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
-                    if !check_treshold || output_amount < DUST_THRESHOLD {
-                        dust_and_allowance_recorders.push((output_amount, output_address, false));
-                    }
-                    
+
+                outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
+                for (_offset, output_wrapper) in [outputs.clone(), dust_outputs.clone()].concat().iter().enumerate() {
                     if total_already_spent < total_to_spend {
-                        total_already_spent += output_amount;
+                        total_already_spent += output_wrapper.amount;
                         let address_index_record = ClientMessageBuilder::create_address_index_recorder(
                             account_index,
-                            address_index,
-                            *internal,
-                            &output,
+                            output_wrapper.address_index,
+                            output_wrapper.internal,
+                            &output_wrapper.output,
                         )?;
                         inputs_for_essence.push(address_index_record.input.clone());
                         address_index_recorders.push(address_index_record);
@@ -408,6 +402,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
                 // if we just processed an even index, increase the address index
                 // (because the list has public and internal addresses)
+                // TODO: remove - even: public
                 if index % 2 == 1 {
                     address_index += 1;
                 }
@@ -455,7 +450,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     .await?
             }
             None => {
-                self.select_inputs(total_to_spend, dust_and_allowance_recorders.as_mut())
+                self.get_inputs(total_to_spend, dust_and_allowance_recorders.as_mut())
                     .await?
             }
         };
