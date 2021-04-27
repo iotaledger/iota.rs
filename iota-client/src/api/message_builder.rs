@@ -402,7 +402,6 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
                 // if we just processed an even index, increase the address index
                 // (because the list has public and internal addresses)
-                // TODO: remove - even: public
                 if index % 2 == 1 {
                     address_index += 1;
                 }
