@@ -300,8 +300,6 @@ impl<'a> ClientMessageBuilder<'a> {
         total_to_spend: u64,
         dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
-        let mut outputs = Vec::new();
-        let mut dust_outputs = Vec::new();
         let mut inputs_for_essence = Vec::new();
         let mut outputs_for_essence = Vec::new();
         let mut address_index_recorders = Vec::new();
@@ -310,6 +308,8 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut gap_index = self.initial_address_index.unwrap_or(0);
         let mut empty_address_count: u64 = 0;
         'input_selection: loop {
+            let mut outputs = Vec::new();
+            let mut dust_outputs = Vec::new();
             // Get the addresses in the BIP path/index ~ path/index+20
             let addresses = self
                 .client
@@ -347,6 +347,45 @@ impl<'a> ClientMessageBuilder<'a> {
                             OutputDto::SignatureLockedDustAllowance(_) => dust_outputs.push(output_wrapper),
                             OutputDto::Treasury(_) => {}
                         };
+
+                        outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
+                        for (_offset, output_wrapper) in outputs.iter().chain(dust_outputs.iter()).enumerate() {
+                            if total_already_spent < total_to_spend {
+                                total_already_spent += output_wrapper.amount;
+                                let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                                    account_index,
+                                    output_wrapper.address_index,
+                                    output_wrapper.internal,
+                                    &output_wrapper.output,
+                                )?;
+                                inputs_for_essence.push(address_index_record.input.clone());
+                                address_index_recorders.push(address_index_record);
+                                if total_already_spent > total_to_spend {
+                                    let remaining_balance = total_already_spent - total_to_spend;
+                                    if remaining_balance < DUST_THRESHOLD {
+                                        dust_and_allowance_recorders.push((
+                                            remaining_balance,
+                                            Address::try_from_bech32(&output_wrapper.address)?,
+                                            true,
+                                        ));
+                                    }
+                                    // Output the remaining tokens back to the original address
+                                    outputs_for_essence.push(
+                                        SignatureLockedSingleOutput::new(
+                                            Address::try_from_bech32(&output_wrapper.address)?,
+                                            remaining_balance,
+                                        )?
+                                        .into(),
+                                    );
+                                }
+                            }
+                        }
+                        // Break if we have enough funds and don't create dust for the remainder
+                        if total_already_spent == total_to_spend
+                            || total_already_spent >= total_to_spend + DUST_THRESHOLD
+                        {
+                            break 'input_selection;
+                        }
                     }
                 }
 
@@ -364,42 +403,6 @@ impl<'a> ClientMessageBuilder<'a> {
                     empty_address_count = 0;
                 }
 
-                outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
-                for (_offset, output_wrapper) in [outputs.clone(), dust_outputs.clone()].concat().iter().enumerate() {
-                    if total_already_spent < total_to_spend {
-                        total_already_spent += output_wrapper.amount;
-                        let address_index_record = ClientMessageBuilder::create_address_index_recorder(
-                            account_index,
-                            output_wrapper.address_index,
-                            output_wrapper.internal,
-                            &output_wrapper.output,
-                        )?;
-                        inputs_for_essence.push(address_index_record.input.clone());
-                        address_index_recorders.push(address_index_record);
-                        if total_already_spent > total_to_spend {
-                            let remaining_balance = total_already_spent - total_to_spend;
-                            if remaining_balance < DUST_THRESHOLD {
-                                dust_and_allowance_recorders.push((
-                                    remaining_balance,
-                                    Address::try_from_bech32(&output_wrapper.address)?,
-                                    true,
-                                ));
-                            }
-                            // Output the remaining tokens back to the original address
-                            outputs_for_essence.push(
-                                SignatureLockedSingleOutput::new(
-                                    Address::try_from_bech32(&output_wrapper.address)?,
-                                    remaining_balance,
-                                )?
-                                .into(),
-                            );
-                        }
-                    }
-                }
-                // Break if we have enough funds and don't create dust for the remainder
-                if total_already_spent == total_to_spend || total_already_spent >= total_to_spend + DUST_THRESHOLD {
-                    break 'input_selection;
-                }
                 // if we just processed an even index, increase the address index
                 // (because the list has public and internal addresses)
                 if index % 2 == 1 {
