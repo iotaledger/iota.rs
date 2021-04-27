@@ -6,12 +6,12 @@ edition = "2018"
 
 [dev-dependencies]
 iota-core = { path = "../iota-core", features = ["storage", "mqtt"] }
-tokio = { version = "1.1", features = ["full"] }
-hex = "0.4.2"
-dotenv = "0.15.0"
+tokio = { version = "1.5", features = ["full"] }
+hex = "0.4"
+dotenv = "0.15"
 serde_json = "1.0"
 serde = "1.0"
-ureq = { version = "2.0", features = ["json"] }
+ureq = { version = "2.1", features = ["json"] }
 
 [[example]]
 name = "01_get_info"
@@ -64,6 +64,14 @@ path = "transaction.rs"
 [[example]]
 name = "multiple_outputs"
 path = "multiple_outputs.rs"
+
+[[example]]
+name = "consolidation"
+path = "consolidation.rs"
+
+[[example]]
+name = "create_max_dust"
+path = "create_max_dust.rs"
 
 [[example]]
 name = "custom_inputs"

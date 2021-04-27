@@ -28,7 +28,6 @@ const DUST_DIVISOR: i64 = 100_000;
 const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Structure for sorting of UnlockBlocks
-// TODO: move the sorting process to the `Message` crate
 struct AddressIndexRecorder {
     input: Input,
     address_index: usize,
@@ -46,7 +45,7 @@ struct OutputWrapper {
     check_treshold: bool,
 }
 
-/// Builder of send API
+/// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
     seed: Option<&'a Seed>,
@@ -61,7 +60,7 @@ pub struct ClientMessageBuilder<'a> {
 }
 
 impl<'a> ClientMessageBuilder<'a> {
-    /// Create send builder
+    /// Create message builder
     pub fn new(client: &'a Client) -> Self {
         Self {
             client,
