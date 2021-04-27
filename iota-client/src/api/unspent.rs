@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
+use crate::{Client, Result};
 
 use crypto::keys::slip10::Seed;
 
@@ -40,7 +40,7 @@ impl<'a> GetUnspentAddressBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn get(self) -> Result<(String, usize)> {
-        let account_index = self.account_index.ok_or(Error::MissingParameter("account index"))?;
+        let account_index = self.account_index.unwrap_or(0);
 
         let mut index = self.initial_address_index.unwrap_or(0);
 
