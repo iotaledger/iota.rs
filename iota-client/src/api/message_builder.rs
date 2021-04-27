@@ -38,7 +38,7 @@ struct OutputWrapper {
     address_index: usize,
     internal: bool,
     amount: u64,
-    address: bee_message::address::Address,
+    address: String,
     check_treshold: bool,
 }
 
@@ -320,8 +320,12 @@ impl<'a> ClientMessageBuilder<'a> {
                 .await?;
             // For each address, get the address outputs
             let mut address_index = gap_index;
-            for (index, (address, internal)) in addresses.iter().enumerate() {
-                let address_outputs = self.client.get_address().outputs(&address, Default::default()).await?;
+            for (index, (str_address, internal)) in addresses.iter().enumerate() {
+                let address_outputs = self
+                    .client
+                    .get_address()
+                    .outputs(&str_address, Default::default())
+                    .await?;
                 for output_id in address_outputs.iter() {
                     let output = self.client.get_output(output_id).await?;
                     if !output.is_spent {
@@ -335,7 +339,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             address_index,
                             internal: *internal,
                             amount,
-                            address,
+                            address: str_address.clone(),
                             check_treshold,
                         };
                         match output_wrapper.output.output {
@@ -377,14 +381,14 @@ impl<'a> ClientMessageBuilder<'a> {
                             if remaining_balance < DUST_THRESHOLD {
                                 dust_and_allowance_recorders.push((
                                     remaining_balance,
-                                    Address::try_from_bech32(address)?,
+                                    Address::try_from_bech32(&output_wrapper.address)?,
                                     true,
                                 ));
                             }
                             // Output the remaining tokens back to the original address
                             outputs_for_essence.push(
                                 SignatureLockedSingleOutput::new(
-                                    Address::try_from_bech32(address)?,
+                                    Address::try_from_bech32(&output_wrapper.address)?,
                                     remaining_balance,
                                 )?
                                 .into(),
