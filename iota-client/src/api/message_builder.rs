@@ -326,6 +326,9 @@ impl<'a> ClientMessageBuilder<'a> {
                     .outputs(&str_address, Default::default())
                     .await?;
 
+                // We store output responses locally in outputs and dust_allowance_outputs and after each output we sort
+                // them and try to get enough inputs for the transaction, so we don't request more
+                // outputs than we need
                 for output_id in address_outputs.iter() {
                     let output = self.client.get_output(output_id).await?;
                     if !output.is_spent {
@@ -348,6 +351,9 @@ impl<'a> ClientMessageBuilder<'a> {
                         dust_allowance_outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
 
                         let mut passed_dust_and_allowance_recorders = Vec::new();
+                        // We start using the signature locked outputs, so we don't move dust_allowance_outputs first
+                        // which could result in a unconfirmable transaction if we still have
+                        // dust on that address
                         for (_offset, output_wrapper) in outputs
                             .iter()
                             .chain(dust_allowance_outputs.iter())
@@ -503,19 +509,20 @@ impl<'a> ClientMessageBuilder<'a> {
         for (current_block_index, recorder) in address_index_recorders.iter().enumerate() {
             // Check if current path is same as previous path
             // If so, add a reference unlock block
-            // Format to differentiate between public and private addresses
+            // Format to differentiate between public and internal addresses
             let index = format!("{}{}", recorder.address_index, recorder.internal);
             if let Some(block_index) = signature_indexes.get(&index) {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
-                // If not, we should create a signature unlock block
+                // If not, we need to create a signature unlock block
                 let private_key = self
                     .seed
                     .expect("No seed")
                     .derive(Curve::Ed25519, &recorder.chain)?
                     .secret_key()?;
                 let public_key = private_key.public_key().to_compressed_bytes();
-                // The block should sign the entire transaction essence part of the transaction payload
+                // The signature unlock block needs to sign the hash of the entire transaction essence of the
+                // transaction payload
                 let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
                 unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
                     public_key, *signature,
