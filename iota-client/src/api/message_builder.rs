@@ -350,26 +350,27 @@ impl<'a> ClientMessageBuilder<'a> {
                         let mut passed_dust_and_allowance_recorders = Vec::new();
                         for (_offset, output_wrapper) in outputs.iter().chain(dust_allowance_outputs.iter()).enumerate()
                         {
-                            if total_already_spent < total_to_spend {
-                                total_already_spent += output_wrapper.amount;
-                                let address_index_record = ClientMessageBuilder::create_address_index_recorder(
-                                    account_index,
-                                    output_wrapper.address_index,
-                                    output_wrapper.internal,
-                                    &output_wrapper.output,
-                                )?;
-                                inputs_for_essence.push(address_index_record.input.clone());
-                                address_index_recorders.push(address_index_record);
-                                if total_already_spent > total_to_spend {
-                                    let remaining_balance = total_already_spent - total_to_spend;
-                                    if remaining_balance < DUST_THRESHOLD {
-                                        passed_dust_and_allowance_recorders.push((
-                                            remaining_balance,
-                                            Address::try_from_bech32(&output_wrapper.address)?,
-                                            true,
-                                        ));
-                                    }
-                                    // Output the remaining tokens back to the original address
+                            // todo make this better
+                            // max 127 inputs
+                            if _offset > 127 {
+                                break;
+                            }
+                            total_already_spent += output_wrapper.amount;
+                            let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                                account_index,
+                                output_wrapper.address_index,
+                                output_wrapper.internal,
+                                &output_wrapper.output,
+                            )?;
+                            inputs_for_essence.push(address_index_record.input.clone());
+                            address_index_recorders.push(address_index_record);
+                            // Break if we have enough funds and don't create dust for the remainder
+                            if total_already_spent == total_to_spend
+                                || total_already_spent >= total_to_spend + DUST_THRESHOLD
+                            {
+                                let remaining_balance = total_already_spent - total_to_spend;
+                                // Output possible remaining tokens back to the original address
+                                if remaining_balance != 0 {
                                     outputs_for_essence.push(
                                         SignatureLockedSingleOutput::new(
                                             Address::try_from_bech32(&output_wrapper.address)?,
@@ -378,19 +379,15 @@ impl<'a> ClientMessageBuilder<'a> {
                                         .into(),
                                     );
                                 }
+                                dust_and_allowance_recorders.append(&mut passed_dust_and_allowance_recorders);
+                                break 'input_selection;
                             }
-                        }
-                        // Break if we have enough funds and don't create dust for the remainder
-                        if total_already_spent == total_to_spend
-                            || total_already_spent >= total_to_spend + DUST_THRESHOLD
-                        {
-                            dust_and_allowance_recorders.append(&mut passed_dust_and_allowance_recorders);
-                            break 'input_selection;
                         }
                         // We need to cleare all gathered records if we haven't reached the total amount we need in this iteration.
                         inputs_for_essence.clear();
                         outputs_for_essence.clear();
                         address_index_recorders.clear();
+                        total_already_spent = 0;
                     }
                 }
 
