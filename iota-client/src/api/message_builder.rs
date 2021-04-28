@@ -4,8 +4,7 @@
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
-use bee_message::constants::INPUT_OUTPUT_COUNT_MAX;
-use bee_message::prelude::*;
+use bee_message::{constants::INPUT_OUTPUT_COUNT_MAX, prelude::*};
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
 use bee_rest_api::types::{
@@ -384,7 +383,8 @@ impl<'a> ClientMessageBuilder<'a> {
                                 break 'input_selection;
                             }
                         }
-                        // We need to cleare all gathered records if we haven't reached the total amount we need in this iteration.
+                        // We need to cleare all gathered records if we haven't reached the total amount we need in this
+                        // iteration.
                         inputs_for_essence.clear();
                         outputs_for_essence.clear();
                         address_index_recorders.clear();
