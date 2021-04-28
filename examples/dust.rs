@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "First transaction sent: https://explorer.iota.org/chrysalis/message/{}",
+        "First transaction sent: https://explorer.iota.org/testnet/message/{}",
         message.id().0
     );
     Ok(())

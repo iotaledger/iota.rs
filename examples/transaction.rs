@@ -23,7 +23,7 @@ use std::env;
 /// "atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2" (index 2), and check the ledger
 /// inclusion state, which should be "Some(Included)".
 
-const EXPLORER_URL: &str = "https://explorer.iota.org/chrysalis/message/";
+const EXPLORER_URL: &str = "https://explorer.iota.org/testnet/message/";
 
 #[tokio::main]
 async fn main() -> Result<()> {

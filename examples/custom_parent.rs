@@ -30,7 +30,7 @@ async fn main() {
         .unwrap();
 
     println!(
-        "Empty message sent: https://explorer.iota.org/chrysalis/message/{}",
+        "Empty message sent: https://explorer.iota.org/testnet/message/{}",
         message.id().0
     );
 }
