@@ -297,7 +297,7 @@ impl<'a> ClientMessageBuilder<'a> {
     async fn get_inputs(
         &self,
         total_to_spend: u64,
-        dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
+        _dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
         let mut outputs = Vec::new();
         let mut dust_allowance_outputs = Vec::new();
@@ -347,10 +347,10 @@ impl<'a> ClientMessageBuilder<'a> {
                             OutputDto::Treasury(_) => {}
                         };
 
-                        outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
-                        dust_allowance_outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
+                        // Order outputs descending, so that as few inputs as necessary are used
+                        outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
+                        dust_allowance_outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
 
-                        let mut passed_dust_and_allowance_recorders = Vec::new();
                         // We start using the signature locked outputs, so we don't move dust_allowance_outputs first
                         // which could result in a unconfirmable transaction if we still have
                         // dust on that address
@@ -385,7 +385,6 @@ impl<'a> ClientMessageBuilder<'a> {
                                         .into(),
                                     );
                                 }
-                                dust_and_allowance_recorders.append(&mut passed_dust_and_allowance_recorders);
                                 break 'input_selection;
                             }
                         }
@@ -404,7 +403,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 // unnecessary. We just need to check the address range,
                 // (index * ADDRESS_GAP_RANGE, index * ADDRESS_GAP_RANGE + ADDRESS_GAP_RANGE), where index is
                 // natural number, and to see if the outputs are all empty.
-                if outputs.is_empty() {
+                if address_outputs.is_empty() {
                     // Accumulate the empty_address_count for each run of output address searching
                     empty_address_count += 1;
                 } else {
