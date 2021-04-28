@@ -387,7 +387,7 @@ impl<'a> ClientMessageBuilder<'a> {
                             dust_and_allowance_recorders.append(&mut passed_dust_and_allowance_recorders);
                             break 'input_selection;
                         }
-                        // We need to cleare all gathered records if we haven't reached the total amount we need.
+                        // We need to cleare all gathered records if we haven't reached the total amount we need in this iteration.
                         inputs_for_essence.clear();
                         outputs_for_essence.clear();
                         address_index_recorders.clear();
