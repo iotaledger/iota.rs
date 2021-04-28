@@ -4,6 +4,7 @@
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
+use bee_message::constants::INPUT_OUTPUT_COUNT_MAX;
 use bee_message::prelude::*;
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
@@ -348,13 +349,13 @@ impl<'a> ClientMessageBuilder<'a> {
                         dust_allowance_outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
 
                         let mut passed_dust_and_allowance_recorders = Vec::new();
-                        for (_offset, output_wrapper) in outputs.iter().chain(dust_allowance_outputs.iter()).enumerate()
+                        for (_offset, output_wrapper) in outputs
+                            .iter()
+                            .chain(dust_allowance_outputs.iter())
+                            // Max inputs is 127
+                            .take(INPUT_OUTPUT_COUNT_MAX)
+                            .enumerate()
                         {
-                            // todo make this better
-                            // max 127 inputs
-                            if _offset > 127 {
-                                break;
-                            }
                             total_already_spent += output_wrapper.amount;
                             let address_index_record = ClientMessageBuilder::create_address_index_recorder(
                                 account_index,
