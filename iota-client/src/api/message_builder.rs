@@ -345,9 +345,8 @@ impl<'a> ClientMessageBuilder<'a> {
                         };
 
                         outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
-                        inputs_for_essence.clear();
-                        outputs_for_essence.clear();
-                        address_index_recorders.clear();
+                        dust_allowance_outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
+
                         let mut passed_dust_and_allowance_recorders = Vec::new();
                         for (_offset, output_wrapper) in outputs.iter().chain(dust_allowance_outputs.iter()).enumerate()
                         {
@@ -388,6 +387,10 @@ impl<'a> ClientMessageBuilder<'a> {
                             dust_and_allowance_recorders.append(&mut passed_dust_and_allowance_recorders);
                             break 'input_selection;
                         }
+                        // We need to cleare all gathered records if we haven't reached the total amount we need.
+                        inputs_for_essence.clear();
+                        outputs_for_essence.clear();
+                        address_index_recorders.clear();
                     }
                 }
 
