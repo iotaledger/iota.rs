@@ -19,6 +19,11 @@ pub enum Error {
     /// The wallet account doesn't have enough balance
     #[error("The wallet account doesn't have enough balance. It only has {0}, required is {1}")]
     NotEnoughBalance(u64, u64),
+    /// The wallet account doesn't have enough balance
+    #[error(
+        "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 127, consolidate them"
+    )]
+    ConsolidationRequired(usize),
     /// Dust error, for example not enough balance on an address
     #[error("Dust error: {0}")]
     DustError(String),

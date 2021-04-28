@@ -420,12 +420,22 @@ impl<'a> ClientMessageBuilder<'a> {
             gap_index += super::ADDRESS_GAP_RANGE;
             // The gap limit is 20 and use reference 40 here because there's public and internal addresses
             if empty_address_count >= (super::ADDRESS_GAP_RANGE * 2) as u64 {
-                break;
+                let inputs_balance = outputs
+                    .iter()
+                    .chain(dust_allowance_outputs.iter())
+                    .fold(0, |acc, output| acc + output.amount);
+                let inputs_amount = outputs.len() + dust_allowance_outputs.len();
+                if inputs_balance >= total_to_spend && inputs_amount > INPUT_OUTPUT_COUNT_MAX {
+                    return Err(Error::ConsolidationRequired(inputs_amount));
+                } else if inputs_balance > total_to_spend {
+                    return Err(Error::DustError(format!(
+                        "Transaction would create a dust output with {}i",
+                        inputs_balance - total_to_spend
+                    )));
+                } else {
+                    return Err(Error::NotEnoughBalance(inputs_balance, total_to_spend));
+                }
             }
-        }
-
-        if total_already_spent < total_to_spend {
-            return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
         }
 
         Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
