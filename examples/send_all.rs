@@ -24,6 +24,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
+    let seed_2 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?);
     let total_balance = iota.get_balance(&seed).with_initial_address_index(0).finish().await?;
 
     println!("Total balance: {}", total_balance);
@@ -32,10 +33,9 @@ async fn main() -> Result<()> {
         .message()
         .with_seed(&seed)
         .with_output(
-            "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+            &iota.get_addresses(&seed_2).with_range(0..1).finish().await?[0],
             total_balance,
         )?
-        .with_initial_address_index(0)
         .finish()
         .await?;
 
