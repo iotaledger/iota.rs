@@ -386,7 +386,7 @@ Output example:
 ```plaintext
 8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9
 ```
-* Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/chrysalis/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
+* Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/testnet/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
 * There are three payloads prepared (`transaction`, `milestone` and `indexation`) however only `indexation` payload is leveraged this time
 * `data` contains an arbitrary data encoded in bytes
 * Please note there is no IOTA address involved while sending data messages. Such messages are referenced using `message_id` or key `index`

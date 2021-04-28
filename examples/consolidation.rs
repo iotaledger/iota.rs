@@ -102,7 +102,7 @@ async fn main() -> Result<()> {
                     .await?;
                 message_id.replace(message.id().0);
                 println!(
-                    "Transaction sent: https://explorer.iota.org/chrysalis/message/{}",
+                    "Transaction sent: https://explorer.iota.org/testnet/message/{}",
                     message_id.unwrap()
                 );
             }

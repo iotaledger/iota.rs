@@ -448,10 +448,10 @@ Output example:
    "nonce":6917529027641573188
 }
 ```
-* Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/chrysalis/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
+* Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/testnet/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
 * In comparison to an empty message sent in the previous chapter, the `payload` section looks more interesting
 * There are three payloads prepared (`transaction`, `milestone` and `indexation`) however only `indexation` payload is leveraged this time
-* `index` was simply encoded to `list[bytes]` in hex (no hash algorithm) and the resulting string can be leveraged as an additional way how to search for a set of indexed messages with the same key index via [Tangle explorer](https://explorer.iota.org/chrysalis/indexed/736f6d655f646174615f696e646578) or `Client.find_messages()` API call
+* `index` was simply encoded to `list[bytes]` in hex (no hash algorithm) and the resulting string can be leveraged as an additional way how to search for a set of indexed messages with the same key index via [Tangle explorer](https://explorer.iota.org/testnet/indexed/736f6d655f646174615f696e646578) or `Client.find_messages()` API call
 * `data` contains an arbitrary data encoded in bytes
 * Please note there is no IOTA address involved while sending data messages. Such messages are referenced using `message_id` or key `index`
 * IOTA addresses are part of `UTXO` data structure that is sent using `SignedTransaction` payload explained below

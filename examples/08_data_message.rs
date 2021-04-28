@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Message sent https://explorer.iota.org/chrysalis/message/{}\n",
+        "Message sent https://explorer.iota.org/testnet/message/{}\n",
         message.id().0
     );
 
