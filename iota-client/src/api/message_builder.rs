@@ -39,7 +39,6 @@ struct OutputWrapper {
     internal: bool,
     amount: u64,
     address: String,
-    check_treshold: bool,
 }
 
 /// Builder of the message API
@@ -300,6 +299,8 @@ impl<'a> ClientMessageBuilder<'a> {
         total_to_spend: u64,
         dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+        let mut outputs = Vec::new();
+        let mut dust_allowance_outputs = Vec::new();
         let mut inputs_for_essence = Vec::new();
         let mut outputs_for_essence = Vec::new();
         let mut address_index_recorders = Vec::new();
@@ -308,8 +309,6 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut gap_index = self.initial_address_index.unwrap_or(0);
         let mut empty_address_count: u64 = 0;
         'input_selection: loop {
-            let mut outputs = Vec::new();
-            let mut dust_outputs = Vec::new();
             // Get the addresses in the BIP path/index ~ path/index+20
             let addresses = self
                 .client
@@ -326,30 +325,32 @@ impl<'a> ClientMessageBuilder<'a> {
                     .get_address()
                     .outputs(&str_address, Default::default())
                     .await?;
+
                 for output_id in address_outputs.iter() {
                     let output = self.client.get_output(output_id).await?;
                     if !output.is_spent {
-                        let (amount, address, check_treshold) =
-                            ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
-                        if !check_treshold || amount < DUST_THRESHOLD {
-                            dust_and_allowance_recorders.push((amount, address, false));
-                        }
+                        let (amount, _, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+
                         let output_wrapper = OutputWrapper {
                             output,
                             address_index,
                             internal: *internal,
                             amount,
                             address: str_address.clone(),
-                            check_treshold,
                         };
                         match output_wrapper.output.output {
                             OutputDto::SignatureLockedSingle(_) => outputs.push(output_wrapper),
-                            OutputDto::SignatureLockedDustAllowance(_) => dust_outputs.push(output_wrapper),
+                            OutputDto::SignatureLockedDustAllowance(_) => dust_allowance_outputs.push(output_wrapper),
                             OutputDto::Treasury(_) => {}
                         };
 
                         outputs.sort_by(|l, r| l.amount.cmp(&r.amount));
-                        for (_offset, output_wrapper) in outputs.iter().chain(dust_outputs.iter()).enumerate() {
+                        inputs_for_essence.clear();
+                        outputs_for_essence.clear();
+                        address_index_recorders.clear();
+                        let mut passed_dust_and_allowance_recorders = Vec::new();
+                        for (_offset, output_wrapper) in outputs.iter().chain(dust_allowance_outputs.iter()).enumerate()
+                        {
                             if total_already_spent < total_to_spend {
                                 total_already_spent += output_wrapper.amount;
                                 let address_index_record = ClientMessageBuilder::create_address_index_recorder(
@@ -363,7 +364,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                 if total_already_spent > total_to_spend {
                                     let remaining_balance = total_already_spent - total_to_spend;
                                     if remaining_balance < DUST_THRESHOLD {
-                                        dust_and_allowance_recorders.push((
+                                        passed_dust_and_allowance_recorders.push((
                                             remaining_balance,
                                             Address::try_from_bech32(&output_wrapper.address)?,
                                             true,
@@ -384,6 +385,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         if total_already_spent == total_to_spend
                             || total_already_spent >= total_to_spend + DUST_THRESHOLD
                         {
+                            dust_and_allowance_recorders.append(&mut passed_dust_and_allowance_recorders);
                             break 'input_selection;
                         }
                     }
