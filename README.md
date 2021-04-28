@@ -1,34 +1,18 @@
 # iota.rs
 
-Official Rust library.  
-
-> **🚧 Alpha Version 🚧**
->
-> This repository now targets [Chrysalis part 2](https://roadmap.iota.org/chrysalis) It will have many breaking change along the way. Please use with caution! 🚧
+Official Rust library.
 
 The goal of this library is to have `one source code of truth`, which means there is one implementation in Rust and [bindings](#bindings) to other programming languages.
 
 For value transfers we recommend to use [wallet.rs](https://github.com/iotaledger/wallet.rs).
 
-This **alpha** version allows you to do the following:
+This library allows you to do the following:
 
-* Create messages and transactions
+* Create messages with indexation and transaction payloads
+* Get messages and outputs
 * Sign transactions
 * Generate addresses
 * Interact with an IOTA node
-
-Please report any issues in our [issue tracker](https://github.com/iotaledger/iota.rs/issues).
-
-| Table of contents                                 |
-| :------------------------------------------------ |
-| [Prerequisites](#prerequisites)                   |
-| [Using the library](#installing-the-library)      |
-| [API reference](#api-reference)                   |
-| [Examples](#examples)                             |
-| [Bindings](#bindings)                             |
-| [Supporting the project](#supporting-the-project) |
-| [Joining the discussion](#joining-the-discussion) |
-| [License](#license)                               |
 
 ## Requirements
 
@@ -61,10 +45,10 @@ cargo doc --document-private-items --no-deps --open
 
 ## Examples
 
-You can see the examples in the [examples](examples/) directory and try them with:
+You can see the examples in the [examples](examples/) directory and try them like:
 
 ```bash
-cargo run --example balance
+cargo run --example 01_get_info
 ```
 
 For the examples where a seed is required you have to rename `.env.example` to `.env`.
@@ -76,11 +60,9 @@ Bindings to other programming languages.
 * [Node.js binding](bindings/nodejs/)
 * [Python binding](bindings/python/)
 
-## Supporting the project
-
 ## Joining the discussion
 
-If you want to get involved in the community, need help with setting up, have any issues or just want to discuss IOTA with other people, feel free to join our [Discord](https://discord.iota.org/).
+If you want to get involved in the community, need help with setting up, have any issues or just want to discuss IOTA with other people, feel free to join our [Discord](https://discord.iota.org/) in the #clients-dev and #clients-discussion channels.
 
 ## License
 
