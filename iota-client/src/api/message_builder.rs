@@ -356,15 +356,12 @@ impl<'a> ClientMessageBuilder<'a> {
                         // We start using the signature locked outputs, so we don't move dust_allowance_outputs first
                         // which could result in a unconfirmable transaction if we still have
                         // dust on that address
-                        let mut iterator = outputs.clone();
+                        let mut iterator: Vec<&OutputWrapper> = outputs.iter().collect();
                         // We only need dust_allowance_outputs in the last iterator, because otherwise we could use
                         // a dust allowance output as input while still having dust on the address
                         if output_index == address_outputs.len() - 1 {
                             dust_allowance_outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
-                            iterator = iterator
-                                .into_iter()
-                                .chain(dust_allowance_outputs.clone().into_iter())
-                                .collect();
+                            iterator = iterator.into_iter().chain(dust_allowance_outputs.iter()).collect();
                         }
 
                         for (_offset, output_wrapper) in iterator

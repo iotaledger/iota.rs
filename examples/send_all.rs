@@ -9,7 +9,7 @@ use dotenv::dotenv;
 use std::env;
 
 /// In this example we will get the balance of the first account of the seed and send everything
-// Todo: automatically detect amount of inputs and if > 127 create multiple transactions
+/// Run the consolidation example first if there are more than 127 outputs
 
 #[tokio::main]
 async fn main() -> Result<()> {
