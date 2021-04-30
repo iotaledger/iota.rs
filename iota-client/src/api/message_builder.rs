@@ -179,6 +179,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
+    // Used to store the address data for an input so we can later sign it
     fn create_address_index_recorder(
         account_index: usize,
         address_index: usize,
@@ -227,6 +228,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
+    // If custom inputs are provided we check if they are unspent, get the balance and search the address for it
     async fn get_custom_inputs(
         &self,
         inputs: &[UtxoInput],
@@ -294,6 +296,7 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
     }
 
+    // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
     async fn get_inputs(
         &self,
         total_to_spend: u64,
@@ -473,8 +476,13 @@ impl<'a> ClientMessageBuilder<'a> {
             }
         }
 
+        // Inputselection
         let (mut inputs_for_essence, mut outputs_for_essence, mut address_index_recorders) = match &self.inputs {
             Some(inputs) => {
+                // 127 is the maximum input amount
+                if inputs.len() > INPUT_OUTPUT_COUNT_MAX {
+                    return Err(Error::ConsolidationRequired(inputs.len()));
+                }
                 self.get_custom_inputs(inputs, total_to_spend, dust_and_allowance_recorders.as_mut())
                     .await?
             }
@@ -755,6 +763,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     }
 }
 
+// PoW timeout, if we reach this we will restart the PoW with new tips, so the final message will never be lazy
 #[cfg(not(feature = "wasm"))]
 fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
