@@ -349,10 +349,6 @@ impl<'a> ClientMessageBuilder<'a> {
 
                         // Order outputs descending, so that as few inputs as necessary are used
                         outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
-                        // We only need dust_allowance_outputs in the last iterator
-                        if output_index != address_outputs.len() {
-                            dust_allowance_outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
-                        }
 
                         // We start using the signature locked outputs, so we don't move dust_allowance_outputs first
                         // which could result in a unconfirmable transaction if we still have
@@ -360,7 +356,8 @@ impl<'a> ClientMessageBuilder<'a> {
                         let mut iterator = outputs.clone();
                         // We only need dust_allowance_outputs in the last iterator, because otherwise we could use
                         // a dust allowance output as input while still having dust on the address
-                        if output_index != address_outputs.len() {
+                        if output_index == address_outputs.len() - 1 {
+                            dust_allowance_outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
                             iterator = iterator
                                 .into_iter()
                                 .chain(dust_allowance_outputs.clone().into_iter())
