@@ -3,7 +3,7 @@
 
 use backtrace::Backtrace;
 use futures::{Future, FutureExt};
-use iota::Client;
+use iota_client::Client;
 use neon::prelude::*;
 use once_cell::sync::{Lazy, OnceCell};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
@@ -29,19 +29,19 @@ pub enum Error {
     #[error("`{0}`")]
     Anyhow(#[from] anyhow::Error),
     #[error("`{0}`")]
-    Client(#[from] iota::client::Error),
+    Client(#[from] iota_client::Error),
     #[error("`{0}`")]
     Hex(#[from] hex::FromHexError),
     #[error("`{0}`")]
     Panic(String),
     #[error("`{0}`")]
-    Message(iota::message::Error),
+    Message(iota_client::bee_message::Error),
     #[error("`{0}`")]
     SerdeJson(serde_json::Error),
 }
 
-impl From<iota::message::Error> for Error {
-    fn from(error: iota::message::Error) -> Self {
+impl From<iota_client::bee_message::Error> for Error {
+    fn from(error: iota_client::bee_message::Error) -> Self {
         Self::Message(error)
     }
 }

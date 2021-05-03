@@ -1,8 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{
-    message::prelude::{Address, MessageId, TransactionId, UtxoInput},
+use iota_client::{
+    bee_message::prelude::{Address, MessageId, TransactionId, UtxoInput},
     AddressOutputsOptions, Client, OutputType, Seed,
 };
 use neon::prelude::*;
