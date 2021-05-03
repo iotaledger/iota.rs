@@ -20,7 +20,7 @@ export declare interface TransactionPayloadEssence {
 export declare interface Ed25519SignatureUnlockBlock {
   type: 'Ed25519'
   data: {
-    public_key: number[]
+    publicKey: number[]
     signature: number[]
   }
 }
@@ -39,7 +39,7 @@ export declare type UnlockBlock = SignatureUnlockBlock | ReferenceUnlockBlock
 
 export declare interface TransactionPayload {
   essence: TransactionPayloadEssence
-  unlock_blocks: UnlockBlock[]
+  unlockBlocks: UnlockBlock[]
 }
 
 export declare interface IndexationPayload {
@@ -51,10 +51,10 @@ export declare interface MilestoneEssence {
   index: string
   timestamp: string
   parents: string[]
-  merkle_proof: number[]
-  next_pow_score: number
-  next_pow_score_milestone_index: number
-  public_keys: number[]
+  inclusionMerkleProof: number[]
+  nextPoWScore: number
+  nextPoWScoreMilestoneIndex: number
+  publicKeys: number[]
 }
 
 export declare interface MilestonePayload {
@@ -67,7 +67,7 @@ export declare type Payload = { type: 'Indexation', data: IndexationPayload } |
 { type: 'Transaction', data: TransactionPayload }
 
 export declare interface Message {
-  network_id: number
+  networkId: number
   parents: string[]
   payload?: Payload
   nonce: number
@@ -94,8 +94,8 @@ export declare interface TreasuryTransactionPayload {
 
 export declare interface Input {
   kind: number
-  transaction_id: string
-  transaction_output_index: number
+  transactionId: string
+  transactionOutputIndex: number
 }
 
 export declare interface Output {

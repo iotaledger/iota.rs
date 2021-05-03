@@ -1,5 +1,5 @@
 const { ClientBuilder } = require('../lib')
-const { assertAddress, assertMessageId, assertMessage } = require('./assertions')
+const { assertAddress, assertMessageId, assertMessageWrapper } = require('./assertions')
 const assert = require('assert')
 
 const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
@@ -17,7 +17,7 @@ describe('Client', () => {
     assert.strictEqual(typeof info, 'object')
     assert.strictEqual(info.localPow, true)
     assert.strictEqual(info.bech32HRP, 'atoi')
-    assert.strictEqual(info.minPowScore, 4000)
+    assert.strictEqual(info.minPoWScore, 4000)
   })
 
   it('gets tips', async () => {
@@ -44,12 +44,12 @@ describe('Client', () => {
   })
 
   it('sends an indexation message with the high level API', async () => {
-    const message = await client
+    const messageWrapper = await client
       .message()
       .index('IOTA.RS TEST')
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
-    assertMessage(message)
+    assertMessageWrapper(messageWrapper)
   })
 
   it('sends a value transaction and checks output balance', async () => {
@@ -60,7 +60,7 @@ describe('Client', () => {
       .accountIndex(0)
       .output(depositAddress, 1000000)
       .submit()
-    assertMessage(message)
+    assertMessageWrapper(message)
 
     while (true) {
       const metadata = await client.getMessage().metadata(message.messageId)
@@ -94,22 +94,22 @@ describe('Client', () => {
     const info = await client.getInfo()
     const milestone = await client.getMilestone(info.nodeinfo.confirmedMilestoneIndex)
     assert.strictEqual(typeof milestone, 'object')
-    assert.strictEqual('message_id' in milestone, true)
-    assertMessageId(milestone.message_id)
-    const message = await client.getMessage().data(milestone.message_id)
-    assertMessage(message)
+    assert.strictEqual('messageId' in milestone, true)
+    assertMessageId(milestone.messageId)
+    const message = await client.getMessage().data(milestone.messageId)
+    assertMessageWrapper(message)
 
 
-    const children = await client.getMessage().children(milestone.message_id)
+    const children = await client.getMessage().children(milestone.messageId)
     assert.strictEqual(Array.isArray(children), true)
 
-    const metadata = await client.getMessage().metadata(milestone.message_id)
+    const metadata = await client.getMessage().metadata(milestone.messageId)
     assert.strictEqual(typeof metadata, 'object')
     assert.strictEqual('messageId' in metadata, true)
     assertMessageId(metadata.messageId)
-    assert.strictEqual(metadata.messageId, milestone.message_id)
+    assert.strictEqual(metadata.messageId, milestone.messageId)
 
-    const raw = await client.getMessage().raw(milestone.message_id)
+    const raw = await client.getMessage().raw(milestone.messageId)
     assert.strictEqual(typeof raw, 'string')
   })
 
@@ -137,10 +137,11 @@ describe('Client', () => {
     assertMessageId(messageId)
 
     const message = await client.getMessage().data(messageId)
-    assertMessage(message)
-    assert.strictEqual(message.message.payload.type, 'Indexation')
-    assert.strictEqual(typeof message.message.payload.data, 'object')
-    assert.deepStrictEqual(message.message.payload.data, indexation)
+    assertMessageWrapper(message)
+    assert.strictEqual(message.message.payload.type, 2)
+    assert.strictEqual(typeof message.message.payload.data, 'string')
+    const decodedData = Buffer.from(message.message.payload.data, 'hex').toString("utf8");
+    assert.deepStrictEqual(decodedData, 'INDEXATION DATA')
   })
 
   it('gets info', async () => {

@@ -3,10 +3,10 @@
 
 use iota_client::{
     bee_message::prelude::{
-        Ed25519Signature, Essence, IndexationPayload, Input, Message, MessageId, Output, Payload, ReferenceUnlock,
+        Ed25519Signature, Essence, IndexationPayload, Input, MessageId, Output, Payload, ReferenceUnlock,
         RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock, UnlockBlocks, UtxoInput,
     },
-    bee_rest_api::types::dtos::OutputDto as BeeOutput,
+    bee_rest_api::types::dtos::{MessageDto as BeeMessageDto, OutputDto as BeeOutput},
 };
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +17,7 @@ use std::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MessageWrapper {
-    pub message: Message,
+    pub message: BeeMessageDto,
     #[serde(rename = "messageId")]
     pub message_id: MessageId,
 }
@@ -194,5 +194,6 @@ pub(crate) struct OutputMetadataDto {
 pub(crate) struct AddressBalanceDto {
     pub address: String,
     pub balance: u64,
+    #[serde(rename = "dustAllowed")]
     pub dust_allowed: bool,
 }
