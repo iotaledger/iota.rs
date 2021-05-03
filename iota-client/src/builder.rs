@@ -19,7 +19,7 @@ use std::{
     time::Duration,
 };
 
-const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(10);
 #[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
@@ -87,7 +87,7 @@ impl Default for ClientBuilder {
                 bech32_hrp: DEFAULT_BECH32_HRP.into(),
                 tips_interval: TIPS_INTERVAL,
             },
-            request_timeout: DEFAULT_REQUEST_TIMEOUT,
+            request_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
             api_timeout: Default::default(),
         }
     }
@@ -279,7 +279,7 @@ impl ClientBuilder {
             Api::PostMessageWithRemotePow,
             self.api_timeout
                 .remove(&Api::PostMessageWithRemotePow)
-                .unwrap_or(DEFAULT_REQUEST_TIMEOUT),
+                .unwrap_or(DEFAULT_REMOTE_POW_TIMEOUT),
         );
         api_timeout.insert(
             Api::GetOutput,
