@@ -59,7 +59,7 @@ export declare class AddressGetter {
   accountIndex(index: number): AddressGetter
   range(start: number, end: number): AddressGetter
   bech32_hrp(bech32_hrp: string): AddressGetter
-  get(): Promise<Address[]>
+  get(): Promise<Address[] | [Address, boolean][]>
 }
 
 export declare class BalanceGetter {
