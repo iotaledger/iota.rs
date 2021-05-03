@@ -7,15 +7,12 @@ async function run() {
   // client will connect to testnet by default
   const client = new ClientBuilder().build();
 
-  // const addresses = await client.getAddresses(IOTA_SEED_SECRET)
-  //   .accountIndex(0)
-  //   .range(0, 2)
-  //   .get();
+  const addresses = await client.getAddresses(IOTA_SEED_SECRET)
+    .accountIndex(0)
+    .range(0, 5)
+    .get();
 
-  // console.log(addresses);
-  const addresses2 = await client.getAddresses(IOTA_SEED_SECRET).range(0, 2).get();
-
-  console.log(addresses2);
+  console.log(addresses);
 }
 
 run()
