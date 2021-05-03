@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::Seed;
+use iota_client::Seed;
 use neon::prelude::*;
 
 use super::{Api, ClientTask};

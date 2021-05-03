@@ -9,7 +9,7 @@ use std::{
     },
 };
 
-use iota::Topic;
+use iota_client::Topic;
 use neon::prelude::*;
 
 struct WaitForMessageTask(Arc<Mutex<Receiver<String>>>);

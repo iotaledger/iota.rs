@@ -6,9 +6,10 @@ use std::{convert::TryInto, ops::Range, str::FromStr};
 use super::MessageDto;
 
 use crate::classes::client::dto::{AddressBalanceDto, MessageWrapper, OutputMetadataDto};
-use iota::{
+use iota_client::{
+    bee_message::prelude::{Address, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput},
     bee_rest_api::types::dtos::{AddressDto, OutputDto as BeeOutput},
-    Address, AddressOutputsOptions, ClientMiner, MessageBuilder, MessageId, Parents, Seed, TransactionId, UtxoInput,
+    AddressOutputsOptions, ClientMiner, Seed,
 };
 use neon::prelude::*;
 

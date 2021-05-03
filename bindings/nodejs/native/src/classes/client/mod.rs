@@ -1,8 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{
-    message::prelude::{Address, MessageId, TransactionId, UtxoInput},
+use iota_client::{
+    bee_message::prelude::{Address, MessageId, TransactionId, UtxoInput},
     AddressOutputsOptions, Client, OutputType, Seed,
 };
 use neon::prelude::*;
@@ -603,11 +603,13 @@ declare_types! {
 
         method hexToBech32(mut cx) {
             let hex = cx.argument::<JsString>(0)?.value();
-            let bech32_hrp: Option<String> = match cx.argument_opt(1) {
-                Some(arg) => {
-                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
-                },
-                None => Default::default(),
+            let bech32_hrp: Option<String> = if cx.len() > 2 {
+                    match cx.argument_opt(1){
+                        Some(arg) => Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value()),
+                        None => Default::default(),
+                    }
+                } else {
+                    Default::default()
             };
 
             let cb = cx.argument::<JsFunction>(cx.len()-1)?;

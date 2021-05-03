@@ -1,10 +1,12 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota::{
-    bee_rest_api::types::dtos::OutputDto as BeeOutput, Ed25519Signature, Essence, IndexationPayload, Input, Message,
-    MessageId, Output, Payload, ReferenceUnlock, RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock,
-    UnlockBlocks, UtxoInput,
+use iota_client::{
+    bee_message::prelude::{
+        Ed25519Signature, Essence, IndexationPayload, Input, Message, MessageId, Output, Payload, ReferenceUnlock,
+        RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock, UnlockBlocks, UtxoInput,
+    },
+    bee_rest_api::types::dtos::OutputDto as BeeOutput,
 };
 use serde::{Deserialize, Serialize};
 

@@ -10,7 +10,7 @@
   "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
   "license": "Apache-2.0",
   "dependencies": {
-    "neon-cli": "^0.5.0",
+    "neon-cli": "^0.8",
     "prebuild-install": "^6.1.2"
   },
   "scripts": {

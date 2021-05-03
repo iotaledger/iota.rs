@@ -3,7 +3,7 @@
 #![allow(clippy::unnecessary_wraps)]
 use std::{collections::HashMap, num::NonZeroU64, str::FromStr, time::Duration};
 
-use iota::client::{Api, BrokerOptions, ClientBuilder};
+use iota_client::{Api, BrokerOptions, ClientBuilder};
 use neon::prelude::*;
 
 pub struct ClientBuilderWrapper {

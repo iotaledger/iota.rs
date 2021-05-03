@@ -15,7 +15,7 @@ $ yarn add @iota/client
 
 ## Requirements
 
-If there is no prebuilt binary available for your system you need `Rust` and `Cargo`, to build it yourself. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+One of the following Node.js version: '10.x', '12.x', '14.x', '15.x', '16.x'
 
 ## Getting Started
 
@@ -168,7 +168,7 @@ Disables the node syncing process. Every node will be considered healthy and rea
 
 **Returns** the client builder instance for chained calls.
 
-#### defaultTimeout(timeoutMs): ClientBuilder
+#### requestTimeout(timeoutMs): ClientBuilder
 
 Sets the default HTTP request timeout.
 
