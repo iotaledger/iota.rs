@@ -17,7 +17,7 @@ crate-type = ["cdylib"]
 neon-build = "0.5"
 
 [dependencies]
-neon = "0.5"
+neon = "0.8"
 iota-core = { path = "../../../iota-core", features = ["mqtt"] }
 serde_json = "1.0"
 serde = "1.0"
