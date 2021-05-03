@@ -1,5 +1,12 @@
 # Changelog
 
+## \[0.3.2]
+
+- Fix hexToBech32 when bech32\_hrp is optional.
+  - [f67b445d](https://github.com/iotaledger/iota.rs/commit/f67b445d848b4cc4120a68600cd84ef0bb84de45) nodejs/fix hexToBech32 and update versions ([#533](https://github.com/iotaledger/iota.rs/pull/533)) on 2021-05-03
+- Update types and make account_index for GetUnspentAddressBuilder optional.
+  - [30585801](https://github.com/iotaledger/iota.rs/commit/305858017cabff456619f5ef0034dfa1973c5117) update nodejs types, optional account_index ([#518](https://github.com/iotaledger/iota.rs/pull/518)) on 2021-04-27
+
 ## \[0.3.1]
 
 - Update minPoWScore in nodeinfo.
