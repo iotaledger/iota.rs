@@ -76,12 +76,11 @@ Seed can be for example generated using SHA256 algorithm on some random input ge
 {{#include ../../../bindings/nodejs/examples/02_generate_seed.js}}
 ```
 
-Seed examples (a single seed per line):
+Output example:
 ```plaintext
-4892e2265c45734d07f220294b1697244a8ab5beb38ba9a7d57aeebf36b6e84a
-37c4aab22a5883595dbc77907c1626c1be39d104df39c5d5708423c0286aea89
-e94346bce41402155ef120e2525fad2d0bf30b10a89e4b93fd8471df1e6a0981
-...
+39bccf7b88a8017e6a96e6f31e34f138829c574dc6061523e84c5f2e53f5ca36
+pass phrase weapon yellow diary scissors gift drive strategy antique scheme make surround aerobic mystery coral hope lock walnut become exclude only glove syrup
+eff5c97c96ddab55d6fe78f914508750152eaab1b9692236bc79268895ecfd168e91eedd2489ed6c51fc44156b9a2e6c967e4edcfb649ff33d41581be4627347
 ```
 
 > In modern wallet implementations, such as our [wallet.rs library](https://chrysalis.docs.iota.org/libraries/wallet.html) and [firefly wallet](https://blog.iota.org/firefly-beta-release/), the seed is usually generated from a `seed mnemonic` (`seed phrase`), using [BIP39 standard](https://en.bitcoin.it/wiki/BIP_0039), to be better memorized/stored by humans. It is based on randomly generated list of english words and later used to generate the seed. Either way, the seed is a root for all generated private keys and addresses

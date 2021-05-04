@@ -281,6 +281,28 @@ Following are the steps for implementing this method:
 * Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
 * Return the list of Output which contains corresponding pairs of address and balance.
 
+## `generate_mnemonic()`
+
+Returns a random generated Bip39 mnemonic with the English word list.
+
+### Return
+
+Parsed [String].
+
+## `mnemonic_to_hex_seed(mnemonic)`
+
+Returns the seed hex encoded.
+
+### Parameters
+
+| Parameter | Required | Type | Definition |
+| - | - | - | - |
+| **mnemonic** | ✔ | [String] | Bip39 mnemonic with words from the English word list. |
+
+### Return
+
+Parsed [String].
+
 ## `bech32_to_hex()`
 
 Returns a parsed hex String from bech32.

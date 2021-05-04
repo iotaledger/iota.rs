@@ -25,8 +25,14 @@ use bee_rest_api::types::{
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
-    keys::slip10::Seed,
+    keys::{
+        bip39::{mnemonic_to_seed, wordlist},
+        slip10::Seed,
+    },
+    utils,
 };
+
+use zeroize::Zeroize;
 
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
@@ -546,6 +552,23 @@ impl Client {
             .iter()
             .filter(|node| !synced.contains(node))
             .collect()
+    }
+
+    /// Generates a new mnemonic.
+    pub fn generate_mnemonic() -> Result<String> {
+        let mut entropy = [0u8; 32];
+        utils::rand::fill(&mut entropy)?;
+        let mnemonic = wordlist::encode(&entropy, &crypto::keys::bip39::wordlist::ENGLISH)
+            .map_err(|e| crate::Error::MnemonicError(format!("{:?}", e)))?;
+        entropy.zeroize();
+        Ok(mnemonic)
+    }
+
+    /// Returns a hex encoded seed for a mnemonic.
+    pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
+        let mut mnemonic_seed = [0u8; 64];
+        mnemonic_to_seed(mnemonic, &"", &mut mnemonic_seed);
+        Ok(hex::encode(mnemonic_seed))
     }
 
     ///////////////////////////////////////////////////////////////////////

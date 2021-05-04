@@ -28,6 +28,7 @@ thiserror = "1.0"
 num_cpus = "1.13"
 log= "0.4"
 regex = "1.4"
+zeroize = { version = "1.2", features = ["zeroize_derive"] }
 
 # sync
 ureq = { version = "2.1", features = ["json"], optional = true }

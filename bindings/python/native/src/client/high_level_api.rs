@@ -294,6 +294,12 @@ impl Client {
             })
             .collect())
     }
+    fn generate_mnemonic(&self) -> Result<String> {
+        Ok(RustClient::generate_mnemonic()?)
+    }
+    fn mnemonic_to_hex_seed(&self, mnemonic: &str) -> Result<String> {
+        Ok(RustClient::mnemonic_to_hex_seed(mnemonic)?)
+    }
     fn bech32_to_hex(&self, hex: &str) -> Result<String> {
         Ok(RustClient::bech32_to_hex(hex)?)
     }

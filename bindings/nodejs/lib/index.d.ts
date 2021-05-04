@@ -103,6 +103,8 @@ export declare class Client {
   findOutputs(outputIds: string[], addresses: string[]): Promise<OutputMetadata[]>
   getAddressOutputs(address: string, options?: AddressOutputsOptions): Promise<string[]>
   getAddressBalance(address: string): Promise<AddressBalance>
+  generateMnemonic(): string
+  mnemonicToHexSeed(mnemonic: string): string
   bech32ToHex(address: string): string
   hexToBech32(address: string, bech32_hrp?: string): Promise<string>
   isAddressValid(address: string): boolean

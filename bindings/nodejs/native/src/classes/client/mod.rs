@@ -595,6 +595,17 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
+        method generateMnemonic(mut cx) {
+            let mnemonic = Client::generate_mnemonic().unwrap();
+            Ok(cx.string(mnemonic).upcast())
+        }
+
+        method mnemonicToHexSeed(mut cx) {
+            let mnemonic = cx.argument::<JsString>(0)?.value();
+            let hex = Client::mnemonic_to_hex_seed(&mnemonic).unwrap();
+            Ok(cx.string(hex).upcast())
+        }
+
         method bech32ToHex(mut cx) {
             let bech32 = cx.argument::<JsString>(0)?.value();
             let hex = Client::bech32_to_hex(bech32.as_str()).unwrap();
