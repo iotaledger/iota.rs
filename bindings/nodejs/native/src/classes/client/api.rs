@@ -180,11 +180,10 @@ impl Task for ClientTask {
 
                     if *include_internal {
                         let all_addresses = getter.get_all().await?;
-                        serde_json::to_string(&all_addresses)?
-                    } else {
-                        let public_addresses = getter.finish().await?;
-                        serde_json::to_string(&public_addresses)?
+                        return Ok(serde_json::to_string(&all_addresses)?);
                     }
+                    let public_addresses = getter.finish().await?;
+                    serde_json::to_string(&public_addresses)?
                 }
                 Api::FindMessages {
                     indexation_keys,
