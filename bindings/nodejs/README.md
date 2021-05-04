@@ -702,7 +702,7 @@ Defines that public and internal address will be returned instead of only public
 
 Performs the operation.
 
-**Returns** an array of public [Address](#address) instances or an array of arrays with an Address, bool, 
+**Returns** an array of public [Address](#address) instances or an array of arrays with an Address and a bool,
 where the bool defines whether it's an internal address or not.
 
 ### BalanceGetter
