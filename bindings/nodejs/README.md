@@ -692,11 +692,18 @@ Defines the range of addresses to get. Defaults to `0..20` if the function isn't
 
 **Returns** the address finder instance for chained calls.
 
-#### get(): Address[]
+#### includeInternal(): AddressGetter
+
+Defines that public and internal address will be returned instead of only public addresses.
+
+**Returns** the address finder instance for chained calls.
+
+#### get(): Address[] | [Address, bool][]
 
 Performs the operation.
 
-**Returns** an array of [Address](#address) instances.
+**Returns** an array of public [Address](#address) instances or an array of arrays with an Address and a bool,
+where the bool defines whether it's an internal address or not.
 
 ### BalanceGetter
 
@@ -804,7 +811,6 @@ Gets the metadata of the given message.
 
 | Field | Type                   | Description                |
 | ----- | ---------------------- | -------------------------- |
-| type  | <code>'Ed25519'</code> | Address type               |
 | data  | <code>string</code>    | Address as a Bech32 string |
 
 ### Message

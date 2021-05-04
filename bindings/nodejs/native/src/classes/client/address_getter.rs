@@ -1,6 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#![allow(clippy::unnecessary_wraps)]
 use iota_client::Seed;
 use neon::prelude::*;
 
@@ -14,6 +15,7 @@ pub struct AddressGetter {
     account_index: Option<usize>,
     range: Option<Range<usize>>,
     bech32_hrp: Option<String>,
+    include_internal: bool,
 }
 
 declare_types! {
@@ -27,6 +29,7 @@ declare_types! {
                 account_index: None,
                 range: None,
                 bech32_hrp: None,
+                include_internal: false,
             })
         }
 
@@ -68,6 +71,17 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method includeInternal(mut cx) {
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let include_internal = &mut this.borrow_mut(&guard).include_internal;
+                *include_internal = true;
+            }
+
+            Ok(cx.this().upcast())
+        }
+
         method get(mut cx) {
             let cb = cx.argument::<JsFunction>(0)?;
             {
@@ -81,6 +95,7 @@ declare_types! {
                         account_index: ref_.account_index,
                         range: ref_.range.clone(),
                         bech32_hrp: ref_.bech32_hrp.clone(),
+                        include_internal: ref_.include_internal,
                     },
                 };
                 client_task.schedule(cb);
@@ -88,5 +103,6 @@ declare_types! {
 
             Ok(cx.undefined().upcast())
         }
+
     }
 }
