@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example multiple_outputs --release
-use iota::{client::Result, Client, Seed};
+use iota_client::{Client, Result, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

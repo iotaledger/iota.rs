@@ -4,7 +4,18 @@
 use crate::client::error::{Error, Result};
 use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
-use iota::{
+use iota_client::{
+    bee_message::prelude::{
+        Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
+        Essence as RustEssence, IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
+        MigratedFundsEntry as RustMigratedFundsEntry, MilestonePayloadEssence as RustMilestonePayloadEssence,
+        Output as RustOutput, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
+        RegularEssence as RustRegularEssence,
+        SignatureLockedDustAllowanceOutput as RustSignatureLockedDustAllowanceOutput,
+        SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
+        TransactionId as RustTransactionId, TransactionPayload as RustTransactionPayload,
+        UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks, UtxoInput as RustUtxoInput,
+    },
     bee_rest_api::types::{
         dtos::{
             AddressDto as RustAddressDto, Ed25519AddressDto as RustEd25519AddressDto, GossipDto as RustgossipDto,
@@ -26,14 +37,7 @@ use iota::{
     },
     builder::NetworkInfo as RustNetworkInfo,
     client::{MilestoneResponse, NodeInfoWrapper as RustNodeInfoWrapper},
-    Address as RustAddress, AddressOutputsOptions as RustAddressOutputsOptions, Ed25519Address as RustEd25519Address,
-    Ed25519Signature as RustEd25519Signature, Essence as RustEssence, IndexationPayload as RustIndexationPayload,
-    Input as RustInput, Message as RustMessage, MilestonePayloadEssence as RustMilestonePayloadEssence,
-    Output as RustOutput, OutputType, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
-    RegularEssence as RustRegularEssence, SignatureLockedDustAllowanceOutput as RustSignatureLockedDustAllowanceOutput,
-    SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, SignatureUnlock as RustSignatureUnlock,
-    TransactionId as RustTransactionId, TransactionPayload as RustTransactionPayload, UnlockBlock as RustUnlockBlock,
-    UnlockBlocks as RustUnlockBlocks, UtxoInput as RustUtxoInput,
+    AddressOutputsOptions as RustAddressOutputsOptions, OutputType,
 };
 
 use std::{
@@ -409,8 +413,8 @@ impl From<RustOutputResponse> for OutputResponse {
     }
 }
 
-impl From<&iota::MigratedFundsEntry> for MigratedFundsEntry {
-    fn from(migrated_funds_entry: &iota::MigratedFundsEntry) -> Self {
+impl From<&RustMigratedFundsEntry> for MigratedFundsEntry {
+    fn from(migrated_funds_entry: &RustMigratedFundsEntry) -> Self {
         Self {
             tail_transaction_hash: migrated_funds_entry.tail_transaction_hash().to_string(),
             output: migrated_funds_entry.output().clone().into(),

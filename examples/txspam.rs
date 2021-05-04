@@ -3,7 +3,10 @@
 
 //! cargo run --example txspam --release
 
-use iota::{client::Result, Client, Essence, Payload, Seed, UtxoInput};
+use iota_client::{
+    bee_message::prelude::{Essence, Payload, UtxoInput},
+    Client, Result, Seed,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

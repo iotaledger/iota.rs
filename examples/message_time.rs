@@ -3,7 +3,7 @@
 
 //! cargo run --example message_time --release
 
-use iota::Client;
+use iota_client::Client;
 
 #[tokio::main]
 async fn main() {

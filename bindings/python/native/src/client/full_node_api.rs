@@ -5,9 +5,12 @@ use crate::client::{
     error::Result, AddressOutputsOptions, BalanceAddressResponse, Client, Message, MilestoneDto, MilestoneUTXOChanges,
     NodeInfoWrapper, OutputResponse, PeerDto, ReceiptDto, TreasuryResponse, UtxoInput,
 };
-use iota::{
-    ClientMiner as RustClientMiner, MessageBuilder as RustMessageBuilder, MessageId as RustMessageId, Parents,
-    TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
+use iota_client::{
+    bee_message::prelude::{
+        MessageBuilder as RustMessageBuilder, MessageId as RustMessageId, Parents, TransactionId as RustTransactionId,
+        UtxoInput as RustUtxoInput,
+    },
+    ClientMiner as RustClientMiner,
 };
 use pyo3::prelude::*;
 

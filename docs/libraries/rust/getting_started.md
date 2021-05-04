@@ -22,7 +22,7 @@ And then you can use the library in your code with `use iota;`.
 This example fetches node information
 
 ```rust
-use iota::Client;
+use iota_client::Client;
 
 #[tokio::main]
 async fn main() {

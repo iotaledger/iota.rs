@@ -5,7 +5,7 @@ publish = false
 edition = "2018"
 
 [dev-dependencies]
-iota-core = { path = "../iota-core", features = ["storage", "mqtt"] }
+iota-client = { path = "../iota-client", features = ["storage", "mqtt"] }
 tokio = { version = "1.5", features = ["full"] }
 hex = "0.4"
 dotenv = "0.15"

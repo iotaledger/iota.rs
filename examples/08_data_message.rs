@@ -3,7 +3,7 @@
 
 //! cargo run --example 08_data_message --release
 
-use iota::{Client, Result};
+use iota_client::{Client, Result};
 
 /// In this example we will send a message without a payload
 

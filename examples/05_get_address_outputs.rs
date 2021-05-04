@@ -3,7 +3,7 @@
 
 //! cargo run --example 05_get_address_outputs --release
 
-use iota::{Client, Result};
+use iota_client::{Client, Result};
 
 /// In this example we will get the outputs of a known address
 

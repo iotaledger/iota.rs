@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example get_funds --release
-use iota::{Client, Seed};
+use iota_client::{Client, Seed};
 use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;

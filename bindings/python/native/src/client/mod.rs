@@ -6,7 +6,7 @@ pub mod full_node_api;
 pub mod high_level_api;
 pub mod mqtt;
 pub mod types;
-use iota::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
+use iota_client::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{

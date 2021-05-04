@@ -3,7 +3,7 @@
 
 //! cargo run --example storage --release
 
-use iota::{
+use iota_client::{
     storage::{sqlite, StorageAdapter},
     Client,
 };

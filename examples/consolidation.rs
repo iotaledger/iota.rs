@@ -3,11 +3,11 @@
 
 //! cargo run --example consolidation --release
 
-use iota::{
+use iota_client::{
+    bee_message::prelude::{Address, Ed25519Address, MessageId},
     bee_rest_api::types::dtos::{AddressDto, OutputDto},
-    client::Result,
     node::{OutputType, OutputsOptions},
-    Address, Client, Ed25519Address, MessageId, Seed,
+    Client, Error, Result, Seed,
 };
 extern crate dotenv;
 use dotenv::dotenv;
@@ -118,7 +118,7 @@ async fn main() -> Result<()> {
 
 fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, bool)> {
     match output {
-        OutputDto::Treasury(_) => Err(iota::error::Error::OutputError("Treasury not allowed")),
+        OutputDto::Treasury(_) => Err(Error::OutputError("Treasury not allowed")),
         OutputDto::SignatureLockedSingle(ref r) => match &r.address {
             AddressDto::Ed25519(addr) => {
                 let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);

@@ -3,7 +3,10 @@
 
 //! cargo run --example split_outputs_single_address --release
 
-use iota::{client::Result, Client, Essence, Output, Payload, Seed, UtxoInput};
+use iota_client::{
+    bee_message::prelude::{Essence, Output, Payload, UtxoInput},
+    Client, Result, Seed,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

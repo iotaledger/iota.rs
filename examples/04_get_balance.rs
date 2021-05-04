@@ -3,7 +3,7 @@
 
 //! cargo run --example 04_get_balance --release
 
-use iota::{Client, Seed};
+use iota_client::{Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

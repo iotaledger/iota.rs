@@ -3,7 +3,7 @@
 
 //! cargo run --example 01_get_info --release
 
-use iota::Client;
+use iota_client::Client;
 
 /// In this example we will get information about the node
 
