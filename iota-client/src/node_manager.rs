@@ -540,6 +540,8 @@ impl HttpClient {
         Self {}
     }
 
+    pub(crate) fn clone(&self) -> Self { Self {} }
+
     pub(crate) async fn get(&self, url: &str, timeout: Duration) -> Result<Response> {
         Ok(Self::get_ureq_agent(timeout).get(url).call()?.into())
     }

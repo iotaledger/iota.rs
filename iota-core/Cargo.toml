@@ -16,7 +16,7 @@ iota-client = { version = "0.5.0-alpha", path = "../iota-client", default-featur
 
 [features]
 default = ["iota-client/default"]
-sync = ["iota-client/sync"]
+sync = ["iota-client/sync", "iota-client/futures", "iota-client/tokio"]
 async = ["iota-client/async"]
 mqtt = ["iota-client/mqtt"]
 storage = ["iota-client/storage"]
