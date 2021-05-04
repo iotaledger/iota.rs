@@ -23,6 +23,7 @@ pub(crate) enum Api {
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
         inputs: Vec<UtxoInput>,
+        input_range: Option<Range<usize>>,
         outputs: Vec<(Address, u64)>,
         dust_allowance_outputs: Vec<(Address, u64)>,
     },
@@ -105,6 +106,7 @@ impl Task for ClientTask {
                     account_index,
                     initial_address_index,
                     inputs,
+                    input_range,
                     outputs,
                     dust_allowance_outputs,
                 } => {
@@ -129,6 +131,9 @@ impl Task for ClientTask {
                     }
                     for input in inputs {
                         sender = sender.with_input(input.clone());
+                    }
+                    if let Some(input_range) = input_range {
+                        sender = sender.with_input_range(input_range.clone());
                     }
                     let bech32_hrp = client.get_bech32_hrp().await?;
                     for output in outputs {
