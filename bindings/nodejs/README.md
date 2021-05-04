@@ -317,16 +317,16 @@ Retries (promotes or reattaches) the message associated with the given id.
 
 **Returns** A promise resolving to the new [Message](#message) instance.
 
-#### retryUntilIncluded(messageId: string[, interval: int, max_attempts: int]): Promise<Message>
+#### retryUntilIncluded(messageId: string[, interval: int, maxAttempts: int]): Promise<Message>
 
 Retries (promotes or reattaches) the message associated with the given id until it's included in the Tangle.
 Default interval is 5 seconds and max_attempts is 10.
 
-| Param                  | Type                | Description                                            |
-| ---------------------- | ------------------- | ------------------------------------------------------ |
-| messageId              | <code>string</code> | The id of the message to retry                         |
-| [options.interval]     | <code>int</code>    | The interval in seconds in which we retry the message. |
-| [options.max_attempts] | <code>int</code>    | The maximum of attempts we retry the message.          |
+| Param                 | Type                | Description                                            |
+| --------------------- | ------------------- | ------------------------------------------------------ |
+| messageId             | <code>string</code> | The id of the message to retry                         |
+| [options.interval]    | <code>int</code>    | The interval in seconds in which we retry the message. |
+| [options.maxAttempts] | <code>int</code>    | The maximum of attempts we retry the message.          |
 
 **Returns** the message ids and [Message](#message) of reattached messages.
 
@@ -732,11 +732,11 @@ Sets the initial address index. Defaults to 0 if the function isn't called.
 #### gapLimit(amount): BalanceGetter
 
 Sets the gapLimit to specify how many addresses will be checked each round.
-If gap_limit amount of addresses in a row have no balance the BalanceGetter will return. Defaults to 20 if the function isn't called.
+If gapLimit amount of addresses in a row have no balance the BalanceGetter will return. Defaults to 20 if the function isn't called.
 
-| Param | Type                | Description               |
-| ----- | ------------------- | ------------------------- |
-| gap_limit | <code>number</code> | The initial address index |
+| Param    | Type                | Description               |
+| -------- | ------------------- | ------------------------- |
+| gapLimit | <code>number</code> | The initial address index |
 
 **Returns** the balance getter instance for chained calls.
 
@@ -894,15 +894,15 @@ Gets the metadata of the given message.
 
 - MilestoneEssence
 
-| Field                          | Type                    | Description                                              |
-| ------------------------------ | ----------------------- | -------------------------------------------------------- |
-| index                          | <code>number</code>     | Milestone index                                          |
-| timestamp                      | <code>number</code>     | Timestamp                                                |
-| parents                        | <code>string[]</code>   | Message ids of the messages the milestone references     |
-| merkle_proof                   | <code>number[]</code>   | Merkle proof                                             |
-| next_pow_score                 | <code>number</code>     | Next PoW score                                           |
-| next_pow_score_milestone_index | <code>number</code>     | Milestone index at which the next_pow_score will be used |
-| public_keys                    | <code>number[][]</code> | public keys                                              |
+| Field                      | Type                    | Description                                            |
+| -------------------------- | ----------------------- | ------------------------------------------------------ |
+| index                      | <code>number</code>     | Milestone index                                        |
+| timestamp                  | <code>number</code>     | Timestamp                                              |
+| parents                    | <code>string[]</code>   | Message ids of the messages the milestone references   |
+| merkleProof                | <code>number[]</code>   | Merkle proof                                           |
+| nextPoWScore               | <code>number</code>     | Next PoW score                                         |
+| nextPoWScoreMilestoneIndex | <code>number</code>     | Milestone index at which the nextPoWScore will be used |
+| publicKeys                 | <code>number[][]</code> | public keys                                            |
 
 ### MessageDto
 
@@ -988,22 +988,22 @@ Gets the metadata of the given message.
 
 ### NodeInfo
 
-| Field                          | Type                  | Description                                       |
-| ------------------------------ | --------------------- | ------------------------------------------------- |
-| name                           | <code>string</code>   | Node name                                         |
-| version                        | <code>string</code>   | Node version                                      |
-| isHealthy                      | <code>boolean</code>  | Node health status                                |
-| networkId                      | <code>string</code>   | Node network identifier                           |
-| bech32HRP                      | <code>string</code>   | Bech32 HRP for this network                       |
-| min_pow_score                  | <code>number</code>   | Min PoW score                                     |
-| messages_per_second            | <code>number</code>   | Network stats: Messages per second in the network |
-| referenced_messages_per_second | <code>number</code>   | Network stats: Referenced messages per second     |
-| referenced_rate                | <code>number</code>   | Network stats: referenced rate                    |
-| latest_milestone_timestamp     | <code>number</code>   | Timestamp of the latest milestone                 |
-| latestMilestoneIndex           | <code>number</code>   | Index of the latest milestone                     |
-| confirmedMilestoneIndex        | <code>number</code>   | Index of the confirmed milestone                  |
-| pruningIndex                   | <code>number</code>   | Pruning index                                     |
-| features                       | <code>string[]</code> | List of node features                             |
+| Field                       | Type                  | Description                                       |
+| --------------------------- | --------------------- | ------------------------------------------------- |
+| name                        | <code>string</code>   | Node name                                         |
+| version                     | <code>string</code>   | Node version                                      |
+| isHealthy                   | <code>boolean</code>  | Node health status                                |
+| networkId                   | <code>string</code>   | Node network identifier                           |
+| bech32HRP                   | <code>string</code>   | Bech32 HRP for this network                       |
+| minPoWScore                 | <code>number</code>   | Min PoW score                                     |
+| messagesPerSecond           | <code>number</code>   | Network stats: Messages per second in the network |
+| referencedMessagesPerSecond | <code>number</code>   | Network stats: Referenced messages per second     |
+| referencedRate              | <code>number</code>   | Network stats: referenced rate                    |
+| latestMilestoneTimestamp    | <code>number</code>   | Timestamp of the latest milestone                 |
+| latestMilestoneIndex        | <code>number</code>   | Index of the latest milestone                     |
+| confirmedMilestoneIndex     | <code>number</code>   | Index of the confirmed milestone                  |
+| pruningIndex                | <code>number</code>   | Pruning index                                     |
+| features                    | <code>string[]</code> | List of node features                             |
 
 ### OutputMetadata
 
@@ -1037,11 +1037,11 @@ Gets the metadata of the given message.
 | Field           | Type                 | Description     |
 | --------------- | -------------------- | --------------- |
 | receipt         | <code>receipt</code> | Receipt         |
-| milestone_index | <code>number</code>  | Milestone index |
+| milestoneIndex | <code>number</code>  | Milestone index |
 
 ### Treasury
 
-| Field         | Type                | Description  |
-| ------------- | ------------------- | ------------ |
-| milestone_id  | <code>string</code> | Milestone id |
-| amount        | <code>number</code> | Amount       |
+| Field       | Type                | Description  |
+| ----------- | ------------------- | ------------ |
+| milestoneId | <code>string</code> | Milestone id |
+| amount      | <code>number</code> | Amount       |

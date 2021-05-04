@@ -69,6 +69,7 @@ pub struct MilestoneResponse {
     /// Milestone index.
     pub index: u32,
     /// Milestone message id.
+    #[serde(rename = "messageId")]
     pub message_id: MessageId,
     /// Milestone timestamp.
     pub timestamp: u64,

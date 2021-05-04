@@ -8,7 +8,7 @@ use super::MessageDto;
 use crate::classes::client::dto::{AddressBalanceDto, MessageWrapper, OutputMetadataDto};
 use iota_client::{
     bee_message::prelude::{Address, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput},
-    bee_rest_api::types::dtos::{AddressDto, OutputDto as BeeOutput},
+    bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto as BeeOutput},
     AddressOutputsOptions, ClientMiner, Seed,
 };
 use neon::prelude::*;
@@ -141,7 +141,7 @@ impl Task for ClientTask {
                     let message = sender.finish().await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
-                        message,
+                        message: BeeMessageDto::from(&message),
                     })?
                 }
                 Api::GetUnspentAddress {
@@ -195,7 +195,7 @@ impl Task for ClientTask {
                         .into_iter()
                         .map(|message| MessageWrapper {
                             message_id: message.id().0,
-                            message,
+                            message: BeeMessageDto::from(&message),
                         })
                         .collect();
                     serde_json::to_string(&message_wrappers)?
@@ -269,7 +269,7 @@ impl Task for ClientTask {
                     let message = client.get_message().data(&id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
-                        message,
+                        message: BeeMessageDto::from(&message),
                     })?
                 }
                 Api::GetMessageMetadata(id) => {
@@ -361,14 +361,14 @@ impl Task for ClientTask {
                     let message = client.get_included_message(&*transaction_id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
-                        message,
+                        message: BeeMessageDto::from(&message),
                     })?
                 }
                 Api::Retry(message_id) => {
                     let message = client.retry(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.0,
-                        message: message.1,
+                        message: BeeMessageDto::from(&message.1),
                     })?
                 }
                 Api::RetryUntilIncluded(message_id, interval, max_attempts) => {
@@ -380,7 +380,7 @@ impl Task for ClientTask {
                         .map(|msg| {
                             serde_json::to_string(&MessageWrapper {
                                 message_id: msg.0,
-                                message: msg.1,
+                                message: BeeMessageDto::from(&msg.1),
                             })
                         })
                         .collect::<Result<String, serde_json::Error>>()?
@@ -388,14 +388,14 @@ impl Task for ClientTask {
                 Api::Reattach(message_id) => {
                     let message = client.reattach(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
-                        message: message.1,
+                        message: BeeMessageDto::from(&message.1),
                         message_id: message.0,
                     })?
                 }
                 Api::Promote(message_id) => {
                     let message = client.promote(message_id).await?;
                     serde_json::to_string(&MessageWrapper {
-                        message: message.1,
+                        message: BeeMessageDto::from(&message.1),
                         message_id: message.0,
                     })?
                 }

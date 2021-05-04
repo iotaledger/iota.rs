@@ -62,5 +62,5 @@ export declare type Address = 'string'
 export declare interface AddressBalance {
   address: Address
   balance: number
-  dust_allowed: boolean
+  dustAllowed: boolean
 }
