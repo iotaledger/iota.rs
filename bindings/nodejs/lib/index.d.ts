@@ -59,7 +59,8 @@ export declare class AddressGetter {
   accountIndex(index: number): AddressGetter
   range(start: number, end: number): AddressGetter
   bech32Hrp(bech32_hrp: string): AddressGetter
-  get(): Promise<Address[]>
+  includeInternal(): AddressGetter
+  get(): Promise<Address[] | [Address, boolean][]>
 }
 
 export declare class BalanceGetter {
