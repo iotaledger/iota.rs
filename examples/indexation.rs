@@ -3,7 +3,7 @@
 
 //! cargo run --example indexation --release
 
-use iota::{Client, Payload};
+use iota_client::{bee_message::prelude::Payload, Client};
 
 #[tokio::main]
 async fn main() {

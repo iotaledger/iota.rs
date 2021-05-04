@@ -5,8 +5,11 @@ use crate::client::{
     error::{Error, Result},
     AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output,
 };
-use iota::{
-    MessageId as RustMessageId, Seed as RustSeed, TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
+use iota_client::{
+    bee_message::prelude::{
+        MessageId as RustMessageId, TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
+    },
+    Client as RustClient, Seed as RustSeed,
 };
 use pyo3::{exceptions, prelude::*};
 use std::{
@@ -292,7 +295,7 @@ impl Client {
             .collect())
     }
     fn bech32_to_hex(&self, hex: &str) -> Result<String> {
-        Ok(iota::Client::bech32_to_hex(hex)?)
+        Ok(RustClient::bech32_to_hex(hex)?)
     }
     fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
         Ok(crate::block_on(async {
@@ -300,7 +303,7 @@ impl Client {
         })?)
     }
     fn is_address_valid(&self, address: &str) -> bool {
-        iota::Client::is_address_valid(address)
+        RustClient::is_address_valid(address)
     }
     fn retry(&self, message_id: String) -> Result<(String, Message)> {
         let message_id_message =

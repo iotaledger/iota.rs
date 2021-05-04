@@ -3,7 +3,7 @@
 
 //! cargo run --example quorum --release
 
-use iota::{client::Result, Client, Seed};
+use iota_client::{Client, Result, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

@@ -3,7 +3,7 @@
 
 //! cargo run --example 07_get_message_metadata --release
 
-use iota::{Client, Result};
+use iota_client::{Client, Result};
 
 /// In this example we will send a message and get the metadata for it
 

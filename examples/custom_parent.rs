@@ -3,7 +3,7 @@
 
 //! cargo run --example custom_parent --release
 
-use iota::{Client, MessageId};
+use iota_client::{bee_message::MessageId, Client};
 use std::str::FromStr;
 
 /// In this example we will define a custom message parent which be used for promoting

@@ -3,7 +3,7 @@
 
 //! cargo run --example search_address --release
 
-use iota::{api::search_address, Client, Seed};
+use iota_client::{api::search_address, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::{convert::TryInto, env};

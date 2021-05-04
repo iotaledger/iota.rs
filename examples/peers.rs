@@ -3,7 +3,7 @@
 
 //! cargo run --example peers --release
 
-use iota::Client;
+use iota_client::Client;
 
 /// In this example we will get information about the nodes peers
 

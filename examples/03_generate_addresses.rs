@@ -3,7 +3,7 @@
 
 //! cargo run --example 03_generate_addresses --release
 
-use iota::{api::GetAddressesBuilder, Client, Seed};
+use iota_client::{api::GetAddressesBuilder, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

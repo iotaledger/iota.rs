@@ -3,7 +3,7 @@
 
 //! cargo run --example mnemonic --release
 
-use iota::{crypto::keys::bip39::mnemonic_to_seed, Client, Seed};
+use iota_client::{crypto::keys::bip39::mnemonic_to_seed, Client, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
