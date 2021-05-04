@@ -464,6 +464,22 @@ Get the balance in iotas for the given addresses.
 
 **Returns** the list of [AddressBalancePair](#addressbalancepair).
 
+#### generate_mnemonic()
+
+Returns a random generated Bip39 mnemonic with the English word list.
+
+**Returns** A String
+
+#### mnemonic_to_hex_seed(mnemonic)
+
+Returns the seed hex encoded.
+
+| Param    | Type                | Default                | Description                                           |
+| -------- | ------------------- | ---------------------- | ----------------------------------------------------- |
+| mnemonic | <code>string</code> | <code>undefined</code> | Bip39 mnemonic with words from the English word list. |
+
+**Returns** A String
+
 #### bech32_to_hex(bech32)
 
 Returns a parsed hex String from bech32.

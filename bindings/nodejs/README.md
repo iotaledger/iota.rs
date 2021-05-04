@@ -276,6 +276,22 @@ Get the balance in iotas for the given addresses.
 
 **Returns** A promise resolving to the list of `{ address, balance }` pairs.
 
+#### generateMnemonic()
+
+Returns a random generated Bip39 mnemonic with the English word list.
+
+**Returns** A String
+
+#### mnemonicToHexSeed(mnemonic)
+
+Returns the seed hex encoded.
+
+| Param   | Type                  | Description                                           |
+| ------- | --------------------- | ----------------------------------------------------- |
+| mnemonic  | <code>string</code> | Bip39 mnemonic with words from the English word list. |
+
+**Returns** A String
+
 #### bech32ToHex(bech32)
 
 Returns a parsed hex String from bech32.

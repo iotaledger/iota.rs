@@ -100,6 +100,9 @@ pub enum Error {
     /// Crypto.rs error
     #[error("{0}")]
     CryptoError(#[from] crypto::Error),
+    /// Crypto.rs mnemonic error
+    #[error("{0}")]
+    MnemonicError(String),
     /// Invalid amount of parents
     #[error("Invalid amount of parents: {0}, length must be in 1..=8")]
     InvalidParentsAmount(usize),

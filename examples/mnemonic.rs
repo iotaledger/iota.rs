@@ -3,7 +3,7 @@
 
 //! cargo run --example mnemonic --release
 
-use iota_client::{crypto::keys::bip39::mnemonic_to_seed, Client, Seed};
+use iota_client::{crypto::keys::bip39::mnemonic_to_seed, Client, Result, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -12,7 +12,7 @@ use std::env;
 /// In this example we will create addresses from a mnemonic defined in .env
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("https://api.lb-0.testnet.chrysalis2.com") // Insert your node URL here
@@ -20,6 +20,10 @@ async fn main() {
         .finish()
         .await
         .unwrap();
+
+    // Generate a random mnemonic
+    let mnemonic = Client::generate_mnemonic()?;
+    println!("Generated mnemonic: {:?}", mnemonic);
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
@@ -42,4 +46,5 @@ async fn main() {
         .unwrap();
 
     println!("List of generated public addresses:\n{:?}\n", addresses);
+    Ok(())
 }

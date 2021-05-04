@@ -1,6 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#![allow(clippy::unnecessary_wraps)]
 use iota_client::{
     bee_message::prelude::{Address, MessageId, TransactionId, UtxoInput},
     AddressOutputsOptions, Client, OutputType, Seed,
@@ -593,6 +594,17 @@ declare_types! {
             }
 
             Ok(cx.undefined().upcast())
+        }
+
+        method generateMnemonic(mut cx) {
+            let mnemonic = Client::generate_mnemonic().unwrap();
+            Ok(cx.string(mnemonic).upcast())
+        }
+
+        method mnemonicToHexSeed(mut cx) {
+            let mnemonic = cx.argument::<JsString>(0)?.value();
+            let hex = Client::mnemonic_to_hex_seed(&mnemonic).unwrap();
+            Ok(cx.string(hex).upcast())
         }
 
         method bech32ToHex(mut cx) {
