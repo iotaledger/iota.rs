@@ -9,7 +9,7 @@ import time
 
 # Read the test vector
 tv = dict()
-with open('../../../fixtures/test_vectors.json') as json_file:
+with open('tests/fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
 
 # The queue to store received events

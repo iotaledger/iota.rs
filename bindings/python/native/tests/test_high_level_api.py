@@ -7,7 +7,7 @@ import os
 
 # Read the test vector
 tv = dict()
-with open('../../../fixtures/test_vectors.json') as json_file:
+with open('tests/fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
 
 client = iota_client.Client(nodes_name_password=[[tv['NODE_URL']]])
