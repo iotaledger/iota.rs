@@ -47,7 +47,7 @@ rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 
 [features]
 default = ["async", "tokio", "futures"]
-sync = ["ureq, tokio, futures"]
+sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures"]
 mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
