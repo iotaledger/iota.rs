@@ -56,7 +56,7 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
-        method bech32_hrp(mut cx) {
+        method bech32Hrp(mut cx) {
             let bech32_hrp = cx.argument::<JsString>(0)?.value();
             {
                 let mut this = cx.this();

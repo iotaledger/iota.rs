@@ -1,10 +1,10 @@
 const assert = require('assert')
 
-function assertMessage(message) {
+function assertMessageWrapper(message) {
   assert.strictEqual(typeof message, 'object')
-  assert.strictEqual('parents' in message.message, true)
+  assert.strictEqual('parentMessageIds' in message.message, true)
   assert.strictEqual('messageId' in message, true)
-  assertMessageId(message.message.parents[0])
+  assertMessageId(message.message.parentMessageIds[0])
 }
 
 function assertMessageId(messageId) {
@@ -19,7 +19,7 @@ function assertAddress(address) {
 }
 
 module.exports = {
-  assertMessage,
+  assertMessageWrapper,
   assertMessageId,
   assertAddress
 }
