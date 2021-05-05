@@ -1,23 +1,12 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{cell::RefCell, rc::Rc, time::Duration, collections::HashMap, convert::TryFrom};
-use iota_client::{
-    Api, 
-    client::{
-        BrokerOptions as RustBrokerOptions, 
-    },
-    ClientBuilder as RustClientBuilder,
-};
+use iota_client::{client::BrokerOptions as RustBrokerOptions, Api, ClientBuilder as RustClientBuilder};
+use std::{cell::RefCell, convert::TryFrom, rc::Rc, time::Duration};
 
-use anyhow::{
-    Result as Result,
-    anyhow,
-};
+use anyhow::Result;
 
-use crate::full_node_api::{
-    Client,
-};
+use crate::full_node_api::Client;
 
 pub struct BrokerOptions {
     builder: Rc<RefCell<Option<RustBrokerOptions>>>,
@@ -37,7 +26,12 @@ impl BrokerOptions {
     }
 
     pub fn automatic_disconnect(&self, disconnect: bool) -> BrokerOptions {
-        let builder = self.builder.borrow_mut().take().unwrap().automatic_disconnect(disconnect);
+        let builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .automatic_disconnect(disconnect);
         BrokerOptions::new_with(builder)
     }
 
@@ -47,7 +41,12 @@ impl BrokerOptions {
     }
 
     pub fn max_reconnection_attempts(&self, max_reconnection_attempts: usize) -> BrokerOptions {
-        let builder = self.builder.borrow_mut().take().unwrap().max_reconnection_attempts(max_reconnection_attempts);
+        let builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .max_reconnection_attempts(max_reconnection_attempts);
         BrokerOptions::new_with(builder)
     }
 }
@@ -85,16 +84,16 @@ impl ClientBuilder {
             .enable_all()
             .build()
             .unwrap()
-            .block_on(async move { 
-                self
-                    .builder
+            .block_on(async move {
+                self.builder
                     .borrow_mut()
                     .take()
                     .unwrap()
-                    .with_node_pool_urls(&node_pool_urls).await
-                    .unwrap() 
+                    .with_node_pool_urls(&node_pool_urls)
+                    .await
+                    .unwrap()
             });
-        
+
         ClientBuilder::new_with_builder(new_builder)
     }
 
@@ -110,7 +109,7 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_node_sync_interval(node_sync_interval);
-            ClientBuilder::new_with_builder(new_builder)
+        ClientBuilder::new_with_builder(new_builder)
     }
 
     pub fn with_node_sync_disabled(&mut self) -> ClientBuilder {
@@ -126,7 +125,7 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_mqtt_broker_options(options.builder.borrow_mut().take().unwrap());
-            ClientBuilder::new_with_builder(new_builder)
+        ClientBuilder::new_with_builder(new_builder)
     }
 
     pub fn with_local_pow(&mut self, local: bool) -> ClientBuilder {
@@ -149,10 +148,8 @@ impl ClientBuilder {
             .enable_all()
             .build()
             .unwrap()
-            .block_on(async move { 
-                self.builder.borrow_mut().take().unwrap().finish().await.unwrap()
-            });
-        
+            .block_on(async move { self.builder.borrow_mut().take().unwrap().finish().await.unwrap() });
+
         Ok(Client::try_from(client).unwrap())
     }
 }

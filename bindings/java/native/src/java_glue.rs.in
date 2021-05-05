@@ -17,16 +17,11 @@ use crate::{
     address::*,
 };
 
+use iota_client::Api;
+
 use anyhow::{
     Result as Result,
     anyhow,
-};
-
-use iota_client::{
-    Api,
-    bee_rest_api::types::{
-        dtos::{MessageDto, PeerDto, RelationDto, ReceiptDto},
-    },
 };
 
 foreign_class!(class RustLogging {
@@ -61,10 +56,10 @@ foreign_enum!(
 );
 
 foreign_enum!(
-    enum RelationDto {
-        KNOWN = RelationDto::Known,
-        UNKNOWN = RelationDto::Unknown,
-        DISCOVERED = RelationDto::Discovered,
+    enum Relation {
+        KNOWN = Relation::KNOWN,
+        UNKNOWN = Relation::UNKNOWN,
+        DISCOVERED = Relation::DISCOVERED,
     }
 );
 
@@ -99,7 +94,7 @@ foreign_class!(
         fn Client::builder() -> ClientBuilder; alias Builder;
         fn Client::get_health(&self) -> Result<bool>;
         fn Client::get_info(&self) -> Result<NodeInfoWrapper>; 
-        //fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
+        fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
         fn Client::get_tips(&self) -> Result<Vec<String>>;
     }
 );
@@ -136,16 +131,62 @@ foreign_class!(
         fn InfoResponse::features(&self) -> Vec<String>;
     }
 );
-/*
-foreign_class!(class PeerDto {
-    self_type PeerDto;
-    private constructor = empty;
-    fn Client::get_health(&self) -> Result<bool>;
-    fn Client::get_info(&self) -> Result<NodeInfo>;
-    fn Client::get_peers(&self) -> Result<Vec<PeerDto>>
-    fn Client::get_tips(&self) -> Result<Vec<String>>
-});*/
 
+foreign_class!(
+    #[derive(camelCaseAliases)]
+        class PeerDto {
+        self_type PeerDto;
+        private constructor = empty;
+        fn PeerDto::id(&self) -> &str;
+        fn PeerDto::multi_addresses(&self) -> Vec<String>;
+        fn PeerDto::alias(&self) -> Option<String>;
+        fn PeerDto::relation(&self) -> Relation;
+        fn PeerDto::connected(&self) -> bool;
+        fn PeerDto::gossip(&self) -> Option<GossipDto>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class GossipDto {
+        self_type GossipDto;
+        private constructor = empty;
+        fn GossipDto::heartbeat(&self) -> HeartbeatDto;
+        fn GossipDto::metrics(&self) -> MetricsDto;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class HeartbeatDto {
+    self_type HeartbeatDto;
+        private constructor = empty;
+        fn HeartbeatDto::solid_milestone_index(&self) -> u32;
+        fn HeartbeatDto::pruned_milestone_index(&self) -> u32;
+        fn HeartbeatDto::latest_milestone_index(&self) -> u32;
+        fn HeartbeatDto::connected_neighbors(&self) -> u8;
+        fn HeartbeatDto::synced_neighbors(&self) -> u8;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class MetricsDto {
+        self_type MetricsDto;
+        private constructor = empty;
+        fn MetricsDto::new_messages(&self) -> u64;
+        fn MetricsDto::received_messages(&self) -> u64;
+        fn MetricsDto::known_messages(&self) -> u64;
+        fn MetricsDto::received_message_requests(&self) -> u64;
+        fn MetricsDto::received_milestone_requests(&self) -> u64;
+        fn MetricsDto::received_heartbeats(&self) -> u64;
+        fn MetricsDto::sent_messages(&self) -> u64;
+        fn MetricsDto::sent_message_requests(&self) -> u64;
+        fn MetricsDto::sent_milestone_requests(&self) -> u64;
+        fn MetricsDto::sent_heartbeats(&self) -> u64;
+        fn MetricsDto::dropped_packets(&self) -> u64;
+    }
+);
 
 /*
 foreign_enum!(

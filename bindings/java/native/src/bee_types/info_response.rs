@@ -3,8 +3,7 @@
 
 use getset::{CopyGetters, Getters};
 use iota_client::{
-    bee_rest_api::types::responses::InfoResponse as RustInfoResponse, 
-    client::NodeInfoWrapper as RustNodeInfoWrapper,
+    bee_rest_api::types::responses::InfoResponse as RustInfoResponse, client::NodeInfoWrapper as RustNodeInfoWrapper,
 };
 
 #[derive(PartialEq, Getters, CopyGetters)]
