@@ -409,6 +409,10 @@ Retries (promotes or reattaches) a message for provided [MessageId] until it's i
 | **interval**    | ✘ | Option<u64>  | The interval in which we retry the message.   |
 | **max_attempts** | ✘ | Option<u64>  | The maximum of attempts we retry the message. |
 
+### Returns:
+
+An array of tuples with the newly reattached `(MessageId,  Message)`.
+
 ## `consolidate_funds()`
 
 Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
