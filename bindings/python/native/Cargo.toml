@@ -1,11 +1,11 @@
 [workspace]
 
 [package]
-name = "iota-core-python"
+name = "iota-client-python"
 version = "0.2.0-alpha.3"
 authors = ["Bing-Yang Lin <bingyang.lin@iota.org>"]
 edition = "2018"
-description = "Core library of IOTA"
+description = "Client library of IOTA"
 license = "Apache-2.0"
 repository = "https://github.com/iotaledger/iota.rs"
 homepage = "https://iota.org"

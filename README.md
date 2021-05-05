@@ -26,10 +26,10 @@ Using the library is easy, just add it as dependancy in `Cargo.toml`:
 
 ```bash
 [dependencies]
-iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 ```
 
-And then you can use the library in your code with `iota`.
+And then you can use the library in your code with `use iota_client;`.
 
 When using the "MQTT" feature, connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
 

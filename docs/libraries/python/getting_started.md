@@ -18,7 +18,7 @@ You should see the similar output:
 ```plaintext
 Package                    Version
 -------------------------- -------
-iota-core-python           0.2.0a3
+iota-client-python           0.2.0a3
 ```
 Once installed in the given python environment you are all set and can start hacking using python binding!
 
