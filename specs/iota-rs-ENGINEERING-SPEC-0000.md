@@ -422,7 +422,7 @@ Function to consolidate all funds from a range of addresses to the address with 
 
 ### Returns:
 
-The address to which the funds got consolidated
+The address to which the funds got consolidated.
 
 ## `reattach()`
 

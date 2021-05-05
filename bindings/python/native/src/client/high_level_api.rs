@@ -322,8 +322,7 @@ impl Client {
         interval: Option<u64>,
         max_attempts: Option<u64>,
     ) -> Result<Vec<(String, Message)>> {
-        let rt = tokio::runtime::Runtime::new()?;
-        let messages = rt.block_on(async {
+        let messages = crate::block_on(async {
             self.client
                 .retry_until_included(&RustMessageId::from_str(&message_id)?, interval, max_attempts)
                 .await
@@ -341,9 +340,8 @@ impl Client {
         start_index: usize,
         end_index: usize,
     ) -> Result<String> {
-        let rt = tokio::runtime::Runtime::new()?;
         let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
-        let address = rt.block_on(async {
+        let address = crate::block_on(async {
             self.client
                 .consolidate_funds(&seed, account_index, start_index..end_index)
                 .await
