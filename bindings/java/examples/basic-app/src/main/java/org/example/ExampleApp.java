@@ -28,8 +28,9 @@ public class ExampleApp {
                     // Optional authentication
                     .finish();
 
-            NodeInfo info = iota.getInfo();
-            System.out.println("Node Info: " + info);
+            NodeInfoWrapper info = iota.getInfo();
+            System.out.println("Node url: " + info.getUrl());
+            System.out.println("Node Info: " + info.nodeInfo());
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
         }

@@ -98,7 +98,7 @@ foreign_class!(
         private constructor = empty;
         fn Client::builder() -> ClientBuilder; alias Builder;
         fn Client::get_health(&self) -> Result<bool>;
-        fn Client::get_info(&self) -> Result<NodeInfo>; 
+        fn Client::get_info(&self) -> Result<NodeInfoWrapper>; 
         //fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
         fn Client::get_tips(&self) -> Result<Vec<String>>;
     }
@@ -106,19 +106,34 @@ foreign_class!(
 
 foreign_class!(
     #[derive(PartialEq)]
-    class NodeInfo {
-        self_type NodeInfo;
+    class NodeInfoWrapper {
+        self_type NodeInfoWrapper;
         private constructor = empty;
-        private fn NodeInfo::eq(&self, o: &NodeInfo) -> bool; alias rustEq;
-        fn NodeInfo::name(&self) -> &str;
-        fn NodeInfo::version(&self) -> &str;
-        fn NodeInfo::network_id(&self) -> &str; alias networkId;
-        fn NodeInfo::bech32_hrp(&self) -> &str; alias bech32HRP;
-        fn NodeInfo::min_pow_score(&self) -> f64; alias minPoWScore;
-        fn NodeInfo::latest_milestone_index(&self) -> u32; alias latestMilestoneIndex;
-        fn NodeInfo::confirmed_milestone_index(&self) -> u32; alias confirmedMilestoneIndex;
-        fn NodeInfo::pruning_index(&self) -> u32; alias pruningIndex;
-        fn NodeInfo::features(&self) -> Vec<String>;
+        private fn NodeInfoWrapper::eq(&self, o: &NodeInfoWrapper) -> bool; alias rustEq;
+        fn NodeInfoWrapper::url(&self) -> &str; alias getUrl;
+        fn NodeInfoWrapper::nodeinfo(&self) -> InfoResponse; alias nodeInfo;
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq)]
+    class InfoResponse {
+        self_type InfoResponse;
+        private constructor = empty;
+        private fn InfoResponse::eq(&self, o: &InfoResponse) -> bool; alias rustEq;
+        fn InfoResponse::name(&self) -> &str;
+        fn InfoResponse::version(&self) -> &str;
+        fn InfoResponse::network_id(&self) -> &str; alias networkId;
+        fn InfoResponse::bech32_hrp(&self) -> &str; alias bech32HRP;
+        fn InfoResponse::messages_per_second(&self) -> f64; alias messagesPerSecond;
+        fn InfoResponse::referenced_messages_per_second(&self) -> f64; alias referencedMessagesPerSecond;
+        fn InfoResponse::referenced_rate(&self) -> f64; alias referencedRate;
+        fn InfoResponse::latest_milestone_timestamp(&self) -> u64; alias latestMilestoneTimestamp;
+        fn InfoResponse::min_pow_score(&self) -> f64; alias minPoWScore;
+        fn InfoResponse::latest_milestone_index(&self) -> u32; alias latestMilestoneIndex;
+        fn InfoResponse::confirmed_milestone_index(&self) -> u32; alias confirmedMilestoneIndex;
+        fn InfoResponse::pruning_index(&self) -> u32; alias pruningIndex;
+        fn InfoResponse::features(&self) -> Vec<String>;
     }
 );
 /*

@@ -19,7 +19,7 @@ use iota_client::{
 
 use crate::{
     client_builder::ClientBuilder,
-    bee_types::NodeInfo,
+    bee_types::NodeInfoWrapper,
 };
 
 use tokio::runtime::{
@@ -54,7 +54,7 @@ impl Client {
         Ok(self.block.block_on(async { self.client.get_health().await })?)
     }
 
-    pub fn get_info(&self) -> Result<NodeInfo> {
+    pub fn get_info(&self) -> Result<NodeInfoWrapper> {
         Ok(self.block.block_on(async { self.client.get_info().await })?.into())
     }
 

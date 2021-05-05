@@ -3,28 +3,49 @@
 
 use getset::{CopyGetters, Getters};
 use iota_client::{
-    bee_rest_api::types::responses::InfoResponse as RustInfoResponse,
+    bee_rest_api::types::responses::InfoResponse as RustInfoResponse, 
+    client::NodeInfoWrapper as RustNodeInfoWrapper,
 };
 
-impl From<RustInfoResponse> for NodeInfo {
-    fn from(info: RustInfoResponse) -> Self {
+#[derive(PartialEq, Getters, CopyGetters)]
+pub struct NodeInfoWrapper {
+    #[getset(get = "pub")]
+    url: String,
+    nodeinfo: InfoResponse,
+}
+
+impl NodeInfoWrapper {
+    pub fn nodeinfo(&self) -> InfoResponse {
+        self.nodeinfo.clone()
+    }
+}
+
+impl From<RustNodeInfoWrapper> for NodeInfoWrapper {
+    fn from(info: RustNodeInfoWrapper) -> Self {
         Self {
-            name: info.name,
-            version: info.version,
-            is_healthy: info.is_healthy,
-            network_id: info.network_id,
-            bech32_hrp: info.bech32_hrp,
-            min_pow_score: info.min_pow_score,
-            latest_milestone_index: info.latest_milestone_index,
-            confirmed_milestone_index: info.confirmed_milestone_index,
-            pruning_index: info.pruning_index,
-            features: info.features,
+            url: info.url,
+            nodeinfo: InfoResponse {
+                name: info.nodeinfo.name,
+                version: info.nodeinfo.version,
+                is_healthy: info.nodeinfo.is_healthy,
+                network_id: info.nodeinfo.network_id,
+                bech32_hrp: info.nodeinfo.bech32_hrp,
+                min_pow_score: info.nodeinfo.min_pow_score,
+                messages_per_second: info.nodeinfo.messages_per_second,
+                referenced_messages_per_second: info.nodeinfo.referenced_messages_per_second,
+                referenced_rate: info.nodeinfo.referenced_rate,
+                latest_milestone_timestamp: info.nodeinfo.latest_milestone_timestamp,
+                latest_milestone_index: info.nodeinfo.latest_milestone_index,
+                confirmed_milestone_index: info.nodeinfo.confirmed_milestone_index,
+                pruning_index: info.nodeinfo.pruning_index,
+                features: info.nodeinfo.features,
+            },
         }
     }
 }
 
 #[derive(Clone, PartialEq, Getters, CopyGetters)]
-pub struct NodeInfo {
+pub struct InfoResponse {
     #[getset(get = "pub")]
     name: String,
     #[getset(get = "pub")]
@@ -38,6 +59,14 @@ pub struct NodeInfo {
     #[getset(get_copy = "pub")]
     min_pow_score: f64,
     #[getset(get_copy = "pub")]
+    messages_per_second: f64,
+    #[getset(get_copy = "pub")]
+    referenced_messages_per_second: f64,
+    #[getset(get_copy = "pub")]
+    referenced_rate: f64,
+    #[getset(get_copy = "pub")]
+    latest_milestone_timestamp: u64,
+    #[getset(get_copy = "pub")]
     latest_milestone_index: u32,
     #[getset(get_copy = "pub")]
     confirmed_milestone_index: u32,
@@ -46,8 +75,29 @@ pub struct NodeInfo {
     features: Vec<String>,
 }
 
-impl NodeInfo {
+impl InfoResponse {
     pub fn features(&self) -> Vec<String> {
         self.features.to_vec()
+    }
+}
+
+impl From<RustInfoResponse> for InfoResponse {
+    fn from(info: RustInfoResponse) -> Self {
+        Self {
+            name: info.name,
+            version: info.version,
+            is_healthy: info.is_healthy,
+            network_id: info.network_id,
+            bech32_hrp: info.bech32_hrp,
+            messages_per_second: info.messages_per_second,
+            referenced_messages_per_second: info.referenced_messages_per_second,
+            referenced_rate: info.referenced_rate,
+            latest_milestone_timestamp: info.latest_milestone_timestamp,
+            latest_milestone_index: info.latest_milestone_index,
+            confirmed_milestone_index: info.confirmed_milestone_index,
+            pruning_index: info.pruning_index,
+            features: info.features,
+            min_pow_score: info.min_pow_score,
+        }
     }
 }
