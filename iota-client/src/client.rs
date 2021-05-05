@@ -53,6 +53,7 @@ use std::{
     collections::{HashMap, HashSet},
     convert::{TryFrom, TryInto},
     hash::Hash,
+    ops::Range,
     str::FromStr,
     sync::Arc,
     time::Duration,
@@ -1162,6 +1163,16 @@ impl Client {
             }
         }
         Err(Error::TangleInclusionError(message_id.to_string()))
+    }
+
+    /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+    pub async fn consolidate_funds(
+        &self,
+        seed: &Seed,
+        account_index: usize,
+        address_range: Range<usize>,
+    ) -> crate::Result<()> {
+        crate::api::consolidate_funds(&self, seed, account_index, address_range).await
     }
 }
 
