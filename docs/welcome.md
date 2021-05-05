@@ -12,9 +12,6 @@ Example of tasks that `iota.rs` is able to help with:
 ## Changes from IOTA 1.0 to 1.5
 For an overview of all significant changes in the protocol, please see [Chrysalis documentation](https://chrysalis.docs.iota.org/guides/index.html).
 
-## Warning
-This library is in active development. The library targets the Chrysalis testnet and does not work with current IOTA mainnet.
-
 ## Testnet
 To join the Chrysalis public testnet checkout [this link](https://blog.iota.org/chrysalis-phase-2-testnet-out-now/). More information about Chrysalis components is available at [documentation portal](https://chrysalis.docs.iota.org/).
 
