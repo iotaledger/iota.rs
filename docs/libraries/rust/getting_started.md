@@ -12,10 +12,10 @@ Using the library is easy, just add it as dependency in your `Cargo.toml`:
 
 ```bash
 [dependencies]
-iota-core = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 ```
 
-And then you can use the library in your code with `use iota;`.
+And then you can use the library in your code with `use iota_client;`.
 
 ### Initialisation
 
