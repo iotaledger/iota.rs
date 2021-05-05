@@ -21,6 +21,7 @@
   * [`subscriber`](#subscriber)
   * [`retry`](#retry)
   * [`retry_until_included`](#retry_until_included)
+  * [`consolidate_funds`](#consolidate_funds)
   * [`reattach`](#reattach)
   * [`promote`](#promote)
 * [Full node API](#Full-node-API)
@@ -411,6 +412,21 @@ Retries (promotes or reattaches) a message for provided [MessageId] until it's i
 ### Returns:
 
 An array of tuples with the newly reattached `(MessageId,  Message)`.
+
+## `consolidate_funds()`
+
+Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+### Parameters
+
+| Parameter | Type | Definition |
+| - | - | - | - |
+| **seed** | [Seed] | The seed we want to search for. |
+| **account_index** | usize | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+| **address_range** | Range<usize> | Range from which to generate public and internal addresses from which to consolidate the funds. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+
+### Returns:
+
+The address to which the funds got consolidated.
 
 ## `reattach()`
 

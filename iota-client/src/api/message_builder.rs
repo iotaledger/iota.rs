@@ -210,7 +210,7 @@ impl<'a> ClientMessageBuilder<'a> {
         })
     }
 
-    fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, bool)> {
+    pub(crate) fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, bool)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
             OutputDto::SignatureLockedSingle(ref r) => match &r.address {

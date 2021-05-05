@@ -76,6 +76,7 @@ pub(crate) enum Api {
     GetIncludedMessage(TransactionId),
     Retry(MessageId),
     RetryUntilIncluded(MessageId, Option<u64>, Option<u64>),
+    ConsolidateFunds(Seed, usize, usize, usize),
     Reattach(MessageId),
     Promote(MessageId),
     HexToBech32(String, Option<String>),
@@ -388,6 +389,12 @@ impl Task for ClientTask {
                             })
                         })
                         .collect::<Result<String, serde_json::Error>>()?
+                }
+                Api::ConsolidateFunds(seed, account_index, start_index, end_index) => {
+                    let address = client
+                        .consolidate_funds(seed, *account_index, *start_index..*end_index)
+                        .await?;
+                    serde_json::to_string(&address)?
                 }
                 Api::Reattach(message_id) => {
                     let message = client.reattach(message_id).await?;

@@ -248,6 +248,27 @@ declare_types! {
             Ok(cx.undefined().upcast())
         }
 
+        method consolidateFunds(mut cx) {
+            let seed_hex = cx.argument::<JsString>(0)?.value();
+            let seed = Seed::from_bytes(&hex::decode(seed_hex).expect("invalid seed hex"));
+            let account_index = cx.argument::<JsNumber>(1)?.value() as usize;
+            let start_index = cx.argument::<JsNumber>(2)?.value() as usize;
+            let end_index = cx.argument::<JsNumber>(3)?.value() as usize;
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::ConsolidateFunds(seed, account_index, start_index, end_index),
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
         method networkInfo(mut cx) {
             let cb = cx.argument::<JsFunction>(0)?;
             {

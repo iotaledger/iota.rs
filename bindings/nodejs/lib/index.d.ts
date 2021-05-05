@@ -94,6 +94,7 @@ export declare class Client {
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>
   retry(messageId: string): Promise<MessageWrapper>
   retryUntilIncluded(messageId: string, interval?: number, maxAttempts?: number): Promise<MessageWrapper[]>
+  consolidateFunds(seed: string, accountIndex: number, startIndex: number, endIndex: number): Promise<String>
 
   getInfo(): Promise<NodeInfoWrapper>
   getTips(): Promise<string[]>
