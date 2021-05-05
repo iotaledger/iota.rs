@@ -20,7 +20,7 @@ pub struct MessageSender {
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
     inputs: Vec<UtxoInput>,
-    input_range: Range<usize>,
+    input_range: Option<Range<usize>>,
     outputs: Vec<(Address, u64)>,
     dust_allowance_outputs: Vec<(Address, u64)>,
 }
@@ -38,7 +38,7 @@ declare_types! {
                 account_index: None,
                 initial_address_index:None,
                 inputs: Vec::new(),
-                input_range: 0..100,
+                input_range: None,
                 outputs: Vec::new(),
                 dust_allowance_outputs: Vec::new(),
             })
@@ -190,7 +190,7 @@ declare_types! {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let input_range = &mut this.borrow_mut(&guard).input_range;
-                *input_range = start..end;
+                input_range.replace(start..end);
             }
             Ok(cx.this().upcast())
         }
@@ -211,6 +211,7 @@ declare_types! {
                         account_index: ref_.account_index,
                         initial_address_index: ref_.initial_address_index,
                         inputs: ref_.inputs.clone(),
+                        input_range: ref_.input_range.clone(),
                         outputs: ref_.outputs.clone(),
                         dust_allowance_outputs: ref_.dust_allowance_outputs.clone(),
                     },
