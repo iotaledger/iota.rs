@@ -1,0 +1,40 @@
+[workspace]
+
+[package]
+name = "iota-client"
+version = "0.1.0"
+authors = ["Brord van Wierst <brord@iota.org>"]
+edition = "2018"
+build = "build.rs"
+
+[lib]
+name = "iota_client"
+crate-type = ["cdylib"]
+
+[dependencies]
+iota-client = { path = "../../../iota-client", features = [] }
+bee-message = "0.1"
+log = "0.4.6"
+chrono = "0.4.6"
+env_logger = "0.8"
+smol = "1.2.5"
+anyhow = "1.0.38"
+hex = "0.4"
+jni = "0.19" # Used in directly verifying binding linkage
+getset = "0.1"
+
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
+tokio = { version = "1.2" }
+
+[build-dependencies]
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
+env_logger = "0.8"
+bindgen = "0.58"
+
+[features]
+default = ["mqtt", "iota-client/default"]
+sync = ["iota-client/sync"]
+async = ["iota-client/async"]
+mqtt = ["iota-client/mqtt"]
+storage = ["iota-client/storage"]
+wasm = ["iota-client/wasm"]

@@ -1,0 +1,425 @@
+use std::{
+    path::PathBuf,
+    time::Duration,
+    str::FromStr,
+};
+
+use chrono::prelude::{
+    DateTime, Utc, Local
+};
+
+use crate::{
+    client_builder::*,
+    full_node_api::*,
+    jni_c_header::*,
+    bee_types::*,
+    message::*,
+    address::*,
+};
+
+use anyhow::{
+    Result as Result,
+    anyhow,
+};
+
+use iota_client::{
+    Api,
+    bee_rest_api::types::{
+        dtos::{MessageDto, PeerDto, RelationDto, ReceiptDto},
+    },
+};
+
+foreign_class!(class RustLogging {
+    fn init() {
+        env_logger::init();
+    }
+});
+
+foreign_enum!(
+    enum Api {
+        /// `get_health` API
+        GET_HEALTH = Api::GetHealth,
+        /// `get_info`API
+        GET_INFO = Api::GetInfo,
+        /// `get_peers`API
+        GET_PEERS = Api::GetPeers,
+        /// `get_tips` API
+        GET_TIPS = Api::GetTips,
+        /// `post_message` API
+        POST_MESSAGE = Api::PostMessage,
+        /// `post_message` API with remote pow
+        POST_MESSAGE_WITH_REMOTE_POW= Api::PostMessageWithRemotePow,
+        /// `get_output` API
+        GET_OUTPUT = Api::GetOutput,
+        /// `get_milestone` API
+        GET_MILESTONE = Api::GetMilestone,
+        /// `get_message` API
+        GET_MESSAGE  = Api::GetMessage,
+        /// `get_balance` API
+        GET_BALANCE = Api::GetBalance,
+    }
+);
+
+foreign_enum!(
+    enum RelationDto {
+        KNOWN = RelationDto::Known,
+        UNKNOWN = RelationDto::Unknown,
+        DISCOVERED = RelationDto::Discovered,
+    }
+);
+
+foreign_class!(class BrokerOptions {
+    self_type BrokerOptions;
+    constructor BrokerOptions::new() -> BrokerOptions;
+    fn BrokerOptions::automatic_disconnect(&self, disconnect: bool) -> BrokerOptions; alias automaticDisconnect;
+    fn BrokerOptions::timeout(&self, timeout: Duration) -> BrokerOptions;
+    fn BrokerOptions::max_reconnection_attempts(&self, max_reconnection_attempts: usize) -> BrokerOptions;
+});
+
+foreign_class!(class ClientBuilder {
+    self_type ClientBuilder;
+    constructor ClientBuilder::new() -> ClientBuilder;
+    fn ClientBuilder::with_node(&mut self, node: &str) -> ClientBuilder; alias withNode;
+    fn ClientBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder; alias withNodePoolUrls;
+    fn ClientBuilder::with_network(&mut self, network: String) -> ClientBuilder; alias withNetwork;
+    fn ClientBuilder::with_node_sync_interval(&mut self, node_sync_interval: Duration) -> ClientBuilder; alias withNodeSyncInterval;
+    fn ClientBuilder::with_node_sync_disabled(&mut self) -> ClientBuilder; alias withNodeSyncDisabled;
+    fn ClientBuilder::with_mqtt_broker_options(&mut self, options: BrokerOptions) -> ClientBuilder; alias withMqttBrokerOptions;
+    fn ClientBuilder::with_local_pow(&mut self, local: bool) -> ClientBuilder; alias withLocalPow;
+    fn ClientBuilder::with_request_timeout(&mut self, timeout: Duration) -> ClientBuilder; alias withRequestTimeout;
+    fn ClientBuilder::with_api_timeout(&mut self, api: Api, timeout: Duration) -> ClientBuilder; alias withApiTimeout;
+    fn ClientBuilder::finish(&mut self) -> Result<Client>;
+});
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class Client {
+        self_type Client;
+        private constructor = empty;
+        fn Client::builder() -> ClientBuilder; alias Builder;
+        fn Client::get_health(&self) -> Result<bool>;
+        fn Client::get_info(&self) -> Result<NodeInfo>; 
+        //fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
+        fn Client::get_tips(&self) -> Result<Vec<String>>;
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq)]
+    class NodeInfo {
+        self_type NodeInfo;
+        private constructor = empty;
+        private fn NodeInfo::eq(&self, o: &NodeInfo) -> bool; alias rustEq;
+        fn NodeInfo::name(&self) -> &str;
+        fn NodeInfo::version(&self) -> &str;
+        fn NodeInfo::network_id(&self) -> &str; alias networkId;
+        fn NodeInfo::bech32_hrp(&self) -> &str; alias bech32HRP;
+        fn NodeInfo::min_pow_score(&self) -> f64; alias minPoWScore;
+        fn NodeInfo::latest_milestone_index(&self) -> u32; alias latestMilestoneIndex;
+        fn NodeInfo::confirmed_milestone_index(&self) -> u32; alias confirmedMilestoneIndex;
+        fn NodeInfo::pruning_index(&self) -> u32; alias pruningIndex;
+        fn NodeInfo::features(&self) -> Vec<String>;
+    }
+);
+/*
+foreign_class!(class PeerDto {
+    self_type PeerDto;
+    private constructor = empty;
+    fn Client::get_health(&self) -> Result<bool>;
+    fn Client::get_info(&self) -> Result<NodeInfo>;
+    fn Client::get_peers(&self) -> Result<Vec<PeerDto>>
+    fn Client::get_tips(&self) -> Result<Vec<String>>
+});*/
+
+
+/*
+foreign_enum!(
+    enum MessageType {
+        RECEIVED = MessageType::Received,
+        SENT = MessageType::Sent,
+        FAILED = MessageType::Failed,
+        UNCONFIRMED = MessageType::Unconfirmed,
+        VALUE = MessageType::Value,
+        CONFIRMED = MessageType::Confirmed,
+    }
+);
+
+foreign_enum!(
+    enum MessagePayloadType {
+        TRANSACTION = MessagePayloadType::Transaction,
+        MILESTONE = MessagePayloadType::Milestone,
+        INDEXATION = MessagePayloadType::Indexation,
+        RECEIPT = MessagePayloadType::Receipt,
+        TREASURY_TRANSACTION = MessagePayloadType::TreasuryTransaction,
+    }
+);
+
+foreign_enum!(
+    enum ValueUnit {
+        I = ValueUnit::I,
+        Ki = ValueUnit::Ki,
+        Mi = ValueUnit::Mi,
+        Gi = ValueUnit::Gi,
+        Ti = ValueUnit::Ti,
+        Pi = ValueUnit::Pi,
+    }
+);
+
+foreign_enum!(
+    enum OutputKind {
+        SIGNATURE_LOCKED_SINGLE = OutputKind::SignatureLockedSingle,
+        SIGNATURE_LOCKED_DUST_ALLOWANCE = OutputKind::SignatureLockedDustAllowance,
+        TREASURY = OutputKind::Treasury,
+    }
+);
+
+foreign_enum!(
+    enum InputKind {
+        UTXO = InputKind::UTXO,
+        TREASURY = InputKind::Treasury,
+    }
+);
+foreign_enum!(
+    enum UnlockBlockKind {
+        ED25519 = UnlockBlockKind::Ed25519,
+        REFERENCE = UnlockBlockKind::Reference,
+    }
+);
+
+foreign_class!(class ClientOptionsBuilder {
+    self_type ClientOptionsBuilder;
+    constructor ClientOptionsBuilder::new() -> ClientOptionsBuilder;
+    fn ClientOptionsBuilder::with_node(&mut self, node: &str) -> ClientOptionsBuilder; alias withNode;
+    fn ClientOptionsBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientOptionsBuilder; alias withNodePoolUrls;
+    fn ClientOptionsBuilder::with_network(&mut self, network: String) -> ClientOptionsBuilder; alias withNetwork;
+    fn ClientOptionsBuilder::with_node_sync_interval(&mut self, node_sync_interval: Duration) -> ClientOptionsBuilder; alias withNodeSyncInterval;
+    fn ClientOptionsBuilder::with_node_sync_disabled(&mut self) -> ClientOptionsBuilder; alias withNodeSyncDisabled;
+    fn ClientOptionsBuilder::with_mqtt_mqtt_broker_options(&mut self, options: BrokerOptions) -> ClientOptionsBuilder; alias withMqttBrokerOptions;
+    fn ClientOptionsBuilder::with_local_pow(&mut self, local: bool) -> ClientOptionsBuilder; alias withLocalPow;
+    fn ClientOptionsBuilder::with_request_timeout(&mut self, timeout: Duration) -> ClientOptionsBuilder; alias withRequestTimeout;
+    fn ClientOptionsBuilder::with_api_timeout(&mut self, api: Api, timeout: Duration) -> ClientOptionsBuilder; alias withApiTimeout;
+    fn ClientOptionsBuilder::build(&mut self) -> Result<ClientOptions>;
+});
+
+foreign_class!(class ClientOptions {
+    self_type ClientOptions;
+    private constructor = empty;
+});
+
+foreign_class!(
+    #[derive(Display)]
+    class Value {
+        self_type Value;
+        constructor Value::new(value: u64, unit: ValueUnit) -> Value;
+        private fn Value::with_denomination(&self) -> String; alias to_string;
+        fn Value::with_denomination(&self) -> String; alias withDenomination;
+        fn Value::without_denomination(&self) -> u64; alias withoutDenomination;
+        fn Value::value(&self) -> &u64;
+    }
+);
+foreign_class!(
+    #[derive(Display)]
+    class MessageId {
+        self_type MessageId;
+        constructor MessageId::null() -> MessageId;
+        private fn MessageId::to_string(&self) -> String;
+        fn MessageId::fromString(str_rep: &str) -> MessageId {
+            MessageId::from_str(str_rep).unwrap()
+        }
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq)]
+    class Message {
+        self_type Message;
+        private constructor = empty;
+        private fn Message::eq(&self, o: &Message) -> bool; alias rustEq;
+        fn Message::id(&self) -> MessageId;
+        fn Message::version(&self) -> u64;
+        fn Message::parents(&self) -> Vec<MessageId>;
+        fn Message::payload_length(&self) -> usize; alias payloadLength;
+        fn Message::payload(&self) -> Option<MessagePayload>;
+        fn Message::timestamp(&self) -> DateTime<Utc>;
+        fn Message::nonce(&self) -> u64;
+        fn Message::confirmed(&self) -> Option<bool>;
+        fn Message::broadcasted(&self) -> bool;
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq, Display)]
+    class Address {
+        self_type Address;
+        private constructor = empty;
+        private fn Address::eq(&self, o: &Address) -> bool; alias rustEq;
+        private fn Address::to_string(&self) -> String;
+        fn Address::balance(&self) -> u64; alias getBalance;
+        fn Address::readable(&self) -> String; alias getReadable;
+        fn Address::address(&self) -> AddressWrapper;
+    }
+);
+
+foreign_class!(
+    class AddressWrapper {
+        self_type AddressWrapper;
+        private constructor = empty;
+        fn AddressWrapper::from(address: &str, bech32_hrp: String) -> Result<AddressWrapper> {
+            match IotaAddress::try_from_bech32(address) {
+                Ok(addr) => Ok(AddressWrapper::new(addr, bech32_hrp)),
+                Err(e) => Err(anyhow!(e)),
+            }
+        }
+        fn AddressWrapper::to_bech32(&self) -> String; alias toBech32;
+    }
+);
+
+// Bee types wrapping
+foreign_class!(
+    #[derive(Display)]
+    class MessagePayload {
+        self_type MessagePayload;
+        private constructor = empty;
+        private fn MessagePayload::to_string(&self) -> String;
+        fn MessagePayload::payload_type(&self) -> MessagePayloadType; alias payloadType;
+        fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>; alias getAsIndexation;
+        fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>; alias getAsMilestone;
+    }
+);
+
+foreign_class!(
+    class IndexationPayload {
+        self_type IndexationPayload;
+        private constructor = empty;
+        fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias new_with;
+        fn IndexationPayload::index(&self) -> &[u8];
+        fn IndexationPayload::data(&self) -> &[u8];
+    }
+);
+
+foreign_class!(
+    class MilestonePayload {
+        self_type MilestonePayload;
+        private constructor = empty;
+        fn MilestonePayload::id(&self) -> String;
+        fn MilestonePayload::essence(&self) -> MilestonePayloadEssence;
+        fn MilestonePayload::validate(&self, applicable_public_keys: &[String], min_threshold: usize) -> bool;
+        //fn MilestonePayload::signatures(&self) -> Vec<Box<[u8]>>;
+    }
+);
+
+foreign_class!(
+    class MilestonePayloadEssence {
+        self_type MilestonePayloadEssence;
+        private constructor = empty;
+        fn MilestonePayloadEssence::index(&self) -> u32;
+        fn MilestonePayloadEssence::timestamp(&self) -> u64;
+        fn MilestonePayloadEssence::parents(&self) -> Vec<MessageId>;
+        fn MilestonePayloadEssence::merkle_proof(&self) -> Vec<u8>; alias merkleProof;
+    }
+);
+
+// TransactionEssence
+
+foreign_class!(
+    class MessageTransactionPayload {
+        self_type MessageTransactionPayload;
+        private constructor = empty;
+        fn MessageTransactionPayload::essence(&self) -> Essence;
+        fn MessageTransactionPayload::unlock_blocks(&self) -> Vec<UnlockBlock>; alias unlockBlocks;
+    }
+);
+
+foreign_class!(
+    class Essence {
+        self_type Essence;
+        private constructor = empty;
+        fn Essence::get_as_regular(&self) -> Option<RegularEssence>; alias getAsRegular;
+    }
+);
+
+foreign_class!(
+    class RegularEssence {
+        self_type RegularEssence;
+        private constructor = empty;
+        fn RegularEssence::inputs(&self) -> Vec<TransactionInput>;
+        fn RegularEssence::outputs(&self) -> Vec<TransactionOutput>;
+        fn RegularEssence::internal(&self) -> bool;
+    
+        fn RegularEssence::incoming(&self) -> bool;
+    
+        /// The transactions's value.
+        fn RegularEssence::value(&self) -> u64;
+    
+        /// The transactions's remainder value sum.
+        fn RegularEssence::remainder_value(&self) -> u64; alias remainderValue;
+    }
+);
+
+foreign_class!(
+    #[derive(Display)]
+    class TransactionInput {
+        self_type TransactionInput;
+        private constructor = empty;
+        private fn TransactionInput::to_string(&self) -> String;
+        fn TransactionInput::kind(&self) -> InputKind;
+    }
+);
+
+foreign_class!(
+    #[derive(Display)]
+    class TransactionOutput {
+        self_type TransactionOutput;
+        private constructor = empty;
+        private fn TransactionOutput::to_string(&self) -> String;
+        fn TransactionOutput::kind(&self) -> OutputKind;
+    }
+);
+
+foreign_class!(
+    #[derive(Display)]
+    class UnlockBlock {
+        self_type UnlockBlock;
+        private constructor = empty;
+        private fn UnlockBlock::to_string(&self) -> String;
+        fn UnlockBlock::kind(&self) -> UnlockBlockKind;
+    }
+);
+
+foreign_class!(
+    class SignatureLockedSingleOutput {
+        self_type SignatureLockedSingleOutput;
+        private constructor = empty;
+        fn SignatureLockedSingleOutput::amount(&self) -> u64;
+    }
+);
+
+foreign_class!(
+    class ReceiptPayload {
+        self_type ReceiptPayload;
+        private constructor = empty;
+        fn ReceiptPayload::migrated_at(&self) -> u32; alias migratedAt;
+        fn ReceiptPayload::last(&self) -> bool;
+        fn ReceiptPayload::funds(&self) -> Vec<MigratedFundsEntry>;
+        fn ReceiptPayload::amount(&self) -> u64;
+    }
+);
+
+foreign_class!(
+    class MigratedFundsEntry {
+        self_type MigratedFundsEntry;
+        private constructor = empty;
+        fn MigratedFundsEntry::tail_transaction_hash(&self) -> Vec<u8>; alias tailTransactionHash;
+        fn MigratedFundsEntry::output(&self) -> SignatureLockedSingleOutput;
+    }
+);
+
+foreign_class!(
+    class TreasuryTransactionPayload {
+        self_type TreasuryTransactionPayload;
+        private constructor = empty;
+        fn TreasuryTransactionPayload::input(&self) -> MessageId;
+        fn TreasuryTransactionPayload::output(&self) -> u64;
+    }
+);
+*/
