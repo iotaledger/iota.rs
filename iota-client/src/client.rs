@@ -1166,12 +1166,13 @@ impl Client {
     }
 
     /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+    /// Returns the address to which the funds got consolidated, if any were available
     pub async fn consolidate_funds(
         &self,
         seed: &Seed,
         account_index: usize,
         address_range: Range<usize>,
-    ) -> crate::Result<()> {
+    ) -> crate::Result<String> {
         crate::api::consolidate_funds(&self, seed, account_index, address_range).await
     }
 }

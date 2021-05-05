@@ -334,6 +334,22 @@ impl Client {
         }
         Ok(res)
     }
+    fn consolidate_funds(
+        &self,
+        seed: String,
+        account_index: usize,
+        start_index: usize,
+        end_index: usize,
+    ) -> Result<String> {
+        let rt = tokio::runtime::Runtime::new()?;
+        let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
+        let address = rt.block_on(async {
+            self.client
+                .consolidate_funds(&seed, account_index, start_index..end_index)
+                .await
+        })?;
+        Ok(address)
+    }
     fn reattach(&self, message_id: String) -> Result<(String, Message)> {
         let message_id_message =
             crate::block_on(async { self.client.reattach(&RustMessageId::from_str(&message_id)?).await })?;

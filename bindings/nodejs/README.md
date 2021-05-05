@@ -346,6 +346,19 @@ Default interval is 5 seconds and max_attempts is 10.
 
 **Returns** the message ids and [Message](#message) of reattached messages.
 
+#### consolidateFunds(seed: string, accountIndex: int, startIndex: int, endIndex: int): Promise<string>
+
+Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+
+| Param        | Type                | Description                                                           |
+| ------------ | ------------------- | --------------------------------------------------------------------- |
+| seed         | <code>string</code> | The seed                                                              |
+| accountIndex | <code>int</code>    | The account index.                                                    |
+| startIndex   | <code>int</code>    | The lowest address index, funds will be consolidated to this address. |
+| endIndex     | <code>int</code>    | The address index until which funds will be consolidated              |
+
+**Returns** the address to which the funds got consolidated, if any were available.
+
 #### getInfo(): Promise<NodeInfoWrapper>
 
 Gets information about the node.

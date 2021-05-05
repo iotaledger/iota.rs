@@ -11,12 +11,13 @@ use crypto::keys::slip10::Seed;
 use std::ops::Range;
 
 /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+/// Returns the address to which the funds got consolidated, if any were available
 pub async fn consolidate_funds(
     client: &Client,
     seed: &Seed,
     account_index: usize,
     address_range: Range<usize>,
-) -> Result<()> {
+) -> Result<String> {
     let addresses = client
         .get_addresses(&seed)
         .with_account_index(account_index)
@@ -93,10 +94,14 @@ pub async fn consolidate_funds(
                 message_ids.push(message.id().0);
             }
         }
+
+        if message_ids.is_empty() {
+            break 'consolidation;
+        }
         // Wait for txs to get confirmed so we don't create conflicting txs
         for message_id in message_ids {
             let _ = client.retry_until_included(&message_id, None, None).await?;
         }
     }
-    Ok(())
+    Ok(consolidation_address)
 }

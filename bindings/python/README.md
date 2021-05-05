@@ -533,6 +533,19 @@ Retries (promotes or reattaches) the message associated with the given id.
 
 **Returns** the message ids and [Message](#message) of reattached messages.
 
+#### consolidate_funds(seed, account_index, start_index, end_index): str
+
+Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+
+| Param           | Type                | Description                                                           |
+| --------------- | ------------------- |  -------------------------------------------------------------------- |
+| [seed]          | <code>string</code> | The seed                                                              |
+| [account_index] | <code>int</code>    | The account index.                                                    |
+| [start_index]   | <code>int</code>    | The lowest address index, funds will be consolidated to this address. |
+| [end_index]     | <code>int</code>    | The address index until which funds will be consolidated              |
+
+**Returns** the address to which the funds got consolidated, if any were available.
+
 #### reattach(message_id): (str, Message)
 
 Reattaches the message associated with the given id.

@@ -26,7 +26,8 @@ async fn main() -> Result<()> {
     let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
 
     // Here all funds will be send to the address with the lowest index in the range
-    consolidate_funds(&iota, &seed, 0, address_range).await?;
+    let address = consolidate_funds(&iota, &seed, 0, address_range).await?;
 
+    println!("Funds consolidated to {}", address);
     Ok(())
 }
