@@ -7,6 +7,7 @@ use crate::{
     builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
     error::*,
     node::*,
+    node_manager::Node,
 };
 use bee_common::packable::Packable;
 use bee_message::prelude::{
@@ -351,8 +352,8 @@ impl Client {
     #[cfg(not(feature = "wasm"))]
     pub(crate) fn start_sync_process(
         runtime: &Runtime,
-        sync: Arc<RwLock<HashSet<Url>>>,
-        nodes: HashSet<Url>,
+        sync: Arc<RwLock<HashSet<Node>>>,
+        nodes: HashSet<Node>,
         node_sync_interval: Duration,
         network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
@@ -381,28 +382,28 @@ impl Client {
 
     #[cfg(not(feature = "wasm"))]
     pub(crate) async fn sync_nodes(
-        sync: &Arc<RwLock<HashSet<Url>>>,
-        nodes: &HashSet<Url>,
+        sync: &Arc<RwLock<HashSet<Node>>>,
+        nodes: &HashSet<Node>,
         network_info: &Arc<RwLock<NetworkInfo>>,
     ) {
         let mut synced_nodes = HashSet::new();
-        let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
-        for node_url in nodes {
+        let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
+        for node in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Client::get_node_info(&node_url.to_string(), None).await {
+            if let Ok(info) = Client::get_node_info(&node.url.to_string(), None, None).await {
                 if info.is_healthy {
                     match network_nodes.get_mut(&info.network_id) {
                         Some(network_id_entry) => {
-                            network_id_entry.push((info, node_url.clone()));
+                            network_id_entry.push((info, node.clone()));
                         }
                         None => match &network_info.read().await.network {
                             Some(id) => {
                                 if info.network_id.contains(id) {
-                                    network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
+                                    network_nodes.insert(info.network_id.clone(), vec![(info, node.clone())]);
                                 }
                             }
                             None => {
-                                network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
+                                network_nodes.insert(info.network_id.clone(), vec![(info, node.clone())]);
                             }
                         },
                     }
@@ -438,7 +439,7 @@ impl Client {
     }
 
     /// Get a node candidate from the synced node pool.
-    pub(crate) async fn get_node(&self) -> Result<Url> {
+    pub(crate) async fn get_node(&self) -> Result<Node> {
         if let Some(primary_node) = &self.node_manager.primary_node {
             return Ok(primary_node.clone());
         }
@@ -546,7 +547,7 @@ impl Client {
 
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
-    pub async fn unsynced_nodes(&self) -> HashSet<&Url> {
+    pub async fn unsynced_nodes(&self) -> HashSet<&Node> {
         let synced = self.node_manager.synced_nodes.read().await;
         self.node_manager
             .nodes
@@ -601,7 +602,7 @@ impl Client {
         let mut url = Url::parse(url)?;
         url.set_path("health");
         let status = crate::node_manager::HttpClient::new()
-            .get(url.as_str(), GET_API_TIMEOUT)
+            .get(Node { url, jwt: None }, GET_API_TIMEOUT)
             .await?
             .status();
         match status {
@@ -612,14 +613,9 @@ impl Client {
 
     /// GET /health endpoint
     pub async fn get_health(&self) -> Result<bool> {
-        let mut url = self.get_node().await?;
-        url.set_path("health");
-        let status = self
-            .node_manager
-            .http_client
-            .get(url.as_str(), GET_API_TIMEOUT)
-            .await?
-            .status();
+        let mut node = self.get_node().await?;
+        node.url.set_path("health");
+        let status = self.node_manager.http_client.get(node, GET_API_TIMEOUT).await?.status();
         match status {
             200 => Ok(true),
             _ => Ok(false),
@@ -627,9 +623,13 @@ impl Client {
     }
 
     /// GET /api/v1/info endpoint
-    pub async fn get_node_info(url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<NodeInfo> {
+    pub async fn get_node_info(
+        url: &str,
+        jwt: Option<String>,
+        auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<NodeInfo> {
         let mut url = crate::node_manager::validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = auth_name_passw {
+        if let Some((name, password)) = auth_name_pwd {
             url.set_username(name)
                 .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
             url.set_password(Some(password))
@@ -643,7 +643,7 @@ impl Client {
             data: NodeInfo,
         }
         let resp: ResponseWrapper = crate::node_manager::HttpClient::new()
-            .get(url.as_str(), GET_API_TIMEOUT)
+            .get(Node { url, jwt }, GET_API_TIMEOUT)
             .await?
             .json()
             .await?;

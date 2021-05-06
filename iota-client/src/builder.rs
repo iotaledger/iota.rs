@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Client Instance
-use crate::{client::*, error::*};
+use crate::{client::*, error::*, node_manager::Node};
 
 #[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
     sync::{broadcast::channel, RwLock},
 };
-use url::Url;
 
 #[cfg(feature = "wasm")]
 use std::sync::RwLock;
@@ -53,7 +52,7 @@ pub struct NetworkInfo {
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
     node_manager_builder: crate::node_manager::NodeManagerBuilder,
-    nodes: HashSet<Url>,
+    nodes: HashSet<Node>,
     #[cfg(not(feature = "wasm"))]
     node_sync_interval: Duration,
     #[cfg(not(feature = "wasm"))]
@@ -105,21 +104,43 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL to be used as primary node, with optional basic authentication
-    pub fn with_primary_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_primary_node(url, auth_name_passw)?;
+    /// Adds an IOTA node by its URL to be used as primary node, with optional jwt and or basic authentication
+    pub fn with_primary_node(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        self.node_manager_builder = self
+            .node_manager_builder
+            .with_primary_node(url, jwt, basic_auth_name_pwd)?;
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional basic authentication
-    pub fn with_primary_pow_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_primary_pow_node(url, auth_name_passw)?;
+    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
+    /// authentication
+    pub fn with_primary_pow_node(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        self.node_manager_builder = self
+            .node_manager_builder
+            .with_primary_pow_node(url, jwt, basic_auth_name_pwd)?;
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL with basic authentication
-    pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_node_auth(url, name, password)?;
+    /// Adds an IOTA node by its URL with optional jwt and or basic authentication
+    pub fn with_node_auth(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        self.node_manager_builder = self
+            .node_manager_builder
+            .with_node_auth(url, jwt, basic_auth_name_pwd)?;
         Ok(self)
     }
 

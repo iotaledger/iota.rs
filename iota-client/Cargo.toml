@@ -46,9 +46,9 @@ async-trait = "0.1"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 
 [features]
-default = ["async", "tokio", "futures"]
+default = ["async"]
 sync = ["ureq", "tokio", "futures"]
-async = ["reqwest", "futures"]
+async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
-wasm = ["async"]
+wasm = ["reqwest", "futures"]
