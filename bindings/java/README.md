@@ -19,16 +19,9 @@ $ cd iota.rs/bindings/java/native
 $ cargo build
 ```
 
-
-- Making a library jar using gradle:
-```
-$ cd iota.rs/bindings/java/lib
-$ ./gradlew assemble
-```
-
 - Running an example using gradle
 ```
-$ cd iotaf.rs/bindings/java
+$ cd iota.rs/bindings/java
 $ ./gradlew examples:basic-app:test --info
 ```
 
