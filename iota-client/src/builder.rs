@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Client Instance
-use crate::{client::*, error::*, node_manager::Node};
+use crate::{client::*, error::*};
 
 #[cfg(not(feature = "wasm"))]
 use tokio::{
@@ -10,13 +10,11 @@ use tokio::{
     sync::{broadcast::channel, RwLock},
 };
 
+#[cfg(not(feature = "wasm"))]
+use std::collections::HashSet;
 #[cfg(feature = "wasm")]
 use std::sync::RwLock;
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-    time::Duration,
-};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(10);
@@ -52,7 +50,6 @@ pub struct NetworkInfo {
 /// Builder to construct client instance with sensible default values
 pub struct ClientBuilder {
     node_manager_builder: crate::node_manager::NodeManagerBuilder,
-    nodes: HashSet<Node>,
     #[cfg(not(feature = "wasm"))]
     node_sync_interval: Duration,
     #[cfg(not(feature = "wasm"))]
@@ -68,7 +65,6 @@ impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
             node_manager_builder: crate::node_manager::NodeManager::builder(),
-            nodes: HashSet::new(),
             #[cfg(not(feature = "wasm"))]
             node_sync_interval: NODE_SYNC_INTERVAL,
             #[cfg(not(feature = "wasm"))]
@@ -230,7 +226,7 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
         let network_info = Arc::new(RwLock::new(self.network_info));
-        let nodes = self.nodes;
+        let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
 
