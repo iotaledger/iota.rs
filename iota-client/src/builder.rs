@@ -20,8 +20,8 @@ const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(10);
 #[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
-// Interval in seconds when new tips will be requested during PoW
-const TIPS_INTERVAL: u64 = 15;
+/// Interval in seconds when new tips will be requested during PoW
+pub const TIPS_INTERVAL: u64 = 15;
 const DEFAULT_MIN_POW: f64 = 4000f64;
 const DEFAULT_BECH32_HRP: &str = "iota";
 
@@ -61,6 +61,22 @@ pub struct ClientBuilder {
     api_timeout: HashMap<Api, Duration>,
 }
 
+impl Default for NetworkInfo {
+    fn default() -> Self {
+        Self {
+            network: None,
+            network_id: None,
+            min_pow_score: DEFAULT_MIN_POW,
+            #[cfg(not(feature = "wasm"))]
+            local_pow: true,
+            #[cfg(feature = "wasm")]
+            local_pow: false,
+            bech32_hrp: DEFAULT_BECH32_HRP.into(),
+            tips_interval: TIPS_INTERVAL,
+        }
+    }
+}
+
 impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
@@ -71,17 +87,7 @@ impl Default for ClientBuilder {
             node_sync_enabled: true,
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
-            network_info: NetworkInfo {
-                network: None,
-                network_id: None,
-                min_pow_score: DEFAULT_MIN_POW,
-                #[cfg(not(feature = "wasm"))]
-                local_pow: true,
-                #[cfg(feature = "wasm")]
-                local_pow: false,
-                bech32_hrp: DEFAULT_BECH32_HRP.into(),
-                tips_interval: TIPS_INTERVAL,
-            },
+            network_info: NetworkInfo::default(),
             request_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
             api_timeout: Default::default(),
         }
