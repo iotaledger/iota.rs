@@ -48,6 +48,9 @@ pub enum Error {
     /// Error on API request
     #[error("Failed to get an answer from all nodes")]
     NodeError,
+    /// Error on RwLock read
+    #[error("Failed to read node RwLock")]
+    NodeReadError,
     /// Hex string convert error
     #[error("{0}")]
     FromHexError(#[from] hex::FromHexError),
@@ -136,4 +139,8 @@ pub enum Error {
     /// Error when parsing from bech32 to hex
     #[error("Failed to parse bech32 to hex")]
     FailedToParseBech32ToHex,
+    #[cfg(not(feature = "wasm"))]
+    /// Tokio task join error
+    #[error("{0}")]
+    TaskJoinError(#[from] tokio::task::JoinError),
 }

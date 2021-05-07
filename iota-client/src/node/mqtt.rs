@@ -72,8 +72,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                         .node_manager
                         .synced_nodes
                         .read()
-                        .expect("Failed to read synced nodes")
-                        .clone()
+                        .map_or(client.node_manager.nodes.clone(), |synced_nodes| synced_nodes.clone())
                 }
                 #[cfg(feature = "wasm")]
                 {
