@@ -37,9 +37,7 @@ use zeroize::Zeroize;
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
 #[cfg(any(feature = "mqtt", not(feature = "wasm")))]
-use tokio::sync::{
-    watch::{Receiver as WatchReceiver, Sender as WatchSender},
-};
+use tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender};
 #[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
@@ -460,11 +458,12 @@ impl Client {
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
-        let not_synced = self.network_info
-                .read()
-                .expect("Couln't read network info")
-                .network_id
-                .is_none();
+        let not_synced = self
+            .network_info
+            .read()
+            .expect("Couln't read network info")
+            .network_id
+            .is_none();
 
         if not_synced {
             let info = self.get_info().await?.nodeinfo;
@@ -476,9 +475,7 @@ impl Client {
                 client_network_info.bech32_hrp = info.bech32_hrp;
             }
         }
-        let res = self.network_info.read()
-            .expect("Failed to read network info")
-            .clone();
+        let res = self.network_info.read().expect("Failed to read network info").clone();
         Ok(res)
     }
 
@@ -495,7 +492,10 @@ impl Client {
     /// returns the tips interval
     #[cfg(not(feature = "wasm"))]
     pub async fn get_tips_interval(&self) -> u64 {
-        self.network_info.read().expect("Failed to read network info").tips_interval
+        self.network_info
+            .read()
+            .expect("Failed to read network info")
+            .tips_interval
     }
 
     /// returns the local pow
@@ -506,7 +506,11 @@ impl Client {
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
     pub async fn unsynced_nodes(&self) -> HashSet<&Url> {
-        let synced = self.node_manager.synced_nodes.read().expect("Failed to read synced nodes");
+        let synced = self
+            .node_manager
+            .synced_nodes
+            .read()
+            .expect("Failed to read synced nodes");
         self.node_manager
             .nodes
             .iter()

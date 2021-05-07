@@ -5,10 +5,7 @@
 use crate::{client::*, error::*};
 
 #[cfg(not(feature = "wasm"))]
-use tokio::{
-    runtime::Runtime,
-    sync::{broadcast::channel},
-};
+use tokio::{runtime::Runtime, sync::broadcast::channel};
 
 #[cfg(not(feature = "wasm"))]
 use std::collections::HashSet;
@@ -16,7 +13,7 @@ use std::collections::HashSet;
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
-    time::Duration
+    time::Duration,
 };
 
 const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
