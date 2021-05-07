@@ -34,13 +34,12 @@ use crypto::{
 
 use zeroize::Zeroize;
 
+#[cfg(not(feature = "wasm"))]
+use crate::builder::TIPS_INTERVAL;
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
 #[cfg(any(feature = "mqtt", not(feature = "wasm")))]
-use tokio::sync::{
-    watch::{Receiver as WatchReceiver, Sender as WatchSender},
-    RwLock,
-};
+use tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender};
 #[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
@@ -55,7 +54,7 @@ use std::{
     hash::Hash,
     ops::Range,
     str::FromStr,
-    sync::Arc,
+    sync::{Arc, RwLock},
     time::Duration,
 };
 
@@ -290,14 +289,11 @@ pub struct Client {
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
     #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
+    pub(crate) mqtt_topic_handlers: Arc<tokio::sync::RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
-    #[cfg(feature = "wasm")]
-    pub(crate) network_info: Arc<std::sync::RwLock<NetworkInfo>>,
-    #[cfg(not(feature = "wasm"))]
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
@@ -357,12 +353,8 @@ impl Client {
         network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
-        let node_sync_interval = TokioDuration::from_nanos(
-            node_sync_interval
-                .as_nanos()
-                .try_into()
-                .expect("Node sync interval parsing failed."),
-        );
+        let node_sync_interval =
+            TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap_or(TIPS_INTERVAL));
 
         runtime.spawn(async move {
             loop {
@@ -395,7 +387,10 @@ impl Client {
                         Some(network_id_entry) => {
                             network_id_entry.push((info, node_url.clone()));
                         }
-                        None => match &network_info.read().await.network {
+                        None => match &network_info
+                            .read()
+                            .map_or(NetworkInfo::default().network, |info| info.network.clone())
+                        {
                             Some(id) => {
                                 if info.network_id.contains(id) {
                                     network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
@@ -419,22 +414,25 @@ impl Client {
         }
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             for (info, node_url) in nodes.iter() {
-                let mut client_network_info = network_info.write().await;
-                client_network_info.network_id = hash_network(&info.network_id).ok();
-                client_network_info.min_pow_score = info.min_pow_score;
-                client_network_info.bech32_hrp = info.bech32_hrp.clone();
-                if !client_network_info.local_pow {
-                    if info.features.contains(&"PoW".to_string()) {
+                if let Ok(mut client_network_info) = network_info.write() {
+                    client_network_info.network_id = hash_network(&info.network_id).ok();
+                    client_network_info.min_pow_score = info.min_pow_score;
+                    client_network_info.bech32_hrp = info.bech32_hrp.clone();
+                    if !client_network_info.local_pow {
+                        if info.features.contains(&"PoW".to_string()) {
+                            synced_nodes.insert(node_url.clone());
+                        }
+                    } else {
                         synced_nodes.insert(node_url.clone());
                     }
-                } else {
-                    synced_nodes.insert(node_url.clone());
                 }
             }
         }
 
         // Update the sync list
-        *sync.write().await = synced_nodes;
+        if let Ok(mut sync) = sync.write() {
+            *sync = synced_nodes;
+        }
     }
 
     /// Get a node candidate from the synced node pool.
@@ -442,18 +440,7 @@ impl Client {
         if let Some(primary_node) = &self.node_manager.primary_node {
             return Ok(primary_node.clone());
         }
-        let pool = if self.node_manager.sync {
-            #[cfg(not(feature = "wasm"))]
-            {
-                self.node_manager.synced_nodes.read().await.clone()
-            }
-            #[cfg(feature = "wasm")]
-            {
-                self.node_manager.nodes.clone()
-            }
-        } else {
-            self.node_manager.nodes.clone()
-        };
+        let pool = self.node_manager.nodes.clone();
         Ok(pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)?)
     }
 
@@ -475,44 +462,22 @@ impl Client {
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
-        #[cfg(feature = "wasm")]
-        let not_synced = {
-            self.network_info
-                .read()
-                .expect("Couln't read network info")
-                .network_id
-                .is_none()
-        };
-        #[cfg(not(feature = "wasm"))]
-        let not_synced = { self.network_info.read().await.network_id.is_none() };
+        let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
+
         if not_synced {
             let info = self.get_info().await?.nodeinfo;
             let network_id = hash_network(&info.network_id).ok();
-            #[cfg(feature = "wasm")]
             {
-                let mut client_network_info = self.network_info.write().expect("Cannot write network info");
-                client_network_info.network_id = network_id;
-                client_network_info.min_pow_score = info.min_pow_score;
-                client_network_info.bech32_hrp = info.bech32_hrp;
-            }
-            #[cfg(not(feature = "wasm"))]
-            {
-                let mut client_network_info = self.network_info.write().await;
+                let mut client_network_info = self.network_info.write().map_err(|e| e).unwrap();
                 client_network_info.network_id = network_id;
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp;
             }
         }
-        let res = {
-            #[cfg(feature = "wasm")]
-            {
-                self.network_info.read().expect("Failed to read network info").clone()
-            }
-            #[cfg(not(feature = "wasm"))]
-            {
-                self.network_info.read().await.clone()
-            }
-        };
+        let res = self
+            .network_info
+            .read()
+            .map_or(NetworkInfo::default(), |info| info.clone());
         Ok(res)
     }
 
@@ -529,30 +494,28 @@ impl Client {
     /// returns the tips interval
     #[cfg(not(feature = "wasm"))]
     pub async fn get_tips_interval(&self) -> u64 {
-        self.network_info.read().await.tips_interval
+        self.network_info
+            .read()
+            .map_or(TIPS_INTERVAL, |info| info.tips_interval)
     }
 
     /// returns the local pow
     pub async fn get_local_pow(&self) -> bool {
-        #[cfg(feature = "wasm")]
-        {
-            self.network_info.read().expect("Failed to read network info").local_pow
-        }
-        #[cfg(not(feature = "wasm"))]
-        {
-            self.network_info.read().await.local_pow
-        }
+        self.network_info
+            .read()
+            .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
     }
 
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
     pub async fn unsynced_nodes(&self) -> HashSet<&Url> {
-        let synced = self.node_manager.synced_nodes.read().await;
-        self.node_manager
-            .nodes
-            .iter()
-            .filter(|node| !synced.contains(node))
-            .collect()
+        self.node_manager.synced_nodes.read().map_or(HashSet::new(), |synced| {
+            self.node_manager
+                .nodes
+                .iter()
+                .filter(|node| !synced.contains(node))
+                .collect()
+        })
     }
 
     /// Generates a new mnemonic.

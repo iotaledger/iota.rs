@@ -11,10 +11,7 @@ use serde_json::Value;
 use crate::error::{Error, Result};
 use log::warn;
 use regex::Regex;
-#[cfg(feature = "wasm")]
 use std::sync::RwLock;
-#[cfg(not(feature = "wasm"))]
-use tokio::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
@@ -63,7 +60,7 @@ impl NodeManager {
     pub(crate) fn builder() -> NodeManagerBuilder {
         NodeManagerBuilder::new()
     }
-    pub(crate) async fn get_urls(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Vec<Url> {
+    pub(crate) async fn get_urls(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Result<Vec<Url>> {
         let mut urls = Vec::new();
         if remote_pow {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
@@ -80,7 +77,10 @@ impl NodeManager {
         let nodes = if self.sync {
             #[cfg(not(feature = "wasm"))]
             {
-                self.synced_nodes.read().await.clone()
+                self.synced_nodes
+                    .read()
+                    .map_err(|_| crate::Error::NodeReadError)?
+                    .clone()
             }
             #[cfg(feature = "wasm")]
             {
@@ -94,7 +94,7 @@ impl NodeManager {
             url.set_query(query);
             urls.push(url);
         }
-        urls
+        Ok(urls)
     }
 
     pub(crate) async fn get_request<T: serde::de::DeserializeOwned>(
@@ -120,7 +120,7 @@ impl NodeManager {
         let mut result: HashMap<String, usize> = HashMap::new();
         // submit message with local PoW should use primary pow node
         // Get urls and set path
-        let urls = self.get_urls(path, query, false).await;
+        let urls = self.get_urls(path, query, false).await?;
         if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && urls.len() < self.quorum_size {
             return Err(Error::QuorumPoolSizeError(urls.len(), self.quorum_size));
         }
@@ -146,10 +146,7 @@ impl NodeManager {
                         });
                     }
                 }
-                for res in futures::future::try_join_all(tasks)
-                    .await
-                    .expect("failed to sync address")
-                {
+                for res in futures::future::try_join_all(tasks).await? {
                     match res {
                         Ok(res) => {
                             if let Ok(res_text) = res.text().await {
@@ -228,7 +225,7 @@ impl NodeManager {
     // Only used for api/v1/messages/{messageID}/raw, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
         // Get urls and set path
-        let urls = self.get_urls(path, query, false).await;
+        let urls = self.get_urls(path, query, false).await?;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
@@ -249,7 +246,7 @@ impl NodeManager {
         body: &[u8],
         remote_pow: bool,
     ) -> Result<T> {
-        let urls = self.get_urls(path, None, remote_pow).await;
+        let urls = self.get_urls(path, None, remote_pow).await?;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.post_bytes(url.as_str(), timeout, body).await {
@@ -270,7 +267,7 @@ impl NodeManager {
         json: Value,
         remote_pow: bool,
     ) -> Result<T> {
-        let urls = self.get_urls(path, None, remote_pow).await;
+        let urls = self.get_urls(path, None, remote_pow).await?;
         // Send requests
         for url in urls {
             if let Ok(res) = self.http_client.post_json(url.as_str(), timeout, json.clone()).await {
