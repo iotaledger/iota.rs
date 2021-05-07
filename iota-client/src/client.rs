@@ -4,7 +4,7 @@
 //! The Client module to connect through HORNET or Bee with API usages
 use crate::{
     api::*,
-    builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT, TIPS_INTERVAL},
+    builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
     error::*,
     node::*,
 };
@@ -34,6 +34,8 @@ use crypto::{
 
 use zeroize::Zeroize;
 
+#[cfg(not(feature = "wasm"))]
+use crate::builder::TIPS_INTERVAL;
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
 #[cfg(any(feature = "mqtt", not(feature = "wasm")))]
