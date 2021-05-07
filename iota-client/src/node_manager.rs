@@ -11,10 +11,7 @@ use serde_json::Value;
 use crate::error::{Error, Result};
 use log::warn;
 use regex::Regex;
-#[cfg(feature = "wasm")]
 use std::sync::RwLock;
-#[cfg(not(feature = "wasm"))]
-use tokio::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
@@ -80,7 +77,7 @@ impl NodeManager {
         let nodes = if self.sync {
             #[cfg(not(feature = "wasm"))]
             {
-                self.synced_nodes.read().await.clone()
+                self.synced_nodes.read().expect("Failed to read synced nodes").clone()
             }
             #[cfg(feature = "wasm")]
             {

@@ -7,14 +7,17 @@ use crate::{client::*, error::*};
 #[cfg(not(feature = "wasm"))]
 use tokio::{
     runtime::Runtime,
-    sync::{broadcast::channel, RwLock},
+    sync::{broadcast::channel},
 };
 
 #[cfg(not(feature = "wasm"))]
 use std::collections::HashSet;
-#[cfg(feature = "wasm")]
-use std::sync::RwLock;
-use std::{collections::HashMap, sync::Arc, time::Duration};
+
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+    time::Duration
+};
 
 const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(10);
@@ -203,13 +206,13 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
-        let network_info = Arc::new(std::sync::RwLock::new(self.network_info));
+        let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
 
         #[cfg(feature = "wasm")]
-        let (sync, network_info) = (Arc::new(std::sync::RwLock::new(nodes.clone())), network_info);
+        let (sync, network_info) = (Arc::new(RwLock::new(nodes.clone())), network_info);
         #[cfg(not(feature = "wasm"))]
         let (runtime, sync, sync_kill_sender, network_info) = if self.node_sync_enabled {
             let sync = Arc::new(RwLock::new(HashSet::new()));

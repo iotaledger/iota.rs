@@ -39,7 +39,6 @@ use rumqttc::AsyncClient as MqttClient;
 #[cfg(any(feature = "mqtt", not(feature = "wasm")))]
 use tokio::sync::{
     watch::{Receiver as WatchReceiver, Sender as WatchSender},
-    RwLock,
 };
 #[cfg(not(feature = "wasm"))]
 use tokio::{
@@ -55,7 +54,7 @@ use std::{
     hash::Hash,
     ops::Range,
     str::FromStr,
-    sync::Arc,
+    sync::{Arc, RwLock},
     time::Duration,
 };
 
@@ -290,12 +289,12 @@ pub struct Client {
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
     #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_topic_handlers: Arc<RwLock<TopicHandlerMap>>,
+    pub(crate) mqtt_topic_handlers: Arc<tokio::sync::RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
     pub(crate) broker_options: BrokerOptions,
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
-    pub(crate) network_info: Arc<std::sync::RwLock<NetworkInfo>>,
+    pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for each API call.
@@ -351,7 +350,7 @@ impl Client {
         sync: Arc<RwLock<HashSet<Url>>>,
         nodes: HashSet<Url>,
         node_sync_interval: Duration,
-        network_info: Arc<std::sync::RwLock<NetworkInfo>>,
+        network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
         let node_sync_interval = TokioDuration::from_nanos(
@@ -380,7 +379,7 @@ impl Client {
     pub(crate) async fn sync_nodes(
         sync: &Arc<RwLock<HashSet<Url>>>,
         nodes: &HashSet<Url>,
-        network_info: &Arc<std::sync::RwLock<NetworkInfo>>,
+        network_info: &Arc<RwLock<NetworkInfo>>,
     ) {
         let mut synced_nodes = HashSet::new();
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
@@ -431,7 +430,7 @@ impl Client {
         }
 
         // Update the sync list
-        *sync.write().await = synced_nodes;
+        *sync.write().expect("Failed to write to synced nodes") = synced_nodes;
     }
 
     /// Get a node candidate from the synced node pool.
@@ -439,18 +438,7 @@ impl Client {
         if let Some(primary_node) = &self.node_manager.primary_node {
             return Ok(primary_node.clone());
         }
-        let pool = if self.node_manager.sync {
-            #[cfg(not(feature = "wasm"))]
-            {
-                self.node_manager.synced_nodes.read().await.clone()
-            }
-            #[cfg(feature = "wasm")]
-            {
-                self.node_manager.nodes.clone()
-            }
-        } else {
-            self.node_manager.nodes.clone()
-        };
+        let pool = self.node_manager.nodes.clone();
         Ok(pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)?)
     }
 
@@ -518,7 +506,7 @@ impl Client {
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
     pub async fn unsynced_nodes(&self) -> HashSet<&Url> {
-        let synced = self.node_manager.synced_nodes.read().await;
+        let synced = self.node_manager.synced_nodes.read().expect("Failed to read synced nodes");
         self.node_manager
             .nodes
             .iter()
