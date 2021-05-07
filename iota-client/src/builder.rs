@@ -10,13 +10,11 @@ use tokio::{
     sync::{broadcast::channel, RwLock},
 };
 
+#[cfg(not(feature = "wasm"))]
+use std::collections::HashSet;
 #[cfg(feature = "wasm")]
 use std::sync::RwLock;
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-    time::Duration,
-};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(10);
