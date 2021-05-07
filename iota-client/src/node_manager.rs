@@ -288,7 +288,7 @@ impl NodeManager {
 pub(crate) struct NodeManagerBuilder {
     primary_node: Option<Url>,
     primary_pow_node: Option<Url>,
-    nodes: HashSet<Url>,
+    pub(crate) nodes: HashSet<Url>,
     sync: bool,
     sync_interval: Duration,
     quorum: bool,
@@ -425,7 +425,7 @@ impl Default for NodeManagerBuilder {
             primary_node: None,
             primary_pow_node: None,
             nodes: HashSet::new(),
-            sync: false,
+            sync: true,
             sync_interval: NODE_SYNC_INTERVAL,
             quorum: false,
             quorum_size: DEFAULT_QUORUM_SIZE,
