@@ -414,22 +414,25 @@ impl Client {
         }
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             for (info, node_url) in nodes.iter() {
-                let mut client_network_info = network_info.write().expect("Failed to write to network info");
-                client_network_info.network_id = hash_network(&info.network_id).ok();
-                client_network_info.min_pow_score = info.min_pow_score;
-                client_network_info.bech32_hrp = info.bech32_hrp.clone();
-                if !client_network_info.local_pow {
-                    if info.features.contains(&"PoW".to_string()) {
+                if let Ok(mut client_network_info) = network_info.write() {
+                    client_network_info.network_id = hash_network(&info.network_id).ok();
+                    client_network_info.min_pow_score = info.min_pow_score;
+                    client_network_info.bech32_hrp = info.bech32_hrp.clone();
+                    if !client_network_info.local_pow {
+                        if info.features.contains(&"PoW".to_string()) {
+                            synced_nodes.insert(node_url.clone());
+                        }
+                    } else {
                         synced_nodes.insert(node_url.clone());
                     }
-                } else {
-                    synced_nodes.insert(node_url.clone());
                 }
             }
         }
 
         // Update the sync list
-        *sync.write().expect("Failed to write to synced nodes") = synced_nodes;
+        if let Ok(mut sync) = sync.write() {
+            *sync = synced_nodes;
+        }
     }
 
     /// Get a node candidate from the synced node pool.

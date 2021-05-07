@@ -543,7 +543,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 // If not, we need to create a signature unlock block
                 let private_key = self
                     .seed
-                    .expect("No seed")
+                    .ok_or(crate::Error::MissingParameter("Seed"))?
                     .derive(Curve::Ed25519, &recorder.chain)?
                     .secret_key()?;
                 let public_key = private_key.public_key().to_compressed_bytes();
