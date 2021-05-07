@@ -12,11 +12,14 @@ use bee_rest_api::types::{
     responses::OutputResponse,
 };
 use crypto::keys::slip10::{Chain, Curve, Seed};
+#[cfg(not(feature = "wasm"))]
+use tokio::time::sleep;
 
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
     str::FromStr,
+    time::Duration,
 };
 
 // https://github.com/GalRogozinski/protocol-rfcs/blob/dust/text/0032-dust-protection/0032-dust-protection.md
@@ -641,12 +644,23 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let msg_id = self.client.post_message(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.client.get_local_pow().await {
-            true => final_message,
-            false => self.client.get_message().data(&msg_id).await?,
-        };
-
-        Ok(msg)
+        match self.client.get_local_pow().await {
+            true => Ok(final_message),
+            false => {
+                // Request message multiple times because the node maybe didn't process it completely in this time
+                // or a node balancer could be used which forwards the request to different node than we published
+                for time in 1..3 {
+                    if let Ok(message) = self.client.get_message().data(&msg_id).await {
+                        return Ok(message);
+                    }
+                    #[cfg(not(feature = "wasm"))]
+                    sleep(Duration::from_millis(time * 50)).await;
+                    #[cfg(feature = "wasm")]
+                    std::thread::sleep(Duration::from_millis(time * 50));
+                }
+                self.client.get_message().data(&msg_id).await
+            }
+        }
     }
 }
 
