@@ -203,7 +203,7 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
-        let network_info = Arc::new(RwLock::new(self.network_info));
+        let network_info = Arc::new(std::sync::RwLock::new(self.network_info));
         let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
@@ -283,9 +283,6 @@ impl ClientBuilder {
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
-        #[cfg(not(feature = "wasm"))]
-        let network_info_ = network_info.read().await.clone();
-        #[cfg(feature = "wasm")]
         let network_info_ = network_info.read().expect("Can't read network info").clone();
         let client = Client {
             node_manager: self.node_manager_builder.build(network_info_, sync.clone()).await?,

@@ -295,10 +295,7 @@ pub struct Client {
     pub(crate) broker_options: BrokerOptions,
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
-    #[cfg(feature = "wasm")]
     pub(crate) network_info: Arc<std::sync::RwLock<NetworkInfo>>,
-    #[cfg(not(feature = "wasm"))]
-    pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for each API call.
@@ -354,7 +351,7 @@ impl Client {
         sync: Arc<RwLock<HashSet<Url>>>,
         nodes: HashSet<Url>,
         node_sync_interval: Duration,
-        network_info: Arc<RwLock<NetworkInfo>>,
+        network_info: Arc<std::sync::RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
         let node_sync_interval = TokioDuration::from_nanos(
@@ -383,7 +380,7 @@ impl Client {
     pub(crate) async fn sync_nodes(
         sync: &Arc<RwLock<HashSet<Url>>>,
         nodes: &HashSet<Url>,
-        network_info: &Arc<RwLock<NetworkInfo>>,
+        network_info: &Arc<std::sync::RwLock<NetworkInfo>>,
     ) {
         let mut synced_nodes = HashSet::new();
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Url)>> = HashMap::new();
@@ -395,7 +392,7 @@ impl Client {
                         Some(network_id_entry) => {
                             network_id_entry.push((info, node_url.clone()));
                         }
-                        None => match &network_info.read().await.network {
+                        None => match &network_info.read().expect("Failed to read Network Info").network {
                             Some(id) => {
                                 if info.network_id.contains(id) {
                                     network_nodes.insert(info.network_id.clone(), vec![(info, node_url.clone())]);
@@ -419,7 +416,7 @@ impl Client {
         }
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             for (info, node_url) in nodes.iter() {
-                let mut client_network_info = network_info.write().await;
+                let mut client_network_info = network_info.write().expect("Failed to write to network info");
                 client_network_info.network_id = hash_network(&info.network_id).ok();
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp.clone();
@@ -475,44 +472,25 @@ impl Client {
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
-        #[cfg(feature = "wasm")]
-        let not_synced = {
-            self.network_info
+        let not_synced = self.network_info
                 .read()
                 .expect("Couln't read network info")
                 .network_id
-                .is_none()
-        };
-        #[cfg(not(feature = "wasm"))]
-        let not_synced = { self.network_info.read().await.network_id.is_none() };
+                .is_none();
+
         if not_synced {
             let info = self.get_info().await?.nodeinfo;
             let network_id = hash_network(&info.network_id).ok();
-            #[cfg(feature = "wasm")]
             {
                 let mut client_network_info = self.network_info.write().expect("Cannot write network info");
                 client_network_info.network_id = network_id;
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp;
             }
-            #[cfg(not(feature = "wasm"))]
-            {
-                let mut client_network_info = self.network_info.write().await;
-                client_network_info.network_id = network_id;
-                client_network_info.min_pow_score = info.min_pow_score;
-                client_network_info.bech32_hrp = info.bech32_hrp;
-            }
         }
-        let res = {
-            #[cfg(feature = "wasm")]
-            {
-                self.network_info.read().expect("Failed to read network info").clone()
-            }
-            #[cfg(not(feature = "wasm"))]
-            {
-                self.network_info.read().await.clone()
-            }
-        };
+        let res = self.network_info.read()
+            .expect("Failed to read network info")
+            .clone();
         Ok(res)
     }
 
@@ -529,19 +507,12 @@ impl Client {
     /// returns the tips interval
     #[cfg(not(feature = "wasm"))]
     pub async fn get_tips_interval(&self) -> u64 {
-        self.network_info.read().await.tips_interval
+        self.network_info.read().expect("Failed to read network info").tips_interval
     }
 
     /// returns the local pow
     pub async fn get_local_pow(&self) -> bool {
-        #[cfg(feature = "wasm")]
-        {
-            self.network_info.read().expect("Failed to read network info").local_pow
-        }
-        #[cfg(not(feature = "wasm"))]
-        {
-            self.network_info.read().await.local_pow
-        }
+        self.network_info.read().expect("Failed to read network info").local_pow
     }
 
     /// returns the unsynced nodes.
