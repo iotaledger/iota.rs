@@ -1,5 +1,17 @@
 # Changelog
 
+## \[0.4.0]
+
+- Use camelCase for attributes.
+- Add consolidation function.
+  - [7e54d183](https://github.com/iotaledger/iota.rs/commit/7e54d183e4e70172dca54b475676f2b1ddeb730f) add changes file on 2021-05-05
+- Fix hexToBech32 when bech32\_hrp is optional.
+  - [75a073e2](https://github.com/iotaledger/iota.rs/commit/75a073e2dc69a9d065c2bc50732c0b8e104743d9) update readme and use iota_client on 2021-05-03
+- Don't overwrite custom provided input range.
+  - [294920f7](https://github.com/iotaledger/iota.rs/commit/294920f791714df46ecd9ec09ab6a8f7947f3458) add changes file on 2021-05-04
+- Add generateMnemonic and mnemonicToHexSeed.
+  - [e9c89e04](https://github.com/iotaledger/iota.rs/commit/e9c89e049d030fca17adfd63aa161b6911f846d1) add changes file on 2021-05-04
+
 ## \[0.3.2]
 
 - Fix hexToBech32 when bech32\_hrp is optional.
