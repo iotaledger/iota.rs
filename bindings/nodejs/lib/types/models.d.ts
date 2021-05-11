@@ -57,7 +57,7 @@ export declare interface BrokerOptions {
   maxReconnectionAttempts?: number
 }
 
-export declare type Address = 'string'
+export declare type Address = string
 
 export declare interface AddressBalance {
   address: Address

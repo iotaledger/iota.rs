@@ -11,10 +11,7 @@ use serde_json::Value;
 use crate::error::{Error, Result};
 use log::warn;
 use regex::Regex;
-#[cfg(feature = "wasm")]
 use std::sync::RwLock;
-#[cfg(not(feature = "wasm"))]
-use tokio::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
@@ -70,7 +67,7 @@ impl NodeManager {
     pub(crate) fn builder() -> NodeManagerBuilder {
         NodeManagerBuilder::new()
     }
-    pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Vec<Node> {
+    pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
         if remote_pow {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
@@ -87,7 +84,10 @@ impl NodeManager {
         let nodes = if self.sync {
             #[cfg(not(feature = "wasm"))]
             {
-                self.synced_nodes.read().await.clone()
+                self.synced_nodes
+                    .read()
+                    .map_err(|_| crate::Error::NodeReadError)?
+                    .clone()
             }
             #[cfg(feature = "wasm")]
             {
@@ -101,7 +101,7 @@ impl NodeManager {
             node.url.set_query(query);
             nodes_with_modified_url.push(node);
         }
-        nodes_with_modified_url
+        Ok(nodes_with_modified_url)
     }
 
     pub(crate) async fn get_request<T: serde::de::DeserializeOwned>(
@@ -127,7 +127,7 @@ impl NodeManager {
         let mut result: HashMap<String, usize> = HashMap::new();
         // submit message with local PoW should use primary pow node
         // Get node urls and set path
-        let nodes = self.get_nodes(path, query, false).await;
+        let nodes = self.get_nodes(path, query, false).await?;
         if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && nodes.len() < self.quorum_size {
             return Err(Error::QuorumPoolSizeError(nodes.len(), self.quorum_size));
         }
@@ -151,10 +151,7 @@ impl NodeManager {
                         tasks.push(async move { tokio::spawn(async move { client_.get(node, timeout).await }).await });
                     }
                 }
-                for res in futures::future::try_join_all(tasks)
-                    .await
-                    .expect("failed to sync address")
-                {
+                for res in futures::future::try_join_all(tasks).await? {
                     match res {
                         Ok(res) => {
                             if let Ok(res_text) = res.text().await {
@@ -233,7 +230,7 @@ impl NodeManager {
     // Only used for api/v1/messages/{messageID}/raw, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
         // Get node urls and set path
-        let nodes = self.get_nodes(path, query, false).await;
+        let nodes = self.get_nodes(path, query, false).await?;
         // Send requests
         for node in nodes {
             if let Ok(res) = self.http_client.get(node, timeout).await {
@@ -254,7 +251,7 @@ impl NodeManager {
         body: &[u8],
         remote_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, remote_pow).await;
+        let nodes = self.get_nodes(path, None, remote_pow).await?;
         // Send requests
         for node in nodes {
             if let Ok(res) = self.http_client.post_bytes(node, timeout, body).await {
@@ -275,7 +272,7 @@ impl NodeManager {
         json: Value,
         remote_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, remote_pow).await;
+        let nodes = self.get_nodes(path, None, remote_pow).await?;
         // Send requests
         for node in nodes {
             if let Ok(res) = self.http_client.post_json(node, timeout, json.clone()).await {
