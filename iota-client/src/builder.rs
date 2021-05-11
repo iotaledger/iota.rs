@@ -231,6 +231,13 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
+        // Add default nodes
+        self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
+
+        // Return error if we don't have a node
+        if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
+            return Err(Error::MissingParameter("Node"));
+        }
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]
@@ -244,7 +251,6 @@ impl ClientBuilder {
             let sync_ = sync.clone();
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
-            let nodes = nodes.clone();
             let runtime = std::thread::spawn(move || {
                 let runtime = Runtime::new().expect("Failed to create Tokio runtime");
                 runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_));
@@ -262,7 +268,7 @@ impl ClientBuilder {
             .expect("failed to init node syncing process");
             (Some(runtime), sync, Some(sync_kill_sender), network_info)
         } else {
-            (None, Arc::new(RwLock::new(nodes.clone())), None, network_info)
+            (None, Arc::new(RwLock::new(nodes)), None, network_info)
         };
 
         let mut api_timeout = HashMap::new();
@@ -311,9 +317,8 @@ impl ClientBuilder {
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
-        let network_info_ = network_info.read().expect("Can't read network info").clone();
         let client = Client {
-            node_manager: self.node_manager_builder.build(network_info_, sync.clone()).await?,
+            node_manager: self.node_manager_builder.build(sync),
             #[cfg(not(feature = "wasm"))]
             runtime,
             #[cfg(not(feature = "wasm"))]

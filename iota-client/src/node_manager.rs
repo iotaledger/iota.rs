@@ -8,7 +8,10 @@ use bee_rest_api::types::responses::InfoResponse as NodeInfo;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::error::{Error, Result};
+use crate::{
+    builder::NetworkInfo,
+    error::{Error, Result},
+};
 use log::warn;
 use regex::Regex;
 use std::sync::RwLock;
@@ -288,7 +291,7 @@ impl NodeManager {
 }
 
 pub(crate) struct NodeManagerBuilder {
-    primary_node: Option<Node>,
+    pub(crate) primary_node: Option<Node>,
     primary_pow_node: Option<Node>,
     pub(crate) nodes: HashSet<Node>,
     sync: bool,
@@ -403,11 +406,7 @@ impl NodeManagerBuilder {
         self.quorum_threshold = threshold;
         self
     }
-    pub(crate) async fn build(
-        mut self,
-        network_info: crate::builder::NetworkInfo,
-        synced_nodes: Arc<RwLock<HashSet<Node>>>,
-    ) -> Result<NodeManager> {
+    pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
         let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
         if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {
@@ -422,13 +421,10 @@ impl NodeManagerBuilder {
                 }
             }
         }
-
-        // Return error if we don't have a node
-        if self.nodes.is_empty() && self.primary_node.is_none() {
-            return Err(Error::MissingParameter("Node"));
-        }
-
-        let node_manager = NodeManager {
+        Ok(self)
+    }
+    pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
+        NodeManager {
             primary_node: self.primary_node,
             primary_pow_node: self.primary_pow_node,
             nodes: self.nodes,
@@ -439,8 +435,7 @@ impl NodeManagerBuilder {
             quorum_size: self.quorum_size,
             quorum_threshold: self.quorum_threshold,
             http_client: HttpClient::new(),
-        };
-        Ok(node_manager)
+        }
     }
 }
 
