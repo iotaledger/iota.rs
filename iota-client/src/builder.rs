@@ -244,7 +244,7 @@ impl ClientBuilder {
         let node_sync_interval = self.node_sync_interval;
 
         #[cfg(feature = "wasm")]
-        let (sync, network_info) = (Arc::new(RwLock::new(nodes.clone())), network_info);
+        let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
         #[cfg(not(feature = "wasm"))]
         let (runtime, sync, sync_kill_sender, network_info) = if self.node_sync_enabled {
             let sync = Arc::new(RwLock::new(HashSet::new()));
