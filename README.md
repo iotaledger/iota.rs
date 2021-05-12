@@ -22,7 +22,7 @@ To use the library, we recommend you update Rust to latest stable version [`$ ru
 
 ## Using the library
 
-Using the library is easy, just add it as dependancy in `Cargo.toml`:
+Using the library is easy, just add it as dependency in `Cargo.toml`:
 
 ```bash
 [dependencies]
