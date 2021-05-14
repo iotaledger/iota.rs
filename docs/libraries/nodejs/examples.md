@@ -516,7 +516,7 @@ IOTA node(s) provides [Message Queuing Telemetry Transport](https://en.wikipedia
 * milestones/confirmed
 * messages
 * messages/referenced
-* messages/indexation/{index}
+* messages/indexation/{index} (index needs to be formatted as hex-string, i.e. string: HORNET Spammer ==> hex-string: 484f524e4554205370616d6d6572)
 * messages/{messageId}/metadata
 * transactions/{transactionId}/included-message
 * outputs/{outputId}
