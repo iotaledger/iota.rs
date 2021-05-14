@@ -1,15 +1,10 @@
- // Copyright 2020 IOTA Stiftung
- // SPDX-License-Identifier: Apache-2.0
- use anyhow::{anyhow, Error};
- use std::convert::TryFrom;
- use getset::{CopyGetters, Getters};
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+use anyhow::{anyhow, Error};
+use getset::{CopyGetters, Getters};
+use std::convert::TryFrom;
 
- use bee_rest_api::types::{
-    dtos::{
-        OutputDto as RustOutputDto,
-    },
-    responses::OutputResponse as RustOutputResponse,
-};
+use bee_rest_api::types::{dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse};
 
 use crate::classes::address::AddressDto;
 
@@ -40,7 +35,7 @@ impl From<RustOutputResponse> for OutputResponse {
             output_index: output.output_index,
             is_spent: output.is_spent,
             output: OutputDto {
-                output: output.output.clone()
+                output: output.output.clone(),
             },
         }
     }
@@ -74,7 +69,9 @@ impl OutputDto {
         SignatureLockedSingleOutputDto::try_from(&self.output)
     }
 
-    pub fn as_signature_locked_dust_allowance_output_dto(&self) -> anyhow::Result<SignatureLockedDustAllowanceOutputDto> {
+    pub fn as_signature_locked_dust_allowance_output_dto(
+        &self,
+    ) -> anyhow::Result<SignatureLockedDustAllowanceOutputDto> {
         SignatureLockedDustAllowanceOutputDto::try_from(&self.output)
     }
 
@@ -83,15 +80,14 @@ impl OutputDto {
     }
 }
 
-
 impl TryFrom<&RustOutputDto> for SignatureLockedSingleOutputDto {
-    type Error = Error; 
+    type Error = Error;
     fn try_from(output: &RustOutputDto) -> Result<Self, Self::Error> {
         match output {
             RustOutputDto::SignatureLockedSingle(ed) => Ok(Self {
                 kind: ed.kind,
                 address: ed.address.clone().into(),
-                amount: ed.amount
+                amount: ed.amount,
             }),
             _ => unimplemented!(),
         }
@@ -110,13 +106,13 @@ pub struct SignatureLockedSingleOutputDto {
 }
 
 impl TryFrom<&RustOutputDto> for SignatureLockedDustAllowanceOutputDto {
-    type Error = Error; 
+    type Error = Error;
     fn try_from(output: &RustOutputDto) -> Result<Self, Self::Error> {
         match output {
             RustOutputDto::SignatureLockedDustAllowance(ed) => Ok(Self {
                 kind: ed.kind,
                 address: ed.address.clone().into(),
-                amount: ed.amount
+                amount: ed.amount,
             }),
             _ => unimplemented!(),
         }
@@ -136,12 +132,12 @@ pub struct SignatureLockedDustAllowanceOutputDto {
 }
 
 impl TryFrom<&RustOutputDto> for TreasuryOutputDto {
-    type Error = Error; 
+    type Error = Error;
     fn try_from(output: &RustOutputDto) -> Result<Self, Self::Error> {
         match output {
             RustOutputDto::Treasury(ed) => Ok(Self {
                 kind: ed.kind,
-                amount: ed.amount
+                amount: ed.amount,
             }),
             _ => unimplemented!(),
         }

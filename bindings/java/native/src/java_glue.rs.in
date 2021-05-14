@@ -100,11 +100,49 @@ foreign_class!(
         self_type Client;
         private constructor = empty;
         fn Client::builder() -> ClientBuilder; alias Builder;
+        
+        /// GET /health endpoint
         fn Client::get_health(&self) -> Result<bool>;
+        fn Client::get_node_health(&self, node: &str) -> Result<bool>;
+        
+
+        /// GET /api/v1/info endpoint
         fn Client::get_info(&self) -> Result<NodeInfoWrapper>; 
+        
+        /// GET /api/v1/peers endpoint
         fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
+
+        /// GET /api/v1/tips endpoint
         fn Client::get_tips(&self) -> Result<Vec<String>>;
+
+        /// GET /api/v1/outputs/{outputId} endpoint
+        /// Find an output by its transaction_id and corresponding output_index.
         fn Client::get_output(&self, output_id: String) -> Result<OutputResponse>;
+
+        /// Return the balance in iota for the given address; No seed or security level needed to do this
+        /// since we are only checking and already know the address.
+        fn Client::get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse>;
+
+        /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
+        /// the request amount exceeds individual node limit.
+        fn Client::find_outputs(&self, output_ids: Option<Vec<String>>, addresses: Option<Vec<String>>) -> Result<Vec<OutputResponse>>;
+        
+        /// GET /api/v1/milestones/{index} endpoint
+        /// Get the milestone by the given index.
+        fn Client::get_milestone(&self, index: u32) -> Result<MilestoneResponse>;
+        
+        /// GET /api/v1/milestones/{index}/utxo-changes endpoint
+        /// Get the milestone by the given index.
+        fn Client::get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse>;
+
+        /// Transforms bech32 to hex
+        fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
+        /// Transforms hex to bech32
+        fn Client::hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
+        /// Returns a valid Address parsed from a String.
+        fn Client::is_address_valid(address: &str) -> bool;
+        /// Checks if a String address is valid.
+        // pub Client::parse_bech32_address(address: &str) -> Result<Address>;
     }
 );
 
@@ -142,6 +180,18 @@ foreign_class!(
 );
 
 foreign_class!(
+    #[derive(PartialEq)]
+    class BalanceAddressResponse {
+        self_type BalanceAddressResponse;
+        private constructor = empty;
+        fn BalanceAddressResponse::address_type(&self) -> u8;
+        fn BalanceAddressResponse::address(&self) -> &str;
+        fn BalanceAddressResponse::balance(&self) -> u64;
+        fn BalanceAddressResponse::dust_allowed(&self) -> bool;
+    }
+);
+
+foreign_class!(
     #[derive(PartialEq, camelCaseAliases)]
     class OutputResponse {
         self_type OutputResponse;
@@ -164,6 +214,34 @@ foreign_class!(
         fn OutputDto::as_signature_locked_single_output_dto(&self) -> Result<SignatureLockedSingleOutputDto>;
         fn OutputDto::as_signature_locked_dust_allowance_output_dto(&self) -> Result<SignatureLockedDustAllowanceOutputDto>;
         fn OutputDto::as_treasury_output(&self) -> Result<TreasuryOutputDto>;
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq, camelCaseAliases, Display)]
+    class MilestoneResponse {
+        self_type MilestoneResponse;
+        private constructor = empty;
+        /// Milestone index.
+        fn MilestoneResponse::index(&self) -> u32;
+        /// Milestone message id
+        fn MilestoneResponse::message_id(&self) -> MessageId;
+        /// Milestone timestamp.
+        fn MilestoneResponse::timestamp(&self) -> u64;
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq, camelCaseAliases, Display)]
+    class MilestoneUtxoChangesResponse {
+        self_type MilestoneUtxoChangesResponse;
+        private constructor = empty;
+        /// Milestone index.
+        fn MilestoneUtxoChangesResponse::index(&self) -> u32;
+        /// Milestone message id
+        fn MilestoneUtxoChangesResponse::created_outputs(&self) -> Vec<String>;
+        /// Milestone timestamp.
+        fn MilestoneUtxoChangesResponse::consumed_outputs(&self) -> Vec<String>;
     }
 );
 

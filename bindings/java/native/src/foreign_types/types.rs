@@ -158,6 +158,7 @@ fn jstring_array_to_vec_of_string(
     result
 }
 
+// String array to Vec<String>
 foreign_typemap!(
     ($p:r_type) Vec<String> <= internal_aliases::JStringObjectsArray {
         $out = jstring_array_to_vec_of_string(env, $p);
@@ -165,6 +166,19 @@ foreign_typemap!(
     ($p:f_type, option = "NoNullAnnotations") <= "java.lang.String []";
     ($p:f_type, option = "NullAnnotations")
                   <= "@NonNull java.lang.String []";
+);
+
+// Optional String array to Option<Vec<String>>
+foreign_typemap!(
+    ($p:r_type) Option<Vec<String>> <= internal_aliases::JStringObjectsArray {
+        let opt;
+        if $p.is_null() {
+            opt = None;
+        } else {
+            opt = Some(jstring_array_to_vec_of_string(env, $p));
+        }
+        $out = opt;
+    };
 );
 
 // These are dumb...

@@ -1,12 +1,11 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+use bee_rest_api::types::{
+    dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
+};
+
 use getset::{CopyGetters, Getters};
 use std::convert::From;
-use bee_rest_api::types::{
-    dtos::{
-        AddressDto as RustAddressDto,
-    },
-};
 
 #[derive(Clone, Debug, Getters, CopyGetters)]
 pub struct AddressDto {
@@ -27,7 +26,32 @@ impl From<RustAddressDto> for AddressDto {
     }
 }
 
-//
+#[derive(Clone, Debug, Getters, CopyGetters)]
+pub struct BalanceAddressResponse {
+    #[getset(get_copy = "pub")]
+    pub address_type: u8,
+    #[getset(get = "pub")]
+    pub address: String,
+    #[getset(get_copy = "pub")]
+    pub balance: u64,
+    #[getset(get_copy = "pub")]
+    pub dust_allowed: bool,
+}
+
+impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
+    fn from(response: RustBalanceAddressResponse) -> Self {
+        Self {
+            address_type: response.address_type,
+            address: response.address,
+            balance: response.balance,
+            dust_allowed: response.dust_allowed,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Getters, CopyGetters)]
+pub struct AddressOutputsOptions {}
+
 // use iota_wallet::{
 // account::Account,
 // address::{Address as AddressRust, AddressOutput, AddressWrapper},

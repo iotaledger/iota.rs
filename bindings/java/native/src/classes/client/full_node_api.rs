@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 use std::{
     convert::{From, Into},
@@ -10,10 +10,7 @@ use std::{
 
 use iota_client::client::Client as ClientRust;
 
-use crate::{
-    bee_types::*, 
-    client_builder::ClientBuilder
-};
+use crate::{address::*, bee_types::*, client_builder::ClientBuilder};
 
 use tokio::runtime::Runtime;
 
@@ -44,6 +41,10 @@ impl Client {
 
     pub fn get_health(&self) -> Result<bool> {
         Ok(self.block.block_on(async { self.client.get_health().await })?)
+    }
+
+    pub fn get_node_health(&self, node: &str) -> Result<bool> {
+        Ok(self.block.block_on(async { iota_client::Client::get_node_health(node).await })?)
     }
 
     pub fn get_info(&self) -> Result<NodeInfoWrapper> {
@@ -83,69 +84,88 @@ impl Client {
     // }
 
     pub fn get_output(&self, output_id: String) -> Result<OutputResponse> {
-        Ok(self.block.block_on(async { self.client.get_output(&RustUTXOInput::from_str(&output_id)?).await })?.into())
+        Ok(self
+            .block
+            .block_on(async { self.client.get_output(&RustUTXOInput::from_str(&output_id)?).await })?
+            .into())
     }
 
-    // fn get_address_balance(&self, address: &str) -> Result<BalanceForAddressResponse> {
-    // Ok(crate::block_on(async {
-    // self.client
-    // .get_address()
-    // .balance(&RustBech32Address::from(address))
-    // .await
-    // })?
-    // .into())
-    // }
+    pub fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
+        let mut result: BalanceAddressResponse = self
+            .block
+            .block_on(async { self.client.get_address().balance(&String::from(address)).await })?
+            .into();
+        result.address = self
+            .block
+            .block_on(async { self.client.hex_to_bech32(&result.address, None).await })?;
+        Ok(result)
+    }
 
-    // fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UTXOInput>> {
-    // let outputs = crate::block_on(async {
-    // self.client
-    // .get_address()
-    // .outputs(
-    // &RustBech32Address::from(address),
-    // options.map(|o| o.into()).unwrap_or_default(),
-    // )
-    // .await
-    // })?;
-    // Ok((*outputs)
-    // .to_vec()
-    // .iter()
-    // .map(|output| UTXOInput {
-    // transaction_id: output.output_id().transaction_id().as_ref().to_vec(),
-    // index: output.output_id().index(),
-    // })
-    // .collect())
-    // }
+    pub fn find_outputs(
+        &self,
+        output_ids: Option<Vec<String>>,
+        addresses: Option<Vec<String>>,
+    ) -> Result<Vec<OutputResponse>> {
+        let output_ids: Vec<RustUTXOInput> = output_ids
+            .unwrap_or_default()
+            .iter()
+            .map(|input| RustUTXOInput::from_str(input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
+            .collect();
+        let output_metadata_vec =
+            crate::block_on(async { self.client.find_outputs(&output_ids[..], &addresses.unwrap_or_default()[..]).await })?;
+        Ok(output_metadata_vec
+            .into_iter()
+            .map(|metadata| metadata.into())
+            .collect())
+    }
 
-    // fn find_outputs(
-    // &self,
-    // output_ids: Option<Vec<String>>,
-    // addresses: Option<Vec<String>>,
-    // ) -> Result<Vec<OutputResponse>> {
-    // let output_ids: Vec<RustUTXOInput> = output_ids
-    // .unwrap_or_default()
-    // .iter()
-    // .map(|input| RustUTXOInput::from_str(input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
-    // .collect();
-    // let addresses: Vec<RustBech32Address> = addresses
-    // .unwrap_or_default()
-    // .iter()
-    // .map(|address| RustBech32Address::from(&address[..]))
-    // .collect();
-    // let output_metadata_vec =
-    // crate::block_on(async { self.client.find_outputs(&output_ids[..], &addresses[..]).await })?;
-    // Ok(output_metadata_vec
-    // .into_iter()
-    // .map(|metadata| metadata.into())
-    // .collect())
-    // }
+    pub fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
+        Ok(self
+            .block
+            .block_on(async {  self.client.get_milestone(index).await })?.into())
+    }
 
-    // fn get_milestone(&self, index: u32) -> Result<MilestoneDto> {
-    // Ok(crate::block_on(async { self.client.get_milestone(index).await })?.into())
-    // }
+    pub fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse> {
+        Ok(self
+            .block
+            .block_on(async { self.client.get_milestone_utxo_changes(index).await })?.into())
+    }
 
-    // fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
-    // Ok(crate::block_on(async { self.client.get_milestone_utxo_changes(index).await })?.into())
-    // }
+    pub fn bech32_to_hex(bech32: &str) -> Result<String> {
+        let res = iota_client::Client::bech32_to_hex(bech32);
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string()))
+        }
+    }
+
+    pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
+        let res = self
+            .block
+            .block_on(async { self.client.hex_to_bech32(hex, bech32_hrp).await }).into();
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string()))
+        }
+    }
+
+    /// Returns a valid Address parsed from a String.
+    pub fn parse_bech32_address(address: &str) -> Result<Address> {
+        let res = iota_client::Client::parse_bech32_address(address);
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string()))
+        }
+    }
+
+    /// Checks if a String address is valid.
+    pub fn is_address_valid(address: &str) -> bool {
+        let res = iota_client::Client::is_address_valid(address);
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string()))
+        }
+    }
 
     // fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
     // let receipts: Vec<ReceiptDto> = crate::block_on(async { self.client.get_receipts().await })?
