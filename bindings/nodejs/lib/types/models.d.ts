@@ -54,6 +54,8 @@ export declare interface BrokerOptions {
   automaticDisconnect?: boolean
   // timeout in milliseconds
   timeout?: number
+  use_ws?: boolean
+  port?: number
   maxReconnectionAttempts?: number
 }
 
