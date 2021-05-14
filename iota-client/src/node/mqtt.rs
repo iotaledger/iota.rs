@@ -11,6 +11,7 @@ use log::warn;
 use regex::Regex;
 use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
+    Transport,
 };
 use tokio::sync::{watch::Sender, RwLock};
 
@@ -83,9 +84,24 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
             };
             for node in nodes.iter() {
                 let host = node.host_str().expect("Can't get host from URL");
-                let mut mqttoptions = MqttOptions::new(host, host, 1883);
-                mqttoptions.set_connection_timeout(client.broker_options.timeout.as_secs());
-                let (_, mut connection) = MqttClient::new(mqttoptions.clone(), 10);
+                let port = 1883;//node.port_or_known_default().unwrap_or(1883);
+                let id = "iota.rs";
+
+                let uri = match client.broker_options.use_ws {
+                    true => format!(
+                        "ws://{}:{}",
+                        host,
+                        port,
+                    ),
+                    false => host.to_string(),
+                };
+                println!("URI = {:?}", uri);
+                let mut mqtt_options = MqttOptions::new(id, uri, port);
+                if client.broker_options.use_ws {
+                    mqtt_options.set_transport(Transport::ws());
+                }
+                mqtt_options.set_connection_timeout(client.broker_options.timeout.as_secs());
+                let (_, mut connection) = MqttClient::new(mqtt_options.clone(), 10);
                 // poll the event loop until we find a ConnAck event,
                 // which means that the mqtt client is ready to be used on this host
                 // if the event loop returns an error, we check the next node
@@ -99,7 +115,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
 
                 // if we found a valid mqtt connection, loop it on a separate thread
                 if got_ack {
-                    let (mqtt_client, connection) = MqttClient::new(mqttoptions, 10);
+                    let (mqtt_client, connection) = MqttClient::new(mqtt_options, 10);
                     client.mqtt_client.replace(mqtt_client);
                     poll_mqtt(
                         client.mqtt_topic_handlers.clone(),

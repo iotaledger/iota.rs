@@ -114,6 +114,8 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
+    #[serde(default = "default_broker_use_ws")]
+    pub(crate) use_ws: bool,
     #[serde(rename = "maxReconnectionAttempts", default)]
     pub(crate) max_reconnection_attempts: usize,
 }
@@ -127,6 +129,10 @@ fn default_broker_automatic_disconnect() -> bool {
 fn default_broker_timeout() -> Duration {
     Duration::from_secs(30)
 }
+#[cfg(feature = "mqtt")]
+fn default_broker_use_ws() -> bool {
+    false
+}
 
 #[cfg(feature = "mqtt")]
 fn default_max_reconnection_attempts() -> usize {
@@ -139,6 +145,7 @@ impl Default for BrokerOptions {
         Self {
             automatic_disconnect: default_broker_automatic_disconnect(),
             timeout: default_broker_timeout(),
+            use_ws: default_broker_use_ws(),
             max_reconnection_attempts: default_max_reconnection_attempts(),
         }
     }
