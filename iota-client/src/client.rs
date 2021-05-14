@@ -131,7 +131,7 @@ fn default_broker_timeout() -> Duration {
 }
 #[cfg(feature = "mqtt")]
 fn default_broker_use_ws() -> bool {
-    false
+    true
 }
 
 #[cfg(feature = "mqtt")]
