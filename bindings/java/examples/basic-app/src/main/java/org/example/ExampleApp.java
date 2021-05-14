@@ -23,10 +23,12 @@ public class ExampleApp {
 
             String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
             Client iota = Client.Builder().withNode(nodeUrl) // Insert your node URL here
-                    .withNodeSyncDisabled()
+                    // .withNodeSyncDisabled()
                     // .with_node_auth("https://somechrysalisiotanode.com", "name", "password") //
                     // Optional authentication
                     .finish();
+
+            System.out.println("Node healthy: " + iota.getHealth());
 
             NodeInfoWrapper info = iota.getInfo();
             System.out.println("Node url: " + info.getUrl());

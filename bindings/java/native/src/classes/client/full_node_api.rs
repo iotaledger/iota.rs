@@ -5,13 +5,19 @@ use anyhow::Result;
 
 use std::{
     convert::{From, Into},
+    str::FromStr,
 };
 
 use iota_client::client::Client as ClientRust;
 
-use crate::{bee_types::*, client_builder::ClientBuilder};
+use crate::{
+    bee_types::*, 
+    client_builder::ClientBuilder
+};
 
 use tokio::runtime::Runtime;
+
+use bee_message::input::UtxoInput as RustUTXOInput;
 
 impl From<ClientRust> for Client {
     fn from(client: ClientRust) -> Self {
@@ -75,9 +81,11 @@ impl Client {
     // let msg = msg_builder.finish()?;
     // Ok(crate::block_on(async { self.client.post_message(&msg).await })?.to_string())
     // }
-    // fn get_output(&self, output_id: String) -> Result<OutputResponse> {
-    // Ok(crate::block_on(async { self.client.get_output(&RustUTXOInput::from_str(&output_id)?).await })?.into())
-    // }
+
+    pub fn get_output(&self, output_id: String) -> Result<OutputResponse> {
+        Ok(self.block.block_on(async { self.client.get_output(&RustUTXOInput::from_str(&output_id)?).await })?.into())
+    }
+
     // fn get_address_balance(&self, address: &str) -> Result<BalanceForAddressResponse> {
     // Ok(crate::block_on(async {
     // self.client
@@ -87,6 +95,7 @@ impl Client {
     // })?
     // .into())
     // }
+
     // fn get_address_outputs(&self, address: &str, options: Option<AddressOutputsOptions>) -> Result<Vec<UTXOInput>> {
     // let outputs = crate::block_on(async {
     // self.client
@@ -106,6 +115,7 @@ impl Client {
     // })
     // .collect())
     // }
+
     // fn find_outputs(
     // &self,
     // output_ids: Option<Vec<String>>,
@@ -128,12 +138,15 @@ impl Client {
     // .map(|metadata| metadata.into())
     // .collect())
     // }
+
     // fn get_milestone(&self, index: u32) -> Result<MilestoneDto> {
     // Ok(crate::block_on(async { self.client.get_milestone(index).await })?.into())
     // }
+
     // fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
     // Ok(crate::block_on(async { self.client.get_milestone_utxo_changes(index).await })?.into())
     // }
+
     // fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
     // let receipts: Vec<ReceiptDto> = crate::block_on(async { self.client.get_receipts().await })?
     // .into_iter()
@@ -141,6 +154,7 @@ impl Client {
     // .collect();
     // Ok(receipts)
     // }
+
     // fn get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>> {
     // let receipts: Vec<ReceiptDto> = crate::block_on(async { self.client.get_receipts_migrated_at(index).await })?
     // .into_iter()
@@ -148,9 +162,11 @@ impl Client {
     // .collect();
     // Ok(receipts)
     // }
+
     // fn get_treasury(&self) -> Result<TreasuryResponse> {
     // Ok(crate::block_on(async { self.client.get_treasury().await })?.into())
     // }
+
     // fn get_included_message(&self, input: String) -> Result<Message> {
     // let transaction_id = RustTransactionId::from_str(&input[..])?;
     // crate::block_on(async { self.client.get_included_message(&transaction_id).await })?.try_into()

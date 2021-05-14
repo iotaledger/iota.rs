@@ -18,7 +18,7 @@ use crate::{
 };
 
 use iota_client::Api;
-
+use bee_message::MessageId;
 use anyhow::{
     Result as Result,
     anyhow,
@@ -63,6 +63,14 @@ foreign_enum!(
     }
 );
 
+foreign_enum!(
+    enum OutputKind {
+        SIGNATURE_LOCKED_SINGLE = OutputKind::SignatureLockedSingle,
+        SIGNATURE_LOCKED_DUST_ALLOWANCE = OutputKind::SignatureLockedDustAllowance,
+        TREASURY = OutputKind::Treasury,
+    }
+);
+
 foreign_class!(class BrokerOptions {
     self_type BrokerOptions;
     constructor BrokerOptions::new() -> BrokerOptions;
@@ -96,6 +104,7 @@ foreign_class!(
         fn Client::get_info(&self) -> Result<NodeInfoWrapper>; 
         fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
         fn Client::get_tips(&self) -> Result<Vec<String>>;
+        fn Client::get_output(&self, output_id: String) -> Result<OutputResponse>;
     }
 );
 
@@ -129,6 +138,56 @@ foreign_class!(
         fn InfoResponse::confirmed_milestone_index(&self) -> u32; alias confirmedMilestoneIndex;
         fn InfoResponse::pruning_index(&self) -> u32; alias pruningIndex;
         fn InfoResponse::features(&self) -> Vec<String>;
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq, camelCaseAliases)]
+    class OutputResponse {
+        self_type OutputResponse;
+        private constructor = empty;
+        fn OutputResponse::message_id(&self) -> &str;
+        fn OutputResponse::transaction_id(&self) -> &str;
+        fn OutputResponse::output_index(&self) -> u16;
+        fn OutputResponse::is_spent(&self) -> bool;
+        fn OutputResponse::output(&self) -> OutputDto;
+    }
+);
+
+foreign_class!(
+    #[derive(PartialEq, camelCaseAliases, Display)]
+    class OutputDto {
+        self_type OutputDto;
+        private constructor = empty;
+        private fn OutputDto::to_string(&self) -> String;
+        fn OutputDto::kind(&self) -> OutputKind;
+        fn OutputDto::as_signature_locked_single_output_dto(&self) -> Result<SignatureLockedSingleOutputDto>;
+        fn OutputDto::as_signature_locked_dust_allowance_output_dto(&self) -> Result<SignatureLockedDustAllowanceOutputDto>;
+        fn OutputDto::as_treasury_output(&self) -> Result<TreasuryOutputDto>;
+    }
+);
+
+foreign_class!(
+    class SignatureLockedSingleOutputDto {
+        self_type SignatureLockedSingleOutputDto;
+        private constructor = empty;
+        fn SignatureLockedSingleOutputDto::amount(&self) -> u64;
+    }
+);
+
+foreign_class!(
+    class SignatureLockedDustAllowanceOutputDto {
+        self_type SignatureLockedDustAllowanceOutputDto;
+        private constructor = empty;
+        fn SignatureLockedDustAllowanceOutputDto::amount(&self) -> u64;
+    }
+);
+
+foreign_class!(
+    class TreasuryOutputDto {
+        self_type TreasuryOutputDto;
+        private constructor = empty;
+        fn TreasuryOutputDto::amount(&self) -> u64;
     }
 );
 
@@ -188,6 +247,34 @@ foreign_class!(
     }
 );
 
+
+/////////////// Message
+foreign_class!(
+    #[derive(Display)]
+    class MessageId {
+        self_type MessageId;
+        constructor MessageId::null() -> MessageId;
+        private fn MessageId::to_string(&self) -> String;
+        fn MessageId::fromString(str_rep: &str) -> MessageId {
+            MessageId::from_str(str_rep).unwrap()
+        }
+    }
+);
+
+/*
+foreign_enum!(
+    enum InputKind {
+        UTXO = InputKind::Utxo,
+        TREASURY = InputKind::Treasury,
+    }
+);
+foreign_enum!(
+    enum UnlockBlockKind {
+        ED25519 = UnlockBlockKind::Ed25519,
+        REFERENCE = UnlockBlockKind::Reference,
+    }
+);*/
+
 /*
 foreign_enum!(
     enum MessageType {
@@ -218,14 +305,6 @@ foreign_enum!(
         Gi = ValueUnit::Gi,
         Ti = ValueUnit::Ti,
         Pi = ValueUnit::Pi,
-    }
-);
-
-foreign_enum!(
-    enum OutputKind {
-        SIGNATURE_LOCKED_SINGLE = OutputKind::SignatureLockedSingle,
-        SIGNATURE_LOCKED_DUST_ALLOWANCE = OutputKind::SignatureLockedDustAllowance,
-        TREASURY = OutputKind::Treasury,
     }
 );
 
@@ -273,17 +352,7 @@ foreign_class!(
         fn Value::value(&self) -> &u64;
     }
 );
-foreign_class!(
-    #[derive(Display)]
-    class MessageId {
-        self_type MessageId;
-        constructor MessageId::null() -> MessageId;
-        private fn MessageId::to_string(&self) -> String;
-        fn MessageId::fromString(str_rep: &str) -> MessageId {
-            MessageId::from_str(str_rep).unwrap()
-        }
-    }
-);
+
 
 foreign_class!(
     #[derive(PartialEq)]
@@ -439,14 +508,6 @@ foreign_class!(
         private constructor = empty;
         private fn UnlockBlock::to_string(&self) -> String;
         fn UnlockBlock::kind(&self) -> UnlockBlockKind;
-    }
-);
-
-foreign_class!(
-    class SignatureLockedSingleOutput {
-        self_type SignatureLockedSingleOutput;
-        private constructor = empty;
-        fn SignatureLockedSingleOutput::amount(&self) -> u64;
     }
 );
 

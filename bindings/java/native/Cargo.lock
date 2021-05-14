@@ -1157,6 +1157,7 @@ dependencies = [
  "jni",
  "log",
  "smol",
+ "syn",
  "tokio",
 ]
 

@@ -8,6 +8,7 @@ mod payloads;
 mod receipt;
 mod transaction;
 mod treasury;
+mod output;
 
 mod gossip;
 mod info_response;
@@ -20,6 +21,7 @@ pub use payloads::*;
 pub use receipt::*;
 pub use transaction::*;
 pub use treasury::*;
+pub use output::*;
 
 pub use gossip::*;
 pub use info_response::*;

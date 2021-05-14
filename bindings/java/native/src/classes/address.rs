@@ -1,6 +1,32 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-// use std::fmt::{Display, Formatter};
+use getset::{CopyGetters, Getters};
+use std::convert::From;
+use bee_rest_api::types::{
+    dtos::{
+        AddressDto as RustAddressDto,
+    },
+};
+
+#[derive(Clone, Debug, Getters, CopyGetters)]
+pub struct AddressDto {
+    #[getset(get_copy = "pub")]
+    pub kind: u8,
+    #[getset(get = "pub")]
+    pub address: String,
+}
+
+impl From<RustAddressDto> for AddressDto {
+    fn from(address: RustAddressDto) -> Self {
+        match address {
+            RustAddressDto::Ed25519(ed) => Self {
+                kind: ed.kind,
+                address: ed.address,
+            },
+        }
+    }
+}
+
 //
 // use iota_wallet::{
 // account::Account,
