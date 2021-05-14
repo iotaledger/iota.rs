@@ -1047,11 +1047,8 @@ impl Client {
     /// Transforms bech32 to hex
     pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
         let address = Address::try_from_bech32(bech32)?;
-        if let Address::Ed25519(ed) = address {
-            return Ok(ed.to_string());
-        }
-
-        Err(crate::Error::FailedToParseBech32ToHex)
+        let Address::Ed25519(ed) = address;
+        Ok(ed.to_string())
     }
 
     /// Transforms hex to bech32
