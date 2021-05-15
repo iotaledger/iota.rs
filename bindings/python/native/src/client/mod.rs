@@ -29,8 +29,8 @@ impl Client {
     /// The constructor of the client instance.
     fn new(
         network: Option<&str>,
-        primary_node_name_password: Option<Vec<&str>>,
-        primary_pow_node_name_password: Option<Vec<&str>>,
+        primary_node_jwt_name_password: Option<Vec<&str>>,
+        primary_pow_node_jwt_name_password: Option<Vec<&str>>,
         nodes_name_password: Option<Vec<Vec<&str>>>,
         node_sync_interval: Option<u64>,
         node_sync_disabled: Option<bool>,
@@ -48,41 +48,23 @@ impl Client {
         if let Some(network) = network {
             client = client.with_network(network);
         }
-        if let Some(node_name_password) = primary_node_name_password {
-            if node_name_password.len() == 1 {
-                client = client.with_primary_node(node_name_password[0], None).unwrap();
-            }
-            if node_name_password.len() == 3 {
-                client = client
-                    .with_primary_node(
-                        node_name_password[0],
-                        Some((node_name_password[1], node_name_password[2])),
-                    )
-                    .unwrap();
+        if let Some(input) = primary_node_jwt_name_password {
+            let (url, jwt, basic_auth_name_pwd) = get_url_jwt_auth(input);
+            if let Some(url) = url {
+                client = client.with_primary_node(url, jwt, basic_auth_name_pwd).unwrap();
             }
         }
-        if let Some(node_name_password) = primary_pow_node_name_password {
-            if node_name_password.len() == 1 {
-                client = client.with_primary_node(node_name_password[0], None).unwrap();
-            }
-            if node_name_password.len() == 3 {
-                client = client
-                    .with_primary_pow_node(
-                        node_name_password[0],
-                        Some((node_name_password[1], node_name_password[2])),
-                    )
-                    .unwrap();
+        if let Some(input) = primary_pow_node_jwt_name_password {
+            let (url, jwt, basic_auth_name_pwd) = get_url_jwt_auth(input);
+            if let Some(url) = url {
+                client = client.with_primary_pow_node(url, jwt, basic_auth_name_pwd).unwrap();
             }
         }
         if let Some(nodes_name_password) = nodes_name_password {
-            for node_name_password in nodes_name_password {
-                if node_name_password.len() == 1 {
-                    client = client.with_node(node_name_password[0]).unwrap();
-                }
-                if node_name_password.len() == 3 {
-                    client = client
-                        .with_node_auth(node_name_password[0], node_name_password[1], node_name_password[2])
-                        .unwrap();
+            for input in nodes_name_password {
+                let (url, jwt, basic_auth_name_pwd) = get_url_jwt_auth(input);
+                if let Some(url) = url {
+                    client = client.with_node_auth(&url, jwt, basic_auth_name_pwd).unwrap();
                 }
             }
         }
@@ -149,5 +131,24 @@ impl Client {
             BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
         }
         Client { client }
+    }
+}
+
+// helper function to get the provided options for a node
+fn get_url_jwt_auth(input: Vec<&str>) -> (Option<&str>, Option<String>, Option<(&str, &str)>) {
+    if input.len() == 1 {
+        // node url alone
+        (Some(input[0]), None, None)
+    } else if input.len() == 2 {
+        // node url with jwt
+        (Some(input[0]), Some(input[1].to_string()), None)
+    } else if input.len() == 3 {
+        // node url with basic auth
+        (Some(input[0]), None, Some((input[1], input[2])))
+    } else if input.len() >= 4 {
+        // node url with jwt and basic auth
+        (Some(input[0]), Some(input[1].to_string()), Some((input[2], input[3])))
+    } else {
+        (None, None, None)
     }
 }

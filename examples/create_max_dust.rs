@@ -66,22 +66,17 @@ async fn main() -> Result<()> {
     // We use the outputs directly so we don't double spend them
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
-        match tx.essence() {
-            Essence::Regular(essence) => {
-                for (index, output) in essence.outputs().iter().enumerate() {
-                    // Only include 1 Mi outputs, otherwise it fails for the remainder address
-                    if let Output::SignatureLockedSingle(output) = output {
-                        if output.amount() == 1_000_001 {
-                            initial_outputs.push(UtxoInput::new(tx.id(), index as u16)?);
-                        }
-                    }
+        let Essence::Regular(essence) = tx.essence();
+        for (index, output) in essence.outputs().iter().enumerate() {
+            // Only include 1 Mi outputs, otherwise it fails for the remainder address
+            if let Output::SignatureLockedSingle(output) = output {
+                if output.amount() == 1_000_001 {
+                    initial_outputs.push(UtxoInput::new(tx.id(), index as u16)?);
                 }
-            }
-            _ => {
-                panic!("Non-existing essence type");
             }
         }
     }
+
     let first_address_old_seed = iota.get_addresses(&seed).with_range(0..1).finish().await?;
     let mut sent_messages = Vec::new();
     for (index, output) in initial_outputs.into_iter().enumerate() {

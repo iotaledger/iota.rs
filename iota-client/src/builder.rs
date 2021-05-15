@@ -106,21 +106,43 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL to be used as primary node, with optional basic authentication
-    pub fn with_primary_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_primary_node(url, auth_name_passw)?;
+    /// Adds an IOTA node by its URL to be used as primary node, with optional jwt and or basic authentication
+    pub fn with_primary_node(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        self.node_manager_builder = self
+            .node_manager_builder
+            .with_primary_node(url, jwt, basic_auth_name_pwd)?;
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional basic authentication
-    pub fn with_primary_pow_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_primary_pow_node(url, auth_name_passw)?;
+    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
+    /// authentication
+    pub fn with_primary_pow_node(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        self.node_manager_builder = self
+            .node_manager_builder
+            .with_primary_pow_node(url, jwt, basic_auth_name_pwd)?;
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL with basic authentication
-    pub fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_node_auth(url, name, password)?;
+    /// Adds an IOTA node by its URL with optional jwt and or basic authentication
+    pub fn with_node_auth(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        self.node_manager_builder = self
+            .node_manager_builder
+            .with_node_auth(url, jwt, basic_auth_name_pwd)?;
         Ok(self)
     }
 
@@ -209,20 +231,26 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
+        // Add default nodes
+        self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
+
+        // Return error if we don't have a node
+        if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
+            return Err(Error::MissingParameter("Node"));
+        }
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
 
         #[cfg(feature = "wasm")]
-        let (sync, network_info) = (Arc::new(RwLock::new(nodes.clone())), network_info);
+        let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
         #[cfg(not(feature = "wasm"))]
         let (runtime, sync, sync_kill_sender, network_info) = if self.node_sync_enabled {
             let sync = Arc::new(RwLock::new(HashSet::new()));
             let sync_ = sync.clone();
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
-            let nodes = nodes.clone();
             let runtime = std::thread::spawn(move || {
                 let runtime = Runtime::new().expect("Failed to create Tokio runtime");
                 runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_));
@@ -240,7 +268,7 @@ impl ClientBuilder {
             .expect("failed to init node syncing process");
             (Some(runtime), sync, Some(sync_kill_sender), network_info)
         } else {
-            (None, Arc::new(RwLock::new(nodes.clone())), None, network_info)
+            (None, Arc::new(RwLock::new(nodes)), None, network_info)
         };
 
         let mut api_timeout = HashMap::new();
@@ -289,9 +317,8 @@ impl ClientBuilder {
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
-        let network_info_ = network_info.read().expect("Can't read network info").clone();
         let client = Client {
-            node_manager: self.node_manager_builder.build(network_info_, sync.clone()).await?,
+            node_manager: self.node_manager_builder.build(sync),
             #[cfg(not(feature = "wasm"))]
             runtime,
             #[cfg(not(feature = "wasm"))]

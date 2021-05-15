@@ -82,7 +82,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 client.node_manager.nodes.clone()
             };
             for node in nodes.iter() {
-                let host = node.host_str().expect("Can't get host from URL");
+                let host = node.url.host_str().expect("Can't get host from URL");
                 let mut mqttoptions = MqttOptions::new(host, host, 1883);
                 mqttoptions.set_connection_timeout(client.broker_options.timeout.as_secs());
                 let (_, mut connection) = MqttClient::new(mqttoptions.clone(), 10);

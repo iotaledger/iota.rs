@@ -45,39 +45,36 @@ Adds an IOTA node to the client pool.
 
 **Returns** the client builder instance for chained calls.
 
-#### nodeAuth(url, name, password): ClientBuilder
+#### nodeAuth(url, authOptions): ClientBuilder
 
-Adds an IOTA node with basic authentication to the client pool.
+Adds an IOTA node with authentication to the client pool.
 
-| Param    | Type                | Description |
-| -------- | ------------------- | ----------- |
-| url      | <code>string</code> | A node URL  |
-| name     | <code>string</code> | A name      |
-| password | <code>string</code> | A password  |
-
-**Returns** the client builder instance for chained calls.
-
-#### primaryNode(url, [, name, password]): ClientBuilder
-
-Add a node to always connect first to with optional name and password for basic authentication.
-
-| Param    | Type                | Description |
-| -------- | ------------------- | ----------- |
-| url      | <code>string</code> | A node URL  |
-| name     | <code>string</code> | A name      |
-| password | <code>string</code> | A password  |
+| Param       | Type                                         | Description                      |
+| ----------- | -------------------------------------------- | -------------------------------- |
+| url         | <code>string</code>                          | A node URL                       |
+| authOptions | <code>[BrokerOptions](#brokeroptions)</code> | Options for node authentication  |
 
 **Returns** the client builder instance for chained calls.
 
-#### primaryPowNode(url, [, name, password]): ClientBuilder
+#### primaryNode(url, [, authOptions]): ClientBuilder
 
-Add a node to always connect first to when using remote PoW with optional name and password for basic authentication. Will overwrite the primary node for this case.
+Add a node to always connect first to with optional authentication.
 
-| Param    | Type                | Description |
-| -------- | ------------------- | ----------- |
-| url      | <code>string</code> | A node URL  |
-| name     | <code>string</code> | A name      |
-| password | <code>string</code> | A password  |
+| Param       | Type                                         | Description                      |
+| ----------- | -------------------------------------------- | -------------------------------- |
+| url         | <code>string</code>                          | A node URL                       |
+| authOptions | <code>[BrokerOptions](#brokeroptions)</code> | Options for node authentication  |
+
+**Returns** the client builder instance for chained calls.
+
+#### primaryPowNode(url, [, authOptions]): ClientBuilder
+
+Add a node to always connect first to when using remote PoW with optional authentication. Will overwrite the primary node for this case.
+
+| Param       | Type                                         | Description                      |
+| ----------- | -------------------------------------------- | -------------------------------- |
+| url         | <code>string</code>                          | A node URL                       |
+| authOptions | <code>[BrokerOptions](#brokeroptions)</code> | Options for node authentication  |
 
 **Returns** the client builder instance for chained calls.
 
@@ -835,6 +832,14 @@ Gets the metadata of the given message.
 | ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
 | automaticDisconnect | <code>number</code> | Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not. |
 | timeout             | <code>number</code> | MQTT connection timeout in secods                                                                     |
+
+### NodeAuthOptions
+
+| Field             | Type                | Description                                |
+| ----------------- | ------------------- | ------------------------------------------ |
+| jwt               | <code>string</code> | Optional JSON Web Token.                   |
+| basicAuthName     | <code>string</code> | Optional name for basic authentication     |
+| basicAuthPassword | <code>string</code> | Optional password for basic authentication |
 
 ### Address
 
