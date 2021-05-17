@@ -295,7 +295,7 @@ pub struct BrokerOptions {
     /// to use ws instead of tcp
     pub use_ws: bool,
     /// port
-    pub port: u32,
+    pub port: u16,
     /// max number of attempts to reconnect.
     pub max_reconnection_attempts: usize,
 }
