@@ -52,15 +52,9 @@ async fn main() -> Result<()> {
     // Use own outputs directly so we don't double spend them
     let mut initial_outputs = Vec::new();
     if let Some(Payload::Transaction(tx)) = message.payload() {
-        match tx.essence() {
-            Essence::Regular(essence) => {
-                for (index, _output) in essence.outputs().iter().enumerate() {
-                    initial_outputs.push(UtxoInput::new(tx.id(), index as u16)?);
-                }
-            }
-            _ => {
-                panic!("Non-existing essence type");
-            }
+        let Essence::Regular(essence) = tx.essence();
+        for (index, _output) in essence.outputs().iter().enumerate() {
+            initial_outputs.push(UtxoInput::new(tx.id(), index as u16)?);
         }
     }
 

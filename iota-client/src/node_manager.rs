@@ -8,7 +8,10 @@ use bee_rest_api::types::responses::InfoResponse as NodeInfo;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::error::{Error, Result};
+use crate::{
+    builder::NetworkInfo,
+    error::{Error, Result},
+};
 use log::warn;
 use regex::Regex;
 use std::sync::RwLock;
@@ -26,15 +29,22 @@ const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 const DEFAULT_QUORUM_SIZE: usize = 3;
 const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 
+/// Node struct
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct Node {
+    pub(crate) url: Url,
+    pub(crate) jwt: Option<String>,
+}
+
 // Nodemanger, takes care of selecting node(s) for requests until a result is returned or if quorum
 // is enabled it will send the requests for some endpoints to multiple nodes and compares the results
 pub(crate) struct NodeManager {
-    pub(crate) primary_node: Option<Url>,
-    primary_pow_node: Option<Url>,
-    pub(crate) nodes: HashSet<Url>,
+    pub(crate) primary_node: Option<Node>,
+    primary_pow_node: Option<Node>,
+    pub(crate) nodes: HashSet<Node>,
     pub(crate) sync: bool,
     sync_interval: Duration,
-    pub(crate) synced_nodes: Arc<RwLock<HashSet<Url>>>,
+    pub(crate) synced_nodes: Arc<RwLock<HashSet<Node>>>,
     quorum: bool,
     quorum_size: usize,
     quorum_threshold: usize,
@@ -60,19 +70,19 @@ impl NodeManager {
     pub(crate) fn builder() -> NodeManagerBuilder {
         NodeManagerBuilder::new()
     }
-    pub(crate) async fn get_urls(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Result<Vec<Url>> {
-        let mut urls = Vec::new();
+    pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Result<Vec<Node>> {
+        let mut nodes_with_modified_url = Vec::new();
         if remote_pow {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
-                pow_node.set_path(path);
-                pow_node.set_query(query);
-                urls.push(pow_node);
+                pow_node.url.set_path(path);
+                pow_node.url.set_query(query);
+                nodes_with_modified_url.push(pow_node);
             }
         }
         if let Some(mut primary_node) = self.primary_node.clone() {
-            primary_node.set_path(path);
-            primary_node.set_query(query);
-            urls.push(primary_node);
+            primary_node.url.set_path(path);
+            primary_node.url.set_query(query);
+            nodes_with_modified_url.push(primary_node);
         }
         let nodes = if self.sync {
             #[cfg(not(feature = "wasm"))]
@@ -89,12 +99,12 @@ impl NodeManager {
         } else {
             self.nodes.clone()
         };
-        for mut url in nodes {
-            url.set_path(path);
-            url.set_query(query);
-            urls.push(url);
+        for mut node in nodes {
+            node.url.set_path(path);
+            node.url.set_query(query);
+            nodes_with_modified_url.push(node);
         }
-        Ok(urls)
+        Ok(nodes_with_modified_url)
     }
 
     pub(crate) async fn get_request<T: serde::de::DeserializeOwned>(
@@ -119,10 +129,10 @@ impl NodeManager {
         );
         let mut result: HashMap<String, usize> = HashMap::new();
         // submit message with local PoW should use primary pow node
-        // Get urls and set path
-        let urls = self.get_urls(path, query, false).await?;
-        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && urls.len() < self.quorum_size {
-            return Err(Error::QuorumPoolSizeError(urls.len(), self.quorum_size));
+        // Get node urls and set path
+        let nodes = self.get_nodes(path, query, false).await?;
+        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && nodes.len() < self.quorum_size {
+            return Err(Error::QuorumPoolSizeError(nodes.len(), self.quorum_size));
         }
 
         // Track amount of results for quorum
@@ -137,13 +147,11 @@ impl NodeManager {
             #[cfg(not(feature = "wasm"))]
             {
                 let mut tasks = Vec::new();
-                let urls_ = urls.clone();
-                for (index, url) in urls_.into_iter().enumerate() {
+                let nodes_ = nodes.clone();
+                for (index, node) in nodes_.into_iter().enumerate() {
                     if index < self.quorum_size {
                         let client_ = self.http_client.clone();
-                        tasks.push(async move {
-                            tokio::spawn(async move { client_.get(url.as_str(), timeout).await }).await
-                        });
+                        tasks.push(async move { tokio::spawn(async move { client_.get(node, timeout).await }).await });
                     }
                 }
                 for res in futures::future::try_join_all(tasks).await? {
@@ -165,8 +173,8 @@ impl NodeManager {
             }
         } else {
             // Send requests
-            for url in urls {
-                match self.http_client.get(url.as_str(), timeout).await {
+            for node in nodes {
+                match self.http_client.get(node.clone(), timeout).await {
                     Ok(res) => {
                         if let Ok(res_text) = res.text().await {
                             // Handle nodeinfo extra because we also want to return the url
@@ -177,7 +185,7 @@ impl NodeManager {
                                 }
                                 let wrapper = crate::client::NodeInfoWrapper {
                                     nodeinfo: serde_json::from_str::<ResponseWrapper>(&res_text)?.data,
-                                    url: format!("{}://{}", url.scheme(), url.host_str().unwrap_or("")),
+                                    url: format!("{}://{}", node.url.scheme(), node.url.host_str().unwrap_or("")),
                                 };
                                 let serde_res = serde_json::to_string(&wrapper)?;
                                 return Ok(serde_json::from_str(&serde_res)?);
@@ -224,11 +232,11 @@ impl NodeManager {
     }
     // Only used for api/v1/messages/{messageID}/raw, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
-        // Get urls and set path
-        let urls = self.get_urls(path, query, false).await?;
+        // Get node urls and set path
+        let nodes = self.get_nodes(path, query, false).await?;
         // Send requests
-        for url in urls {
-            if let Ok(res) = self.http_client.get(url.as_str(), timeout).await {
+        for node in nodes {
+            if let Ok(res) = self.http_client.get(node, timeout).await {
                 if let Ok(res_text) = res.text().await {
                     // Without quorum it's enough if we got one response
                     return Ok(res_text);
@@ -246,10 +254,10 @@ impl NodeManager {
         body: &[u8],
         remote_pow: bool,
     ) -> Result<T> {
-        let urls = self.get_urls(path, None, remote_pow).await?;
+        let nodes = self.get_nodes(path, None, remote_pow).await?;
         // Send requests
-        for url in urls {
-            if let Ok(res) = self.http_client.post_bytes(url.as_str(), timeout, body).await {
+        for node in nodes {
+            if let Ok(res) = self.http_client.post_bytes(node, timeout, body).await {
                 if let Ok(res_text) = res.text().await {
                     return Ok(serde_json::from_str(&res_text)?);
                 } else {
@@ -267,10 +275,10 @@ impl NodeManager {
         json: Value,
         remote_pow: bool,
     ) -> Result<T> {
-        let urls = self.get_urls(path, None, remote_pow).await?;
+        let nodes = self.get_nodes(path, None, remote_pow).await?;
         // Send requests
-        for url in urls {
-            if let Ok(res) = self.http_client.post_json(url.as_str(), timeout, json.clone()).await {
+        for node in nodes {
+            if let Ok(res) = self.http_client.post_json(node, timeout, json.clone()).await {
                 if let Ok(res_text) = res.text().await {
                     return Ok(serde_json::from_str(&res_text)?);
                 } else {
@@ -283,9 +291,9 @@ impl NodeManager {
 }
 
 pub(crate) struct NodeManagerBuilder {
-    primary_node: Option<Url>,
-    primary_pow_node: Option<Url>,
-    pub(crate) nodes: HashSet<Url>,
+    pub(crate) primary_node: Option<Node>,
+    primary_pow_node: Option<Node>,
+    pub(crate) nodes: HashSet<Node>,
     sync: bool,
     sync_interval: Duration,
     quorum: bool,
@@ -299,48 +307,65 @@ impl NodeManagerBuilder {
     }
     pub(crate) fn with_node(mut self, url: &str) -> Result<Self> {
         let url = validate_url(Url::parse(url)?)?;
-        self.nodes.insert(url);
+        self.nodes.insert(Node { url, jwt: None });
         Ok(self)
     }
-    pub(crate) fn with_primary_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
+    pub(crate) fn with_primary_node(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
         let mut url = validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = auth_name_passw {
+        if let Some((name, password)) = basic_auth_name_pwd {
             url.set_username(name)
                 .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
             url.set_password(Some(password))
                 .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
         }
-        self.primary_node.replace(url);
+        self.primary_node.replace(Node { url, jwt });
         Ok(self)
     }
-    pub(crate) fn with_primary_pow_node(mut self, url: &str, auth_name_passw: Option<(&str, &str)>) -> Result<Self> {
+    pub(crate) fn with_primary_pow_node(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
         let mut url = validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = auth_name_passw {
+        if let Some((name, password)) = basic_auth_name_pwd {
             url.set_username(name)
                 .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
             url.set_password(Some(password))
                 .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
         }
-        self.primary_pow_node.replace(url);
+        self.primary_pow_node.replace(Node { url, jwt });
         Ok(self)
     }
     pub(crate) fn with_node_sync_disabled(mut self) -> Self {
         self.sync = false;
         self
     }
-    pub(crate) fn with_node_auth(mut self, url: &str, name: &str, password: &str) -> Result<Self> {
+    pub(crate) fn with_node_auth(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
         let mut url = validate_url(Url::parse(url)?)?;
-        url.set_username(name)
-            .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-        url.set_password(Some(password))
-            .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
-        self.nodes.insert(url);
+        if let Some((name, password)) = basic_auth_name_pwd {
+            url.set_username(name)
+                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+            url.set_password(Some(password))
+                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+        }
+        self.nodes.insert(Node { url, jwt });
         Ok(self)
     }
     pub(crate) fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
             let url = validate_url(Url::parse(url)?)?;
-            self.nodes.insert(url);
+            self.nodes.insert(Node { url, jwt: None });
         }
         Ok(self)
     }
@@ -348,13 +373,19 @@ impl NodeManagerBuilder {
     pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
             let nodes_details: Vec<NodeDetail> = crate::node_manager::HttpClient::new()
-                .get(&pool_url, crate::builder::GET_API_TIMEOUT)
+                .get(
+                    Node {
+                        url: validate_url(Url::parse(pool_url)?)?,
+                        jwt: None,
+                    },
+                    crate::builder::GET_API_TIMEOUT,
+                )
                 .await?
                 .json()
                 .await?;
             for node_detail in nodes_details {
                 let url = validate_url(Url::parse(&node_detail.node)?)?;
-                self.nodes.insert(url);
+                self.nodes.insert(Node { url, jwt: None });
             }
         }
         Ok(self)
@@ -375,11 +406,7 @@ impl NodeManagerBuilder {
         self.quorum_threshold = threshold;
         self
     }
-    pub(crate) async fn build(
-        mut self,
-        network_info: crate::builder::NetworkInfo,
-        synced_nodes: Arc<RwLock<HashSet<Url>>>,
-    ) -> Result<NodeManager> {
+    pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
         let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
         if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {
@@ -394,13 +421,10 @@ impl NodeManagerBuilder {
                 }
             }
         }
-
-        // Return error if we don't have a node
-        if self.nodes.is_empty() && self.primary_node.is_none() {
-            return Err(Error::MissingParameter("Node"));
-        }
-
-        let node_manager = NodeManager {
+        Ok(self)
+    }
+    pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
+        NodeManager {
             primary_node: self.primary_node,
             primary_pow_node: self.primary_pow_node,
             nodes: self.nodes,
@@ -411,8 +435,7 @@ impl NodeManagerBuilder {
             quorum_size: self.quorum_size,
             quorum_threshold: self.quorum_threshold,
             http_client: HttpClient::new(),
-        };
-        Ok(node_manager)
+        }
     }
 }
 
@@ -500,34 +523,40 @@ impl HttpClient {
         }
     }
 
-    pub(crate) async fn get(&self, url: &str, _timeout: Duration) -> Result<Response> {
+    pub(crate) async fn get(&self, node: Node, _timeout: Duration) -> Result<Response> {
+        let mut request_builder = self.client.get(node.url);
+        if let Some(jwt) = node.jwt {
+            request_builder = request_builder.bearer_auth(jwt);
+        }
         #[cfg(not(feature = "wasm"))]
-        let response = self.client.get(url).timeout(_timeout).send().await?;
-        #[cfg(feature = "wasm")]
-        let response = self.client.get(url).send().await?;
-        Self::parse_response(response).await
+        {
+            request_builder = request_builder.timeout(_timeout);
+        }
+        Self::parse_response(request_builder.send().await?).await
     }
 
-    pub(crate) async fn post_bytes(&self, url: &str, _timeout: Duration, body: &[u8]) -> Result<Response> {
+    pub(crate) async fn post_bytes(&self, node: Node, _timeout: Duration, body: &[u8]) -> Result<Response> {
+        let mut request_builder = self.client.post(node.url);
+        if let Some(jwt) = node.jwt {
+            request_builder = request_builder.bearer_auth(jwt);
+        }
         #[cfg(not(feature = "wasm"))]
-        let response = self
-            .client
-            .post(url)
-            .timeout(_timeout)
-            .body(body.to_vec())
-            .send()
-            .await?;
-        #[cfg(feature = "wasm")]
-        let response = self.client.post(url).body(body.to_vec()).send().await?;
-        Self::parse_response(response).await
+        {
+            request_builder = request_builder.timeout(_timeout);
+        }
+        Self::parse_response(request_builder.body(body.to_vec()).send().await?).await
     }
 
-    pub(crate) async fn post_json(&self, url: &str, _timeout: Duration, json: Value) -> Result<Response> {
+    pub(crate) async fn post_json(&self, node: Node, _timeout: Duration, json: Value) -> Result<Response> {
+        let mut request_builder = self.client.get(node.url);
+        if let Some(jwt) = node.jwt {
+            request_builder = request_builder.bearer_auth(jwt);
+        }
         #[cfg(not(feature = "wasm"))]
-        let response = self.client.post(url).timeout(_timeout).json(&json).send().await?;
-        #[cfg(feature = "wasm")]
-        let response = self.client.post(url).json(&json).send().await?;
-        Self::parse_response(response).await
+        {
+            request_builder = request_builder.timeout(_timeout);
+        }
+        Self::parse_response(request_builder.json(&json).send().await?).await
     }
 }
 
@@ -541,16 +570,28 @@ impl HttpClient {
         Self {}
     }
 
-    pub(crate) async fn get(&self, url: &str, timeout: Duration) -> Result<Response> {
-        Ok(Self::get_ureq_agent(timeout).get(url).call()?.into())
+    pub(crate) async fn get(&self, node: Node, timeout: Duration) -> Result<Response> {
+        let mut request_builder = Self::get_ureq_agent(timeout).get(node.url.as_str());
+        if let Some(jwt) = node.jwt {
+            request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
+        }
+        Ok(request_builder.call()?.into())
     }
 
-    pub(crate) async fn post_bytes(&self, url: &str, timeout: Duration, body: &[u8]) -> Result<Response> {
-        Ok(Self::get_ureq_agent(timeout).post(url).send_bytes(body)?.into())
+    pub(crate) async fn post_bytes(&self, node: Node, timeout: Duration, body: &[u8]) -> Result<Response> {
+        let mut request_builder = Self::get_ureq_agent(timeout).post(node.url.as_str());
+        if let Some(jwt) = node.jwt {
+            request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
+        }
+        Ok(request_builder.send_bytes(body)?.into())
     }
 
-    pub(crate) async fn post_json(&self, url: &str, timeout: Duration, json: Value) -> Result<Response> {
-        Ok(Self::get_ureq_agent(timeout).post(url).send_json(json)?.into())
+    pub(crate) async fn post_json(&self, node: Node, timeout: Duration, json: Value) -> Result<Response> {
+        let mut request_builder = Self::get_ureq_agent(timeout).post(node.url.as_str());
+        if let Some(jwt) = node.jwt {
+            request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
+        }
+        Ok(request_builder.send_json(json)?.into())
     }
 
     fn get_ureq_agent(timeout: Duration) -> Agent {

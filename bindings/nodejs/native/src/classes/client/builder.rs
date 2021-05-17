@@ -3,14 +3,16 @@
 #![allow(clippy::unnecessary_wraps)]
 use std::{collections::HashMap, num::NonZeroU64, str::FromStr, time::Duration};
 
+use serde::{Deserialize, Serialize};
+
 use iota_client::{Api, BrokerOptions, ClientBuilder};
 use neon::prelude::*;
 
 pub struct ClientBuilderWrapper {
     nodes: Vec<String>,
-    auth: Option<(String, String, String)>,
-    primary_node: Option<(String, Option<(String, String)>)>,
-    primary_pow_node: Option<(String, Option<(String, String)>)>,
+    auth: Option<(String, NodeAuthOptions)>,
+    primary_node: Option<(String, Option<NodeAuthOptions>)>,
+    primary_pow_node: Option<(String, Option<NodeAuthOptions>)>,
     node_pool_urls: Vec<String>,
     quorum: Option<bool>,
     quorum_size: Option<usize>,
@@ -23,6 +25,15 @@ pub struct ClientBuilderWrapper {
     local_pow: bool,
     tips_interval: u64,
     node_sync_disabled: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NodeAuthOptions {
+    jwt: Option<String>,
+    #[serde(rename = "basicAuthName")]
+    basic_auth_name: Option<String>,
+    #[serde(rename = "basicAuthPassword")]
+    basic_auth_password: Option<String>,
 }
 
 declare_types! {
@@ -61,28 +72,24 @@ declare_types! {
 
         method nodeAuth(mut cx) {
             let node_url = cx.argument::<JsString>(0)?.value();
-            let name = cx.argument::<JsString>(1)?.value();
-            let password = cx.argument::<JsString>(2)?.value();
+            let auth_options = cx.argument::<JsString>(1)?.value();
+            let options: NodeAuthOptions = serde_json::from_str(&auth_options).expect("invalid node auth options JSON");
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let auth = &mut this.borrow_mut(&guard).auth;
-                auth.replace((node_url, name, password));
+                auth.replace((node_url, options));
             }
             Ok(cx.this().upcast())
         }
 
         method primaryNode(mut cx) {
             let node_url = cx.argument::<JsString>(0)?.value();
-            let name: Option<String> = match cx.argument_opt(1) {
+            let auth_options: Option<NodeAuthOptions> = match cx.argument_opt(1) {
                 Some(arg) => {
-                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
-                },
-                None => None,
-            };
-            let password: Option<String> = match cx.argument_opt(2) {
-                Some(arg) => {
-                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
+                    let auth_options = arg.downcast::<JsString>().or_throw(&mut cx)?.value();
+                    let options: NodeAuthOptions = serde_json::from_str(&auth_options).expect("invalid node auth options JSON");
+                    Some(options)
                 },
                 None => None,
             };
@@ -90,26 +97,18 @@ declare_types! {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let primary_node = &mut this.borrow_mut(&guard).primary_node;
-                if let (Some(name), Some(password)) = (name, password){
-                    primary_node.replace((node_url, Some((name, password))));
-                } else {
-                    primary_node.replace((node_url, None));
-                }
+                primary_node.replace((node_url, auth_options));
             }
             Ok(cx.this().upcast())
         }
 
         method primaryPowNode(mut cx) {
             let node_url = cx.argument::<JsString>(0)?.value();
-            let name: Option<String> = match cx.argument_opt(1) {
+            let auth_options: Option<NodeAuthOptions> = match cx.argument_opt(1) {
                 Some(arg) => {
-                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
-                },
-                None => None,
-            };
-            let password: Option<String> = match cx.argument_opt(2) {
-                Some(arg) => {
-                    Some(arg.downcast::<JsString>().or_throw(&mut cx)?.value())
+                    let auth_options = arg.downcast::<JsString>().or_throw(&mut cx)?.value();
+                    let options: NodeAuthOptions = serde_json::from_str(&auth_options).expect("invalid node auth options JSON");
+                    Some(options)
                 },
                 None => None,
             };
@@ -117,11 +116,7 @@ declare_types! {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let primary_pow_node = &mut this.borrow_mut(&guard).primary_pow_node;
-                if let (Some(name), Some(password)) = (name, password){
-                    primary_pow_node.replace((node_url, Some((name, password))));
-                } else {
-                    primary_pow_node.replace((node_url, None));
-                }
+                primary_pow_node.replace((node_url, auth_options));
             }
             Ok(cx.this().upcast())
         }
@@ -303,19 +298,39 @@ declare_types! {
                 for node in &ref_.nodes {
                     builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
                 }
-                if let Some((node, name, password)) = &ref_.auth{
-                    builder = builder.with_node_auth(node, name, password).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
-                }
-                if let Some((node, auth)) = &ref_.primary_node{
-                    match auth {
-                        Some(auth) => builder = builder.with_primary_node(node, Some((&auth.0, &auth.1))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
-                        None => builder = builder.with_primary_node(node, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
+                if let Some((node, auth_options)) = &ref_.auth{
+                    if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
+                        builder = builder.with_node_auth(node, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                    } else{
+                        builder = builder.with_node_auth(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
                     }
                 }
-                if let Some((node, auth)) = &ref_.primary_pow_node{
-                    match auth {
-                        Some(auth) => builder = builder.with_primary_pow_node(node, Some((&auth.0, &auth.1))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
-                        None => builder = builder.with_primary_pow_node(node, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node)),
+                if let Some((node, auth_options)) = &ref_.primary_node{
+                    match auth_options{
+                        Some(auth_options) => {
+                            if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
+                                builder = builder.with_primary_node(node, auth_options.jwt.clone(), Some((&name, &password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                            }else{
+                                builder = builder.with_primary_node(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                            }
+                        },
+                        None => {
+                            builder = builder.with_primary_node(node, None, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                        }
+                    }
+                }
+                if let Some((node, auth_options)) = &ref_.primary_pow_node{
+                    match auth_options{
+                        Some(auth_options) => {
+                            if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
+                                builder = builder.with_primary_pow_node(node, auth_options.jwt.clone(), Some((&name, &password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                            }else{
+                                builder = builder.with_primary_pow_node(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                            }
+                        },
+                        None => {
+                            builder = builder.with_primary_pow_node(node, None, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                        }
                     }
                 }
                 if !&ref_.node_pool_urls.is_empty() {

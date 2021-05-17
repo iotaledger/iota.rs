@@ -136,9 +136,6 @@ pub enum Error {
     /// Output Error
     #[error("Output error: {0}")]
     OutputError(&'static str),
-    /// Error when parsing from bech32 to hex
-    #[error("Failed to parse bech32 to hex")]
-    FailedToParseBech32ToHex,
     #[cfg(not(feature = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]

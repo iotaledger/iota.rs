@@ -54,6 +54,27 @@ ClientBuilder.prototype.brokerOptions = function (options) {
   return brokerOptionsFn.apply(this, [JSON.stringify(opt)])
 }
 
+const nodeAuthFn = ClientBuilder.prototype.nodeAuth
+ClientBuilder.prototype.nodeAuth = function (url, authOptions) {
+  return nodeAuthFn.apply(this, [url, JSON.stringify(authOptions)])
+}
+
+const primaryNodeFn = ClientBuilder.prototype.primaryNode
+ClientBuilder.prototype.primaryNode = function (url, authOptions) {
+  if (authOptions !== undefined) {
+    return primaryNodeFn.apply(this, [url, JSON.stringify(authOptions)])
+  }
+  return primaryNodeFn.apply(this, [url])
+}
+
+const primaryPowNodeFn = ClientBuilder.prototype.primaryPowNode
+ClientBuilder.prototype.primaryPowNode = function (url, authOptions) {
+  if (authOptions !== undefined) {
+    return primaryPowNodeFn.apply(this, [url, JSON.stringify(authOptions)])
+  }
+  return primaryPowNodeFn.apply(this, [url])
+}
+
 Client.prototype.networkInfo = promisify(Client.prototype.networkInfo)
 
 Client.prototype.findMessages = promisify(Client.prototype.findMessages)

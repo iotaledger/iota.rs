@@ -15,11 +15,17 @@ import {
 
 export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'PostMessageWithRemotePoW' | 'GetOutput' | 'GetMilestone'
 
+export declare interface NodeAuthOptions {
+  jwt?: string
+  basicAuthName?: string
+  basicAuthPassword?: string
+}
+
 export declare class ClientBuilder {
   node(url: string): ClientBuilder
-  nodeAuth(url: string, name: string, password: string): ClientBuilder
-  primaryNode(url: string, name?: string, password?: string): ClientBuilder
-  primaryPowNode(url: string, name?: string, password?: string): ClientBuilder
+  nodeAuth(url: string, authOptions: NodeAuthOptions): ClientBuilder
+  primaryNode(url: string, authOptions?: NodeAuthOptions): ClientBuilder
+  primaryPowNode(url: string, authOptions?: NodeAuthOptions): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
   network(network_name: string): ClientBuilder
