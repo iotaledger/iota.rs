@@ -292,6 +292,10 @@ pub struct BrokerOptions {
     pub automatic_disconnect: bool,
     /// broker timeout in secs
     pub timeout: u64,
+    /// to use ws instead of tcp
+    pub use_ws: bool,
+    /// port
+    pub port: u16,
     /// max number of attempts to reconnect.
     pub max_reconnection_attempts: usize,
 }

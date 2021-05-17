@@ -11,6 +11,7 @@ use log::warn;
 use regex::Regex;
 use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
+    Transport,
 };
 use tokio::sync::{watch::Sender, RwLock};
 
@@ -31,6 +32,19 @@ impl TryFrom<&str> for Topic {
 impl Topic {
     /// Creates a new topic and checks if it's valid.
     pub fn new<S: Into<String>>(name: S) -> Result<Self> {
+        let mut name: String = name.into();
+        // Convert non hex index to hex
+        let indexation_beginning = "messages/indexation/";
+        if name.len() > indexation_beginning.len()
+            && &name[0..indexation_beginning.len()] == indexation_beginning
+            && hex::decode(&name[indexation_beginning.len()..name.len()]).is_err()
+        {
+            name = format!(
+                "messages/indexation/{}",
+                hex::encode(&name[indexation_beginning.len()..name.len()])
+            );
+        }
+
         let valid_topics = lazy_static!(
           ["milestones/latest", "milestones/confirmed", "messages", "messages/referenced"].to_vec() => Vec<&str>
         );
@@ -47,7 +61,6 @@ impl Topic {
           ].to_vec() => Vec<Regex>
         );
 
-        let name = name.into();
         if valid_topics.iter().any(|valid| valid == &name) || regexes.iter().any(|re| re.is_match(&name)) {
             let topic = Self(name);
             Ok(topic)
@@ -83,9 +96,24 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
             };
             for node in nodes.iter() {
                 let host = node.url.host_str().expect("Can't get host from URL");
-                let mut mqttoptions = MqttOptions::new(host, host, 1883);
-                mqttoptions.set_connection_timeout(client.broker_options.timeout.as_secs());
-                let (_, mut connection) = MqttClient::new(mqttoptions.clone(), 10);
+                let id = "iota.rs";
+                let port = client.broker_options.port;
+                let mut uri = format!(
+                    "{}://{}:{}/mqtt",
+                    if node.url.scheme() == "https" { "wss" } else { "ws" },
+                    host,
+                    node.url.port_or_known_default().unwrap_or(port)
+                );
+
+                if !client.broker_options.use_ws {
+                    uri = host.to_string();
+                };
+                let mut mqtt_options = MqttOptions::new(id, uri, port);
+                if client.broker_options.use_ws {
+                    mqtt_options.set_transport(Transport::ws());
+                }
+                mqtt_options.set_connection_timeout(client.broker_options.timeout.as_secs());
+                let (_, mut connection) = MqttClient::new(mqtt_options.clone(), 10);
                 // poll the event loop until we find a ConnAck event,
                 // which means that the mqtt client is ready to be used on this host
                 // if the event loop returns an error, we check the next node
@@ -99,7 +127,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
 
                 // if we found a valid mqtt connection, loop it on a separate thread
                 if got_ack {
-                    let (mqtt_client, connection) = MqttClient::new(mqttoptions, 10);
+                    let (mqtt_client, connection) = MqttClient::new(mqtt_options, 10);
                     client.mqtt_client.replace(mqtt_client);
                     poll_mqtt(
                         client.mqtt_topic_handlers.clone(),

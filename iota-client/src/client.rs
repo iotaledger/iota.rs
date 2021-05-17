@@ -115,6 +115,10 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
+    #[serde(default = "default_broker_use_ws", rename = "defaultBrokerUseWs")]
+    pub(crate) use_ws: bool,
+    #[serde(default = "default_broker_port", rename = "defaultBrokerPort")]
+    pub(crate) port: u16,
     #[serde(rename = "maxReconnectionAttempts", default)]
     pub(crate) max_reconnection_attempts: usize,
 }
@@ -128,6 +132,15 @@ fn default_broker_automatic_disconnect() -> bool {
 fn default_broker_timeout() -> Duration {
     Duration::from_secs(30)
 }
+#[cfg(feature = "mqtt")]
+fn default_broker_use_ws() -> bool {
+    true
+}
+
+#[cfg(feature = "mqtt")]
+fn default_broker_port() -> u16 {
+    1883
+}
 
 #[cfg(feature = "mqtt")]
 fn default_max_reconnection_attempts() -> usize {
@@ -140,6 +153,8 @@ impl Default for BrokerOptions {
         Self {
             automatic_disconnect: default_broker_automatic_disconnect(),
             timeout: default_broker_timeout(),
+            use_ws: default_broker_use_ws(),
+            port: default_broker_port(),
             max_reconnection_attempts: default_max_reconnection_attempts(),
         }
     }
@@ -161,6 +176,18 @@ impl BrokerOptions {
     /// Sets the timeout used for the MQTT operations.
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
+        self
+    }
+
+    /// Sets the use_ws used for the MQTT operations.
+    pub fn use_ws(mut self, use_ws: bool) -> Self {
+        self.use_ws = use_ws;
+        self
+    }
+
+    /// Sets the port used for the MQTT operations.
+    pub fn port(mut self, port: u16) -> Self {
+        self.port = port;
         self
     }
 

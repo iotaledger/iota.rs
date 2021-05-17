@@ -117,6 +117,8 @@ impl Client {
             let rust_broker_options = RustBrokerOptions::new()
                 .automatic_disconnect(broker_options.automatic_disconnect)
                 .timeout(Duration::from_secs(broker_options.timeout))
+                .use_ws(broker_options.use_ws)
+                .port(broker_options.port)
                 .max_reconnection_attempts(broker_options.max_reconnection_attempts);
             client = client.with_mqtt_broker_options(rust_broker_options);
         }
