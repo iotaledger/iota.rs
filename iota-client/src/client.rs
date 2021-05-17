@@ -179,6 +179,18 @@ impl BrokerOptions {
         self
     }
 
+    /// Sets the use_ws used for the MQTT operations.
+    pub fn use_ws(mut self, use_ws: bool) -> Self {
+        self.use_ws = use_ws;
+        self
+    }
+
+    /// Sets the port used for the MQTT operations.
+    pub fn port(mut self, port: u16) -> Self {
+        self.port = port;
+        self
+    }
+
     /// Sets the maximum number of reconnection attempts.
     pub fn max_reconnection_attempts(mut self, max_reconnection_attempts: usize) -> Self {
         self.max_reconnection_attempts = max_reconnection_attempts;
