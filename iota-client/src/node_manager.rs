@@ -479,10 +479,10 @@ impl Response {
     }
 }
 
-#[cfg(feature = "async")]
+#[cfg(any(feature = "async", feature = "wasm"))]
 pub(crate) struct Response(reqwest::Response);
 
-#[cfg(feature = "async")]
+#[cfg(any(feature = "async", feature = "wasm"))]
 impl Response {
     pub(crate) fn status(&self) -> u16 {
         self.0.status().as_u16()
@@ -497,7 +497,7 @@ impl Response {
     }
 }
 
-#[cfg(feature = "async")]
+#[cfg(any(feature = "async", feature = "wasm"))]
 #[derive(Clone)]
 pub(crate) struct HttpClient {
     client: reqwest::Client,
@@ -506,7 +506,7 @@ pub(crate) struct HttpClient {
 #[cfg(all(feature = "sync", not(feature = "async")))]
 pub(crate) struct HttpClient;
 
-#[cfg(feature = "async")]
+#[cfg(any(feature = "async", feature = "wasm"))]
 impl HttpClient {
     pub(crate) fn new() -> Self {
         Self {

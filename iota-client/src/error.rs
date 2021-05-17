@@ -114,11 +114,11 @@ pub enum Error {
     #[error("{0}")]
     UreqError(#[from] ureq::Error),
     /// Error from RestAPI calls with unexpected status code response
-    #[cfg(feature = "async")]
+    #[cfg(any(feature = "async", feature = "wasm"))]
     #[error("Response error with status code {0}: {1}")]
     ResponseError(u16, String),
     /// reqwest error
-    #[cfg(feature = "async")]
+    #[cfg(any(feature = "async", feature = "wasm"))]
     #[error("{0}")]
     ReqwestError(#[from] reqwest::Error),
     /// URL error
