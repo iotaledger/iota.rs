@@ -1,6 +1,6 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use bee_message::prelude::{Address as RustAddress, Ed25519Address};
+use iota_client::bee_message::prelude::{Address as RustAddress};
 use bee_rest_api::types::{
     dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
 };
@@ -90,7 +90,7 @@ impl Address {
     // }
     //
     // Tries to create an `Address` from a Bech32 encoded string.
-    // 
+    //
     //
     // Encodes this address to a Bech32 string with the hrp (human readable part) argument as prefix.
     // pub fn to_bech32(&self, hrp: &str) -> String

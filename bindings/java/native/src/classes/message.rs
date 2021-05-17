@@ -1,157 +1,157 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-// use std::{cell::RefCell, rc::Rc};
-//
-// use iota_wallet::{
-// address::AddressWrapper,
-// message::{
-// Message as MessageRust, MessageId, RemainderValueStrategy as RemainderValueStrategyRust,
-// Transfer as TransferRust, TransferBuilder as TransferBuilderRust,
-// },
-// };
-//
-// use crate::bee_types::{IndexationPayload, MessagePayload};
-//
-// use chrono::prelude::{DateTime, Utc};
-// use std::num::NonZeroU64;
-//
-// pub enum RemainderValueStrategy {
-// ReuseAddress = 1,
-// ChangeAddress = 2,
-// }
-//
-// pub fn remainder_type_enum_to_type(strategy: RemainderValueStrategy) -> RemainderValueStrategyRust {
-// match strategy {
-// RemainderValueStrategy::ReuseAddress => RemainderValueStrategyRust::ReuseAddress,
-// RemainderValueStrategy::ChangeAddress => RemainderValueStrategyRust::ChangeAddress,
-// }
-// }
-//
-// pub struct Transfer {
-// transfer: TransferRust,
-// }
-//
-// impl Transfer {
-// pub fn to_inner(self) -> TransferRust {
-// self.transfer
-// }
-//
-// pub fn builder(address: AddressWrapper, amount: u64) -> TransferBuilder {
-// TransferBuilder::new(address, amount)
-// }
-// }
-//
-// pub struct TransferBuilder {
-// builder: Rc<RefCell<Option<TransferBuilderRust>>>,
-// }
-//
-// impl TransferBuilder {
-// pub fn new(address: AddressWrapper, amount: u64) -> Self {
-// Self {
-// builder: Rc::new(RefCell::new(Option::from(TransferBuilderRust::new(
-// address,
-// NonZeroU64::new(amount).unwrap(),
-// )))),
-// }
-// }
-//
-// pub fn new_with_builder(builder: TransferBuilderRust) -> Self {
-// Self {
-// builder: Rc::new(RefCell::new(Option::from(builder))),
-// }
-// }
-//
-// pub fn with_remainder_value_strategy(&mut self, strategy: RemainderValueStrategy) -> Self {
-// let new_builder = self
-// .builder
-// .borrow_mut()
-// .take()
-// .unwrap()
-// .with_remainder_value_strategy(remainder_type_enum_to_type(strategy));
-// TransferBuilder::new_with_builder(new_builder)
-// }
-//
-// pub fn with_remainder_to_account_with_address(&mut self, address: AddressWrapper) -> Self {
-// let new_builder = self
-// .builder
-// .borrow_mut()
-// .take()
-// .unwrap()
-// .with_remainder_value_strategy(RemainderValueStrategyRust::AccountAddress(address));
-// TransferBuilder::new_with_builder(new_builder)
-// }
-//
-// pub fn with_indexation(&mut self, indexation: IndexationPayload) -> Self {
-// let new_builder = self
-// .builder
-// .borrow_mut()
-// .take()
-// .unwrap()
-// .with_indexation(indexation.to_inner());
-// TransferBuilder::new_with_builder(new_builder)
-// }
-//
-// Builds the transfer.
-// pub fn finish(&self) -> Transfer {
-// Transfer {
-// transfer: self.builder.borrow_mut().take().unwrap().finish(),
-// }
-// }
-// }
-//
-// #[derive(PartialEq)]
-// pub struct Message {
-// message: MessageRust,
-// }
-//
-// impl Clone for Message {
-// fn clone(&self) -> Self {
-// Message {
-// message: self.message.clone(),
-// }
-// }
-// }
-//
-// impl From<MessageRust> for Message {
-// fn from(message: MessageRust) -> Self {
-// Self { message }
-// }
-// }
-//
-// impl Message {
-// pub fn id(&self) -> MessageId {
-// self.message.id().clone()
-// }
-// pub fn version(&self) -> u64 {
-// (self.message.version())
-// }
-// pub fn parents(&self) -> Vec<MessageId> {
-// self.message.parents().to_vec()
-// }
-// pub fn payload_length(&self) -> usize {
-// (self.message.payload_length())
-// }
-//
-// pub fn payload(&self) -> Option<MessagePayload> {
-// match self.message.payload() {
-// None => None,
-// Some(e) => Some(e.clone().into()),
-// }
-// }
-// pub fn timestamp(&self) -> DateTime<Utc> {
-// (self.message.timestamp())
-// }
-// pub fn nonce(&self) -> u64 {
-// (self.message.nonce())
-// }
-// pub fn confirmed(&self) -> Option<bool> {
-// (self.message.confirmed())
-// }
-// pub fn broadcasted(&self) -> bool {
-// (self.message.broadcasted())
-// }
-//
-// pub fn to_inner(self) -> MessageRust {
-// self.message
-// }
-// }
+use std::{cell::RefCell, rc::Rc};
+
+
+use getset::{CopyGetters, Getters};
+use iota_client::bee_message::{
+    prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents}
+};
+
+use anyhow::anyhow;
+
+use crate::{
+    Result, Payload
+};
+
+#[derive(PartialEq, Debug, Getters, CopyGetters)]
+pub struct Message {
+    /// Specifies which network this message is meant for.
+    #[getset(get_copy = "pub")]
+    network_id: u64,
+    /// The [`MessageId`]s that this message directly approves.
+    parents: Vec<MessageId>,
+    /// The optional [Payload] of the message.
+    payload: Option<Payload>,
+    /// The result of the Proof of Work in order fot the message to be accepted into the tangle.
+    #[getset(get_copy = "pub")]
+    nonce: u64,
+
+    id: MessageId,
+}
+
+impl Clone for Message {
+    fn clone(&self) -> Self {
+        Message {
+            network_id: self.network_id,
+            parents: self.parents().clone(),
+            payload: self.payload.clone(),
+            nonce: self.nonce,
+            id: self.id.clone(),
+        }
+    }
+}
+
+impl From<RustMessage> for Message {
+    fn from(message: RustMessage) -> Self {
+        let payload: Option<Payload> = match message.payload() {
+            Some(p) => Some(p.clone().into()),
+            None => None,
+        };
+        Self {
+            network_id: message.network_id(),
+            parents: message.parents().to_vec(),
+            payload: payload,
+            nonce: message.nonce(),
+            id: message.id().0,
+        }
+    }
+}
+
+impl Message {
+    pub fn builder() -> MessageBuilder {
+        MessageBuilder::new()
+    }
+
+    pub fn id(&self) -> MessageId {
+        self.id.clone()
+    }
+
+    pub fn parents(&self) -> Vec<MessageId> {
+        self.parents.clone()
+    }
+
+    pub fn payload(&self) -> Option<Payload> {
+        self.payload.clone()
+    }
+}
+
+
+
+pub struct MessageBuilder {
+    builder: Rc<RefCell<Option<RustMessageBuilder>>>,
+}
+
+impl Default for MessageBuilder {
+    fn default() -> Self {
+        Self {
+            builder: Rc::new(RefCell::new(Option::from(RustMessageBuilder::default()))),
+        }
+    }
+}
+
+impl MessageBuilder {
+    pub fn new() -> Self {
+        MessageBuilder::new_with_builder(RustMessageBuilder::new())
+    }
+
+    fn new_with_builder(builder: RustMessageBuilder) -> Self {
+        Self {
+            builder: Rc::new(RefCell::new(Option::from(builder))),
+        }
+    }
+
+    /// Adds a network id to a `MessageBuilder`.
+    pub fn network_id(&self, network_id: u64) -> Self {
+        let new_builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_network_id(network_id);
+        MessageBuilder::new_with_builder(new_builder)
+    }
+
+    /// Adds parents to a `MessageBuilder`.
+    pub fn parents(&self, parents: Vec<MessageId>) -> Result<Self> {
+        let new_builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_parents(Parents::new(parents)?);
+        Ok(MessageBuilder::new_with_builder(new_builder))
+    }
+
+    /// Adds a payload to a `MessageBuilder`.
+    pub fn payload(&self, payload: Payload) -> Self {
+        let new_builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_payload(payload.to_inner());
+        MessageBuilder::new_with_builder(new_builder)
+    }
+
+    /// Adds a nonce provider to a `MessageBuilder`.
+    /*pub fn nonce_provider(&self, nonce_provider: P, target_score: f64) -> Self {
+        let new_builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_payload(payload.to_inner())
+            .unwrap();
+        MessageBuilder::new_with_builder(new_builder)
+    }*/
+
+    /// Finishes the `MessageBuilder` into a `Message`.
+    pub fn finish(&self) -> Result<Message> {
+        let msg = self.builder.borrow_mut().take().unwrap().finish();
+        match msg {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+}

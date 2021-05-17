@@ -8,13 +8,14 @@ use std::{
     str::FromStr,
 };
 
-use iota_client::client::Client as ClientRust;
+use iota_client::{
+    bee_message::input::UtxoInput as RustUTXOInput,
+    client::Client as ClientRust,
+};
 
 use crate::{address::*, bee_types::*, client_builder::ClientBuilder};
 
 use tokio::runtime::Runtime;
-
-use bee_message::input::UtxoInput as RustUTXOInput;
 
 impl From<ClientRust> for Client {
     fn from(client: ClientRust) -> Self {
@@ -111,13 +112,13 @@ impl Client {
             .map(|b| {
                 let mut result: BalanceAddressResponse = b.into();
                 // TODO
-                /*result.address = self
-                .block
-                .block_on(async { self.client.hex_to_bech32(&result.address, None).await })?;*/
+                // result.address = self
+                // .block
+                // .block_on(async { self.client.hex_to_bech32(&result.address, None).await })?;
                 result
             })
             .collect();
-        
+
         Ok(result)
     }
 

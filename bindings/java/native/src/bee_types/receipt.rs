@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use getset::{CopyGetters, Getters};
-use std::{
-    convert::TryFrom,
-    fmt::{Display, Formatter},
-};
+use std::fmt::{Display, Formatter};
 
 use crate::classes::address::AddressDto;
 use bee_rest_api::types::dtos::{

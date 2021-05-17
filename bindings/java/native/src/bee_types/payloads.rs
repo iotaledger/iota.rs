@@ -1,5 +1,30 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+
+use iota_client::bee_message::payload::Payload as RustPayload;
+
+#[derive(PartialEq, Clone, Debug)]
+pub struct Payload {
+    payload: RustPayload,
+}
+
+impl From<RustPayload> for Payload {
+    fn from(payload: RustPayload) -> Self {
+        Self { payload }
+    }
+}
+
+impl Payload {
+    pub fn to_string(&self) -> String {
+        format!("{:?}", self.payload)
+    }
+
+    pub fn to_inner(self) -> RustPayload {
+        self.payload
+    }
+}
+
+
 // use iota_wallet::message::MessagePayload as MessagePayloadRust;
 //
 // use crate::types::{index::*, milestone::*, receipt::*, transaction::*, treasury::*};

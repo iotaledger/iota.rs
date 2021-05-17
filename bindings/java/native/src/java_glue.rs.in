@@ -1,11 +1,6 @@
 use std::{
-    path::PathBuf,
     time::Duration,
     str::FromStr,
-};
-
-use chrono::prelude::{
-    DateTime, Utc, Local
 };
 
 use crate::{
@@ -17,11 +12,9 @@ use crate::{
     address::*,
 };
 
-use iota_client::Api;
-use bee_message::MessageId;
+use iota_client::{Api, bee_message::MessageId};
 use anyhow::{
     Result as Result,
-    anyhow,
 };
 
 foreign_class!(class RustLogging {
@@ -391,6 +384,35 @@ foreign_class!(
         }
     }
 );
+
+foreign_class!(
+    #[derive(Display)]
+    class Message {
+        self_type Message;
+        private constructor = empty;
+        fn Message::builder() -> MessageBuilder;
+        fn Message::network_id(&self) -> u64;
+        fn Message::id(&self) -> MessageId;
+        fn Message::nonce(&self) -> u64;
+        // fn Message::parents(&self) -> Vec<MessageId>;
+        // fn Message::payload(&self) -> Payload;
+    }
+);
+
+foreign_class!(
+    #[derive(Display)]
+    class MessageBuilder {
+        self_type MessageBuilder;
+        constructor MessageBuilder::new() -> MessageBuilder;
+        fn MessageBuilder::network_id(&self, network_id: u64) -> MessageBuilder;
+        //fn MessageBuilder::parents(&self, parents: Vec<MessageId>) -> MessageBuilder;
+        //fn MessageBuilder::payload(&self payload: Payload) -> MessageBuilder;
+        //fn MessageBuilder::nonce_provider(&self) -> MessageBuilder;
+        fn MessageBuilder::finish(&self) -> Result<Message>;
+    }
+);
+
+/////////////// Address
 
 foreign_class!(
     #[derive(Display)]
