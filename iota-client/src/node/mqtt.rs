@@ -97,11 +97,10 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
             for node in nodes.iter() {
                 let host = node.host_str().expect("Can't get host from URL");
                 let id = "iota.rs";
-                let mut port = client.broker_options.port;
+                let port = client.broker_options.port;
                 let mut uri = format!("wss://{}:{}/mqtt", host, node.port_or_known_default().unwrap_or(port));
                 if !client.broker_options.use_ws {
                     uri = host.to_string();
-                    port = 1883;
                 };
                 let mut mqtt_options = MqttOptions::new(id, uri, port);
                 if client.broker_options.use_ws {

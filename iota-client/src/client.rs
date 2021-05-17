@@ -114,9 +114,9 @@ pub struct BrokerOptions {
     pub(crate) automatic_disconnect: bool,
     #[serde(default = "default_broker_timeout")]
     pub(crate) timeout: Duration,
-    #[serde(default = "default_broker_use_ws")]
+    #[serde(default = "default_broker_use_ws", rename = "defaultBrokerUseWs")]
     pub(crate) use_ws: bool,
-    #[serde(default = "default_broker_port")]
+    #[serde(default = "default_broker_port", rename = "defaultBrokerPort")]
     pub(crate) port: u16,
     #[serde(rename = "maxReconnectionAttempts", default)]
     pub(crate) max_reconnection_attempts: usize,
