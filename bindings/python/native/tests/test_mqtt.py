@@ -19,6 +19,8 @@ q = queue.Queue()
 broker_options = {
     'automatic_disconnect': True,
     'timeout': 30,
+    'use_ws': True,
+    'port': 443,
     'max_reconnection_attempts': 5,
 }
 
@@ -32,6 +34,8 @@ q = queue.Queue()
 broker_options = {
     'automatic_disconnect': True,
     'timeout': 5,
+    'use_ws': True,
+    'port': 443,
     'max_reconnection_attempts': 5,
 }
 
