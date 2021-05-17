@@ -44,7 +44,9 @@ impl Client {
     }
 
     pub fn get_node_health(&self, node: &str) -> Result<bool> {
-        Ok(self.block.block_on(async { iota_client::Client::get_node_health(node).await })?)
+        Ok(self
+            .block
+            .block_on(async { iota_client::Client::get_node_health(node).await })?)
     }
 
     pub fn get_info(&self) -> Result<NodeInfoWrapper> {
@@ -101,6 +103,24 @@ impl Client {
         Ok(result)
     }
 
+    pub fn get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>> {
+        let mut result: Vec<BalanceAddressResponse> = self
+            .block
+            .block_on(async { self.client.get_address_balances(&addresses).await })?
+            .into_iter()
+            .map(|b| {
+                let mut result: BalanceAddressResponse = b.into();
+                // TODO
+                /*result.address = self
+                .block
+                .block_on(async { self.client.hex_to_bech32(&result.address, None).await })?;*/
+                result
+            })
+            .collect();
+        
+        Ok(result)
+    }
+
     pub fn find_outputs(
         &self,
         output_ids: Option<Vec<String>>,
@@ -108,11 +128,14 @@ impl Client {
     ) -> Result<Vec<OutputResponse>> {
         let output_ids: Vec<RustUTXOInput> = output_ids
             .unwrap_or_default()
-            .iter()
-            .map(|input| RustUTXOInput::from_str(input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
+            .into_iter()
+            .map(|input| RustUTXOInput::from_str(&input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
             .collect();
-        let output_metadata_vec =
-            crate::block_on(async { self.client.find_outputs(&output_ids[..], &addresses.unwrap_or_default()[..]).await })?;
+        let output_metadata_vec = crate::block_on(async {
+            self.client
+                .find_outputs(&output_ids[..], &addresses.unwrap_or_default()[..])
+                .await
+        })?;
         Ok(output_metadata_vec
             .into_iter()
             .map(|metadata| metadata.into())
@@ -122,66 +145,36 @@ impl Client {
     pub fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
         Ok(self
             .block
-            .block_on(async {  self.client.get_milestone(index).await })?.into())
+            .block_on(async { self.client.get_milestone(index).await })?
+            .into())
     }
 
     pub fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse> {
         Ok(self
             .block
-            .block_on(async { self.client.get_milestone_utxo_changes(index).await })?.into())
+            .block_on(async { self.client.get_milestone_utxo_changes(index).await })?
+            .into())
     }
 
-    pub fn bech32_to_hex(bech32: &str) -> Result<String> {
-        let res = iota_client::Client::bech32_to_hex(bech32);
-        match res {
-            Ok(s) => Ok(s),
-            Err(e) => Err(anyhow!(e.to_string()))
-        }
-    }
-
-    pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
-        let res = self
+    pub fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
+        let receipts: Vec<ReceiptDto> = self
             .block
-            .block_on(async { self.client.hex_to_bech32(hex, bech32_hrp).await }).into();
-        match res {
-            Ok(s) => Ok(s),
-            Err(e) => Err(anyhow!(e.to_string()))
-        }
+            .block_on(async { self.client.get_receipts().await })?
+            .into_iter()
+            .map(|r| r.into())
+            .collect();
+        Ok(receipts)
     }
 
-    /// Returns a valid Address parsed from a String.
-    pub fn parse_bech32_address(address: &str) -> Result<Address> {
-        let res = iota_client::Client::parse_bech32_address(address);
-        match res {
-            Ok(s) => Ok(s),
-            Err(e) => Err(anyhow!(e.to_string()))
-        }
+    pub fn get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>> {
+        let receipts: Vec<ReceiptDto> = self
+            .block
+            .block_on(async { self.client.get_receipts_migrated_at(index).await })?
+            .into_iter()
+            .map(|r| r.into())
+            .collect();
+        Ok(receipts)
     }
-
-    /// Checks if a String address is valid.
-    pub fn is_address_valid(address: &str) -> bool {
-        let res = iota_client::Client::is_address_valid(address);
-        match res {
-            Ok(s) => Ok(s),
-            Err(e) => Err(anyhow!(e.to_string()))
-        }
-    }
-
-    // fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
-    // let receipts: Vec<ReceiptDto> = crate::block_on(async { self.client.get_receipts().await })?
-    // .into_iter()
-    // .map(|r| r.into())
-    // .collect();
-    // Ok(receipts)
-    // }
-
-    // fn get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>> {
-    // let receipts: Vec<ReceiptDto> = crate::block_on(async { self.client.get_receipts_migrated_at(index).await })?
-    // .into_iter()
-    // .map(|r| r.into())
-    // .collect();
-    // Ok(receipts)
-    // }
 
     // fn get_treasury(&self) -> Result<TreasuryResponse> {
     // Ok(crate::block_on(async { self.client.get_treasury().await })?.into())
@@ -191,4 +184,39 @@ impl Client {
     // let transaction_id = RustTransactionId::from_str(&input[..])?;
     // crate::block_on(async { self.client.get_included_message(&transaction_id).await })?.try_into()
     // }
+
+    // UTIL BELOW
+
+    pub fn bech32_to_hex(bech32: &str) -> Result<String> {
+        let res = iota_client::Client::bech32_to_hex(bech32);
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
+        let res = self
+            .block
+            .block_on(async { self.client.hex_to_bech32(hex, bech32_hrp).await })
+            .into();
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    /// Returns a valid Address parsed from a String.
+    pub fn parse_bech32_address(address: &str) -> Result<Address> {
+        let res = iota_client::Client::parse_bech32_address(address);
+        match res {
+            Ok(s) => Ok(s.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    /// Checks if a String address is valid.
+    pub fn is_address_valid(address: &str) -> bool {
+        iota_client::Client::is_address_valid(address)
+    }
 }

@@ -1,11 +1,17 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+use bee_message::prelude::{Address as RustAddress, Ed25519Address};
 use bee_rest_api::types::{
     dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
 };
-
 use getset::{CopyGetters, Getters};
-use std::convert::From;
+use std::{
+    convert::From,
+    fmt::{Display, Formatter},
+};
+
+use crate::Result;
+use anyhow::anyhow;
 
 #[derive(Clone, Debug, Getters, CopyGetters)]
 pub struct AddressDto {
@@ -52,48 +58,43 @@ impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
 #[derive(Clone, Debug, Getters, CopyGetters)]
 pub struct AddressOutputsOptions {}
 
-// use iota_wallet::{
-// account::Account,
-// address::{Address as AddressRust, AddressOutput, AddressWrapper},
-// };
 //
-// #[derive(Clone, PartialEq)]
-// pub struct Address {
-// address: AddressRust,
-// }
+#[derive(Clone, PartialEq)]
+pub struct Address {
+    address: RustAddress,
+}
 //
-// impl Display for Address {
-// fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-// write!(f, "({})", self.readable())
-// }
-// }
+impl Display for Address {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.address)
+    }
+}
 //
-// impl From<AddressRust> for Address {
-// fn from(address: AddressRust) -> Self {
-// Self { address }
-// }
-// }
-//
-// impl Address {
-// pub fn readable(&self) -> String {
-// self.address.address().to_bech32()
-// }
-//
-// pub fn balance(&self) -> u64 {
-// self.address.balance()
-// }
-//
-// Gets the list of outputs that aren't spent or pending.
-// pub fn available_outputs(&self, account: &Account) -> Vec<&AddressOutput> {
-// self.address.available_outputs(account)
-// }
-//
-// pub fn to_inner(self) -> AddressRust {
-// TODO: Find a way to not need clone
-// self.address.clone()
-// }
-//
-// pub fn address(&self) -> AddressWrapper {
-// self.address.address().clone()
-// }
-// }
+impl From<RustAddress> for Address {
+    fn from(address: RustAddress) -> Self {
+        Self { address }
+    }
+}
+
+impl Address {
+    pub fn try_from_bech32(addr: &str) -> Result<Self> {
+        match RustAddress::try_from_bech32(addr) {
+            Ok(addr) => Ok(addr.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+    // pub fn kind(&self) -> u8 {
+    // match self {
+    // Self::Ed25519(_) => Ed25519Address::KIND,
+    // }
+    // }
+    //
+    // Tries to create an `Address` from a Bech32 encoded string.
+    // 
+    //
+    // Encodes this address to a Bech32 string with the hrp (human readable part) argument as prefix.
+    // pub fn to_bech32(&self, hrp: &str) -> String
+    //
+    // Verifies a [`SignatureUnlock`] for a message against the [`Address`].
+    // pub fn verify(&self, msg: &[u8], signature: &SignatureUnlock) -> Result<(), Error> {
+}

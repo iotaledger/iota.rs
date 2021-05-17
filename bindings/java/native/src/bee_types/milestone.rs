@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, Error};
-use getset::{CopyGetters, Getters};
-use std::convert::TryFrom;
 use bee_message::MessageId;
-use iota_client::{
-    MilestoneResponse as RustMilestoneResponse,
-};
-use bee_rest_api::types::{responses::UtxoChangesResponse as RustUtxoChangesResponse,};
+use bee_rest_api::types::responses::UtxoChangesResponse as RustUtxoChangesResponse;
+use getset::{CopyGetters, Getters};
+use iota_client::MilestoneResponse as RustMilestoneResponse;
+use std::convert::TryFrom;
 
 #[derive(Getters, CopyGetters)]
 pub struct MilestoneResponse {
