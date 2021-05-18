@@ -7,3 +7,4 @@ pub use client::*;
 
 pub mod address;
 pub mod message;
+pub mod ed25519;

@@ -1,13 +1,15 @@
 package org.example;
 
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.nio.file.Path;
-
 import org.iota.client.*;
 import org.iota.client.local.*;
 
 public class ExampleApp {
+
+    static {
+        System.out.println("hello?");
+        NativeAPI.verifyLink();
+    }
+
     public static void main(String[] args) {
 
         try {
@@ -18,9 +20,11 @@ public class ExampleApp {
     }
 
     public ExampleApp() {
-        try {
-            NativeAPI.verifyLink();
 
+    }
+
+    public static void nodeInfo() {
+        try {
             String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
             Client iota = Client.Builder().withNode(nodeUrl) // Insert your node URL here
                     // .withNodeSyncDisabled()
@@ -33,6 +37,15 @@ public class ExampleApp {
             NodeInfoWrapper info = iota.getInfo();
             System.out.println("Node url: " + info.getUrl());
             System.out.println("Node Info: " + info.nodeInfo());
+        } catch (ClientException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    public static void generateSeed() {
+        try {
+            SecretKey secret_key = SecretKey.generate();
+            System.out.println(RustHex.encode(secret_key.toLeBytes()));
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
         }

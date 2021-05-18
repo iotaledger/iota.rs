@@ -14,7 +14,7 @@ use crate::{
     Result, Payload
 };
 
-#[derive(PartialEq, Debug, Getters, CopyGetters)]
+#[derive(Clone, PartialEq, Getters, CopyGetters)]
 pub struct Message {
     /// Specifies which network this message is meant for.
     #[getset(get_copy = "pub")]
@@ -30,6 +30,18 @@ pub struct Message {
     id: MessageId,
 }
 
+impl core::fmt::Display for Message {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{} {} {} {:?} {:?}", self.network_id, self.nonce, self.id, self.parents, self.payload)
+    }
+}
+
+impl core::fmt::Debug for Message {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "Message({})", self)
+    }
+}
+/*
 impl Clone for Message {
     fn clone(&self) -> Self {
         Message {
@@ -40,7 +52,7 @@ impl Clone for Message {
             id: self.id.clone(),
         }
     }
-}
+}*/
 
 impl From<RustMessage> for Message {
     fn from(message: RustMessage) -> Self {
@@ -75,8 +87,6 @@ impl Message {
         self.payload.clone()
     }
 }
-
-
 
 pub struct MessageBuilder {
     builder: Rc<RefCell<Option<RustMessageBuilder>>>,

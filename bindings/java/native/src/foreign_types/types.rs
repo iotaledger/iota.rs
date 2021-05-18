@@ -15,6 +15,12 @@ foreign_typemap!(
 );
 
 foreign_typemap!(
+    ($p:r_type) Vec<u8> <= JavaShortArray {
+        $out = $p.to_slice().iter().cloned().map(|x| x as u8).collect();
+    };
+);
+
+foreign_typemap!(
     ($p:r_type) PathBuf => jstring {
         $out = from_std_string_jstring($p.as_path().display().to_string(), env);
     };

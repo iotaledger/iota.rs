@@ -10,7 +10,7 @@ use bee_rest_api::types::dtos::{
     ReceiptPayloadDto as RustReceiptPayloadDto,
 };
 
-#[derive(Getters, CopyGetters)]
+#[derive(Getters, CopyGetters, Debug)]
 pub struct ReceiptDto {
     pub receipt: ReceiptPayloadDto,
     #[getset(get_copy = "pub")]
@@ -32,7 +32,7 @@ impl Display for ReceiptDto {
     }
 }
 
-#[derive(Getters, CopyGetters)]
+#[derive(Getters, CopyGetters, Debug)]
 pub struct ReceiptPayloadDto {
     #[getset(get_copy = "pub")]
     pub kind: u32,
@@ -68,8 +68,6 @@ impl From<RustReceiptPayloadDto> for ReceiptPayloadDto {
         Self {
             kind: payload.kind.clone(),
             migrated_at: payload.migrated_at.clone(),
-
-            // TUrn into index
             funds: payload.funds.into_iter().map(|m| m.into()).collect(),
             transaction: payload.transaction.into(),
             last: payload.last.clone(),
@@ -77,7 +75,7 @@ impl From<RustReceiptPayloadDto> for ReceiptPayloadDto {
     }
 }
 
-#[derive(Clone, Debug, Getters, CopyGetters)]
+#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
 pub struct MigratedFundsEntryDto {
     #[getset(get = "pub")]
     pub tail_transaction_hash: String,

@@ -10,10 +10,12 @@ use crate::{
     bee_types::*,
     message::*,
     address::*,
+    ed25519::*,
 };
 
 use iota_client::{Api, bee_message::MessageId};
 use anyhow::{
+    anyhow,
     Result as Result,
 };
 
@@ -196,6 +198,7 @@ foreign_class!(
     class BalanceAddressResponse {
         self_type BalanceAddressResponse;
         private constructor = empty;
+        private fn BalanceAddressResponse::eq(&self, o: &BalanceAddressResponse) -> bool; alias rustEq;
         fn BalanceAddressResponse::address_type(&self) -> u8;
         fn BalanceAddressResponse::address(&self) -> &str;
         fn BalanceAddressResponse::balance(&self) -> u64;
@@ -204,7 +207,7 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(PartialEq, camelCaseAliases)]
+    #[derive(camelCaseAliases)]
     class OutputResponse {
         self_type OutputResponse;
         private constructor = empty;
@@ -217,11 +220,11 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(PartialEq, camelCaseAliases, Display)]
+    #[derive(camelCaseAliases, Display)]
     class OutputDto {
         self_type OutputDto;
         private constructor = empty;
-        private fn OutputDto::to_string(&self) -> String;
+        private fn OutputDto::to_string(&self) -> String; alias to_string;
         fn OutputDto::kind(&self) -> OutputKind;
         fn OutputDto::as_signature_locked_single_output_dto(&self) -> Result<SignatureLockedSingleOutputDto>;
         fn OutputDto::as_signature_locked_dust_allowance_output_dto(&self) -> Result<SignatureLockedDustAllowanceOutputDto>;
@@ -230,26 +233,25 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(PartialEq, camelCaseAliases, Display)]
+    #[derive(camelCaseAliases, Display)]
     class ReceiptDto {
         self_type ReceiptDto;
         private constructor = empty;
-        private fn ReceiptDto::to_string(&self) -> String;
+        private fn ReceiptDto::to_string(&self) -> String; alias to_string;
         private fn ReceiptDto::milestone_index(&self) -> u32;
     }
 );
 
 foreign_class!(
-    #[derive(PartialEq, camelCaseAliases, Display)]
+    #[derive(camelCaseAliases, Display)]
     class ReceiptPayloadDto {
         self_type ReceiptPayloadDto;
         private constructor = empty;
-        private fn ReceiptPayloadDto::to_string(&self) -> String;
+        private fn ReceiptPayloadDto::to_string(&self) -> String; alias to_string;
         fn ReceiptPayloadDto::kind(&self) -> u32;
         fn ReceiptPayloadDto::migrated_at(&self) -> u32;
         fn ReceiptPayloadDto::funds(&self) -> Vec<MigratedFundsEntryDto>;
         fn ReceiptPayloadDto::last(&self) -> bool;
-        //fn ReceiptPayloadDto::amount(&self) -> u64;
     }
 );
 
@@ -258,6 +260,8 @@ foreign_class!(
     class MilestoneResponse {
         self_type MilestoneResponse;
         private constructor = empty;
+        private fn MilestoneResponse::to_string(&self) -> String; alias to_string;
+        private fn MilestoneResponse::eq(&self, o: &MilestoneResponse) -> bool; alias rustEq;
         /// Milestone index.
         fn MilestoneResponse::index(&self) -> u32;
         /// Milestone message id
@@ -272,6 +276,8 @@ foreign_class!(
     class MilestoneUtxoChangesResponse {
         self_type MilestoneUtxoChangesResponse;
         private constructor = empty;
+        private fn MilestoneUtxoChangesResponse::to_string(&self) -> String; alias to_string;
+        private fn MilestoneUtxoChangesResponse::eq(&self, o: &MilestoneUtxoChangesResponse) -> bool; alias rustEq;
         /// Milestone index.
         fn MilestoneUtxoChangesResponse::index(&self) -> u32;
         /// Milestone message id
@@ -378,7 +384,7 @@ foreign_class!(
     class MessageId {
         self_type MessageId;
         constructor MessageId::null() -> MessageId;
-        private fn MessageId::to_string(&self) -> String;
+        private fn MessageId::to_string(&self) -> String; alias to_string;
         fn MessageId::fromString(str_rep: &str) -> MessageId {
             MessageId::from_str(str_rep).unwrap()
         }
@@ -390,6 +396,7 @@ foreign_class!(
     class Message {
         self_type Message;
         private constructor = empty;
+        private fn Message::to_string(&self) -> String; alias to_string;
         fn Message::builder() -> MessageBuilder;
         fn Message::network_id(&self) -> u64;
         fn Message::id(&self) -> MessageId;
@@ -400,7 +407,6 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(Display)]
     class MessageBuilder {
         self_type MessageBuilder;
         constructor MessageBuilder::new() -> MessageBuilder;
@@ -420,7 +426,7 @@ foreign_class!(
         self_type Address;
         private constructor = empty;
         fn Address::try_from_bech32(addr: &str) -> Result<Address>;
-        private fn Address::to_string(&self) -> String;
+        private fn Address::to_string(&self) -> String; alias to_string;
     }
 );
 
@@ -430,6 +436,61 @@ foreign_class!(
         private constructor = empty;
         fn AddressDto::kind(&self) -> u8;
         fn AddressDto::address(&self) -> &str;
+    }
+);
+
+//////////////// Util
+foreign_class!(class RustHex {
+    fn hex::encode(_ : String) -> String;
+    fn hex::encode(_ : Vec<u8>) -> String;
+    fn decode(s : String) -> Result<Vec<u8>> {
+        let res = hex::decode(s);
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!("Hex error {:?}", e.to_string()))
+        }
+    }
+    fn decode(s : Vec<u8>) -> Result<Vec<u8>> {
+        let res = hex::decode(s);
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!("Hex error {:?}", e.to_string()))
+        }
+    }
+});
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class Signature {
+        self_type Signature;
+        private constructor = empty;
+        fn Signature::to_bytes(&self) -> Vec<u8>;
+        fn Signature::from_bytes(bs: Vec<u8>) -> Signature;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class PublicKey {
+        self_type PublicKey;
+        private constructor = empty;
+        fn PublicKey::verify(&self, sig: Signature, msg: Vec<u8>) -> bool;
+        fn PublicKey::to_compressed_bytes(&self) -> Vec<u8>;
+        fn PublicKey::from_compressed_bytes(bs: Vec<u8>) -> Result<PublicKey>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class SecretKey {
+        self_type SecretKey;
+        private constructor = empty;
+        fn SecretKey::generate() -> Result<SecretKey>;
+        fn SecretKey::from_le_bytes(bs: Vec<u8>) -> Result<SecretKey>;
+        
+        fn SecretKey::public_key(&self) -> PublicKey;
+        fn SecretKey::to_le_bytes(&self) -> Vec<u8>;
+        fn SecretKey::sign(&self, msg: Vec<u8>) -> Signature;
     }
 );
 

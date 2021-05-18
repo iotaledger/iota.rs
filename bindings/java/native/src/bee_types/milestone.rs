@@ -1,6 +1,5 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-
 use bee_rest_api::types::responses::UtxoChangesResponse as RustUtxoChangesResponse;
 use getset::{CopyGetters, Getters};
 use iota_client::{
@@ -8,7 +7,7 @@ use iota_client::{
     bee_message::MessageId,
 };
 
-#[derive(Getters, CopyGetters)]
+#[derive(Getters, CopyGetters, PartialEq)]
 pub struct MilestoneResponse {
     #[getset(get_copy = "pub")]
     pub index: u32,
@@ -16,6 +15,19 @@ pub struct MilestoneResponse {
     pub message_id: MessageId,
     #[getset(get_copy = "pub")]
     pub timestamp: u64,
+}
+
+
+impl core::fmt::Display for MilestoneResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{} {} {}", self.index, self.message_id, self.timestamp)
+    }
+}
+
+impl core::fmt::Debug for MilestoneResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "MilestoneResponse({})", self)
+    }
 }
 
 impl From<RustMilestoneResponse> for MilestoneResponse {
@@ -28,7 +40,7 @@ impl From<RustMilestoneResponse> for MilestoneResponse {
     }
 }
 
-#[derive(Getters, CopyGetters)]
+#[derive(Getters, CopyGetters, PartialEq)]
 pub struct MilestoneUtxoChangesResponse {
     #[getset(get_copy = "pub")]
     pub index: u32,
@@ -42,6 +54,18 @@ impl MilestoneUtxoChangesResponse {
     }
     pub fn consumed_outputs(&self) -> Vec<String> {
         self.consumed_outputs.clone()
+    }
+}
+
+impl core::fmt::Display for MilestoneUtxoChangesResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{} {:?} {:?}", self.index, self.created_outputs, self.consumed_outputs)
+    }
+}
+
+impl core::fmt::Debug for MilestoneUtxoChangesResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "MilestoneUtxoChangesResponse({})", self)
     }
 }
 

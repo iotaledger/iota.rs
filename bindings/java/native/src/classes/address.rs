@@ -13,7 +13,7 @@ use std::{
 use crate::Result;
 use anyhow::anyhow;
 
-#[derive(Clone, Debug, Getters, CopyGetters)]
+#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
 pub struct AddressDto {
     #[getset(get_copy = "pub")]
     pub kind: u8,
@@ -32,7 +32,7 @@ impl From<RustAddressDto> for AddressDto {
     }
 }
 
-#[derive(Clone, Debug, Getters, CopyGetters)]
+#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
 pub struct BalanceAddressResponse {
     #[getset(get_copy = "pub")]
     pub address_type: u8,
