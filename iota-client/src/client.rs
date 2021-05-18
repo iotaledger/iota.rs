@@ -39,7 +39,7 @@ use zeroize::Zeroize;
 use crate::builder::TIPS_INTERVAL;
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
-#[cfg(any(feature = "mqtt", not(feature = "wasm")))]
+#[cfg(feature = "mqtt")]
 use tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender};
 #[cfg(not(feature = "wasm"))]
 use tokio::{
@@ -558,6 +558,9 @@ impl Client {
 
     /// Returns a hex encoded seed for a mnemonic.
     pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
+        // first we check if the mnemonic is valid to give meaningful errors
+        crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
         let mut mnemonic_seed = [0u8; 64];
         mnemonic_to_seed(mnemonic, &"", &mut mnemonic_seed);
         Ok(hex::encode(mnemonic_seed))

@@ -140,4 +140,7 @@ pub enum Error {
     /// Tokio task join error
     #[error("{0}")]
     TaskJoinError(#[from] tokio::task::JoinError),
+    /// Invalid mnemonic error
+    #[error("Invalid mnemonic {0}")]
+    InvalidMnemonic(String),
 }
