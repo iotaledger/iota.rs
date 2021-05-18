@@ -19,6 +19,19 @@ impl NodeInfoWrapper {
     }
 }
 
+impl core::fmt::Display for NodeInfoWrapper {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "url: {}, nodeinfo: {}", 
+            self.url, self.nodeinfo)
+    }
+}
+
+impl core::fmt::Debug for NodeInfoWrapper {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "NodeInfoWrapper({})", self)
+    }
+}
+
 impl From<RustNodeInfoWrapper> for NodeInfoWrapper {
     fn from(info: RustNodeInfoWrapper) -> Self {
         Self {
@@ -77,6 +90,27 @@ pub struct InfoResponse {
 impl InfoResponse {
     pub fn features(&self) -> Vec<String> {
         self.features.to_vec()
+    }
+}
+
+impl core::fmt::Display for InfoResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "name={}, version={}, is_healthy={}, network_id={}, bech32_hrp={}, min_pow_score={}" + 
+            ", messages_per_second={}, referenced_messages_per_second={}, referenced_rate={}" + 
+            ", latest_milestone_timestamp={}, latest_milestone_index={}, confirmed_milestone_index={}" +
+            ", pruning_index={}, features=({:?})", 
+            self.name, self.version, self.is_healthy, 
+            self.network_id, self.bech32_hrp, self.min_pow_score, 
+            self.messages_per_second, self.referenced_messages_per_second, 
+            self.referenced_rate, self.latest_milestone_timestamp, 
+            self.latest_milestone_index, self.confirmed_milestone_index,
+            self.pruning_index, self.features)
+    }
+}
+
+impl core::fmt::Debug for InfoResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "InfoResponse({})", self)
     }
 }
 

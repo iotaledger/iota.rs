@@ -161,10 +161,11 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Display)]
     class NodeInfoWrapper {
         self_type NodeInfoWrapper;
         private constructor = empty;
+        private fn NodeInfoWrapper::to_string(&self) -> String; alias to_string;
         private fn NodeInfoWrapper::eq(&self, o: &NodeInfoWrapper) -> bool; alias rustEq;
         fn NodeInfoWrapper::url(&self) -> &str; alias getUrl;
         fn NodeInfoWrapper::nodeinfo(&self) -> InfoResponse; alias nodeInfo;
@@ -172,10 +173,11 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Display)]
     class InfoResponse {
         self_type InfoResponse;
         private constructor = empty;
+        private fn InfoResponse::to_string(&self) -> String; alias to_string;
         private fn InfoResponse::eq(&self, o: &InfoResponse) -> bool; alias rustEq;
         fn InfoResponse::name(&self) -> &str;
         fn InfoResponse::version(&self) -> &str;

@@ -32,7 +32,8 @@ pub struct Message {
 
 impl core::fmt::Display for Message {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "{} {} {} {:?} {:?}", self.network_id, self.nonce, self.id, self.parents, self.payload)
+        write!(f, "network_id={}, nonce={}, id={}, payload={:?}, parents=({:?})", 
+            self.network_id, self.nonce, self.id, self.payload, self.parents)
     }
 }
 
