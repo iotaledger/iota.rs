@@ -867,6 +867,7 @@ All fields are optional.
 | timeout                 | <code>number</code> | MQTT connection timeout in secods                                                                     |
 | useWs                   | <code>bool</code>   | Defines if websockets should be used (true) or TCP (false)                                            |
 | maxReconnectionAttempts | <code>number</code> | Defines the maximum reconnection attempts before it returns an error                                  |
+| port                    | <code>number</code> | Defines the port to be used for the MQTT connection                                                   |
 
 ### NodeAuthOptions
 
