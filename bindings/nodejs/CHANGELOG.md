@@ -1,5 +1,17 @@
 # Changelog
 
+## \[0.5.0]
+
+- Add JWT support and fix default nodes.
+  - [b94c0ae1](https://github.com/iotaledger/iota.rs/commit/b94c0ae150c935e3771d12061f534f301d39c33c) add changes file on 2021-05-14
+- Validate mnemonic in mnemonicToHexSeed()
+  - [e9c89e04](https://github.com/iotaledger/iota.rs/commit/e9c89e049d030fca17adfd63aa161b6911f846d1) add changes file on 2021-05-04
+  - [cce6254f](https://github.com/iotaledger/iota.rs/commit/cce6254f37af65a08e5daf53dae6c3f3ba9f9abd) apply version updates ([#538](https://github.com/iotaledger/iota.rs/pull/538)) on 2021-05-09
+  - [4b159da2](https://github.com/iotaledger/iota.rs/commit/4b159da25ea0f8db3eea5a6b2748eefb366d1f4d) validate mnemonic in mnemonic_to_hex_seed ([#568](https://github.com/iotaledger/iota.rs/pull/568)) on 2021-05-18
+- MQTT uses websocket as default
+  Indexation topic with non hex content will be converted to hex automatically
+  - [98dad972](https://github.com/iotaledger/iota.rs/commit/98dad972549339d32fba6c06057a9df7582e0b51) Mqtt websocket first iteration ([#561](https://github.com/iotaledger/iota.rs/pull/561)) on 2021-05-17
+
 ## \[0.4.0]
 
 - Use camelCase for attributes.
