@@ -28,7 +28,7 @@ export declare class ClientBuilder {
   primaryPowNode(url: string, authOptions?: NodeAuthOptions): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
-  network(network_name: string): ClientBuilder
+  network(networkName: string): ClientBuilder
   quorum(enabled: boolean): ClientBuilder
   quorumSize(size: number): ClientBuilder
   quorumThreshold(threshold: number): ClientBuilder
@@ -64,7 +64,7 @@ export declare class UnspentAddressGetter {
 export declare class AddressGetter {
   accountIndex(index: number): AddressGetter
   range(start: number, end: number): AddressGetter
-  bech32Hrp(bech32_hrp: string): AddressGetter
+  bech32Hrp(bech32Hrp: string): AddressGetter
   includeInternal(): AddressGetter
   get(): Promise<Address[] | [Address, boolean][]>
 }

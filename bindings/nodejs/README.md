@@ -5,11 +5,14 @@ Node.js binding to the IOTA client library.
 ## Installation
 
 - Using NPM:
-```
+
+```bash
 $ npm i @iota/client
 ```
+
 - Using yarn:
-```
+
+```bash
 $ yarn add @iota/client
 ```
 
@@ -52,7 +55,7 @@ Adds an IOTA node with authentication to the client pool.
 | Param       | Type                                         | Description                      |
 | ----------- | -------------------------------------------- | -------------------------------- |
 | url         | <code>string</code>                          | A node URL                       |
-| authOptions | <code>[BrokerOptions](#brokeroptions)</code> | Options for node authentication  |
+| authOptions | <code>[NodeAuthOptions](#nodeauthoptions)</code> | Options for node authentication  |
 
 **Returns** the client builder instance for chained calls.
 
@@ -63,7 +66,7 @@ Add a node to always connect first to with optional authentication.
 | Param       | Type                                         | Description                      |
 | ----------- | -------------------------------------------- | -------------------------------- |
 | url         | <code>string</code>                          | A node URL                       |
-| authOptions | <code>[BrokerOptions](#brokeroptions)</code> | Options for node authentication  |
+| authOptions | <code>[NodeAuthOptions](#nodeauthoptions)</code> | Options for node authentication  |
 
 **Returns** the client builder instance for chained calls.
 
@@ -74,7 +77,7 @@ Add a node to always connect first to when using remote PoW with optional authen
 | Param       | Type                                         | Description                      |
 | ----------- | -------------------------------------------- | -------------------------------- |
 | url         | <code>string</code>                          | A node URL                       |
-| authOptions | <code>[BrokerOptions](#brokeroptions)</code> | Options for node authentication  |
+| authOptions | <code>[NodeAuthOptions](#nodeauthoptions)</code> | Options for node authentication  |
 
 **Returns** the client builder instance for chained calls.
 
@@ -509,6 +512,24 @@ Promotes the message associated with the given id.
 
 ### TopicSubscriber
 
+Possible topics:
+
+```bash
+milestones/latest
+milestones/confirmed
+
+messages
+messages/referenced
+messages/indexation/{index}
+messages/{messageId}/metadata
+transactions/{transactionId}/included-message
+
+outputs/{outputId}
+
+addresses/{address}/outputs
+addresses/ed25519/{address}/outputs
+```
+
 #### topic(topic): TopicSubscriber
 
 Adds a topic to this manager instance.
@@ -724,6 +745,16 @@ Defines that public and internal address will be returned instead of only public
 
 **Returns** the address finder instance for chained calls.
 
+#### bech32Hrp(bech32Hrp): AddressGetter
+
+Defines the bech32Hrp for the bech32 encoded addresses, required when generating addresses offline(with disableNodeSync()).
+
+| Param     | Type                | Description                     |
+| --------- | ------------------- | ------------------------------- |
+| bech32Hrp | <code>string</code> | The bech32Hrp for the addresses |
+
+**Returns** the address finder instance for chained calls.
+
 #### get(): Address[] | [Address, bool][]
 
 Performs the operation.
@@ -828,10 +859,15 @@ Gets the metadata of the given message.
 
 ### BrokerOptions
 
-| Field               | Type                | Description                                                                                           |
-| ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
-| automaticDisconnect | <code>number</code> | Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not. |
-| timeout             | <code>number</code> | MQTT connection timeout in secods                                                                     |
+All fields are optional.
+
+| Field                   | Type                | Description                                                                                           |
+| ----------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
+| automaticDisconnect     | <code>number</code> | Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not. |
+| timeout                 | <code>number</code> | MQTT connection timeout in secods                                                                     |
+| useWs                   | <code>bool</code>   | Defines if websockets should be used (true) or TCP (false)                                            |
+| maxReconnectionAttempts | <code>number</code> | Defines the maximum reconnection attempts before it returns an error                                  |
+| port                    | <code>number</code> | Defines the port to be used for the MQTT connection                                                   |
 
 ### NodeAuthOptions
 

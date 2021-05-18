@@ -186,14 +186,13 @@ Example of output:
 
 ```json
 {
-   "address_type":0,
    "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
    "balance":10000000,
    "dustAllowed":false
 }
+Account balance: 0
 ```
 
-* `address_type` indicates type of address. Value 0 denotes a Ed25519 address (currently the default for IOTA 1.5 network)
 * `dustAllowed` indicates whether the given address is allowed to accepts a dust due to [dust protection mechanism](https://chrysalis.docs.iota.org/guides/dev_guide.html#dust-protection)
 
 `Client.getBalance(seed)` performs a several tasks under the hood.
