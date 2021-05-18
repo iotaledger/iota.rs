@@ -9,11 +9,14 @@ use std::{
 };
 
 use iota_client::{
-    bee_message::input::UtxoInput as RustUTXOInput,
+    bee_message::{
+        input::UtxoInput as RustUTXOInput,
+        MessageId,
+    },
     client::Client as ClientRust,
 };
 
-use crate::{address::*, bee_types::*, client_builder::ClientBuilder};
+use crate::{address::*, message::MessageWrap, bee_types::*, client_builder::ClientBuilder};
 
 use tokio::runtime::Runtime;
 
@@ -185,6 +188,56 @@ impl Client {
     // let transaction_id = RustTransactionId::from_str(&input[..])?;
     // crate::block_on(async { self.client.get_included_message(&transaction_id).await })?.try_into()
     // }
+
+    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+    /// confirmed for a while.
+    pub fn reattach(&self, message_id: MessageId) -> Result<MessageWrap> {
+        let res = self
+            .block
+            .block_on(async { self.client.reattach(&message_id).await });
+
+        match res {
+            Ok(w) => Ok(MessageWrap::new(w.0, w.1.into())),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    /// Reattach a message without checking if it should be reattached
+    pub fn reattach_unchecked(&self, message_id: MessageId) -> Result<MessageWrap> {
+        let res = self
+            .block
+            .block_on(async { self.client.reattach_unchecked(&message_id).await });
+
+        match res {
+            Ok(w) => Ok(MessageWrap::new(w.0, w.1.into())),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+    /// method should error out and should not allow unnecessary promotions.
+    pub fn promote(&self, message_id: MessageId) -> Result<MessageWrap> {
+        let res = self
+            .block
+            .block_on(async { self.client.promote(&message_id).await });
+
+        match res {
+            Ok(w) => Ok(MessageWrap::new(w.0, w.1.into())),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    /// Promote a message without checking if it should be promoted
+    pub fn promote_unchecked(&self, message_id: MessageId) -> Result<MessageWrap> {
+        let res = self
+            .block
+            .block_on(async { self.client.promote_unchecked(&message_id).await });
+
+        match res {
+            Ok(w) => Ok(MessageWrap::new(w.0, w.1.into())),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
 
     // UTIL BELOW
 

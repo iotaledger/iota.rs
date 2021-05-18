@@ -50,4 +50,18 @@ public class ExampleApp {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
+    public static void generateAddresses() {
+        try {
+            String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
+            Client iota = Client.Builder().withNode(nodeUrl) // Insert your node URL here
+                    // .withNodeSyncDisabled()
+                    // .with_node_auth("https://somechrysalisiotanode.com", "name", "password") //
+                    // Optional authentication
+                    .finish();
+
+        } catch (ClientException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 }

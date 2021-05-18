@@ -148,6 +148,20 @@ foreign_class!(
         /// Get the receipts by the given milestone index.
         fn Client::get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>>;
 
+        /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+        /// confirmed for a while.
+        fn Client::reattach(&self, message_id: MessageId) -> Result<MessageWrap>;
+        
+        /// Reattach a message without checking if it should be reattached
+        fn Client::reattach_unchecked(&self, message_id: MessageId) -> Result<MessageWrap>;
+        
+        /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+        /// method should error out and should not allow unnecessary promotions.
+        fn Client::promote(&self, message_id: MessageId) -> Result<MessageWrap>;
+        
+        /// Promote a message without checking if it should be promoted
+        fn Client::promote_unchecked(&self, message_id: MessageId) -> Result<MessageWrap>;
+
         /// Transforms bech32 to hex
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
         /// Transforms hex to bech32
@@ -381,6 +395,17 @@ foreign_class!(
 
 
 /////////////// Message
+foreign_class!(
+    #[derive(Display)]
+    class MessageWrap {
+        self_type MessageWrap;
+        private constructor = empty;
+        private fn MessageWrap::to_string(&self) -> String; alias to_string;
+        fn MessageWrap::message_id(&self) -> MessageId;
+        fn MessageWrap::message(&self) -> Message;
+    }
+);
+
 foreign_class!(
     #[derive(Display)]
     class MessageId {

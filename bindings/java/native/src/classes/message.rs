@@ -14,6 +14,44 @@ use crate::{
     Result, Payload
 };
 
+
+#[derive(Clone, PartialEq)]
+pub struct MessageWrap {
+    message: Message,
+
+    message_id: MessageId,
+}
+
+impl MessageWrap {
+    pub fn new(message_id: MessageId, message: Message) -> Self {
+        Self {
+            message,
+            message_id
+        }
+    }
+
+    pub fn message(&self) -> Message {
+        self.message.clone()
+    }
+
+    pub fn message_id(&self) -> MessageId {
+        self.message_id.clone()
+    }
+}
+
+impl core::fmt::Display for MessageWrap {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "message_id={}, message={}", 
+            self.message_id, self.message)
+    }
+}
+
+impl core::fmt::Debug for MessageWrap {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "MessageWrap({})", self)
+    }
+}
+
 #[derive(Clone, PartialEq, Getters, CopyGetters)]
 pub struct Message {
     /// Specifies which network this message is meant for.
