@@ -31,9 +31,11 @@ const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 
 /// Node struct
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub(crate) struct Node {
-    pub(crate) url: Url,
-    pub(crate) jwt: Option<String>,
+pub struct Node {
+    /// node url
+    pub url: Url,
+    /// node jwt
+    pub jwt: Option<String>,
 }
 
 // Nodemanger, takes care of selecting node(s) for requests until a result is returned or if quorum
