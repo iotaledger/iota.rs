@@ -52,9 +52,9 @@ export declare interface MilestoneUTXOChanges {
 
 export declare interface BrokerOptions {
   automaticDisconnect?: boolean
-  // timeout in milliseconds
+  // timeout in seconds
   timeout?: number
-  use_ws?: boolean
+  useWs?: boolean
   port?: number
   maxReconnectionAttempts?: number
 }
