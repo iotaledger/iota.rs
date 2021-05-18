@@ -861,13 +861,13 @@ Gets the metadata of the given message.
 
 All fields are optional.
 
-| Field                   | Type                | Description                                                                                           |
-| ----------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
-| automaticDisconnect     | <code>number</code> | Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not. |
-| timeout                 | <code>number</code> | MQTT connection timeout in secods                                                                     |
-| useWs                   | <code>bool</code>   | Defines if websockets should be used (true) or TCP (false)                                            |
-| maxReconnectionAttempts | <code>number</code> | Defines the maximum reconnection attempts before it returns an error                                  |
-| port                    | <code>number</code> | Defines the port to be used for the MQTT connection                                                   |
+| Field                   | Type                 | Description                                                                                           |
+| ----------------------- | -------------------- | ----------------------------------------------------------------------------------------------------- |
+| automaticDisconnect     | <code>boolean</code> | Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not. |
+| timeout                 | <code>number</code>  | MQTT connection timeout in secods                                                                     |
+| useWs                   | <code>boolean</code> | Defines if websockets should be used (true) or TCP (false)                                            |
+| maxReconnectionAttempts | <code>number</code>  | Defines the maximum reconnection attempts before it returns an error                                  |
+| port                    | <code>number</code>  | Defines the port to be used for the MQTT connection                                                   |
 
 ### NodeAuthOptions
 
