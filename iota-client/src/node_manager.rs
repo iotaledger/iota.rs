@@ -31,7 +31,7 @@ const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 
 /// Node struct
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct Node {
+pub(crate) struct Node {
     pub(crate) url: Url,
     pub(crate) jwt: Option<String>,
 }
