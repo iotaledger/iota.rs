@@ -43,6 +43,10 @@ impl Client {
         ClientBuilder::new()
     }
 
+    pub fn borrow<'a>(&'a self) -> &'a ClientRust {
+        &self.client
+    }
+
     pub fn get_health(&self) -> Result<bool> {
         Ok(self.block.block_on(async { self.client.get_health().await })?)
     }
