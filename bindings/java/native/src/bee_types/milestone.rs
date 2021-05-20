@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.
 use getset::{CopyGetters, Getters};
 use iota_client::{
+    bee_message::MessageId, bee_rest_api::types::responses::UtxoChangesResponse as RustUtxoChangesResponse,
     MilestoneResponse as RustMilestoneResponse,
-    bee_message::MessageId,
-    bee_rest_api::types::responses::UtxoChangesResponse as RustUtxoChangesResponse,
 };
 
 #[derive(Getters, CopyGetters, PartialEq)]
@@ -16,7 +15,6 @@ pub struct MilestoneResponse {
     #[getset(get_copy = "pub")]
     pub timestamp: u64,
 }
-
 
 impl core::fmt::Display for MilestoneResponse {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
@@ -59,7 +57,11 @@ impl MilestoneUtxoChangesResponse {
 
 impl core::fmt::Display for MilestoneUtxoChangesResponse {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "{} {:?} {:?}", self.index, self.created_outputs, self.consumed_outputs)
+        write!(
+            f,
+            "{} {:?} {:?}",
+            self.index, self.created_outputs, self.consumed_outputs
+        )
     }
 }
 

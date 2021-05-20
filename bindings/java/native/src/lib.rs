@@ -13,9 +13,9 @@ pub use crate::{bee_types::*, classes::*, java_glue::*};
 
 pub use anyhow::{Error, Result};
 
-use tokio::runtime::Runtime;
 use once_cell::sync::OnceCell;
 use std::sync::Mutex;
+use tokio::runtime::Runtime;
 
 pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
     static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();

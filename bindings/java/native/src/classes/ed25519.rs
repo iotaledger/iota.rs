@@ -4,13 +4,11 @@
 use std::convert::AsMut;
 
 use iota_client::crypto::signatures::ed25519::{
-    SecretKey as RustSecretKey,
-    PublicKey as RustPublicKey,
-    Signature as RustSignature,
+    PublicKey as RustPublicKey, SecretKey as RustSecretKey, Signature as RustSignature,
 };
 
-use anyhow::anyhow;
 use crate::Result;
+use anyhow::anyhow;
 
 const SECRET_KEY_LENGTH: usize = 32;
 const SIGNATURE_LENGTH: usize = 64;
@@ -80,8 +78,9 @@ impl Signature {
 
 // https://stackoverflow.com/a/37679442
 fn clone_into_array<A, T>(slice: &[T]) -> A
-    where A: Sized + Default + AsMut<[T]>,
-          T: Clone
+where
+    A: Sized + Default + AsMut<[T]>,
+    T: Clone,
 {
     let mut a = Default::default();
     <A as AsMut<[T]>>::as_mut(&mut a).clone_from_slice(slice);

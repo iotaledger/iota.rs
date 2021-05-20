@@ -24,7 +24,6 @@ impl Payload {
     }
 }
 
-
 // use iota_wallet::message::MessagePayload as MessagePayloadRust;
 //
 // use crate::types::{index::*, milestone::*, receipt::*, transaction::*, treasury::*};

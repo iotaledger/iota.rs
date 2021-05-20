@@ -2,18 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::{cell::RefCell, rc::Rc};
 
-
 use getset::{CopyGetters, Getters};
-use iota_client::bee_message::{
-    prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents}
+use iota_client::bee_message::prelude::{
+    Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents,
 };
 
 use anyhow::anyhow;
 
-use crate::{
-    Result, Payload
-};
-
+use crate::{Payload, Result};
 
 #[derive(Clone, PartialEq)]
 pub struct MessageWrap {
@@ -24,10 +20,7 @@ pub struct MessageWrap {
 
 impl MessageWrap {
     pub fn new(message_id: MessageId, message: Message) -> Self {
-        Self {
-            message,
-            message_id
-        }
+        Self { message, message_id }
     }
 
     pub fn message(&self) -> Message {
@@ -41,8 +34,7 @@ impl MessageWrap {
 
 impl core::fmt::Display for MessageWrap {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "message_id={}, message={}", 
-            self.message_id, self.message)
+        write!(f, "message_id={}, message={}", self.message_id, self.message)
     }
 }
 
@@ -70,8 +62,11 @@ pub struct Message {
 
 impl core::fmt::Display for Message {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "network_id={}, nonce={}, id={}, payload={:?}, parents=({:?})", 
-            self.network_id, self.nonce, self.id, self.payload, self.parents)
+        write!(
+            f,
+            "network_id={}, nonce={}, id={}, payload={:?}, parents=({:?})",
+            self.network_id, self.nonce, self.id, self.payload, self.parents
+        )
     }
 }
 
@@ -80,18 +75,17 @@ impl core::fmt::Debug for Message {
         write!(f, "Message({})", self)
     }
 }
-/*
-impl Clone for Message {
-    fn clone(&self) -> Self {
-        Message {
-            network_id: self.network_id,
-            parents: self.parents().clone(),
-            payload: self.payload.clone(),
-            nonce: self.nonce,
-            id: self.id.clone(),
-        }
-    }
-}*/
+// impl Clone for Message {
+// fn clone(&self) -> Self {
+// Message {
+// network_id: self.network_id,
+// parents: self.parents().clone(),
+// payload: self.payload.clone(),
+// nonce: self.nonce,
+// id: self.id.clone(),
+// }
+// }
+// }
 
 impl From<RustMessage> for Message {
     fn from(message: RustMessage) -> Self {
@@ -152,12 +146,7 @@ impl MessageBuilder {
 
     /// Adds a network id to a `MessageBuilder`.
     pub fn network_id(&self, network_id: u64) -> Self {
-        let new_builder = self
-            .builder
-            .borrow_mut()
-            .take()
-            .unwrap()
-            .with_network_id(network_id);
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_network_id(network_id);
         MessageBuilder::new_with_builder(new_builder)
     }
 
@@ -184,16 +173,16 @@ impl MessageBuilder {
     }
 
     /// Adds a nonce provider to a `MessageBuilder`.
-    /*pub fn nonce_provider(&self, nonce_provider: P, target_score: f64) -> Self {
-        let new_builder = self
-            .builder
-            .borrow_mut()
-            .take()
-            .unwrap()
-            .with_payload(payload.to_inner())
-            .unwrap();
-        MessageBuilder::new_with_builder(new_builder)
-    }*/
+    // pub fn nonce_provider(&self, nonce_provider: P, target_score: f64) -> Self {
+    // let new_builder = self
+    // .builder
+    // .borrow_mut()
+    // .take()
+    // .unwrap()
+    // .with_payload(payload.to_inner())
+    // .unwrap();
+    // MessageBuilder::new_with_builder(new_builder)
+    // }
 
     /// Finishes the `MessageBuilder` into a `Message`.
     pub fn finish(&self) -> Result<Message> {

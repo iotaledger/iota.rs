@@ -9,14 +9,11 @@ use std::{
 };
 
 use iota_client::{
-    bee_message::{
-        input::UtxoInput as RustUTXOInput,
-        MessageId,
-    },
+    bee_message::{input::UtxoInput as RustUTXOInput, MessageId},
     client::Client as ClientRust,
 };
 
-use crate::{address::*, message::MessageWrap, bee_types::*, client_builder::ClientBuilder};
+use crate::{address::*, bee_types::*, client_builder::ClientBuilder, message::MessageWrap};
 
 use tokio::runtime::Runtime;
 
@@ -43,7 +40,9 @@ impl Client {
     }
 
     pub fn get_node_health(&self, node: &str) -> Result<bool> {
-        Ok(crate::block_on(async { iota_client::Client::get_node_health(node).await })?)
+        Ok(crate::block_on(async {
+            iota_client::Client::get_node_health(node).await
+        })?)
     }
 
     pub fn get_info(&self) -> Result<NodeInfoWrapper> {
@@ -81,29 +80,29 @@ impl Client {
     // }
 
     pub fn get_output(&self, output_id: String) -> Result<OutputResponse> {
-        Ok(crate::block_on(async { self.0.get_output(&RustUTXOInput::from_str(&output_id)?).await })?
-            .into())
+        Ok(crate::block_on(async { self.0.get_output(&RustUTXOInput::from_str(&output_id)?).await })?.into())
     }
 
     pub fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
-        let mut result: BalanceAddressResponse = crate::block_on(async { self.0.get_address().balance(&String::from(address)).await })?
-            .into();
+        let mut result: BalanceAddressResponse =
+            crate::block_on(async { self.0.get_address().balance(&String::from(address)).await })?.into();
         result.address = crate::block_on(async { self.0.hex_to_bech32(&result.address, None).await })?;
         Ok(result)
     }
 
     pub fn get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>> {
-        let mut result: Vec<BalanceAddressResponse> = crate::block_on(async { self.0.get_address_balances(&addresses).await })?
-            .into_iter()
-            .map(|b| {
-                let mut result: BalanceAddressResponse = b.into();
-                // TODO
-                // result.address = self
-                // .block
-                // .block_on(async { self.0.hex_to_bech32(&result.address, None).await })?;
-                result
-            })
-            .collect();
+        let mut result: Vec<BalanceAddressResponse> =
+            crate::block_on(async { self.0.get_address_balances(&addresses).await })?
+                .into_iter()
+                .map(|b| {
+                    let mut result: BalanceAddressResponse = b.into();
+                    // TODO
+                    // result.address = self
+                    // .block
+                    // .block_on(async { self.0.hex_to_bech32(&result.address, None).await })?;
+                    result
+                })
+                .collect();
 
         Ok(result)
     }
@@ -130,13 +129,11 @@ impl Client {
     }
 
     pub fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
-        Ok(crate::block_on(async { self.0.get_milestone(index).await })?
-            .into())
+        Ok(crate::block_on(async { self.0.get_milestone(index).await })?.into())
     }
 
     pub fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse> {
-        Ok(crate::block_on(async { self.0.get_milestone_utxo_changes(index).await })?
-            .into())
+        Ok(crate::block_on(async { self.0.get_milestone_utxo_changes(index).await })?.into())
     }
 
     pub fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
@@ -217,8 +214,7 @@ impl Client {
     }
 
     pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
-        let res = crate::block_on(async { self.0.hex_to_bech32(hex, bech32_hrp).await })
-            .into();
+        let res = crate::block_on(async { self.0.hex_to_bech32(hex, bech32_hrp).await }).into();
         match res {
             Ok(s) => Ok(s),
             Err(e) => Err(anyhow!(e.to_string())),

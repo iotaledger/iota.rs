@@ -1,27 +1,24 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{
-    Seed as RustSeed,
-    api::{
-        GetAddressesBuilder as RustGetAddressesBuilderApi,
-    },
-    bee_message::prelude::{Address as RustAddress},
+    api::GetAddressesBuilder as RustGetAddressesBuilderApi,
+    bee_message::prelude::Address as RustAddress,
     bee_rest_api::types::{
         dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
-    }
+    },
+    Seed as RustSeed,
 };
 
-use std::{cell::RefCell,rc::Rc, ops::Range};
 use getset::{CopyGetters, Getters};
 use std::{
+    cell::RefCell,
     convert::From,
     fmt::{Display, Formatter},
+    ops::Range,
+    rc::Rc,
 };
 
-use crate::{
-    Result,
-    full_node_api::Client,
-};
+use crate::{full_node_api::Client, Result};
 use anyhow::anyhow;
 
 const ADDRESS_GAP_RANGE: usize = 20;
@@ -175,19 +172,19 @@ impl GetAddressesBuilderApi {
     pub fn finish(&self) -> Result<Vec<String>> {
         let fields = self.fields.borrow_mut().take().unwrap();
         let ret = crate::block_on(async {
-                let mut builder = RustGetAddressesBuilderApi::new(&fields.seed)
-                    .with_account_index(fields.account_index)
-                    .with_range(fields.range);
+            let mut builder = RustGetAddressesBuilderApi::new(&fields.seed)
+                .with_account_index(fields.account_index)
+                .with_range(fields.range);
 
-                if let Some(b) = fields.bech32_hrp {
-                    builder = builder.with_bech32_hrp(b);
-                }
-                if let Some(c) = fields.client {
-                    builder.with_client(c.borrow()).finish().await
-                } else {
-                    builder.finish().await
-                }
-            });
+            if let Some(b) = fields.bech32_hrp {
+                builder = builder.with_bech32_hrp(b);
+            }
+            if let Some(c) = fields.client {
+                builder.with_client(c.borrow()).finish().await
+            } else {
+                builder.finish().await
+            }
+        });
 
         match ret {
             Ok(e) => Ok(e),
@@ -196,14 +193,12 @@ impl GetAddressesBuilderApi {
     }
 }
 
-/*
-
-    /// Consume the builder and get the vector of public and internal addresses bech32 encoded
-    pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
-        
-    }
-    /// Consume the builder and get the vector of public and internal addresses
-    pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
-
-    }
-}*/
+// Consume the builder and get the vector of public and internal addresses bech32 encoded
+// pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
+//
+// }
+// Consume the builder and get the vector of public and internal addresses
+// pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
+//
+// }
+// }
