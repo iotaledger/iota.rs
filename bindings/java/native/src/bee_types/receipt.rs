@@ -5,7 +5,8 @@ use getset::{CopyGetters, Getters};
 use std::fmt::{Display, Formatter};
 
 use crate::classes::address::AddressDto;
-use bee_rest_api::types::dtos::{
+
+use iota_client::bee_rest_api::types::dtos::{
     MigratedFundsEntryDto as RustMigratedFundsEntryDto, PayloadDto as RustPayloadDto, ReceiptDto as RustReceiptDto,
     ReceiptPayloadDto as RustReceiptPayloadDto,
 };

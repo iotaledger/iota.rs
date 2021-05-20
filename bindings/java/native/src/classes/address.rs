@@ -21,7 +21,6 @@ use std::{
 use crate::{
     Result,
     full_node_api::Client,
-    seed::Seed,
 };
 use anyhow::anyhow;
 
@@ -114,7 +113,7 @@ impl Address {
 }
 
 struct GetAddressesBuilderApiInternal {
-    seed: Seed,
+    seed: RustSeed,
     account_index: usize,
     range: Range<usize>,
     bech32_hrp: Option<String>,
@@ -126,9 +125,9 @@ pub struct GetAddressesBuilderApi {
 }
 
 impl GetAddressesBuilderApi {
-    pub fn new(seed: Seed) -> Self {
+    pub fn new(seed: &str) -> Self {
         let internal = GetAddressesBuilderApiInternal {
-            seed,
+            seed: RustSeed::from_bytes(seed.as_bytes()),
             account_index: 0,
             range: 0..ADDRESS_GAP_RANGE,
             bech32_hrp: None,
@@ -175,12 +174,8 @@ impl GetAddressesBuilderApi {
 
     pub fn finish(&self) -> Result<Vec<String>> {
         let fields = self.fields.borrow_mut().take().unwrap();
-        let ret = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async move {
-                let mut builder = RustGetAddressesBuilderApi::new(fields.seed.to_inner())
+        let ret = crate::block_on(async {
+                let mut builder = RustGetAddressesBuilderApi::new(&fields.seed)
                     .with_account_index(fields.account_index)
                     .with_range(fields.range);
 

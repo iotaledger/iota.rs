@@ -11,6 +11,14 @@ mod java_glue;
 
 pub use crate::{bee_types::*, classes::*, java_glue::*};
 
-pub use smol::block_on;
-
 pub use anyhow::{Error, Result};
+
+use tokio::runtime::Runtime;
+use once_cell::sync::OnceCell;
+use std::sync::Mutex;
+
+pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
+    static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();
+    let runtime = INSTANCE.get_or_init(|| Mutex::new(Runtime::new().unwrap()));
+    runtime.lock().unwrap().block_on(cb)
+}

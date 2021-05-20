@@ -80,11 +80,7 @@ impl ClientBuilder {
     }
 
     pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder {
-        let new_builder = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async move {
+        let new_builder = crate::block_on(async move {
                 self.builder
                     .borrow_mut()
                     .take()
@@ -144,11 +140,9 @@ impl ClientBuilder {
     }
 
     pub fn finish(&mut self) -> Result<Client> {
-        let client = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async move { self.builder.borrow_mut().take().unwrap().finish().await.unwrap() });
+        let client = crate::block_on(async move { 
+            self.builder.borrow_mut().take().unwrap().finish().await.unwrap() 
+        });
 
         Ok(Client::try_from(client).unwrap())
     }

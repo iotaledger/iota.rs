@@ -11,20 +11,22 @@ crate-type = ["cdylib"]
 
 [dependencies]
 iota-client = { path = "../../../iota-client", features = [] }
-bee-rest-api = "0.1"
-bee-message = "0.1"
+
+# Java gen
+jni = "0.19" # Used in directly verifying binding linkage
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
 
 log = "0.4.6"
 chrono = "0.4.6"
 env_logger = "0.8"
-smol = "1.2.5"
 anyhow = "1.0.38"
 hex = "0.4"
-jni = "0.19" # Used in directly verifying binding linkage
 getset = "0.1"
 
-flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
+# await block_on etc management
 tokio = { version = "1.2" }
+once_cell = "1.4"
+futures = "0.3"
 
 [build-dependencies]
 flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }

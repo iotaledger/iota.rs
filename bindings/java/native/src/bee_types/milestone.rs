@@ -1,10 +1,10 @@
 // Copyright 2020 IOTA Stiftung
-// SPDX-License-Identifier: Apache-2.0
-use bee_rest_api::types::responses::UtxoChangesResponse as RustUtxoChangesResponse;
+// SPDX-License-Identifier: Apache-2.
 use getset::{CopyGetters, Getters};
 use iota_client::{
     MilestoneResponse as RustMilestoneResponse,
     bee_message::MessageId,
+    bee_rest_api::types::responses::UtxoChangesResponse as RustUtxoChangesResponse,
 };
 
 #[derive(Getters, CopyGetters, PartialEq)]

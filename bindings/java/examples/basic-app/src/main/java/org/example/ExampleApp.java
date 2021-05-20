@@ -1,5 +1,7 @@
 package org.example;
 
+import java.util.Arrays;
+
 import org.iota.client.*;
 import org.iota.client.local.*;
 
@@ -60,6 +62,9 @@ public class ExampleApp {
                     // Optional authentication
                     .finish();
 
+            String seed = "MY_SECRET_SEED";
+            String[] addresses = new GetAddressesBuilderApi(seed).with_client(iota).with_range(0, 10).finish();
+            System.out.println(Arrays.toString(addresses));
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
         }

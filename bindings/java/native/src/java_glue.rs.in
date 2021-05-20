@@ -11,7 +11,6 @@ use crate::{
     message::*,
     address::*,
     ed25519::*,
-    seed::*,
 };
 use iota_client::{
     Seed as RustSeed, Api, bee_message::MessageId, 
@@ -23,6 +22,7 @@ use anyhow::{
     anyhow,
     Result as Result,
 };
+
 
 foreign_class!(class RustLogging {
     fn init() {
@@ -474,15 +474,12 @@ foreign_class!(
 foreign_class!(
     class GetAddressesBuilderApi {
         self_type GetAddressesBuilderApi;
-        private constructor = empty;
-        fn GetAddressesBuilderApi::new(seed: Seed) -> GetAddressesBuilderApi;
-    }
-);
-
-foreign_class!(
-    class Seed {
-        self_type Seed;
-        private constructor = empty;
+        constructor GetAddressesBuilderApi::new(seed: &str) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilderApi::with_account_index(&self, account_index: usize) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilderApi::with_range(&self, start: usize, end: usize) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilderApi::with_bech32_hrp(&self, bech32_hrp: String) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilderApi::with_client(&self, client: Client) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilderApi::finish(&self) -> Result<Vec<String>>;
     }
 );
 
