@@ -1,9 +1,9 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{
-    Seed,
+    Seed as RustSeed,
     api::{
-        GetAddressesBuilder as RustGetAddressesBuilderApi
+        GetAddressesBuilder as RustGetAddressesBuilderApi,
     },
     bee_message::prelude::{Address as RustAddress},
     bee_rest_api::types::{
@@ -11,7 +11,7 @@ use iota_client::{
     }
 };
 
-use std::{cell::RefCell,rc::Rc};
+use std::{cell::RefCell,rc::Rc, ops::Range};
 use getset::{CopyGetters, Getters};
 use std::{
     convert::From,
@@ -21,8 +21,11 @@ use std::{
 use crate::{
     Result,
     full_node_api::Client,
+    seed::Seed,
 };
 use anyhow::anyhow;
+
+const ADDRESS_GAP_RANGE: usize = 20;
 
 #[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
 pub struct AddressDto {
@@ -110,69 +113,95 @@ impl Address {
     // pub fn verify(&self, msg: &[u8], signature: &SignatureUnlock) -> Result<(), Error> {
 }
 
-pub struct GetAddressesBuilderApi<'a> {
-    builder: Rc<RefCell<Option<RustGetAddressesBuilderApi<'a>>>>,
+struct GetAddressesBuilderApiInternal {
+    seed: Seed,
+    account_index: usize,
+    range: Range<usize>,
+    bech32_hrp: Option<String>,
+    client: Option<Client>,
 }
 
-impl<'a> Default for GetAddressesBuilderApi<'a> {
-    fn default() -> Self {
-        Self {
-            builder: Rc::new(RefCell::new(Option::from(RustGetAddressesBuilderApi::default()))),
-        }
-    }
+pub struct GetAddressesBuilderApi {
+    fields: Rc<RefCell<Option<GetAddressesBuilderApiInternal>>>,
 }
 
-impl<'a> GetAddressesBuilderApi<'a> {
-    fn new_with_builder(builder: RustGetAddressesBuilderApi<'a>) -> Self {
+impl GetAddressesBuilderApi {
+    pub fn new(seed: Seed) -> Self {
+        let internal = GetAddressesBuilderApiInternal {
+            seed,
+            account_index: 0,
+            range: 0..ADDRESS_GAP_RANGE,
+            bech32_hrp: None,
+            client: None,
+        };
         Self {
-            builder: Rc::new(RefCell::new(Option::from(builder))),
+            fields: Rc::new(RefCell::new(Option::from(internal))),
         }
     }
-    
-    pub fn new(seed: String) -> Self {
-        let rust_seed = Seed::from_bytes(&hex::decode(seed).unwrap());
 
+    fn new_with_fields(fields: GetAddressesBuilderApiInternal) -> Self {
         Self {
-            builder: Rc::new(RefCell::new(Option::from(RustGetAddressesBuilderApi::new(&rust_seed)))),
+            fields: Rc::new(RefCell::new(Option::from(fields))),
         }
-    }
-
-    /// Provide a client to get the bech32_hrp from the node
-    pub fn with_client(self, client: Client) -> Self {
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_client(client.borrow());
-        GetAddressesBuilderApi::new_with_builder(new_builder)
     }
 
     /// Set the account index
     pub fn with_account_index(&self, account_index: usize) -> Self {
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_account_index(account_index);
-        GetAddressesBuilderApi::new_with_builder(new_builder)
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.account_index = account_index;
+        GetAddressesBuilderApi::new_with_fields(fields)
     }
 
     /// Set range to the builder
     pub fn with_range(&self, start: usize, end: usize) -> Self {
-        let range = start..end;
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_range(range);
-        GetAddressesBuilderApi::new_with_builder(new_builder)
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.range = start..end;
+        GetAddressesBuilderApi::new_with_fields(fields)
+    }
+
+    /// Set client to the builder
+    pub fn with_client(&self, client: Client) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.client = Some(client);
+        GetAddressesBuilderApi::new_with_fields(fields)
     }
 
     /// Set bech32 human readable part (hrp)
     pub fn with_bech32_hrp(&self, bech32_hrp: String) -> Self {
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_bech32_hrp(bech32_hrp);
-        GetAddressesBuilderApi::new_with_builder(new_builder)
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.bech32_hrp = Some(bech32_hrp);
+        GetAddressesBuilderApi::new_with_fields(fields)
     }
 
-    /*
-    /// Consume the builder and get a vector of public addresses bech32 encoded
-    pub async fn finish(self) -> Result<Vec<String>> {
-        let client = tokio::runtime::Builder::new_current_thread()
+    pub fn finish(&self) -> Result<Vec<String>> {
+        let fields = self.fields.borrow_mut().take().unwrap();
+        let ret = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap()
-            .block_on(async move { self.builder.borrow_mut().take().unwrap().finish().await.unwrap() });
+            .block_on(async move {
+                let mut builder = RustGetAddressesBuilderApi::new(fields.seed.to_inner())
+                    .with_account_index(fields.account_index)
+                    .with_range(fields.range);
 
-        Ok(Client::try_from(client).unwrap())
+                if let Some(b) = fields.bech32_hrp {
+                    builder = builder.with_bech32_hrp(b);
+                }
+                if let Some(c) = fields.client {
+                    builder.with_client(c.borrow()).finish().await
+                } else {
+                    builder.finish().await
+                }
+            });
+
+        match ret {
+            Ok(e) => Ok(e),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
     }
+}
+
+/*
 
     /// Consume the builder and get the vector of public and internal addresses bech32 encoded
     pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
@@ -181,5 +210,5 @@ impl<'a> GetAddressesBuilderApi<'a> {
     /// Consume the builder and get the vector of public and internal addresses
     pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
 
-    }*/
-}
+    }
+}*/

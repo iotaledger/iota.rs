@@ -11,9 +11,14 @@ use crate::{
     message::*,
     address::*,
     ed25519::*,
+    seed::*,
 };
-
-use iota_client::{Api, bee_message::MessageId};
+use iota_client::{
+    Seed as RustSeed, Api, bee_message::MessageId, 
+    api::{
+        GetAddressesBuilder as RustGetAddressesBuilderApi
+    },
+};
 use anyhow::{
     anyhow,
     Result as Result,
@@ -463,6 +468,21 @@ foreign_class!(
         private constructor = empty;
         fn AddressDto::kind(&self) -> u8;
         fn AddressDto::address(&self) -> &str;
+    }
+);
+
+foreign_class!(
+    class GetAddressesBuilderApi {
+        self_type GetAddressesBuilderApi;
+        private constructor = empty;
+        fn GetAddressesBuilderApi::new(seed: Seed) -> GetAddressesBuilderApi;
+    }
+);
+
+foreign_class!(
+    class Seed {
+        self_type Seed;
+        private constructor = empty;
     }
 );
 
