@@ -14,13 +14,11 @@ use iota_client::{
 };
 
 use crate::{
-    address::*, 
-    bee_types::*, 
-    client_builder::ClientBuilder, 
-    message::{
-        MessageWrap, ClientMessageBuilder, GetMessageBuilder,
-    },
+    address::*,
     balance::GetBalanceBuilderApi,
+    bee_types::*,
+    client_builder::ClientBuilder,
+    message::{ClientMessageBuilder, GetMessageBuilder, MessageWrap},
 };
 
 impl From<ClientRust> for Client {

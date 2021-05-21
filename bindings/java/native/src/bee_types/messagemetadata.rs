@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use getset::{CopyGetters, Getters};
-use iota_client::{
-    bee_rest_api::types::{
-        dtos::LedgerInclusionStateDto,
-        responses::MessageMetadataResponse as RustMessageMetadata,
-    },
+use iota_client::bee_rest_api::types::{
+    dtos::LedgerInclusionStateDto, responses::MessageMetadataResponse as RustMessageMetadata,
 };
 
 #[derive(Clone, Getters, CopyGetters)]
@@ -33,8 +30,7 @@ impl core::fmt::Display for MessageMetadata {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(
             f,
-            "message_id={}, parent_message_ids=({:?}), is_solid={}, referenced_by_milestone_index={:?}, milestone_index={:?}
-            , ledger_inclusion_state={:?}, conflict_reason={:?}, should_promote={:?}, should_reattach={:?}",
+            "message_id={}, parent_message_ids=({:?}), is_solid={}, referenced_by_milestone_index={:?}, milestone_index={:?}, ledger_inclusion_state={:?}, conflict_reason={:?}, should_promote={:?}, should_reattach={:?}",
             self.message_id,
             self.parent_message_ids,
             self.is_solid,
@@ -65,7 +61,7 @@ impl From<RustMessageMetadata> for MessageMetadata {
             ledger_inclusion_state: info.ledger_inclusion_state,
             conflict_reason: info.conflict_reason,
             should_promote: info.should_promote,
-            should_reattach: info.should_reattach
+            should_reattach: info.should_reattach,
         }
     }
 }

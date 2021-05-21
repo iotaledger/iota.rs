@@ -4,21 +4,18 @@ use std::{cell::RefCell, rc::Rc};
 
 use getset::{CopyGetters, Getters};
 use iota_client::{
-    Seed as RustSeed,
     api::ClientMessageBuilder as RustClientMessageBuilder,
+    bee_message::prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents},
     node::GetMessageBuilder as RustGetMessageBuilder,
-    bee_message::prelude::{
-        Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents,
-    },
+    Seed as RustSeed,
 };
 
 use anyhow::anyhow;
 
 use crate::{
-    Payload, Result, 
-    full_node_api::Client, bee_types::{
-        UtxoInput, MessageMetadata
-    }, 
+    bee_types::{MessageMetadata, UtxoInput},
+    full_node_api::Client,
+    Payload, Result,
 };
 
 #[derive(Clone, PartialEq)]
@@ -209,7 +206,6 @@ pub struct ClientMessageBuilderInternal<'a> {
     builder: RustClientMessageBuilder<'a>,
 }
 
-
 pub struct ClientMessageBuilder<'a> {
     fields: Rc<RefCell<Option<ClientMessageBuilderInternal<'a>>>>,
 }
@@ -218,7 +214,7 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
         let internal = ClientMessageBuilderInternal {
             seed: None,
-            builder: RustClientMessageBuilder::new(client.borrow())
+            builder: RustClientMessageBuilder::new(client.borrow()),
         };
         Self {
             fields: Rc::new(RefCell::new(Option::from(internal))),
@@ -270,15 +266,13 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn with_output(&self, address: &str, amount: u64) -> Result<Self> {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         let ret = fields.builder.with_output(address, amount);
-        
+
         match ret {
             Ok(b) => {
                 fields.builder = b;
                 Ok(ClientMessageBuilder::new_with_fields(fields))
-            },
-            Err(e) => {
-                Err(anyhow!(e.to_string()))
             }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 
@@ -286,15 +280,13 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn with_dust_allowance_output(&self, address: &str, amount: u64) -> Result<Self> {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         let ret = fields.builder.with_dust_allowance_output(address, amount);
-        
+
         match ret {
             Ok(b) => {
                 fields.builder = b;
                 Ok(ClientMessageBuilder::new_with_fields(fields))
-            },
-            Err(e) => {
-                Err(anyhow!(e.to_string()))
             }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 
@@ -302,15 +294,13 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn with_output_hex(&self, address: &str, amount: u64) -> Result<Self> {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         let ret = fields.builder.with_output_hex(address, amount);
-        
+
         match ret {
             Ok(b) => {
                 fields.builder = b;
                 Ok(ClientMessageBuilder::new_with_fields(fields))
-            },
-            Err(e) => {
-                Err(anyhow!(e.to_string()))
             }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 
@@ -357,39 +347,35 @@ pub struct GetMessageBuilder<'a> {
 
 impl<'a> GetMessageBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
-        Self {
-            client: client
-        }
+        Self { client: client }
     }
-    
+
     pub fn index_string(&self, index: &str) -> Result<Vec<MessageId>> {
         let res = crate::block_on(async {
-            RustGetMessageBuilder::new(self.client.borrow()).index(index.to_string().as_bytes()).await
+            RustGetMessageBuilder::new(self.client.borrow())
+                .index(index.to_string().as_bytes())
+                .await
         });
         match res {
-            Ok(r) => Ok(r.iter().map(|message_id| {
-                message_id.clone().into()
-            }).collect()),
+            Ok(r) => Ok(r.iter().map(|message_id| message_id.clone().into()).collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 
     pub fn index_vec(&self, index: Vec<u8>) -> Result<Vec<MessageId>> {
         let res = crate::block_on(async {
-            RustGetMessageBuilder::new(self.client.borrow()).index(index.clone()).await
+            RustGetMessageBuilder::new(self.client.borrow())
+                .index(index.clone())
+                .await
         });
         match res {
-            Ok(r) => Ok(r.iter().map(|message_id| {
-                message_id.clone().into()
-            }).collect()),
+            Ok(r) => Ok(r.iter().map(|message_id| message_id.clone().into()).collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 
     pub fn data(&self, message_id: MessageId) -> Result<Message> {
-        let res = crate::block_on(async {
-            RustGetMessageBuilder::new(self.client.borrow()).data(&message_id).await
-        });
+        let res = crate::block_on(async { RustGetMessageBuilder::new(self.client.borrow()).data(&message_id).await });
         match res {
             Ok(r) => Ok(r.into()),
             Err(e) => Err(anyhow!(e.to_string())),
@@ -398,7 +384,9 @@ impl<'a> GetMessageBuilder<'a> {
 
     pub fn metadata(&self, message_id: MessageId) -> Result<MessageMetadata> {
         let res = crate::block_on(async {
-            RustGetMessageBuilder::new(self.client.borrow()).metadata(&message_id).await
+            RustGetMessageBuilder::new(self.client.borrow())
+                .metadata(&message_id)
+                .await
         });
         match res {
             Ok(r) => Ok(r.into()),
@@ -407,9 +395,7 @@ impl<'a> GetMessageBuilder<'a> {
     }
 
     pub fn raw(&self, message_id: MessageId) -> Result<String> {
-        let res = crate::block_on(async {
-            RustGetMessageBuilder::new(self.client.borrow()).raw(&message_id).await
-        });
+        let res = crate::block_on(async { RustGetMessageBuilder::new(self.client.borrow()).raw(&message_id).await });
         match res {
             Ok(r) => Ok(r),
             Err(e) => Err(anyhow!(e.to_string())),
@@ -418,12 +404,12 @@ impl<'a> GetMessageBuilder<'a> {
 
     pub fn children(&self, message_id: MessageId) -> Result<Vec<MessageId>> {
         let res = crate::block_on(async {
-            RustGetMessageBuilder::new(self.client.borrow()).children(&message_id).await
+            RustGetMessageBuilder::new(self.client.borrow())
+                .children(&message_id)
+                .await
         });
         match res {
-            Ok(r) => Ok(r.iter().map(|message_id| {
-                message_id.clone().into()
-            }).collect()),
+            Ok(r) => Ok(r.iter().map(|message_id| message_id.clone().into()).collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{
     api::GetAddressesBuilder as RustGetAddressesBuilderApi,
-    node::GetAddressBuilder as RustGetAddressBuilderNode,
     bee_message::prelude::Address as RustAddress,
     bee_rest_api::types::{
         dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
     },
+    node::GetAddressBuilder as RustGetAddressBuilderNode,
     Seed as RustSeed,
 };
 
@@ -20,10 +20,9 @@ use std::{
 };
 
 use crate::{
-    full_node_api::Client, bee_types::{
-        OutputsOptions, UtxoInput
-    }, 
-    Result
+    bee_types::{OutputsOptions, UtxoInput},
+    full_node_api::Client,
+    Result,
 };
 
 use anyhow::anyhow;
@@ -63,8 +62,11 @@ pub struct BalanceAddressResponse {
 
 impl Display for BalanceAddressResponse {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "(address_type={}, address={}, balance={}, dust_allowed={})", 
-        self.address_type, self.address, self.balance, self.dust_allowed)
+        write!(
+            f,
+            "(address_type={}, address={}, balance={}, dust_allowed={})",
+            self.address_type, self.address, self.balance, self.dust_allowed
+        )
     }
 }
 
@@ -129,29 +131,29 @@ pub struct GetAddressBuilderNode<'a> {
 
 impl<'a> GetAddressBuilderNode<'a> {
     pub fn new(client: &'a Client) -> Self {
-        Self {
-            client: client
-        }
+        Self { client: client }
     }
 
     pub fn balance(&self, address: &str) -> Result<BalanceAddressResponse> {
         let res = crate::block_on(async {
-            RustGetAddressBuilderNode::new(self.client.borrow()).balance(address).await
+            RustGetAddressBuilderNode::new(self.client.borrow())
+                .balance(address)
+                .await
         });
         match res {
             Ok(r) => Ok(r.into()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
-    
+
     pub fn outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>> {
         let res = crate::block_on(async {
-            RustGetAddressBuilderNode::new(self.client.borrow()).outputs(address, options.to_inner()).await
+            RustGetAddressBuilderNode::new(self.client.borrow())
+                .outputs(address, options.to_inner())
+                .await
         });
         match res {
-            Ok(r) => Ok(r.iter().map(|input| {
-                input.clone().into()
-            }).collect()),
+            Ok(r) => Ok(r.iter().map(|input| input.clone().into()).collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
@@ -239,16 +241,14 @@ impl GetAddressesBuilderApi {
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
-    
-    /*
-    // Consume the builder and get the vector of public and internal addresses bech32 encoded
-    pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
-    
-    }
 
+    // Consume the builder and get the vector of public and internal addresses bech32 encoded
+    // pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
+    //
+    // }
+    //
     // Consume the builder and get the vector of public and internal addresses
-    pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
-    
-    }
-    */
+    // pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
+    //
+    // }
 }

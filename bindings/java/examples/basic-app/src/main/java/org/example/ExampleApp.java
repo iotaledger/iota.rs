@@ -115,4 +115,28 @@ public class ExampleApp {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
+    public static void getMessageMetadata() {
+        try {
+            Client iota = node();
+            Message message = iota.message().finish();
+
+            MessageMetadata metadata = iota.getMessage().metadata(message.id());
+
+            System.out.println("Message metadata: " + metadata);
+        } catch (ClientException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    public static void getDataMessage() {
+        Client iota = node();
+
+        Message message = iota.message().withIndexString("Hello").withData("Tangle".getBytes()).finish();
+
+        System.out.println("Message sent https://explorer.iota.org/testnet/message/" + message.id());
+
+        MessageId[] fetched_message_ids = iota.getMessage().indexString("Hello");
+        System.out.println("Messages with Hello index: " + Arrays.toString(fetched_message_ids));
+    }
 }

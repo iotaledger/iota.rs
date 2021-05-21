@@ -184,6 +184,8 @@ foreign_class!(
 
         fn Client::message(&self) -> ClientMessageBuilder;
 
+        fn Client::get_message(&self) -> GetMessageBuilder;
+
         /// Transforms bech32 to hex
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
         /// Transforms hex to bech32

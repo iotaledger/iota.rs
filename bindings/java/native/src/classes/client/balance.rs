@@ -1,14 +1,8 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use iota_client::{
-    api::GetBalanceBuilder as RustGetBalanceBuilderApi,
-    Seed as RustSeed,
-};
+use iota_client::{api::GetBalanceBuilder as RustGetBalanceBuilderApi, Seed as RustSeed};
 
-use std::{
-    cell::RefCell,
-    rc::Rc,
-};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{full_node_api::Client, Result};
 use anyhow::anyhow;
@@ -75,7 +69,8 @@ impl<'a> GetBalanceBuilderApi<'a> {
                 .with_account_index(fields.account_index)
                 .with_initial_address_index(fields.initial_address_index)
                 .with_gap_limit(fields.gap_limit)
-                .finish().await
+                .finish()
+                .await
         });
 
         match ret {

@@ -3,17 +3,14 @@
 use anyhow::Error;
 use getset::{CopyGetters, Getters};
 use std::{
-    fmt::Formatter,
-    fmt::Display,
     convert::TryFrom,
+    fmt::{Display, Formatter},
 };
 
 use iota_client::{
+    bee_rest_api::types::{dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse},
     node::OutputsOptions as RustOutputsOptions,
     OutputType,
-    bee_rest_api::types::{
-        dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse,
-    },
 };
 
 use crate::classes::address::AddressDto;
@@ -39,8 +36,15 @@ impl OutputResponse {
 
 impl Display for OutputResponse {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "(message_id={}, transaction_id={}, output_index={}, is_spent={}, output=({}))", 
-        self.message_id, self.transaction_id, self.output_index, self.is_spent, self.output.to_string())
+        write!(
+            f,
+            "(message_id={}, transaction_id={}, output_index={}, is_spent={}, output=({}))",
+            self.message_id,
+            self.transaction_id,
+            self.output_index,
+            self.is_spent,
+            self.output.to_string()
+        )
     }
 }
 

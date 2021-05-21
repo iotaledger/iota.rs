@@ -1,12 +1,8 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use std::fmt::{
-    Formatter, Display,
-};
+use std::fmt::{Display, Formatter};
 
-use iota_client::bee_message::prelude::{
-    UtxoInput as RustUtxoInput,
-};
+use iota_client::bee_message::prelude::UtxoInput as RustUtxoInput;
 
 pub struct UtxoInput(RustUtxoInput);
 
@@ -27,7 +23,12 @@ impl UtxoInput {
 }
 impl Display for UtxoInput {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "(transaction_id={}, index={})", hex::encode(self.transaction_id()), self.index())
+        write!(
+            f,
+            "(transaction_id={}, index={})",
+            hex::encode(self.transaction_id()),
+            self.index()
+        )
     }
 }
 
