@@ -20,6 +20,10 @@ impl UtxoInput {
     pub fn index(&self) -> u16 {
         self.0.output_id().index()
     }
+
+    pub fn to_inner_clone(&self) -> RustUtxoInput {
+        self.0.clone()
+    }
 }
 impl Display for UtxoInput {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {

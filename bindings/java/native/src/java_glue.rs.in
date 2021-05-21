@@ -486,6 +486,40 @@ foreign_class!(
     class ClientMessageBuilder {
         self_type ClientMessageBuilder<'a>;
         private constructor = empty;
+        /// Sets the seed.
+        fn ClientMessageBuilder::with_seed(&self, seed: &str) -> ClientMessageBuilder;
+
+        /// Sets the account index.
+        fn ClientMessageBuilder::with_account_index(&self, account_index: usize) -> ClientMessageBuilder;
+
+        /// Sets the index of the address to start looking for balance.
+        fn ClientMessageBuilder::with_initial_address_index(&self, initial_address_index: usize) -> ClientMessageBuilder;
+
+        /// Set a custom input(transaction output)
+        fn ClientMessageBuilder::with_input(&self, input: UtxoInput) -> ClientMessageBuilder;
+
+        /// Set a custom range in which to search for addresses for custom inputs. Default: 0..100
+        fn ClientMessageBuilder::with_input_range(&self, low: usize, high: usize) -> ClientMessageBuilder;
+
+        /// 
+        fn ClientMessageBuilder::with_output(&self, address: &str, amount: u64) -> Result<ClientMessageBuilder>;
+
+        /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+        fn ClientMessageBuilder::with_dust_allowance_output(&self, address: &str, amount: u64)  -> Result<ClientMessageBuilder>;
+
+        /// Set a transfer to the builder, address needs to be hex encoded
+        fn ClientMessageBuilder::with_output_hex(&self, address: &str, amount: u64)  -> Result<ClientMessageBuilder>;
+
+        /// Set indexation to the builder
+        fn ClientMessageBuilder::with_index_vec(&self, index: Vec<u8>)  -> ClientMessageBuilder;
+        /// Set indexation to the builder
+        fn ClientMessageBuilder::with_index_string(&self, index: &str)  -> ClientMessageBuilder;
+
+        /// Set data to the builder
+        fn ClientMessageBuilder::with_data(&self, data: Vec<u8>)  -> ClientMessageBuilder;
+
+        /// Consume the builder and return the message
+        fn ClientMessageBuilder::finish(&self) -> Result<Message>;
     }
 );
 

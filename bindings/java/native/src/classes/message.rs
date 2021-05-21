@@ -1,6 +1,6 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use std::{cell::RefCell, rc::Rc, ops::Range};
+use std::{cell::RefCell, rc::Rc};
 
 use getset::{CopyGetters, Getters};
 use iota_client::{
@@ -204,16 +204,8 @@ impl MessageBuilder {
 }
 
 pub struct ClientMessageBuilderInternal<'a> {
-    client: &'a Client,
     seed: Option<RustSeed>,
-    account_index: Option<usize>,
-    initial_address_index: Option<usize>,
-    inputs: Option<Vec<UtxoInput>>,
-    input_range: Range<usize>,
-    outputs: Vec<Output>,
-    index: Option<Box<[u8]>>,
-    data: Option<Vec<u8>>,
-    parents: Option<Vec<MessageId>>,
+    builder: RustClientMessageBuilder<'a>,
 }
 
 
@@ -224,16 +216,8 @@ pub struct ClientMessageBuilder<'a> {
 impl<'a> ClientMessageBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
         let internal = ClientMessageBuilderInternal {
-            client: client,
             seed: None,
-            account_index: None,
-            initial_address_index: None,
-            inputs: None,
-            input_range: 0..100,
-            outputs: Vec::new(),
-            index: None,
-            data: None,
-            parents: None,
+            builder: RustClientMessageBuilder::new(client.borrow())
         };
         Self {
             fields: Rc::new(RefCell::new(Option::from(internal))),
@@ -243,6 +227,125 @@ impl<'a> ClientMessageBuilder<'a> {
     fn new_with_fields(fields: ClientMessageBuilderInternal<'a>) -> Self {
         Self {
             fields: Rc::new(RefCell::new(Option::from(fields))),
+        }
+    }
+
+    /// Sets the seed.
+    pub fn with_seed(&self, seed: &str) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.seed = Some(RustSeed::from_bytes(seed.as_bytes()));
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    /// Sets the account index.
+    pub fn with_account_index(&self, account_index: usize) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_account_index(account_index);
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    /// Sets the index of the address to start looking for balance.
+    pub fn with_initial_address_index(&self, initial_address_index: usize) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_initial_address_index(initial_address_index);
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    /// Set a custom input(transaction output)
+    pub fn with_input(&self, input: UtxoInput) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_input(input.to_inner_clone());
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    /// Set a custom range in which to search for addresses for custom inputs. Default: 0..100
+    pub fn with_input_range(&self, low: usize, high: usize) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_input_range(low..high);
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    /// Set a transfer to the builder
+    pub fn with_output(&self, address: &str, amount: u64) -> Result<Self> {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        let ret = fields.builder.with_output(address, amount);
+        
+        match ret {
+            Ok(b) => {
+                fields.builder = b;
+                Ok(ClientMessageBuilder::new_with_fields(fields))
+            },
+            Err(e) => {
+                Err(anyhow!(e.to_string()))
+            }
+        }
+    }
+
+    /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+    pub fn with_dust_allowance_output(&self, address: &str, amount: u64) -> Result<Self> {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        let ret = fields.builder.with_dust_allowance_output(address, amount);
+        
+        match ret {
+            Ok(b) => {
+                fields.builder = b;
+                Ok(ClientMessageBuilder::new_with_fields(fields))
+            },
+            Err(e) => {
+                Err(anyhow!(e.to_string()))
+            }
+        }
+    }
+
+    /// Set a transfer to the builder, address needs to be hex encoded
+    pub fn with_output_hex(&self, address: &str, amount: u64) -> Result<Self> {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        let ret = fields.builder.with_output_hex(address, amount);
+        
+        match ret {
+            Ok(b) => {
+                fields.builder = b;
+                Ok(ClientMessageBuilder::new_with_fields(fields))
+            },
+            Err(e) => {
+                Err(anyhow!(e.to_string()))
+            }
+        }
+    }
+
+    /// Set indexation to the builder
+    pub fn with_index_vec(&self, index: Vec<u8>) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_index(index.clone());
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    /// Set indexation to the builder
+    pub fn with_index_string(&self, index: &str) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_index(index.to_string().as_bytes());
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    /// Set data to the builder
+    pub fn with_data(&self, data: Vec<u8>) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_data(data.clone());
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
+    pub fn finish(&self) -> Result<Message> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).finish().await
+            } else {
+                inner.builder.finish().await
+            }
+        });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 }
