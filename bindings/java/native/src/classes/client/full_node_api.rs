@@ -9,13 +9,17 @@ use std::{
 };
 
 use iota_client::{
-    bee_message::{input::UtxoInput as RustUTXOInput, MessageId},
+    bee_message::{input::UtxoInput as RustUtxoInput, MessageId},
     client::Client as ClientRust,
 };
 
-use crate::{address::*, bee_types::*, client_builder::ClientBuilder, message::MessageWrap};
-
-use tokio::runtime::Runtime;
+use crate::{
+    address::*, 
+    bee_types::*, 
+    client_builder::ClientBuilder, 
+    message::MessageWrap,
+    balance::GetBalanceBuilderApi,
+};
 
 impl From<ClientRust> for Client {
     fn from(client: ClientRust) -> Self {
@@ -80,7 +84,12 @@ impl Client {
     // }
 
     pub fn get_output(&self, output_id: String) -> Result<OutputResponse> {
-        Ok(crate::block_on(async { self.0.get_output(&RustUTXOInput::from_str(&output_id)?).await })?.into())
+        Ok(crate::block_on(async { self.0.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
+    }
+
+    /// GET /api/v1/addresses/{address} endpoint
+    pub fn get_address(&self) -> GetAddressBuilderNode {
+        GetAddressBuilderNode::new(self)
     }
 
     pub fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
@@ -91,11 +100,11 @@ impl Client {
     }
 
     pub fn get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>> {
-        let mut result: Vec<BalanceAddressResponse> =
+        let result: Vec<BalanceAddressResponse> =
             crate::block_on(async { self.0.get_address_balances(&addresses).await })?
                 .into_iter()
                 .map(|b| {
-                    let mut result: BalanceAddressResponse = b.into();
+                    let result: BalanceAddressResponse = b.into();
                     // TODO
                     // result.address = self
                     // .block
@@ -112,10 +121,10 @@ impl Client {
         output_ids: Option<Vec<String>>,
         addresses: Option<Vec<String>>,
     ) -> Result<Vec<OutputResponse>> {
-        let output_ids: Vec<RustUTXOInput> = output_ids
+        let output_ids: Vec<RustUtxoInput> = output_ids
             .unwrap_or_default()
             .into_iter()
-            .map(|input| RustUTXOInput::from_str(&input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
+            .map(|input| RustUtxoInput::from_str(&input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
             .collect();
         let output_metadata_vec = crate::block_on(async {
             self.0
@@ -201,6 +210,15 @@ impl Client {
             Ok(w) => Ok(MessageWrap::new(w.0, w.1.into())),
             Err(e) => Err(anyhow!(e.to_string())),
         }
+    }
+
+    // HIGH LEVEL API
+
+    /// Return the balance for a provided seed and its wallet chain account index.
+    /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
+    /// balance address.
+    pub fn get_balance(&self, seed: &str) -> GetBalanceBuilderApi {
+        GetBalanceBuilderApi::new(self, seed)
     }
 
     // UTIL BELOW

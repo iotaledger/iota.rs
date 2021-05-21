@@ -6,6 +6,7 @@ use std::{
 use crate::{
     client_builder::*,
     full_node_api::*,
+    balance::*,
     jni_c_header::*,
     bee_types::*,
     message::*,
@@ -13,10 +14,7 @@ use crate::{
     ed25519::*,
 };
 use iota_client::{
-    Seed as RustSeed, Api, bee_message::MessageId, 
-    api::{
-        GetAddressesBuilder as RustGetAddressesBuilderApi
-    },
+    Api, bee_message::MessageId
 };
 use anyhow::{
     anyhow,
@@ -125,6 +123,9 @@ foreign_class!(
         /// Find an output by its transaction_id and corresponding output_index.
         fn Client::get_output(&self, output_id: String) -> Result<OutputResponse>;
 
+        /// GET /api/v1/addresses/{address} endpoint
+        fn Client::get_address(&self) -> GetAddressBuilderNode;
+
         /// Return the balance in iota for the given address; No seed or security level needed to do this
         /// since we are only checking and already know the address.
         fn Client::get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse>;
@@ -166,6 +167,11 @@ foreign_class!(
         
         /// Promote a message without checking if it should be promoted
         fn Client::promote_unchecked(&self, message_id: MessageId) -> Result<MessageWrap>;
+
+        /// Return the balance for a provided seed and its wallet chain account index.
+        /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
+        /// balance address.
+        fn Client::get_balance(&self, seed: &str) -> GetBalanceBuilderApi;
 
         /// Transforms bech32 to hex
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
@@ -215,10 +221,11 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(PartialEq, camelCaseAliases)]
+    #[derive(PartialEq, camelCaseAliases, Display)]
     class BalanceAddressResponse {
         self_type BalanceAddressResponse;
         private constructor = empty;
+        private fn BalanceAddressResponse::to_string(&self) -> String; alias to_string;
         private fn BalanceAddressResponse::eq(&self, o: &BalanceAddressResponse) -> bool; alias rustEq;
         fn BalanceAddressResponse::address_type(&self) -> u8;
         fn BalanceAddressResponse::address(&self) -> &str;
@@ -228,10 +235,11 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class OutputResponse {
         self_type OutputResponse;
         private constructor = empty;
+        private fn OutputResponse::to_string(&self) -> String; alias to_string;
         fn OutputResponse::message_id(&self) -> &str;
         fn OutputResponse::transaction_id(&self) -> &str;
         fn OutputResponse::output_index(&self) -> u16;
@@ -250,6 +258,28 @@ foreign_class!(
         fn OutputDto::as_signature_locked_single_output_dto(&self) -> Result<SignatureLockedSingleOutputDto>;
         fn OutputDto::as_signature_locked_dust_allowance_output_dto(&self) -> Result<SignatureLockedDustAllowanceOutputDto>;
         fn OutputDto::as_treasury_output(&self) -> Result<TreasuryOutputDto>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
+    class OutputsOptions {
+        self_type OutputsOptions;
+        constructor OutputsOptions::default() -> OutputsOptions;
+        private fn OutputsOptions::to_string(&self) -> String; alias to_string;
+        private fn OutputsOptions::include_spent(&mut self, include_spent: bool);
+        private fn OutputsOptions::output_type(&mut self, output_type: Option<OutputKind>);
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
+    class UtxoInput {
+        self_type UtxoInput;
+        private constructor = empty;
+        private fn UtxoInput::to_string(&self) -> String; alias to_string;
+        private fn UtxoInput::transaction_id(&self) -> Vec<u8>;
+        private fn UtxoInput::index(&self) -> u16;
     }
 );
 
@@ -472,13 +502,52 @@ foreign_class!(
 );
 
 foreign_class!(
+    class GetBalanceBuilderApi {
+        self_type GetBalanceBuilderApi<'a>;
+        private constructor = empty;
+        
+        /// Sets the account index.
+        fn GetBalanceBuilderApi::with_account_index(&self, account_index: usize) -> GetBalanceBuilderApi;
+
+        /// Sets the index of the address to start looking for balance.
+        fn GetBalanceBuilderApi::with_initial_address_index(&self, initial_address_index: usize) -> GetBalanceBuilderApi;
+        
+        /// Sets the gap limit to specify how many addresses will be checked each round.
+        /// If gap_limit amount of addresses in a row have no balance the function will return.
+        fn GetBalanceBuilderApi::with_gap_limit(&self, gap_limit: usize) -> GetBalanceBuilderApi;
+        
+        /// Consume the builder and get the API result
+        fn GetBalanceBuilderApi::finish(&self) -> Result<u64>;
+    }
+);
+
+foreign_class!(
+    class GetAddressBuilderNode {
+        self_type GetAddressBuilderNode<'a>;
+        private constructor = empty;
+        fn GetAddressBuilderNode::balance(&self, address: &str) -> Result<BalanceAddressResponse>;
+        fn GetAddressBuilderNode::outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>>;
+    }
+);
+
+foreign_class!(
     class GetAddressesBuilderApi {
         self_type GetAddressesBuilderApi;
         constructor GetAddressesBuilderApi::new(seed: &str) -> GetAddressesBuilderApi;
+        
+        /// Set the account index
         fn GetAddressesBuilderApi::with_account_index(&self, account_index: usize) -> GetAddressesBuilderApi;
+        
+        /// Set range to the builder
         fn GetAddressesBuilderApi::with_range(&self, start: usize, end: usize) -> GetAddressesBuilderApi;
+        
+        /// Set bech32 human readable part (hrp)
         fn GetAddressesBuilderApi::with_bech32_hrp(&self, bech32_hrp: String) -> GetAddressesBuilderApi;
+        
+        /// Set client to the builder
         fn GetAddressesBuilderApi::with_client(&self, client: Client) -> GetAddressesBuilderApi;
+        
+        
         fn GetAddressesBuilderApi::finish(&self) -> Result<Vec<String>>;
     }
 );

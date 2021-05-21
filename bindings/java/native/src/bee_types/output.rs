@@ -2,10 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 use anyhow::Error;
 use getset::{CopyGetters, Getters};
-use std::convert::TryFrom;
+use std::{
+    fmt::Formatter,
+    fmt::Display,
+    convert::TryFrom,
+};
 
-use iota_client::bee_rest_api::types::{
-    dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse,
+use iota_client::{
+    node::OutputsOptions as RustOutputsOptions,
+    OutputType,
+    bee_rest_api::types::{
+        dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse,
+    },
 };
 
 use crate::classes::address::AddressDto;
@@ -29,6 +37,13 @@ impl OutputResponse {
     }
 }
 
+impl Display for OutputResponse {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(message_id={}, transaction_id={}, output_index={}, is_spent={}, output=({}))", 
+        self.message_id, self.transaction_id, self.output_index, self.is_spent, self.output.to_string())
+    }
+}
+
 impl From<RustOutputResponse> for OutputResponse {
     fn from(output: RustOutputResponse) -> Self {
         Self {
@@ -43,10 +58,19 @@ impl From<RustOutputResponse> for OutputResponse {
     }
 }
 
+#[derive(Debug)]
 pub enum OutputKind {
     SignatureLockedSingle = 1,
     SignatureLockedDustAllowance = 2,
     Treasury = 3,
+}
+
+pub fn output_kind_to_type(kind: OutputKind) -> OutputType {
+    match kind {
+        OutputKind::SignatureLockedSingle => OutputType::SignatureLockedSingle,
+        OutputKind::SignatureLockedDustAllowance => OutputType::SignatureLockedDustAllowance,
+        _ => unimplemented!(),
+    }
 }
 
 #[derive(Clone)]
@@ -152,4 +176,33 @@ pub struct TreasuryOutputDto {
     pub kind: u8,
     #[getset(get_copy = "pub")]
     pub amount: u64,
+}
+
+#[derive(Default, Clone)]
+pub struct OutputsOptions {
+    options: RustOutputsOptions,
+}
+
+impl OutputsOptions {
+    /// Whether the query should include spent outputs or not.
+    pub fn include_spent(&mut self, include_spent: bool) {
+        self.options.include_spent = include_spent;
+    }
+    /// The output type filter.
+    pub fn output_type(&mut self, output_type: Option<OutputKind>) {
+        self.options.output_type = match output_type {
+            Some(kind) => Some(output_kind_to_type(kind)),
+            None => None,
+        };
+    }
+
+    pub fn to_inner(&self) -> RustOutputsOptions {
+        self.options.clone()
+    }
+}
+
+impl Display for OutputsOptions {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({}, {:?})", self.options.include_spent, self.options.output_type)
+    }
 }

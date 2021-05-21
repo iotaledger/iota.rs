@@ -3,5 +3,5 @@
 
 pub mod client_builder;
 pub mod full_node_api;
-pub mod high_level_api;
+pub mod balance;
 pub mod mqtt;

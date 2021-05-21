@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{
     api::GetAddressesBuilder as RustGetAddressesBuilderApi,
+    node::GetAddressBuilder as RustGetAddressBuilderNode,
     bee_message::prelude::Address as RustAddress,
     bee_rest_api::types::{
         dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
@@ -18,10 +19,16 @@ use std::{
     rc::Rc,
 };
 
-use crate::{full_node_api::Client, Result};
+use crate::{
+    full_node_api::Client, bee_types::{
+        OutputsOptions, UtxoInput
+    }, 
+    Result
+};
+
 use anyhow::anyhow;
 
-const ADDRESS_GAP_RANGE: usize = 20;
+pub const ADDRESS_GAP_RANGE: usize = 20;
 
 #[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
 pub struct AddressDto {
@@ -42,7 +49,7 @@ impl From<RustAddressDto> for AddressDto {
     }
 }
 
-#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
+#[derive(Clone, Getters, CopyGetters, PartialEq)]
 pub struct BalanceAddressResponse {
     #[getset(get_copy = "pub")]
     pub address_type: u8,
@@ -52,6 +59,13 @@ pub struct BalanceAddressResponse {
     pub balance: u64,
     #[getset(get_copy = "pub")]
     pub dust_allowed: bool,
+}
+
+impl Display for BalanceAddressResponse {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(address_type={}, address={}, balance={}, dust_allowed={})", 
+        self.address_type, self.address, self.balance, self.dust_allowed)
+    }
 }
 
 impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
@@ -107,6 +121,40 @@ impl Address {
     //
     // Verifies a [`SignatureUnlock`] for a message against the [`Address`].
     // pub fn verify(&self, msg: &[u8], signature: &SignatureUnlock) -> Result<(), Error> {
+}
+
+pub struct GetAddressBuilderNode<'a> {
+    client: &'a Client,
+}
+
+impl<'a> GetAddressBuilderNode<'a> {
+    pub fn new(client: &'a Client) -> Self {
+        Self {
+            client: client
+        }
+    }
+
+    pub fn balance(&self, address: &str) -> Result<BalanceAddressResponse> {
+        let res = crate::block_on(async {
+            RustGetAddressBuilderNode::new(self.client.borrow()).balance(address).await
+        });
+        match res {
+            Ok(r) => Ok(r.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+    
+    pub fn outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>> {
+        let res = crate::block_on(async {
+            RustGetAddressBuilderNode::new(self.client.borrow()).outputs(address, options.to_inner()).await
+        });
+        match res {
+            Ok(r) => Ok(r.iter().map(|input| {
+                input.clone().into()
+            }).collect()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
 }
 
 struct GetAddressesBuilderApiInternal {
@@ -191,14 +239,16 @@ impl GetAddressesBuilderApi {
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
-}
+    
+    /*
+    // Consume the builder and get the vector of public and internal addresses bech32 encoded
+    pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
+    
+    }
 
-// Consume the builder and get the vector of public and internal addresses bech32 encoded
-// pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
-//
-// }
-// Consume the builder and get the vector of public and internal addresses
-// pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
-//
-// }
-// }
+    // Consume the builder and get the vector of public and internal addresses
+    pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
+    
+    }
+    */
+}
