@@ -1,3 +1,3 @@
 # API Reference
 
-{{#include ../../../bindings/nodejs/README.md:31:}}
+{{#include ../../../bindings/nodejs/README.md:39:}}
