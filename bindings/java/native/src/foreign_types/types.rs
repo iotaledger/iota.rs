@@ -1,6 +1,8 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::convert::TryInto;
+
 foreign_typemap!(
     ($p:r_type) &[u8] => Vec<i16> {
         $out = $p.iter().cloned().map(|x| x as i16).collect();
@@ -67,6 +69,24 @@ foreign_typemap!(
             $out = java.util.Optional.of(java.lang.Boolean.valueOf($p == 1 ? true : false));
         }
 "#;
+);
+
+foreign_typemap!(
+    ($p:r_type) Option<u32> => jlong {
+        $out = match $p {
+            Some(x) => x.try_into().unwrap(),
+            None => -1,
+        };
+    };
+);
+
+foreign_typemap!(
+    ($p:r_type) Option<u8> => jint {
+        $out = match $p {
+            Some(x) => x.try_into().unwrap(),
+            None => -1,
+        };
+    };
 );
 
 foreign_typemap!(

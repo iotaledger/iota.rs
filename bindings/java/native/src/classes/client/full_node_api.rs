@@ -18,7 +18,7 @@ use crate::{
     bee_types::*, 
     client_builder::ClientBuilder, 
     message::{
-        MessageWrap, ClientMessageBuilder,
+        MessageWrap, ClientMessageBuilder, GetMessageBuilder,
     },
     balance::GetBalanceBuilderApi,
 };
@@ -223,8 +223,14 @@ impl Client {
         GetBalanceBuilderApi::new(self, seed)
     }
 
+    /// A generic send function for easily sending transaction or indexation messages.
     pub fn message(&self) -> ClientMessageBuilder {
         ClientMessageBuilder::new(self)
+    }
+
+    /// GET /api/v1/messages/{messageId} endpoint
+    pub fn get_message(&self) -> GetMessageBuilder {
+        GetMessageBuilder::new(self)
     }
 
     // UTIL BELOW

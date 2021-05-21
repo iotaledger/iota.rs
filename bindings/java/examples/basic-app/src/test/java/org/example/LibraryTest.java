@@ -6,7 +6,7 @@ public class LibraryTest {
     @Test
     public void testSomeLibraryMethod() {
         try {
-            ExampleApp.getBalance();
+            ExampleApp.simpleMessage();
         } catch (Exception e) {
             e.printStackTrace();
         }

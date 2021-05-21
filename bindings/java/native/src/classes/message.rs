@@ -6,6 +6,7 @@ use getset::{CopyGetters, Getters};
 use iota_client::{
     Seed as RustSeed,
     api::ClientMessageBuilder as RustClientMessageBuilder,
+    node::GetMessageBuilder as RustGetMessageBuilder,
     bee_message::prelude::{
         Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents,
     },
@@ -16,7 +17,7 @@ use anyhow::anyhow;
 use crate::{
     Payload, Result, 
     full_node_api::Client, bee_types::{
-        UtxoInput
+        UtxoInput, MessageMetadata
     }, 
 };
 
@@ -345,6 +346,84 @@ impl<'a> ClientMessageBuilder<'a> {
         });
         match res {
             Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+}
+
+pub struct GetMessageBuilder<'a> {
+    client: &'a Client,
+}
+
+impl<'a> GetMessageBuilder<'a> {
+    pub fn new(client: &'a Client) -> Self {
+        Self {
+            client: client
+        }
+    }
+    
+    pub fn index_string(&self, index: &str) -> Result<Vec<MessageId>> {
+        let res = crate::block_on(async {
+            RustGetMessageBuilder::new(self.client.borrow()).index(index.to_string().as_bytes()).await
+        });
+        match res {
+            Ok(r) => Ok(r.iter().map(|message_id| {
+                message_id.clone().into()
+            }).collect()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn index_vec(&self, index: Vec<u8>) -> Result<Vec<MessageId>> {
+        let res = crate::block_on(async {
+            RustGetMessageBuilder::new(self.client.borrow()).index(index.clone()).await
+        });
+        match res {
+            Ok(r) => Ok(r.iter().map(|message_id| {
+                message_id.clone().into()
+            }).collect()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn data(&self, message_id: MessageId) -> Result<Message> {
+        let res = crate::block_on(async {
+            RustGetMessageBuilder::new(self.client.borrow()).data(&message_id).await
+        });
+        match res {
+            Ok(r) => Ok(r.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn metadata(&self, message_id: MessageId) -> Result<MessageMetadata> {
+        let res = crate::block_on(async {
+            RustGetMessageBuilder::new(self.client.borrow()).metadata(&message_id).await
+        });
+        match res {
+            Ok(r) => Ok(r.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn raw(&self, message_id: MessageId) -> Result<String> {
+        let res = crate::block_on(async {
+            RustGetMessageBuilder::new(self.client.borrow()).raw(&message_id).await
+        });
+        match res {
+            Ok(r) => Ok(r),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn children(&self, message_id: MessageId) -> Result<Vec<MessageId>> {
+        let res = crate::block_on(async {
+            RustGetMessageBuilder::new(self.client.borrow()).children(&message_id).await
+        });
+        match res {
+            Ok(r) => Ok(r.iter().map(|message_id| {
+                message_id.clone().into()
+            }).collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }

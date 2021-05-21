@@ -14,7 +14,8 @@ use crate::{
     ed25519::*,
 };
 use iota_client::{
-    Api, bee_message::MessageId
+    Api, bee_message::MessageId,
+    bee_rest_api::types::dtos::LedgerInclusionStateDto,
 };
 use anyhow::{
     anyhow,
@@ -66,6 +67,14 @@ foreign_enum!(
         SIGNATURE_LOCKED_SINGLE = OutputKind::SignatureLockedSingle,
         SIGNATURE_LOCKED_DUST_ALLOWANCE = OutputKind::SignatureLockedDustAllowance,
         TREASURY = OutputKind::Treasury,
+    }
+);
+
+foreign_enum!(
+    enum LedgerInclusionStateDto {
+        CONFLICTING = LedgerInclusionStateDto::Conflicting,
+        INCLUDED = LedgerInclusionStateDto::Included,
+        NO_TRANSACTION = LedgerInclusionStateDto::NoTransaction,
     }
 );
 
@@ -471,6 +480,7 @@ foreign_class!(
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
     class MessageBuilder {
         self_type MessageBuilder;
         constructor MessageBuilder::new() -> MessageBuilder;
@@ -483,6 +493,7 @@ foreign_class!(
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
     class ClientMessageBuilder {
         self_type ClientMessageBuilder<'a>;
         private constructor = empty;
@@ -520,6 +531,58 @@ foreign_class!(
 
         /// Consume the builder and return the message
         fn ClientMessageBuilder::finish(&self) -> Result<Message>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class GetMessageBuilder {
+        self_type GetMessageBuilder<'a>;
+        private constructor = empty;
+        
+        /// GET /api/v1/messages?index={Index} endpoint
+        /// Consume the builder and search for messages matching the index
+        fn GetMessageBuilder::index_string(&self, index: &str) -> Result<Vec<MessageId>>;
+
+        /// GET /api/v1/messages?index={Index} endpoint
+        /// Consume the builder and search for messages matching the index
+        fn GetMessageBuilder::index_vec(&self, index: Vec<u8>) -> Result<Vec<MessageId>>;
+
+        /// GET /api/v1/messages/{messageID} endpoint
+        /// Consume the builder and find a message by its identifer. This method returns the given message object.
+        fn GetMessageBuilder::data(&self, message_id: MessageId) -> Result<Message>;
+
+        /// GET /api/v1/messages/{messageID}/metadata endpoint
+        /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
+        fn GetMessageBuilder::metadata(&self, message_id: MessageId) -> Result<MessageMetadata>;
+
+        /// GET /api/v1/messages/{messageID}/raw endpoint
+        /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
+        fn GetMessageBuilder::raw(&self, message_id: MessageId) -> Result<String>;
+
+        /// GET /api/v1/messages/{messageID}/children endpoint
+        /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
+        fn GetMessageBuilder::children(&self, message_id: MessageId) -> Result<Vec<MessageId>>;
+    }
+);
+
+foreign_class!(
+    /// Response of GET /api/v1/messages/{message_id}/metadata.
+    /// Returns the metadata of a message.
+    #[derive(camelCaseAliases, Display)]
+    class MessageMetadata {
+        self_type MessageMetadata;
+        private constructor = empty;
+        private fn MessageMetadata::to_string(&self) -> String; alias to_string;
+        fn MessageMetadata::message_id(&self) -> &str;
+        fn MessageMetadata::parent_message_ids(&self) -> Vec<String>;
+        fn MessageMetadata::is_solid(&self) -> bool;
+        fn MessageMetadata::referenced_by_milestone_index(&self) -> Option<u32>;
+        fn MessageMetadata::milestone_index(&self) -> Option<u32>;
+        fn MessageMetadata::ledger_inclusion_state(&self) -> Option<LedgerInclusionStateDto>;
+        fn MessageMetadata::conflict_reason(&self) -> Option<u8>;
+        fn MessageMetadata::should_promote(&self) -> Option<bool>;
+        fn MessageMetadata::should_reattach(&self) -> Option<bool>;
     }
 );
 

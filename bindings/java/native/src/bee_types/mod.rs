@@ -13,6 +13,7 @@ mod treasury;
 
 mod gossip;
 mod info_response;
+mod messagemetadata;
 mod peers;
 
 pub use index::*;
@@ -27,4 +28,5 @@ pub use treasury::*;
 
 pub use gossip::*;
 pub use info_response::*;
+pub use messagemetadata::*;
 pub use peers::*;

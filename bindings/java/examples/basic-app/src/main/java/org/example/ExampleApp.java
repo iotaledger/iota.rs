@@ -8,7 +8,6 @@ import org.iota.client.local.*;
 public class ExampleApp {
 
     static {
-        System.out.println("hello?");
         NativeAPI.verifyLink();
     }
 
@@ -111,7 +110,7 @@ public class ExampleApp {
             Message message = iota.message().finish();
 
             System.out.println(
-                    "Empty message sent: https://explorer.iota.org/testnet/message/{}" + message.id().toString());
+                    "Empty message sent: https://explorer.iota.org/mainnet/message/" + message.id().toString());
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
         }
