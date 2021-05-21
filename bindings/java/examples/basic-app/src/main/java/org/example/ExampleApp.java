@@ -91,4 +91,29 @@ public class ExampleApp {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
+    public static void getOutputs() {
+        try {
+            Client iota = node();
+
+            String address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
+
+            UtxoInput[] outputs = iota.getAddress().outputs(address, new OutputsOptions());
+            System.out.println("The outputs of address " + address + " are: " + Arrays.toString(outputs));
+        } catch (ClientException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    public static void simpleMessage() {
+        try {
+            Client iota = node();
+            Message message = iota.message().finish();
+
+            System.out.println(
+                    "Empty message sent: https://explorer.iota.org/testnet/message/{}" + message.id().toString());
+        } catch (ClientException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 }

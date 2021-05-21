@@ -173,6 +173,8 @@ foreign_class!(
         /// balance address.
         fn Client::get_balance(&self, seed: &str) -> GetBalanceBuilderApi;
 
+        fn Client::message(&self) -> ClientMessageBuilder;
+
         /// Transforms bech32 to hex
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
         /// Transforms hex to bech32
@@ -463,7 +465,7 @@ foreign_class!(
         fn Message::network_id(&self) -> u64;
         fn Message::id(&self) -> MessageId;
         fn Message::nonce(&self) -> u64;
-        // fn Message::parents(&self) -> Vec<MessageId>;
+        fn Message::parents(&self) -> Vec<MessageId>;
         // fn Message::payload(&self) -> Payload;
     }
 );
@@ -477,6 +479,13 @@ foreign_class!(
         //fn MessageBuilder::payload(&self payload: Payload) -> MessageBuilder;
         //fn MessageBuilder::nonce_provider(&self) -> MessageBuilder;
         fn MessageBuilder::finish(&self) -> Result<Message>;
+    }
+);
+
+foreign_class!(
+    class ClientMessageBuilder {
+        self_type ClientMessageBuilder<'a>;
+        private constructor = empty;
     }
 );
 

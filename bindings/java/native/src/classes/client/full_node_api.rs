@@ -17,7 +17,9 @@ use crate::{
     address::*, 
     bee_types::*, 
     client_builder::ClientBuilder, 
-    message::MessageWrap,
+    message::{
+        MessageWrap, ClientMessageBuilder,
+    },
     balance::GetBalanceBuilderApi,
 };
 
@@ -219,6 +221,10 @@ impl Client {
     /// balance address.
     pub fn get_balance(&self, seed: &str) -> GetBalanceBuilderApi {
         GetBalanceBuilderApi::new(self, seed)
+    }
+
+    pub fn message(&self) -> ClientMessageBuilder {
+        ClientMessageBuilder::new(self)
     }
 
     // UTIL BELOW

@@ -1,15 +1,24 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, ops::Range};
 
 use getset::{CopyGetters, Getters};
-use iota_client::bee_message::prelude::{
-    Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents,
+use iota_client::{
+    Seed as RustSeed,
+    api::ClientMessageBuilder as RustClientMessageBuilder,
+    bee_message::prelude::{
+        Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents,
+    },
 };
 
 use anyhow::anyhow;
 
-use crate::{Payload, Result};
+use crate::{
+    Payload, Result, 
+    full_node_api::Client, bee_types::{
+        UtxoInput
+    }, 
+};
 
 #[derive(Clone, PartialEq)]
 pub struct MessageWrap {
@@ -190,6 +199,50 @@ impl MessageBuilder {
         match msg {
             Ok(m) => Ok(m.into()),
             Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+}
+
+pub struct ClientMessageBuilderInternal<'a> {
+    client: &'a Client,
+    seed: Option<RustSeed>,
+    account_index: Option<usize>,
+    initial_address_index: Option<usize>,
+    inputs: Option<Vec<UtxoInput>>,
+    input_range: Range<usize>,
+    outputs: Vec<Output>,
+    index: Option<Box<[u8]>>,
+    data: Option<Vec<u8>>,
+    parents: Option<Vec<MessageId>>,
+}
+
+
+pub struct ClientMessageBuilder<'a> {
+    fields: Rc<RefCell<Option<ClientMessageBuilderInternal<'a>>>>,
+}
+
+impl<'a> ClientMessageBuilder<'a> {
+    pub fn new(client: &'a Client) -> Self {
+        let internal = ClientMessageBuilderInternal {
+            client: client,
+            seed: None,
+            account_index: None,
+            initial_address_index: None,
+            inputs: None,
+            input_range: 0..100,
+            outputs: Vec::new(),
+            index: None,
+            data: None,
+            parents: None,
+        };
+        Self {
+            fields: Rc::new(RefCell::new(Option::from(internal))),
+        }
+    }
+
+    fn new_with_fields(fields: ClientMessageBuilderInternal<'a>) -> Self {
+        Self {
+            fields: Rc::new(RefCell::new(Option::from(fields))),
         }
     }
 }
