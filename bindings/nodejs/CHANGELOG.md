@@ -1,5 +1,12 @@
 # Changelog
 
+## \[0.5.1]
+
+- Set git repo and rev to allow JS bindings to be built from source
+  - [282de0a6](https://github.com/iotaledger/iota.rs/commit/282de0a6db2e8522b040c7aee1228840a6296cf1) fix(ci,bindings/nodejs): Set rev to allow building from source ([#573](https://github.com/iotaledger/iota.rs/pull/573)) on 2021-05-20
+- Build bindings on Ubuntu 18.04 to support older versions of glibc
+  - [9ee430ca](https://github.com/iotaledger/iota.rs/commit/9ee430cac5b21d61676c239f91414a00831be309) fix(ci): Build Node.js bindings on Ubuntu 18.04 ([#576](https://github.com/iotaledger/iota.rs/pull/576)) on 2021-05-20
+
 ## \[0.5.0]
 
 - Add JWT support and fix default nodes.
