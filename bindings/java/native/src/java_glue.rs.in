@@ -530,7 +530,8 @@ foreign_class!(
 
         /// Set data to the builder
         fn ClientMessageBuilder::with_data(&self, data: Vec<u8>)  -> ClientMessageBuilder;
-
+        /// Set data to the builder
+        fn ClientMessageBuilder::with_data_string(&self, data: &str)  -> ClientMessageBuilder;
         /// Consume the builder and return the message
         fn ClientMessageBuilder::finish(&self) -> Result<Message>;
     }

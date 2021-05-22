@@ -325,6 +325,13 @@ impl<'a> ClientMessageBuilder<'a> {
         ClientMessageBuilder::new_with_fields(fields)
     }
 
+    /// Set data to the builder
+    pub fn with_data_string(&self, data: &str) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.builder = fields.builder.with_data(data.to_string().as_bytes().to_vec());
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
     pub fn finish(&self) -> Result<Message> {
         let inner = self.fields.borrow_mut().take().unwrap();
         let res = crate::block_on(async {

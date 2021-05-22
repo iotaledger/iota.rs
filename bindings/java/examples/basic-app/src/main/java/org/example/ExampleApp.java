@@ -132,7 +132,7 @@ public class ExampleApp {
     public static void getDataMessage() {
         Client iota = node();
 
-        Message message = iota.message().withIndexString("Hello").withData("Tangle".getBytes()).finish();
+        Message message = iota.message().withIndexString("Hello").withDataString("Tangle").finish();
 
         System.out.println("Message sent https://explorer.iota.org/testnet/message/" + message.id());
 
