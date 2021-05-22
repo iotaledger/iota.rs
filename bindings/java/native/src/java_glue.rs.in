@@ -182,9 +182,14 @@ foreign_class!(
         /// balance address.
         fn Client::get_balance(&self, seed: &str) -> GetBalanceBuilderApi;
 
+        /// A generic send function for easily sending transaction or indexation messages.
         fn Client::message(&self) -> ClientMessageBuilder;
 
+        /// GET /api/v1/messages/{messageId} endpoint
         fn Client::get_message(&self) -> GetMessageBuilder;
+
+        /// Return a list of addresses from the seed regardless of their validity.
+        fn Client::get_addresses(&self, seed: &str) -> GetAddressesBuilderApi;
 
         /// Transforms bech32 to hex
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;

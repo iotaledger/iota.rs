@@ -231,6 +231,10 @@ impl Client {
         GetMessageBuilder::new(self)
     }
 
+    pub fn get_addresses(&self, seed: &str) -> GetAddressesBuilderApi {
+        GetAddressesBuilderApi::new(seed).with_client(self)
+    } 
+
     // UTIL BELOW
 
     pub fn bech32_to_hex(bech32: &str) -> Result<String> {

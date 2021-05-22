@@ -139,4 +139,21 @@ public class ExampleApp {
         MessageId[] fetched_message_ids = iota.getMessage().indexString("Hello");
         System.out.println("Messages with Hello index: " + Arrays.toString(fetched_message_ids));
     }
+
+    public static void transaction() {
+        Client iota = node();
+
+        String seed_1 = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
+
+        Message message = iota
+            .message()
+            .withSeed(seed_1)
+            // Insert the output address and amount to spent. The amount cannot be zero.
+            .withOutput(
+                // We generate an address from our seed so that we send the funds to ourselves
+                iota.getAddresses(seed_1).withRange(0, 1).finish()[0], 1000000,
+            ).finish();
+
+        System.out.println("Transaction sent: https://explorer.iota.org/testnet/message/" +  message.id());
+    }
 }
