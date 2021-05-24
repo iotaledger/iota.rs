@@ -18,8 +18,14 @@ pub fn consolidate_funds(
     address_range_high: usize,
 ) -> crate::Result<String> {
     match crate::block_on(async {
-        iota_client::api::consolidate_funds(client.borrow(), &iota_client::Seed::from_bytes(seed.as_bytes()), account_index, address_range_low..address_range_high).await
-    }){
+        iota_client::api::consolidate_funds(
+            client.borrow(),
+            &iota_client::Seed::from_bytes(seed.as_bytes()),
+            account_index,
+            address_range_low..address_range_high,
+        )
+        .await
+    }) {
         Ok(s) => Ok(s),
         Err(e) => Err(anyhow::anyhow!(e.to_string())),
     }

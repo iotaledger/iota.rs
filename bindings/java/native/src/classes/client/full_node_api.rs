@@ -238,17 +238,15 @@ impl Client {
 
     pub fn get_addresses(&self, seed: &str) -> GetAddressesBuilderApi {
         GetAddressesBuilderApi::new(seed).with_client(self)
-    } 
+    }
 
     // Mqtt
 
-    pub fn subscriber(& mut self) -> MqttManager {
+    pub fn subscriber(&mut self) -> MqttManager {
         MqttManager::new(self)
-    } 
-
-    pub fn mqtt_event_receiver(&self) {
-
     }
+
+    pub fn mqtt_event_receiver(&self) {}
 
     // UTIL BELOW
 

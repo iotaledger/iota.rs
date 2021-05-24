@@ -1,23 +1,13 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use std::{
-    cell::RefCell,
-    rc::Rc,
-};
+use std::{cell::RefCell, rc::Rc};
 
 use iota_client::{
-    TopicEvent, 
-    node::{
-        MqttManager as RustMqttManager,
-        MqttTopicManager as RustMqttTopicManager,
-        Topic,
-    },
+    node::{MqttManager as RustMqttManager, MqttTopicManager as RustMqttTopicManager, Topic},
+    TopicEvent,
 };
 
-use crate::{
-    Result,
-    full_node_api::Client,
-};
+use crate::{full_node_api::Client, Result};
 
 use anyhow::anyhow;
 
@@ -31,9 +21,7 @@ pub struct MqttManager<'a> {
 
 impl<'a> MqttManager<'a> {
     pub fn new(client: &'a mut Client) -> Self {
-        Self {
-            client
-        }
+        Self { client }
     }
 
     pub fn with_topic(&mut self, topic: Topic) -> MqttTopicManager {
@@ -45,19 +33,15 @@ impl<'a> MqttManager<'a> {
     }
 
     pub fn unsubscribe(&mut self) -> Result<()> {
-        let res = crate::block_on(async {
-            RustMqttManager::new(self.client.borrow_mut()).unsubscribe().await
-        });
+        let res = crate::block_on(async { RustMqttManager::new(self.client.borrow_mut()).unsubscribe().await });
         match res {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
-    
+
     pub fn disconnect(&mut self) -> Result<()> {
-        let res = crate::block_on(async {
-            RustMqttManager::new(self.client.borrow_mut()).disconnect().await
-        });
+        let res = crate::block_on(async { RustMqttManager::new(self.client.borrow_mut()).disconnect().await });
         match res {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow!(e.to_string())),
@@ -84,12 +68,13 @@ impl<'a> MqttTopicManager<'a> {
 
     pub fn subscribe(&self, cb: Box<dyn MqttListener + Send + Sync + 'static>) -> Result<()> {
         let new_manager = self.0.borrow_mut().take().unwrap();
-        
+
         let res = crate::block_on(async {
-            new_manager.subscribe(move |event| {
-                cb.on_event(event.clone());
-            })
-            .await
+            new_manager
+                .subscribe(move |event| {
+                    cb.on_event(event.clone());
+                })
+                .await
         });
 
         match res {
@@ -100,9 +85,7 @@ impl<'a> MqttTopicManager<'a> {
 
     pub fn unsubscribe(&self) -> Result<()> {
         let new_manager = self.0.borrow_mut().take().unwrap();
-        let res = crate::block_on(async move {
-            new_manager.unsubscribe().await
-        });
+        let res = crate::block_on(async move { new_manager.unsubscribe().await });
         match res {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow!(e.to_string())),
