@@ -19,6 +19,7 @@ use crate::{
     bee_types::*,
     client_builder::ClientBuilder,
     message::{ClientMessageBuilder, GetMessageBuilder, MessageWrap},
+    mqtt::MqttManager,
 };
 
 impl From<ClientRust> for Client {
@@ -37,6 +38,10 @@ impl Client {
 
     pub fn borrow<'a>(&'a self) -> &'a ClientRust {
         &self.0
+    }
+
+    pub fn borrow_mut<'a>(&'a mut self) -> &'a mut ClientRust {
+        &mut self.0
     }
 
     pub fn get_health(&self) -> Result<bool> {
@@ -234,6 +239,36 @@ impl Client {
     pub fn get_addresses(&self, seed: &str) -> GetAddressesBuilderApi {
         GetAddressesBuilderApi::new(seed).with_client(self)
     } 
+
+    /// Generates a new mnemonic.
+    pub fn generate_mnemonic() -> Result<String> {
+        let res = ClientRust::generate_mnemonic();
+
+        match res {
+            Ok(m) => Ok(m),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    /// Returns a hex encoded seed for a mnemonic.
+    pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
+        let res = ClientRust::mnemonic_to_hex_seed(mnemonic);
+
+        match res {
+            Ok(m) => Ok(m),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    // Mqtt
+
+    pub fn subscriber(& mut self) -> MqttManager {
+        MqttManager::new(self)
+    } 
+
+    pub fn mqtt_event_receiver(&self) {
+
+    }
 
     // UTIL BELOW
 

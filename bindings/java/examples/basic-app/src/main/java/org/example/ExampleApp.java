@@ -63,7 +63,7 @@ public class ExampleApp {
             Client iota = node();
 
             String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
-            String[] addresses = new GetAddressesBuilderApi(seed).with_client(iota).with_range(0, 10).finish();
+            String[] addresses = new GetAddressesBuilderApi(seed).withClient(iota).withRange(0, 10).finish();
             System.out.println(Arrays.toString(addresses));
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
@@ -151,9 +151,23 @@ public class ExampleApp {
             // Insert the output address and amount to spent. The amount cannot be zero.
             .withOutput(
                 // We generate an address from our seed so that we send the funds to ourselves
-                iota.getAddresses(seed_1).withRange(0, 1).finish()[0], 1000000,
+                        iota.getAddresses(seed_1).withRange(0, 1).finish()[0], 1000000
             ).finish();
 
         System.out.println("Transaction sent: https://explorer.iota.org/testnet/message/" +  message.id());
     }
+
+    public static void mqtt() {
+        Client iota = node();
+
+        MqttListener listener = new MqttListener() {
+            @Override
+            public void onEvent(TopicEvent event) {
+                System.out.println(event);
+            }
+        };
+
+        iota.subscriber().withTopic(new Topic("messages")).subscribe(listener);
+    }
+
 }

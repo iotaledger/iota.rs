@@ -159,19 +159,19 @@ impl<'a> GetAddressBuilderNode<'a> {
     }
 }
 
-struct GetAddressesBuilderApiInternal {
+struct GetAddressesBuilderApiInternal<'a> {
     seed: RustSeed,
     account_index: usize,
     range: Range<usize>,
     bech32_hrp: Option<String>,
-    client: Option<Client>,
+    client: Option<&'a Client>,
 }
 
-pub struct GetAddressesBuilderApi {
-    fields: Rc<RefCell<Option<GetAddressesBuilderApiInternal>>>,
+pub struct GetAddressesBuilderApi<'a> {
+    fields: Rc<RefCell<Option<GetAddressesBuilderApiInternal<'a>>>>,
 }
 
-impl GetAddressesBuilderApi {
+impl<'a> GetAddressesBuilderApi<'a> {
     pub fn new(seed: &str) -> Self {
         let internal = GetAddressesBuilderApiInternal {
             seed: RustSeed::from_bytes(seed.as_bytes()),
@@ -185,7 +185,7 @@ impl GetAddressesBuilderApi {
         }
     }
 
-    fn new_with_fields(fields: GetAddressesBuilderApiInternal) -> Self {
+    fn new_with_fields(fields: GetAddressesBuilderApiInternal<'a>) -> Self {
         Self {
             fields: Rc::new(RefCell::new(Option::from(fields))),
         }
@@ -206,7 +206,7 @@ impl GetAddressesBuilderApi {
     }
 
     /// Set client to the builder
-    pub fn with_client(&self, client: Client) -> Self {
+    pub fn with_client(&self, client: &'a Client) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         fields.client = Some(client);
         GetAddressesBuilderApi::new_with_fields(fields)

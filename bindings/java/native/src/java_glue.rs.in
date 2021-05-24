@@ -12,14 +12,16 @@ use crate::{
     message::*,
     address::*,
     ed25519::*,
+    mqtt::*,
 };
 use iota_client::{
+    TopicEvent, MqttEvent, node::Topic,
     Api, bee_message::MessageId,
     bee_rest_api::types::dtos::LedgerInclusionStateDto,
 };
 use anyhow::{
     anyhow,
-    Result as Result,
+    Result,
 };
 
 
@@ -116,8 +118,9 @@ foreign_class!(
         
         /// GET /health endpoint
         fn Client::get_health(&self) -> Result<bool>;
+
+        /// GET /health endpoint for the passed node
         fn Client::get_node_health(&self, node: &str) -> Result<bool>;
-        
 
         /// GET /api/v1/info endpoint
         fn Client::get_info(&self) -> Result<NodeInfoWrapper>; 
@@ -191,6 +194,15 @@ foreign_class!(
         /// Return a list of addresses from the seed regardless of their validity.
         fn Client::get_addresses(&self, seed: &str) -> GetAddressesBuilderApi;
 
+        /// Returns a handle to the MQTT topics manager.
+        fn Client::subscriber(&mut self) -> MqttManager;
+
+        /// Generates a new mnemonic.
+        fn Client::generate_mnemonic() -> Result<String>;
+
+        /// Returns a hex encoded seed for a mnemonic.
+        fn Client::mnemonic_to_hex_seed(mnemonic: &str) -> Result<String>;
+
         /// Transforms bech32 to hex
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
         /// Transforms hex to bech32
@@ -204,19 +216,19 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(PartialEq, Display)]
+    #[derive(PartialEq, camelCaseAliases, Display)]
     class NodeInfoWrapper {
         self_type NodeInfoWrapper;
         private constructor = empty;
         private fn NodeInfoWrapper::to_string(&self) -> String; alias to_string;
         private fn NodeInfoWrapper::eq(&self, o: &NodeInfoWrapper) -> bool; alias rustEq;
-        fn NodeInfoWrapper::url(&self) -> &str; alias getUrl;
-        fn NodeInfoWrapper::nodeinfo(&self) -> InfoResponse; alias nodeInfo;
+        fn NodeInfoWrapper::url(&self) -> &str;
+        fn NodeInfoWrapper::nodeinfo(&self) -> InfoResponse;
     }
 );
 
 foreign_class!(
-    #[derive(PartialEq, Display)]
+    #[derive(PartialEq, camelCaseAliases, Display)]
     class InfoResponse {
         self_type InfoResponse;
         private constructor = empty;
@@ -224,16 +236,16 @@ foreign_class!(
         private fn InfoResponse::eq(&self, o: &InfoResponse) -> bool; alias rustEq;
         fn InfoResponse::name(&self) -> &str;
         fn InfoResponse::version(&self) -> &str;
-        fn InfoResponse::network_id(&self) -> &str; alias networkId;
-        fn InfoResponse::bech32_hrp(&self) -> &str; alias bech32HRP;
-        fn InfoResponse::messages_per_second(&self) -> f64; alias messagesPerSecond;
-        fn InfoResponse::referenced_messages_per_second(&self) -> f64; alias referencedMessagesPerSecond;
-        fn InfoResponse::referenced_rate(&self) -> f64; alias referencedRate;
-        fn InfoResponse::latest_milestone_timestamp(&self) -> u64; alias latestMilestoneTimestamp;
-        fn InfoResponse::min_pow_score(&self) -> f64; alias minPoWScore;
-        fn InfoResponse::latest_milestone_index(&self) -> u32; alias latestMilestoneIndex;
-        fn InfoResponse::confirmed_milestone_index(&self) -> u32; alias confirmedMilestoneIndex;
-        fn InfoResponse::pruning_index(&self) -> u32; alias pruningIndex;
+        fn InfoResponse::network_id(&self) -> &str;
+        fn InfoResponse::bech32_hrp(&self) -> &str;
+        fn InfoResponse::messages_per_second(&self) -> f64;
+        fn InfoResponse::referenced_messages_per_second(&self) -> f64;
+        fn InfoResponse::referenced_rate(&self) -> f64;
+        fn InfoResponse::latest_milestone_timestamp(&self) -> u64;
+        fn InfoResponse::min_pow_score(&self) -> f64;
+        fn InfoResponse::latest_milestone_index(&self) -> u32;
+        fn InfoResponse::confirmed_milestone_index(&self) -> u32;
+        fn InfoResponse::pruning_index(&self) -> u32;
         fn InfoResponse::features(&self) -> Vec<String>;
     }
 );
@@ -382,7 +394,8 @@ foreign_class!(
 
 foreign_class!(
     #[derive(camelCaseAliases)]
-        class PeerDto {
+    /// Describes a peer.
+    class PeerDto {
         self_type PeerDto;
         private constructor = empty;
         fn PeerDto::id(&self) -> &str;
@@ -616,6 +629,7 @@ foreign_class!(
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
     class GetBalanceBuilderApi {
         self_type GetBalanceBuilderApi<'a>;
         private constructor = empty;
@@ -645,9 +659,10 @@ foreign_class!(
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
     class GetAddressesBuilderApi {
-        self_type GetAddressesBuilderApi;
-        constructor GetAddressesBuilderApi::new(seed: &str) -> GetAddressesBuilderApi;
+        self_type GetAddressesBuilderApi<'a>;
+        constructor GetAddressesBuilderApi::new(seed: &str) -> GetAddressesBuilderApi<'a>;
         
         /// Set the account index
         fn GetAddressesBuilderApi::with_account_index(&self, account_index: usize) -> GetAddressesBuilderApi;
@@ -659,10 +674,114 @@ foreign_class!(
         fn GetAddressesBuilderApi::with_bech32_hrp(&self, bech32_hrp: String) -> GetAddressesBuilderApi;
         
         /// Set client to the builder
-        fn GetAddressesBuilderApi::with_client(&self, client: Client) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilderApi::with_client(&self, client: &Client) -> GetAddressesBuilderApi;
         
         
         fn GetAddressesBuilderApi::finish(&self) -> Result<Vec<String>>;
+    }
+);
+
+//////////////// MQTT
+
+
+foreign_class!(
+    #[derive(Display)]
+    class Topic {
+        self_type Topic;
+        private constructor = empty;
+
+        /// Creates a new topic and checks if it's valid.
+        fn Topic::from(topic: &str) -> Result<Topic> {
+            // Cannot be a constructor due to the Result
+            match Topic::new(topic) {
+                Ok(t) => Ok(t),
+                Err(e) => Err(anyhow!(e.to_string())),
+            }
+        }
+
+        private fn Topic::to_string(&self) -> String {
+            format!("Topic({:?})", this)
+        }
+    }
+);
+
+
+foreign_class!(
+    #[derive(Display)]
+    class TopicEvent {
+        self_type TopicEvent;
+        private constructor = empty;
+
+        private fn TopicEvent::to_string(&self) -> String {
+            "TopicEvent(topic: ".to_string() + &this.topic + ", payload: " + &this.payload + ")"
+        }
+
+        /// the MQTT topic.
+        fn TopicEvent::topic(&self) -> String {
+            this.topic.clone()
+        }
+
+        /// The MQTT event payload.
+        fn TopicEvent::payload(&self) -> String {
+            this.payload.clone()
+        }
+    }
+);
+
+foreign_enum!(
+    enum MqttEvent {
+        /// Client was connected.
+        CONNECTED = MqttEvent::Connected,
+        /// Client was disconnected.
+        DISCONNECTED = MqttEvent::Disconnected,
+    }
+);
+
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class MqttManager {
+        self_type MqttManager<'a>;
+        private constructor = empty;
+        
+        /// Add a new topic to the list.
+        fn MqttManager::with_topic(&mut self, topic: Topic) -> MqttTopicManager;
+
+        /// Add a collection of topics to the list.
+        fn MqttManager::with_topics(&mut self, topics: Vec<Topic>) -> MqttTopicManager;
+
+        /// Unsubscribes from all subscriptions.
+        fn MqttManager::unsubscribe(&mut self) -> Result<()>;
+
+        /// Disconnects the broker.
+        /// This will clear the stored topic handlers and close the MQTT connection.
+        fn MqttManager::disconnect(&mut self) -> Result<()>;
+    }
+);
+
+foreign_callback!(callback MqttListener {
+    self_type MqttListener + Send + 'static;
+    onEvent = MqttListener::on_event(&self, event: TopicEvent);
+});
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class MqttTopicManager {
+        self_type MqttTopicManager<'a>;
+        private constructor = empty;
+        
+        /// Add a new topic to the list.
+        fn MqttTopicManager::with_topic(&self, topic: Topic) -> MqttTopicManager;
+
+        /// Add a collection of topics to the list.
+        fn MqttTopicManager::with_topics(&self, topics: Vec<Topic>) -> MqttTopicManager;
+
+        /// Unsubscribe from the given topics.
+        /// If no topics were provided, the function will unsubscribe from every subscribed topic.
+        fn MqttTopicManager::unsubscribe(&self) -> Result<()>;
+
+        // Subscribe to the given topics with the callback.
+        //fn MqttTopicManager::subscribe(&self, cb: Box<dyn MqttListener + Send + Sync + 'static>) -> Result<()>;
     }
 );
 

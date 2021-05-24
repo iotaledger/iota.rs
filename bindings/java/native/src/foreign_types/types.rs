@@ -207,21 +207,10 @@ foreign_typemap!(
     };
 );
 
-// These are dumb...
-// TODO: Find out why this typemap doesnt work:
-// https://github.com/Dushistov/flapigen-rs/blob/5f248cfdeccd15b70685f810d978567891bc78d3/macroslib/src/java_jni/jni-include.rs#L433
 foreign_typemap!(
-    ($p:r_type) Vec<Message> <= internal_aliases::JForeignObjectsArray<Message> {
+    ($p:r_type) <T: SwigForeignClass> Vec<T> <= internal_aliases::JForeignObjectsArray<T> {
         $out = jobject_array_to_vec_of_objects(env, $p);
     };
-    ($p:f_type, option = "NoNullAnnotations") <= "Message[]";
-    ($p:f_type, option = "NullAnnotations") <= "@NonNull Message[]";
-);
-
-foreign_typemap!(
-    ($p:r_type) Vec<Address> <= internal_aliases::JForeignObjectsArray<Address> {
-        $out = jobject_array_to_vec_of_objects(env, $p);
-    };
-    ($p:f_type, option = "NoNullAnnotations") <= "Address[]";
-    ($p:f_type, option = "NullAnnotations") <= "@NonNull Address[]";
+    ($p:f_type, option = "NoNullAnnotations") <= "T[]";
+    ($p:f_type, option = "NullAnnotations") <= "@NonNull T[]";
 );
