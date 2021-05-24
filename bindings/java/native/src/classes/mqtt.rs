@@ -84,6 +84,7 @@ impl<'a> MqttTopicManager<'a> {
 
     pub fn subscribe(&self, cb: Box<dyn MqttListener + Send + Sync + 'static>) -> Result<()> {
         let new_manager = self.0.borrow_mut().take().unwrap();
+        
         let res = crate::block_on(async {
             new_manager.subscribe(move |event| {
                 cb.on_event(event.clone());

@@ -713,7 +713,7 @@ foreign_class!(
         private constructor = empty;
 
         private fn TopicEvent::to_string(&self) -> String {
-            "TopicEvent(topic: ".to_string() + &this.topic + ", payload: " + &this.payload + ")"
+            format!("TopicEvent(topic: {}, payload: {})", this.topic, this.payload)
         }
 
         /// the MQTT topic.
@@ -760,7 +760,7 @@ foreign_class!(
 );
 
 foreign_callback!(callback MqttListener {
-    self_type MqttListener + Send + 'static;
+    self_type MqttListener + Send + Sync + 'static;
     onEvent = MqttListener::on_event(&self, event: TopicEvent);
 });
 
@@ -781,7 +781,7 @@ foreign_class!(
         fn MqttTopicManager::unsubscribe(&self) -> Result<()>;
 
         // Subscribe to the given topics with the callback.
-        //fn MqttTopicManager::subscribe(&self, cb: Box<dyn MqttListener + Send + Sync + 'static>) -> Result<()>;
+        fn MqttTopicManager::subscribe(&self, cb: MqttListener) -> Result<()>;
     }
 );
 

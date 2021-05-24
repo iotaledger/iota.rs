@@ -167,7 +167,8 @@ public class ExampleApp {
             }
         };
 
-        iota.subscriber().withTopic(new Topic("messages")).subscribe(listener);
+        // TODO: Make listeners with the Sync trait
+        iota.subscriber().withTopic(Topic.from("messages")).subscribe(listener);
     }
 
 }
