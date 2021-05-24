@@ -781,11 +781,27 @@ foreign_class!(
         fn MqttTopicManager::unsubscribe(&self) -> Result<()>;
 
         // Subscribe to the given topics with the callback.
-        fn MqttTopicManager::subscribe(&self, cb: MqttListener) -> Result<()>;
+        //fn MqttTopicManager::subscribe(&self, cb: Box<dyn MqttListener + Send + 'static>) -> Result<()>;
     }
 );
 
 //////////////// Util
+/// 
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class Util {
+        /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+        /// Returns the address to which the funds got consolidated, if any were available
+        fn crate::consolidate_funds(
+            client: Client,
+            seed: &str,
+            account_index: usize,
+            address_range_low: usize,
+            address_range_high: usize,
+        ) -> Result<String>;
+    }
+);
+
 foreign_class!(class RustHex {
     fn hex::encode(_ : String) -> String;
     fn hex::encode(_ : Vec<u8>) -> String;

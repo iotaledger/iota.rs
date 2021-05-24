@@ -240,6 +240,18 @@ impl Client {
         GetAddressesBuilderApi::new(seed).with_client(self)
     } 
 
+    // Mqtt
+
+    pub fn subscriber(& mut self) -> MqttManager {
+        MqttManager::new(self)
+    } 
+
+    pub fn mqtt_event_receiver(&self) {
+
+    }
+
+    // UTIL BELOW
+
     /// Generates a new mnemonic.
     pub fn generate_mnemonic() -> Result<String> {
         let res = ClientRust::generate_mnemonic();
@@ -259,18 +271,6 @@ impl Client {
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
-
-    // Mqtt
-
-    pub fn subscriber(& mut self) -> MqttManager {
-        MqttManager::new(self)
-    } 
-
-    pub fn mqtt_event_receiver(&self) {
-
-    }
-
-    // UTIL BELOW
 
     pub fn bech32_to_hex(bech32: &str) -> Result<String> {
         let res = iota_client::Client::bech32_to_hex(bech32);
