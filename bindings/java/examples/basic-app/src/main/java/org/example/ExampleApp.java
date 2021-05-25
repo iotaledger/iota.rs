@@ -1,6 +1,9 @@
 package org.example;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.iota.client.*;
 import org.iota.client.local.*;
@@ -36,14 +39,13 @@ public class ExampleApp {
 
     public static void nodeInfo() {
         try {
-            String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
             Client iota = node();
 
             System.out.println("Node healthy: " + iota.getHealth());
 
             NodeInfoWrapper info = iota.getInfo();
-            System.out.println("Node url: " + info.getUrl());
-            System.out.println("Node Info: " + info.nodeInfo());
+            System.out.println("Node url: " + info.url());
+            System.out.println("Node Info: " + info.nodeinfo());
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -220,53 +222,43 @@ public class ExampleApp {
         // At this point we have 100 Mi on 100 addresses and we will just send it to the final address
         // We use the outputs directly so we don't double spend them
         
-        let mut initial_outputs = Vec::new();
-        if let Some(Payload::Transaction(tx)) = message.payload() {
-            match tx.essence() {
-                Essence::Regular(essence) => {
-                    for (index, output) in essence.outputs().iter().enumerate() {
-                        // Only include 1 Mi outputs, otherwise it fails for the remainder address
-                        if let Output::SignatureLockedSingle(output) = output {
-                            if output.amount() == 1_000_001 {
-                                initial_outputs.push(UtxoInput::new(tx.id(), index as u16)?);
-                            }
-                        }
-                    }
-                }
-                _ => {
-                    panic!("Non-existing essence type");
-                }
+        List<UtxoInput> initial_outputs = new ArrayList<>();
+        Optional<MessagePayload> payload = message.payload();
+        if (payload.isPresent() && payload.get().payloadType().equals(MessagePayloadType.TRANSACTION)) {
+            TransactionPayload tx = payload.get().getAsTransaction().get();
+            RegularEssence essence = tx.essence().getAsRegular().get();
+            OutputDto[] outputs = essence.outputs();
+            for (int index = 0; index < outputs.length; index++) {
+                OutputDto output = outputs[index];
+                if (output.asSignatureLockedSingleOutputDto().amount() == 1_000_001) {
+                    initial_outputs.add(UtxoInput.from(tx.id(), index));
+                } 
             }
         }
+
         String[] first_address_old_seed = iota.getAddresses(seed).withRange(0, 1).finish();
-        let mut sent_messages = Vec::new();
-        for (index, output) in initial_outputs.into_iter().enumerate() {
-            let message_id = iota
+        List<MessageId> sent_messages = new ArrayList<>();
+        for (UtxoInput input : initial_outputs) {
+            MessageId message_id = iota
                 .message()
-                .with_seed(&seed)
-                .with_input(output)
-                .with_input_range(1..101)
-                .with_output(&new_address[0], 1)?
+                    .withSeed(seed).withInput(input).withInputRange(1, 101).withOutput(new_addresses[0], 1)
                 // send remaining iotas back
-                .with_output(&first_address_old_seed[0], 1_000_000)?
+                    .withOutput(first_address_old_seed[0], 1_000_000)
                 .finish()
-                .await?
-                .id()
-                .0;
-            println!(
-                "Transaction {} sent: https://explorer.iota.org/testnet/message/{}",
-                index, message_id
+                    .id();
+            System.out.printf("Transaction %i sent: https://explorer.iota.org/testnet/message/%s" + input.index(),
+                    message_id
             );
-            sent_messages.push(message_id);
+            sent_messages.add(message_id);
         }
         // only check last message, if this gets confirmed all other messages should also be confirmed
-        msgs = iota.retryUntilIncluded(sent_messages[sent_messages.length], -1, -1);
+        msgs = iota.retryUntilIncluded(sent_messages.get(sent_messages.size() - 1), -1, -1);
         // Send all funds back to first address
         long total_balance = iota.getBalance(seed).finish();
 
         System.out.println("Total balance: " + total_balance);
 
-        Message message = iota
+        message = iota
             .message()
             .withSeed(seed)
             .withOutput(first_address_old_seed[0], total_balance)

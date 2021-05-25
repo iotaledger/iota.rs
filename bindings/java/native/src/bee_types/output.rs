@@ -9,6 +9,7 @@ use std::{
 
 use iota_client::{
     bee_rest_api::types::{dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse},
+    bee_message::output::Output as RustOutput,
     node::OutputsOptions as RustOutputsOptions,
     OutputType,
 };
@@ -107,6 +108,15 @@ impl OutputDto {
 
     pub fn as_treasury_output(&self) -> anyhow::Result<TreasuryOutputDto> {
         TreasuryOutputDto::try_from(&self.output)
+    }
+}
+
+impl From<&RustOutput> for OutputDto {
+    fn from(output: &RustOutput) -> OutputDto {
+        let rust_output: RustOutputDto = output.into();
+        OutputDto {
+            output: rust_output
+        }
     }
 }
 

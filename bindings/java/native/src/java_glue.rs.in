@@ -956,6 +956,7 @@ foreign_class!(
         self_type TransactionPayload;
         private constructor = empty;
         fn TransactionPayload::essence(&self) -> Essence;
+        fn TransactionPayload::id(&self) -> TransactionId;
         //fn TransactionPayload::unlock_blocks(&self) -> Vec<UnlockBlock>; alias unlockBlocks;
     }
 );
@@ -972,8 +973,8 @@ foreign_class!(
     class RegularEssence {
         self_type RegularEssence;
         private constructor = empty;
-        //fn RegularEssence::inputs(&self) -> Vec<TransactionInput>;
-        //fn RegularEssence::outputs(&self) -> Vec<TransactionOutput>;
+        //fn RegularEssence::inputs(&self) -> Vec<InputDto>;
+        fn RegularEssence::outputs(&self) -> Vec<OutputDto>;
     }
 );
 foreign_class!(

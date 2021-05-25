@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    bee_types::InputKind,
+    bee_types::{
+        InputKind,
+        OutputDto,
+    },
 };
 
 use iota_client::bee_message::{
     unlock::UnlockBlock as RustUnlockBlock,
     payload::{
         transaction::{
+            TransactionId,
             TransactionPayload as RustTransactionPayload,
             Essence as RustEssence, 
             RegularEssence as RustRegularEssence,
-        }
+        },
     },
 };
 
@@ -24,6 +28,7 @@ pub enum UnlockBlockKind {
 pub struct TransactionPayload {
     essence: Essence,
     unlock_blocks: Vec<UnlockBlock>,
+    id: TransactionId,
 }
 
 impl From<&Box<RustTransactionPayload>> for TransactionPayload {
@@ -40,6 +45,7 @@ impl From<&Box<RustTransactionPayload>> for TransactionPayload {
                     unlock_block: unlock_block,
                 })
                 .collect(),
+            id: payload.id()
         }
     }
 }
@@ -51,6 +57,10 @@ impl TransactionPayload {
 
     pub fn unlock_blocks(&self) -> Vec<UnlockBlock> {
         self.unlock_blocks.iter().cloned().collect()
+    }
+
+    pub fn id(&self) -> TransactionId {
+        self.id.clone()
     }
 }
 
@@ -84,18 +94,17 @@ impl RegularEssence {
             .cloned()
             .map(|input| TransactionInput { input: input })
             .collect()
-    }
+    }*/
 
     /// Gets the transaction outputs.
-    pub fn outputs(&self) -> Vec<TransactionOutput> {
+    pub fn outputs(&self) -> Vec<OutputDto> {
         self.essence
             .outputs()
             .iter()
-            .cloned()
-            .map(|output| TransactionOutput { output: output })
+            .map(|output| output.into())
             .collect()
     }
-
+/*
     /// Gets the transaction chained payload.
     pub fn payload(&self) -> &Option<RustPayload> {
         self.essence.payload()
