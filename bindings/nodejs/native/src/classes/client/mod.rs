@@ -3,13 +3,14 @@
 
 #![allow(clippy::unnecessary_wraps)]
 use iota_client::{
-    bee_message::prelude::{Address, MessageId, TransactionId, UtxoInput},
+    bee_message::prelude::{Address, Message, MessageId, TransactionId, UtxoInput},
+    bee_rest_api::types::dtos::MessageDto as BeeMessageDto,
     AddressOutputsOptions, Client, OutputType, Seed,
 };
 use neon::prelude::*;
 use serde::Deserialize;
 
-use std::str::FromStr;
+use std::{convert::TryFrom, str::FromStr};
 
 mod builder;
 pub use builder::*;
@@ -664,6 +665,17 @@ declare_types! {
             let address = cx.argument::<JsString>(0)?.value();
             let is_valid = Client::is_address_valid(address.as_str());
             Ok(cx.boolean(is_valid).upcast())
+        }
+
+        method getMessageId(mut cx) {
+            let message_string = cx.argument::<JsString>(0)?.value();
+            // Try BeeMessageDto and if it fails Message
+            let message = match serde_json::from_str::<BeeMessageDto>(&message_string){
+                Ok(message_dto) => Message::try_from(&message_dto).expect("invalid message"),
+                Err(_) => serde_json::from_str::<Message>(&message_string).expect("invalid message"),
+            };
+            let message_id = message.id().0.to_string();
+            Ok(cx.string(message_id).upcast())
         }
     }
 }
