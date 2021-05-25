@@ -240,6 +240,39 @@ impl Client {
         GetAddressesBuilderApi::new(seed).with_client(self)
     }
 
+    pub fn retry_until_included(
+        &self,
+        message_id: MessageId,
+        interval: usize,
+        max_attempts: usize,
+    ) -> Result<Vec<MessageWrap>> {
+        let mut opt_int = None;
+        if interval > 0 {
+            opt_int = Some(interval as u64);
+        }
+
+        let mut opt_attempt = None;
+        if max_attempts > 0 {
+            opt_attempt = Some(max_attempts as u64);
+        }
+
+        let res = crate::block_on(async { 
+            self.0.retry_until_included(&message_id, opt_int, opt_attempt).await 
+        });
+
+        match res {
+            Ok(w) => {
+                let mut output = vec![];
+                for pair in w {
+                    output.push(MessageWrap::new(pair.0, pair.1.into()))
+                }
+
+                Ok(output)
+            },
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
     // Mqtt
 
     pub fn subscriber(&mut self) -> MqttManager {

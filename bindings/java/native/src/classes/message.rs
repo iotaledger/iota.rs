@@ -15,7 +15,7 @@ use anyhow::anyhow;
 use crate::{
     bee_types::{MessageMetadata, UtxoInput},
     full_node_api::Client,
-    Payload, Result,
+    MessagePayload, Result,
 };
 
 #[derive(Clone, PartialEq)]
@@ -59,7 +59,7 @@ pub struct Message {
     /// The [`MessageId`]s that this message directly approves.
     parents: Vec<MessageId>,
     /// The optional [Payload] of the message.
-    payload: Option<Payload>,
+    payload: Option<MessagePayload>,
     /// The result of the Proof of Work in order fot the message to be accepted into the tangle.
     #[getset(get_copy = "pub")]
     nonce: u64,
@@ -96,7 +96,7 @@ impl core::fmt::Debug for Message {
 
 impl From<RustMessage> for Message {
     fn from(message: RustMessage) -> Self {
-        let payload: Option<Payload> = match message.payload() {
+        let payload: Option<MessagePayload> = match message.payload() {
             Some(p) => Some(p.clone().into()),
             None => None,
         };
@@ -123,7 +123,7 @@ impl Message {
         self.parents.clone()
     }
 
-    pub fn payload(&self) -> Option<Payload> {
+    pub fn payload(&self) -> Option<MessagePayload> {
         self.payload.clone()
     }
 }
@@ -169,7 +169,7 @@ impl MessageBuilder {
     }
 
     /// Adds a payload to a `MessageBuilder`.
-    pub fn payload(&self, payload: Payload) -> Self {
+    pub fn payload(&self, payload: MessagePayload) -> Self {
         let new_builder = self
             .builder
             .borrow_mut()

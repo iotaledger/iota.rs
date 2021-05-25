@@ -16,7 +16,10 @@ use crate::{
 };
 use iota_client::{
     TopicEvent, MqttEvent, node::Topic,
-    Api, bee_message::MessageId,
+    Api, bee_message::{
+        payload::transaction::TransactionId,
+        MessageId, 
+    },
     bee_rest_api::types::dtos::LedgerInclusionStateDto,
 };
 use anyhow::{
@@ -77,6 +80,29 @@ foreign_enum!(
         CONFLICTING = LedgerInclusionStateDto::Conflicting,
         INCLUDED = LedgerInclusionStateDto::Included,
         NO_TRANSACTION = LedgerInclusionStateDto::NoTransaction,
+    }
+);
+
+foreign_enum!(
+    enum MessagePayloadType {
+        TRANSACTION = MessagePayloadType::Transaction,
+        MILESTONE = MessagePayloadType::Milestone,
+        INDEXATION = MessagePayloadType::Indexation,
+        RECEIPT = MessagePayloadType::Receipt,
+        TREASURY_TRANSACTION = MessagePayloadType::TreasuryTransaction,
+    }
+);
+
+foreign_enum!(
+    enum InputKind {
+        UTXO = InputKind::Utxo,
+        TREASURY = InputKind::Treasury,
+    }
+);
+foreign_enum!(
+    enum UnlockBlockKind {
+        ED25519 = UnlockBlockKind::Ed25519,
+        REFERENCE = UnlockBlockKind::Reference,
     }
 );
 
@@ -194,6 +220,12 @@ foreign_class!(
         /// Return a list of addresses from the seed regardless of their validity.
         fn Client::get_addresses(&self, seed: &str) -> GetAddressesBuilderApi;
 
+        /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
+        /// milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages. Set to -1 for defaults.
+        fn Client::retry_until_included(&self, message_id: MessageId,
+            interval: usize,
+            max_attempts: usize) -> Result<Vec<MessageWrap>>;
+
         /// Returns a handle to the MQTT topics manager.
         fn Client::subscriber(&mut self) -> MqttManager;
 
@@ -308,8 +340,9 @@ foreign_class!(
         self_type UtxoInput;
         private constructor = empty;
         private fn UtxoInput::to_string(&self) -> String; alias to_string;
-        private fn UtxoInput::transaction_id(&self) -> Vec<u8>;
-        private fn UtxoInput::index(&self) -> u16;
+        fn UtxoInput::from(id: TransactionId, index: u16) -> Result<UtxoInput>;
+        fn UtxoInput::transaction_id(&self) -> Vec<u8>;
+        fn UtxoInput::index(&self) -> u16;
     }
 );
 
@@ -319,7 +352,7 @@ foreign_class!(
         self_type ReceiptDto;
         private constructor = empty;
         private fn ReceiptDto::to_string(&self) -> String; alias to_string;
-        private fn ReceiptDto::milestone_index(&self) -> u32;
+        fn ReceiptDto::milestone_index(&self) -> u32;
     }
 );
 
@@ -483,6 +516,17 @@ foreign_class!(
         }
     }
 );
+foreign_class!(
+    #[derive(Display)]
+    class TransactionId {
+        self_type TransactionId;
+        private constructor = empty;
+        private fn TransactionId::to_string(&self) -> String; alias to_string;
+        fn TransactionId::fromString(str_rep: &str) -> TransactionId {
+            TransactionId::from_str(str_rep).unwrap()
+        }
+    }
+);
 
 foreign_class!(
     #[derive(Display)]
@@ -495,7 +539,7 @@ foreign_class!(
         fn Message::id(&self) -> MessageId;
         fn Message::nonce(&self) -> u64;
         fn Message::parents(&self) -> Vec<MessageId>;
-        // fn Message::payload(&self) -> Payload;
+        fn Message::payload(&self) -> Option<MessagePayload>;
     }
 );
 
@@ -505,8 +549,8 @@ foreign_class!(
         self_type MessageBuilder;
         constructor MessageBuilder::new() -> MessageBuilder;
         fn MessageBuilder::network_id(&self, network_id: u64) -> MessageBuilder;
-        //fn MessageBuilder::parents(&self, parents: Vec<MessageId>) -> MessageBuilder;
-        //fn MessageBuilder::payload(&self payload: Payload) -> MessageBuilder;
+        fn MessageBuilder::parents(&self, parents: Vec<MessageId>) -> Result<MessageBuilder>;
+        fn MessageBuilder::payload(&self, payload: MessagePayload) -> MessageBuilder;
         //fn MessageBuilder::nonce_provider(&self) -> MessageBuilder;
         fn MessageBuilder::finish(&self) -> Result<Message>;
     }
@@ -856,167 +900,33 @@ foreign_class!(
     }
 );
 
-/*
-foreign_enum!(
-    enum InputKind {
-        UTXO = InputKind::Utxo,
-        TREASURY = InputKind::Treasury,
-    }
-);
-foreign_enum!(
-    enum UnlockBlockKind {
-        ED25519 = UnlockBlockKind::Ed25519,
-        REFERENCE = UnlockBlockKind::Reference,
-    }
-);*/
-
-/*
-foreign_enum!(
-    enum MessageType {
-        RECEIVED = MessageType::Received,
-        SENT = MessageType::Sent,
-        FAILED = MessageType::Failed,
-        UNCONFIRMED = MessageType::Unconfirmed,
-        VALUE = MessageType::Value,
-        CONFIRMED = MessageType::Confirmed,
-    }
-);
-
-foreign_enum!(
-    enum MessagePayloadType {
-        TRANSACTION = MessagePayloadType::Transaction,
-        MILESTONE = MessagePayloadType::Milestone,
-        INDEXATION = MessagePayloadType::Indexation,
-        RECEIPT = MessagePayloadType::Receipt,
-        TREASURY_TRANSACTION = MessagePayloadType::TreasuryTransaction,
-    }
-);
-
-foreign_enum!(
-    enum ValueUnit {
-        I = ValueUnit::I,
-        Ki = ValueUnit::Ki,
-        Mi = ValueUnit::Mi,
-        Gi = ValueUnit::Gi,
-        Ti = ValueUnit::Ti,
-        Pi = ValueUnit::Pi,
-    }
-);
-
-foreign_enum!(
-    enum InputKind {
-        UTXO = InputKind::UTXO,
-        TREASURY = InputKind::Treasury,
-    }
-);
-foreign_enum!(
-    enum UnlockBlockKind {
-        ED25519 = UnlockBlockKind::Ed25519,
-        REFERENCE = UnlockBlockKind::Reference,
-    }
-);
-
-foreign_class!(class ClientOptionsBuilder {
-    self_type ClientOptionsBuilder;
-    constructor ClientOptionsBuilder::new() -> ClientOptionsBuilder;
-    fn ClientOptionsBuilder::with_node(&mut self, node: &str) -> ClientOptionsBuilder; alias withNode;
-    fn ClientOptionsBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientOptionsBuilder; alias withNodePoolUrls;
-    fn ClientOptionsBuilder::with_network(&mut self, network: String) -> ClientOptionsBuilder; alias withNetwork;
-    fn ClientOptionsBuilder::with_node_sync_interval(&mut self, node_sync_interval: Duration) -> ClientOptionsBuilder; alias withNodeSyncInterval;
-    fn ClientOptionsBuilder::with_node_sync_disabled(&mut self) -> ClientOptionsBuilder; alias withNodeSyncDisabled;
-    fn ClientOptionsBuilder::with_mqtt_mqtt_broker_options(&mut self, options: BrokerOptions) -> ClientOptionsBuilder; alias withMqttBrokerOptions;
-    fn ClientOptionsBuilder::with_local_pow(&mut self, local: bool) -> ClientOptionsBuilder; alias withLocalPow;
-    fn ClientOptionsBuilder::with_request_timeout(&mut self, timeout: Duration) -> ClientOptionsBuilder; alias withRequestTimeout;
-    fn ClientOptionsBuilder::with_api_timeout(&mut self, api: Api, timeout: Duration) -> ClientOptionsBuilder; alias withApiTimeout;
-    fn ClientOptionsBuilder::build(&mut self) -> Result<ClientOptions>;
-});
-
-foreign_class!(class ClientOptions {
-    self_type ClientOptions;
-    private constructor = empty;
-});
-
-foreign_class!(
-    #[derive(Display)]
-    class Value {
-        self_type Value;
-        constructor Value::new(value: u64, unit: ValueUnit) -> Value;
-        private fn Value::with_denomination(&self) -> String; alias to_string;
-        fn Value::with_denomination(&self) -> String; alias withDenomination;
-        fn Value::without_denomination(&self) -> u64; alias withoutDenomination;
-        fn Value::value(&self) -> &u64;
-    }
-);
-
-
-foreign_class!(
-    #[derive(PartialEq)]
-    class Message {
-        self_type Message;
-        private constructor = empty;
-        private fn Message::eq(&self, o: &Message) -> bool; alias rustEq;
-        fn Message::id(&self) -> MessageId;
-        fn Message::version(&self) -> u64;
-        fn Message::parents(&self) -> Vec<MessageId>;
-        fn Message::payload_length(&self) -> usize; alias payloadLength;
-        fn Message::payload(&self) -> Option<MessagePayload>;
-        fn Message::timestamp(&self) -> DateTime<Utc>;
-        fn Message::nonce(&self) -> u64;
-        fn Message::confirmed(&self) -> Option<bool>;
-        fn Message::broadcasted(&self) -> bool;
-    }
-);
-
-foreign_class!(
-    #[derive(PartialEq, Display)]
-    class Address {
-        self_type Address;
-        private constructor = empty;
-        private fn Address::eq(&self, o: &Address) -> bool; alias rustEq;
-        private fn Address::to_string(&self) -> String;
-        fn Address::balance(&self) -> u64; alias getBalance;
-        fn Address::readable(&self) -> String; alias getReadable;
-        fn Address::address(&self) -> AddressWrapper;
-    }
-);
-
-foreign_class!(
-    class AddressWrapper {
-        self_type AddressWrapper;
-        private constructor = empty;
-        fn AddressWrapper::from(address: &str, bech32_hrp: String) -> Result<AddressWrapper> {
-            match IotaAddress::try_from_bech32(address) {
-                Ok(addr) => Ok(AddressWrapper::new(addr, bech32_hrp)),
-                Err(e) => Err(anyhow!(e)),
-            }
-        }
-        fn AddressWrapper::to_bech32(&self) -> String; alias toBech32;
-    }
-);
-
 // Bee types wrapping
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, camelCaseAliases)]
     class MessagePayload {
         self_type MessagePayload;
         private constructor = empty;
-        private fn MessagePayload::to_string(&self) -> String;
-        fn MessagePayload::payload_type(&self) -> MessagePayloadType; alias payloadType;
-        fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>; alias getAsIndexation;
-        fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>; alias getAsMilestone;
+        private fn MessagePayload::to_string(&self) -> String; alias to_string;
+        fn MessagePayload::payload_type(&self) -> MessagePayloadType;
+        fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>;
+        fn MessagePayload::get_as_transaction(&self) -> Option<TransactionPayload>;
+        //fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>; alias getAsMilestone;
     }
 );
 
 foreign_class!(
+    #[derive(Display, camelCaseAliases)]
     class IndexationPayload {
         self_type IndexationPayload;
         private constructor = empty;
+        private fn IndexationPayload::to_string(&self) -> String; alias to_string;
         fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias new_with;
         fn IndexationPayload::index(&self) -> &[u8];
         fn IndexationPayload::data(&self) -> &[u8];
     }
 );
 
+/*
 foreign_class!(
     class MilestonePayload {
         self_type MilestonePayload;
@@ -1038,15 +948,15 @@ foreign_class!(
         fn MilestonePayloadEssence::merkle_proof(&self) -> Vec<u8>; alias merkleProof;
     }
 );
-
+*/
 // TransactionEssence
 
 foreign_class!(
-    class MessageTransactionPayload {
-        self_type MessageTransactionPayload;
+    class TransactionPayload {
+        self_type TransactionPayload;
         private constructor = empty;
-        fn MessageTransactionPayload::essence(&self) -> Essence;
-        fn MessageTransactionPayload::unlock_blocks(&self) -> Vec<UnlockBlock>; alias unlockBlocks;
+        fn TransactionPayload::essence(&self) -> Essence;
+        //fn TransactionPayload::unlock_blocks(&self) -> Vec<UnlockBlock>; alias unlockBlocks;
     }
 );
 
@@ -1062,20 +972,10 @@ foreign_class!(
     class RegularEssence {
         self_type RegularEssence;
         private constructor = empty;
-        fn RegularEssence::inputs(&self) -> Vec<TransactionInput>;
-        fn RegularEssence::outputs(&self) -> Vec<TransactionOutput>;
-        fn RegularEssence::internal(&self) -> bool;
-    
-        fn RegularEssence::incoming(&self) -> bool;
-    
-        /// The transactions's value.
-        fn RegularEssence::value(&self) -> u64;
-    
-        /// The transactions's remainder value sum.
-        fn RegularEssence::remainder_value(&self) -> u64; alias remainderValue;
+        //fn RegularEssence::inputs(&self) -> Vec<TransactionInput>;
+        //fn RegularEssence::outputs(&self) -> Vec<TransactionOutput>;
     }
 );
-
 foreign_class!(
     #[derive(Display)]
     class TransactionInput {
@@ -1086,6 +986,7 @@ foreign_class!(
     }
 );
 
+/*
 foreign_class!(
     #[derive(Display)]
     class TransactionOutput {
