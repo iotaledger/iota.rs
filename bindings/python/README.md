@@ -183,24 +183,24 @@ Also for all the optional values, the default values are the same as the ones in
 
 Creates a new instance of the Client.
 
-| Param                                | Type                                         | Default                | Description                                                                                                                                                       |
-| ------------------------------------ | -------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [network]                            | <code>str</code>                             | <code>undefined</code> | The network                                                                                                                                                       |
-| [node]                               | <code>str</code>                             | <code>undefined</code> | A node URL                                                                                                                                                        |
-| [primary_node_jwt_name_password]     | <code>list[str]</code>                       | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password)                                                                                                                                                                                                                                                                          |
-| [primary_pow_node_jwt_name_password] | <code>list[str]</code>                       | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password)                                                                                                                                                                                                                                                                          |
-| [nodes_name_password]                | <code>list[]list[str]</code>                 | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password)                                                                                                                                                                                                                                                                          |
-| [node_sync_interval]                 | <code>int</code>                             | <code>undefined</code> | The interval for the node syncing process                                                                                                                         |
-| [node_sync_disabled]                 | <code>bool</code>                            | <code>undefined</code> | Disables the node syncing process. Every node will be considered healthy and ready to use                                                                         |
-| [node_pool_urls]                     | <code>str</code>                             | <code>undefined</code> | An array of node pool URLs                                                                                                                                        |
-| [quorum]                             | <code>bool</code>                            | <code>false</code>     | Bool to define if quorum should be used                                                                                                                           |
-| [quorum_size]                        | <code>int</code>                             | <code>3</code>         | An int that defines how many nodes should be used for quorum                                                                                                      |
-| [quorum_threshold]                   | <code>int</code>                             | <code>66</code>        | Define the % of nodes that need to return the same response to accept it                                                                                          |
-| [request_timeout]                    | <code>int</code>                             | <code>undefined</code> | Sets the default HTTP request timeout                                                                                                                             |
-| [api_timeout]                        | <code>dict</code>                            | <code>undefined</code> | The API to set the request timeout. Key: 'GetHealth', 'GetInfo', 'GetPeers', 'GetTips', 'PostMessage', 'GetOutput', 'GetMilestone' Value: timeout in milliseconds |
-| [local_pow]                          | <code>bool</code>                            | <code>undefined</code> | Flag determining if PoW should be done locally or remotely                                                                                                        |
-| [tips_interval]                      | <code>int</code>                             | <code>undefined</code> | Time between requests for new tips during PoW                                                                                                                     |
-| [mqtt_broker_options]                | <code>[BrokerOptions](#brokeroptions)</code> | <code>undefined</code> | Sets the options for the MQTT connection with the node                                                                                                            |
+| Param                                | Type                                         | Default                | Description                                                                                                                                                                                                                                              |
+| ------------------------------------ | -------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [network]                            | <code>str</code>                             | <code>undefined</code> | The network                                                                                                                                                                                                                                              |
+| [node]                               | <code>str</code>                             | <code>undefined</code> | A node URL                                                                                                                                                                                                                                               |
+| [primary_node_jwt_name_password]     | <code>list[str]</code>                       | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password) |
+| [primary_pow_node_jwt_name_password] | <code>list[str]</code>                       | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password) |
+| [nodes_name_password]                | <code>list[]list[str]</code>                 | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password) |
+| [node_sync_interval]                 | <code>int</code>                             | <code>undefined</code> | The interval for the node syncing process                                                                                                                                                                                                                |
+| [node_sync_disabled]                 | <code>bool</code>                            | <code>undefined</code> | Disables the node syncing process. Every node will be considered healthy and ready to use                                                                                                                                                                |
+| [node_pool_urls]                     | <code>str</code>                             | <code>undefined</code> | An array of node pool URLs                                                                                                                                                                                                                               |
+| [quorum]                             | <code>bool</code>                            | <code>false</code>     | Bool to define if quorum should be used                                                                                                                                                                                                                  |
+| [quorum_size]                        | <code>int</code>                             | <code>3</code>         | An int that defines how many nodes should be used for quorum                                                                                                                                                                                             |
+| [quorum_threshold]                   | <code>int</code>                             | <code>66</code>        | Define the % of nodes that need to return the same response to accept it                                                                                                                                                                                 |
+| [request_timeout]                    | <code>int</code>                             | <code>undefined</code> | Sets the default HTTP request timeout                                                                                                                                                                                                                    |
+| [api_timeout]                        | <code>dict</code>                            | <code>undefined</code> | The API to set the request timeout. Key: 'GetHealth', 'GetInfo', 'GetPeers', 'GetTips', 'PostMessage', 'GetOutput', 'GetMilestone' Value: timeout in milliseconds                                                                                        |
+| [local_pow]                          | <code>bool</code>                            | <code>undefined</code> | Flag determining if PoW should be done locally or remotely                                                                                                                                                                                               |
+| [tips_interval]                      | <code>int</code>                             | <code>undefined</code> | Time between requests for new tips during PoW                                                                                                                                                                                                            |
+| [mqtt_broker_options]                | <code>[BrokerOptions](#brokeroptions)</code> | <code>undefined</code> | Sets the options for the MQTT connection with the node                                                                                                                                                                                                   |
 
 **Returns** The constructed [Client](#client).
 
@@ -328,8 +328,8 @@ Get the treasury amount.
 
 Get the included message of a transaction.
 
-| Param | Type                | Description                |
-| ----- | ------------------- | -------------------------- |
+| Param   | Type                | Description               |
+| ------- | ------------------- | ------------------------- |
 | [index] | <code>string</code> | The id of the transaction |
 
 **Returns** the new [Message](#message).
@@ -394,6 +394,16 @@ Gets the children of the given message.
 | Param        | Type             | Default                | Description    |
 | ------------ | ---------------- | ---------------------- | -------------- |
 | [message_id] | <code>str</code> | <code>undefined</code> | The message id |
+
+**Returns** the list of children strings.
+
+#### get_message_id(payload_str): str
+
+Get the message id from the payload string.
+
+| Param       | Type             | Default                | Description                                    |
+| ----------- | ---------------- | ---------------------- | ---------------------------------------------- |
+| payload_str | <code>str</code> | <code>undefined</code> | The payload string from the mqtt message event |
 
 **Returns** the list of children strings.
 
@@ -487,9 +497,9 @@ Returns the seed hex encoded.
 
 Returns a parsed hex String from bech32.
 
-| Param   | Type                | Default                | Description               |
-| ------- | ------------------- | ---------------------- | ------------------------- |
-| bech32  | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| Param  | Type                | Default                | Description               |
+| ------ | ------------------- | ---------------------- | ------------------------- |
+| bech32 | <code>string</code> | <code>undefined</code> | The address Bech32 string |
 
 **Returns** A String
 
@@ -497,10 +507,10 @@ Returns a parsed hex String from bech32.
 
 Returns a parsed bech32 String from hex.
 
-| Param       | Type                | Default                | Description               |
-| ----------- | ------------------- | ---------------------- | ------------------------- |
-| bech32      | <code>string</code> | <code>undefined</code> | The address Bech32 string |
-| bech32_hrp  | <code>string</code> | <code>undefined</code> | The Bech32 hrp string     |
+| Param      | Type                | Default                | Description               |
+| ---------- | ------------------- | ---------------------- | ------------------------- |
+| bech32     | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| bech32_hrp | <code>string</code> | <code>undefined</code> | The Bech32 hrp string     |
 
 **Returns** A String
 
@@ -541,7 +551,7 @@ Retries (promotes or reattaches) the message associated with the given id.
 Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
 
 | Param           | Type                | Description                                                           |
-| --------------- | ------------------- |  -------------------------------------------------------------------- |
+| --------------- | ------------------- | --------------------------------------------------------------------- |
 | [seed]          | <code>string</code> | The seed                                                              |
 | [account_index] | <code>int</code>    | The account index.                                                    |
 | [start_index]   | <code>int</code>    | The lowest address index, funds will be consolidated to this address. |

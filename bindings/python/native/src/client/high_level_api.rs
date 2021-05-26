@@ -7,13 +7,15 @@ use crate::client::{
 };
 use iota_client::{
     bee_message::prelude::{
-        MessageId as RustMessageId, TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
+        Message as RustMessage, MessageId as RustMessageId, TransactionId as RustTransactionId,
+        UtxoInput as RustUtxoInput,
     },
+    bee_rest_api::types::dtos::MessageDto as BeeMessageDto,
     Client as RustClient, Seed as RustSeed,
 };
 use pyo3::{exceptions, prelude::*};
 use std::{
-    convert::{Into, TryInto},
+    convert::{Into, TryFrom, TryInto},
     str::FromStr,
 };
 
@@ -162,6 +164,22 @@ impl Client {
                 .await
         })?;
         Ok(children.iter().map(|child| hex::encode(child.as_ref())).collect())
+    }
+    /// Get the message id from the payload string.
+    ///
+    /// Args:
+    ///     payload_str (str): The identifier of message.
+    ///
+    /// Returns:
+    ///     children ([str]): The returned list of children string.
+    fn get_message_id(&self, payload_str: &str) -> Result<String> {
+        // Try BeeMessageDto and if it fails Message
+        let message = match serde_json::from_str::<BeeMessageDto>(&payload_str) {
+            Ok(message_dto) => RustMessage::try_from(&message_dto).expect("invalid message"),
+            Err(_) => serde_json::from_str::<RustMessage>(&payload_str).expect("invalid message"),
+        };
+        let message_id = message.id().0.to_string();
+        Ok(message_id)
     }
     /// Get the list of message indices from the message_id.
     ///
