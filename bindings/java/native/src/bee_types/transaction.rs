@@ -11,7 +11,7 @@ use crate::{
 
 use anyhow::anyhow;
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, fmt::{Display, Formatter}};
 
 use iota_client::bee_message::{
     unlock::{
@@ -73,6 +73,12 @@ impl TransactionPayload {
     }
 }
 
+impl Display for TransactionPayload {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(id={}, essence={}, unlock_blocks=({:?}))", self.id, self.essence, self.unlock_blocks)
+    }
+}
+
 #[derive(Clone)]
 pub struct Essence(RustEssence);
 
@@ -87,6 +93,12 @@ impl Essence {
 
     pub fn to_inner(&self) -> RustEssence {
         self.0.clone()
+    }
+}
+
+impl Display for Essence {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
     }
 }
 
@@ -118,7 +130,13 @@ impl RegularEssence {
     }*/
 }
 
-#[derive(Clone)]
+impl Display for RegularEssence {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct UnlockBlock(RustUnlockBlock);
 
 impl UnlockBlock {
@@ -133,12 +151,14 @@ impl UnlockBlock {
     pub fn to_inner(&self) -> RustUnlockBlock   {
         self.0.clone()
     }
-
-    pub fn to_string(&self) -> String {
-        format!("{:?}", self.0)
+}
+impl Display for UnlockBlock {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct UnlockBlocks(RustUnlockBlocks);
 
 impl UnlockBlocks {
@@ -160,9 +180,11 @@ impl UnlockBlocks {
     pub fn to_inner(&self) -> RustUnlockBlocks   {
         self.0.clone()
     }
+}
 
-    pub fn to_string(&self) -> String {
-        format!("{:?}", self.0)
+impl Display for UnlockBlocks {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
     }
 }
 

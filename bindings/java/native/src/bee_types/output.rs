@@ -9,12 +9,22 @@ use std::{
 
 use iota_client::{
     bee_rest_api::types::{dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse},
-    bee_message::output::Output as RustOutput,
+    bee_message::output::{
+        TreasuryOutput as RustTreasuryOutput,
+        SignatureLockedDustAllowanceOutput as RustSignatureLockedDustAllowanceOutput,
+        SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
+        Output as RustOutput
+    },
     node::OutputsOptions as RustOutputsOptions,
     OutputType,
 };
 
-use crate::classes::address::AddressDto;
+use crate::{
+    Result,
+    classes::address::{
+        AddressDto, Address,
+    },
+};
 
 #[derive(Getters, CopyGetters)]
 pub struct OutputResponse {
@@ -84,10 +94,6 @@ pub struct OutputDto {
 }
 
 impl OutputDto {
-    pub fn to_string(&self) -> String {
-        format!("{:?}", self.output)
-    }
-
     pub fn kind(&self) -> OutputKind {
         match self.output {
             RustOutputDto::SignatureLockedSingle(_) => OutputKind::SignatureLockedSingle,
@@ -96,18 +102,24 @@ impl OutputDto {
         }
     }
 
-    pub fn as_signature_locked_single_output_dto(&self) -> anyhow::Result<SignatureLockedSingleOutputDto> {
+    pub fn as_signature_locked_single_output_dto(&self) -> Result<SignatureLockedSingleOutputDto> {
         SignatureLockedSingleOutputDto::try_from(&self.output)
     }
 
     pub fn as_signature_locked_dust_allowance_output_dto(
         &self,
-    ) -> anyhow::Result<SignatureLockedDustAllowanceOutputDto> {
+    ) -> Result<SignatureLockedDustAllowanceOutputDto> {
         SignatureLockedDustAllowanceOutputDto::try_from(&self.output)
     }
 
-    pub fn as_treasury_output(&self) -> anyhow::Result<TreasuryOutputDto> {
+    pub fn as_treasury_output(&self) -> Result<TreasuryOutputDto> {
         TreasuryOutputDto::try_from(&self.output)
+    }
+}
+
+impl Display for OutputDto {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.output)
     }
 }
 
@@ -145,6 +157,12 @@ pub struct SignatureLockedSingleOutputDto {
     pub amount: u64,
 }
 
+impl Display for SignatureLockedSingleOutputDto {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(amount={}, address={}, kind={})", self.amount, self.address, self.kind)
+    }
+}
+
 impl TryFrom<&RustOutputDto> for SignatureLockedDustAllowanceOutputDto {
     type Error = Error;
     fn try_from(output: &RustOutputDto) -> Result<Self, Self::Error> {
@@ -171,6 +189,12 @@ pub struct SignatureLockedDustAllowanceOutputDto {
     pub amount: u64,
 }
 
+impl Display for SignatureLockedDustAllowanceOutputDto {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(amount={}, address={}, kind={})", self.amount, self.address, self.kind)
+    }
+}
+
 impl TryFrom<&RustOutputDto> for TreasuryOutputDto {
     type Error = Error;
     fn try_from(output: &RustOutputDto) -> Result<Self, Self::Error> {
@@ -190,6 +214,12 @@ pub struct TreasuryOutputDto {
     pub kind: u8,
     #[getset(get_copy = "pub")]
     pub amount: u64,
+}
+
+impl Display for TreasuryOutputDto {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(amount={}, kind={})", self.amount, self.kind)
+    }
 }
 
 #[derive(Default, Clone)]
@@ -218,5 +248,129 @@ impl OutputsOptions {
 impl Display for OutputsOptions {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(f, "({}, {:?})", self.options.include_spent, self.options.output_type)
+    }
+}
+
+pub struct Output {
+    output: RustOutput,
+}
+
+impl Output {
+    pub fn kind(&self) -> OutputKind {
+        match self.output {
+            RustOutput::SignatureLockedSingle(_) => OutputKind::SignatureLockedSingle,
+            RustOutput::SignatureLockedDustAllowance(_) => OutputKind::SignatureLockedDustAllowance,
+            RustOutput::Treasury(_) => OutputKind::Treasury,
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn as_signature_locked_single_output(&self) -> Result<SignatureLockedSingleOutput> {
+        SignatureLockedSingleOutput::try_from(self.output.clone())
+    }
+
+    pub fn as_signature_locked_dust_allowance_output(
+        &self,
+    ) -> Result<SignatureLockedDustAllowanceOutput> {
+        SignatureLockedDustAllowanceOutput::try_from(self.output.clone())
+    }
+
+    pub fn as_treasury_output(&self) -> Result<TreasuryOutput> {
+        TreasuryOutput::try_from(self.output.clone())
+    }
+}
+
+impl Display for Output {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.output)
+    }
+}
+
+/// Describes a deposit to a single address which is unlocked via a signature.
+#[derive(Clone, Debug)]
+pub struct SignatureLockedSingleOutput(RustSignatureLockedSingleOutput);
+
+impl SignatureLockedSingleOutput {
+    pub fn amount(&self) -> u64 {
+        self.0.amount()
+    }
+    pub fn address(&self) -> Address {
+        self.0.address().clone().into()
+    }
+}
+
+impl From<RustSignatureLockedSingleOutput> for SignatureLockedSingleOutput {
+    fn from(output: RustSignatureLockedSingleOutput) -> Self {
+        Self(output)
+    }
+}
+
+impl TryFrom<RustOutput> for SignatureLockedSingleOutput {
+    type Error = Error;
+    fn try_from(output: RustOutput) -> Result<Self, Self::Error> {
+        match output {
+            RustOutput::SignatureLockedSingle(ed) => Ok(Self(ed)),
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl Display for SignatureLockedSingleOutput {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
+    }
+}
+/// Output type for deposits that enables an address to receive dust outputs. It can be consumed as an input like a
+/// regular SigLockedSingleOutput.
+#[derive(Clone, Debug)]
+pub struct SignatureLockedDustAllowanceOutput(RustSignatureLockedDustAllowanceOutput);
+impl SignatureLockedDustAllowanceOutput {
+    pub fn amount(&self) -> u64 {
+        self.0.amount()
+    }
+
+    pub fn address(&self) -> Address {
+        self.0.address().clone().into()
+    }
+}
+
+impl TryFrom<RustOutput> for SignatureLockedDustAllowanceOutput {
+    type Error = Error;
+    fn try_from(output: RustOutput) -> Result<Self, Self::Error> {
+        match output {
+            RustOutput::SignatureLockedDustAllowance(ed) => Ok(Self(ed)),
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl Display for SignatureLockedDustAllowanceOutput {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct TreasuryOutput(RustTreasuryOutput);
+
+impl TreasuryOutput {
+    pub fn amount(&self) -> u64 {
+        self.0.amount()
+    }
+}
+
+impl TryFrom<RustOutput> for TreasuryOutput {
+    type Error = Error;
+    fn try_from(output: RustOutput) -> Result<Self, Self::Error> {
+        match output {
+            RustOutput::Treasury(ed) => Ok(Self(ed)),
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl Display for TreasuryOutput {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
     }
 }

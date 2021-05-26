@@ -405,9 +405,11 @@ foreign_class!(
 
 foreign_class!(
     /// Describes a deposit to a single address which is unlocked via a signature.
+    #[derive(camelCaseAliases, Display)]
     class SignatureLockedSingleOutputDto {
         self_type SignatureLockedSingleOutputDto;
         private constructor = empty;
+        private fn SignatureLockedSingleOutputDto::to_string(&self) -> String; alias to_string;
         fn SignatureLockedSingleOutputDto::amount(&self) -> u64;
     }
 );
@@ -415,18 +417,57 @@ foreign_class!(
 foreign_class!(
     /// Output type for deposits that enables an address to receive dust outputs. It can be consumed as an input like a
     /// regular SigLockedSingleOutput.
+    #[derive(camelCaseAliases, Display)]
     class SignatureLockedDustAllowanceOutputDto {
         self_type SignatureLockedDustAllowanceOutputDto;
         private constructor = empty;
+        private fn SignatureLockedDustAllowanceOutputDto::to_string(&self) -> String; alias to_string;
         fn SignatureLockedDustAllowanceOutputDto::amount(&self) -> u64;
     }
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases, Display)]
     class TreasuryOutputDto {
         self_type TreasuryOutputDto;
         private constructor = empty;
+        private fn TreasuryOutputDto::to_string(&self) -> String; alias to_string;
         fn TreasuryOutputDto::amount(&self) -> u64;
+    }
+);
+
+foreign_class!(
+    /// Describes a deposit to a single address which is unlocked via a signature.
+    #[derive(camelCaseAliases, Display)]
+    class SignatureLockedSingleOutput {
+        self_type SignatureLockedSingleOutput;
+        private constructor = empty;
+        private fn SignatureLockedSingleOutput::to_string(&self) -> String; alias to_string;
+        fn SignatureLockedSingleOutput::amount(&self) -> u64;
+        fn SignatureLockedSingleOutput::address(&self) -> Address;
+    }
+);
+
+foreign_class!(
+    /// Output type for deposits that enables an address to receive dust outputs. It can be consumed as an input like a
+    /// regular SigLockedSingleOutput.
+    #[derive(camelCaseAliases, Display)]
+    class SignatureLockedDustAllowanceOutput {
+        self_type SignatureLockedDustAllowanceOutput;
+        private constructor = empty;
+        private fn SignatureLockedDustAllowanceOutput::to_string(&self) -> String; alias to_string;
+        fn SignatureLockedDustAllowanceOutput::amount(&self) -> u64;
+        fn SignatureLockedDustAllowanceOutput::address(&self) -> Address;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
+    class TreasuryOutput {
+        self_type TreasuryOutput;
+        private constructor = empty;
+        private fn TreasuryOutput::to_string(&self) -> String; alias to_string;
+        fn TreasuryOutput::amount(&self) -> u64;
     }
 );
 
@@ -667,15 +708,17 @@ foreign_class!(
     class Address {
         self_type Address;
         private constructor = empty;
-        fn Address::try_from_bech32(addr: &str) -> Result<Address>;
         private fn Address::to_string(&self) -> String; alias to_string;
+        fn Address::try_from_bech32(addr: &str) -> Result<Address>;
     }
 );
 
 foreign_class!(
+    #[derive(Display)]
     class AddressDto {
         self_type AddressDto;
         private constructor = empty;
+        private fn AddressDto::to_string(&self) -> String; alias to_string;
         fn AddressDto::kind(&self) -> u8;
         fn AddressDto::address(&self) -> &str;
     }
@@ -939,43 +982,49 @@ foreign_class!(
 );
 
 foreign_class!(
+    #[derive(Display, camelCaseAliases)]
     class MilestonePayload {
         self_type MilestonePayload;
         private constructor = empty;
+        private fn MilestonePayload::to_string(&self) -> String; alias to_string;
         fn MilestonePayload::essence(&self) -> MilestonePayloadEssence;
         fn MilestonePayload::signatures(&self) -> Vec<MilestoneSignature>;
     }
 );
 
 foreign_class!(
+    #[derive(Display, camelCaseAliases)]
     class MilestoneSignature {
         self_type MilestoneSignature;
         private constructor = empty;
-        fn MilestoneSignature::get_signature(&self) -> Vec<u8>; alias getSignature;
+        private fn MilestoneSignature::to_string(&self) -> String; alias to_string;
+        fn MilestoneSignature::get_signature(&self) -> Vec<u8>;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(Display, camelCaseAliases)]
     class MilestonePayloadEssence {
         self_type MilestonePayloadEssence;
         private constructor = empty;
+        private fn MilestonePayloadEssence::to_string(&self) -> String; alias to_string;
         fn MilestonePayloadEssence::index(&self) -> u32;
         fn MilestonePayloadEssence::timestamp(&self) -> u64;
         fn MilestonePayloadEssence::parents(&self) -> Vec<MessageId>;
         fn MilestonePayloadEssence::merkle_proof(&self) -> Vec<u8>;
         fn MilestonePayloadEssence::next_pow_score(&self) -> u32;
         fn MilestonePayloadEssence::next_pow_score_milestone(&self) -> u32;
-        //fn MilestonePayloadEssence::public_keys(&self) -> Vec<PublicKey>;
-        //fn MilestonePayloadEssence::receipt(&self) -> Option<ReceiptPayload>;
+        fn MilestonePayloadEssence::public_keys(&self) -> Vec<PublicKey>;
+        fn MilestonePayloadEssence::receipt(&self) -> Option<ReceiptPayload>;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class ReceiptPayload {
         self_type ReceiptPayload;
         private constructor = empty;
+        private fn ReceiptPayload::to_string(&self) -> String; alias to_string;
         fn ReceiptPayload::migrated_at(&self) -> u32;
         fn ReceiptPayload::last(&self) -> bool;
         fn ReceiptPayload::funds(&self) -> Vec<MigratedFundsEntry>;
@@ -983,20 +1032,22 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class MigratedFundsEntry {
         self_type MigratedFundsEntry;
         private constructor = empty;
+        private fn MigratedFundsEntry::to_string(&self) -> String; alias to_string;
         fn MigratedFundsEntry::tail_transaction_hash(&self) -> Vec<u8>;
-        //fn MigratedFundsEntry::output(&self) -> TransactionSignatureLockedSingleOutput;
+        fn MigratedFundsEntry::output(&self) -> SignatureLockedSingleOutput;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class TransactionPayload {
         self_type TransactionPayload;
         private constructor = empty;
+        private fn TransactionPayload::to_string(&self) -> String;
         /// Return a new `TransactionPayloadBuilder` to build a `TransactionPayload`.
         fn TransactionPayload::builder() -> TransactionPayloadBuilder;
         /// Return the essence of a `TransactionPayload`.
@@ -1016,24 +1067,29 @@ foreign_class!(
         constructor TransactionPayloadBuilder::new() -> TransactionPayloadBuilder;
         /// Adds an essence to a `TransactionPayloadBuilder`.
         fn TransactionPayloadBuilder::with_essence(&self, essence: Essence) -> TransactionPayloadBuilder;
+        /// Adds unlock blocks to a `TransactionPayloadBuilder`.
         fn TransactionPayloadBuilder::with_unlock_blocks(&self, unlock_blocks: UnlockBlocks)-> TransactionPayloadBuilder;
+        /// Finishes a `TransactionPayloadBuilder` into a `TransactionPayload`.
         fn TransactionPayloadBuilder::finish(&self) -> Result<TransactionPayload>;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class Essence {
         self_type Essence;
         private constructor = empty;
+        private fn Essence::to_string(&self) -> String;
         fn Essence::get_as_regular(&self) -> Option<RegularEssence>;
     }
 );
 
 foreign_class!(
+    #[derive(Display)]
     class RegularEssence {
         self_type RegularEssence;
         private constructor = empty;
+        private fn RegularEssence::to_string(&self) -> String;
         /// Gets the transaction inputs.
         fn RegularEssence::inputs(&self) -> Vec<Input>;
         /// Gets the transaction outputs.
@@ -1050,18 +1106,16 @@ foreign_class!(
     }
 );
 
-/*
 foreign_class!(
     #[derive(Display)]
-    class TransactionOutput {
-        self_type TransactionOutput;
+    class Output {
+        self_type Output;
         private constructor = empty;
-        private fn TransactionOutput::to_string(&self) -> String;
-        fn TransactionOutput::kind(&self) -> OutputKind;
+        private fn Output::to_string(&self) -> String;
+        fn Output::kind(&self) -> OutputKind;
     }
 );
 
-*/
 foreign_class!(
     #[derive(Display)]
     class UnlockBlock {
@@ -1085,9 +1139,11 @@ foreign_class!(
 );
 
 foreign_class!(
+    #[derive(Display)]
     class TreasuryPayload {
         self_type TreasuryPayload;
         private constructor = empty;
+        private fn TreasuryPayload::to_string(&self) -> String;
         fn TreasuryPayload::output(&self) -> u64;
     }
 );

@@ -5,6 +5,7 @@ use iota_client::{
     bee_message::{
         MessageId,
         payload::{
+            Payload as RustPayload,
             milestone::{
                 MilestonePayloadEssence as RustMilestonePayloadEssence,
             },
@@ -14,7 +15,14 @@ use iota_client::{
     MilestoneResponse as RustMilestoneResponse,
 };
 
-#[derive(Getters, CopyGetters, PartialEq)]
+use crate::{
+    ed25519::PublicKey,
+    bee_types::ReceiptPayload,
+};
+
+use std::convert::TryInto;
+
+#[derive(Getters, CopyGetters, PartialEq, Debug)]
 pub struct MilestoneResponse {
     #[getset(get_copy = "pub")]
     pub index: u32,
@@ -30,12 +38,6 @@ impl core::fmt::Display for MilestoneResponse {
     }
 }
 
-impl core::fmt::Debug for MilestoneResponse {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "MilestoneResponse({})", self)
-    }
-}
-
 impl From<RustMilestoneResponse> for MilestoneResponse {
     fn from(milestone: RustMilestoneResponse) -> Self {
         Self {
@@ -46,7 +48,7 @@ impl From<RustMilestoneResponse> for MilestoneResponse {
     }
 }
 
-#[derive(Getters, CopyGetters, PartialEq)]
+#[derive(Getters, CopyGetters, PartialEq, Debug)]
 pub struct MilestoneUtxoChangesResponse {
     #[getset(get_copy = "pub")]
     pub index: u32,
@@ -73,12 +75,6 @@ impl core::fmt::Display for MilestoneUtxoChangesResponse {
     }
 }
 
-impl core::fmt::Debug for MilestoneUtxoChangesResponse {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "MilestoneUtxoChangesResponse({})", self)
-    }
-}
-
 impl From<RustUtxoChangesResponse> for MilestoneUtxoChangesResponse {
     fn from(changes: RustUtxoChangesResponse) -> Self {
         Self {
@@ -89,6 +85,7 @@ impl From<RustUtxoChangesResponse> for MilestoneUtxoChangesResponse {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct MilestonePayload {
     essence: RustMilestonePayloadEssence,
     signatures: Vec<Box<[u8]>>,
@@ -117,6 +114,17 @@ impl MilestonePayload {
     }
 }
 
+impl core::fmt::Display for MilestonePayload {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(
+            f,
+            "essence={:?} signatures=({:?})",
+            self.essence, self.signatures
+        )
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub struct MilestoneSignature {
     signature: Vec<u8>,
 }
@@ -127,6 +135,17 @@ impl MilestoneSignature {
     }
 }
 
+impl core::fmt::Display for MilestoneSignature {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(
+            f,
+            "{:?}",
+            self.signature
+        )
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub struct MilestonePayloadEssence {
     essence: RustMilestonePayloadEssence,
 }
@@ -156,15 +175,11 @@ impl MilestonePayloadEssence {
         self.essence.next_pow_score_milestone_index()
     }
 
-    /*
     pub fn public_keys(&self) -> Vec<PublicKey> {
-        // Vec of vec isnt implemented as a generatable type
         self.essence
             .public_keys()
             .iter()
-            .map(|key| PublicKey {
-                public_key: key.to_vec(),
-            })
+            .map(|key| key.try_into().unwrap())
             .collect()
     }
 
@@ -177,5 +192,15 @@ impl MilestonePayloadEssence {
         }
 
         None
-    }*/
+    }
+}
+
+impl core::fmt::Display for MilestonePayloadEssence {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(
+            f,
+            "{:?}",
+            self.essence
+        )
+    }
 }

@@ -37,6 +37,12 @@ pub struct AddressDto {
     pub address: String,
 }
 
+impl Display for AddressDto {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(address={}, kind={})", self.address, self.kind)
+    }
+}
+
 impl From<RustAddressDto> for AddressDto {
     fn from(address: RustAddressDto) -> Self {
         match address {

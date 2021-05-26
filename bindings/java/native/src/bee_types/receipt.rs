@@ -4,7 +4,10 @@
 use getset::{CopyGetters, Getters};
 use std::fmt::{Display, Formatter};
 
-use crate::classes::address::AddressDto;
+use crate::{
+    SignatureLockedSingleOutput,
+    classes::address::AddressDto
+};
 
 use iota_client::{
     bee_message::payload::{
@@ -108,6 +111,11 @@ impl From<RustMigratedFundsEntryDto> for MigratedFundsEntryDto {
         }
     }
 }
+impl Display for MigratedFundsEntryDto {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(tail_transaction_hash={:}, address={:?}, deposit={})", self.tail_transaction_hash, self.address, self.deposit)
+    }
+}
 
 pub struct ReceiptPayload {
     payload: RustReceiptPayload,
@@ -137,6 +145,12 @@ impl ReceiptPayload {
     }
 }
 
+impl Display for ReceiptPayload {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.payload)
+    }
+}
+
 pub struct MigratedFundsEntry {
     payload: RustMigratedFundsEntry,
 }
@@ -146,9 +160,13 @@ impl MigratedFundsEntry {
         self.payload.tail_transaction_hash().as_ref().to_vec()
     }
 
-    /*
-    pub fn output(&self) -> TransactionSignatureLockedSingleOutput {
-        self.payload.output().clone()
+    pub fn output(&self) -> SignatureLockedSingleOutput {
+        self.payload.output().clone().into()
     }
-    */
+}
+
+impl Display for MigratedFundsEntry {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.payload)
+    }
 }
