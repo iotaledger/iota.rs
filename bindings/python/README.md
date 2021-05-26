@@ -405,7 +405,7 @@ Get the message id from the payload string.
 | ----------- | ---------------- | ---------------------- | ---------------------------------------------- |
 | payload_str | <code>str</code> | <code>undefined</code> | The payload string from the mqtt message event |
 
-**Returns** the message_id string.
+**Returns** The identifier of message.
 
 #### get_message_index(index): list[str]
 

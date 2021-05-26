@@ -171,7 +171,7 @@ impl Client {
     ///     payload_str (str): The identifier of message.
     ///
     /// Returns:
-    ///     message_id (str): The message id in string.
+    ///     message_id (str): The identifier of message.
     fn get_message_id(&self, payload_str: &str) -> Result<String> {
         // Try BeeMessageDto and if it fails Message
         let message = match serde_json::from_str::<BeeMessageDto>(&payload_str) {
