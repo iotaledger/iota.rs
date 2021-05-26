@@ -256,13 +256,13 @@ There are three functions to get `UTXO` outputs (related to the given address):
 ```
 
 Output example:
-```json`
+```json
 [
   '0f2d5d2651f8061a9f5417d0658009f32b2e3f77f9706b0be3b4b3f466171f360000',
   '7614ba900a90b130707766a660a454942ac7cc4adea3fb9ad0cdca90114417c20000',
   '768c20c15a290e02a43b83263a98501b9d7eb0b57da40a9247289c672de63ea60000'
 ]
-``
+```
 
 Then the function `Client.getOutput(str)` can be used to get metadata about the given `output_id`:
 
