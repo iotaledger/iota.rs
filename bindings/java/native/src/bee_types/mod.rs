@@ -3,7 +3,6 @@
 
 mod index;
 mod input;
-mod migration;
 mod milestone;
 mod output;
 mod payloads;
@@ -18,7 +17,6 @@ mod peers;
 
 pub use index::*;
 pub use input::*;
-pub use migration::*;
 pub use milestone::*;
 pub use output::*;
 pub use payloads::*;

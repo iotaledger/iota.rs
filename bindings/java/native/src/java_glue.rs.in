@@ -920,7 +920,8 @@ foreign_class!(
         fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>;
         fn MessagePayload::get_as_transaction(&self) -> Option<TransactionPayload>;
         fn MessagePayload::get_as_treasury(&self) -> Option<TreasuryPayload>;
-        //fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>; alias getAsMilestone;
+        fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>;
+        fn MessagePayload::get_as_receipt(&self) -> Option<ReceiptPayload>;
     }
 );
 
@@ -937,30 +938,59 @@ foreign_class!(
     }
 );
 
-/*
 foreign_class!(
     class MilestonePayload {
         self_type MilestonePayload;
         private constructor = empty;
-        fn MilestonePayload::id(&self) -> String;
         fn MilestonePayload::essence(&self) -> MilestonePayloadEssence;
-        fn MilestonePayload::validate(&self, applicable_public_keys: &[String], min_threshold: usize) -> bool;
-        //fn MilestonePayload::signatures(&self) -> Vec<Box<[u8]>>;
+        fn MilestonePayload::signatures(&self) -> Vec<MilestoneSignature>;
     }
 );
 
 foreign_class!(
+    class MilestoneSignature {
+        self_type MilestoneSignature;
+        private constructor = empty;
+        fn MilestoneSignature::get_signature(&self) -> Vec<u8>; alias getSignature;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
     class MilestonePayloadEssence {
         self_type MilestonePayloadEssence;
         private constructor = empty;
         fn MilestonePayloadEssence::index(&self) -> u32;
         fn MilestonePayloadEssence::timestamp(&self) -> u64;
         fn MilestonePayloadEssence::parents(&self) -> Vec<MessageId>;
-        fn MilestonePayloadEssence::merkle_proof(&self) -> Vec<u8>; alias merkleProof;
+        fn MilestonePayloadEssence::merkle_proof(&self) -> Vec<u8>;
+        fn MilestonePayloadEssence::next_pow_score(&self) -> u32;
+        fn MilestonePayloadEssence::next_pow_score_milestone(&self) -> u32;
+        //fn MilestonePayloadEssence::public_keys(&self) -> Vec<PublicKey>;
+        //fn MilestonePayloadEssence::receipt(&self) -> Option<ReceiptPayload>;
     }
 );
-*/
-// TransactionEssence
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class ReceiptPayload {
+        self_type ReceiptPayload;
+        private constructor = empty;
+        fn ReceiptPayload::migrated_at(&self) -> u32;
+        fn ReceiptPayload::last(&self) -> bool;
+        fn ReceiptPayload::funds(&self) -> Vec<MigratedFundsEntry>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class MigratedFundsEntry {
+        self_type MigratedFundsEntry;
+        private constructor = empty;
+        fn MigratedFundsEntry::tail_transaction_hash(&self) -> Vec<u8>;
+        //fn MigratedFundsEntry::output(&self) -> TransactionSignatureLockedSingleOutput;
+    }
+);
 
 foreign_class!(
     #[derive(camelCaseAliases)]
@@ -1049,7 +1079,8 @@ foreign_class!(
         private constructor = empty;
         private fn UnlockBlocks::to_string(&self) -> String;
         fn UnlockBlocks::new(unlock_blocks: Vec<UnlockBlock>) -> Result<UnlockBlocks>;
-        fn UnlockBlocks::get(&self, index: usize) -> Option<UnlockBlock>
+        // Gets a copy of the unlockblock at specified index, if it exists
+        fn UnlockBlocks::get(&self, index: usize) -> Option<UnlockBlock>;
     }
 );
 

@@ -6,9 +6,17 @@ use std::fmt::{Display, Formatter};
 
 use crate::classes::address::AddressDto;
 
-use iota_client::bee_rest_api::types::dtos::{
-    MigratedFundsEntryDto as RustMigratedFundsEntryDto, PayloadDto as RustPayloadDto, ReceiptDto as RustReceiptDto,
-    ReceiptPayloadDto as RustReceiptPayloadDto,
+use iota_client::{
+    bee_message::payload::{
+        receipt::{
+            ReceiptPayload as RustReceiptPayload,
+            MigratedFundsEntry as RustMigratedFundsEntry,
+        },
+    },
+    bee_rest_api::types::dtos::{
+        MigratedFundsEntryDto as RustMigratedFundsEntryDto, PayloadDto as RustPayloadDto, ReceiptDto as RustReceiptDto,
+        ReceiptPayloadDto as RustReceiptPayloadDto,
+    },
 };
 
 #[derive(Getters, CopyGetters, Debug)]
@@ -101,49 +109,46 @@ impl From<RustMigratedFundsEntryDto> for MigratedFundsEntryDto {
     }
 }
 
-// use iota_wallet::message::{
-// MessageMigratedFundsEntry as MigratedFundsEntryRust, MessageReceiptPayload as ReceiptPayloadRust,
-// TransactionSignatureLockedSingleOutput,
-// };
-//
-// pub struct ReceiptPayload {
-// payload: ReceiptPayloadRust,
-// }
-//
-// impl From<ReceiptPayloadRust> for ReceiptPayload {
-// fn from(payload: ReceiptPayloadRust) -> Self {
-// Self { payload }
-// }
-// }
-//
-// impl ReceiptPayload {
-// pub fn migrated_at(&self) -> u32 {
-// self.payload.migrated_at()
-// }
-//
-// pub fn last(&self) -> bool {
-// self.payload.last()
-// }
-//
-// pub fn funds(&self) -> Vec<MigratedFundsEntry> {
-// self.payload
-// .funds()
-// .into_iter()
-// .map(|m| MigratedFundsEntry { payload: m.clone() })
-// .collect()
-// }
-// }
-//
-// pub struct MigratedFundsEntry {
-// payload: MigratedFundsEntryRust,
-// }
-//
-// impl MigratedFundsEntry {
-// pub fn tail_transaction_hash(&self) -> Vec<u8> {
-// self.payload.tail_transaction_hash().as_ref().to_vec()
-// }
-//
-// pub fn output(&self) -> TransactionSignatureLockedSingleOutput {
-// self.payload.output().clone()
-// }
-// }
+pub struct ReceiptPayload {
+    payload: RustReceiptPayload,
+}
+
+impl From<RustReceiptPayload> for ReceiptPayload {
+    fn from(payload: RustReceiptPayload) -> Self {
+        Self { payload }
+    }
+}
+
+impl ReceiptPayload {
+    pub fn migrated_at(&self) -> u32 {
+        *self.payload.migrated_at()
+    }
+
+    pub fn last(&self) -> bool {
+        self.payload.last()
+    }
+
+    pub fn funds(&self) -> Vec<MigratedFundsEntry> {
+        self.payload
+            .funds()
+            .into_iter()
+            .map(|m| MigratedFundsEntry { payload: m.clone() })
+            .collect()
+    }
+}
+
+pub struct MigratedFundsEntry {
+    payload: RustMigratedFundsEntry,
+}
+
+impl MigratedFundsEntry {
+    pub fn tail_transaction_hash(&self) -> Vec<u8> {
+        self.payload.tail_transaction_hash().as_ref().to_vec()
+    }
+
+    /*
+    pub fn output(&self) -> TransactionSignatureLockedSingleOutput {
+        self.payload.output().clone()
+    }
+    */
+}

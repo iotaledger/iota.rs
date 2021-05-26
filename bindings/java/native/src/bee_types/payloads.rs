@@ -7,6 +7,8 @@ use crate::bee_types::{
     IndexationPayload,
     TransactionPayload,
     TreasuryPayload,
+    MilestonePayload,
+    ReceiptPayload,
 };
 
 pub enum MessagePayloadType {
@@ -75,9 +77,9 @@ impl MessagePayload {
             None
         }
     }
-/*
+
     pub fn get_as_milestone(&self) -> Option<MilestonePayload> {
-        if let MessagePayloadRust::Milestone(payload) = &self.payload {
+        if let RustPayload::Milestone(payload) = &self.payload {
             Some(MilestonePayload::new(
                 payload.essence().to_owned(),
                 payload.signatures().to_owned(),
@@ -88,12 +90,10 @@ impl MessagePayload {
     }
 
     pub fn get_as_receipt(&self) -> Option<ReceiptPayload> {
-        if let MessagePayloadRust::Receipt(payload) = &self.payload {
+        if let RustPayload::Receipt(payload) = &self.payload {
             Some((*payload.clone()).into())
         } else {
             None
         }
     }
-
-    */
 }
