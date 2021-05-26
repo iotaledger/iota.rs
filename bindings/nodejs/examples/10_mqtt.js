@@ -10,6 +10,7 @@ async function run() {
 
     client.subscriber().topics(['milestones/confirmed', 'messages']).subscribe((err, data) => {
         console.log(data);
+        // To get the message id `client.getMessageId(data.payload)` can be used
     })
 }
 

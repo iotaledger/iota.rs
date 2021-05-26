@@ -323,6 +323,16 @@ Checks if a given address is valid.
 
 **Returns** A boolean.
 
+#### getMessageId(message: string): boolean
+
+Returns the message id from a message.
+
+| Param   | Type                | Description    |
+| ------- | ------------------- | -------------- |
+| message | <code>string</code> | The message id |
+
+**Returns** the message id.
+
 #### retry(messageId: string): Promise<Message>
 
 Retries (promotes or reattaches) the message associated with the given id.

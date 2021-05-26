@@ -116,6 +116,7 @@ export declare class Client {
   bech32ToHex(address: string): string
   hexToBech32(address: string, bech32_hrp?: string): Promise<string>
   isAddressValid(address: string): boolean
+  getMessageId(message: string): string
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUtxoChanges(index: number): Promise<MilestoneUTXOChanges>
   getReceipts(): Promise<Receipts[]>
