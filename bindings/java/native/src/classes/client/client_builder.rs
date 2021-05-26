@@ -4,9 +4,10 @@
 use iota_client::{client::BrokerOptions as RustBrokerOptions, Api, ClientBuilder as RustClientBuilder};
 use std::{cell::RefCell, convert::TryFrom, rc::Rc, time::Duration};
 
-use anyhow::Result;
-
-use crate::full_node_api::Client;
+use crate::{
+    Result,
+    full_node_api::Client
+};
 
 pub struct BrokerOptions {
     builder: Rc<RefCell<Option<RustBrokerOptions>>>,

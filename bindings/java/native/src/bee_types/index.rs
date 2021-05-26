@@ -10,12 +10,21 @@ pub struct IndexationPayload {
 }
 
 impl IndexationPayload {
+    
     pub fn to_inner(self) -> RustIndexationPayload {
         self.payload
     }
 
     pub fn new(index: &[u8], data: &[u8]) -> Result<IndexationPayload> {
         let index = RustIndexationPayload::new(&index, &data);
+        match index {
+            Err(e) => Err(anyhow!(e.to_string())),
+            Ok(i) => Ok(IndexationPayload { payload: i }),
+        }
+    }
+
+    pub fn new_from_string(index: &str, data: &str) -> Result<IndexationPayload> {
+        let index = RustIndexationPayload::new(index.as_bytes(), data.as_bytes());
         match index {
             Err(e) => Err(anyhow!(e.to_string())),
             Ok(i) => Ok(IndexationPayload { payload: i }),

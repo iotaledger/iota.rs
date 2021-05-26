@@ -329,7 +329,9 @@ foreign_class!(
         self_type OutputsOptions;
         constructor OutputsOptions::default() -> OutputsOptions;
         private fn OutputsOptions::to_string(&self) -> String; alias to_string;
+        /// Whether the query should include spent outputs or not.
         private fn OutputsOptions::include_spent(&mut self, include_spent: bool);
+        /// The output type filter.
         private fn OutputsOptions::output_type(&mut self, output_type: Option<OutputKind>);
     }
 );
@@ -402,6 +404,7 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// Describes a deposit to a single address which is unlocked via a signature.
     class SignatureLockedSingleOutputDto {
         self_type SignatureLockedSingleOutputDto;
         private constructor = empty;
@@ -410,6 +413,8 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// Output type for deposits that enables an address to receive dust outputs. It can be consumed as an input like a
+    /// regular SigLockedSingleOutput.
     class SignatureLockedDustAllowanceOutputDto {
         self_type SignatureLockedDustAllowanceOutputDto;
         private constructor = empty;
@@ -594,6 +599,10 @@ foreign_class!(
         fn ClientMessageBuilder::with_data(&self, data: Vec<u8>)  -> ClientMessageBuilder;
         /// Set data to the builder
         fn ClientMessageBuilder::with_data_string(&self, data: &str)  -> ClientMessageBuilder;
+
+        /// Consume the builder and return the message made with the specific payload
+        fn ClientMessageBuilder::finish_message(&self, payload: IndexationPayload) -> Result<Message>;
+
         /// Consume the builder and return the message
         fn ClientMessageBuilder::finish(&self) -> Result<Message>;
     }
@@ -910,6 +919,7 @@ foreign_class!(
         fn MessagePayload::payload_type(&self) -> MessagePayloadType;
         fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>;
         fn MessagePayload::get_as_transaction(&self) -> Option<TransactionPayload>;
+        fn MessagePayload::get_as_treasury(&self) -> Option<TreasuryPayload>;
         //fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>; alias getAsMilestone;
     }
 );
@@ -920,7 +930,8 @@ foreign_class!(
         self_type IndexationPayload;
         private constructor = empty;
         private fn IndexationPayload::to_string(&self) -> String; alias to_string;
-        fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias new_with;
+        fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias fromBytes;
+        fn IndexationPayload::new_from_string(index: &str, data: &str) -> Result<IndexationPayload>; alias fromStrings;
         fn IndexationPayload::index(&self) -> &[u8];
         fn IndexationPayload::data(&self) -> &[u8];
     }
@@ -952,20 +963,40 @@ foreign_class!(
 // TransactionEssence
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
     class TransactionPayload {
         self_type TransactionPayload;
         private constructor = empty;
+        /// Return a new `TransactionPayloadBuilder` to build a `TransactionPayload`.
+        fn TransactionPayload::builder() -> TransactionPayloadBuilder;
+        /// Return the essence of a `TransactionPayload`.
         fn TransactionPayload::essence(&self) -> Essence;
+        /// Computes the identifier of a `TransactionPayload`.
         fn TransactionPayload::id(&self) -> TransactionId;
-        //fn TransactionPayload::unlock_blocks(&self) -> Vec<UnlockBlock>; alias unlockBlocks;
+        /// Return unlock blocks of a `TransactionPayload`.
+        fn TransactionPayload::unlock_blocks(&self) -> Vec<UnlockBlock>;
     }
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
+    class TransactionPayloadBuilder {
+        self_type TransactionPayloadBuilder;
+        /// Creates a new `TransactionPayloadBuilder`.
+        constructor TransactionPayloadBuilder::new() -> TransactionPayloadBuilder;
+        /// Adds an essence to a `TransactionPayloadBuilder`.
+        fn TransactionPayloadBuilder::with_essence(&self, essence: Essence) -> TransactionPayloadBuilder;
+        fn TransactionPayloadBuilder::with_unlock_blocks(&self, unlock_blocks: UnlockBlocks)-> TransactionPayloadBuilder;
+        fn TransactionPayloadBuilder::finish(&self) -> Result<TransactionPayload>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
     class Essence {
         self_type Essence;
         private constructor = empty;
-        fn Essence::get_as_regular(&self) -> Option<RegularEssence>; alias getAsRegular;
+        fn Essence::get_as_regular(&self) -> Option<RegularEssence>;
     }
 );
 
@@ -973,17 +1004,19 @@ foreign_class!(
     class RegularEssence {
         self_type RegularEssence;
         private constructor = empty;
-        //fn RegularEssence::inputs(&self) -> Vec<InputDto>;
+        /// Gets the transaction inputs.
+        fn RegularEssence::inputs(&self) -> Vec<Input>;
+        /// Gets the transaction outputs.
         fn RegularEssence::outputs(&self) -> Vec<OutputDto>;
     }
 );
 foreign_class!(
     #[derive(Display)]
-    class TransactionInput {
-        self_type TransactionInput;
+    class Input {
+        self_type Input;
         private constructor = empty;
-        private fn TransactionInput::to_string(&self) -> String;
-        fn TransactionInput::kind(&self) -> InputKind;
+        private fn Input::to_string(&self) -> String;
+        fn Input::kind(&self) -> InputKind;
     }
 );
 
@@ -998,6 +1031,7 @@ foreign_class!(
     }
 );
 
+*/
 foreign_class!(
     #[derive(Display)]
     class UnlockBlock {
@@ -1009,11 +1043,20 @@ foreign_class!(
 );
 
 foreign_class!(
-    class TreasuryTransactionPayload {
-        self_type TreasuryTransactionPayload;
+    #[derive(Display)]
+    class UnlockBlocks {
+        self_type UnlockBlocks;
         private constructor = empty;
-        fn TreasuryTransactionPayload::input(&self) -> MessageId;
-        fn TreasuryTransactionPayload::output(&self) -> u64;
+        private fn UnlockBlocks::to_string(&self) -> String;
+        fn UnlockBlocks::new(unlock_blocks: Vec<UnlockBlock>) -> Result<UnlockBlocks>;
+        fn UnlockBlocks::get(&self, index: usize) -> Option<UnlockBlock>
     }
 );
-*/
+
+foreign_class!(
+    class TreasuryPayload {
+        self_type TreasuryPayload;
+        private constructor = empty;
+        fn TreasuryPayload::output(&self) -> u64;
+    }
+);

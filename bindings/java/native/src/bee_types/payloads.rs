@@ -6,6 +6,7 @@ use iota_client::bee_message::payload::Payload as RustPayload;
 use crate::bee_types::{
     IndexationPayload,
     TransactionPayload,
+    TreasuryPayload,
 };
 
 pub enum MessagePayloadType {
@@ -61,7 +62,15 @@ impl MessagePayload {
     
     pub fn get_as_transaction(&self) -> Option<TransactionPayload> {
         if let RustPayload::Transaction(payload) = &self.payload {
-            Some(payload.into())
+            Some((*payload.clone()).into())
+        } else {
+            None
+        }
+    }
+
+    pub fn get_as_treasury(&self) -> Option<TreasuryPayload> {
+        if let RustPayload::TreasuryTransaction(payload) = &self.payload {
+            Some((*payload.clone()).into())
         } else {
             None
         }
@@ -86,11 +95,5 @@ impl MessagePayload {
         }
     }
 
-    pub fn get_as_treasury(&self) -> Option<TreasuryTransactionPayload> {
-        if let MessagePayloadRust::TreasuryTransaction(payload) = &self.payload {
-            Some((*payload.clone()).into())
-        } else {
-            None
-        }
-    }*/
+    */
 }

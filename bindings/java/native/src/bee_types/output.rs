@@ -198,11 +198,11 @@ pub struct OutputsOptions {
 }
 
 impl OutputsOptions {
-    /// Whether the query should include spent outputs or not.
+    
     pub fn include_spent(&mut self, include_spent: bool) {
         self.options.include_spent = include_spent;
     }
-    /// The output type filter.
+    
     pub fn output_type(&mut self, output_type: Option<OutputKind>) {
         self.options.output_type = match output_type {
             Some(kind) => Some(output_kind_to_type(kind)),

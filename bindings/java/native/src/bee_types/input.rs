@@ -16,13 +16,11 @@ pub enum InputKind {
 }
 
 #[derive(Clone)]
-pub struct TransactionInput {
-    input: RustInput,
-}
+pub struct Input(RustInput);
 
-impl TransactionInput {
+impl Input {
     pub fn kind(&self) -> InputKind {
-        match self.input {
+        match self.0 {
             RustInput::Utxo(_) => InputKind::Utxo,
             RustInput::Treasury(_) => InputKind::Treasury,
             _ => unimplemented!()
@@ -30,7 +28,13 @@ impl TransactionInput {
     }
 
     pub fn to_string(&self) -> String {
-        format!("{:?}", self.input)
+        format!("{:?}", self.0)
+    }
+}
+
+impl From<RustInput> for Input {
+    fn from(input: RustInput) -> Self {
+        Self(input)
     }
 }
 

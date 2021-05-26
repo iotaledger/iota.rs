@@ -268,4 +268,15 @@ public class ExampleApp {
 
         msgs = iota.retryUntilIncluded(message.id(), -1, -1);
     }
+
+    public static void customPayload() {
+        // Create a client instance
+        Client iota = node();
+
+        IndexationPayload indexation_payload = IndexationPayload.fromStrings("Your Index", "Your Data");
+
+        Message message = iota.message().finishMessage(indexation_payload);
+
+        System.out.printf("Message ID: %s", message.id());
+    }
 }

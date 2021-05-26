@@ -5,7 +5,10 @@ use std::{cell::RefCell, rc::Rc};
 use getset::{CopyGetters, Getters};
 use iota_client::{
     api::ClientMessageBuilder as RustClientMessageBuilder,
-    bee_message::prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents},
+    bee_message::{
+        payload::Payload,
+        prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents},
+    },
     node::GetMessageBuilder as RustGetMessageBuilder,
     Seed as RustSeed,
 };
@@ -13,7 +16,7 @@ use iota_client::{
 use anyhow::anyhow;
 
 use crate::{
-    bee_types::{MessageMetadata, UtxoInput},
+    bee_types::{MessageMetadata, UtxoInput, IndexationPayload},
     full_node_api::Client,
     MessagePayload, Result,
 };
@@ -339,6 +342,22 @@ impl<'a> ClientMessageBuilder<'a> {
                 inner.builder.with_seed(&s).finish().await
             } else {
                 inner.builder.finish().await
+            }
+        });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn finish_message(&self, payload: IndexationPayload) -> Result<Message> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let payload = Some(Payload::Indexation(Box::new(payload.to_inner())));
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).finish_message(payload).await
+            } else {
+                inner.builder.finish_message(payload).await
             }
         });
         match res {

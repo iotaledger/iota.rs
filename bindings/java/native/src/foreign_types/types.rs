@@ -214,7 +214,13 @@ foreign_typemap!(
     ($p:f_type, option = "NoNullAnnotations") <= "Message[]";
     ($p:f_type, option = "NullAnnotations") <= "@NonNull Message[]";
 );
-
+foreign_typemap!(
+    ($p:r_type) Vec<MessageId> <= internal_aliases::JForeignObjectsArray<MessageId> {
+        $out = jobject_array_to_vec_of_objects(env, $p);
+    };
+    ($p:f_type, option = "NoNullAnnotations") <= "MessageId[]";
+    ($p:f_type, option = "NullAnnotations") <= "@NonNull MessageId[]";
+);
 foreign_typemap!(
     ($p:r_type) Vec<Address> <= internal_aliases::JForeignObjectsArray<Address> {
         $out = jobject_array_to_vec_of_objects(env, $p);
@@ -222,19 +228,10 @@ foreign_typemap!(
     ($p:f_type, option = "NoNullAnnotations") <= "Address[]";
     ($p:f_type, option = "NullAnnotations") <= "@NonNull Address[]";
 );
-
 foreign_typemap!(
     ($p:r_type) Vec<Topic> <= internal_aliases::JForeignObjectsArray<Topic> {
         $out = jobject_array_to_vec_of_objects(env, $p);
     };
     ($p:f_type, option = "NoNullAnnotations") <= "Topic[]";
     ($p:f_type, option = "NullAnnotations") <= "@NonNull Topic[]";
-);
-
-foreign_typemap!(
-    ($p:r_type) Vec<MessageId> <= internal_aliases::JForeignObjectsArray<MessageId> {
-        $out = jobject_array_to_vec_of_objects(env, $p);
-    };
-    ($p:f_type, option = "NoNullAnnotations") <= "MessageId[]";
-    ($p:f_type, option = "NullAnnotations") <= "@NonNull MessageId[]";
 );
