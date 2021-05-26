@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.6.0]
+
+- Added getMessageId function.
+  - [b1935f36](https://github.com/iotaledger/iota.rs/commit/b1935f36542ed805209c1ce684aa12fc1de8af7a) nodejs add getMessageId on 2021-05-25
+
 ## \[0.5.1]
 
 - Set git repo and rev to allow JS bindings to be built from source
