@@ -8,7 +8,6 @@ pub use client::*;
 pub mod address;
 pub mod ed25519;
 pub mod message;
-pub mod mqtt;
 
 pub fn consolidate_funds(
     client: crate::full_node_api::Client,
