@@ -1,3 +1,5 @@
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
 use getset::{CopyGetters, Getters};
 use iota_client::bee_rest_api::types::dtos::{PeerDto as RustPeerDto, RelationDto as RustRelationDto};
 
