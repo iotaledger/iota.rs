@@ -46,7 +46,6 @@ impl MessagePayload {
             RustPayload::Indexation(_) => MessagePayloadType::Indexation,
             RustPayload::Receipt(_) => MessagePayloadType::Receipt,
             RustPayload::TreasuryTransaction(_) => MessagePayloadType::TreasuryTransaction,
-            _ => unimplemented!()
         }
     }
 

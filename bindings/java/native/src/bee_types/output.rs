@@ -270,7 +270,6 @@ impl Output {
             RustOutput::SignatureLockedSingle(_) => OutputKind::SignatureLockedSingle,
             RustOutput::SignatureLockedDustAllowance(_) => OutputKind::SignatureLockedDustAllowance,
             RustOutput::Treasury(_) => OutputKind::Treasury,
-            _ => unimplemented!(),
         }
     }
 

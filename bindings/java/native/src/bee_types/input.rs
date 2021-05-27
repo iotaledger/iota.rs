@@ -27,12 +27,15 @@ impl Input {
         match self.0 {
             RustInput::Utxo(_) => InputKind::Utxo,
             RustInput::Treasury(_) => InputKind::Treasury,
-            _ => unimplemented!()
         }
     }
 
     pub fn get_as_utxo(&self) -> Option<UtxoInput> {
-        None
+        if let RustInput::Utxo(payload) = &self.0 {
+            Some(payload.clone().into())
+        } else {
+            None
+        }
     }
 
     pub fn get_as_treasury(&self) -> Option<TreasuryInput> {

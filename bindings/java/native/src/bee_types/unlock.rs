@@ -36,7 +36,6 @@ impl UnlockBlock {
         match self.0 {
             RustUnlockBlock::Signature(_) => UnlockBlockKind::Ed25519,
             RustUnlockBlock::Reference(_) => UnlockBlockKind::Reference,
-            _ => panic!("Found unknown unlock block"),
         }
     }
 
