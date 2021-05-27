@@ -140,6 +140,9 @@ impl From<RustReceiptPayload> for ReceiptPayload {
 }
 
 impl ReceiptPayload {
+    pub fn to_inner(self) -> RustReceiptPayload {
+        self.payload
+    }
     pub fn from(
         migrated_at: u32,
         last: bool,
@@ -153,6 +156,7 @@ impl ReceiptPayload {
         }
     }
     
+
     pub fn migrated_at(&self) -> u32 {
         *self.payload.migrated_at()
     }

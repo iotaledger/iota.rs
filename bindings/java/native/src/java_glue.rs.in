@@ -165,7 +165,7 @@ foreign_class!(
         fn Client::get_output(&self, output_id: String) -> Result<OutputResponse>;
 
         /// GET /api/v1/addresses/{address} endpoint
-        fn Client::get_address(&self) -> GetAddressBuilderNode;
+        fn Client::get_address(&self) -> GetAddressBuilder;
 
         /// Return the balance in iota for the given address; No seed or security level needed to do this
         /// since we are only checking and already know the address.
@@ -221,7 +221,7 @@ foreign_class!(
         fn Client::get_message(&self) -> GetMessageBuilder;
 
         /// Return a list of addresses from the seed regardless of their validity.
-        fn Client::get_addresses(&self, seed: &str) -> GetAddressesBuilderApi;
+        fn Client::get_addresses(&self, seed: &str) -> GetAddressesBuilder;
 
         /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
         /// milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages. Set to -1 for defaults.
@@ -678,7 +678,15 @@ foreign_class!(
         fn ClientMessageBuilder::with_data_string(&self, data: &str)  -> ClientMessageBuilder;
 
         /// Consume the builder and return the message made with the specific payload
-        fn ClientMessageBuilder::finish_message(&self, payload: IndexationPayload) -> Result<Message>;
+        fn ClientMessageBuilder::finish_message_transaction(&self, payload: TransactionPayload) -> Result<Message>; alias finishTransaction;
+        /// Consume the builder and return the message made with the specific payload
+        fn ClientMessageBuilder::finish_message_milestone(&self, payload: MilestonePayload) -> Result<Message>; alias finishMilestone;
+        /// Consume the builder and return the message made with the specific payload
+        fn ClientMessageBuilder::finish_message_index(&self, payload: IndexationPayload) -> Result<Message>; alias finish;
+        /// Consume the builder and return the message made with the specific payload
+        fn ClientMessageBuilder::finish_message_receipt(&self, payload: ReceiptPayload) -> Result<Message>; alias finishReceipt;
+        /// Consume the builder and return the message made with the specific payload
+        fn ClientMessageBuilder::finish_message_treasury(&self, payload: TreasuryPayload) -> Result<Message>; alias finishTreasury;
 
         /// Consume the builder and return the message
         fn ClientMessageBuilder::finish(&self) -> Result<Message>;
@@ -787,34 +795,34 @@ foreign_class!(
 );
 
 foreign_class!(
-    class GetAddressBuilderNode {
-        self_type GetAddressBuilderNode<'a>;
+    class GetAddressBuilder {
+        self_type GetAddressBuilder<'a>;
         private constructor = empty;
-        fn GetAddressBuilderNode::balance(&self, address: &str) -> Result<BalanceAddressResponse>;
-        fn GetAddressBuilderNode::outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>>;
+        fn GetAddressBuilder::balance(&self, address: &str) -> Result<BalanceAddressResponse>;
+        fn GetAddressBuilder::outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>>;
     }
 );
 
 foreign_class!(
     #[derive(camelCaseAliases)]
-    class GetAddressesBuilderApi {
-        self_type GetAddressesBuilderApi<'a>;
-        constructor GetAddressesBuilderApi::new(seed: &str) -> GetAddressesBuilderApi<'a>;
+    class GetAddressesBuilder {
+        self_type GetAddressesBuilder<'a>;
+        constructor GetAddressesBuilder::new(seed: &str) -> GetAddressesBuilder<'a>;
         
         /// Set the account index
-        fn GetAddressesBuilderApi::with_account_index(&self, account_index: usize) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilder::with_account_index(&self, account_index: usize) -> GetAddressesBuilder;
         
         /// Set range to the builder
-        fn GetAddressesBuilderApi::with_range(&self, start: usize, end: usize) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilder::with_range(&self, start: usize, end: usize) -> GetAddressesBuilder;
         
         /// Set bech32 human readable part (hrp)
-        fn GetAddressesBuilderApi::with_bech32_hrp(&self, bech32_hrp: String) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilder::with_bech32_hrp(&self, bech32_hrp: String) -> GetAddressesBuilder;
         
         /// Set client to the builder
-        fn GetAddressesBuilderApi::with_client(&self, client: &Client) -> GetAddressesBuilderApi;
+        fn GetAddressesBuilder::with_client(&self, client: &Client) -> GetAddressesBuilder;
         
         
-        fn GetAddressesBuilderApi::finish(&self) -> Result<Vec<String>>;
+        fn GetAddressesBuilder::finish(&self) -> Result<Vec<String>>;
     }
 );
 

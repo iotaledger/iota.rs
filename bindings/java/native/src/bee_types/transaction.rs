@@ -27,6 +27,7 @@ use iota_client::bee_message::{
 };
 
 pub struct TransactionPayload {
+    rust_payload: RustTransactionPayload,
     essence: Essence,
     unlock_blocks: Vec<UnlockBlock>,
     id: TransactionId,
@@ -35,6 +36,7 @@ pub struct TransactionPayload {
 impl From<RustTransactionPayload> for TransactionPayload {
     fn from(payload: RustTransactionPayload) -> Self {
         Self {
+            rust_payload: payload.clone(),
             essence: Essence(payload.essence().to_owned()),
             unlock_blocks: payload
                 .unlock_blocks()
@@ -52,6 +54,9 @@ impl TransactionPayload {
         TransactionPayloadBuilder::new()
     }
 
+    pub fn to_inner(self) -> RustTransactionPayload {
+       self.rust_payload
+    }
     pub fn essence(&self) -> Essence {
         self.essence.clone()
     }

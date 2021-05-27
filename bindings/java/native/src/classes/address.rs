@@ -1,12 +1,12 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{
-    api::GetAddressesBuilder as RustGetAddressesBuilderApi,
+    api::GetAddressesBuilder as RustGetAddressesBuilder,
     bee_message::prelude::Address as RustAddress,
     bee_rest_api::types::{
         dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
     },
-    node::GetAddressBuilder as RustGetAddressBuilderNode,
+    node::GetAddressBuilder as RustGetAddressBuilder,
     Seed as RustSeed,
 };
 
@@ -131,18 +131,18 @@ impl Address {
     }
 }
 
-pub struct GetAddressBuilderNode<'a> {
+pub struct GetAddressBuilder<'a> {
     client: &'a Client,
 }
 
-impl<'a> GetAddressBuilderNode<'a> {
+impl<'a> GetAddressBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
         Self { client: client }
     }
 
     pub fn balance(&self, address: &str) -> Result<BalanceAddressResponse> {
         let res = crate::block_on(async {
-            RustGetAddressBuilderNode::new(self.client.borrow())
+            RustGetAddressBuilder::new(self.client.borrow())
                 .balance(address)
                 .await
         });
@@ -154,7 +154,7 @@ impl<'a> GetAddressBuilderNode<'a> {
 
     pub fn outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>> {
         let res = crate::block_on(async {
-            RustGetAddressBuilderNode::new(self.client.borrow())
+            RustGetAddressBuilder::new(self.client.borrow())
                 .outputs(address, options.to_inner())
                 .await
         });
@@ -165,7 +165,7 @@ impl<'a> GetAddressBuilderNode<'a> {
     }
 }
 
-struct GetAddressesBuilderApiInternal<'a> {
+struct GetAddressesBuilderInternal<'a> {
     seed: RustSeed,
     account_index: usize,
     range: Range<usize>,
@@ -173,13 +173,13 @@ struct GetAddressesBuilderApiInternal<'a> {
     client: Option<&'a Client>,
 }
 
-pub struct GetAddressesBuilderApi<'a> {
-    fields: Rc<RefCell<Option<GetAddressesBuilderApiInternal<'a>>>>,
+pub struct GetAddressesBuilder<'a> {
+    fields: Rc<RefCell<Option<GetAddressesBuilderInternal<'a>>>>,
 }
 
-impl<'a> GetAddressesBuilderApi<'a> {
+impl<'a> GetAddressesBuilder<'a> {
     pub fn new(seed: &str) -> Self {
-        let internal = GetAddressesBuilderApiInternal {
+        let internal = GetAddressesBuilderInternal {
             seed: RustSeed::from_bytes(seed.as_bytes()),
             account_index: 0,
             range: 0..ADDRESS_GAP_RANGE,
@@ -191,7 +191,7 @@ impl<'a> GetAddressesBuilderApi<'a> {
         }
     }
 
-    fn new_with_fields(fields: GetAddressesBuilderApiInternal<'a>) -> Self {
+    fn new_with_fields(fields: GetAddressesBuilderInternal<'a>) -> Self {
         Self {
             fields: Rc::new(RefCell::new(Option::from(fields))),
         }
@@ -201,34 +201,34 @@ impl<'a> GetAddressesBuilderApi<'a> {
     pub fn with_account_index(&self, account_index: usize) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         fields.account_index = account_index;
-        GetAddressesBuilderApi::new_with_fields(fields)
+        GetAddressesBuilder::new_with_fields(fields)
     }
 
     /// Set range to the builder
     pub fn with_range(&self, start: usize, end: usize) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         fields.range = start..end;
-        GetAddressesBuilderApi::new_with_fields(fields)
+        GetAddressesBuilder::new_with_fields(fields)
     }
 
     /// Set client to the builder
     pub fn with_client(&self, client: &'a Client) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         fields.client = Some(client);
-        GetAddressesBuilderApi::new_with_fields(fields)
+        GetAddressesBuilder::new_with_fields(fields)
     }
 
     /// Set bech32 human readable part (hrp)
     pub fn with_bech32_hrp(&self, bech32_hrp: String) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
         fields.bech32_hrp = Some(bech32_hrp);
-        GetAddressesBuilderApi::new_with_fields(fields)
+        GetAddressesBuilder::new_with_fields(fields)
     }
 
     pub fn finish(&self) -> Result<Vec<String>> {
         let fields = self.fields.borrow_mut().take().unwrap();
         let ret = crate::block_on(async {
-            let mut builder = RustGetAddressesBuilderApi::new(&fields.seed)
+            let mut builder = RustGetAddressesBuilder::new(&fields.seed)
                 .with_account_index(fields.account_index)
                 .with_range(fields.range);
 

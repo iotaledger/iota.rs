@@ -28,6 +28,10 @@ impl TreasuryPayload {
         Self(RustTreasuryPayload::new(input.to_inner_clone().into(), output.to_inner_clone().into()).unwrap())
     }
 
+    pub fn to_inner(self) -> RustTreasuryPayload {
+        self.0
+    }
+
     pub fn output(&self) -> TreasuryOutput {
         if let RustOutput::Treasury(payload) = self.0.output() {
             return payload.clone().into()

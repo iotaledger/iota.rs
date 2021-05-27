@@ -93,8 +93,8 @@ impl Client {
     }
 
     /// GET /api/v1/addresses/{address} endpoint
-    pub fn get_address(&self) -> GetAddressBuilderNode {
-        GetAddressBuilderNode::new(self)
+    pub fn get_address(&self) -> GetAddressBuilder {
+        GetAddressBuilder::new(self)
     }
 
     pub fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
@@ -236,8 +236,8 @@ impl Client {
         GetMessageBuilder::new(self)
     }
 
-    pub fn get_addresses(&self, seed: &str) -> GetAddressesBuilderApi {
-        GetAddressesBuilderApi::new(seed).with_client(self)
+    pub fn get_addresses(&self, seed: &str) -> GetAddressesBuilder {
+        GetAddressesBuilder::new(seed).with_client(self)
     }
 
     pub fn retry_until_included(

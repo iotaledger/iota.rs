@@ -16,7 +16,7 @@ use iota_client::{
 use anyhow::anyhow;
 
 use crate::{
-    bee_types::{MessageMetadata, UtxoInput, IndexationPayload},
+    bee_types::{MessageMetadata, UtxoInput, IndexationPayload, TreasuryPayload, TransactionPayload, MilestonePayload, ReceiptPayload},
     full_node_api::Client,
     MessagePayload, Result,
 };
@@ -350,9 +350,73 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
-    pub fn finish_message(&self, payload: IndexationPayload) -> Result<Message> {
+    pub fn finish_message_transaction(&self, payload: TransactionPayload) -> Result<Message> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let payload = Some(Payload::Transaction(Box::new(payload.to_inner())));
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).finish_message(payload).await
+            } else {
+                inner.builder.finish_message(payload).await
+            }
+        });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn finish_message_index(&self, payload: IndexationPayload) -> Result<Message> {
         let inner = self.fields.borrow_mut().take().unwrap();
         let payload = Some(Payload::Indexation(Box::new(payload.to_inner())));
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).finish_message(payload).await
+            } else {
+                inner.builder.finish_message(payload).await
+            }
+        });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn finish_message_milestone(&self, payload: MilestonePayload) -> Result<Message> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let payload = Some(Payload::Milestone(Box::new(payload.to_inner())));
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).finish_message(payload).await
+            } else {
+                inner.builder.finish_message(payload).await
+            }
+        });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn finish_message_receipt(&self, payload: ReceiptPayload) -> Result<Message> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let payload = Some(Payload::Receipt(Box::new(payload.to_inner())));
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).finish_message(payload).await
+            } else {
+                inner.builder.finish_message(payload).await
+            }
+        });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn finish_message_treasury(&self, payload: TreasuryPayload) -> Result<Message> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let payload = Some(Payload::TreasuryTransaction(Box::new(payload.to_inner())));
         let res = crate::block_on(async {
             if let Some(s) = inner.seed {
                 inner.builder.with_seed(&s).finish_message(payload).await

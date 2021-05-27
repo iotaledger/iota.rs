@@ -65,7 +65,7 @@ public class ExampleApp {
             Client iota = node();
 
             String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
-            String[] addresses = new GetAddressesBuilderApi(seed).withClient(iota).withRange(0, 10).finish();
+            String[] addresses = new GetAddressesBuilder(seed).withClient(iota).withRange(0, 10).finish();
             System.out.println(Arrays.toString(addresses));
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
@@ -275,7 +275,7 @@ public class ExampleApp {
 
         IndexationPayload indexation_payload = IndexationPayload.fromStrings("Your Index", "Your Data");
 
-        Message message = iota.message().finishMessage(indexation_payload);
+        Message message = iota.message().finish(indexation_payload);
 
         System.out.printf("Message ID: %s", message.id());
     }
