@@ -151,10 +151,14 @@ impl TryFrom<&RustOutputDto> for SignatureLockedSingleOutputDto {
 pub struct SignatureLockedSingleOutputDto {
     #[getset(get_copy = "pub")]
     pub kind: u8,
-    #[getset(get = "pub")]
     pub address: AddressDto,
     #[getset(get_copy = "pub")]
     pub amount: u64,
+}
+impl SignatureLockedSingleOutputDto {
+    pub fn address(&self) -> AddressDto {
+        self.address.clone()
+    }
 }
 
 impl Display for SignatureLockedSingleOutputDto {
@@ -183,10 +187,15 @@ impl TryFrom<&RustOutputDto> for SignatureLockedDustAllowanceOutputDto {
 pub struct SignatureLockedDustAllowanceOutputDto {
     #[getset(get_copy = "pub")]
     pub kind: u8,
-    #[getset(get = "pub")]
     pub address: AddressDto,
     #[getset(get_copy = "pub")]
     pub amount: u64,
+}
+
+impl SignatureLockedDustAllowanceOutputDto {
+    pub fn address(&self) -> AddressDto {
+        self.address.clone()
+    }
 }
 
 impl Display for SignatureLockedDustAllowanceOutputDto {
@@ -291,6 +300,12 @@ impl Display for Output {
 pub struct SignatureLockedSingleOutput(RustSignatureLockedSingleOutput);
 
 impl SignatureLockedSingleOutput {
+    pub fn from(address: Address, amount: u64) -> Result<SignatureLockedSingleOutput>{
+        match RustSignatureLockedSingleOutput::new(address.to_inner_clone(), amount) {
+            Ok(e) => Ok(Self(e)),
+            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+        }
+    }
     pub fn amount(&self) -> u64 {
         self.0.amount()
     }
@@ -298,7 +313,7 @@ impl SignatureLockedSingleOutput {
         self.0.address().clone().into()
     }
 
-    pub fn to_inner(&self) -> RustSignatureLockedSingleOutput {
+    pub fn to_inner_clone(&self) -> RustSignatureLockedSingleOutput {
         self.0.clone()
     }
 }
@@ -329,12 +344,22 @@ impl Display for SignatureLockedSingleOutput {
 #[derive(Clone, Debug)]
 pub struct SignatureLockedDustAllowanceOutput(RustSignatureLockedDustAllowanceOutput);
 impl SignatureLockedDustAllowanceOutput {
+    pub fn from(address: Address, amount: u64) -> Result<SignatureLockedDustAllowanceOutput>{
+        match RustSignatureLockedDustAllowanceOutput::new(address.to_inner_clone(), amount) {
+            Ok(e) => Ok(Self(e)),
+            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+        }
+    }
+
     pub fn amount(&self) -> u64 {
         self.0.amount()
     }
 
     pub fn address(&self) -> Address {
         self.0.address().clone().into()
+    }
+    pub fn to_inner_clone(&self) -> RustSignatureLockedDustAllowanceOutput {
+        self.0.clone()
     }
 }
 
@@ -358,8 +383,18 @@ impl Display for SignatureLockedDustAllowanceOutput {
 pub struct TreasuryOutput(RustTreasuryOutput);
 
 impl TreasuryOutput {
+    pub fn from(amount: u64) -> Result<TreasuryOutput> {
+        match RustTreasuryOutput::new(amount) {
+            Ok(e) => Ok(Self(e)),
+            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+        }
+    }
+
     pub fn amount(&self) -> u64 {
         self.0.amount()
+    }
+    pub fn to_inner_clone(&self) -> RustTreasuryOutput {
+        self.0.clone()
     }
 }
 

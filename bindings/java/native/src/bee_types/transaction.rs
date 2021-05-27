@@ -6,6 +6,7 @@ use crate::{
     bee_types::{
         Input,
         OutputDto,
+        UnlockBlock, UnlockBlocks,
     },
 };
 
@@ -14,10 +15,6 @@ use anyhow::anyhow;
 use std::{cell::RefCell, rc::Rc, fmt::{Display, Formatter}};
 
 use iota_client::bee_message::{
-    unlock::{
-        UnlockBlock as RustUnlockBlock,
-        UnlockBlocks as RustUnlockBlocks,
-    },
     payload::{
         transaction::{
             TransactionId,
@@ -28,11 +25,6 @@ use iota_client::bee_message::{
         },
     },
 };
-
-pub enum UnlockBlockKind {
-    Reference = 0,
-    Ed25519 = 1,
-}
 
 pub struct TransactionPayload {
     essence: Essence,
@@ -48,7 +40,7 @@ impl From<RustTransactionPayload> for TransactionPayload {
                 .unlock_blocks()
                 .iter()
                 .cloned()
-                .map(|unlock_block| UnlockBlock(unlock_block))
+                .map(|unlock_block| unlock_block.into())
                 .collect(),
             id: payload.id()
         }
@@ -131,58 +123,6 @@ impl RegularEssence {
 }
 
 impl Display for RegularEssence {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "({:?})", self.0)
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct UnlockBlock(RustUnlockBlock);
-
-impl UnlockBlock {
-    pub fn kind(&self) -> UnlockBlockKind {
-        match self.0 {
-            RustUnlockBlock::Signature(_) => UnlockBlockKind::Ed25519,
-            RustUnlockBlock::Reference(_) => UnlockBlockKind::Reference,
-            _ => panic!("Found unknown unlock block"),
-        }
-    }
-
-    pub fn to_inner(&self) -> RustUnlockBlock   {
-        self.0.clone()
-    }
-}
-impl Display for UnlockBlock {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "({:?})", self.0)
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct UnlockBlocks(RustUnlockBlocks);
-
-impl UnlockBlocks {
-
-    pub fn from(unlock_blocks: Vec<UnlockBlock>) -> Result<Self> {
-        match RustUnlockBlocks::new(unlock_blocks.iter().map(|b| b.to_inner()).collect()) {
-            Err(e) => Err(anyhow!(e.to_string())),
-            Ok(u) => Ok(UnlockBlocks(u))
-        }
-    }
-
-    pub fn get(&self, index: usize) -> Option<UnlockBlock> {
-        match self.0.get(index) {
-            None => None,
-            Some(u) => Some(UnlockBlock(u.clone()))
-        }
-    }
-
-    pub fn to_inner(&self) -> RustUnlockBlocks   {
-        self.0.clone()
-    }
-}
-
-impl Display for UnlockBlocks {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(f, "({:?})", self.0)
     }

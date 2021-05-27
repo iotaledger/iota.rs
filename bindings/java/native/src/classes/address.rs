@@ -20,7 +20,7 @@ use std::{
 };
 
 use crate::{
-    bee_types::{OutputsOptions, UtxoInput},
+    bee_types::{OutputsOptions, UtxoInput, SignatureUnlock},
     full_node_api::Client,
     Result,
 };
@@ -115,20 +115,20 @@ impl Address {
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
-    // pub fn kind(&self) -> u8 {
-    // match self {
-    // Self::Ed25519(_) => Ed25519Address::KIND,
-    // }
-    // }
-    //
-    // Tries to create an `Address` from a Bech32 encoded string.
-    //
-    //
-    // Encodes this address to a Bech32 string with the hrp (human readable part) argument as prefix.
-    // pub fn to_bech32(&self, hrp: &str) -> String
-    //
-    // Verifies a [`SignatureUnlock`] for a message against the [`Address`].
-    // pub fn verify(&self, msg: &[u8], signature: &SignatureUnlock) -> Result<(), Error> {
+    pub fn to_inner_clone(&self) -> RustAddress {
+        self.address.clone()
+    }
+
+    pub fn to_bech32(&self, hrp: &str) -> String {
+        self.address.to_bech32(hrp)
+    }
+    
+    pub fn verify(&self, msg: Vec<u8>, signature: SignatureUnlock) -> Result<()> {
+        match self.address.verify(&msg, signature.to_inner_ref()) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
 }
 
 pub struct GetAddressBuilderNode<'a> {

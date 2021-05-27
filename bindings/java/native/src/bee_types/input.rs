@@ -60,7 +60,10 @@ pub struct UtxoInput(RustUtxoInput);
 
 impl UtxoInput {
     pub fn from(id: TransactionId, index: u16) -> Result<Self> {
-        Ok(Self(RustUtxoInput::new(id, index)?))
+        match RustUtxoInput::new(id, index) {
+            Ok(e) => Ok(Self(e)),
+            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+        }
     }
 
     /// Returns the `TransactionId` of an `OutputId`.
@@ -103,6 +106,10 @@ impl TreasuryInput {
 
     pub fn milestone_id(&self) -> MilestoneId {
         *self.0.milestone_id()
+    }
+
+    pub fn to_inner_clone(&self) -> RustTreasuryInput {
+        self.0.clone()
     }
 }
 

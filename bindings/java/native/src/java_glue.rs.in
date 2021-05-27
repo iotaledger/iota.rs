@@ -425,6 +425,7 @@ foreign_class!(
         private constructor = empty;
         private fn SignatureLockedSingleOutputDto::to_string(&self) -> String; alias to_string;
         fn SignatureLockedSingleOutputDto::amount(&self) -> u64;
+        fn SignatureLockedSingleOutputDto::address(&self) -> AddressDto;
     }
 );
 
@@ -437,6 +438,7 @@ foreign_class!(
         private constructor = empty;
         private fn SignatureLockedDustAllowanceOutputDto::to_string(&self) -> String; alias to_string;
         fn SignatureLockedDustAllowanceOutputDto::amount(&self) -> u64;
+        fn SignatureLockedDustAllowanceOutputDto::address(&self) -> AddressDto;
     }
 );
 
@@ -457,7 +459,11 @@ foreign_class!(
         self_type SignatureLockedSingleOutput;
         private constructor = empty;
         private fn SignatureLockedSingleOutput::to_string(&self) -> String; alias to_string;
+        /// Creates a new `SignatureLockedSingleOutput`.
+        fn SignatureLockedSingleOutput::from(address: Address, amount: u64) -> Result<SignatureLockedSingleOutput>;
+        /// Returns the amount of a `SignatureLockedDustAllowanceOutput`.
         fn SignatureLockedSingleOutput::amount(&self) -> u64;
+        /// Returns the address of a `SignatureLockedSingleOutput`.
         fn SignatureLockedSingleOutput::address(&self) -> Address;
     }
 );
@@ -470,7 +476,11 @@ foreign_class!(
         self_type SignatureLockedDustAllowanceOutput;
         private constructor = empty;
         private fn SignatureLockedDustAllowanceOutput::to_string(&self) -> String; alias to_string;
+        /// Creates a new `SignatureLockedDustAllowanceOutput`.
+        fn SignatureLockedDustAllowanceOutput::from(address: Address, amount: u64) -> Result<SignatureLockedDustAllowanceOutput>;
+        /// Returns the amount of a `SignatureLockedDustAllowanceOutput`.
         fn SignatureLockedDustAllowanceOutput::amount(&self) -> u64;
+        /// Returns the address of a `SignatureLockedDustAllowanceOutput`.
         fn SignatureLockedDustAllowanceOutput::address(&self) -> Address;
     }
 );
@@ -481,6 +491,8 @@ foreign_class!(
         self_type TreasuryOutput;
         private constructor = empty;
         private fn TreasuryOutput::to_string(&self) -> String; alias to_string;
+        fn TreasuryOutput::from(amount: u64) -> Result<TreasuryOutput>;
+        /// Returns the amount of a `TreasuryOutput`.
         fn TreasuryOutput::amount(&self) -> u64;
     }
 );
@@ -733,7 +745,12 @@ foreign_class!(
         self_type Address;
         private constructor = empty;
         private fn Address::to_string(&self) -> String; alias to_string;
+        /// Tries to create an `Address` from a Bech32 encoded string.
         fn Address::try_from_bech32(addr: &str) -> Result<Address>;
+        // Encodes this address to a Bech32 string with the hrp (human readable part) argument as prefix.
+        fn Address::to_bech32(&self, hrp: &str) -> String;
+        // Verifies a [`SignatureUnlock`] for a message against the [`Address`].
+        fn Address::verify(&self, msg: Vec<u8>, signature: SignatureUnlock) -> Result<()>;
     }
 );
 
@@ -1175,11 +1192,37 @@ foreign_class!(
 
 foreign_class!(
     #[derive(Display)]
+    class ReferenceUnlock {
+        self_type ReferenceUnlock;
+        private constructor = empty;
+        private fn ReferenceUnlock::to_string(&self) -> String;
+        /// Creates a new `ReferenceUnlock`.
+        fn ReferenceUnlock::from(index: u16) -> Result<ReferenceUnlock>;
+        /// Return the index of a `ReferenceUnlock`.
+        fn ReferenceUnlock::index(&self) -> u16;
+    }
+);
+
+foreign_class!(
+    #[derive(Display)]
+    class SignatureUnlock {
+        self_type SignatureUnlock;
+        constructor SignatureUnlock::from(public_key: Vec<u8>, signature: Vec<u8>) -> SignatureUnlock;
+        private fn SignatureUnlock::to_string(&self) -> String;
+        
+    }
+);
+
+foreign_class!(
+    #[derive(Display)]
     class UnlockBlock {
         self_type UnlockBlock;
         private constructor = empty;
         private fn UnlockBlock::to_string(&self) -> String;
         fn UnlockBlock::kind(&self) -> UnlockBlockKind;
+        
+        fn UnlockBlock::get_as_reference(&self) -> Option<ReferenceUnlock>;
+        fn UnlockBlock::get_as_signature(&self) -> Option<SignatureUnlock>;
     }
 );
 
@@ -1190,7 +1233,8 @@ foreign_class!(
         private constructor = empty;
         private fn UnlockBlocks::to_string(&self) -> String;
         fn UnlockBlocks::from(unlock_blocks: Vec<UnlockBlock>) -> Result<UnlockBlocks>;
-        // Gets a copy of the unlockblock at specified index, if it exists
+        /// Gets a clone of an `UnlockBlock` from `UnlockBlocks`.
+        /// Returns the referenced unlock block if the requested unlock block was a reference.
         fn UnlockBlocks::get(&self, index: usize) -> Option<UnlockBlock>;
     }
 );
@@ -1199,7 +1243,7 @@ foreign_class!(
     #[derive(Display)]
     class TreasuryPayload {
         self_type TreasuryPayload;
-        private constructor = empty;
+        constructor TreasuryPayload::new(input: TreasuryInput, output: TreasuryOutput) -> TreasuryPayload;
         private fn TreasuryPayload::to_string(&self) -> String;
         fn TreasuryPayload::output(&self) -> TreasuryOutput;
         fn TreasuryPayload::input(&self) -> TreasuryInput;

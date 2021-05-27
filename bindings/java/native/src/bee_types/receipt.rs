@@ -195,7 +195,7 @@ impl MigratedFundsEntry {
         let tail_res = TailTransactionHash::new(hash.as_bytes().try_into().unwrap());
         match tail_res {
             Ok(tail) => {
-                let res = RustMigratedFundsEntry::new(tail, output.to_inner());
+                let res = RustMigratedFundsEntry::new(tail, output.to_inner_clone());
                 match res {
                     Ok(payload) => Ok(Self {payload}),
                     Err(e) => Err(anyhow::anyhow!(e.to_string())),
