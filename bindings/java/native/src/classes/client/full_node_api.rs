@@ -256,9 +256,7 @@ impl Client {
             opt_attempt = Some(max_attempts as u64);
         }
 
-        let res = crate::block_on(async { 
-            self.0.retry_until_included(&message_id, opt_int, opt_attempt).await 
-        });
+        let res = crate::block_on(async { self.0.retry_until_included(&message_id, opt_int, opt_attempt).await });
 
         match res {
             Ok(w) => {
@@ -268,7 +266,7 @@ impl Client {
                 }
 
                 Ok(output)
-            },
+            }
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }

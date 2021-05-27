@@ -3,25 +3,20 @@
 use getset::{CopyGetters, Getters};
 use iota_client::{
     bee_message::{
-        MessageId,
         payload::{
-            Payload as RustPayload,
             milestone::{
-                MilestonePayloadEssence as RustMilestonePayloadEssence,
-                MilestonePayload as RustMilestonePayload,
+                MilestonePayload as RustMilestonePayload, MilestonePayloadEssence as RustMilestonePayloadEssence,
                 MILESTONE_SIGNATURE_LENGTH,
             },
+            Payload as RustPayload,
         },
+        MessageId,
     },
     bee_rest_api::types::responses::UtxoChangesResponse as RustUtxoChangesResponse,
     MilestoneResponse as RustMilestoneResponse,
 };
 
-use crate::{
-    Result,
-    ed25519::PublicKey,
-    bee_types::ReceiptPayload,
-};
+use crate::{bee_types::ReceiptPayload, ed25519::PublicKey, Result};
 
 use std::convert::TryInto;
 
@@ -97,8 +92,13 @@ pub struct MilestonePayload {
 
 impl MilestonePayload {
     pub fn new(essence: RustMilestonePayloadEssence, box_signatures: Vec<Box<[u8]>>) -> MilestonePayload {
-        let signatures: Vec<[u8; MILESTONE_SIGNATURE_LENGTH]> = box_signatures.iter().map(|s| s.to_vec().try_into().unwrap()).collect();
-        MilestonePayload { rust_milestone: RustMilestonePayload::new(essence.clone(), signatures.clone()).unwrap(), essence, signatures }
+        let signatures: Vec<[u8; MILESTONE_SIGNATURE_LENGTH]> =
+            box_signatures.iter().map(|s| s.to_vec().try_into().unwrap()).collect();
+        MilestonePayload {
+            rust_milestone: RustMilestonePayload::new(essence.clone(), signatures.clone()).unwrap(),
+            essence,
+            signatures,
+        }
     }
     pub fn to_inner(self) -> RustMilestonePayload {
         RustMilestonePayload::new(self.essence.clone(), self.signatures.clone()).unwrap()
@@ -121,7 +121,7 @@ impl MilestonePayload {
             .collect()
     }
 
-    pub fn validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize,) -> Result<()>{
+    pub fn validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize) -> Result<()> {
         match self.rust_milestone.validate(&applicable_public_keys, min_threshold) {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow::anyhow!(format!("{:?}", e))),
@@ -135,11 +135,7 @@ impl MilestonePayload {
 
 impl core::fmt::Display for MilestonePayload {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(
-            f,
-            "essence={:?} signatures=({:?})",
-            self.essence, self.signatures
-        )
+        write!(f, "essence={:?} signatures=({:?})", self.essence, self.signatures)
     }
 }
 
@@ -156,11 +152,7 @@ impl MilestoneSignature {
 
 impl core::fmt::Display for MilestoneSignature {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(
-            f,
-            "{:?}",
-            self.signature
-        )
+        write!(f, "{:?}", self.signature)
     }
 }
 
@@ -220,10 +212,6 @@ impl MilestonePayloadEssence {
 
 impl core::fmt::Display for MilestonePayloadEssence {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(
-            f,
-            "{:?}",
-            self.essence
-        )
+        write!(f, "{:?}", self.essence)
     }
 }

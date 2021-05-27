@@ -4,12 +4,8 @@ use std::fmt::{Display, Formatter};
 
 use iota_client::bee_message::{
     input::Input as RustInput,
-    payload::{
-        milestone::MilestoneId,
-        transaction::TransactionId,
-    },
-    prelude::UtxoInput as RustUtxoInput,
-    prelude::TreasuryInput as RustTreasuryInput,
+    payload::{milestone::MilestoneId, transaction::TransactionId},
+    prelude::{TreasuryInput as RustTreasuryInput, UtxoInput as RustUtxoInput},
 };
 
 use crate::Result;
@@ -65,7 +61,7 @@ impl UtxoInput {
     pub fn from(id: TransactionId, index: u16) -> Result<Self> {
         match RustUtxoInput::new(id, index) {
             Ok(e) => Ok(Self(e)),
-            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
 

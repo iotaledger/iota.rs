@@ -8,8 +8,8 @@ mod output;
 mod payloads;
 mod receipt;
 mod transaction;
-mod unlock;
 mod treasury;
+mod unlock;
 
 mod gossip;
 mod info_response;
@@ -23,8 +23,8 @@ pub use output::*;
 pub use payloads::*;
 pub use receipt::*;
 pub use transaction::*;
-pub use unlock::*;
 pub use treasury::*;
+pub use unlock::*;
 
 pub use gossip::*;
 pub use info_response::*;

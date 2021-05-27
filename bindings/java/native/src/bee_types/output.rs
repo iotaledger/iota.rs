@@ -8,22 +8,18 @@ use std::{
 };
 
 use iota_client::{
-    bee_rest_api::types::{dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse},
     bee_message::output::{
-        TreasuryOutput as RustTreasuryOutput,
-        SignatureLockedDustAllowanceOutput as RustSignatureLockedDustAllowanceOutput,
-        SignatureLockedSingleOutput as RustSignatureLockedSingleOutput,
-        Output as RustOutput
+        Output as RustOutput, SignatureLockedDustAllowanceOutput as RustSignatureLockedDustAllowanceOutput,
+        SignatureLockedSingleOutput as RustSignatureLockedSingleOutput, TreasuryOutput as RustTreasuryOutput,
     },
+    bee_rest_api::types::{dtos::OutputDto as RustOutputDto, responses::OutputResponse as RustOutputResponse},
     node::OutputsOptions as RustOutputsOptions,
     OutputType,
 };
 
 use crate::{
+    classes::address::{Address, AddressDto},
     Result,
-    classes::address::{
-        AddressDto, Address,
-    },
 };
 
 #[derive(Getters, CopyGetters)]
@@ -106,9 +102,7 @@ impl OutputDto {
         SignatureLockedSingleOutputDto::try_from(&self.output)
     }
 
-    pub fn as_signature_locked_dust_allowance_output_dto(
-        &self,
-    ) -> Result<SignatureLockedDustAllowanceOutputDto> {
+    pub fn as_signature_locked_dust_allowance_output_dto(&self) -> Result<SignatureLockedDustAllowanceOutputDto> {
         SignatureLockedDustAllowanceOutputDto::try_from(&self.output)
     }
 
@@ -126,9 +120,7 @@ impl Display for OutputDto {
 impl From<&RustOutput> for OutputDto {
     fn from(output: &RustOutput) -> OutputDto {
         let rust_output: RustOutputDto = output.into();
-        OutputDto {
-            output: rust_output
-        }
+        OutputDto { output: rust_output }
     }
 }
 
@@ -163,7 +155,11 @@ impl SignatureLockedSingleOutputDto {
 
 impl Display for SignatureLockedSingleOutputDto {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "(amount={}, address={}, kind={})", self.amount, self.address, self.kind)
+        write!(
+            f,
+            "(amount={}, address={}, kind={})",
+            self.amount, self.address, self.kind
+        )
     }
 }
 
@@ -200,7 +196,11 @@ impl SignatureLockedDustAllowanceOutputDto {
 
 impl Display for SignatureLockedDustAllowanceOutputDto {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "(amount={}, address={}, kind={})", self.amount, self.address, self.kind)
+        write!(
+            f,
+            "(amount={}, address={}, kind={})",
+            self.amount, self.address, self.kind
+        )
     }
 }
 
@@ -237,11 +237,10 @@ pub struct OutputsOptions {
 }
 
 impl OutputsOptions {
-    
     pub fn include_spent(&mut self, include_spent: bool) {
         self.options.include_spent = include_spent;
     }
-    
+
     pub fn output_type(&mut self, output_type: Option<OutputKind>) {
         self.options.output_type = match output_type {
             Some(kind) => Some(output_kind_to_type(kind)),
@@ -277,9 +276,7 @@ impl Output {
         SignatureLockedSingleOutput::try_from(self.output.clone())
     }
 
-    pub fn as_signature_locked_dust_allowance_output(
-        &self,
-    ) -> Result<SignatureLockedDustAllowanceOutput> {
+    pub fn as_signature_locked_dust_allowance_output(&self) -> Result<SignatureLockedDustAllowanceOutput> {
         SignatureLockedDustAllowanceOutput::try_from(self.output.clone())
     }
 
@@ -299,10 +296,10 @@ impl Display for Output {
 pub struct SignatureLockedSingleOutput(RustSignatureLockedSingleOutput);
 
 impl SignatureLockedSingleOutput {
-    pub fn from(address: Address, amount: u64) -> Result<SignatureLockedSingleOutput>{
+    pub fn from(address: Address, amount: u64) -> Result<SignatureLockedSingleOutput> {
         match RustSignatureLockedSingleOutput::new(address.to_inner_clone(), amount) {
             Ok(e) => Ok(Self(e)),
-            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
     pub fn amount(&self) -> u64 {
@@ -343,10 +340,10 @@ impl Display for SignatureLockedSingleOutput {
 #[derive(Clone, Debug)]
 pub struct SignatureLockedDustAllowanceOutput(RustSignatureLockedDustAllowanceOutput);
 impl SignatureLockedDustAllowanceOutput {
-    pub fn from(address: Address, amount: u64) -> Result<SignatureLockedDustAllowanceOutput>{
+    pub fn from(address: Address, amount: u64) -> Result<SignatureLockedDustAllowanceOutput> {
         match RustSignatureLockedDustAllowanceOutput::new(address.to_inner_clone(), amount) {
             Ok(e) => Ok(Self(e)),
-            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
 
@@ -385,7 +382,7 @@ impl TreasuryOutput {
     pub fn from(amount: u64) -> Result<TreasuryOutput> {
         match RustTreasuryOutput::new(amount) {
             Ok(e) => Ok(Self(e)),
-            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
 

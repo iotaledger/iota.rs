@@ -2,28 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    bee_types::{Input, OutputDto, UnlockBlock, UnlockBlocks},
     Result,
-    bee_types::{
-        Input,
-        OutputDto,
-        UnlockBlock, UnlockBlocks,
-    },
 };
 
 use anyhow::anyhow;
 
-use std::{cell::RefCell, rc::Rc, fmt::{Display, Formatter}};
+use std::{
+    cell::RefCell,
+    fmt::{Display, Formatter},
+    rc::Rc,
+};
 
-use iota_client::bee_message::{
-    payload::{
-        transaction::{
-            TransactionId,
-            TransactionPayload as RustTransactionPayload,
-            TransactionPayloadBuilder as RustTransactionPayloadBuilder,
-            Essence as RustEssence, 
-            RegularEssence as RustRegularEssence,
-        },
-    },
+use iota_client::bee_message::payload::transaction::{
+    Essence as RustEssence, RegularEssence as RustRegularEssence, TransactionId,
+    TransactionPayload as RustTransactionPayload, TransactionPayloadBuilder as RustTransactionPayloadBuilder,
 };
 
 pub struct TransactionPayload {
@@ -44,7 +37,7 @@ impl From<RustTransactionPayload> for TransactionPayload {
                 .cloned()
                 .map(|unlock_block| unlock_block.into())
                 .collect(),
-            id: payload.id()
+            id: payload.id(),
         }
     }
 }
@@ -55,7 +48,7 @@ impl TransactionPayload {
     }
 
     pub fn to_inner(self) -> RustTransactionPayload {
-       self.rust_payload
+        self.rust_payload
     }
     pub fn essence(&self) -> Essence {
         self.essence.clone()
@@ -72,7 +65,11 @@ impl TransactionPayload {
 
 impl Display for TransactionPayload {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "(id={}, essence={}, unlock_blocks=({:?}))", self.id, self.essence, self.unlock_blocks)
+        write!(
+            f,
+            "(id={}, essence={}, unlock_blocks=({:?}))",
+            self.id, self.essence, self.unlock_blocks
+        )
     }
 }
 
@@ -104,27 +101,17 @@ pub struct RegularEssence(RustRegularEssence);
 
 impl RegularEssence {
     pub fn inputs(&self) -> Vec<Input> {
-        self.0
-            .inputs()
-            .iter()
-            .cloned()
-            .map(|input| input.into())
-            .collect()
+        self.0.inputs().iter().cloned().map(|input| input.into()).collect()
     }
 
     /// Gets the transaction outputs.
     pub fn outputs(&self) -> Vec<OutputDto> {
-        self.0
-            .outputs()
-            .iter()
-            .map(|output| output.into())
-            .collect()
+        self.0.outputs().iter().map(|output| output.into()).collect()
     }
-/*
-    /// Gets the transaction chained payload.
-    pub fn payload(&self) -> &Option<RustPayload> {
-        self.essence.payload()
-    }*/
+    // Gets the transaction chained payload.
+    // pub fn payload(&self) -> &Option<RustPayload> {
+    // self.essence.payload()
+    // }
 }
 
 impl Display for RegularEssence {
@@ -135,10 +122,12 @@ impl Display for RegularEssence {
 
 pub struct TransactionPayloadBuilder(Rc<RefCell<Option<RustTransactionPayloadBuilder>>>);
 
-impl TransactionPayloadBuilder{
+impl TransactionPayloadBuilder {
     /// Creates a new `TransactionPayloadBuilder`.
     pub fn new() -> Self {
-        Self(Rc::new(RefCell::new(Option::from(RustTransactionPayloadBuilder::default()))))
+        Self(Rc::new(RefCell::new(Option::from(
+            RustTransactionPayloadBuilder::default(),
+        ))))
     }
 
     fn new_with_builder(builder: RustTransactionPayloadBuilder) -> Self {
@@ -153,7 +142,12 @@ impl TransactionPayloadBuilder{
 
     /// Adds unlock blocks to a `TransactionPayloadBuilder`.
     pub fn with_unlock_blocks(&self, unlock_blocks: UnlockBlocks) -> Self {
-        let new_builder = self.0.borrow_mut().take().unwrap().with_unlock_blocks(unlock_blocks.to_inner());
+        let new_builder = self
+            .0
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_unlock_blocks(unlock_blocks.to_inner());
         TransactionPayloadBuilder::new_with_builder(new_builder)
     }
 

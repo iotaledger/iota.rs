@@ -10,7 +10,6 @@ pub struct IndexationPayload {
 }
 
 impl IndexationPayload {
-    
     pub fn to_inner(self) -> RustIndexationPayload {
         self.payload
     }
@@ -42,11 +41,7 @@ impl IndexationPayload {
 
 impl core::fmt::Display for IndexationPayload {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(
-            f,
-            "payload={:?}",
-            self.payload
-        )
+        write!(f, "payload={:?}", self.payload)
     }
 }
 

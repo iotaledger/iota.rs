@@ -4,28 +4,20 @@
 use getset::{CopyGetters, Getters};
 use std::{
     convert::TryInto,
-    fmt::{Display, Formatter, },
+    fmt::{Display, Formatter},
 };
 
 use crate::{
-    Result,
-    SignatureLockedSingleOutput,
+    bee_types::{MessagePayload, TreasuryPayload},
     classes::address::AddressDto,
-    bee_types::{
-        MessagePayload,
-        TreasuryPayload,
-    }
+    Result, SignatureLockedSingleOutput,
 };
 
 use iota_client::{
     bee_message::{
         milestone::MilestoneIndex,
-        payload::{
-            receipt::{
-                TailTransactionHash,
-                ReceiptPayload as RustReceiptPayload,
-                MigratedFundsEntry as RustMigratedFundsEntry,
-            },
+        payload::receipt::{
+            MigratedFundsEntry as RustMigratedFundsEntry, ReceiptPayload as RustReceiptPayload, TailTransactionHash,
         },
     },
     bee_rest_api::types::dtos::{
@@ -125,7 +117,11 @@ impl From<RustMigratedFundsEntryDto> for MigratedFundsEntryDto {
 }
 impl Display for MigratedFundsEntryDto {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "(tail_transaction_hash={:}, address={:?}, deposit={})", self.tail_transaction_hash, self.address, self.deposit)
+        write!(
+            f,
+            "(tail_transaction_hash={:}, address={:?}, deposit={})",
+            self.tail_transaction_hash, self.address, self.deposit
+        )
     }
 }
 
@@ -149,13 +145,17 @@ impl ReceiptPayload {
         funds: Vec<MigratedFundsEntry>,
         transaction: MessagePayload,
     ) -> Result<Self> {
-        let res = RustReceiptPayload::new(MilestoneIndex::new(migrated_at), last, funds.iter().map(|f| f.to_inner()).collect(), transaction.to_inner());
+        let res = RustReceiptPayload::new(
+            MilestoneIndex::new(migrated_at),
+            last,
+            funds.iter().map(|f| f.to_inner()).collect(),
+            transaction.to_inner(),
+        );
         match res {
-            Ok(payload) => Ok(Self {payload}),
+            Ok(payload) => Ok(Self { payload }),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
-    
 
     pub fn migrated_at(&self) -> u32 {
         *self.payload.migrated_at()
@@ -201,13 +201,12 @@ impl MigratedFundsEntry {
             Ok(tail) => {
                 let res = RustMigratedFundsEntry::new(tail, output.to_inner_clone());
                 match res {
-                    Ok(payload) => Ok(Self {payload}),
+                    Ok(payload) => Ok(Self { payload }),
                     Err(e) => Err(anyhow::anyhow!(e.to_string())),
                 }
             }
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
-        
     }
 
     pub fn tail_transaction_hash(&self) -> String {

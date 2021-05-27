@@ -1,26 +1,19 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    Result,
-};
+use crate::Result;
 
 use anyhow::anyhow;
 
+use iota_client::bee_message::{
+    signature::{Ed25519Signature, SignatureUnlock as RustSignatureUnlock},
+    unlock::{
+        ReferenceUnlock as RustReferenceUnlock, UnlockBlock as RustUnlockBlock, UnlockBlocks as RustUnlockBlocks,
+    },
+};
 use std::{
     convert::TryInto,
     fmt::{Display, Formatter},
-};
-use iota_client::bee_message::{
-    signature::{
-        Ed25519Signature,
-        SignatureUnlock as RustSignatureUnlock,
-    },
-    unlock::{
-        UnlockBlock as RustUnlockBlock,
-        UnlockBlocks as RustUnlockBlocks,
-        ReferenceUnlock as RustReferenceUnlock,
-    },
 };
 
 pub enum UnlockBlockKind {
@@ -39,7 +32,7 @@ impl UnlockBlock {
         }
     }
 
-    pub fn to_inner(&self) -> RustUnlockBlock   {
+    pub fn to_inner(&self) -> RustUnlockBlock {
         self.0.clone()
     }
 
@@ -73,22 +66,21 @@ impl From<RustUnlockBlock> for UnlockBlock {
 pub struct UnlockBlocks(RustUnlockBlocks);
 
 impl UnlockBlocks {
-
     pub fn from(unlock_blocks: Vec<UnlockBlock>) -> Result<Self> {
         match RustUnlockBlocks::new(unlock_blocks.iter().map(|b| b.to_inner()).collect()) {
             Err(e) => Err(anyhow!(e.to_string())),
-            Ok(u) => Ok(UnlockBlocks(u))
+            Ok(u) => Ok(UnlockBlocks(u)),
         }
     }
 
     pub fn get(&self, index: usize) -> Option<UnlockBlock> {
         match self.0.get(index) {
             None => None,
-            Some(u) => Some(UnlockBlock(u.clone()))
+            Some(u) => Some(UnlockBlock(u.clone())),
         }
     }
 
-    pub fn to_inner(&self) -> RustUnlockBlocks   {
+    pub fn to_inner(&self) -> RustUnlockBlocks {
         self.0.clone()
     }
 }
@@ -106,7 +98,7 @@ impl ReferenceUnlock {
     pub fn from(index: u16) -> Result<ReferenceUnlock> {
         match RustReferenceUnlock::new(index) {
             Ok(e) => Ok(Self(e)),
-            Err(e) => Err(anyhow::anyhow!(e.to_string()))
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
 
@@ -131,7 +123,10 @@ pub struct SignatureUnlock(RustSignatureUnlock);
 
 impl SignatureUnlock {
     pub fn from(public_key: Vec<u8>, signature: Vec<u8>) -> SignatureUnlock {
-        Self(RustSignatureUnlock::Ed25519(Ed25519Signature::new((*public_key).try_into().unwrap(), (*signature).try_into().unwrap())))
+        Self(RustSignatureUnlock::Ed25519(Ed25519Signature::new(
+            (*public_key).try_into().unwrap(),
+            (*signature).try_into().unwrap(),
+        )))
     }
 
     pub fn to_inner_ref(&self) -> &RustSignatureUnlock {

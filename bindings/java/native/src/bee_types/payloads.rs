@@ -1,15 +1,9 @@
- // Copyright 2020 IOTA Stiftung
- // SPDX-License-Identifier: Apache-2.0
+// Copyright 2020 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
 
 use iota_client::bee_message::payload::Payload as RustPayload;
 
-use crate::bee_types::{
-    IndexationPayload,
-    TransactionPayload,
-    TreasuryPayload,
-    MilestonePayload,
-    ReceiptPayload,
-};
+use crate::bee_types::{IndexationPayload, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload};
 
 pub enum MessagePayloadType {
     Transaction = 1,
@@ -60,7 +54,6 @@ impl MessagePayload {
         }
     }
 
-    
     pub fn get_as_transaction(&self) -> Option<TransactionPayload> {
         if let RustPayload::Transaction(payload) = &self.payload {
             Some((*payload.clone()).into())

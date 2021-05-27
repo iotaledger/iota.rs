@@ -16,7 +16,10 @@ use iota_client::{
 use anyhow::anyhow;
 
 use crate::{
-    bee_types::{MessageMetadata, UtxoInput, IndexationPayload, TreasuryPayload, TransactionPayload, MilestonePayload, ReceiptPayload},
+    bee_types::{
+        IndexationPayload, MessageMetadata, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload,
+        UtxoInput,
+    },
     full_node_api::Client,
     MessagePayload, Result,
 };

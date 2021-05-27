@@ -20,7 +20,7 @@ use std::{
 };
 
 use crate::{
-    bee_types::{OutputsOptions, UtxoInput, SignatureUnlock},
+    bee_types::{OutputsOptions, SignatureUnlock, UtxoInput},
     full_node_api::Client,
     Result,
 };
@@ -122,7 +122,7 @@ impl Address {
     pub fn to_bech32(&self, hrp: &str) -> String {
         self.address.to_bech32(hrp)
     }
-    
+
     pub fn verify(&self, msg: Vec<u8>, signature: SignatureUnlock) -> Result<()> {
         match self.address.verify(&msg, signature.to_inner_ref()) {
             Ok(()) => Ok(()),
@@ -141,11 +141,7 @@ impl<'a> GetAddressBuilder<'a> {
     }
 
     pub fn balance(&self, address: &str) -> Result<BalanceAddressResponse> {
-        let res = crate::block_on(async {
-            RustGetAddressBuilder::new(self.client.borrow())
-                .balance(address)
-                .await
-        });
+        let res = crate::block_on(async { RustGetAddressBuilder::new(self.client.borrow()).balance(address).await });
         match res {
             Ok(r) => Ok(r.into()),
             Err(e) => Err(anyhow!(e.to_string())),
