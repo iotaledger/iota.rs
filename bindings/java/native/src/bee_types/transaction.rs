@@ -163,7 +163,7 @@ pub struct UnlockBlocks(RustUnlockBlocks);
 
 impl UnlockBlocks {
 
-    pub fn new(unlock_blocks: Vec<UnlockBlock>) -> Result<Self> {
+    pub fn from(unlock_blocks: Vec<UnlockBlock>) -> Result<Self> {
         match RustUnlockBlocks::new(unlock_blocks.iter().map(|b| b.to_inner()).collect()) {
             Err(e) => Err(anyhow!(e.to_string())),
             Ok(u) => Ok(UnlockBlocks(u))

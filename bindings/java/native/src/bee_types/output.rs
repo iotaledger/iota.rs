@@ -297,6 +297,10 @@ impl SignatureLockedSingleOutput {
     pub fn address(&self) -> Address {
         self.0.address().clone().into()
     }
+
+    pub fn to_inner(&self) -> RustSignatureLockedSingleOutput {
+        self.0.clone()
+    }
 }
 
 impl From<RustSignatureLockedSingleOutput> for SignatureLockedSingleOutput {
@@ -368,7 +372,11 @@ impl TryFrom<RustOutput> for TreasuryOutput {
         }
     }
 }
-
+impl From<RustTreasuryOutput> for TreasuryOutput {
+    fn from(output: RustTreasuryOutput) -> Self {
+        Self(output)
+    }
+}
 impl Display for TreasuryOutput {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(f, "({:?})", self.0)

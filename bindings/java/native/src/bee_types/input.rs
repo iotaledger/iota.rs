@@ -4,8 +4,12 @@ use std::fmt::{Display, Formatter};
 
 use iota_client::bee_message::{
     input::Input as RustInput,
-    payload::transaction::TransactionId,
+    payload::{
+        milestone::MilestoneId,
+        transaction::TransactionId,
+    },
     prelude::UtxoInput as RustUtxoInput,
+    prelude::TreasuryInput as RustTreasuryInput,
 };
 
 use crate::Result;
@@ -27,14 +31,28 @@ impl Input {
         }
     }
 
-    pub fn to_string(&self) -> String {
-        format!("{:?}", self.0)
+    pub fn get_as_utxo(&self) -> Option<UtxoInput> {
+        None
+    }
+
+    pub fn get_as_treasury(&self) -> Option<TreasuryInput> {
+        if let RustInput::Treasury(payload) = self.0 {
+            Some(payload.into())
+        } else {
+            None
+        }
     }
 }
 
 impl From<RustInput> for Input {
     fn from(input: RustInput) -> Self {
         Self(input)
+    }
+}
+
+impl Display for Input {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
     }
 }
 
@@ -73,5 +91,29 @@ impl Display for UtxoInput {
 impl From<RustUtxoInput> for UtxoInput {
     fn from(input: RustUtxoInput) -> Self {
         Self(input)
+    }
+}
+
+pub struct TreasuryInput(RustTreasuryInput);
+
+impl TreasuryInput {
+    pub fn new(id: MilestoneId) -> Self {
+        Self(RustTreasuryInput::new(id))
+    }
+
+    pub fn milestone_id(&self) -> MilestoneId {
+        *self.0.milestone_id()
+    }
+}
+
+impl From<RustTreasuryInput> for TreasuryInput {
+    fn from(input: RustTreasuryInput) -> Self {
+        Self(input)
+    }
+}
+
+impl Display for TreasuryInput {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "({:?})", self.0)
     }
 }

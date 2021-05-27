@@ -2,11 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_client::bee_message::{
-    output::Output,
+    output::Output as RustOutput,
+    input::Input as RustInput,
     prelude::TreasuryTransactionPayload as RustTreasuryPayload,
 };
 use std::{
     fmt::{Display, Formatter},
+};
+
+use crate::bee_types::{
+    TreasuryOutput,
+    TreasuryInput,
 };
 
 pub struct TreasuryPayload(RustTreasuryPayload);
@@ -18,9 +24,16 @@ impl From<RustTreasuryPayload> for TreasuryPayload {
 }
 
 impl TreasuryPayload {
-    pub fn output(&self) -> u64 {
-        if let Output::Treasury(payload) = self.0.output() {
-            return payload.amount();
+    pub fn output(&self) -> TreasuryOutput {
+        if let RustOutput::Treasury(payload) = self.0.output() {
+            return payload.clone().into()
+        }
+        unreachable!()
+    }
+
+    pub fn input(&self) -> TreasuryInput {
+        if let RustInput::Treasury(payload) = self.0.input() {
+            return payload.clone().into();
         }
         unreachable!()
     }

@@ -242,3 +242,10 @@ foreign_typemap!(
     ($p:f_type, option = "NoNullAnnotations") <= "UnlockBlock[]";
     ($p:f_type, option = "NullAnnotations") <= "@NonNull UnlockBlock[]";
 );
+foreign_typemap!(
+    ($p:r_type) Vec<MigratedFundsEntry> <= internal_aliases::JForeignObjectsArray<MigratedFundsEntry> {
+        $out = jobject_array_to_vec_of_objects(env, $p);
+    };
+    ($p:f_type, option = "NoNullAnnotations") <= "MigratedFundsEntry[]";
+    ($p:f_type, option = "NullAnnotations") <= "@NonNull MigratedFundsEntry[]";
+);

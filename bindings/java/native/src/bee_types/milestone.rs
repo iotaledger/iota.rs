@@ -8,6 +8,8 @@ use iota_client::{
             Payload as RustPayload,
             milestone::{
                 MilestonePayloadEssence as RustMilestonePayloadEssence,
+                MilestonePayload as RustMilestonePayload,
+                MILESTONE_SIGNATURE_LENGTH,
             },
         },
     },
@@ -16,6 +18,7 @@ use iota_client::{
 };
 
 use crate::{
+    Result,
     ed25519::PublicKey,
     bee_types::ReceiptPayload,
 };
@@ -88,12 +91,12 @@ impl From<RustUtxoChangesResponse> for MilestoneUtxoChangesResponse {
 #[derive(PartialEq, Debug)]
 pub struct MilestonePayload {
     essence: RustMilestonePayloadEssence,
-    signatures: Vec<Box<[u8]>>,
+    signatures: Vec<[u8; MILESTONE_SIGNATURE_LENGTH]>,
 }
 
 impl MilestonePayload {
     pub fn new(essence: RustMilestonePayloadEssence, signatures: Vec<Box<[u8]>>) -> MilestonePayload {
-        MilestonePayload { essence, signatures }
+        MilestonePayload { essence, signatures: signatures.iter().map(|s| s.to_vec().try_into().unwrap()).collect() }
     }
 
     pub fn essence(&self) -> MilestonePayloadEssence {
@@ -108,9 +111,22 @@ impl MilestonePayload {
             .clone()
             .iter()
             .map(|signature| MilestoneSignature {
-                signature: (*signature).to_vec(),
+                signature: signature.clone(),
             })
             .collect()
+    }
+
+    pub fn validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize,) -> Result<()>{
+        let ms = RustMilestonePayload::new(self.essence.clone(), self.signatures.clone()).unwrap();
+        match ms.validate(&applicable_public_keys, min_threshold) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(anyhow::anyhow!(format!("{:?}", e))),
+        }
+    }
+
+    pub fn id(&self) -> String {
+        let ms = RustMilestonePayload::new(self.essence.clone(), self.signatures.clone()).unwrap();
+        ms.id().to_string()
     }
 }
 
@@ -126,12 +142,12 @@ impl core::fmt::Display for MilestonePayload {
 
 #[derive(PartialEq, Debug)]
 pub struct MilestoneSignature {
-    signature: Vec<u8>,
+    signature: [u8; MILESTONE_SIGNATURE_LENGTH],
 }
 
 impl MilestoneSignature {
     pub fn get_signature(&self) -> Vec<u8> {
-        self.signature.clone()
+        self.signature.clone().to_vec()
     }
 }
 
@@ -192,6 +208,10 @@ impl MilestonePayloadEssence {
         }
 
         None
+    }
+
+    pub fn hash(&self) -> Vec<u8> {
+        self.essence.hash().to_vec()
     }
 }
 

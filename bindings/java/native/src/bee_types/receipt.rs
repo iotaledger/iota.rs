@@ -2,18 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use getset::{CopyGetters, Getters};
-use std::fmt::{Display, Formatter};
+use std::{
+    convert::TryInto,
+    fmt::{Display, Formatter, },
+};
 
 use crate::{
+    Result,
     SignatureLockedSingleOutput,
-    classes::address::AddressDto
+    classes::address::AddressDto,
+    bee_types::{
+        MessagePayload,
+        TreasuryPayload,
+    }
 };
 
 use iota_client::{
-    bee_message::payload::{
-        receipt::{
-            ReceiptPayload as RustReceiptPayload,
-            MigratedFundsEntry as RustMigratedFundsEntry,
+    bee_message::{
+        milestone::MilestoneIndex,
+        payload::{
+            receipt::{
+                TailTransactionHash,
+                ReceiptPayload as RustReceiptPayload,
+                MigratedFundsEntry as RustMigratedFundsEntry,
+            },
         },
     },
     bee_rest_api::types::dtos::{
@@ -128,12 +140,34 @@ impl From<RustReceiptPayload> for ReceiptPayload {
 }
 
 impl ReceiptPayload {
+    pub fn from(
+        migrated_at: u32,
+        last: bool,
+        funds: Vec<MigratedFundsEntry>,
+        transaction: MessagePayload,
+    ) -> Result<Self> {
+        let res = RustReceiptPayload::new(MilestoneIndex::new(migrated_at), last, funds.iter().map(|f| f.to_inner()).collect(), transaction.to_inner());
+        match res {
+            Ok(payload) => Ok(Self {payload}),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
+    
     pub fn migrated_at(&self) -> u32 {
         *self.payload.migrated_at()
     }
 
     pub fn last(&self) -> bool {
         self.payload.last()
+    }
+
+    pub fn transaction(&self) -> TreasuryPayload {
+        let p: MessagePayload = self.payload.transaction().clone().into();
+        p.get_as_treasury().unwrap()
+    }
+
+    pub fn amount(&self) -> u64 {
+        self.payload.amount()
     }
 
     pub fn funds(&self) -> Vec<MigratedFundsEntry> {
@@ -151,17 +185,37 @@ impl Display for ReceiptPayload {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct MigratedFundsEntry {
     payload: RustMigratedFundsEntry,
 }
 
 impl MigratedFundsEntry {
-    pub fn tail_transaction_hash(&self) -> Vec<u8> {
-        self.payload.tail_transaction_hash().as_ref().to_vec()
+    pub fn from(hash: String, output: SignatureLockedSingleOutput) -> Result<MigratedFundsEntry> {
+        let tail_res = TailTransactionHash::new(hash.as_bytes().try_into().unwrap());
+        match tail_res {
+            Ok(tail) => {
+                let res = RustMigratedFundsEntry::new(tail, output.to_inner());
+                match res {
+                    Ok(payload) => Ok(Self {payload}),
+                    Err(e) => Err(anyhow::anyhow!(e.to_string())),
+                }
+            }
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+        
+    }
+
+    pub fn tail_transaction_hash(&self) -> String {
+        self.payload.tail_transaction_hash().to_string()
     }
 
     pub fn output(&self) -> SignatureLockedSingleOutput {
         self.payload.output().clone().into()
+    }
+
+    fn to_inner(&self) -> RustMigratedFundsEntry {
+        self.payload.clone()
     }
 }
 

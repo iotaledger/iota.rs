@@ -17,7 +17,10 @@ use crate::{
 use iota_client::{
     TopicEvent, MqttEvent, node::Topic,
     Api, bee_message::{
-        payload::transaction::TransactionId,
+        payload::{
+            milestone::MilestoneId,
+            transaction::TransactionId,
+        },
         MessageId, 
     },
     bee_rest_api::types::dtos::LedgerInclusionStateDto,
@@ -350,6 +353,17 @@ foreign_class!(
 
 foreign_class!(
     #[derive(camelCaseAliases, Display)]
+    class TreasuryInput {
+        self_type TreasuryInput;
+        constructor TreasuryInput::new(milestone: MilestoneId) -> TreasuryInput;
+        private fn TreasuryInput::to_string(&self) -> String; alias to_string;
+        /// Returns the milestones id of a `TreasuryInput`.
+        fn TreasuryInput::milestone_id(&self) -> MilestoneId;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
     class ReceiptDto {
         self_type ReceiptDto;
         private constructor = empty;
@@ -573,7 +587,17 @@ foreign_class!(
         }
     }
 );
-
+foreign_class!(
+    #[derive(Display)]
+    class MilestoneId {
+        self_type MilestoneId;
+        private constructor = empty;
+        private fn MilestoneId::to_string(&self) -> String; alias to_string;
+        fn MilestoneId::fromString(str_rep: &str) -> MilestoneId {
+            MilestoneId::from_str(str_rep).unwrap()
+        }
+    }
+);
 foreign_class!(
     #[derive(Display)]
     class Message {
@@ -954,7 +978,7 @@ foreign_class!(
 
 // Bee types wrapping
 foreign_class!(
-    #[derive(Display, camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class MessagePayload {
         self_type MessagePayload;
         private constructor = empty;
@@ -969,31 +993,41 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(Display, camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class IndexationPayload {
         self_type IndexationPayload;
         private constructor = empty;
         private fn IndexationPayload::to_string(&self) -> String; alias to_string;
+        /// Creates a new `IndexationPayload`.
         fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias fromBytes;
+        /// Creates a new `IndexationPayload` fro strings
         fn IndexationPayload::new_from_string(index: &str, data: &str) -> Result<IndexationPayload>; alias fromStrings;
+        /// Returns the index of an `IndexationPayload`.
         fn IndexationPayload::index(&self) -> &[u8];
+        /// Returns the data of an `IndexationPayload`.
         fn IndexationPayload::data(&self) -> &[u8];
     }
 );
 
 foreign_class!(
-    #[derive(Display, camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class MilestonePayload {
         self_type MilestonePayload;
         private constructor = empty;
         private fn MilestonePayload::to_string(&self) -> String; alias to_string;
+        /// Returns the essence of a `MilestonePayload`.
         fn MilestonePayload::essence(&self) -> MilestonePayloadEssence;
+        /// Returns the signatures of a `MilestonePayload`.
         fn MilestonePayload::signatures(&self) -> Vec<MilestoneSignature>;
+        /// Semantically validate a `MilestonePayload`.
+        fn MilestonePayload::validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize,) -> Result<()>;
+        /// Computes the identifier of a `MilestonePayload`.
+        fn MilestonePayload::id(&self) -> String;
     }
 );
 
 foreign_class!(
-    #[derive(Display, camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class MilestoneSignature {
         self_type MilestoneSignature;
         private constructor = empty;
@@ -1003,19 +1037,29 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(Display, camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class MilestonePayloadEssence {
         self_type MilestonePayloadEssence;
         private constructor = empty;
         private fn MilestonePayloadEssence::to_string(&self) -> String; alias to_string;
+        /// Returns the index of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::index(&self) -> u32;
+        /// Returns the timestamp of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::timestamp(&self) -> u64;
+        /// Returns the parents of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::parents(&self) -> Vec<MessageId>;
+        /// Returns the merkle proof of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::merkle_proof(&self) -> Vec<u8>;
+        /// Returns the next proof of work score of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::next_pow_score(&self) -> u32;
+        /// Returns the newt proof of work index of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::next_pow_score_milestone(&self) -> u32;
+        /// Returns the public keys of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::public_keys(&self) -> Vec<PublicKey>;
+        /// Returns the optional receipt of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::receipt(&self) -> Option<ReceiptPayload>;
+        /// Hashes the `MilestonePayloadEssence to be signed.`
+        fn MilestonePayloadEssence::hash(&self) -> Vec<u8>;
     }
 );
 
@@ -1024,10 +1068,19 @@ foreign_class!(
     class ReceiptPayload {
         self_type ReceiptPayload;
         private constructor = empty;
+        /// Creates a new `ReceiptPayload`.
+        fn ReceiptPayload::from(migrated_at: u32, last: bool, funds: Vec<MigratedFundsEntry>, transaction: MessagePayload) -> Result<ReceiptPayload>;
         private fn ReceiptPayload::to_string(&self) -> String; alias to_string;
+        /// Returns the milestone index at which the funds of a `ReceiptPayload` were migrated at in the legacy network.
         fn ReceiptPayload::migrated_at(&self) -> u32;
+        /// Returns whether a `ReceiptPayload` is the final one for a given migrated at index.
         fn ReceiptPayload::last(&self) -> bool;
+        /// The funds which were migrated with a `ReceiptPayload`.
         fn ReceiptPayload::funds(&self) -> Vec<MigratedFundsEntry>;
+        /// The `TreasuryTransaction` used to fund the funds of a `ReceiptPayload`.
+        fn ReceiptPayload::transaction(&self) -> TreasuryPayload;
+        /// Returns the sum of all `MigratedFundsEntry` items within a `ReceiptPayload`.
+        fn ReceiptPayload::amount(&self) -> u64;
     }
 );
 
@@ -1036,8 +1089,12 @@ foreign_class!(
     class MigratedFundsEntry {
         self_type MigratedFundsEntry;
         private constructor = empty;
+        /// Creates a new `MigratedFundsEntry`.
+        fn MigratedFundsEntry::from(hash: String, output: SignatureLockedSingleOutput) -> Result<MigratedFundsEntry>;
         private fn MigratedFundsEntry::to_string(&self) -> String; alias to_string;
-        fn MigratedFundsEntry::tail_transaction_hash(&self) -> Vec<u8>;
+        /// Returns the tail transaction hash of a `MigratedFundsEntry`.
+        fn MigratedFundsEntry::tail_transaction_hash(&self) -> String;
+        /// Returns the output of a `MigratedFundsEntry`.
         fn MigratedFundsEntry::output(&self) -> SignatureLockedSingleOutput;
     }
 );
@@ -1047,7 +1104,7 @@ foreign_class!(
     class TransactionPayload {
         self_type TransactionPayload;
         private constructor = empty;
-        private fn TransactionPayload::to_string(&self) -> String;
+        private fn TransactionPayload::to_string(&self) -> String; alias to_string;
         /// Return a new `TransactionPayloadBuilder` to build a `TransactionPayload`.
         fn TransactionPayload::builder() -> TransactionPayloadBuilder;
         /// Return the essence of a `TransactionPayload`.
@@ -1079,7 +1136,7 @@ foreign_class!(
     class Essence {
         self_type Essence;
         private constructor = empty;
-        private fn Essence::to_string(&self) -> String;
+        private fn Essence::to_string(&self) -> String; alias to_string;
         fn Essence::get_as_regular(&self) -> Option<RegularEssence>;
     }
 );
@@ -1132,7 +1189,7 @@ foreign_class!(
         self_type UnlockBlocks;
         private constructor = empty;
         private fn UnlockBlocks::to_string(&self) -> String;
-        fn UnlockBlocks::new(unlock_blocks: Vec<UnlockBlock>) -> Result<UnlockBlocks>;
+        fn UnlockBlocks::from(unlock_blocks: Vec<UnlockBlock>) -> Result<UnlockBlocks>;
         // Gets a copy of the unlockblock at specified index, if it exists
         fn UnlockBlocks::get(&self, index: usize) -> Option<UnlockBlock>;
     }
@@ -1144,6 +1201,7 @@ foreign_class!(
         self_type TreasuryPayload;
         private constructor = empty;
         private fn TreasuryPayload::to_string(&self) -> String;
-        fn TreasuryPayload::output(&self) -> u64;
+        fn TreasuryPayload::output(&self) -> TreasuryOutput;
+        fn TreasuryPayload::input(&self) -> TreasuryInput;
     }
 );
