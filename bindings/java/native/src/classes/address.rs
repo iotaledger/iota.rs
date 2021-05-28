@@ -90,18 +90,17 @@ impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
 #[derive(Clone, Debug, Getters, CopyGetters)]
 pub struct AddressOutputsOptions {}
 
-//
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Address {
     address: RustAddress,
 }
-//
+
 impl Display for Address {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(f, "({:?})", self.address)
     }
 }
-//
+
 impl From<RustAddress> for Address {
     fn from(address: RustAddress) -> Self {
         Self { address }
@@ -244,13 +243,88 @@ impl<'a> GetAddressesBuilder<'a> {
         }
     }
 
-    // Consume the builder and get the vector of public and internal addresses bech32 encoded
-    // pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
-    //
-    // }
-    //
-    // Consume the builder and get the vector of public and internal addresses
-    // pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
-    //
-    // }
+    pub fn get_all(&self) -> Result<Vec<AddressStringPublicWrapper>> {
+        let fields = self.fields.borrow_mut().take().unwrap();
+        let ret = crate::block_on(async {
+            let mut builder = RustGetAddressesBuilder::new(&fields.seed)
+                .with_account_index(fields.account_index)
+                .with_range(fields.range);
+
+            if let Some(b) = fields.bech32_hrp {
+                builder = builder.with_bech32_hrp(b);
+            }
+            if let Some(c) = fields.client {
+                builder.with_client(c.borrow()).get_all().await
+            } else {
+                builder.get_all().await
+            }
+        });
+
+        match ret {
+            Ok(e) => Ok(e.iter().map(|t| AddressStringPublicWrapper {
+                        address: t.0.clone(),
+                        public: t.1
+                    }
+                ).collect()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn get_all_raw(&self) -> Result<Vec<AddressPublicWrapper>> {
+        let fields = self.fields.borrow_mut().take().unwrap();
+        let ret = crate::block_on(async {
+            let mut builder = RustGetAddressesBuilder::new(&fields.seed)
+                .with_account_index(fields.account_index)
+                .with_range(fields.range);
+
+            if let Some(b) = fields.bech32_hrp {
+                builder = builder.with_bech32_hrp(b);
+            }
+            if let Some(c) = fields.client {
+                builder.with_client(c.borrow()).get_all_raw().await
+            } else {
+                builder.get_all_raw().await
+            }
+        });
+
+        match ret {
+            Ok(e) => Ok(e.iter().map(|t| AddressPublicWrapper {
+                        address: t.0.into(),
+                        public: t.1
+                    }
+                ).collect()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
+pub struct AddressStringPublicWrapper {
+    #[getset(get = "pub")]
+    address: String,
+    #[getset(get_copy = "pub")]
+    public: bool
+}
+impl Display for AddressStringPublicWrapper {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(address={}, public={})", self.address, self.public)
+    }
+}
+
+#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
+pub struct AddressPublicWrapper {
+    address: Address,
+    #[getset(get_copy = "pub")]
+    public: bool
+}
+
+impl AddressPublicWrapper {
+    pub fn address(&self) -> Address {
+        self.address.clone()
+    }
+}
+impl Display for AddressPublicWrapper {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "(address={}, public={})", self.address, self.public)
+    }
 }

@@ -205,6 +205,7 @@ foreign_typemap!(
         }
         $out = opt;
     };
+    
 );
 
 foreign_typemap!(
