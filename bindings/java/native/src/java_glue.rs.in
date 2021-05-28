@@ -1263,6 +1263,8 @@ foreign_class!(
         fn RegularEssence::inputs(&self) -> Vec<Input>;
         /// Gets the transaction outputs.
         fn RegularEssence::outputs(&self) -> Vec<OutputDto>;
+        // Gets the transaction chained payload.
+        fn RegularEssence::payload(&self) -> Option<MessagePayload>;
     }
 );
 foreign_class!(

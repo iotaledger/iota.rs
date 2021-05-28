@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    bee_types::{Input, OutputDto, UnlockBlock, UnlockBlocks},
+    bee_types::{Input, OutputDto, UnlockBlock, UnlockBlocks, MessagePayload},
     Result,
 };
 
@@ -109,9 +109,12 @@ impl RegularEssence {
         self.0.outputs().iter().map(|output| output.into()).collect()
     }
     // Gets the transaction chained payload.
-    // pub fn payload(&self) -> &Option<RustPayload> {
-    // self.essence.payload()
-    // }
+    pub fn payload(&self) -> Option<MessagePayload> {
+        match self.0.payload() {
+            Some(payload) => Some(payload.clone().into()),
+            None => None,
+        }
+    }
 }
 
 impl Display for RegularEssence {
