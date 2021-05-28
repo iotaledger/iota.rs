@@ -195,6 +195,17 @@ foreign_class!(
         /// Get the receipts by the given milestone index.
         fn Client::get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>>;
 
+        /// GET /api/v1/treasury endpoint
+        /// Get the treasury output.
+        fn Client::get_treasury(&self) -> Result<TreasuryResponse>;
+        
+        /// GET /api/v1/transactions/{transactionId}/included-message
+        /// Returns the included message of the transaction.
+        fn Client::get_included_message(&self, transaction_id: TransactionId) -> Result<Message>;
+
+        /// POST /api/v1/messages endpoint
+        fn Client::post_message(&self, msg: Message) -> Result<MessageId>;
+
         /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
         /// confirmed for a while.
         fn Client::reattach(&self, message_id: MessageId) -> Result<MessageWrap>;
@@ -382,6 +393,20 @@ foreign_class!(
         fn ReceiptPayloadDto::migrated_at(&self) -> u32;
         fn ReceiptPayloadDto::funds(&self) -> Vec<MigratedFundsEntryDto>;
         fn ReceiptPayloadDto::last(&self) -> bool;
+    }
+);
+
+foreign_class!(
+    /// Response of GET /api/v1/treasury.
+    /// Returns all information about the treasury.
+    #[derive(PartialEq, camelCaseAliases, Display)]
+    class TreasuryResponse {
+        self_type TreasuryResponse;
+        private constructor = empty;
+        private fn TreasuryResponse::to_string(&self) -> String; alias to_string;
+        private fn TreasuryResponse::eq(&self, o: &TreasuryResponse) -> bool; alias rustEq;
+        fn TreasuryResponse::amount(&self) -> u64;
+        fn TreasuryResponse::milestone_id(&self) -> &str;
     }
 );
 

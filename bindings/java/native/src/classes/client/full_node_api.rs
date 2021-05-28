@@ -9,7 +9,7 @@ use std::{
 };
 
 use iota_client::{
-    bee_message::{input::UtxoInput as RustUtxoInput, MessageId},
+    bee_message::{input::UtxoInput as RustUtxoInput, MessageId, payload::transaction::TransactionId},
     client::Client as ClientRust,
 };
 
@@ -18,7 +18,7 @@ use crate::{
     balance::GetBalanceBuilderApi,
     bee_types::*,
     client_builder::ClientBuilder,
-    message::{ClientMessageBuilder, GetMessageBuilder, MessageWrap},
+    message::{ClientMessageBuilder, GetMessageBuilder, MessageWrap, Message},
     mqtt::MqttManager,
 };
 
@@ -70,23 +70,16 @@ impl Client {
             .collect())
     }
 
-    // fn post_message(&self, msg: Message) -> Result<String> {
-    // let rt = tokio::runtime::Runtime::new()?;
-    // let mut msg_builder = RustMessageBuilder::<RustClientMiner>::new()
-    // .with_network_id(msg.network_id)
-    // .with_parents(Parents::new(
-    // msg.parents
-    // .iter()
-    // .map(|m| m.parse::<RustMessageId>().expect("Invalid message id"))
-    // .collect::<Vec<RustMessageId>>(),
-    // )?)
-    // .with_nonce_provider(rt.block_on(self.0.get_pow_provider()), 4000f64, None);
-    // if let Some(payload) = msg.payload {
-    // msg_builder = msg_builder.with_payload(payload.try_into()?);
-    // }
-    // let msg = msg_builder.finish()?;
-    // Ok(crate::block_on(async { self.0.post_message(&msg).await })?.to_string())
-    // }
+    pub fn post_message(&self, msg: Message) -> Result<MessageId> {
+        let ret = crate::block_on(async {
+            self.0.post_message(&msg.to_inner_clone()).await
+        });
+
+        match ret {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
 
     pub fn get_output(&self, output_id: String) -> Result<OutputResponse> {
         Ok(crate::block_on(async { self.0.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
@@ -166,14 +159,23 @@ impl Client {
         Ok(receipts)
     }
 
-    // fn get_treasury(&self) -> Result<TreasuryResponse> {
-    // Ok(crate::block_on(async { self.0.get_treasury().await })?.into())
-    // }
+    /// GET /api/v1/treasury endpoint
+    /// Get the treasury output.
+    pub fn get_treasury(&self) -> Result<TreasuryResponse> {
+        let res = crate::block_on(async { self.0.get_treasury().await });
+        match res {
+            Ok(t) => Ok(t.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
 
-    // fn get_included_message(&self, input: String) -> Result<Message> {
-    // let transaction_id = RustTransactionId::from_str(&input[..])?;
-    // crate::block_on(async { self.0.get_included_message(&transaction_id).await })?.try_into()
-    // }
+    pub fn get_included_message(&self, transaction_id: TransactionId) -> Result<Message> {
+        let res = crate::block_on(async { self.0.get_included_message(&transaction_id).await });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.

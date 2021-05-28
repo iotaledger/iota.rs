@@ -59,6 +59,8 @@ impl core::fmt::Debug for MessageWrap {
 
 #[derive(Clone, PartialEq, Getters, CopyGetters)]
 pub struct Message {
+    rust_message: RustMessage,
+
     /// Specifies which network this message is meant for.
     #[getset(get_copy = "pub")]
     network_id: u64,
@@ -88,17 +90,6 @@ impl core::fmt::Debug for Message {
         write!(f, "Message({})", self)
     }
 }
-// impl Clone for Message {
-// fn clone(&self) -> Self {
-// Message {
-// network_id: self.network_id,
-// parents: self.parents().clone(),
-// payload: self.payload.clone(),
-// nonce: self.nonce,
-// id: self.id.clone(),
-// }
-// }
-// }
 
 impl From<RustMessage> for Message {
     fn from(message: RustMessage) -> Self {
@@ -107,6 +98,7 @@ impl From<RustMessage> for Message {
             None => None,
         };
         Self {
+            rust_message: message.clone(),
             network_id: message.network_id(),
             parents: message.parents().to_vec(),
             payload: payload,
@@ -131,6 +123,10 @@ impl Message {
 
     pub fn payload(&self) -> Option<MessagePayload> {
         self.payload.clone()
+    }
+    
+    pub fn to_inner_clone(self) -> RustMessage {
+        self.rust_message.clone()
     }
 }
 
