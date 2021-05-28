@@ -38,6 +38,16 @@ impl BrokerOptions {
         BrokerOptions::new_with(builder)
     }
 
+    pub fn use_ws(&self, use_ws: bool) -> BrokerOptions {
+        let builder = self.builder.borrow_mut().take().unwrap().use_ws(use_ws);
+        BrokerOptions::new_with(builder)
+    }
+
+    pub fn port(&self, port: u16) -> BrokerOptions {
+        let builder = self.builder.borrow_mut().take().unwrap().port(port);
+        BrokerOptions::new_with(builder)
+    }
+
     pub fn max_reconnection_attempts(&self, max_reconnection_attempts: usize) -> BrokerOptions {
         let builder = self
             .builder
@@ -77,6 +87,51 @@ impl ClientBuilder {
         ClientBuilder::new_with_builder(new_builder)
     }
 
+    pub fn with_nodes(&mut self, nodes: Vec<String>) -> ClientBuilder {
+        let nodes_arr: Vec<&str> = nodes.iter().map(|s| {let st: &str = &s; st}).collect();
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_nodes(nodes_arr.as_slice()).unwrap();
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
+    pub fn with_node_auth(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder {
+        let jwt_opt = match jwt {
+            Some(j) => Some(j.to_string()),
+            None => None,
+        };
+        let auth_opt = match username {
+            Some(user) => Some((user, password.unwrap())),
+            None => None,
+        };
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_node_auth(node, jwt_opt, auth_opt).unwrap();
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
+    pub fn with_primary_node(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder {
+        let jwt_opt = match jwt {
+            Some(j) => Some(j.to_string()),
+            None => None,
+        };
+        let auth_opt = match username {
+            Some(user) => Some((user, password.unwrap())),
+            None => None,
+        };
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_primary_node(node, jwt_opt, auth_opt).unwrap();
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
+    pub fn with_primary_pow_node(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder {
+        let jwt_opt = match jwt {
+            Some(j) => Some(j.to_string()),
+            None => None,
+        };
+        let auth_opt = match username {
+            Some(user) => Some((user, password.unwrap())),
+            None => None,
+        };
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_node_auth(node, jwt_opt, auth_opt).unwrap();
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
     pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder {
         let new_builder = crate::block_on(async move {
             self.builder
@@ -111,6 +166,21 @@ impl ClientBuilder {
         ClientBuilder::new_with_builder(new_builder)
     }
 
+    pub fn with_quorum(&self, quorum: bool) -> ClientBuilder {
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_quorum(quorum);
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
+    pub fn with_quorum_size(&self, quorum_size: usize) -> ClientBuilder {
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_quorum_size(quorum_size);
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
+    pub fn with_quorum_threshold(&self, quorum_size: usize) -> ClientBuilder {
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_quorum_threshold(quorum_size);
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
     /// Sets the MQTT broker options.
     pub fn with_mqtt_broker_options(&mut self, options: BrokerOptions) -> ClientBuilder {
         let new_builder = self
@@ -124,6 +194,11 @@ impl ClientBuilder {
 
     pub fn with_local_pow(&mut self, local: bool) -> ClientBuilder {
         let new_builder = self.builder.borrow_mut().take().unwrap().with_local_pow(local);
+        ClientBuilder::new_with_builder(new_builder)
+    }
+
+    pub fn with_tips_interval(&mut self, tips: u64) -> ClientBuilder {
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_tips_interval(tips);
         ClientBuilder::new_with_builder(new_builder)
     }
 

@@ -30,8 +30,7 @@ public class ExampleApp {
     private static Client node() {
         String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
         Client iota = Client.Builder().withNode(nodeUrl) // Insert your node URL here
-                // .withNodeSyncDisabled()
-                // .with_node_auth("https://somechrysalisiotanode.com", "name", "password") //
+                // .withNodeAuth("https://somechrysalisiotanode.com", "name", "password") //
                 // Optional authentication
                 .finish();
         return iota;

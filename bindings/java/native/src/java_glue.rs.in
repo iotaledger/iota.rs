@@ -117,6 +117,8 @@ foreign_class!(
         fn BrokerOptions::automatic_disconnect(&self, disconnect: bool) -> BrokerOptions;
         fn BrokerOptions::timeout(&self, timeout: Duration) -> BrokerOptions;
         fn BrokerOptions::max_reconnection_attempts(&self, max_reconnection_attempts: usize) -> BrokerOptions;
+        fn BrokerOptions::use_ws(&self, use_ws: bool) -> BrokerOptions;
+        fn BrokerOptions::port(&self, port: u16) -> BrokerOptions;
     }
 );
 
@@ -125,15 +127,47 @@ foreign_class!(
     class ClientBuilder {
         self_type ClientBuilder;
         constructor ClientBuilder::new() -> ClientBuilder;
+        /// Adds an IOTA node by its URL.
         fn ClientBuilder::with_node(&mut self, node: &str) -> ClientBuilder;
+        /// Adds a list of IOTA nodes by their URLs.
+        fn ClientBuilder::with_nodes(&mut self, nodes: Vec<String>) -> ClientBuilder;
+        /// Adds an IOTA node by its URL with optional jwt and or basic authentication
+        fn ClientBuilder::with_node_auth(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
+        /// Adds an IOTA node by its URL to be used as primary node, with optional jwt and or basic authentication
+        fn ClientBuilder::with_primary_node(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
+        /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
+        /// authentication
+        fn ClientBuilder::with_primary_pow_node(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
+        /// Get node list from the node_pool_urls
         fn ClientBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder;
+        /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
+        /// Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are
+        /// provided.
         fn ClientBuilder::with_network(&mut self, network: String) -> ClientBuilder;
+        /// Set the node sync interval
         fn ClientBuilder::with_node_sync_interval(&mut self, node_sync_interval: Duration) -> ClientBuilder;
+        /// Disables the node syncing process.
+        /// Every node will be considered healthy and ready to use.
         fn ClientBuilder::with_node_sync_disabled(&mut self) -> ClientBuilder;
+        
+        /// Set if quroum should be used or not
+        fn ClientBuilder::with_quorum(&self, quorum: bool) -> ClientBuilder;
+        /// Set amount of nodes which should be used for quorum
+        fn ClientBuilder::with_quorum_size(&self, quorum_size: usize) -> ClientBuilder;
+        /// Set quorum_threshold
+        fn ClientBuilder::with_quorum_threshold(&self, threshold: usize) -> ClientBuilder;
+        
+        /// Sets the MQTT broker options.
         fn ClientBuilder::with_mqtt_broker_options(&mut self, options: BrokerOptions) -> ClientBuilder;
+        /// Sets whether the PoW should be done locally or remotely.
         fn ClientBuilder::with_local_pow(&mut self, local: bool) -> ClientBuilder;
+        /// Sets after how many seconds new tips will be requested during PoW
+        fn ClientBuilder::with_tips_interval(&mut self, tips: u64) -> ClientBuilder;
+        /// Sets the default request timeout.
         fn ClientBuilder::with_request_timeout(&mut self, timeout: Duration) -> ClientBuilder;
+        /// Sets the request timeout for a specific API usage.
         fn ClientBuilder::with_api_timeout(&mut self, api: Api, timeout: Duration) -> ClientBuilder;
+        /// Build the Client instance.
         fn ClientBuilder::finish(&mut self) -> Result<Client>;
     }
 );
@@ -683,7 +717,7 @@ foreign_class!(
         /// Set a custom range in which to search for addresses for custom inputs. Default: 0..100
         fn ClientMessageBuilder::with_input_range(&self, low: usize, high: usize) -> ClientMessageBuilder;
 
-        /// 
+        /// Set a transfer to the builder
         fn ClientMessageBuilder::with_output(&self, address: &str, amount: u64) -> Result<ClientMessageBuilder>;
 
         /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
