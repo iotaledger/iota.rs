@@ -136,27 +136,14 @@ The whole process is deterministic which means the output is the same as long as
 
 Output example:
 
-```json
-['atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86',
- 'atoi1qzfvkkp398v7hhvu89fu88hxctf7snwc9sf3a3nd7msfv77jk7qk2ah07s3',
- 'atoi1qq4t98j5y8wxkaujue99mjwqcp6jvvmsd5lv0755sz7dtjdz3p2lydv76sy',
- 'atoi1qrhzhjxc4z8vpwjt3hafs5xpdng5katqe890p0h95mc0l273j8yzxn7r4hc',
- 'atoi1qputu0yvfvxd7g39wf4rc67e0f0dyhl6enxu9jxnsrjqmemh067tw7qelyc',
- 'atoi1qptg5w2x47qwjf3gpqt3h7d2ey5x7xf8v7qtt29gkxt4mjfjfc28sutvd8a',
- 'atoi1qprvelq9paakh72fgm6j2kf8kexadw3t5xljer9dpsep5c7wx5mjwdxch6z',
- 'atoi1qrwk37tz47ddng9kpxfflkpz5tplcq7ll56v4acam04307xk70l7uf6wg8j',
- 'atoi1qper3zr5xe9x0wqs35ytwh622870g44frkyygdhs0ds8yejle3xujhq7dx3',
- 'atoi1qq6lkr9hucfylqjaqphu0stvk8pcmsx98r7ukuq40asszwmqytlnc058thk',
- 'atoi1qzpn7se3ryhscmqg404pycxzvfpt8v4xn8aul0tqdh00xsncgnxu7na7zjj',
- 'atoi1qz4qqakty9qytw8fk9shelt9lwlvv83s5ggt3wjag9fkgcc74z78w4l86y5',
- 'atoi1qp20uddchglqry0l5qnjg5aln8d5rk2v5l45hwrxv9z0daxs7u6xcsh4077',
- 'atoi1qrlqm2u5txxxnjx22fxq0jfjzk6l4nwnue6ht5pepk65m2f4xmxqynmxu2m',
- 'atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz',
- 'atoi1qrkjennxyl2xcqem6x69ya65sasma33z0ux872k846lqft0s3qf7k6lqpft',
- 'atoi1qr4yuekp30ff7mnnnjwy9tdhynxmlmkpuxf70qurtwudp2zpf3jeyw4uh37',
- 'atoi1qp6m5sz5ayjtccfxapdk5lp4qkheyfg0emzntmulyxzftps730vcul8dmqr',
- 'atoi1qzrwhkzhu67fqltfffwljejawdcghedukpgu9x6tzevwlnq89gmfjtayhgz',
- 'atoi1qpehxcp24z947dgupjqc9ktkn5ylmdxqqnx83m7xlajnf8005756u4n7z77']
+```string
+[
+  'atoi1qz6dr6dtl0856tf0pczz7gesrf7j8a4vr00q58ld2zx7ttlv3p96snpym9z',
+  'atoi1qpp7sz28a0ghvd6knwnljr7j2s04qquduuc5vlz94fwf94zznj2yv5ew2c4',
+  'atoi1qzje6zhg5vu456eg3z84ekcfn3laxqyczche5eeqhcdh3w9yr5sqvr4z4td',
+  'atoi1qqwhxjmcvmatpedeedapgx0vwyupfwx9k5n4w0lnc5l6vmz78aavwhs55v0',
+  'atoi1qzg63t9880jtfysvpq7rrynz0rqt3kd2fw8r4934ezraz9dpwvzxkw2dtmh'
+]
 ```
 
 IOTA address is represented by a checksumed base 32 string (Bech32) and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/dev_guide.html#iota-15-address-anatomy).
@@ -338,8 +325,21 @@ The simplest message that can be broadcasted is a message without any particular
 
 Output example:
 
-```plaintext
-e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086
+```string
+{
+  message: {
+    networkId: '14379272398717627559',
+    parentMessageIds: [
+      '03ddc83fad172a322fb00fb4e449436e9d1117ff390879100647c650a30c2d52',
+      '252798210fa9816f6fd40f1b19095da9f2dc88ae06fc4c0523a928a29d0d782e',
+      'a8e4f4cd49227068424ead8da187a48fdaa7ce8ffc4b9ac0ee2d5d3f2fcd7e70',
+      'dbbc8044bc624b3378e1dda83ab95f9be468b06a6a9806c76a70353182028cf9'
+    ],
+    payload: null,
+    nonce: '9223372036854784215'
+  },
+  messageId: '10dbee9cf3c58507725861b34ac711058dc13f709be1a6d21f1dc0af17b06379'
+}
 ```
 
 * `message_id` is an unique id that refers to the given message in network
@@ -355,36 +355,36 @@ Output example:
 ```json
 Message meta data:
 {
-  "messageId": "656f753d781a4c4f545ac6a69e391ec400b7f33ac8bed98add70f7310de910b6",
-  "parentMessageIds": [
-    "28359f7010ec08b1ed67465f495424f9046ec3890164dddc0240a275f20cecdb",
-    "93b142fdf1bdfe1c5fa68d807287480aa14f2347f601fb349a3f89127b7a9e53",
-    "cf192d94f2af091b1094e7b6513ff6752fcf477dd919b16c8ab823944a78aee7",
-    "dbca8d2119b00fd5ef130bdb900592cafde56142e81c279b80cf18dcaae86f44"
-  ],
-  "isSolid": true,
-  "referencedByMilestoneIndex": 224175,
-  "ledgerInclusionState": "noTransaction"
+   "messageId":"e52b631bc7500366b90c6e11eb7fd6abaa7527f9bb5b4b512b0b9112bb9e7be8",
+   "parentMessageIds": [
+      "26d72339ed262c1ec29d6c91de6be26d067b3327191f5e47606df53cc40e334e",
+      "6289ea0aecf3830e5e8d9925959bb6e804e324bb6db23c5701f7a538d12831f6",
+      "fdbf2d02603235fdff99f0ceb57705ead95041d62de386387f2922e5d9f6c502",
+      "ffa26139ca7f9d4849e118ff369fb3a387c8fefd8d15232b8353d4acf334324c"
+   ],
+   "isSolid":true,
+   "shouldPromote":false,
+   "shouldReattach":false
 }
 
 Message data:
 {
-  "message": {
-    "networkId": "14379272398717628000",
-    "parentMessageIds": [
-      "28359f7010ec08b1ed67465f495424f9046ec3890164dddc0240a275f20cecdb",
-      "93b142fdf1bdfe1c5fa68d807287480aa14f2347f601fb349a3f89127b7a9e53",
-      "cf192d94f2af091b1094e7b6513ff6752fcf477dd919b16c8ab823944a78aee7",
-      "dbca8d2119b00fd5ef130bdb900592cafde56142e81c279b80cf18dcaae86f44"
-    ],
-    "payload": {
-      "type": 2,
-      "index": "494f54412e52532042494e44494e47202d204e4f44452e4a53",
-      "data": "736f6d65207574662062617365642064617461"
-    },
-    "nonce": 9223372036855090000
-  },
-  "messageId": "656f753d781a4c4f545ac6a69e391ec400b7f33ac8bed98add70f7310de910b6"
+   "message": {
+      "networkId":"14379272398717627559",
+      "parentMessageIds": [
+         "27782707e4cbf84ca26b3db881bbf39b6429f9ee736a0cbe5a1c177d7a52b05d",
+         "61cdf92c64a3304bbbabaf9fbfb0ea7ef9624e1eedea68efbe08595ccdf853e1",
+         "a222d13e3ee51b56b0b0e38140a5f7f813b6d9e29b752d7e1e2424099455080d",
+         "ab6bca20091b58dcbb0906438a7e47bfb11621c4a37b8d118b565f7f138a40d6"
+      ],
+      "payload": {
+         "type":2,
+         "index":"484f524e4554205370616d6d6572",
+         "data":"42696e61727920697320746865206675747572652e0a436f756e743a2031333936393530390a54696d657374616d703a20323032312d30352d33315431353a33363a30392b30323a30300a54697073656c656374696f6e3a203337c2b573"
+         },
+      "nonce":"246736"
+   },
+   "messageId":"30d87fa9917602e5685638e37802bde11b260bd2379f6c850704d7babd365b44"
 }
 ```
 
@@ -401,8 +401,25 @@ Message data:
 
 Output example:
 
-```plaintext
-8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9
+```json
+{
+   "message": {
+      "networkId":"14379272398717627559",
+      "parentMessageIds": [
+         "1a383abbe5f6a6b0899d718975c3119643aa784a68d04075f4e986fd7a0c0e4b",
+         "6098f889e31911833df7b7839e8b222d701ab496f7dfa1a719087edf4fa7ae52",
+         "a98b47db4e8254eccc738c968bd35b08a5491e56d6c1a18af298c42bbd8c3a46",
+         "da6796c0842c08de832c7948fffedc0d5adce372e50a108f26a128dba6096d31"
+      ],
+      "payload": {
+         "type":2,
+         "index":"494f54412e52532042494e44494e47202d204e4f44452e4a53",
+         "data":"736f6d65207574662062617365642064617461"
+      },
+      "nonce":"13835058055282176519"
+   },
+   "messageId":"10f59c101cec669b0a0ba163bc777184c7f63455f5e771d42f910a1ba2ad20ff"
+}
 ```
 
 * Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/testnet/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
@@ -424,7 +441,7 @@ async function run(){
     // client will connect to testnet by default
     const client = new ClientBuilder().build();
 
-    const message_data = await client.getMessage().data("e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086");
+    const message_data = await client.getMessage().data("92f427d68c7008a81fde290b9cb99071373d9893d65718bfc22928273877e041");
     console.log(message_data);
 }
 
@@ -435,51 +452,59 @@ Example of a message with `SignedTransaction` payload:
 
 ```json
 {
-   "message":{
-      "networkId":"14379272398717627559",
-      "parentMessageIds":[
-         "108e58d210b3b918d75fe2c4d7a5248878e29454cfb071688393ec9d1f9ad81b",
-         "90d8d2722bc661aa893a7fa7bb044f7dcdd8503da7e10f5c907649897f110c44",
-         "ac4a389ee6985b9238dbc5882a0a27e3a8b6cf5960d176e64c6f832bdadbe7c6",
-         "c20dc0da13802f9c1e34c269fe19fa96a92c184e5776ed211bfa74ebe33d82a8"
-      ],
-      "payload":{
-         "type":0,
-         "essence":{
-            "type":0,
-            "inputs":[
-               {
-                  "type":0,
-                  "transactionId":"7614ba900a90b130707766a660a454942ac7cc4adea3fb9ad0cdca90114417c2",
-                  "transactionOutputIndex":0
-               }
-            ],
-            "outputs":[
-               {
-                  "type":0,
-                  "address":{
-                     "type":0,
-                     "address":"08dc79fb0c9acf9fea71219ec32070afbcb44230e75f950ac1dcdc4377fb44fe"
-                  },
-                  "amount":1000000
-               }
-            ],
-            "payload":null
-         },
-         "unlockBlocks":[
-            {
-               "type":0,
-               "signature":{
-                  "type":0,
-                  "publicKey":"2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a",
-                  "signature":"a0354502ef69dbbfdadb4248791a271ac59c2707b55f3c758de9f5762278a2800553cfec278a4b270c501bbfd5cfcdf8613eda5879d9088835d328228f789d08"
-               }
-            }
-         ]
-      },
-      "nonce":"17293822569102755792"
-   },
-   "messageId":"0cd0a0362217a3fec8c03c22fa7135cef96e808f0e2f4a40d3be67c639b17b85"
+	"message": {
+		"networkId": "14379272398717627559",
+		"parentMessageIds": [
+			"a59a5d11da0944c88b58f9f9c095c11ee4b8b7fd9da47bd25412d39f815bb804",
+			"c3d42c42eccd25bc3374a0552e3a4b21180facece14f31c36e5ac580e5496ccc",
+			"dae4a36cef9a3fd03caff5ddbc5c90bc5523477f4e4937837202bfe4bd5b98aa",
+			"fe188a4f57ecd6a135b05b31913d86617550d9397476ab5bb7445138f782ec34"
+		],
+		"payload": {
+			"type": 0,
+			"essence": {
+				"type": 0,
+				"inputs": [
+					{
+						"type": 0,
+						"transactionId": "b2b9723c9119f4fb49084472e72821e842ba4779df02e1038f03dd8b25d96730",
+						"transactionOutputIndex": 1
+					}
+				],
+				"outputs": [
+					{
+						"type": 0,
+						"address": {
+							"type": 0,
+							"address": "43e80947ebd17637569ba7f90fd2541f50038de731467c45aa5c92d4429c9446"
+						},
+						"amount": 1000
+					},
+					{
+						"type": 0,
+						"address": {
+							"type": 0,
+							"address": "b4d1e9abfbcf4d2d2f0e042f23301a7d23f6ac1bde0a1fed508de5afec884ba8"
+						},
+						"amount": 8995995
+					}
+				],
+				"payload": null
+			},
+			"unlockBlocks": [
+				{
+					"type": 0,
+					"signature": {
+						"type": 0,
+						"publicKey": "27177dd41cc479ed379b8ad2535d66fa58480c119a8a15a7a296f055401ab958",
+						"signature": "8403dc1fb949365e960f14cdc19b6b3abb6b0a6bce83f1082a33e3857a30ddd2be1098074b6c261f442db8e59eb640002d24d9a577262fd8152c6fee2d076c0b"
+					}
+				}
+			]
+		},
+		"nonce": "156106"
+	},
+	"messageId": "92f427d68c7008a81fde290b9cb99071373d9893d65718bfc22928273877e041"
 }
 ```
 
