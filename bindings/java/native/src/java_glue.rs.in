@@ -828,7 +828,7 @@ foreign_class!(
         private constructor = empty;
         private fn AddressStringPublicWrapper::eq(&self, o: &AddressStringPublicWrapper) -> bool; alias rustEq;
         private fn AddressStringPublicWrapper::to_string(&self) -> String; alias to_string;
-        fn AddressStringPublicWrapper::public(&self) -> bool;
+        fn AddressStringPublicWrapper::public(&self) -> bool; alias isPublic;
         fn AddressStringPublicWrapper::address(&self) -> &str;
     }
 );
@@ -839,7 +839,7 @@ foreign_class!(
         private constructor = empty;
         private fn AddressPublicWrapper::eq(&self, o: &AddressPublicWrapper) -> bool; alias rustEq;
         private fn AddressPublicWrapper::to_string(&self) -> String; alias to_string;
-        fn AddressPublicWrapper::public(&self) -> bool;
+        fn AddressPublicWrapper::public(&self) -> bool; alias isPublic;
         fn AddressPublicWrapper::address(&self) -> Address;
     }
 );
