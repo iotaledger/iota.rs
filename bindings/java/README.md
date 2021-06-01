@@ -27,6 +27,9 @@ $ ./gradlew examples:basic-app:test --info
 
 Make sure to make gradlew executable (`chmod +x gradlew`)
 
+## Example for an external project
+Project skeleton can be found [here](https://github.com/kwek20/iota-rs-java).
+
 ## Documentation
 
 Documentation can be found [here](https://client-lib.docs.iota.org/overview/index.html).
