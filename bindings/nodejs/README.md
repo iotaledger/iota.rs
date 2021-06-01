@@ -65,9 +65,9 @@ Adds an IOTA node with authentication to the client pool.
 
 Add a node to always connect first to with optional authentication.
 
-| Param       | Type                                         | Description                      |
-| ----------- | -------------------------------------------- | -------------------------------- |
-| url         | <code>string</code>                          | A node URL                       |
+| Param       | Type                                             | Description                      |
+| ----------- | ------------------------------------------------ | -------------------------------- |
+| url         | <code>string</code>                              | A node URL                       |
 | authOptions | <code>[NodeAuthOptions](#nodeauthoptions)</code> | Options for node authentication  |
 
 **Returns** the client builder instance for chained calls.
@@ -76,9 +76,20 @@ Add a node to always connect first to with optional authentication.
 
 Add a node to always connect first to when using remote PoW with optional authentication. Will overwrite the primary node for this case.
 
-| Param       | Type                                         | Description                      |
-| ----------- | -------------------------------------------- | -------------------------------- |
-| url         | <code>string</code>                          | A node URL                       |
+| Param       | Type                                             | Description                      |
+| ----------- | ------------------------------------------------ | -------------------------------- |
+| url         | <code>string</code>                              | A node URL                       |
+| authOptions | <code>[NodeAuthOptions](#nodeauthoptions)</code> | Options for node authentication  |
+
+**Returns** the client builder instance for chained calls.
+
+#### permanode(url, [, authOptions]): ClientBuilder
+
+Add a permanode.
+
+| Param       | Type                                             | Description                      |
+| ----------- | ------------------------------------------------ | -------------------------------- |
+| url         | <code>string</code>                              | A node URL                       |
 | authOptions | <code>[NodeAuthOptions](#nodeauthoptions)</code> | Options for node authentication  |
 
 **Returns** the client builder instance for chained calls.

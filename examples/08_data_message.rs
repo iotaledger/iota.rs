@@ -10,7 +10,10 @@ use iota_client::{Client, Result};
 #[tokio::main]
 async fn main() -> Result<()> {
     let iota = Client::builder()
-        .with_node("https://api.lb-0.testnet.chrysalis2.com")?
+        // .with_node("https://api.lb-0.testnet.chrysalis2.com")?
+        .with_node("http://localhost")?
+        .with_node_sync_disabled()
+        .with_permanode("http://18.196.167.57:8000/api/permanode/", None, None)?
         .finish()
         .await?;
 
