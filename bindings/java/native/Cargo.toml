@@ -1,0 +1,42 @@
+[package]
+name = "iota-client"
+version = "0.1.0"
+authors = ["Brord van Wierst <brord@iota.org>"]
+edition = "2018"
+build = "build.rs"
+
+[lib]
+name = "iota_client"
+crate-type = ["cdylib"]
+
+[dependencies]
+iota-client = { path = "../../../iota-client", features = ["mqtt"] }
+
+# Java gen
+jni = "0.19" # Used in directly verifying binding linkage
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
+
+log = "0.4.6"
+chrono = "0.4.6"
+env_logger = "0.8"
+anyhow = "1.0.38"
+hex = "0.4"
+getset = "0.1"
+
+# await block_on etc management
+tokio = { version = "1.2" }
+once_cell = "1.4"
+futures = "0.3"
+
+[build-dependencies]
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
+env_logger = "0.8"
+bindgen = "0.58"
+
+[features]
+default = ["mqtt", "iota-client/default"]
+sync = ["iota-client/sync"]
+async = ["iota-client/async"]
+mqtt = ["iota-client/mqtt"]
+storage = ["iota-client/storage"]
+wasm = ["iota-client/wasm"]
