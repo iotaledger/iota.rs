@@ -101,14 +101,7 @@ impl Client {
         let result: Vec<BalanceAddressResponse> =
             crate::block_on(async { self.0.get_address_balances(&addresses).await })?
                 .into_iter()
-                .map(|b| {
-                    let result: BalanceAddressResponse = b.into();
-                    // TODO
-                    // result.address = self
-                    // .block
-                    // .block_on(async { self.0.hex_to_bech32(&result.address, None).await })?;
-                    result
-                })
+                .map(|b| b.into())
                 .collect();
 
         Ok(result)
