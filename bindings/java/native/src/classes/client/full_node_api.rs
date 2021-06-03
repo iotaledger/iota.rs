@@ -9,7 +9,7 @@ use std::{
 };
 
 use iota_client::{
-    bee_message::{input::UtxoInput as RustUtxoInput, MessageId, payload::transaction::TransactionId},
+    bee_message::{input::UtxoInput as RustUtxoInput, payload::transaction::TransactionId, MessageId},
     client::Client as ClientRust,
 };
 
@@ -18,7 +18,7 @@ use crate::{
     balance::GetBalanceBuilderApi,
     bee_types::*,
     client_builder::ClientBuilder,
-    message::{ClientMessageBuilder, GetMessageBuilder, MessageWrap, Message},
+    message::{ClientMessageBuilder, GetMessageBuilder, Message, MessageWrap},
     mqtt::MqttManager,
 };
 
@@ -71,9 +71,7 @@ impl Client {
     }
 
     pub fn post_message(&self, msg: Message) -> Result<MessageId> {
-        let ret = crate::block_on(async {
-            self.0.post_message(&msg.to_inner_clone()).await
-        });
+        let ret = crate::block_on(async { self.0.post_message(&msg.to_inner_clone()).await });
 
         match ret {
             Ok(s) => Ok(s),

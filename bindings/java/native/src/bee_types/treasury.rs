@@ -3,7 +3,8 @@
 use getset::{CopyGetters, Getters};
 use iota_client::{
     bee_message::{
-        input::Input as RustInput, output::Output as RustOutput, prelude::TreasuryTransactionPayload as RustTreasuryPayload,
+        input::Input as RustInput, output::Output as RustOutput,
+        prelude::TreasuryTransactionPayload as RustTreasuryPayload,
     },
     bee_rest_api::types::responses::TreasuryResponse as RustTreasuryResponse,
 };
@@ -25,7 +26,7 @@ impl From<RustTreasuryResponse> for TreasuryResponse {
     fn from(response: RustTreasuryResponse) -> Self {
         Self {
             milestone_id: response.milestone_id,
-            amount: response.amount
+            amount: response.amount,
         }
     }
 }

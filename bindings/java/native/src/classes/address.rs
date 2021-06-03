@@ -261,11 +261,13 @@ impl<'a> GetAddressesBuilder<'a> {
         });
 
         match ret {
-            Ok(e) => Ok(e.iter().map(|t| AddressStringPublicWrapper {
-                        address: t.0.clone(),
-                        public: t.1
-                    }
-                ).collect()),
+            Ok(e) => Ok(e
+                .iter()
+                .map(|t| AddressStringPublicWrapper {
+                    address: t.0.clone(),
+                    public: t.1,
+                })
+                .collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
@@ -288,11 +290,13 @@ impl<'a> GetAddressesBuilder<'a> {
         });
 
         match ret {
-            Ok(e) => Ok(e.iter().map(|t| AddressPublicWrapper {
-                        address: t.0.into(),
-                        public: t.1
-                    }
-                ).collect()),
+            Ok(e) => Ok(e
+                .iter()
+                .map(|t| AddressPublicWrapper {
+                    address: t.0.into(),
+                    public: t.1,
+                })
+                .collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
@@ -303,7 +307,7 @@ pub struct AddressStringPublicWrapper {
     #[getset(get = "pub")]
     address: String,
     #[getset(get_copy = "pub")]
-    public: bool
+    public: bool,
 }
 impl Display for AddressStringPublicWrapper {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
@@ -315,7 +319,7 @@ impl Display for AddressStringPublicWrapper {
 pub struct AddressPublicWrapper {
     address: Address,
     #[getset(get_copy = "pub")]
-    public: bool
+    public: bool,
 }
 
 impl AddressPublicWrapper {

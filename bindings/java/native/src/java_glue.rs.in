@@ -138,6 +138,8 @@ foreign_class!(
         /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
         /// authentication
         fn ClientBuilder::with_primary_pow_node(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
+        /// Adds an IOTA permanode by its URL, with optional jwt and or basic authentication
+        fn ClientBuilder::with_permanode(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
         /// Get node list from the node_pool_urls
         fn ClientBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder;
         /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
