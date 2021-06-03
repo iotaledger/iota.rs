@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    bee_types::{Input, OutputDto, UnlockBlock, UnlockBlocks, MessagePayload},
+    bee_types::{Input, MessagePayload, OutputDto, UnlockBlock, UnlockBlocks},
     Result,
 };
 

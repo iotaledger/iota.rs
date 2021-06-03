@@ -26,6 +26,7 @@ export declare class ClientBuilder {
   nodeAuth(url: string, authOptions: NodeAuthOptions): ClientBuilder
   primaryNode(url: string, authOptions?: NodeAuthOptions): ClientBuilder
   primaryPowNode(url: string, authOptions?: NodeAuthOptions): ClientBuilder
+  permanode(url: string, authOptions?: NodeAuthOptions): ClientBuilder
   nodes(urls: string[]): ClientBuilder
   nodePoolUrls(urls: string[]): ClientBuilder
   network(networkName: string): ClientBuilder

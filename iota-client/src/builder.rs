@@ -133,6 +133,19 @@ impl ClientBuilder {
         Ok(self)
     }
 
+    /// Adds a permanode by its URL, with optional jwt and or basic authentication
+    pub fn with_permanode(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        self.node_manager_builder = self
+            .node_manager_builder
+            .with_permanode(url, jwt, basic_auth_name_pwd)?;
+        Ok(self)
+    }
+
     /// Adds an IOTA node by its URL with optional jwt and or basic authentication
     pub fn with_node_auth(
         mut self,

@@ -124,7 +124,7 @@ impl Message {
     pub fn payload(&self) -> Option<MessagePayload> {
         self.payload.clone()
     }
-    
+
     pub fn to_inner_clone(self) -> RustMessage {
         self.rust_message.clone()
     }

@@ -823,7 +823,6 @@ impl TryFrom<RustMessage> for Message {
             Some(RustPayload::Transaction(payload)) => {
                 let essence = match payload.essence().to_owned() {
                     RustEssence::Regular(e) => e.try_into()?,
-                    _ => panic!("Unexisting essence."),
                 };
 
                 Some(Payload {
@@ -876,7 +875,6 @@ impl TryFrom<RustMessage> for Message {
                 let essence = match payload.transaction() {
                     RustPayload::Transaction(transaction_payload) => match transaction_payload.essence().to_owned() {
                         RustEssence::Regular(e) => e.try_into()?,
-                        _ => panic!("Unexisting essence."),
                     },
                     _ => panic!("Missing transaction payload"),
                 };
