@@ -96,6 +96,8 @@ impl NodeManager {
         );
         if permanode_regexes.iter().any(|re| re.is_match(&path)) || (path == "api/v1/messages" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
+                // remove api/v1/ since permanodes can have custom keyspaces
+                // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
                 let path = &path["api/v1/".len()..];
                 for mut permanode in permanodes {
                     permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
