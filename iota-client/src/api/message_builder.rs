@@ -28,11 +28,15 @@ const DUST_DIVISOR: i64 = 100_000;
 const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Structure for sorting of UnlockBlocks
-struct AddressIndexRecorder {
+#[derive(Debug, Clone)]
+pub struct AddressIndexRecorder {
+    account_index: usize,
     input: Input,
+    output: OutputResponse,
     address_index: usize,
     chain: Chain,
     internal: bool,
+    bech32_address: String,
 }
 
 #[derive(Debug, Clone)]
@@ -168,11 +172,15 @@ impl<'a> ClientMessageBuilder<'a> {
             return Err(Error::MissingParameter("output"));
         }
         if !self.outputs.is_empty() {
-            if self.seed.is_none() {
+            if self.seed.is_none() && self.inputs.is_none() {
                 return Err(Error::MissingParameter("Seed"));
             }
             // Send message with transaction
-            self.finish_transaction().await
+            let (essence, address_input_recorders) = self.prepare_transaction().await?;
+            let tx_payload = self
+                .sign_transaction(essence, address_input_recorders, None, None)
+                .await?;
+            self.finish_message(Some(tx_payload)).await
         } else if self.index.is_some() {
             // Send message with indexation payload
             self.finish_indexation().await
@@ -188,6 +196,7 @@ impl<'a> ClientMessageBuilder<'a> {
         address_index: usize,
         internal: bool,
         output: &OutputResponse,
+        bech32_address: String,
     ) -> Result<AddressIndexRecorder> {
         // Note that we need to sign the original address, i.e., `path/index`,
         // instead of `path/index/_offset` or `path/_offset`.
@@ -206,10 +215,13 @@ impl<'a> ClientMessageBuilder<'a> {
         );
 
         Ok(AddressIndexRecorder {
+            account_index,
             input,
+            output: output.clone(),
             address_index,
             chain,
             internal,
+            bech32_address,
         })
     }
 
@@ -256,20 +268,26 @@ impl<'a> ClientMessageBuilder<'a> {
 
                     total_already_spent += output_amount;
                     let bech32_hrp = self.client.get_bech32_hrp().await?;
-                    let (address_index, internal) = search_address(
-                        self.seed.ok_or(crate::Error::MissingParameter("seed"))?,
-                        bech32_hrp,
-                        account_index,
-                        self.input_range.clone(),
-                        &output_address,
-                    )
-                    .await?;
+                    let (address_index, internal) = match self.seed {
+                        Some(seed) => {
+                            search_address(
+                                seed,
+                                &bech32_hrp,
+                                account_index,
+                                self.input_range.clone(),
+                                &output_address,
+                            )
+                            .await?
+                        }
+                        None => (0, false),
+                    };
 
                     let address_index_record = ClientMessageBuilder::create_address_index_recorder(
                         account_index,
                         address_index,
                         internal,
                         &output,
+                        output_address.to_bech32(&bech32_hrp),
                     )?;
                     inputs_for_essence.push(address_index_record.input.clone());
                     address_index_recorders.push(address_index_record);
@@ -379,6 +397,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                 output_wrapper.address_index,
                                 output_wrapper.internal,
                                 &output_wrapper.output,
+                                str_address.to_owned(),
                             )?;
                             inputs_for_essence.push(address_index_record.input.clone());
                             address_index_recorders.push(address_index_record);
@@ -453,8 +472,8 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
     }
 
-    /// Consume the builder and get the API result
-    pub async fn finish_transaction(self) -> Result<Message> {
+    /// Prepare a transaction
+    pub async fn prepare_transaction(&self) -> Result<(Essence, Vec<AddressIndexRecorder>)> {
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
 
@@ -477,7 +496,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         // Inputselection
-        let (mut inputs_for_essence, mut outputs_for_essence, mut address_index_recorders) = match &self.inputs {
+        let (mut inputs_for_essence, mut outputs_for_essence, address_index_recorders) = match &self.inputs {
             Some(inputs) => {
                 // 127 is the maximum input amount
                 if inputs.len() > INPUT_OUTPUT_COUNT_MAX {
@@ -527,12 +546,43 @@ impl<'a> ClientMessageBuilder<'a> {
         }
         let regular_essence = essence.finish()?;
         let essence = Essence::Regular(regular_essence);
+        Ok((essence, address_index_recorders))
+    }
+
+    /// Sign the transaction
+    pub async fn sign_transaction(
+        &self,
+        essence: Essence,
+        mut address_index_recorders: Vec<AddressIndexRecorder>,
+        seed: Option<&'a Seed>,
+        inputs_range: Option<Range<usize>>,
+    ) -> Result<Payload> {
         let hashed_essence = essence.hash();
         let mut unlock_blocks = Vec::new();
         let mut signature_indexes = HashMap::<String, usize>::new();
         address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
 
-        for (current_block_index, recorder) in address_index_recorders.iter().enumerate() {
+        for (current_block_index, mut recorder) in address_index_recorders.into_iter().enumerate() {
+            // If seed is provided we assume an essence that got prepared without seed and need to find the correct
+            // address indexes and public/internal
+            if seed.is_some() {
+                let (address_index, internal) = search_address(
+                    seed.or(self.seed).ok_or(crate::Error::MissingParameter("Seed"))?,
+                    &recorder.bech32_address[0..4],
+                    recorder.account_index,
+                    inputs_range.clone().unwrap_or_else(|| self.input_range.clone()),
+                    &Address::try_from_bech32(&recorder.bech32_address)?,
+                )
+                .await?;
+                recorder = ClientMessageBuilder::create_address_index_recorder(
+                    recorder.account_index,
+                    address_index,
+                    internal,
+                    &recorder.output,
+                    recorder.bech32_address,
+                )?;
+            }
+
             // Check if current path is same as previous path
             // If so, add a reference unlock block
             // Format to differentiate between public and internal addresses
@@ -541,8 +591,8 @@ impl<'a> ClientMessageBuilder<'a> {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we need to create a signature unlock block
-                let private_key = self
-                    .seed
+                let private_key = seed
+                    .or(self.seed)
                     .ok_or(crate::Error::MissingParameter("Seed"))?
                     .derive(Curve::Ed25519, &recorder.chain)?
                     .secret_key()?;
@@ -563,10 +613,7 @@ impl<'a> ClientMessageBuilder<'a> {
             .with_unlock_blocks(unlock_blocks)
             .finish()
             .map_err(|_| Error::TransactionError)?;
-        // building message
-        let payload = Payload::Transaction(Box::new(payload));
-
-        self.finish_message(Some(payload)).await
+        Ok(Payload::Transaction(Box::new(payload)))
     }
 
     /// Consume the builder and get the API result

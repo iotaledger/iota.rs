@@ -133,3 +133,7 @@ path = "get_funds.rs"
 name = "split_outputs_single_address"
 path = "split_outputs_single_address.rs"
 
+[[example]]
+name = "offline_signing"
+path = "offline_signing.rs"
+
