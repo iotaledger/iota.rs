@@ -13,7 +13,7 @@ const OUTPUT_ID_LENGTH: usize = 68;
 const TRANSACTION_ID_LENGTH: usize = 64;
 
 /// Output type filter.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum OutputType {
     /// Signature locked single output.
     SignatureLockedSingle,
