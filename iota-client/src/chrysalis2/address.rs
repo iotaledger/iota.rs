@@ -81,12 +81,10 @@ impl<'a> GetAddressesBuilder<'a> {
         for i in range {
             let address = generate_address(&self.seed, &mut path, i, false)?;
             let internal_address = generate_address(&self.seed, &mut path, i, true)?;
-            if let Address::Ed25519(address) = address {
-                addresses.push((address, false));
-            }
-            if let Address::Ed25519(internal_address) = internal_address {
-                addresses.push((internal_address, true));
-            }
+            let Address::Ed25519(address) = address;
+            addresses.push((address, false));
+            let Address::Ed25519(internal_address) = internal_address;
+            addresses.push((internal_address, true));
         }
 
         Ok(addresses)

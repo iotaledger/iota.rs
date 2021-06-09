@@ -239,6 +239,83 @@ pub async fn mine(
     Ok((mined_info, updated_bundle))
 }
 
+/// mine a bundle essence from raw Txs to reveal as least new parts of the signature as possible
+pub async fn mine_bundle(
+    txs: Vec<BundledTransaction>,
+    security_level: u8,
+    spent_bundle_hashes: Vec<String>,
+    timeout: u64,
+    offset: i64,
+) -> Result<(MinerInfo, OutgoingBundleBuilder)> {
+    if spent_bundle_hashes.is_empty() {
+        return Err(Error::MigrationError(
+            "Can't mine without spent_bundle_hashes",
+        ));
+    }
+
+    let essence_parts = get_bundle_essence_parts(&txs);
+    let mut miner_builder = MinerBuilder::new()
+        .with_offset(offset)
+        .with_essences_from_unsigned_bundle(
+            essence_parts
+                .iter()
+                .map(|t| {
+                    Ok(TryteBuf::try_from_str(&(*t).to_string())?
+                        .as_trits()
+                        .encode())
+                })
+                .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
+        )
+        .with_security_level(security_level as usize);
+    miner_builder = miner_builder.with_num_13_free_fragments((security_level * 27) as usize);
+    // Use one worker less than we have cores or 1 if there is only one core
+    let mut worker_count = num_cpus::get();
+    if worker_count > 1 {
+        worker_count -= 1;
+    } else {
+        worker_count = 1;
+    }
+    let miner = miner_builder
+        .with_known_bundle_hashes(
+            spent_bundle_hashes
+                .iter()
+                .map(|t| {
+                    Ok(TryteBuf::try_from_str(&(*t).to_string())?
+                        .as_trits()
+                        .encode())
+                })
+                .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
+        )
+        .with_worker_count(worker_count)
+        .with_core_thread_count(worker_count)
+        .with_mining_timeout(timeout)
+        .finish()?;
+
+    let mut recoverer = RecovererBuilder::new()
+        .with_security_level(security_level as usize)
+        .with_known_bundle_hashes(
+            spent_bundle_hashes
+                .iter()
+                .map(|t| {
+                    Ok(TryteBuf::try_from_str(&(*t).to_string())?
+                        .as_trits()
+                        .encode())
+                })
+                .collect::<Result<Vec<TritBuf<T1B1Buf>>>>()?,
+        )
+        .miner(miner)
+        .finish()?;
+    let CrackabilityMinerEvent::MinerInfo(mined_info) = recoverer.recover().await;
+    let updated_bundle = update_essence_with_mined_essence(
+        txs,
+        mined_info
+            .mined_essence
+            .clone()
+            .ok_or(Error::MigrationError("Couldn't get mined_essence"))?,
+    )?;
+    Ok((mined_info, updated_bundle))
+}
+
 /// Get Trytes from an OutgoingBundleBuilder
 pub fn get_trytes_from_bundle(
     created_migration_bundle: OutgoingBundleBuilder,
