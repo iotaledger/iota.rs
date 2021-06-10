@@ -7,7 +7,7 @@ use std::{fs::File, io::prelude::*, path::Path};
 
 /// In this example we will send the signed transaction in a message
 
-const SIGNED_TRANSACTION_FILE_NAME: &'static str = "examples/offline_signing/signed_transaction.json";
+const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_transaction.json";
 
 #[tokio::main]
 async fn main() -> Result<()> {

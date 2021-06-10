@@ -15,8 +15,8 @@ use std::{
 };
 /// In this example we will get inputs and prepare a transaction
 
-const ADDRESS_FILE_NAME: &'static str = "examples/offline_signing/addresses.json";
-const PREPARED_TRANSACTION_FILE_NAME: &'static str = "examples/offline_signing/prepared_transaction.json";
+const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
+const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
 const DUST_THRESHOLD: u64 = 1_000_000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

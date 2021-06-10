@@ -18,8 +18,8 @@ use std::{
 };
 /// In this example we will sign the prepared transaction
 
-const PREPARED_TRANSACTION_FILE_NAME: &'static str = "examples/offline_signing/prepared_transaction.json";
-const SIGNED_TRANSACTION_FILE_NAME: &'static str = "examples/offline_signing/signed_transaction.json";
+const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
+const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_transaction.json";
 
 #[tokio::main]
 async fn main() -> Result<()> {

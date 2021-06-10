@@ -9,7 +9,7 @@ use std::{env, fs::File, io::BufWriter, path::Path};
 
 /// In this example we will generate addresses which will be used later to find inputs
 
-const ADDRESS_FILE_NAME: &'static str = "examples/offline_signing/addresses.json";
+const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 
 #[tokio::main]
 async fn main() -> Result<()> {
