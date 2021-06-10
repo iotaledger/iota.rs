@@ -28,7 +28,7 @@ const DUST_DIVISOR: i64 = 100_000;
 const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Structure for sorting of UnlockBlocks
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressIndexRecorder {
     account_index: usize,
     input: Input,
@@ -225,7 +225,9 @@ impl<'a> ClientMessageBuilder<'a> {
         })
     }
 
-    pub(crate) fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, bool)> {
+    /// Get output amount and address from an OutputDto (bool true == SignatureLockedSingle, false ==
+    /// SignatureLockedDustAllowance)
+    pub fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, bool)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
             OutputDto::SignatureLockedSingle(ref r) => match &r.address {

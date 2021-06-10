@@ -134,6 +134,18 @@ name = "split_outputs_single_address"
 path = "split_outputs_single_address.rs"
 
 [[example]]
-name = "offline_signing"
-path = "offline_signing.rs"
+name = "0_address_generation"
+path = "offline_signing/0_address_generation.rs"
+
+[[example]]
+name = "1_transaction_preparation"
+path = "offline_signing/1_transaction_preparation.rs"
+
+[[example]]
+name = "2_transaction_signing"
+path = "offline_signing/2_transaction_signing.rs"
+
+[[example]]
+name = "3_send_message"
+path = "offline_signing/3_send_message.rs"
 

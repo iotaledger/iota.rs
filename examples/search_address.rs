@@ -37,7 +37,7 @@ async fn main() {
 
     let res = search_address(
         &seed,
-        iota.get_bech32_hrp().await.unwrap(),
+        &iota.get_bech32_hrp().await.unwrap(),
         0,
         0..10,
         &addresses[0].clone().try_into().unwrap(),
