@@ -13,6 +13,7 @@ pub struct ClientBuilderWrapper {
     auth: Option<(String, NodeAuthOptions)>,
     primary_node: Option<(String, Option<NodeAuthOptions>)>,
     primary_pow_node: Option<(String, Option<NodeAuthOptions>)>,
+    permanodes: Vec<(String, Option<NodeAuthOptions>)>,
     node_pool_urls: Vec<String>,
     quorum: Option<bool>,
     quorum_size: Option<usize>,
@@ -44,6 +45,7 @@ declare_types! {
                 auth: Default::default(),
                 primary_node: Default::default(),
                 primary_pow_node: Default::default(),
+                permanodes: Default::default(),
                 node_pool_urls: Default::default(),
                 quorum: Default::default(),
                 quorum_size: Default::default(),
@@ -117,6 +119,25 @@ declare_types! {
                 let guard = cx.lock();
                 let primary_pow_node = &mut this.borrow_mut(&guard).primary_pow_node;
                 primary_pow_node.replace((node_url, auth_options));
+            }
+            Ok(cx.this().upcast())
+        }
+
+        method permanode(mut cx) {
+            let node_url = cx.argument::<JsString>(0)?.value();
+            let auth_options: Option<NodeAuthOptions> = match cx.argument_opt(1) {
+                Some(arg) => {
+                    let auth_options = arg.downcast::<JsString>().or_throw(&mut cx)?.value();
+                    let options: NodeAuthOptions = serde_json::from_str(&auth_options).expect("invalid node auth options JSON");
+                    Some(options)
+                },
+                None => None,
+            };
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let permanodes = &mut this.borrow_mut(&guard).permanodes;
+                permanodes.push((node_url, auth_options));
             }
             Ok(cx.this().upcast())
         }
@@ -297,6 +318,20 @@ declare_types! {
 
                 for node in &ref_.nodes {
                     builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
+                }
+                for (permanode, auth_options) in &ref_.permanodes {
+                    match auth_options{
+                        Some(auth_options) => {
+                            if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
+                                builder = builder.with_permanode(permanode, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", permanode));
+                            } else{
+                                builder = builder.with_permanode(permanode, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", permanode));
+                            }
+                        },
+                        None => {
+                            builder = builder.with_permanode(permanode, None, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", permanode));
+                        },
+                    }
                 }
                 if let Some((node, auth_options)) = &ref_.auth{
                     if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){

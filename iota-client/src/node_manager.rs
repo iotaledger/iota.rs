@@ -44,6 +44,7 @@ pub(crate) struct NodeManager {
     pub(crate) primary_node: Option<Node>,
     primary_pow_node: Option<Node>,
     pub(crate) nodes: HashSet<Node>,
+    permanodes: Option<HashSet<Node>>,
     pub(crate) sync: bool,
     sync_interval: Duration,
     pub(crate) synced_nodes: Arc<RwLock<HashSet<Node>>>,
@@ -59,6 +60,7 @@ impl std::fmt::Debug for NodeManager {
         d.field("primary_node", &self.primary_node);
         d.field("primary_pow_node", &self.primary_pow_node);
         d.field("nodes", &self.nodes);
+        d.field("permanodes", &self.permanodes);
         d.field("sync", &self.sync);
         d.field("sync_interval", &self.sync_interval);
         d.field("synced_nodes", &self.synced_nodes);
@@ -74,6 +76,37 @@ impl NodeManager {
     }
     pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
+
+        // Endpoints for which only permanodes will be used if provided
+        let permanode_regexes = lazy_static!(
+            [
+              Regex::new(r"messages/([A-Fa-f0-9]{64})").expect("regex failed"),
+              Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
+              Regex::new(r"messages/([A-Fa-f0-9]{64})/children").expect("regex failed"),
+              Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
+              // bech32 address
+              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]").expect("regex failed"),
+              Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
+              // ED25519 address hex
+              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
+              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
+              Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
+              Regex::new(r"milestones/[0-9]").expect("regex failed"),
+            ].to_vec() => Vec<Regex>
+        );
+        if permanode_regexes.iter().any(|re| re.is_match(&path)) || (path == "api/v1/messages" && query.is_some()) {
+            if let Some(permanodes) = self.permanodes.clone() {
+                // remove api/v1/ since permanodes can have custom keyspaces
+                // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
+                let path = &path["api/v1/".len()..];
+                for mut permanode in permanodes {
+                    permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
+                    permanode.url.set_query(query);
+                    nodes_with_modified_url.push(permanode);
+                }
+            }
+        }
+
         if remote_pow {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
                 pow_node.url.set_path(path);
@@ -296,6 +329,7 @@ pub(crate) struct NodeManagerBuilder {
     pub(crate) primary_node: Option<Node>,
     primary_pow_node: Option<Node>,
     pub(crate) nodes: HashSet<Node>,
+    pub(crate) permanodes: Option<HashSet<Node>>,
     sync: bool,
     sync_interval: Duration,
     quorum: bool,
@@ -342,6 +376,31 @@ impl NodeManagerBuilder {
                 .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
         }
         self.primary_pow_node.replace(Node { url, jwt });
+        Ok(self)
+    }
+    pub(crate) fn with_permanode(
+        mut self,
+        url: &str,
+        jwt: Option<String>,
+        basic_auth_name_pwd: Option<(&str, &str)>,
+    ) -> Result<Self> {
+        let mut url = validate_url(Url::parse(url)?)?;
+        if let Some((name, password)) = basic_auth_name_pwd {
+            url.set_username(name)
+                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+            url.set_password(Some(password))
+                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+        }
+        match self.permanodes {
+            Some(ref mut permanodes) => {
+                permanodes.insert(Node { url, jwt });
+            }
+            None => {
+                let mut permanodes = HashSet::new();
+                permanodes.insert(Node { url, jwt });
+                self.permanodes.replace(permanodes);
+            }
+        }
         Ok(self)
     }
     pub(crate) fn with_node_sync_disabled(mut self) -> Self {
@@ -430,6 +489,7 @@ impl NodeManagerBuilder {
             primary_node: self.primary_node,
             primary_pow_node: self.primary_pow_node,
             nodes: self.nodes,
+            permanodes: self.permanodes,
             sync: self.sync,
             sync_interval: self.sync_interval,
             synced_nodes,
@@ -447,6 +507,7 @@ impl Default for NodeManagerBuilder {
             primary_node: None,
             primary_pow_node: None,
             nodes: HashSet::new(),
+            permanodes: None,
             sync: true,
             sync_interval: NODE_SYNC_INTERVAL,
             quorum: false,

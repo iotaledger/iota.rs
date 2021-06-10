@@ -32,6 +32,7 @@ impl Client {
         primary_node_jwt_name_password: Option<Vec<&str>>,
         primary_pow_node_jwt_name_password: Option<Vec<&str>>,
         nodes_name_password: Option<Vec<Vec<&str>>>,
+        permanodes_name_password: Option<Vec<Vec<&str>>>,
         node_sync_interval: Option<u64>,
         node_sync_disabled: Option<bool>,
         node_pool_urls: Option<Vec<String>>,
@@ -65,6 +66,14 @@ impl Client {
                 let (url, jwt, basic_auth_name_pwd) = get_url_jwt_auth(input);
                 if let Some(url) = url {
                     client = client.with_node_auth(&url, jwt, basic_auth_name_pwd).unwrap();
+                }
+            }
+        }
+        if let Some(permanodes_name_password) = permanodes_name_password {
+            for input in permanodes_name_password {
+                let (url, jwt, basic_auth_name_pwd) = get_url_jwt_auth(input);
+                if let Some(url) = url {
+                    client = client.with_permanode(&url, jwt, basic_auth_name_pwd).unwrap();
                 }
             }
         }

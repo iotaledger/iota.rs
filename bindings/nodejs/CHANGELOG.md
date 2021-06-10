@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.6.1]
+
+- Add permanode option.
+  - [8537f390](https://github.com/iotaledger/iota.rs/commit/8537f3901a3e9860df32aa982943de171670da3e) Add basic permanode support ([#586](https://github.com/iotaledger/iota.rs/pull/586)) on 2021-06-03
+
 ## \[0.6.0]
 
 - Added getMessageId function.

@@ -1,0 +1,41 @@
+plugins {
+    // Apply the java-library plugin to add support for Java
+    id 'java'
+
+    // Apply the application plugin to add support for building a CLI application.
+    id 'application'
+}
+
+dependencies {
+    implementation project(':native')
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+}
+
+tasks.withType(Test) {
+    systemProperties System.properties
+}
+startScripts {
+    classpath += files('../../target/debug')
+}
+
+task customCleanTask(type: Delete) {
+    // Clean up running "test" artifacts
+    // delete "${rootDir}/examples/basic-app/my-db"
+}
+
+test {
+    // Always run tests, even when they didnt change
+    outputs.upToDateWhen { false }
+
+    // Gradle ignores java logging, not rust logging
+    testLogging.showStandardStreams = true
+
+    dependsOn customCleanTask
+    
+    // Set rust output .so/.lib files to path
+    systemProperty "java.library.path", file("../../target/debug")
+}
+
+mainClassName = 'org.example.ExampleApp'
