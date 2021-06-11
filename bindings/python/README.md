@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Rust 1.45.0+
+- Rust 1.52.0+
 - Python 3.6+
 
 ## Try Run w/ Local Hornet
@@ -186,7 +186,6 @@ Creates a new instance of the Client.
 | Param                                | Type                                         | Default                | Description                                                                                                                                                                                                                                              |
 | ------------------------------------ | -------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [network]                            | <code>str</code>                             | <code>undefined</code> | The network                                                                                                                                                                                                                                              |
-| [node]                               | <code>str</code>                             | <code>undefined</code> | A node URL                                                                                                                                                                                                                                               |
 | [primary_node_jwt_name_password]     | <code>list[str]</code>                       | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password) |
 | [primary_pow_node_jwt_name_password] | <code>list[str]</code>                       | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password) |
 | [nodes_name_password]                | <code>list[]list[str]</code>                 | <code>undefined</code> | An array of array with node URLs and optional JWT and basic auth name and password (length 1 is only the url, length 2 is url with JWT, length 3 is url with basic auth name and password and length 4 is url with JWT and basic auth name and password) |
