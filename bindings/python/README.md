@@ -48,7 +48,7 @@
    - **NOTE: Please download the wheel files generated in the commit version you want to use.**
    - `$ pip3 install [THE_DOWNLOADED_WHEEL_FILE]`
 
-Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
 ## Testing
 - Install [tox](#https://pypi.org/project/tox/)
   - `$ pip install tox`

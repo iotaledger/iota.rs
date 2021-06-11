@@ -6,7 +6,7 @@
 use iota_client::{bee_message::Message, Client, MqttEvent, Result, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
-// Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+// Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
