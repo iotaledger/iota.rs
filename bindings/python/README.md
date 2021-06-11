@@ -73,7 +73,7 @@ SEED = os.getenv('MY_IOTA_SEED')
 
 EMPTY_ADDRESS = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r"
 client = iota_client.Client(
-    node=LOCAL_NODE_URL, node_sync_disabled=True)
+    nodes_name_password=[[node=LOCAL_NODE_URL]], node_sync_disabled=True)
 
 
 def main():
