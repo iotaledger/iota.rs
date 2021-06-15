@@ -27,6 +27,7 @@ pub use chrysalis2::*;
 pub use client::Client;
 pub use error::*;
 pub use extended::GetAccountDataForMigrationBuilder;
+pub use extended::GetLedgerAccountDataForMigrationBuilder;
 pub use migration::*;
 pub use response::*;
 pub use util::{bytes_to_trytes, str_to_trytes};

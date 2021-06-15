@@ -10,7 +10,6 @@ macro_rules! account_path {
 }
 
 use crate::{chrysalis2::Seed, Error, Result};
-
 // use bee_crypto::ternary::sponge::{Kerl, Sponge};
 // use bee_ternary::{b1t6, T1B1Buf, T3B1Buf, Trits, TryteBuf};
 // use bee_transaction::bundled::{Address as TryteAddress, BundledTransactionField};
@@ -23,6 +22,7 @@ use blake2::{
 use core::convert::TryInto;
 use slip10::BIP32Path;
 use std::ops::Range;
+use std::str::FromStr;
 
 const HARDEND: u32 = 1 << 31;
 

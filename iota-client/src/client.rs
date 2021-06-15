@@ -177,6 +177,18 @@ impl Client {
         GetAccountDataForMigrationBuilder::builder(self)
     }
 
+    /// Creates and returns an Inputs object by fetching the latest balance of provided inputs.
+    /// Spent addresses will be included with the bundlehash(es) that were used to spent from them.
+    /// # Parameters
+    /// * [`addresses`] - Vec<AddressInput> Addresses with index and security level.
+    ///
+    /// [`with_addresses`]: ../extended/struct.GetAccountDataForMigrationBuilder.html#method.with_gap_limit
+    pub fn get_ledger_account_data_for_migration(
+        &mut self,
+    ) -> GetLedgerAccountDataForMigrationBuilder<'_> {
+        GetLedgerAccountDataForMigrationBuilder::builder(self)
+    }
+
     /// Fetch inclusion states of the given transactions to determine if the transactions are confirmed.
     ///
     /// # Parameters
