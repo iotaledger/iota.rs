@@ -12,6 +12,7 @@ mod send_trytes;
 pub use attach_to_tangle::*;
 pub use get_account_data_for_migration::GetAccountDataForMigrationBuilder;
 pub use get_inputs::GetInputsBuilder;
+pub use get_ledger_account_data_for_migration::AddressInput;
 pub use get_ledger_account_data_for_migration::GetLedgerAccountDataForMigrationBuilder;
 pub use get_new_address::GenerateNewAddressBuilder;
 pub use prepare_transfers::PrepareTransfersBuilder;

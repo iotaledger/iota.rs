@@ -26,6 +26,7 @@ pub use builder::ClientBuilder;
 pub use chrysalis2::*;
 pub use client::Client;
 pub use error::*;
+pub use extended::AddressInput;
 pub use extended::GetAccountDataForMigrationBuilder;
 pub use extended::GetLedgerAccountDataForMigrationBuilder;
 pub use migration::*;
