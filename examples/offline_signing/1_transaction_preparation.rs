@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example 1_transaction_preparation --release
-use iota_client::{
-    api::{AddressIndexRecorder, ClientMessageBuilder},
-    bee_message::{constants::INPUT_OUTPUT_COUNT_MAX, input::UtxoInput, payload::transaction::Essence},
-    Client, Result,
-};
+use iota_client::{api::AddressIndexRecorder, bee_message::payload::transaction::Essence, Client, Result};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::File,
@@ -17,7 +13,6 @@ use std::{
 
 const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
-const DUST_THRESHOLD: u64 = 1_000_000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct PreparedTransactionData {
@@ -39,13 +34,7 @@ async fn main() -> Result<()> {
 
     let addresses = read_addresses_from_file(ADDRESS_FILE_NAME)?;
 
-    // Get outputs from node and select inputs
-    let mut available_outputs = Vec::new();
-    for address in addresses {
-        available_outputs.extend_from_slice(&iota_online.get_address().outputs(&address, Default::default()).await?);
-    }
-    println!("Available outputs: {:?}", available_outputs.len());
-    let inputs = get_inputs(&iota_online, available_outputs, amount).await?;
+    let inputs = iota_online.find_inputs(addresses, amount).await?;
 
     // Prepare transaction
     let mut transaction_builder = iota_online.message();
@@ -87,45 +76,4 @@ fn write_transaction_to_file<P: AsRef<Path>>(
     let bw = BufWriter::new(file);
     serde_json::to_writer_pretty(bw, &jsonvalue)?;
     Ok(())
-}
-
-struct OutputWrapper {
-    output: UtxoInput,
-    amount: u64,
-}
-
-async fn get_inputs(client: &Client, outputs: Vec<UtxoInput>, amount: u64) -> Result<Vec<UtxoInput>> {
-    let mut signature_locked_outputs = Vec::new();
-    let mut dust_allowance_outputs = Vec::new();
-
-    for output in outputs.into_iter() {
-        let output_data = client.get_output(&output).await?;
-        let (amount, _, signature_locked) = ClientMessageBuilder::get_output_amount_and_address(&output_data.output)?;
-        let output_wrapper = OutputWrapper { output, amount };
-        if signature_locked {
-            signature_locked_outputs.push(output_wrapper);
-        } else {
-            dust_allowance_outputs.push(output_wrapper);
-        }
-    }
-    signature_locked_outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
-    dust_allowance_outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
-
-    let mut total_already_spent = 0;
-    let mut selected_inputs = Vec::new();
-    for (_offset, output_wrapper) in signature_locked_outputs
-        .into_iter()
-        .chain(dust_allowance_outputs.into_iter())
-        // Max inputs is 127
-        .take(INPUT_OUTPUT_COUNT_MAX)
-        .enumerate()
-    {
-        // Break if we have enough funds and don't create dust for the remainder
-        if total_already_spent == amount || total_already_spent >= amount + DUST_THRESHOLD {
-            break;
-        }
-        selected_inputs.push(output_wrapper.output.clone());
-        total_already_spent += output_wrapper.amount;
-    }
-    Ok(selected_inputs)
 }
