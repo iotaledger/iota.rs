@@ -608,6 +608,13 @@ impl Client {
             selected_inputs.push(output_wrapper.0.clone());
             total_already_spent += output_wrapper.1;
         }
+
+        if total_already_spent < amount
+            || (total_already_spent != amount && total_already_spent < amount + DUST_THRESHOLD)
+        {
+            return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
+        }
+
         Ok(selected_inputs)
     }
 
