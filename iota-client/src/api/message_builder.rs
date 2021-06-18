@@ -27,6 +27,15 @@ const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
 const DUST_DIVISOR: i64 = 100_000;
 const DUST_THRESHOLD: u64 = 1_000_000;
 
+/// Helper struct for offline signing
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PreparedTransactionData {
+    /// Transaction essence
+    pub essence: Essence,
+    /// Required address information for signing
+    pub address_index_recorders: Vec<AddressIndexRecorder>,
+}
+
 /// Structure for sorting of UnlockBlocks
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressIndexRecorder {
@@ -176,10 +185,8 @@ impl<'a> ClientMessageBuilder<'a> {
                 return Err(Error::MissingParameter("Seed"));
             }
             // Send message with transaction
-            let (essence, address_input_recorders) = self.prepare_transaction().await?;
-            let tx_payload = self
-                .sign_transaction(essence, address_input_recorders, None, None)
-                .await?;
+            let prepared_transaction_data = self.prepare_transaction().await?;
+            let tx_payload = self.sign_transaction(prepared_transaction_data, None, None).await?;
             self.finish_message(Some(tx_payload)).await
         } else if self.index.is_some() {
             // Send message with indexation payload
@@ -475,7 +482,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Prepare a transaction
-    pub async fn prepare_transaction(&self) -> Result<(Essence, Vec<AddressIndexRecorder>)> {
+    pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
         // store (amount, address, new_created) to check later if dust is allowed
         let mut dust_and_allowance_recorders = Vec::new();
 
@@ -548,17 +555,22 @@ impl<'a> ClientMessageBuilder<'a> {
         }
         let regular_essence = essence.finish()?;
         let essence = Essence::Regular(regular_essence);
-        Ok((essence, address_index_recorders))
+
+        Ok(PreparedTransactionData {
+            essence,
+            address_index_recorders,
+        })
     }
 
     /// Sign the transaction
     pub async fn sign_transaction(
         &self,
-        essence: Essence,
-        mut address_index_recorders: Vec<AddressIndexRecorder>,
+        prepared_transaction_data: PreparedTransactionData,
         seed: Option<&'a Seed>,
         inputs_range: Option<Range<usize>>,
     ) -> Result<Payload> {
+        let essence = prepared_transaction_data.essence;
+        let mut address_index_recorders = prepared_transaction_data.address_index_recorders;
         let hashed_essence = essence.hash();
         let mut unlock_blocks = Vec::new();
         let mut signature_indexes = HashMap::<String, usize>::new();

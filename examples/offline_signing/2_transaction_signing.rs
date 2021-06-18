@@ -2,20 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example 2_transaction_signing --release
-use iota_client::{
-    api::AddressIndexRecorder,
-    bee_message::payload::{transaction::Essence, Payload},
-    Client, Result, Seed,
-};
+use iota_client::{api::PreparedTransactionData, bee_message::payload::Payload, Client, Result, Seed};
 extern crate dotenv;
 use dotenv::dotenv;
-use serde::Deserialize;
 use std::{
     env,
     fs::File,
     io::{prelude::*, BufWriter},
     path::Path,
 };
+
 /// In this example we will sign the prepared transaction
 
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
@@ -36,8 +32,7 @@ async fn main() -> Result<()> {
     let signed_transaction = iota_offline
         .message()
         .sign_transaction(
-            prepared_transaction_data.essence,
-            prepared_transaction_data.address_index_recorders,
+            prepared_transaction_data,
             Some(&seed),
             // indexes for the input addresses need to be in this range
             Some(0..100),
@@ -48,12 +43,6 @@ async fn main() -> Result<()> {
 
     write_signed_transaction_to_file(SIGNED_TRANSACTION_FILE_NAME, signed_transaction)?;
     Ok(())
-}
-
-#[derive(Deserialize)]
-struct PreparedTransactionData {
-    essence: Essence,
-    address_index_recorders: Vec<AddressIndexRecorder>,
 }
 
 fn read_prepared_transactiondata_from_file<P: AsRef<Path>>(path: P) -> Result<PreparedTransactionData> {

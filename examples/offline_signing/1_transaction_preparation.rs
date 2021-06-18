@@ -2,23 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example 1_transaction_preparation --release
-use iota_client::{api::AddressIndexRecorder, bee_message::payload::transaction::Essence, Client, Result};
-use serde::{Deserialize, Serialize};
+use iota_client::{api::PreparedTransactionData, Client, Result};
 use std::{
     fs::File,
     io::{prelude::*, BufWriter},
     path::Path,
 };
+
 /// In this example we will get inputs and prepare a transaction
 
 const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct PreparedTransactionData {
-    essence: Essence,
-    address_index_recorders: Vec<AddressIndexRecorder>,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -41,20 +35,14 @@ async fn main() -> Result<()> {
     for input in inputs {
         transaction_builder = transaction_builder.with_input(input);
     }
-    let (essence, address_index_recorders) = transaction_builder
+    let prepared_transaction_data = transaction_builder
         .with_output(address, amount)?
         .prepare_transaction()
         .await?;
 
     println!("Prepared transaction sending {} to {}", amount, address);
 
-    write_transaction_to_file(
-        PREPARED_TRANSACTION_FILE_NAME,
-        PreparedTransactionData {
-            essence,
-            address_index_recorders,
-        },
-    )?;
+    write_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, prepared_transaction_data)?;
 
     Ok(())
 }
