@@ -34,7 +34,7 @@ const client = new ClientBuilder()
 client.getInfo().then(console.log).catch(console.error)
 ```
 
-Connecting to a MQTT broker using raw ip doesn't work. This is a limitation of rustls.
+Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
 
 ## API Reference
 
