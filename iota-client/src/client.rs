@@ -80,8 +80,9 @@ impl Client {
                 set.push(url.clone());
             };
         }
-        let synced_nodes = sync_list.into_iter().max_by_key(|(x, _)| *x).unwrap().1;
-        *self.sync.write().await = synced_nodes.into_iter().collect();
+        if let Some(synced_nodes) = sync_list.into_iter().max_by_key(|(x, _)| *x) {
+            *self.sync.write().await = synced_nodes.1.into_iter().collect();
+        }
     }
 
     /// Add a node to the node pool.

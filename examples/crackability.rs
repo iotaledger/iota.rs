@@ -72,10 +72,7 @@ async fn main() -> Result<()> {
 
     //Convert migraton address
     let new_address = ChrysalisAddress::try_from_bech32(bech32_address)?;
-    let new_converted_address = match new_address {
-        ChrysalisAddress::Ed25519(a) => a,
-        _ => panic!("Unsupported address type"),
-    };
+    let ChrysalisAddress::Ed25519(new_converted_address) = new_address;
 
     // Create bundle
     let mut prepared_bundle =
@@ -116,7 +113,7 @@ async fn main() -> Result<()> {
         .iter_trytes()
         .map(char::from)
         .collect::<String>();
-    println!("Bundle sent: {:?}", bundlehash);
+    println!("Bundle finished: {:?}", bundlehash);
     let hashes_trit_i8_test = spent_bundle_hashes
         .clone()
         .iter()

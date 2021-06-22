@@ -146,7 +146,7 @@ pub fn sign_migration_bundle(
     Ok(trytes)
 }
 
-/// mine a bundle essence to reveal as least new parts of the signature as possible
+/// mine a bundle essence to reveal as few new parts of the signature as possible
 pub async fn mine(
     prepared_bundle: OutgoingBundleBuilder,
     security_level: u8,
