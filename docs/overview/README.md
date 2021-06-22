@@ -1,18 +1,27 @@
 # Overview
 
-The IOTA client library is a stateless library that provides a high level abstractions on top of IOTA node software to help interact with IOTA network in user friendly way and allows you to do the following, for instance:
+To communicate with the IOTA network, you have to connect and interact with a [node](https://chrysalis.docs.iota.org/node-software/node-software.html). This library, the IOTA Client, wraps routine tasks and minute details into its tidy API. It will generate addresses for you, send messages, sign and send transactions, and more.
 
-- Create messages and transactions
-- Sign transactions
-- Generate addresses
-- Interact with an IOTA node
+Beyond establishing the initial connection to a node, Client has no state. Operations only use the data that you pass during the call. Operations have no effect on the client instance or your code beyond returning a value. You are in full control of the data flow in your application.
 
-## IOTA client library in a nutshell
-The library provides two types of API calls under a common interface:
-* `Full node API calls`: those calls are basically translated to native node rest api calls. For more information, please see [node rest API reference](https://editor.swagger.io/?url=https://raw.githubusercontent.com/rufsam/protocol-rfcs/master/text/0026-rest-api/rest-api.yaml)
-* `General high level API calls`: those are convenience functions with some typical default parameters in order to use them in a straightforward manner. They typically implement several recommended steps for the given task. Implementation details are part of the full specification
+This approach makes Client easier for you to use and understand, and for us to develop and maintain. But since you are in full control of the data management, you also fully responsible for it. It could feel tedious or overwhelming if you have to manage complex or sensitive data.
 
-See the full specification [here](../specs/).
+If you plan on managing funds in your application, take a look at our [IOTA wallet](https://wallet-lib.docs.iota.org/) library instead. It can build and store a wallet and send a token transaction, and it already includes our best practices. Wallet uses Client to communicate with the IOTA network, and [Stronghold](https://stronghold.docs.iota.org/) to store sensitive data. Unlike Client, it has a state.
 
-## High level layered overview:
-![iota layers overview](layered_overview.svg)
+## Supported Languages
+
+We have implemented the IOTA client library in Rust and prepared bindings for JavaScript and Python. The API stays the same no matter the language you choose, as we aim to make our libraries equally simple to use across all supported languages. You can read more on reasoning behind this design in this [blog post](https://blog.iota.org/the-new-iota-client-libraries-harder-better-faster-stronger/).
+
+## Your Application In the IOTA Network
+
+Your application communicates with the IOTA client library either directly or through a node.js or python binding. Client turns your requests into REST API calls and sends them to a node through the Internet. The node, in turn, interacts with the rest of an IOTA network, which could be the main operational network (mainnet) or a network for testing purposes (devnet).
+
+Different nodes could run on a different software, but they always expose the same interface to clients. For example, one node could be a [Hornet](https://hornet.docs.iota.org/) node and the other could be a [Bee](https://bee.docs.iota.org/) node, and they both would work the same for any client.
+
+![An illustration for the text above.](./layered_overview.svg "An overview of IOTA layers.")
+
+## API Design
+
+The IOTA client library exposes operations of two types. Clients interact with nodes by calling their REST API, and the first group of operations mirrors the available calls. As you invoke an operation, it directly translates into a REST call to a node. For a full list, see the [node's REST API reference](https://editor.swagger.io/?url=https://raw.githubusercontent.com/rufsam/protocol-rfcs/master/text/0026-rest-api/rest-api.yaml). 
+
+Operations from the first group tend to be too atomic and basic to use them in a convenient way. The second group battles that by providing you with helper functions. These functions represent an actual task and combine multiple basic operations internally. For example, you can get your token balance by calling `getBalance(seed)`. It first calls `getAddresses(seed)`, then it calls `getAddressBalances` over associated addresses, and sums the results to return the total balance. See the [full specification](../specs) for details.
