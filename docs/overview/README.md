@@ -2,11 +2,11 @@
 
 To communicate with the IOTA network, you have to connect and interact with a [node](https://chrysalis.docs.iota.org/node-software/node-software.html). This library, the IOTA Client, wraps routine tasks and minute details into its tidy API. It will generate addresses for you, send messages, sign and send transactions, and more.
 
-Beyond establishing the initial connection to a node, Client has no state. Operations only use the data that you pass during the call. Operations have no effect on the client instance or your code beyond returning a value. You are in full control of the data flow in your application.
+Beyond establishing the initial connection to a node, Client has no state. Operations use only the data that you pass during the call and have no effect on your code or the client instance beyond returning a value. You are in full control of the data flow in your application.
 
 This approach makes Client easier for you to use and understand, and for us to develop and maintain. But since you are in full control of the data management, you also fully responsible for it. It could feel tedious or overwhelming if you have to manage complex or sensitive data.
 
-If you plan on managing funds in your application, take a look at our [IOTA wallet](https://wallet-lib.docs.iota.org/) library instead. It can build and store a wallet and send a token transaction, and it already includes our best practices. Wallet uses Client to communicate with the IOTA network, and [Stronghold](https://stronghold.docs.iota.org/) to store sensitive data. Unlike Client, it has a state.
+If you plan on managing funds in your application, take a look at our [IOTA wallet](https://wallet-lib.docs.iota.org/) library instead. It already includes our best security practices and can build and store wallets and manage token transactions. Wallet uses Client to communicate with the IOTA network, and [Stronghold](https://stronghold.docs.iota.org/) to store sensitive data. Unlike Client, it has a state.
 
 ## Supported Languages
 
@@ -16,7 +16,7 @@ We have implemented the IOTA client library in Rust and prepared bindings for Ja
 
 Your application communicates with the IOTA client library either directly or through a node.js or python binding. Client turns your requests into REST API calls and sends them to a node through the Internet. The node, in turn, interacts with the rest of an IOTA network, which could be the main operational network (mainnet) or a network for testing purposes (devnet).
 
-Different nodes could run on a different software, but they always expose the same interface to clients. For example, one node could be a [Hornet](https://hornet.docs.iota.org/) node and the other could be a [Bee](https://bee.docs.iota.org/) node, and they both would work the same for any client.
+Different nodes could run on a different software, but they always expose the same interface to clients. For example, one node could be a [Hornet](https://hornet.docs.iota.org/) node and the other could be a [Bee](https://bee.docs.iota.org/) node, and they both would appear the same for any client.
 
 ![An illustration for the text above.](./layered_overview.svg "An overview of IOTA layers.")
 
