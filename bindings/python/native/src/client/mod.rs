@@ -35,6 +35,7 @@ impl Client {
         permanodes_name_password: Option<Vec<Vec<&str>>>,
         node_sync_interval: Option<u64>,
         node_sync_disabled: Option<bool>,
+        offline: Option<bool>,
         node_pool_urls: Option<Vec<String>>,
         quorum: Option<bool>,
         quorum_size: Option<usize>,
@@ -83,6 +84,11 @@ impl Client {
         if let Some(node_sync_disabled) = node_sync_disabled {
             if node_sync_disabled {
                 client = client.with_node_sync_disabled();
+            }
+        }
+        if let Some(offline) = offline {
+            if offline {
+                client = client.with_offline_mode();
             }
         }
         if let Some(node_pool_urls) = node_pool_urls {
