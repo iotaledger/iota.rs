@@ -494,6 +494,18 @@ Returns the seed hex encoded.
 
 **Returns** A String
 
+#### find_inputs(addresses, amount: u64)
+
+Return the inputs from addresses for a provided amount (useful for offline signing)
+
+| Param     | Type                   | Default                | Description             |
+| --------- | ---------------------- | ---------------------- | ----------------------- |
+| addresses | <code>list[str]</code> | <code>undefined</code> | The input address list. |
+| amount    | <code>str</code>       | <code>undefined</code> | The input amount.       |
+
+
+**Returns** The list of [UtxoInput](#utxoinput).
+
 #### bech32_to_hex(bech32)
 
 Returns a parsed hex String from bech32.
