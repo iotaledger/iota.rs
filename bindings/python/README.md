@@ -329,9 +329,9 @@ Get the treasury amount.
 
 Get the included message of a transaction.
 
-| Param   | Type                | Description               |
-| ------- | ------------------- | ------------------------- |
-| [index] | <code>string</code> | The id of the transaction |
+| Param   | Type             | Description               |
+| ------- | ---------------- | ------------------------- |
+| [index] | <code>str</code> | The id of the transaction |
 
 **Returns** the new [Message](#message).
 
@@ -488,9 +488,9 @@ Returns a random generated Bip39 mnemonic with the English word list.
 
 Returns the seed hex encoded.
 
-| Param    | Type                | Default                | Description                                           |
-| -------- | ------------------- | ---------------------- | ----------------------------------------------------- |
-| mnemonic | <code>string</code> | <code>undefined</code> | Bip39 mnemonic with words from the English word list. |
+| Param    | Type             | Default                | Description                                           |
+| -------- | ---------------- | ---------------------- | ----------------------------------------------------- |
+| mnemonic | <code>str</code> | <code>undefined</code> | Bip39 mnemonic with words from the English word list. |
 
 **Returns** A String
 
@@ -510,9 +510,9 @@ Return the inputs from addresses for a provided amount (useful for offline signi
 
 Returns a parsed hex String from bech32.
 
-| Param  | Type                | Default                | Description               |
-| ------ | ------------------- | ---------------------- | ------------------------- |
-| bech32 | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| Param  | Type             | Default                | Description               |
+| ------ | ---------------- | ---------------------- | ------------------------- |
+| bech32 | <code>str</code> | <code>undefined</code> | The address Bech32 string |
 
 **Returns** A String
 
@@ -520,10 +520,10 @@ Returns a parsed hex String from bech32.
 
 Returns a parsed bech32 String from hex.
 
-| Param      | Type                | Default                | Description               |
-| ---------- | ------------------- | ---------------------- | ------------------------- |
-| bech32     | <code>string</code> | <code>undefined</code> | The address Bech32 string |
-| bech32_hrp | <code>string</code> | <code>undefined</code> | The Bech32 hrp string     |
+| Param      | Type             | Default                | Description               |
+| ---------- | ---------------- | ---------------------- | ------------------------- |
+| bech32     | <code>str</code> | <code>undefined</code> | The address Bech32 string |
+| bech32_hrp | <code>str</code> | <code>undefined</code> | The Bech32 hrp string     |
 
 **Returns** A String
 
@@ -531,9 +531,9 @@ Returns a parsed bech32 String from hex.
 
 Checks if a given address is valid.
 
-| Param   | Type                | Default                | Description               |
-| ------- | ------------------- | ---------------------- | ------------------------- |
-| address | <code>string</code> | <code>undefined</code> | The address Bech32 string |
+| Param   | Type             | Default                | Description               |
+| ------- | ---------------- | ---------------------- | ------------------------- |
+| address | <code>str</code> | <code>undefined</code> | The address Bech32 string |
 
 **Returns** A boolean.
 
@@ -563,12 +563,12 @@ Retries (promotes or reattaches) the message associated with the given id.
 
 Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
 
-| Param           | Type                | Description                                                           |
-| --------------- | ------------------- | --------------------------------------------------------------------- |
-| [seed]          | <code>string</code> | The seed                                                              |
-| [account_index] | <code>int</code>    | The account index.                                                    |
-| [start_index]   | <code>int</code>    | The lowest address index, funds will be consolidated to this address. |
-| [end_index]     | <code>int</code>    | The address index until which funds will be consolidated              |
+| Param           | Type             | Description                                                           |
+| --------------- | ---------------- | --------------------------------------------------------------------- |
+| [seed]          | <code>str</code> | The seed                                                              |
+| [account_index] | <code>int</code> | The account index.                                                    |
+| [start_index]   | <code>int</code> | The lowest address index, funds will be consolidated to this address. |
+| [end_index]     | <code>int</code> | The address index until which funds will be consolidated              |
 
 **Returns** the address to which the funds got consolidated, if any were available.
 
