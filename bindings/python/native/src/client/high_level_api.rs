@@ -324,8 +324,8 @@ impl Client {
             .to_vec()
             .iter()
             .map(|input| UtxoInput {
-                transaction_id: output.output_id().transaction_id().as_ref().to_vec(),
-                index: output.output_id().index(),
+                transaction_id: input.output_id().transaction_id().as_ref().to_vec(),
+                index: input.output_id().index(),
             })
             .collect())
     }
