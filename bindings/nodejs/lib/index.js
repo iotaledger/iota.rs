@@ -10,7 +10,7 @@ const {
   UnspentAddressGetter,
   AddressGetter,
   BalanceGetter
-} = require('../build/Release')
+} = require('../build/Release/index.node')
 
 function promisify(fn, parse = true) {
   return function () {
