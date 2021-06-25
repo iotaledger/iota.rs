@@ -1,6 +1,6 @@
 # Documentation Area
 
-Everything related to the IOTA cLient library.
+Everything related to the iota.rs library.
 
 ## Run locally
 
