@@ -1,7 +1,10 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{
-    api::GetAddressesBuilder as RustGetAddressesBuilder,
+    api::{
+        GetAddressesBuilder as RustGetAddressesBuilder,
+        search_address as search_address_api,
+    },
     bee_message::prelude::Address as RustAddress,
     bee_rest_api::types::{
         dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
@@ -127,6 +130,32 @@ impl Address {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
+    }
+}
+
+#[derive(Clone, Debug, Getters, CopyGetters)]
+pub struct IndexPublicDto {
+    #[getset(get_copy = "pub")]
+    index: usize,
+    #[getset(get_copy = "pub")]
+    public: bool,
+}
+
+/// Function to find the index and public or internal type of an Bech32 encoded address
+pub fn search_address(
+    seed: &str,
+    bech32_hrp: &str,
+    account_index: usize,
+    range_low: usize,
+    range_high: usize,
+    address: Address,
+) -> Result<IndexPublicDto> {
+    let res = crate::block_on(async { search_address_api(&RustSeed::from_bytes(seed.as_bytes()), bech32_hrp, account_index, range_low..range_high, &address.address).await});
+    match res {
+        Ok((index, public)) => Ok(IndexPublicDto {
+            index, public
+        }),
+        Err(e) => Err(anyhow::anyhow!(e.to_string())),
     }
 }
 

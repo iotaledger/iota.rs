@@ -1033,6 +1033,26 @@ foreign_class!(
             address_range_low: usize,
             address_range_high: usize,
         ) -> Result<String>;
+
+        /// Function to find the index and public or internal type of an Bech32 encoded address
+        fn crate::address::search_address(
+            seed: &str,
+            bech32_hrp: &str,
+            account_index: usize,
+            range_low: usize,
+            range_high: usize,
+            address: Address,
+        ) -> Result<IndexPublicDto>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class IndexPublicDto {
+        self_type IndexPublicDto;
+        private constructor = empty;
+        fn IndexPublicDto::index(&self) -> usize;
+        fn IndexPublicDto::public(&self) -> bool;
     }
 );
 
