@@ -139,20 +139,20 @@ fn generate_address(seed: &Seed, account_index: u32, address_index: u32, interna
 /// Function to find the index and public or internal type of an Bech32 encoded address
 pub async fn search_address(
     seed: &Seed,
-    bech32_hrp: String,
+    bech32_hrp: &str,
     account_index: usize,
     range: Range<usize>,
     address: &Address,
 ) -> Result<(usize, bool)> {
     let addresses = GetAddressesBuilder::new(&seed)
-        .with_bech32_hrp(bech32_hrp.clone())
+        .with_bech32_hrp(bech32_hrp.to_owned())
         .with_account_index(account_index)
         .with_range(range.clone())
         .get_all()
         .await?;
     let mut index_counter = range.start;
     for address_internal in addresses {
-        if address_internal.0 == *address.to_bech32(&bech32_hrp) {
+        if address_internal.0 == *address.to_bech32(bech32_hrp) {
             return Ok((index_counter, address_internal.1));
         }
         if !address_internal.1 {
@@ -160,7 +160,7 @@ pub async fn search_address(
         }
     }
     Err(crate::error::Error::InputAddressNotFound(
-        address.to_bech32(&bech32_hrp),
+        address.to_bech32(bech32_hrp),
         format!("{:?}", range),
     ))
 }

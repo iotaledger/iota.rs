@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
             // We generate an address from our seed so that we send the funds to ourselves
-            &iota.get_addresses(&seed_1).with_range(0..1).finish().await?[0],
+            &iota.get_addresses(&seed_1).with_range(1..2).finish().await?[0],
             1_000_000,
         )?
         .finish()

@@ -59,6 +59,7 @@ pub struct ClientBuilder {
     pub(crate) network_info: NetworkInfo,
     request_timeout: Duration,
     api_timeout: HashMap<Api, Duration>,
+    offline: bool,
 }
 
 impl Default for NetworkInfo {
@@ -90,6 +91,7 @@ impl Default for ClientBuilder {
             network_info: NetworkInfo::default(),
             request_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
             api_timeout: Default::default(),
+            offline: false,
         }
     }
 }
@@ -178,6 +180,12 @@ impl ClientBuilder {
         self
     }
 
+    /// Allows creating the client without nodes for offline address generation or signing
+    pub fn with_offline_mode(mut self) -> Self {
+        self.offline = true;
+        self
+    }
+
     /// Get node list from the node_pool_urls
     pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         self.node_manager_builder = self.node_manager_builder.with_node_pool_urls(node_pool_urls).await?;
@@ -245,12 +253,14 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
         // Add default nodes
-        self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
-
-        // Return error if we don't have a node
-        if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
-            return Err(Error::MissingParameter("Node"));
+        if !self.offline {
+            self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
+            // Return error if we don't have a node
+            if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
+                return Err(Error::MissingParameter("Node"));
+            }
         }
+
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]

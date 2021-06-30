@@ -10,8 +10,9 @@ use crate::{
     node_manager::Node,
 };
 use bee_common::packable::Packable;
-use bee_message::prelude::{
-    Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput,
+use bee_message::{
+    constants::INPUT_OUTPUT_COUNT_MAX,
+    prelude::{Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput},
 };
 use bee_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
@@ -60,6 +61,7 @@ use std::{
 };
 
 const RESPONSE_MAX_OUTPUTS: usize = 1000;
+const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)
 #[derive(Debug, Serialize, Deserialize)]
@@ -564,6 +566,56 @@ impl Client {
         let mut mnemonic_seed = [0u8; 64];
         mnemonic_to_seed(mnemonic, &"", &mut mnemonic_seed);
         Ok(hex::encode(mnemonic_seed))
+    }
+
+    /// Function to find inputs from addresses for a provided amount (useful for offline signing)
+    pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
+        // Get outputs from node and select inputs
+        let mut available_outputs = Vec::new();
+        for address in addresses {
+            available_outputs.extend_from_slice(&self.get_address().outputs(&address, Default::default()).await?);
+        }
+
+        let mut signature_locked_outputs = Vec::new();
+        let mut dust_allowance_outputs = Vec::new();
+
+        for output in available_outputs.into_iter() {
+            let output_data = self.get_output(&output).await?;
+            let (amount, _, signature_locked) =
+                ClientMessageBuilder::get_output_amount_and_address(&output_data.output)?;
+            if signature_locked {
+                signature_locked_outputs.push((output, amount));
+            } else {
+                dust_allowance_outputs.push((output, amount));
+            }
+        }
+        signature_locked_outputs.sort_by(|l, r| r.1.cmp(&l.1));
+        dust_allowance_outputs.sort_by(|l, r| r.1.cmp(&l.1));
+
+        let mut total_already_spent = 0;
+        let mut selected_inputs = Vec::new();
+        for (_offset, output_wrapper) in signature_locked_outputs
+            .into_iter()
+            .chain(dust_allowance_outputs.into_iter())
+            // Max inputs is 127
+            .take(INPUT_OUTPUT_COUNT_MAX)
+            .enumerate()
+        {
+            // Break if we have enough funds and don't create dust for the remainder
+            if total_already_spent == amount || total_already_spent >= amount + DUST_THRESHOLD {
+                break;
+            }
+            selected_inputs.push(output_wrapper.0.clone());
+            total_already_spent += output_wrapper.1;
+        }
+
+        if total_already_spent < amount
+            || (total_already_spent != amount && total_already_spent < amount + DUST_THRESHOLD)
+        {
+            return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
+        }
+
+        Ok(selected_inputs)
     }
 
     ///////////////////////////////////////////////////////////////////////
