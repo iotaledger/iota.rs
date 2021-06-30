@@ -1,10 +1,15 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+/// The error type exposed to users
 pub mod error;
+/// Full node API binding
 pub mod full_node_api;
+/// High-level API binding
 pub mod high_level_api;
+/// MQTT binding
 pub mod mqtt;
+/// Type casting between Rust and Python
 pub mod types;
 use iota_client::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
 use pyo3::prelude::*;
@@ -18,6 +23,7 @@ use types::{
 /// Client builder
 #[pyclass]
 pub struct Client {
+    /// The Client structure in native rust
     pub client: RustClient,
 }
 

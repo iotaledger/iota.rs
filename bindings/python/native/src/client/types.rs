@@ -44,11 +44,16 @@ use std::{
     convert::{From, Into, TryInto},
     str::FromStr,
 };
+
+/// The length of milestone Merkle tree.
 pub const MILESTONE_MERKLE_PROOF_LENGTH: usize = 32;
+/// The length of milestone public key.
 pub const MILESTONE_PUBLIC_KEY_LENGTH: usize = 32;
+/// The Bech32_human-readable part.
 pub static mut BECH32_HRP: &str = "atoi1";
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The metadata of a message.
 pub struct MessageMetadataResponse {
     /// Message ID
     pub message_id: String,
@@ -56,280 +61,426 @@ pub struct MessageMetadataResponse {
     pub parent_message_ids: Vec<String>,
     /// Solid status
     pub is_solid: bool,
+    /// The milestone index which refers to the message.
     pub referenced_by_milestone_index: Option<u32>,
+    /// The milestone index.
     pub milestone_index: Option<u32>,
+    /// The ledger inclusion state.
     pub ledger_inclusion_state: Option<LedgerInclusionStateDto>,
+    /// The reason of conflict.
     pub conflict_reason: Option<u8>,
+    /// The message should be promoted.
     pub should_promote: Option<bool>,
+    /// The message should be reattached.
     pub should_reattach: Option<bool>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The balance of the address.
 pub struct BalanceAddressResponse {
-    // The type of the address (1=Ed25519).
+    /// The type of the address (1=Ed25519).
     pub address_type: u8,
-    // hex encoded address
+    /// The hex encoded address.
     pub address: String,
+    /// The balance of the address.
     pub balance: u64,
+    /// Wether the address is dust allowed.
     pub dust_allowed: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The address balance pair.
 pub struct AddressBalancePair {
-    /// Address
+    /// The address string.
     pub address: String,
-    /// Balance in the address
+    /// The balance in the address.
     pub balance: u64,
-    /// If dust is allowed on the address
+    /// Whether this address allowed dust.
     pub dust_allowed: bool,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The structure describes milestone data transfer object.
 pub struct MilestoneDto {
+    /// The milestone index.
     pub index: u32,
+    /// The timestamp of the milestone.
     pub timestamp: u64,
+    /// The message id of the milestone.
     pub message_id: String,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The UTXO changes that happened at a specific milestone.
 pub struct MilestoneUTXOChanges {
+    /// The milestone index.
     pub index: u32,
+    /// The created outputs.
     pub created_outputs: Vec<String>,
+    /// The consumed outputs.
     pub consumed_outputs: Vec<String>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The input structure.
 pub struct InputDto {
+    /// The UTXO input.
     pub utxo: Option<UtxoInput>,
+    /// The treasury Input.
     pub treasury: Option<TreasuryInput>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The UTXO input referencing an output.
 pub struct UtxoInput {
+    /// The transaction id.
     pub transaction_id: Vec<u8>,
+    /// The index.
     pub index: u16,
 }
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The treasury input.
 pub struct TreasuryInput {
+    /// The input kind.
     pub kind: u8,
+    /// The message id.
     pub message_id: String,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The output response.
 pub struct OutputResponse {
+    /// The message id.
     pub message_id: String,
+    /// The transaction id.
     pub transaction_id: String,
+    /// The output index.
     pub output_index: u16,
+    /// Indicates whether the output is spent or not.
     pub is_spent: bool,
+    /// The output.
     pub output: OutputDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// Describes all the different output types.
 pub struct OutputDto {
+    /// The treasury output.
     pub treasury: Option<TreasuryOutputDto>,
+    /// The signature locked single output.
     pub signature_locked_single: Option<SignatureLockedSingleOutputDto>,
+    /// The signature locked dust-allowance output
     pub signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutputDto>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The signature locked single output.
 pub struct SignatureLockedSingleOutputDto {
+    /// The output kind.
     pub kind: u8,
+    /// The address.
     pub address: AddressDto,
+    /// The token amount.
     pub amount: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The signature locked dust-allowance output.
 pub struct SignatureLockedDustAllowanceOutputDto {
+    /// The output kind.
     pub kind: u8,
+    /// The address.
     pub address: AddressDto,
+    /// The token amount.
     pub amount: u64,
 }
 
 #[derive(Clone, Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The treasury output.
 pub struct TreasuryOutputDto {
+    /// The output kind.
     pub kind: u8,
+    /// The token amount.
     pub amount: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The structure stores address.
 pub struct AddressDto {
+    /// The Ed25519 address.
     pub ed25519: Ed25519AddressDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The Ed25519 address structure.
 pub struct Ed25519AddressDto {
+    /// The address kind.
     pub kind: u8,
+    /// The address in string.
     pub address: String,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The structure contains information of a message.
 pub struct Message {
+    /// The message id.
     pub message_id: String,
+    /// The network id.
     pub network_id: u64,
+    /// The parents of the message.
     pub parents: Vec<String>,
+    /// The messgae payload.
     pub payload: Option<Payload>,
+    /// The nonce of the message.
     pub nonce: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The structure defines the payload in a message.
 pub struct Payload {
+    /// The transaction payload.
     pub transaction: Option<Vec<Transaction>>,
+    /// The milestone payload.
     pub milestone: Option<Vec<Milestone>>,
+    /// The indexation payload.
     pub indexation: Option<Vec<Indexation>>,
+    /// The receipt payload
     pub receipt: Option<Vec<Receipt>>,
+    /// The treasury transaction payload.
     pub treasury_transaction: Option<Vec<TreasuryTransaction>>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The payload which defines the transaction.
 pub struct Transaction {
+    /// The transaction regular essence.
     pub essence: RegularEssence,
+    /// The unlock blocks for the transaction.
     pub unlock_blocks: Vec<UnlockBlock>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// A payload which defines the inclusion set of other messages in the Tangle.
 pub struct Milestone {
+    /// The milestone essence.
     pub essence: MilestonePayloadEssence,
+    /// The milestone signatures.
     pub signatures: Vec<Vec<u8>>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The essence of the milestone payload.
 pub struct MilestonePayloadEssence {
+    /// The index.
     pub index: u32,
+    /// The timestamp.
     pub timestamp: u64,
+    /// The parents.
     pub parents: Vec<String>,
+    /// The Merkle proof.
     pub merkle_proof: [u8; MILESTONE_MERKLE_PROOF_LENGTH],
+    /// The next proof-of-work score.
     pub next_pow_score: u32,
+    /// The next proof-of-work milestone index.
     pub next_pow_score_milestone_index: u32,
+    /// The public keys.
     pub public_keys: Vec<[u8; MILESTONE_PUBLIC_KEY_LENGTH]>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The indexation payload.
 pub struct Indexation {
+    /// The index.
     pub index: String,
+    /// The indexation data.
     pub data: Vec<u8>,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The receipt data transfer object.
 pub struct ReceiptDto {
+    /// The receipt.
     pub receipt: Receipt,
+    /// The milestone index.
     pub milestone_index: u32,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The structure describes receipt.
 pub struct Receipt {
+    /// The receipt kind.
     pub kind: u32,
+    /// The receipt index.
     pub index: u32,
+    /// If the receipt is the last one.
     pub last: bool,
+    /// The migrated fund entries
     pub funds: Vec<MigratedFundsEntry>,
+    /// The transaction payload.
     pub transaction: Payload,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The migrated funds entry.
 pub struct MigratedFundsEntry {
+    /// The tail transaction hash.
     pub tail_transaction_hash: String,
+    /// The signature locked single output.
     pub output: SignatureLockedSingleOutputDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The treasury transaction.
 pub struct TreasuryTransaction {
+    /// The transaction kind.
     pub kind: u32,
+    /// The input.
     pub input: InputDto,
+    /// The output.
     pub output: OutputDto,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The regular essence.
 pub struct RegularEssence {
+    /// The inputs.
     pub inputs: Vec<Input>,
+    /// The transaction outputs.
     pub outputs: Vec<TransactionOutput>,
+    /// The payload.
     pub payload: Option<Payload>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The output structure describes an address and the corresponding token amount.
 pub struct Output {
+    /// The address.
     pub address: String,
+    /// The amount.
     pub amount: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The transaction output.
 pub struct TransactionOutput {
+    /// The signature locked single output.
     pub signature_locked_single: Option<SignatureLockedSingleOutput>,
+    /// The signature locked dust-allowance output
     pub signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutput>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The signature locked single output.
 pub struct SignatureLockedSingleOutput {
+    /// The output address.
     pub address: String,
+    /// The token amount.
     pub amount: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The signature locked dust-allowance output.
 pub struct SignatureLockedDustAllowanceOutput {
+    /// The output address.
     pub address: String,
+    /// The token amount.
     pub amount: u64,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The transaction input.
 pub struct Input {
+    /// The transaction id.
     pub transaction_id: String,
+    /// The index.
     pub index: u16,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The unlock block.
 pub struct UnlockBlock {
+    /// The Ed25519 Signature.
     pub signature: Option<Ed25519Signature>,
+    /// The reference block id.
     pub reference: Option<u16>,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The Ed25519 Signature.
 pub struct Ed25519Signature {
+    /// The public key.
     pub public_key: [u8; 32],
+    /// The signature.
     pub signature: Vec<u8>,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The broker options.
 pub struct BrokerOptions {
-    /// automatic disconnect or not
+    /// Enable automatic disconnect or not.
     pub automatic_disconnect: bool,
-    /// broker timeout in secs
+    /// The broker timeout in secs.
     pub timeout: u64,
-    /// to use ws instead of tcp
+    /// To use websocket instead of tcp,
     pub use_ws: bool,
-    /// port
+    /// The port id.
     pub port: u16,
-    /// max number of attempts to reconnect.
+    /// The max number of reconnection attempts.
     pub max_reconnection_attempts: usize,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The ledger inclusion state.
 pub struct LedgerInclusionStateDto {
+    /// The inclusion state.
     pub state: String,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// NodeInfo wrapper which contains the `NodeInfo` and the `url` from the node
+/// This structure is useful when multiple nodes are used.
 pub struct NodeInfoWrapper {
+    /// The node information.
     pub nodeinfo: NodeInfo,
+    /// The url of the node.
     pub url: String,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The node information.
 pub struct NodeInfo {
+    /// The node name.
     pub name: String,
+    /// The node version.
     pub version: String,
+    /// The node is healthy or not.
     pub is_healthy: bool,
+    /// The network id of the node.
     pub network_id: String,
+    /// The Bech32 human-readable part.
     pub bech32_hrp: String,
+    /// The minimum proof-of-work score.
     pub min_pow_score: f64,
+    /// The messages per seconds.
     pub messages_per_second: f64,
+    /// The referenced messages per second.
     pub referenced_messages_per_second: f64,
+    /// The referenced rate.
     pub referenced_rate: f64,
+    /// The latest milestone timestamp.
     pub latest_milestone_timestamp: u64,
+    /// The latest milestone index.
     pub latest_milestone_index: u32,
+    /// The confirmed milestone index.
     pub confirmed_milestone_index: u32,
+    /// The prunning index.
     pub pruning_index: u32,
+    /// Describes the features of the node.
     pub features: Vec<String>,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The network information of the node.
 pub struct NetworkInfo {
     /// Network of the Iota nodes belong to
     pub network: String,
@@ -346,53 +497,86 @@ pub struct NetworkInfo {
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The structure describes peer node.
 pub struct PeerDto {
+    /// The peer id
     pub id: String,
+    /// The peer addresses.
     pub multi_addresses: Vec<String>,
+    /// THe peer alias.
     pub alias: Option<String>,
+    /// The relation with the peer.
     pub relation: RelationDto,
+    /// Is connected to the peer.
     pub connected: bool,
+    /// The gossip information with the peer.
     pub gossip: Option<GossipDto>,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// Describes the relation with the peer.
 pub struct RelationDto {
+    /// The relation with the peer.
     pub relation: String,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The metrics of all information about the gossip stream with the peer.
 pub struct GossipDto {
+    /// The heartbeat of a node.
     pub heartbeat: HeartbeatDto,
+    /// The metrics of the gossip stream.
     pub metrics: MetricsDto,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The heartbeat of a node.
 pub struct HeartbeatDto {
+    /// The solid milestone index.
     pub solid_milestone_index: u32,
+    /// The pruned milestone index.
     pub pruned_milestone_index: u32,
+    /// The last milestone index.
     pub latest_milestone_index: u32,
+    /// The connected neighbor count.
     pub connected_neighbors: u8,
+    /// The synced neighbor count.
     pub synced_neighbors: u8,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The data transfer object for metrics of a gossip stream.
 pub struct MetricsDto {
+    /// The new message count.
     pub new_messages: u64,
+    /// The received message count.
     pub received_messages: u64,
+    /// The known message count.
     pub known_messages: u64,
+    /// The received message request count.
     pub received_message_requests: u64,
+    /// The received milestone request count.
     pub received_milestone_requests: u64,
+    /// The received heartbeat count.
     pub received_heartbeats: u64,
+    /// The sent message count.
     pub sent_messages: u64,
+    /// The sent message request count.
     pub sent_message_requests: u64,
+    /// The sent milestone request count.
     pub sent_milestone_requests: u64,
+    /// The sent heartbeat count.
     pub sent_heartbeats: u64,
+    /// The dropped packet count.
     pub dropped_packets: u64,
 }
 
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The treasury response.
 pub struct TreasuryResponse {
+    /// Milestone id.
     pub milestone_id: String,
+    /// Token amount.
     pub amount: u64,
 }
 
@@ -1159,6 +1343,7 @@ impl From<RustTreasuryTransactionPayloadDto> for TreasuryTransaction {
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
+/// The outputs query options.
 pub struct AddressOutputsOptions {
     include_spent: bool,
     output_type: Option<String>,

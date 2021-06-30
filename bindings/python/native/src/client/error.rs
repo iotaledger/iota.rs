@@ -5,10 +5,13 @@ use iota_client::{bee_message, error::Error as RustError};
 use pyo3::{exceptions, prelude::*};
 use std::convert::From;
 
+/// The `Result` structure to wrap the error type for python binding.
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
+/// The Error type.
 pub struct Error {
+    /// The error exposed to python.
     pub error: PyErr,
 }
 
