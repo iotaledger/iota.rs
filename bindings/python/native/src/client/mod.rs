@@ -1,10 +1,15 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+/// The error type exposed to users
 pub mod error;
+/// Full node API binding
 pub mod full_node_api;
+/// High-level API binding
 pub mod high_level_api;
+/// MQTT binding
 pub mod mqtt;
+/// Type casting between Rust and Python
 pub mod types;
 use iota_client::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient};
 use pyo3::prelude::*;
@@ -18,6 +23,7 @@ use types::{
 /// Client builder
 #[pyclass]
 pub struct Client {
+    /// The Client structure in native rust
     pub client: RustClient,
 }
 
@@ -35,6 +41,7 @@ impl Client {
         permanodes_name_password: Option<Vec<Vec<&str>>>,
         node_sync_interval: Option<u64>,
         node_sync_disabled: Option<bool>,
+        offline: Option<bool>,
         node_pool_urls: Option<Vec<String>>,
         quorum: Option<bool>,
         quorum_size: Option<usize>,
@@ -83,6 +90,11 @@ impl Client {
         if let Some(node_sync_disabled) = node_sync_disabled {
             if node_sync_disabled {
                 client = client.with_node_sync_disabled();
+            }
+        }
+        if let Some(offline) = offline {
+            if offline {
+                client = client.with_offline_mode();
             }
         }
         if let Some(node_pool_urls) = node_pool_urls {

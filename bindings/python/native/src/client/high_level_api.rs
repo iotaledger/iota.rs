@@ -3,7 +3,7 @@
 
 use crate::client::{
     error::{Error, Result},
-    AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output,
+    AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output, UtxoInput,
 };
 use iota_client::{
     bee_message::prelude::{
@@ -317,6 +317,17 @@ impl Client {
     }
     fn mnemonic_to_hex_seed(&self, mnemonic: &str) -> Result<String> {
         Ok(RustClient::mnemonic_to_hex_seed(mnemonic)?)
+    }
+    fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
+        let inputs = crate::block_on(async { self.client.find_inputs(addresses, amount).await })?;
+        Ok((*inputs)
+            .to_vec()
+            .iter()
+            .map(|input| UtxoInput {
+                transaction_id: input.output_id().transaction_id().as_ref().to_vec(),
+                index: input.output_id().index(),
+            })
+            .collect())
     }
     fn bech32_to_hex(&self, hex: &str) -> Result<String> {
         Ok(RustClient::bech32_to_hex(hex)?)
