@@ -244,7 +244,7 @@ pub struct Payload {
     pub milestone: Option<Vec<Milestone>>,
     /// The indexation payload.
     pub indexation: Option<Vec<Indexation>>,
-    /// The receipt payload
+    /// The receipt payload.
     pub receipt: Option<Vec<Receipt>>,
     /// The treasury transaction payload.
     pub treasury_transaction: Option<Vec<TreasuryTransaction>>,
@@ -365,7 +365,7 @@ pub struct Output {
 pub struct TransactionOutput {
     /// The signature locked single output.
     pub signature_locked_single: Option<SignatureLockedSingleOutput>,
-    /// The signature locked dust-allowance output
+    /// The signature locked dust-allowance output.
     pub signature_locked_dust_allowance: Option<SignatureLockedDustAllowanceOutput>,
 }
 
@@ -499,7 +499,7 @@ pub struct NetworkInfo {
 #[derive(Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 /// The structure describes peer node.
 pub struct PeerDto {
-    /// The peer id
+    /// The peer id.
     pub id: String,
     /// The peer addresses.
     pub multi_addresses: Vec<String>,
