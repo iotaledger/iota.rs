@@ -503,7 +503,7 @@ pub struct PeerDto {
     pub id: String,
     /// The peer addresses.
     pub multi_addresses: Vec<String>,
-    /// THe peer alias.
+    /// The peer alias.
     pub alias: Option<String>,
     /// The relation with the peer.
     pub relation: RelationDto,
