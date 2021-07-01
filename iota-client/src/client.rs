@@ -1178,7 +1178,7 @@ impl Client {
         let mut message_ids = vec![*message_id];
         // Reattached Messages that get returned
         let mut messages_with_id = Vec::new();
-        for _ in 0..max_attempts.unwrap_or(10) {
+        for _ in 0..max_attempts.unwrap_or(20) {
             #[cfg(feature = "wasm")]
             std::thread::sleep(Duration::from_secs(interval.unwrap_or(5)));
             #[cfg(not(feature = "wasm"))]
@@ -1191,7 +1191,7 @@ impl Client {
                     return Ok(messages_with_id);
                 }
                 // Only reattach or promote latest attachment of the message
-                if index == message_ids_len {
+                if index == message_ids_len - 1 {
                     if message_metadata.should_promote.unwrap_or(false) {
                         // Safe to unwrap since we iterate over it
                         self.promote_unchecked(&message_ids.last().unwrap()).await?;
