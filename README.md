@@ -26,7 +26,7 @@ Using the library is easy, just add it as dependency in `Cargo.toml`:
 
 ```bash
 [dependencies]
-iota-client = "1.0.0"
+iota-client = "1.0"
 ```
 
 or for the latest changes

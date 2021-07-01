@@ -1,6 +1,6 @@
 [package]
 name = "iota-client"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Thoralf Müller <thoralf.mueller@iota.org", "Antony Dikov <antoni.dikov@iota.org>", "Bing-Yang Lin <bingyang.lin@iota.org>", "Lucas Nogueira <lucas.nogueira@iota.org>", "Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Client to use IOTA APIs"
