@@ -10,8 +10,10 @@ use crate::{
     jni_c_header::*,
     bee_types::*,
     message::*,
+    prepared::*,
     address::*,
     ed25519::*,
+    slip10::*,
     mqtt::*,
 };
 use iota_client::{
@@ -142,6 +144,8 @@ foreign_class!(
         fn ClientBuilder::with_permanode(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
         /// Get node list from the node_pool_urls
         fn ClientBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder;
+        /// Allows creating the client without nodes for offline address generation or signing
+        fn ClientBuilder::with_offline_mode(&mut self) -> ClientBuilder;
         /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
         /// Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are
         /// provided.
@@ -284,6 +288,9 @@ foreign_class!(
 
         /// Returns a hex encoded seed for a mnemonic.
         fn Client::mnemonic_to_hex_seed(mnemonic: &str) -> Result<String>;
+
+        /// Function to find inputs from addresses for a provided amount (useful for offline signing)
+        fn Client::find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>>;
 
         /// Transforms bech32 to hex
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
@@ -738,6 +745,13 @@ foreign_class!(
         /// Set data to the builder
         fn ClientMessageBuilder::with_data_string(&self, data: &str)  -> ClientMessageBuilder;
 
+        /// Prepare a transaction
+        fn ClientMessageBuilder::prepare_transaction(&self)  -> Result<PreparedTransactionData>;
+
+        /// Sign the transaction. inputsRangeLow and high to 0 for not using an input range
+        fn ClientMessageBuilder::sign_transaction(&self, prepared_transaction_data: PreparedTransactionData,
+            seed: &str, inputs_range_low: usize, inputs_range_high: usize) -> Result<MessagePayload>;
+
         /// Consume the builder and return the message made with the specific payload
         fn ClientMessageBuilder::finish_message_transaction(&self, payload: TransactionPayload) -> Result<Message>; alias finishTransaction;
         /// Consume the builder and return the message made with the specific payload
@@ -1110,6 +1124,14 @@ foreign_class!(
     }
 );
 
+foreign_class!(
+    #[derive(camelCaseAliases)]
+    class Chain {
+        self_type Chain;
+        private constructor = empty;
+    }
+);
+
 // Bee types wrapping
 foreign_class!(
     #[derive(camelCaseAliases, Display)]
@@ -1262,6 +1284,44 @@ foreign_class!(
         fn TransactionPayloadBuilder::with_unlock_blocks(&self, unlock_blocks: UnlockBlocks)-> TransactionPayloadBuilder;
         /// Finishes a `TransactionPayloadBuilder` into a `TransactionPayload`.
         fn TransactionPayloadBuilder::finish(&self) -> Result<TransactionPayload>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
+    /// Helper struct for offline signing
+    class PreparedTransactionData {
+        self_type PreparedTransactionData;
+        private constructor = empty;
+        private fn PreparedTransactionData::to_string(&self) -> String; alias to_string;
+        /// Transaction essence
+        fn PreparedTransactionData::essence(&self) -> Essence;
+        /// Required address information for signing
+        fn PreparedTransactionData::address_index_recorders(&self) -> Vec<AddressIndexRecorder>;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
+    /// Structure for sorting of UnlockBlocks
+    class AddressIndexRecorder {
+        self_type AddressIndexRecorder;
+        private constructor = empty;
+        private fn AddressIndexRecorder::to_string(&self) -> String; alias to_string;
+        /// Index of the account
+        fn AddressIndexRecorder::account_index(&self) -> usize;
+        /// The input used
+        fn AddressIndexRecorder::input(&self) -> Input;
+        /// The output information
+        fn AddressIndexRecorder::output(&self) -> OutputResponse;
+        /// index of this address on the seed
+        fn AddressIndexRecorder::address_index(&self) -> usize;
+        /// The chain derived from seed
+        fn AddressIndexRecorder::chain(&self) -> Chain;
+        /// Whether this is an internal address
+        fn AddressIndexRecorder::internal(&self) -> bool;
+        /// The address
+        fn AddressIndexRecorder::bech32_address(&self) -> &str;
     }
 );
 

@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 use std::fmt::{Display, Formatter};
-
+use serde::{Serialize, Deserialize};
 use iota_client::bee_message::{
     input::Input as RustInput,
     payload::{milestone::MilestoneId, transaction::TransactionId},
@@ -15,7 +15,7 @@ pub enum InputKind {
     Treasury = 1,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Input(RustInput);
 
 impl Input {
@@ -40,6 +40,10 @@ impl Input {
         } else {
             None
         }
+    }
+
+    pub fn to_inner_clone(&self) -> RustInput {
+        self.0.clone()
     }
 }
 
