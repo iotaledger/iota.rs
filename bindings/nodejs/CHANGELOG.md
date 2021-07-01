@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.6.2]
+
+- Fixed retryUntilIncluded.
+  - [1703e299](https://github.com/iotaledger/iota.rs/commit/1703e299cc973d194ee0e82de87fec6c347afcf2) Fix retry_until_included ([#599](https://github.com/iotaledger/iota.rs/pull/599)) on 2021-07-01
+
 ## \[0.6.1]
 
 - Add permanode option.
