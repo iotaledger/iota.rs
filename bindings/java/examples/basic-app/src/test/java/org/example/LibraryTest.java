@@ -6,7 +6,7 @@ public class LibraryTest {
     @Test
     public void testSomeLibraryMethod() {
         try {
-            ExampleApp.offlineExample();
+            ExampleApp.nodeInfo();
         } catch (Exception e) {
             e.printStackTrace();
         }
