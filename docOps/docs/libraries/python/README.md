@@ -1,3 +1,6 @@
+---
+slug: /libraries/python/overview
+---
 # IOTA Client Python Library
 
 [![status](https://img.shields.io/badge/Status-Alpha-yellow.svg)](https://github.com/iotaledger/iota.rs)
@@ -11,7 +14,7 @@ For an overview of all significant changes in the protocol, please see [Chrysali
 
 ## Overview
 
-- [Getting Started]()
-- [Examples]()
-- [API Reference]()
-- [Troubleshooting]()
+- [Getting Started](getting_started.md)
+- [Examples](examples.md)
+- [API Reference](api_reference.md)
+- [Troubleshooting](troubleshooting.md)

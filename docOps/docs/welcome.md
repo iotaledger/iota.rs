@@ -1,3 +1,6 @@
+---
+slug: /
+---
 # Welcome
 This is the documentation for the official IOTA Client Library. It can be used to easily interact with IOTA network (Tangle) via [IOTA node software](https://chrysalis.docs.iota.org/node-software/node-software.html). Official IOTA libraries serve as `one-source-code-of-truth` to IOTA users and providing binding to other programming languages. You can read more about core principles behind IOTA client libraries in the following blog [post](https://blog.iota.org/the-new-iota-client-libraries-harder-better-faster-stronger/).
 
