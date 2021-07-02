@@ -22,7 +22,10 @@ env_logger = "0.8"
 anyhow = "1.0.38"
 hex = "0.4"
 getset = "0.1"
-serde = "1"
+
+# Needed for prepared transaction data serialization
+serde = "1.0"
+serde_json = "1.0"
 
 # await block_on etc management
 tokio = { version = "1.2" }

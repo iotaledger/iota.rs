@@ -398,7 +398,6 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
-    /*
     pub fn finish_message(&self, payload: MessagePayload) -> Result<Message> {
         let inner = self.fields.borrow_mut().take().unwrap();
         let payload = Some(payload.to_inner());
@@ -413,7 +412,7 @@ impl<'a> ClientMessageBuilder<'a> {
             Ok(m) => Ok(m.into()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
-    }*/
+    }
 
     pub fn finish_message_transaction(&self, payload: TransactionPayload) -> Result<Message> {
         let inner = self.fields.borrow_mut().take().unwrap();

@@ -138,7 +138,7 @@ pub struct IndexPublicDto {
     #[getset(get_copy = "pub")]
     index: usize,
     #[getset(get_copy = "pub")]
-    public: bool,
+    is_public: bool,
 }
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
@@ -152,8 +152,8 @@ pub fn search_address(
 ) -> Result<IndexPublicDto> {
     let res = crate::block_on(async { search_address_api(&RustSeed::from_bytes(seed.as_bytes()), bech32_hrp, account_index, range_low..range_high, &address.address).await});
     match res {
-        Ok((index, public)) => Ok(IndexPublicDto {
-            index, public
+        Ok((index, is_public)) => Ok(IndexPublicDto {
+            index, is_public
         }),
         Err(e) => Err(anyhow::anyhow!(e.to_string())),
     }

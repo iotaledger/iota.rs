@@ -1,7 +1,6 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use getset::{CopyGetters, Getters};
 use serde::{Serialize, Deserialize};
 
 use iota_client::crypto::keys::slip10::{
@@ -9,13 +8,13 @@ use iota_client::crypto::keys::slip10::{
 };
 
 /// Helper struct for offline signing
-#[derive(Clone, Getters, CopyGetters, Serialize, Deserialize)]
-pub struct Chain(Vec<u32>);
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Chain(String);
 
 impl Chain {
     
     pub fn to_rust_chain(&self) -> RustChain {
-        RustChain::from_u32(self.0)
+        serde_json::from_str(&self.0).unwrap()
     }
 }
 
@@ -23,7 +22,7 @@ impl core::fmt::Display for Chain {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(
             f,
-            "",
+            "{}", self.0,
         )
     }
 }
@@ -36,8 +35,6 @@ impl core::fmt::Debug for Chain {
 
 impl From<RustChain> for Chain {
     fn from(chain: RustChain) -> Self {
-        Self {
-            
-        }
+        Self(serde_json::to_string(&chain).unwrap())
     }
 }

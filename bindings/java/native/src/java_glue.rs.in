@@ -753,11 +753,14 @@ foreign_class!(
             seed: &str, inputs_range_low: usize, inputs_range_high: usize) -> Result<MessagePayload>;
 
         /// Consume the builder and return the message made with the specific payload
+        fn ClientMessageBuilder::finish_message(&self, payload: MessagePayload) -> Result<Message>; alias finish; 
+
+        /// Consume the builder and return the message made with the specific payload
         fn ClientMessageBuilder::finish_message_transaction(&self, payload: TransactionPayload) -> Result<Message>; alias finishTransaction;
         /// Consume the builder and return the message made with the specific payload
         fn ClientMessageBuilder::finish_message_milestone(&self, payload: MilestonePayload) -> Result<Message>; alias finishMilestone;
         /// Consume the builder and return the message made with the specific payload
-        fn ClientMessageBuilder::finish_message_index(&self, payload: IndexationPayload) -> Result<Message>; alias finish;
+        fn ClientMessageBuilder::finish_message_index(&self, payload: IndexationPayload) -> Result<Message>; alias finishIndex;
         /// Consume the builder and return the message made with the specific payload
         fn ClientMessageBuilder::finish_message_receipt(&self, payload: ReceiptPayload) -> Result<Message>; alias finishReceipt;
         /// Consume the builder and return the message made with the specific payload
@@ -1066,7 +1069,7 @@ foreign_class!(
         self_type IndexPublicDto;
         private constructor = empty;
         fn IndexPublicDto::index(&self) -> usize;
-        fn IndexPublicDto::public(&self) -> bool;
+        fn IndexPublicDto::is_public(&self) -> bool;
     }
 );
 
@@ -1139,12 +1142,19 @@ foreign_class!(
         self_type MessagePayload;
         private constructor = empty;
         private fn MessagePayload::to_string(&self) -> String; alias to_string;
+
+        /// Turns a serialized message payload string back into its class 
+        fn MessagePayload::deserialize(serialised_data: &str) -> Result<MessagePayload>;
+        /// Get the type of message this contains (used to select the correct getter)
         fn MessagePayload::payload_type(&self) -> MessagePayloadType;
         fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>;
         fn MessagePayload::get_as_transaction(&self) -> Option<TransactionPayload>;
         fn MessagePayload::get_as_treasury(&self) -> Option<TreasuryPayload>;
         fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>;
         fn MessagePayload::get_as_receipt(&self) -> Option<ReceiptPayload>;
+        
+        /// Serializes the message payload into a json string
+        fn MessagePayload::serialize(&self) -> Result<String>;
     }
 );
 
@@ -1294,10 +1304,18 @@ foreign_class!(
         self_type PreparedTransactionData;
         private constructor = empty;
         private fn PreparedTransactionData::to_string(&self) -> String; alias to_string;
+
+        /// Turns a serialized preparedTransactionData string back into its class 
+        fn PreparedTransactionData::deserialize(serialised_data: &str) -> Result<PreparedTransactionData>;
+
         /// Transaction essence
         fn PreparedTransactionData::essence(&self) -> Essence;
         /// Required address information for signing
         fn PreparedTransactionData::address_index_recorders(&self) -> Vec<AddressIndexRecorder>;
+
+        /// Serializes the prepared data into a json string
+        fn PreparedTransactionData::serialize(&self) -> Result<String>;
+
     }
 );
 

@@ -14,6 +14,7 @@ use crate::{
     bee_types::{
         OutputResponse, Input, Essence
     },
+    Result,
     slip10::*,
 };
 
@@ -27,12 +28,31 @@ pub struct PreparedTransactionData {
 }
 
 impl PreparedTransactionData {
+    
+    pub fn deserialize(serialised_data: &str) -> Result<PreparedTransactionData> {
+        let res = serde_json::from_str(&serialised_data);
+        
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
+
     pub fn essence(&self) -> Essence {
         self.essence.clone()
     }
 
     pub fn address_index_recorders(&self) -> Vec<AddressIndexRecorder> {
         self.address_index_recorders.iter().cloned().collect()
+    }
+    
+    pub fn serialize(&self) -> Result<String> {
+        let res = serde_json::to_string(self);
+
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
     }
 }
 
