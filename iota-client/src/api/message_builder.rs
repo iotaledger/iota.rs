@@ -39,13 +39,20 @@ pub struct PreparedTransactionData {
 /// Structure for sorting of UnlockBlocks
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressIndexRecorder {
-    account_index: usize,
-    input: Input,
-    output: OutputResponse,
-    address_index: usize,
-    chain: Chain,
-    internal: bool,
-    bech32_address: String,
+    /// Index of the account
+    pub account_index: usize,
+    /// The input used
+    pub input: Input,
+    /// The output information
+    pub output: OutputResponse,
+    /// index of this address on the seed
+    pub address_index: usize,
+    /// The chain derived from seed
+    pub chain: Chain,
+    /// Whether this is an internal address
+    pub internal: bool,
+    /// The address
+    pub bech32_address: String,
 }
 
 #[derive(Debug, Clone)]

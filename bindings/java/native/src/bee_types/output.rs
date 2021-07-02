@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use anyhow::Error;
 use getset::{CopyGetters, Getters};
+use serde::{Serialize, Deserialize};
 use std::{
     convert::TryFrom,
     fmt::{Display, Formatter},
@@ -22,7 +23,7 @@ use crate::{
     Result,
 };
 
-#[derive(Getters, CopyGetters)]
+#[derive(Getters, CopyGetters, Clone, Serialize, Deserialize)]
 pub struct OutputResponse {
     #[getset(get = "pub")]
     pub message_id: String,
@@ -38,6 +39,16 @@ pub struct OutputResponse {
 impl OutputResponse {
     pub fn output(&self) -> OutputDto {
         self.output.clone()
+    }
+
+    pub fn to_rust_output(&self) -> RustOutputResponse {
+        RustOutputResponse {
+            message_id: self.message_id.clone(),
+            transaction_id: self.transaction_id.clone(),
+            output_index: self.output_index,
+            is_spent: self.is_spent,
+            output: self.output.to_inner_clone(),
+        }
     }
 }
 
@@ -84,7 +95,7 @@ pub fn output_kind_to_type(kind: OutputKind) -> OutputType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct OutputDto {
     output: RustOutputDto,
 }
@@ -108,6 +119,10 @@ impl OutputDto {
 
     pub fn as_treasury_output(&self) -> Result<TreasuryOutputDto> {
         TreasuryOutputDto::try_from(&self.output)
+    }
+
+    pub fn to_inner_clone(&self) -> RustOutputDto {
+        self.output.clone()
     }
 }
 

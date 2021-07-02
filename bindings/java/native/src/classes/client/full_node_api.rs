@@ -294,6 +294,18 @@ impl Client {
         }
     }
 
+    /// Function to find inputs from addresses for a provided amount (useful for offline signing)
+    pub fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
+        let res = crate::block_on(async { self.0.find_inputs(addresses, amount).await });
+
+        match res {
+            Ok(w) => {
+                Ok(w.iter().map(|utxo| utxo.clone().into()).collect())
+            }
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
     pub fn bech32_to_hex(bech32: &str) -> Result<String> {
         let res = iota_client::Client::bech32_to_hex(bech32);
         match res {

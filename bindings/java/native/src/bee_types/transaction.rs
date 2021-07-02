@@ -7,6 +7,7 @@ use crate::{
 };
 
 use anyhow::anyhow;
+use serde::{Serialize, Deserialize};
 
 use std::{
     cell::RefCell,
@@ -73,7 +74,7 @@ impl Display for TransactionPayload {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Essence(RustEssence);
 
 impl Essence {
@@ -93,6 +94,13 @@ impl Essence {
 impl Display for Essence {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(f, "({:?})", self.0)
+    }
+}
+
+
+impl From<RustEssence> for Essence {
+    fn from(essence: RustEssence) -> Self {
+        Self(essence)
     }
 }
 
