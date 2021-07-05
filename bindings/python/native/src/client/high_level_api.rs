@@ -3,9 +3,11 @@
 
 use crate::client::{
     error::{Error, Result},
-    AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output, UtxoInput,
+    AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output, Payload, PreparedTransactionData,
+    UtxoInput,
 };
 use iota_client::{
+    api::PreparedTransactionData as RustPreparedTransactionData,
     bee_message::prelude::{
         Message as RustMessage, MessageId as RustMessageId, TransactionId as RustTransactionId,
         UtxoInput as RustUtxoInput,
@@ -101,6 +103,37 @@ impl Client {
         } else {
             crate::block_on(async { send_builder.finish().await })?.try_into()
         }
+    }
+    fn prepare_transaction(&self, inputs: Vec<Input>, outputs: Vec<Output>) -> Result<PreparedTransactionData> {
+        let mut prepare_transaction_builder = self.client.message();
+        for input in inputs {
+            prepare_transaction_builder = prepare_transaction_builder.with_input(RustUtxoInput::new(
+                RustTransactionId::from_str(&input.transaction_id[..])?,
+                input.index,
+            )?);
+        }
+        for output in outputs {
+            prepare_transaction_builder =
+                prepare_transaction_builder.with_output(&output.address[..], output.amount)?;
+        }
+        crate::block_on(async { prepare_transaction_builder.prepare_transaction().await })?.try_into()
+    }
+    fn sign_transaction(
+        &self,
+        prepared_transaction_data: PreparedTransactionData,
+        seed: String,
+        start_index: usize,
+        end_index: usize,
+    ) -> Result<Payload> {
+        let sign_transaction_builder = self.client.message();
+        let data: RustPreparedTransactionData = prepared_transaction_data.try_into()?;
+        let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
+        crate::block_on(async {
+            sign_transaction_builder
+                .sign_transaction(data, Some(&seed), Some(start_index..end_index))
+                .await
+        })?
+        .try_into()
     }
     /// Get the message data from the message_id.
     ///

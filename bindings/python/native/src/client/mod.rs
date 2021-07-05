@@ -16,8 +16,8 @@ use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{
     AddressBalancePair, AddressOutputsOptions, BalanceAddressResponse, BrokerOptions, Input, Message,
-    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, NodeInfoWrapper, Output, OutputResponse, PeerDto,
-    ReceiptDto, TreasuryResponse, UtxoInput, BECH32_HRP,
+    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, NodeInfoWrapper, Output, OutputResponse, Payload,
+    PeerDto, PreparedTransactionData, ReceiptDto, TreasuryResponse, UtxoInput, BECH32_HRP,
 };
 
 /// Client builder
