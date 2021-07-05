@@ -10,7 +10,9 @@ If you plan on managing funds in your application, take a look at our [wallet.rs
 
 ## Supported Languages
 
-We have implemented the iota.rs library in Rust and prepared bindings for JavaScript and Python. The API stays the same no matter the language you choose, as we aim to make our libraries equally simple to use across all supported languages. You can read more on reasoning behind this design in this [blog post](https://blog.iota.org/the-new-iota-client-libraries-harder-better-faster-stronger/).
+We have implemented the iota.rs library in Rust and prepared bindings for JavaScript and Python. Whenever we introduce a change, there is only one library for us to modify. Whenever there is a bug, there is only one library for us to look into. You can read more on reasoning behind this design in this [blog post](https://blog.iota.org/the-new-iota-client-libraries-harder-better-faster-stronger/).
+
+We aim to make our libraries equally simple to use across all supported languages. This calls for a precise tailoring and not for a mechanical translation, and so we adjust every binding for the language's conventions and best practices. For that reason you will not find a `ClientBuilder` class in the Python binding, for example, as the convention is to use named constructor arguments instead. However, we never change the meaning behind our API. The API stays equally powerful no matter the language you choose. 
 
 ## Your Application In the IOTA Network
 
@@ -18,10 +20,10 @@ Your application communicates with iota.rs either directly or through a node.js 
 
 Different nodes could run on a different software, but they always expose the same interface to clients. For example, one node could be a [Hornet](https://hornet.docs.iota.org/) node and the other could be a [Bee](https://bee.docs.iota.org/) node, and they both would appear the same for any client.
 
-![An illustration for the text above.](./layered_overview.svg "An overview of IOTA layers.")
+![An illustration for the text above.](./media/layered_overview.svg "An overview of IOTA layers.")
 
 ## API Design
 
 The iota.rs library exposes operations of two types. Clients interact with nodes by calling their REST API, and the first group of operations mirrors the available calls. As you invoke an operation, it directly translates into a REST call to a node. For a full list, see the [node's REST API reference](https://editor.swagger.io/?url=https://raw.githubusercontent.com/rufsam/protocol-rfcs/master/text/0026-rest-api/rest-api.yaml). 
 
-Operations from the first group tend to be too atomic and basic to use them in a convenient way. The second group provides you with higher-level helper functions. These functions represent an actual task and combine multiple basic operations internally. For example, you can get your token balance by calling `getBalance`. It first calls `getAddresses`, then it calls `getAddressBalances` over associated addresses, and sums the results to return the total balance. See the [full specification](../specs) for details.
+Operations from the first group tend to be too atomic and basic to use them in a convenient way. The second group provides you with higher-level helper functions. These functions represent an actual task and combine multiple basic operations internally. For example, you can get your token balance by calling `getBalance`. It first calls `getAddresses`, then it calls `getAddressBalances` over associated addresses, and sums the results to return the total balance. See the [full specification](./specs) for details.
