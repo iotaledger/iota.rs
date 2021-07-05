@@ -5,6 +5,7 @@ use crate::client::error::{Error, Result};
 use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota_client::{
+    api::{AddressIndexRecorder as RustAddressIndexRecorder, PreparedTransactionData as RustPreparedTransactionData},
     bee_message::prelude::{
         Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
         Essence as RustEssence, IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
@@ -37,6 +38,7 @@ use iota_client::{
     },
     builder::NetworkInfo as RustNetworkInfo,
     client::{MilestoneResponse, NodeInfoWrapper as RustNodeInfoWrapper},
+    crypto::keys::slip10::{Chain as RustChain, Segment as RustSegment},
     AddressOutputsOptions as RustAddressOutputsOptions, OutputType,
 };
 
@@ -580,6 +582,163 @@ pub struct TreasuryResponse {
     pub amount: u64,
 }
 
+#[derive(Clone, Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// Helper struct for offline signing.
+pub struct PreparedTransactionData {
+    /// Transaction essence.AddressBalancePair
+    pub essence: RegularEssence,
+    /// Required address information for signing.
+    pub address_index_recorders: Vec<AddressIndexRecorder>,
+}
+
+#[derive(Clone, Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// Structure for sorting of UnlockBlocks.
+pub struct AddressIndexRecorder {
+    /// The account index.
+    account_index: usize,
+    /// The input.
+    input: Input,
+    /// The output response.
+    output: OutputResponse,
+    /// The address index.
+    address_index: usize,
+    /// The `Segment` vector.
+    chain: Vec<Segment>,
+    /// Whether is the address internal.
+    internal: bool,
+    /// The Bech32 address.
+    bech32_address: String,
+}
+
+#[derive(Clone, Debug, DeriveFromPyObject, DeriveIntoPyObject)]
+/// Structure for sorting of UnlockBlocks
+pub struct Segment {
+    /// Whether is it hardened.
+    hardened: bool,
+    /// Bytes
+    bs: [u8; 4],
+}
+
+impl Segment {
+    /// Convert the Segment from its representation as a byte array in big endian.
+    pub fn as_u32_be(&self) -> u32 {
+        if self.hardened {
+            u32::from_be_bytes(self.bs) | RustSegment::HARDEN_MASK
+        } else {
+            u32::from_be_bytes(self.bs)
+        }
+    }
+}
+
+impl From<RustAddressIndexRecorder> for AddressIndexRecorder {
+    fn from(recorder: RustAddressIndexRecorder) -> Self {
+        Self {
+            account_index: recorder.account_index,
+            input: if let RustInput::Utxo(input) = recorder.input {
+                Input {
+                    transaction_id: input.output_id().transaction_id().to_string(),
+                    index: input.output_id().index(),
+                }
+            } else {
+                unreachable!()
+            },
+            output: recorder.output.into(),
+            address_index: recorder.address_index,
+            chain: recorder
+                .chain
+                .segments()
+                .iter()
+                .cloned()
+                .map(|segment| Segment {
+                    hardened: segment.hardened(),
+                    bs: segment.bs(),
+                })
+                .collect(),
+            internal: recorder.internal,
+            bech32_address: recorder.bech32_address,
+        }
+    }
+}
+
+impl TryFrom<AddressIndexRecorder> for RustAddressIndexRecorder {
+    type Error = Error;
+    fn try_from(recorder: AddressIndexRecorder) -> Result<Self> {
+        Ok(Self {
+            account_index: recorder.account_index,
+            input: RustUtxoInput::new(
+                RustTransactionId::from_str(&recorder.input.transaction_id[..]).unwrap_or_else(|_| {
+                    panic!(
+                        "invalid UtxoInput transaction_id: {} with input index {}",
+                        recorder.input.transaction_id, recorder.input.index
+                    )
+                }),
+                recorder.input.index,
+            )
+            .unwrap_or_else(|_| {
+                panic!(
+                    "invalid UtxoInput transaction_id: {} with input index {}",
+                    recorder.input.transaction_id, recorder.input.index
+                )
+            })
+            .into(),
+            output: RustOutputResponse {
+                message_id: recorder.output.message_id,
+                transaction_id: recorder.output.transaction_id,
+                output_index: recorder.output.output_index,
+                is_spent: recorder.output.is_spent,
+                output: recorder.output.output.into(),
+            },
+            address_index: recorder.address_index,
+            chain: RustChain::from_u32(
+                recorder
+                    .chain
+                    .iter()
+                    .clone()
+                    .map(|s| s.as_u32_be())
+                    .collect::<Vec<u32>>(),
+            ),
+            internal: recorder.internal,
+            bech32_address: recorder.bech32_address,
+        })
+    }
+}
+
+impl TryFrom<RustPreparedTransactionData> for PreparedTransactionData {
+    type Error = Error;
+    fn try_from(data: RustPreparedTransactionData) -> Result<Self> {
+        Ok(PreparedTransactionData {
+            essence: match data.essence {
+                RustEssence::Regular(e) => e.try_into()?,
+            },
+            address_index_recorders: data
+                .address_index_recorders
+                .iter()
+                .cloned()
+                .map(|recorder| recorder.into())
+                .collect(),
+        })
+    }
+}
+
+impl TryFrom<PreparedTransactionData> for RustPreparedTransactionData {
+    type Error = Error;
+    fn try_from(data: PreparedTransactionData) -> Result<Self> {
+        Ok(Self {
+            essence: RustEssence::Regular(data.essence.clone().try_into()?),
+            address_index_recorders: data
+                .address_index_recorders
+                .iter()
+                .map(|recorder| {
+                    recorder
+                        .clone()
+                        .try_into()
+                        .unwrap_or_else(|_| panic!("invalid AddressIndexRecorder {:?}", data))
+                })
+                .collect(),
+        })
+    }
+}
+
 impl From<RustTreasuryResponse> for TreasuryResponse {
     fn from(treasury: RustTreasuryResponse) -> Self {
         Self {
@@ -628,6 +787,37 @@ impl From<RustOutputDto> for OutputDto {
                 signature_locked_single: None,
                 signature_locked_dust_allowance: Some(signature.into()),
             },
+        }
+    }
+}
+
+impl From<OutputDto> for RustOutputDto {
+    fn from(output: OutputDto) -> Self {
+        if let Some(treasury) = output.treasury {
+            RustOutputDto::Treasury(RustTreasuryOutputDto {
+                kind: treasury.kind,
+                amount: treasury.amount,
+            })
+        } else if let Some(signature) = output.signature_locked_single {
+            RustOutputDto::SignatureLockedSingle(RustSignatureLockedSingleOutputDto {
+                kind: signature.kind,
+                address: RustAddressDto::Ed25519(RustEd25519AddressDto {
+                    kind: signature.address.ed25519.kind,
+                    address: signature.address.ed25519.address,
+                }),
+                amount: signature.amount,
+            })
+        } else if let Some(signature) = output.signature_locked_dust_allowance {
+            RustOutputDto::SignatureLockedDustAllowance(RustSignatureLockedDustAllowanceOutputDto {
+                kind: signature.kind,
+                address: RustAddressDto::Ed25519(RustEd25519AddressDto {
+                    kind: signature.address.ed25519.kind,
+                    address: signature.address.ed25519.address,
+                }),
+                amount: signature.amount,
+            })
+        } else {
+            unreachable!()
         }
     }
 }
@@ -999,17 +1189,16 @@ impl TryFrom<RustUnlockBlock> for UnlockBlock {
     }
 }
 
-impl TryFrom<RustMessage> for Message {
+impl TryFrom<RustPayload> for Payload {
     type Error = Error;
-    fn try_from(msg: RustMessage) -> Result<Self> {
-        let payload = msg.payload().as_ref();
+    fn try_from(payload: RustPayload) -> Result<Self> {
         let payload = match payload {
-            Some(RustPayload::Transaction(payload)) => {
+            RustPayload::Transaction(payload) => {
                 let essence = match payload.essence().to_owned() {
                     RustEssence::Regular(e) => e.try_into()?,
                 };
 
-                Some(Payload {
+                Payload {
                     transaction: Some(vec![Transaction {
                         essence,
                         unlock_blocks: payload
@@ -1023,9 +1212,9 @@ impl TryFrom<RustMessage> for Message {
                     indexation: None,
                     receipt: None,
                     treasury_transaction: None,
-                })
+                }
             }
-            Some(RustPayload::Indexation(payload)) => Some(Payload {
+            RustPayload::Indexation(payload) => Payload {
                 transaction: None,
                 milestone: None,
                 indexation: Some(vec![Indexation {
@@ -1040,8 +1229,8 @@ impl TryFrom<RustMessage> for Message {
                 }]),
                 receipt: None,
                 treasury_transaction: None,
-            }),
-            Some(RustPayload::Milestone(payload)) => Some(Payload {
+            },
+            RustPayload::Milestone(payload) => Payload {
                 transaction: None,
                 milestone: Some(vec![Milestone {
                     essence: payload.essence().to_owned().try_into()?,
@@ -1054,15 +1243,15 @@ impl TryFrom<RustMessage> for Message {
                 indexation: None,
                 receipt: None,
                 treasury_transaction: None,
-            }),
-            Some(RustPayload::Receipt(payload)) => {
+            },
+            RustPayload::Receipt(payload) => {
                 let essence = match payload.transaction() {
                     RustPayload::Transaction(transaction_payload) => match transaction_payload.essence().to_owned() {
                         RustEssence::Regular(e) => e.try_into()?,
                     },
                     _ => panic!("Missing transaction payload"),
                 };
-                Some(Payload {
+                Payload {
                     transaction: None,
                     milestone: None,
                     indexation: None,
@@ -1095,16 +1284,32 @@ impl TryFrom<RustMessage> for Message {
                         },
                     }]),
                     treasury_transaction: None,
-                })
+                }
             }
-            _ => None,
+            RustPayload::TreasuryTransaction(payload) => Payload {
+                transaction: None,
+                milestone: None,
+                indexation: None,
+                receipt: None,
+                treasury_transaction: Some(vec![RustTreasuryTransactionPayloadDto::from(&(*payload)).into()]),
+            },
         };
+        Ok(payload)
+    }
+}
 
+impl TryFrom<RustMessage> for Message {
+    type Error = Error;
+    fn try_from(msg: RustMessage) -> Result<Self> {
         Ok(Message {
             message_id: msg.id().0.to_string(),
             network_id: msg.network_id(),
             parents: msg.parents().iter().map(|m| m.to_string()).collect(),
-            payload,
+            payload: if let Some(payload) = msg.payload().as_ref() {
+                Some((*payload).clone().try_into()?)
+            } else {
+                None
+            },
             nonce: msg.nonce(),
         })
     }
