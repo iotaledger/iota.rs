@@ -3,11 +3,11 @@
 
 use crate::client::{
     error::{Error, Result},
-    AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output, Payload, PreparedTransactionData,
-    UtxoInput,
+    AddressBalancePair, AddressDto, Client, Input, Message, MessageMetadataResponse, Output, OutputDto, Payload,
+    PreparedTransactionData, UtxoInput,
 };
 use iota_client::{
-    api::PreparedTransactionData as RustPreparedTransactionData,
+    api::{ClientMessageBuilder as RustClientMessageBuilder, PreparedTransactionData as RustPreparedTransactionData},
     bee_message::prelude::{
         Message as RustMessage, MessageId as RustMessageId, TransactionId as RustTransactionId,
         UtxoInput as RustUtxoInput,
@@ -103,6 +103,10 @@ impl Client {
         } else {
             crate::block_on(async { send_builder.finish().await })?.try_into()
         }
+    }
+    fn get_output_amount_and_address(&self, output: OutputDto) -> Result<(u64, AddressDto, bool)> {
+        let (output_amount, address, single) = RustClientMessageBuilder::get_output_amount_and_address(&output.into())?;
+        Ok((output_amount, address.into(), single))
     }
     fn prepare_transaction(&self, inputs: Vec<Input>, outputs: Vec<Output>) -> Result<PreparedTransactionData> {
         let mut prepare_transaction_builder = self.client.message();
