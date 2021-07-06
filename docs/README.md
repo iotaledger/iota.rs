@@ -1,7 +1,9 @@
 # Documentation Area
-Everything related to the IOTA cLient library.
+
+Everything related to the iota.rs library.
 
 ## Run locally
+
 You can run a local server to run the documentation page.
 
 ### Dependencies
