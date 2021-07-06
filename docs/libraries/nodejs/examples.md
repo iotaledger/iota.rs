@@ -193,7 +193,7 @@ Before we continue, let's introduce some additional terms that describe a unit t
 
 > IOTA is no longer based on ternary. IOTA 1.5 (Chrysalis) uses binary to encode and broadcast all underlying data entities
 
-`Message` is broadcasted using a binary format, is arbitrary in size (up to 35 kB), and it can hold variable sets of information so called `payloads`. The number of payloads a single message can encapsulate is not given (even a message without any `payload` at all is completely valid).
+`Message` is broadcasted using a binary format, is arbitrary in size (up to 32 kB), and it can hold variable sets of information so called `payloads`. The number of payloads a single message can encapsulate is not given (even a message without any `payload` at all is completely valid).
 
 `Payload` represents a layer of concern. Some payloads may change a state of the ledger (ex. `transactions`) and some may provide extra features to some specific applications and business use cases (ex. `indexed data`).
 
