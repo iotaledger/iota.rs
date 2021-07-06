@@ -15,9 +15,9 @@ use iota_client::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient}
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{
-    AddressBalancePair, AddressOutputsOptions, BalanceAddressResponse, BrokerOptions, Input, Message,
-    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, NodeInfoWrapper, Output, OutputResponse, Payload,
-    PeerDto, PreparedTransactionData, ReceiptDto, TreasuryResponse, UtxoInput, BECH32_HRP,
+    AddressBalancePair, AddressDto, AddressOutputsOptions, BalanceAddressResponse, BrokerOptions, Input, Message,
+    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, NodeInfoWrapper, Output, OutputDto, OutputResponse,
+    Payload, PeerDto, PreparedTransactionData, ReceiptDto, TreasuryResponse, UtxoInput, BECH32_HRP,
 };
 
 /// Client builder
