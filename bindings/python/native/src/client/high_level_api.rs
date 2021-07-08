@@ -139,6 +139,10 @@ impl Client {
         })?
         .try_into()
     }
+    fn finish_message(&self, payload: Payload) -> Result<Message> {
+        let payload: RustPayload = payload.try_into()?;
+        crate::block_on(async { self.client.message().finish_message(Some(payload)).await })?.try_into()
+    }
     /// Get the message data from the message_id.
     ///
     /// Args:
