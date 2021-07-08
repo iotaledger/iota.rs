@@ -124,7 +124,7 @@ module.exports = {
     },
     {
       type: 'doc',
-      id: 'specs/README',
+      id: 'specs',
       label: 'Specification',
     },
     {

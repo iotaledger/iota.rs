@@ -1,7 +1,3 @@
----
-slug: /specification
----
-
 # High Level API Specification
 
 ## Table of Contents
