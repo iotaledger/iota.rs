@@ -3,22 +3,21 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
-  title: 'Iota.rs',
-  tagline: '',
+  title: 'iota.rs',
+  tagline: 'Official IOTA iota.rs Software',
   url: 'https://iota.rs.docs.iota.org/',
-  baseUrl: '/',
-  onBrokenLinks: 'throw',
+  baseUrl: '/iota.rs/',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'throw',
-  favicon: 'img/logo/favicon.ico',
+  favicon: '/img/logo/favicon.ico',
   organizationName: 'iotaledger', // Usually your GitHub org/user name.
   projectName: 'iota.rs', // Usually your repo name.
   stylesheets: [
     'https://fonts.googleapis.com/css?family=Material+Icons',
-    'http://v2202102141633143571.bestsrv.de/assets/css/styles.c88dfa6b.css', //replace this URL
   ],
   themeConfig: {
     navbar: {
-      title: 'Iota.rs documentation',
+      title: 'Iota.rs',
       logo: {
         alt: 'IOTA',
         src: 'img/logo/Logo_Swirl_Dark.png',
@@ -43,7 +42,7 @@ module.exports = {
           title: 'Documentation',
           items: [{
               label: 'Welcome',
-              to: '/',
+              to: '/welcome',
             },
             {
               label: 'Overview',
@@ -77,7 +76,7 @@ module.exports = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/iotaledger/bee',
+              href: 'https://github.com/iotaledger/iota.rs',
             },
           ],
         },
@@ -101,7 +100,7 @@ module.exports = {
           editUrl: 'https://github.com/iotaledger/iota.rs/tree/main/docs',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: require.resolve('./src/css/iota.css'),
         },
       },
     ],

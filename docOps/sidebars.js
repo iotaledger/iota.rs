@@ -10,7 +10,7 @@
  */
 
 module.exports = {
-  mySidebar: [{
+  docs: [{
       type: 'doc',
       id: 'welcome',
     },
