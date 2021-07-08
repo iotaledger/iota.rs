@@ -357,9 +357,53 @@ Build a message.
 | [data_str]               | <code>str</code>                     | <code>undefined</code> | The data string                              |
 | [parents]                | <code>list[str]</code>               | <code>undefined</code> | The message ids of the parents               |
 
-**Returns** the built [Message](#message).
+#### get_output_amount_and_address(output): (int, AddressDto, bool)
+
+Get the output amount and address from the provided OutputDto.
+
+| Param    | Type                   | Default                | Description                                   |
+| -------- | ---------------------- | ---------------------- | --------------------------------------------- |
+| [output] | <code>OutputDto</code> | <code>undefined</code> | The outputs where we want to send them tokens |
+
+**Returns** the tuple of (the amount of tokens, the address, the indicator of the output type: `true` for `SignatureLockedSingle`, `false` for `SignatureLockedDustAllowance`).
+
+#### prepare_transaction(inputs, outputs): PreparedTransactionData
+
+Prepare a transaction.
+
+| Param     | Type                         | Default                | Description                                      |
+| --------- | ---------------------------- | ---------------------- | ------------------------------------------------ |
+| [inputs]  | <code>list[UtxoInput]</code> | <code>undefined</code> | The UTXOInputs where we want to send tokens from |
+| [outputs] | <code>list[Output]</code>    | <code>undefined</code> | The outputs where we want to send them tokens    |
+
+**Returns** the prepared transaction data.
+
+#### sign_transaction(prepared_transaction_data, seed, start_index, end_index): Payload
+
+Sign the transaction.
+
+| Param                       | Type                                 | Default                | Description                      |
+| --------------------------- | ------------------------------------ | ---------------------- | -------------------------------- |
+| [prepared_transaction_data] | <code>PreparedTransactionData</code> | <code>undefined</code> | The prepared transaction data    |
+| [seed]                      | <code>str</code>                     | <code>undefined</code> | The seed                         |
+| [start_index]               | <code>int</code>                     | <code>undefined</code> | The start address index          |
+| [end_index]                 | <code>int</code>                     | <code>undefined</code> | The end address index (excluded) |
+
+**Returns** the [Payload](#payload).
+
+#### finish_message(payload): Message
+
+Construct the message by payload.
+
+| Param     | Type                 | Default                | Description             |
+| --------- | -------------------- | ---------------------- | ----------------------- |
+| [payload] | <code>Payload</code> | <code>undefined</code> | The [Payload](#payload) |
+
+**Returns** the [Message](#message).
 
 #### get_message_metadata(message_id): MessageMetadataResponse
+
+Get the message metadata by message_id.
 
 | Param        | Type             | Default                | Description    |
 | ------------ | ---------------- | ---------------------- | -------------- |
@@ -444,13 +488,14 @@ Gets a valid unspent address.
 
 Finds addresses from the seed regardless of their validity.
 
-| Param               | Type              | Default                | Description                    |
-| ------------------- | ----------------- | ---------------------- | ------------------------------ |
-| [seed]              | <code>str</code>  | <code>undefined</code> | The hex-encoded seed to search |
-| [account_index]     | <code>int</code>  | <code>undefined</code> | The account index              |
-| [input_range_begin] | <code>int</code>  | <code>undefined</code> | The begin of the address range |
-| [input_range_end]   | <code>int</code>  | <code>undefined</code> | The end of the address range   |
-| [get_all]           | <code>bool</code> | <code>undefined</code> | Get all addresses              |
+| Param               | Type                | Default                | Description                    |
+| ------------------- | ------------------- | ---------------------- | ------------------------------ |
+| [seed]              | <code>str</code>    | <code>undefined</code> | The hex-encoded seed to search |
+| [account_index]     | <code>int</code>    | <code>undefined</code> | The account index              |
+| [input_range_begin] | <code>int</code>    | <code>undefined</code> | The begin of the address range |
+| [input_range_end]   | <code>int</code>    | <code>undefined</code> | The end of the address range   |
+| [bech32_hrp]        | <code>string</code> | <code>undefined</code> | The Bech32 HRP                 |
+| [get_all]           | <code>bool</code>   | <code>undefined</code> | Get all addresses              |
 
 **Returns** a list of tuples with type of `(str, int)` as the address and corresponding index in the account.
 
@@ -838,6 +883,9 @@ payload = {
     'transaction': list[Transaction], # (optional)
     'milestone': list[Milestone], # (optional)
     'indexation': list[Indexation], # (optional)
+    'receipt': List[Receipt], # (optional)
+    'treasury_transaction': List[TreasuryTransaction], # (optional)
+
 }
 ```
 
