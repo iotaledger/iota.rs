@@ -54,7 +54,7 @@ module.exports = {
             },
             {
               label: 'Specification',
-              to: '/specification',
+              to: '/specs',
             },
             {
               label: 'Contribute',
