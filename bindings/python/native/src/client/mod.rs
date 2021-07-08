@@ -145,13 +145,16 @@ impl Client {
         }
         let client = crate::block_on(async { client.finish().await.unwrap() });
 
-        // Update the BECH32_HRP
-        // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
-        //       create the client object.
-        let bech32_hrp = crate::block_on(async { client.get_bech32_hrp().await.unwrap() });
-        // Note that mutable static is unsafe and requires unsafe function or block
-        unsafe {
-            BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
+        // If not in the offline mode
+        if offline != Some(true) {
+            // Update the BECH32_HRP
+            // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
+            //       create the client object.
+            let bech32_hrp = crate::block_on(async { client.get_bech32_hrp().await.unwrap() });
+            // Note that mutable static is unsafe and requires unsafe function or block
+            unsafe {
+                BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
+            }
         }
         Client { client }
     }
