@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.6.3]
+
+- Fixed ts interfaces
+  - [49100701](https://github.com/iotaledger/iota.rs/commit/491007014eedce0cf8d90d4272b547ae83854094) add change file on 2021-07-07
+
 ## \[0.6.2]
 
 - Fixed retryUntilIncluded.

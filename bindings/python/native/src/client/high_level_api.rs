@@ -3,11 +3,13 @@
 
 use crate::client::{
     error::{Error, Result},
-    AddressBalancePair, Client, Input, Message, MessageMetadataResponse, Output, UtxoInput,
+    AddressBalancePair, AddressDto, Client, Input, Message, MessageMetadataResponse, Output, OutputDto, Payload,
+    PreparedTransactionData, UtxoInput,
 };
 use iota_client::{
+    api::{ClientMessageBuilder as RustClientMessageBuilder, PreparedTransactionData as RustPreparedTransactionData},
     bee_message::prelude::{
-        Message as RustMessage, MessageId as RustMessageId, TransactionId as RustTransactionId,
+        Message as RustMessage, MessageId as RustMessageId, Payload as RustPayload, TransactionId as RustTransactionId,
         UtxoInput as RustUtxoInput,
     },
     bee_rest_api::types::dtos::MessageDto as BeeMessageDto,
@@ -101,6 +103,45 @@ impl Client {
         } else {
             crate::block_on(async { send_builder.finish().await })?.try_into()
         }
+    }
+    fn get_output_amount_and_address(&self, output: OutputDto) -> Result<(u64, AddressDto, bool)> {
+        let (output_amount, address, single) = RustClientMessageBuilder::get_output_amount_and_address(&output.into())?;
+        Ok((output_amount, address.into(), single))
+    }
+    fn prepare_transaction(&self, inputs: Vec<UtxoInput>, outputs: Vec<Output>) -> Result<PreparedTransactionData> {
+        let mut prepare_transaction_builder = self.client.message();
+        for input in inputs {
+            prepare_transaction_builder = prepare_transaction_builder.with_input(RustUtxoInput::new(
+                RustTransactionId::new(input.transaction_id.try_into().unwrap()),
+                input.index,
+            )?);
+        }
+        for output in outputs {
+            prepare_transaction_builder =
+                prepare_transaction_builder.with_output(&output.address[..], output.amount)?;
+        }
+        crate::block_on(async { prepare_transaction_builder.prepare_transaction().await })?.try_into()
+    }
+    fn sign_transaction(
+        &self,
+        prepared_transaction_data: PreparedTransactionData,
+        seed: String,
+        start_index: usize,
+        end_index: usize,
+    ) -> Result<Payload> {
+        let sign_transaction_builder = self.client.message();
+        let data: RustPreparedTransactionData = prepared_transaction_data.try_into()?;
+        let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
+        crate::block_on(async {
+            sign_transaction_builder
+                .sign_transaction(data, Some(&seed), Some(start_index..end_index))
+                .await
+        })?
+        .try_into()
+    }
+    fn finish_message(&self, payload: Payload) -> Result<Message> {
+        let payload: RustPayload = payload.try_into()?;
+        crate::block_on(async { self.client.message().finish_message(Some(payload)).await })?.try_into()
     }
     /// Get the message data from the message_id.
     ///
@@ -240,6 +281,7 @@ impl Client {
         account_index: Option<usize>,
         input_range_begin: Option<usize>,
         input_range_end: Option<usize>,
+        bech32_hrp: Option<String>,
         get_all: Option<bool>,
     ) -> Result<Vec<(String, Option<bool>)>> {
         let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
@@ -254,12 +296,22 @@ impl Client {
         let end: usize = input_range_end.unwrap_or(0);
         if get_all.unwrap_or(false) {
             let addresses = crate::block_on(async {
-                self.client
-                    .get_addresses(&seed)
-                    .with_account_index(account_index.unwrap_or(0))
-                    .with_range(begin..end)
-                    .get_all()
-                    .await
+                if let Some(bech32_hrp) = bech32_hrp {
+                    self.client
+                        .get_addresses(&seed)
+                        .with_account_index(account_index.unwrap_or(0))
+                        .with_range(begin..end)
+                        .with_bech32_hrp(bech32_hrp)
+                        .get_all()
+                        .await
+                } else {
+                    self.client
+                        .get_addresses(&seed)
+                        .with_account_index(account_index.unwrap_or(0))
+                        .with_range(begin..end)
+                        .get_all()
+                        .await
+                }
             })?;
             Ok(addresses
                 .iter()
@@ -267,12 +319,22 @@ impl Client {
                 .collect())
         } else {
             let addresses = crate::block_on(async {
-                self.client
-                    .get_addresses(&seed)
-                    .with_account_index(account_index.unwrap_or(0))
-                    .with_range(begin..end)
-                    .finish()
-                    .await
+                if let Some(bech32_hrp) = bech32_hrp {
+                    self.client
+                        .get_addresses(&seed)
+                        .with_account_index(account_index.unwrap_or(0))
+                        .with_range(begin..end)
+                        .with_bech32_hrp(bech32_hrp)
+                        .finish()
+                        .await
+                } else {
+                    self.client
+                        .get_addresses(&seed)
+                        .with_account_index(account_index.unwrap_or(0))
+                        .with_range(begin..end)
+                        .finish()
+                        .await
+                }
             })?;
             Ok(addresses
                 .iter()

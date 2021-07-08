@@ -2,7 +2,7 @@ import {
   NodeInfoWrapper,
   MessageMetadata,
   MilestoneUTXOChanges,
-  Receipts,
+  ReceiptPayload,
   Treasury,
   OutputMetadata,
   MilestoneMetadata,
@@ -120,8 +120,8 @@ export declare class Client {
   getMessageId(message: string): string
   getMilestone(index: number): Promise<MilestoneMetadata>
   getMilestoneUtxoChanges(index: number): Promise<MilestoneUTXOChanges>
-  getReceipts(): Promise<Receipts[]>
-  getReceiptsMigratedAt(index: number): Promise<Receipts[]>
+  getReceipts(): Promise<ReceiptPayload[]>
+  getReceiptsMigratedAt(index: number): Promise<ReceiptPayload[]>
   getTreasury(): Promise<Treasury>
   getIncludedMessage(): Promise<MessageWrapper>
   reattach(messageId: string): Promise<MessageWrapper>

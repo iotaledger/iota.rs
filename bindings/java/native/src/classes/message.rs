@@ -4,7 +4,10 @@ use std::{cell::RefCell, rc::Rc};
 
 use getset::{CopyGetters, Getters};
 use iota_client::{
-    api::ClientMessageBuilder as RustClientMessageBuilder,
+    api::{
+        ClientMessageBuilder as RustClientMessageBuilder,
+        PreparedTransactionData as RustPreparedTransactionData,
+    },
     bee_message::{
         payload::Payload,
         prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents},
@@ -12,7 +15,6 @@ use iota_client::{
     node::GetMessageBuilder as RustGetMessageBuilder,
     Seed as RustSeed,
 };
-
 use anyhow::anyhow;
 
 use crate::{
@@ -20,6 +22,7 @@ use crate::{
         IndexationPayload, MessageMetadata, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload,
         UtxoInput,
     },
+    prepared::{PreparedTransactionData, addres_into_rust_address_recorder},
     full_node_api::Client,
     MessagePayload, Result,
 };
@@ -334,6 +337,52 @@ impl<'a> ClientMessageBuilder<'a> {
         ClientMessageBuilder::new_with_fields(fields)
     }
 
+    /// Prepare a transaction
+    pub fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).prepare_transaction().await
+            } else {
+                inner.builder.prepare_transaction().await
+            }
+        });
+        match res {
+            Ok(pt) => Ok(pt.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn sign_transaction(&self, 
+        prepared_transaction_data: PreparedTransactionData,
+        seed: &str,
+        inputs_range_low: usize,
+        inputs_range_high: usize) -> Result<MessagePayload> {
+        let second_seed = Some(RustSeed::from_bytes(seed.as_bytes()));
+
+        let mut range = None;
+        if inputs_range_low != 0 && inputs_range_low != 0 {
+            range = Some(inputs_range_low..inputs_range_high);
+        }
+
+        let prepared = RustPreparedTransactionData {
+            essence: prepared_transaction_data.essence.to_inner(),
+            address_index_recorders: prepared_transaction_data.address_index_recorders.iter().map(|a| addres_into_rust_address_recorder(a.clone())).collect()
+        };
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).sign_transaction(prepared, second_seed.as_ref(), range).await
+            } else {
+                inner.builder.sign_transaction(prepared, second_seed.as_ref(), range).await
+            }
+        });
+        match res {
+            Ok(p) => Ok(p.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
     pub fn finish(&self) -> Result<Message> {
         let inner = self.fields.borrow_mut().take().unwrap();
         let res = crate::block_on(async {
@@ -341,6 +390,22 @@ impl<'a> ClientMessageBuilder<'a> {
                 inner.builder.with_seed(&s).finish().await
             } else {
                 inner.builder.finish().await
+            }
+        });
+        match res {
+            Ok(m) => Ok(m.into()),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn finish_message(&self, payload: MessagePayload) -> Result<Message> {
+        let inner = self.fields.borrow_mut().take().unwrap();
+        let payload = Some(payload.to_inner());
+        let res = crate::block_on(async {
+            if let Some(s) = inner.seed {
+                inner.builder.with_seed(&s).finish_message(payload).await
+            } else {
+                inner.builder.finish_message(payload).await
             }
         });
         match res {

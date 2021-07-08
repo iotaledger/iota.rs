@@ -204,6 +204,19 @@ impl ClientBuilder {
             .unwrap();
         ClientBuilder::new_with_builder(new_builder)
     }
+    
+    /// Allows creating the client without nodes for offline address generation or signing
+    pub fn with_offline_mode(&mut self) -> Self {
+        let new_builder = crate::block_on(async move {
+            self.builder
+                .borrow_mut()
+                .take()
+                .unwrap()
+                .with_offline_mode()
+        });
+
+        ClientBuilder::new_with_builder(new_builder)
+    }
 
     pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder {
         let new_builder = crate::block_on(async move {

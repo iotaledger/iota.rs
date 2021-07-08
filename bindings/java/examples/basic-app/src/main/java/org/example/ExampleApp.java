@@ -14,6 +14,8 @@ public class ExampleApp {
         NativeAPI.verifyLink();
     }
 
+    private static String URL = "https://chrysalis-nodes.iota.cafe:443";
+
     public static void main(String[] args) {
 
         try {
@@ -28,8 +30,7 @@ public class ExampleApp {
     }
 
     private static Client node() {
-        String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
-        Client iota = Client.Builder().withNode(nodeUrl) // Insert your node URL here
+        Client iota = Client.Builder().withNode(URL) // Insert your node URL here
                 // .withNodeAuth("https://somechrysalisiotanode.com", "jwt_or_null",
                 // "name_or_null", "password_or_null") //
                 // Optional authentication
@@ -275,7 +276,24 @@ public class ExampleApp {
 
         IndexationPayload indexation_payload = IndexationPayload.fromStrings("Your Index", "Your Data");
 
-        Message message = iota.message().finish(indexation_payload);
+        Message message = iota.message().finishIndex(indexation_payload);
+
+        System.out.printf("Message ID: %s", message.id());
+    }
+
+    public static void offlineExample() {
+        String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
+        String toAddress = "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq";
+        long amount = 1_000_000;
+
+        Offline offlineExample = new Offline(URL, seed);
+        String[] inputAddresses = offlineExample.generateAddresses();
+        String preparedData = offlineExample.prepareTransaction(inputAddresses, toAddress, amount);
+        System.out.println("Prepared data: " + preparedData);
+        String signedData = offlineExample.signTransaction(preparedData);
+        System.out.println("Signed data: " + signedData);
+
+        Message message = offlineExample.sendMessage(signedData);
 
         System.out.printf("Message ID: %s", message.id());
     }

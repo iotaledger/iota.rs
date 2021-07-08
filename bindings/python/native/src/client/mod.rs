@@ -15,9 +15,9 @@ use iota_client::{Api, BrokerOptions as RustBrokerOptions, Client as RustClient}
 use pyo3::prelude::*;
 use std::{collections::HashMap, time::Duration};
 use types::{
-    AddressBalancePair, AddressOutputsOptions, BalanceAddressResponse, BrokerOptions, Input, Message,
-    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, NodeInfoWrapper, Output, OutputResponse, PeerDto,
-    ReceiptDto, TreasuryResponse, UtxoInput, BECH32_HRP,
+    AddressBalancePair, AddressDto, AddressOutputsOptions, BalanceAddressResponse, BrokerOptions, Input, Message,
+    MessageMetadataResponse, MilestoneDto, MilestoneUTXOChanges, NodeInfoWrapper, Output, OutputDto, OutputResponse,
+    Payload, PeerDto, PreparedTransactionData, ReceiptDto, TreasuryResponse, UtxoInput, BECH32_HRP,
 };
 
 /// Client builder
@@ -145,13 +145,16 @@ impl Client {
         }
         let client = crate::block_on(async { client.finish().await.unwrap() });
 
-        // Update the BECH32_HRP
-        // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
-        //       create the client object.
-        let bech32_hrp = crate::block_on(async { client.get_bech32_hrp().await.unwrap() });
-        // Note that mutable static is unsafe and requires unsafe function or block
-        unsafe {
-            BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
+        // If not in the offline mode
+        if offline != Some(true) {
+            // Update the BECH32_HRP
+            // Note: This unsafe code is actually safe, because the BECH32_HRP will be only initialized when we
+            //       create the client object.
+            let bech32_hrp = crate::block_on(async { client.get_bech32_hrp().await.unwrap() });
+            // Note that mutable static is unsafe and requires unsafe function or block
+            unsafe {
+                BECH32_HRP = Box::leak(bech32_hrp.into_boxed_str());
+            }
         }
         Client { client }
     }

@@ -16,7 +16,11 @@ module.exports = {
     },
     {
       type: 'doc',
-      id: 'overview/README',
+      id: 'overview',
+    },
+    {
+      type: 'doc',
+      id: 'getting_started',
     },
     {
       type: 'category',
