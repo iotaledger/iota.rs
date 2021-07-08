@@ -1353,12 +1353,12 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
                 if let Some(output) = &output.signature_locked_single {
                     converted_output = Some(
                         RustSignatureLockedSingleOutput::new(
-                            RustAddress::from(RustEd25519Address::from_str(&output.address[..]).unwrap_or_else(|_| {
+                            RustAddress::try_from_bech32(&output.address[..]).unwrap_or_else(|_| {
                                 panic!(
                                     "invalid SignatureLockedSingleOutput with output address: {}",
                                     output.address
                                 )
-                            })),
+                            }),
                             output.amount,
                         )
                         .unwrap_or_else(|_| {
