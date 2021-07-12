@@ -22,7 +22,8 @@ bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "c5b44f0a2867b
 bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-iota-crypto = { version = "0.6", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"]}
+# TODO: Use "0.6" when the iota-crypto is updated (higher than 0.6.0).
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"], rev = "e42be4d"}
 url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
