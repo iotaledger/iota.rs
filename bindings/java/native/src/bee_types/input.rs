@@ -1,12 +1,12 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use std::fmt::{Display, Formatter};
-use serde::{Serialize, Deserialize};
 use iota_client::bee_message::{
     input::Input as RustInput,
     payload::{milestone::MilestoneId, transaction::TransactionId},
     prelude::{TreasuryInput as RustTreasuryInput, UtxoInput as RustUtxoInput},
 };
+use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 use crate::Result;
 

@@ -2,20 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use getset::{CopyGetters, Getters};
-use serde::{Serialize, Deserialize};
-use iota_client::{
-    api::{
-        AddressIndexRecorder as RustAddressIndexRecorder,
-        PreparedTransactionData as RustPreparedTransactionData
-    },
+use iota_client::api::{
+    AddressIndexRecorder as RustAddressIndexRecorder, PreparedTransactionData as RustPreparedTransactionData,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    bee_types::{
-        OutputResponse, Input, Essence
-    },
-    Result,
+    bee_types::{Essence, Input, OutputResponse},
     slip10::*,
+    Result,
 };
 
 /// Helper struct for offline signing
@@ -28,10 +23,9 @@ pub struct PreparedTransactionData {
 }
 
 impl PreparedTransactionData {
-    
     pub fn deserialize(serialised_data: &str) -> Result<PreparedTransactionData> {
         let res = serde_json::from_str(&serialised_data);
-        
+
         match res {
             Ok(s) => Ok(s),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
@@ -45,7 +39,7 @@ impl PreparedTransactionData {
     pub fn address_index_recorders(&self) -> Vec<AddressIndexRecorder> {
         self.address_index_recorders.iter().cloned().collect()
     }
-    
+
     pub fn serialize(&self) -> Result<String> {
         let res = serde_json::to_string(self);
 
@@ -83,7 +77,7 @@ impl From<RustPreparedTransactionData> for PreparedTransactionData {
 
 /// Structure for sorting of UnlockBlocks
 #[derive(Clone, Getters, CopyGetters, Serialize, Deserialize)]
-pub struct AddressIndexRecorder  {
+pub struct AddressIndexRecorder {
     #[getset(get_copy = "pub")]
     account_index: usize,
     input: Input,
@@ -105,7 +99,7 @@ impl AddressIndexRecorder {
     pub fn output(&self) -> OutputResponse {
         self.output.clone()
     }
-    
+
     pub fn chain(&self) -> Chain {
         self.chain.clone()
     }

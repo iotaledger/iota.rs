@@ -1,10 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{
-    api::{
-        GetAddressesBuilder as RustGetAddressesBuilder,
-        search_address as search_address_api,
-    },
+    api::{search_address as search_address_api, GetAddressesBuilder as RustGetAddressesBuilder},
     bee_message::prelude::Address as RustAddress,
     bee_rest_api::types::{
         dtos::AddressDto as RustAddressDto, responses::BalanceAddressResponse as RustBalanceAddressResponse,
@@ -150,11 +147,18 @@ pub fn search_address(
     range_high: usize,
     address: Address,
 ) -> Result<IndexPublicDto> {
-    let res = crate::block_on(async { search_address_api(&RustSeed::from_bytes(seed.as_bytes()), bech32_hrp, account_index, range_low..range_high, &address.address).await});
+    let res = crate::block_on(async {
+        search_address_api(
+            &RustSeed::from_bytes(seed.as_bytes()),
+            bech32_hrp,
+            account_index,
+            range_low..range_high,
+            &address.address,
+        )
+        .await
+    });
     match res {
-        Ok((index, is_public)) => Ok(IndexPublicDto {
-            index, is_public
-        }),
+        Ok((index, is_public)) => Ok(IndexPublicDto { index, is_public }),
         Err(e) => Err(anyhow::anyhow!(e.to_string())),
     }
 }
