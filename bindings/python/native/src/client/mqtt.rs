@@ -52,6 +52,24 @@ impl Client {
         }
     }
 
+    fn unsubscribe_topics(&mut self, topics: Vec<&str>) -> PyResult<()> {
+        let result = crate::block_on(
+            self.client
+                .subscriber()
+                .with_topics(
+                    topics
+                        .iter()
+                        .map(|&topic| topic.to_owned()[..].try_into().unwrap())
+                        .collect(),
+                )
+                .unsubscribe(),
+        );
+        match result {
+            Err(err) => Err(PyErr::new::<exceptions::PyTypeError, _>(err.to_string())),
+            Ok(()) => Ok(()),
+        }
+    }
+
     fn disconnect(&mut self) -> PyResult<()> {
         let result = crate::block_on(self.client.subscriber().disconnect());
         match result {
