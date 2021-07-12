@@ -14,12 +14,15 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = "0.1"
-bee-message = "0.1"
-bee-pow = "0.1"
-bee-common = "0.4"
-# TODO: Use "0.6" when the iota-crypto is updated.
-iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"], rev = "e42be4d"}
+# TODO: Use crates.io versions when bee-rest-api got updated.
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "c5b44f0a2867bb1655960e9418a87599e6565418" }
+# bee-message = "0.1"
+# bee-pow = "0.1"
+# bee-common = "0.4"
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+iota-crypto = { version = "0.6", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"]}
 url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
