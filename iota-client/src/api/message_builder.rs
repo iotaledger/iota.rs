@@ -677,7 +677,9 @@ impl<'a> ClientMessageBuilder<'a> {
             }
             _ => {
                 let network_id = self.client.get_network_id().await?;
-                let tips = self.client.get_tips().await?;
+                let mut tips = self.client.get_tips().await?;
+                tips.sort_unstable_by_key(|a| a.pack_new());
+                tips.dedup();
                 let mut message = MessageBuilder::<ClientMiner>::new();
                 message = message.with_network_id(network_id).with_parents(Parents::new(tips)?);
                 if let Some(p) = payload {
@@ -809,7 +811,9 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         let cancel = MinerCancel::new();
         let cancel_2 = cancel.clone();
         let payload_ = payload.clone();
-        let parent_messages = client.get_tips().await?;
+        let mut parent_messages = client.get_tips().await?;
+        parent_messages.sort_unstable_by_key(|a| a.pack_new());
+        parent_messages.dedup();
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
             do_pow(
