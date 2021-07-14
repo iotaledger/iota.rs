@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.6.5]
+
+- Order parent messages always, fix POST JSON request.
+  - [1d6a84c4](https://github.com/iotaledger/iota.rs/commit/1d6a84c4fde2c1c0e46380509f9c66123842ca72) add change file on 2021-07-14
+
 ## \[0.6.4]
 
 - Fixed receipt payload conversion.
