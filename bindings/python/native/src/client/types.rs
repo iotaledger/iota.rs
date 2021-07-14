@@ -162,6 +162,8 @@ pub struct OutputResponse {
     pub is_spent: bool,
     /// The output.
     pub output: OutputDto,
+    /// The ledger index.
+    pub ledger_index: u32,
 }
 
 #[derive(Debug, Clone, DeriveFromPyObject, DeriveIntoPyObject)]
@@ -687,6 +689,7 @@ impl TryFrom<AddressIndexRecorder> for RustAddressIndexRecorder {
                 output_index: recorder.output.output_index,
                 is_spent: recorder.output.is_spent,
                 output: recorder.output.output.into(),
+                ledger_index: recorder.output.ledger_index,
             },
             address_index: recorder.address_index,
             chain: RustChain::from_u32(
@@ -756,6 +759,7 @@ impl From<RustOutputResponse> for OutputResponse {
             output_index: output.output_index,
             is_spent: output.is_spent,
             output: output.output.into(),
+            ledger_index: output.ledger_index,
         }
     }
 }

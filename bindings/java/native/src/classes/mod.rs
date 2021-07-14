@@ -7,9 +7,9 @@ pub use client::*;
 
 pub mod address;
 pub mod ed25519;
-pub mod slip10;
 pub mod message;
 pub mod prepared;
+pub mod slip10;
 
 pub fn consolidate_funds(
     client: crate::full_node_api::Client,

@@ -10,7 +10,13 @@ async function run() {
 
     client.subscriber().topics(['milestones/confirmed', 'messages']).subscribe((err, data) => {
         console.log(data);
-        // To get the message id `client.getMessageId(data.payload)` can be used
+        // To get the message id from messages `client.getMessageId(data.payload)` can be used
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    // unsubscribe from 'messages' topic, will continue to receive events for 'milestones/confirmed'
+    client.subscriber().topics(['messages']).unsubscribe((err, data) => {
+        console.log(data);
     })
 }
 

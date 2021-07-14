@@ -660,6 +660,14 @@ Subscribe topics and assign the associated callbacks, respectively.
 
 Unsubscribe all topics.
 
+#### unsubscribe_topics(topics): void
+
+Unsubscribe from provided topics.
+
+| Param      | Type                   | Default                | Description            |
+| ---------- | ---------------------- | ---------------------- | ---------------------- |
+| [topics]   | <code>list[str]</code> | <code>undefined</code> | The MQTT topics        |
+
 #### disconnect(): void
 
 Disconnect the mqtt broker.
