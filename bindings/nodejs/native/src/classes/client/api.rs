@@ -7,9 +7,9 @@ use super::MessageDto;
 
 use crate::classes::client::dto::{AddressBalanceDto, MessageWrapper, OutputMetadataDto};
 use iota_client::{
-    common::packable::Packable,
     bee_message::prelude::{Address, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput},
     bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto as BeeOutput},
+    common::packable::Packable,
     AddressOutputsOptions, ClientMiner, Seed,
 };
 use neon::prelude::*;
