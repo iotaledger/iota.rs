@@ -9,6 +9,7 @@ use crate::classes::client::dto::{AddressBalanceDto, MessageWrapper, OutputMetad
 use iota_client::{
     bee_message::prelude::{Address, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput},
     bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto as BeeOutput},
+    common::packable::Packable,
     AddressOutputsOptions, ClientMiner, Seed,
 };
 use neon::prelude::*;
@@ -245,7 +246,7 @@ impl Task for ClientTask {
                     serde_json::to_string(&tips)?
                 }
                 Api::PostMessage(message) => {
-                    let parent_msg_ids = match message.parents.as_ref() {
+                    let mut parent_msg_ids = match message.parents.as_ref() {
                         Some(parents) => {
                             let mut parent_ids = Vec::new();
                             for msg_id in parents {
@@ -255,6 +256,8 @@ impl Task for ClientTask {
                         }
                         None => client.get_tips().await?,
                     };
+                    parent_msg_ids.sort_unstable_by_key(|a| a.pack_new());
+                    parent_msg_ids.dedup();
                     let network_id = client.get_network_id().await?;
                     let nonce_provider = client.get_pow_provider().await;
                     let message = MessageBuilder::<ClientMiner>::new()

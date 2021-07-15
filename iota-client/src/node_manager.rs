@@ -611,7 +611,7 @@ impl HttpClient {
     }
 
     pub(crate) async fn post_json(&self, node: Node, _timeout: Duration, json: Value) -> Result<Response> {
-        let mut request_builder = self.client.get(node.url);
+        let mut request_builder = self.client.post(node.url);
         if let Some(jwt) = node.jwt {
             request_builder = request_builder.bearer_auth(jwt);
         }
