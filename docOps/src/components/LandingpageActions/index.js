@@ -9,7 +9,7 @@ const ActionList = [
     link: 'welcome',
     description: (
       <>
-        Learn the Basics about the IOTA Identity Wallet Library and how it works behind the scenes. 
+        Learn the Basics about the iota.rs library and how it works behind the scenes.
       </>
     ),
   },
@@ -18,7 +18,7 @@ const ActionList = [
     link: 'libraries/overview',
     description: (
       <>
-        Follow our tutorial to build your own IOTA application. IOTA Identity supports Rust, Python and Javascript.
+        Follow our tutorials to build your own IOTA application. The iota.rs library supports Rust, Python and Javascript.
       </>
     ),
   },
