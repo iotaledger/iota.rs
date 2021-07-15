@@ -7,7 +7,7 @@ use crate::{
 };
 
 use anyhow::anyhow;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use std::{
     cell::RefCell,
@@ -96,7 +96,6 @@ impl Display for Essence {
         write!(f, "({:?})", self.0)
     }
 }
-
 
 impl From<RustEssence> for Essence {
     fn from(essence: RustEssence) -> Self {

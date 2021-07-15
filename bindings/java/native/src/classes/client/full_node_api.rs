@@ -299,9 +299,7 @@ impl Client {
         let res = crate::block_on(async { self.0.find_inputs(addresses, amount).await });
 
         match res {
-            Ok(w) => {
-                Ok(w.iter().map(|utxo| utxo.clone().into()).collect())
-            }
+            Ok(w) => Ok(w.iter().map(|utxo| utxo.clone().into()).collect()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }

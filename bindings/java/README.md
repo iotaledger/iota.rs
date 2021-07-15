@@ -10,19 +10,19 @@ Ensure you have first installed the required dependencies for the library [here]
 
 Clone project
 ```
-$ git clone https://github.com/iotaledger/iota.rs
+git clone https://github.com/iotaledger/iota.rs
 ```
 
 Build the rust library
 ```
-$ cd iota.rs/bindings/java/native
-$ cargo build
+cd iota.rs/bindings/java/native
+cargo build
 ```
 
 - Running an example using gradle
 ```
-$ cd iota.rs/bindings/java
-$ ./gradlew examples:basic-app:test --info
+cd iota.rs/bindings/java
+./gradlew examples:basic-app:test --info
 ```
 
 Make sure to make gradlew executable (`chmod +x gradlew`)

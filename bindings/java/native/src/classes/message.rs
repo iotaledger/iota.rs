@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::{cell::RefCell, rc::Rc};
 
+use anyhow::anyhow;
 use getset::{CopyGetters, Getters};
 use iota_client::{
-    api::{
-        ClientMessageBuilder as RustClientMessageBuilder,
-        PreparedTransactionData as RustPreparedTransactionData,
-    },
+    api::{ClientMessageBuilder as RustClientMessageBuilder, PreparedTransactionData as RustPreparedTransactionData},
     bee_message::{
         payload::Payload,
         prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents},
@@ -15,15 +13,14 @@ use iota_client::{
     node::GetMessageBuilder as RustGetMessageBuilder,
     Seed as RustSeed,
 };
-use anyhow::anyhow;
 
 use crate::{
     bee_types::{
         IndexationPayload, MessageMetadata, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload,
         UtxoInput,
     },
-    prepared::{PreparedTransactionData, addres_into_rust_address_recorder},
     full_node_api::Client,
+    prepared::{addres_into_rust_address_recorder, PreparedTransactionData},
     MessagePayload, Result,
 };
 
@@ -353,11 +350,13 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
-    pub fn sign_transaction(&self, 
+    pub fn sign_transaction(
+        &self,
         prepared_transaction_data: PreparedTransactionData,
         seed: &str,
         inputs_range_low: usize,
-        inputs_range_high: usize) -> Result<MessagePayload> {
+        inputs_range_high: usize,
+    ) -> Result<MessagePayload> {
         let second_seed = Some(RustSeed::from_bytes(seed.as_bytes()));
 
         let mut range = None;
@@ -367,14 +366,25 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let prepared = RustPreparedTransactionData {
             essence: prepared_transaction_data.essence.to_inner(),
-            address_index_recorders: prepared_transaction_data.address_index_recorders.iter().map(|a| addres_into_rust_address_recorder(a.clone())).collect()
+            address_index_recorders: prepared_transaction_data
+                .address_index_recorders
+                .iter()
+                .map(|a| addres_into_rust_address_recorder(a.clone()))
+                .collect(),
         };
         let inner = self.fields.borrow_mut().take().unwrap();
         let res = crate::block_on(async {
             if let Some(s) = inner.seed {
-                inner.builder.with_seed(&s).sign_transaction(prepared, second_seed.as_ref(), range).await
+                inner
+                    .builder
+                    .with_seed(&s)
+                    .sign_transaction(prepared, second_seed.as_ref(), range)
+                    .await
             } else {
-                inner.builder.sign_transaction(prepared, second_seed.as_ref(), range).await
+                inner
+                    .builder
+                    .sign_transaction(prepared, second_seed.as_ref(), range)
+                    .await
             }
         });
         match res {
