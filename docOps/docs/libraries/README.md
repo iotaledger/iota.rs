@@ -5,9 +5,9 @@ slug: /libraries/overview
 
 There are currently available the following official bindings to `iota.rs`:
 
-- [Rust](rust/README.md) 
-- [Node.js](nodejs/README.md) 
-- [Python](python/README.md) 
+- [Rust](rust/getting_started.md) 
+- [Node.js](nodejs/getting_started.md) 
+- [Python](python/getting_started.md) 
 
 ## Getting Started
 It is a recommended approach to start your interactions with IOTA on a `testnet` network. API load balancer: https://api.lb-0.testnet.chrysalis2.com:443

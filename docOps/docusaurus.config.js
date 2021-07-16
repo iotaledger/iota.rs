@@ -4,7 +4,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'iota.rs',
-  tagline: 'Official IOTA iota.rs Software',
+  tagline: 'Official IOTA Client Software',
   url: 'https://iota.rs.docs.iota.org/',
   baseUrl: '/',
   onBrokenLinks: 'warn',
@@ -105,6 +105,19 @@ module.exports = {
         theme: {
           customCss: require.resolve('./src/css/iota.css'),
         },
+      },
+    ],
+  ],
+  plugins: [
+    [
+      'docusaurus-plugin-includes',
+      {
+        sharedFolders: [
+          { source: '../../bindings/nodejs/examples', target: 'docs/nodejs/examples/'},
+          { source: '../../bindings/python/examples', target: 'docs/python/examples/'},
+          { source: '../../bindings/java/examples', target: 'docs/java/examples/'},
+          { source: '../../examples/', target: 'docs/rust/examples/'},
+        ],
       },
     ],
   ],
