@@ -6,7 +6,7 @@ module.exports = {
   title: 'iota.rs',
   tagline: 'Official IOTA Client Software',
   url: 'https://iota.rs.docs.iota.org/',
-  baseUrl: '/',
+  baseUrl: '/iota.rs/',
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'throw',
   favicon: '/img/logo/favicon.ico',
