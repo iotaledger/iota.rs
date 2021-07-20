@@ -100,7 +100,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           routeBasePath: '/',
           // Please change this to your repo.
-          editUrl: 'https://github.com/iotaledger/iota.rs/tree/main/docs',
+          editUrl: 'https://github.com/iotaledger/iota.rs/tree/dev/documentation/',
         },
         theme: {
           customCss: require.resolve('./src/css/iota.css'),
