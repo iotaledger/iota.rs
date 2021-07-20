@@ -1,0 +1,34 @@
+[workspace]
+
+[package]
+name = "iota-client-wasm"
+version = "0.0.1"
+authors = ["IOTA Stiftung"]
+edition = "2018"
+description = "Web Assembly bindings for the iota-client crate."
+readme = "README.md"
+repository = "https://github.com/iotaledger/iota.rs"
+license = "Apache-2.0"
+keywords = ["iota", "tangle", "wasm"]
+homepage = "https://www.iota.org"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+console_error_panic_hook = { version = "0.1" }
+futures = { version = "0.3" }
+js-sys = { version = "0.3" }
+serde = { version = "1.0", features = ["derive"] }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+wasm-bindgen-futures = { version = "0.4", default-features = false }
+
+
+[dev-dependencies]
+wasm-bindgen-test = { version = "0.3" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+iota-client = { path = "../../../iota-client", features = ["wasm"], default-features = false }
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
