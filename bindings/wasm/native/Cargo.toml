@@ -22,7 +22,7 @@ js-sys = { version = "0.3" }
 serde = { version = "1.0", features = ["derive"] }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = { version = "0.4", default-features = false }
-
+hex = "0.4"
 
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }

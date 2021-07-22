@@ -12,9 +12,11 @@ use wasm_bindgen::prelude::*;
 mod macros;
 mod client;
 mod client_builder;
+mod message_builder;
+mod message_getter;
 mod utils;
 
-pub use client::Client;
+pub use client_builder::ClientBuilder;
 
 /// Initializes the console error panic hook for better error messages
 #[wasm_bindgen(start)]

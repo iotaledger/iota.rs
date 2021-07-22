@@ -40,6 +40,7 @@ pub struct Node {
 
 // Nodemanger, takes care of selecting node(s) for requests until a result is returned or if quorum
 // is enabled it will send the requests for some endpoints to multiple nodes and compares the results
+#[derive(Clone)]
 pub(crate) struct NodeManager {
     pub(crate) primary_node: Option<Node>,
     primary_pow_node: Option<Node>,
@@ -325,6 +326,7 @@ impl NodeManager {
     }
 }
 
+#[derive(Clone)]
 pub(crate) struct NodeManagerBuilder {
     pub(crate) primary_node: Option<Node>,
     primary_pow_node: Option<Node>,

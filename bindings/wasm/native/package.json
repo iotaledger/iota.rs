@@ -1,5 +1,5 @@
 {
-  "name": "@iota/client-wasm",
+  "name": "iota-client-wasm-test",
   "version": "0.0.1",
   "description": "WASM bindings for the IOTA client library. To be used in Javascript/Typescript",
   "repository": {

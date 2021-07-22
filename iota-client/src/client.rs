@@ -260,7 +260,7 @@ impl NonceProvider for ClientMiner {
 }
 
 /// Each of the node APIs the client uses.
-#[derive(Eq, PartialEq, Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub enum Api {
     /// `get_health` API
     GetHealth,
@@ -306,6 +306,7 @@ impl FromStr for Api {
 }
 
 /// An instance of the client using HORNET or Bee URI
+#[cfg_attr(feature = "wasm", derive(Clone))]
 pub struct Client {
     #[allow(dead_code)]
     #[cfg(not(feature = "wasm"))]

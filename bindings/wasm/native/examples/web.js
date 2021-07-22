@@ -2,12 +2,18 @@ async function run(Iota) {
   console.log(Iota)
 
   const {
-    Client
+    ClientBuilder
   } = Iota
 
-  let iota_client = await Client.withNode("https://api.lb-0.testnet.chrysalis2.com/");
-
-  console.log("Nodeinfo: ", await iota_client.getInfo())
+  let iota_client = new ClientBuilder().node("https://chrysalis-nodes.iota.org/").build();
+  // Get the nodeinfo
+  console.log(await iota_client.getInfo());
+  let message = await iota_client.message().index("test").submit()
+  console.log(message);
+  let message2 = await iota_client.getMessage().data(message.messageId)
+  console.log(message2);
+  let messageIds = await iota_client.getMessage().index(new TextEncoder().encode("test"))
+  console.log(messageIds);
 
 }
 

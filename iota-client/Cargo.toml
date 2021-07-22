@@ -15,15 +15,15 @@ name = "iota_client"
 
 [dependencies]
 # TODO: Use crates.io versions when bee-rest-api got updated.
-bee-rest-api = "0.1"
-bee-message = "0.1"
-bee-pow = "0.1"
-bee-common = "0.4"
+# bee-rest-api = "0.1"
+# bee-message = "0.1"
+# bee-pow = "0.1"
+# bee-common = "0.4"
 
-# bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "c5b44f0a2867bb1655960e9418a87599e6565418" }
-# bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "8799deaa44e99eaee01e9444a403ba4f2a75727c" }
+bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 # TODO: Use "0.6" when the iota-crypto is updated (higher than 0.6.0).
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"], rev = "e42be4d"}
 url = "2.2"

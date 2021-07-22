@@ -1,11 +1,13 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::ClientBuilder;
+use crate::client::Client;
+use crate::utils::err;
+use futures::executor;
+use iota_client::ClientBuilder as RustClientBuilder;
+use std::rc::Rc;
 use std::time::Duration;
 use wasm_bindgen::prelude::*;
-
-use crate::utils::err;
 
 fn to_duration(seconds: u32) -> Duration {
   Duration::from_secs(u64::from(seconds))
@@ -16,140 +18,164 @@ fn to_basic_auth<'a>(username: &'a Option<String>, password: &'a Option<String>)
 }
 
 #[wasm_bindgen]
-pub struct Config {
-  pub(crate) builder: Option<ClientBuilder>,
+#[derive(Clone)]
+pub struct ClientBuilder {
+  pub(crate) builder: Option<RustClientBuilder>,
 }
 
 #[wasm_bindgen]
-impl Config {
+impl ClientBuilder {
   #[wasm_bindgen(constructor)]
   pub fn new() -> Self {
     Self {
-      builder: Some(ClientBuilder::new()),
+      builder: Some(RustClientBuilder::new()),
     }
   }
 
-  #[wasm_bindgen(js_name = setNode)]
-  pub fn set_node(&mut self, url: &str) -> Result<(), JsValue> {
-    self.try_with_mut(|builder| builder.with_node(url).map_err(err))
+  #[wasm_bindgen]
+  pub fn node(&mut self, url: &str) -> Result<ClientBuilder, JsValue> {
+    self.try_with_mut(|builder: RustClientBuilder| builder.with_node(url).map_err(err))?;
+    // is there a way we can do it without the clone?
+    Ok(self.clone())
   }
 
-  #[wasm_bindgen(js_name = setPrimaryNode)]
-  pub fn set_primary_node(
+  #[wasm_bindgen(js_name = primaryNode)]
+  pub fn primary_node(
     &mut self,
     url: &str,
     jwt: Option<String>,
     username: Option<String>,
     password: Option<String>,
-  ) -> Result<(), JsValue> {
+  ) -> Result<ClientBuilder, JsValue> {
     self.try_with_mut(|builder| {
       builder
         .with_primary_node(url, jwt.clone(), to_basic_auth(&username, &password))
         .map_err(err)
-    })
+    })?;
+    Ok(self.clone())
   }
 
-  #[wasm_bindgen(js_name = setPrimaryPoWNode)]
-  pub fn set_primary_pow_node(
+  #[wasm_bindgen(js_name = primaryPowNode)]
+  pub fn primary_pow_node(
     &mut self,
     url: &str,
     jwt: Option<String>,
     username: Option<String>,
     password: Option<String>,
-  ) -> Result<(), JsValue> {
+  ) -> Result<ClientBuilder, JsValue> {
     self.try_with_mut(|builder| {
       builder
         .with_primary_pow_node(url, jwt.clone(), to_basic_auth(&username, &password))
         .map_err(err)
-    })
+    })?;
+    Ok(self.clone())
   }
 
-  #[wasm_bindgen(js_name = setPermanode)]
-  pub fn set_permanode(
+  #[wasm_bindgen]
+  pub fn permanode(
     &mut self,
     url: &str,
     jwt: Option<String>,
     username: Option<String>,
     password: Option<String>,
-  ) -> Result<(), JsValue> {
+  ) -> Result<ClientBuilder, JsValue> {
     self.try_with_mut(|builder| {
       builder
         .with_permanode(url, jwt.clone(), to_basic_auth(&username, &password))
         .map_err(err)
-    })
+    })?;
+    Ok(self.clone())
   }
 
-  #[wasm_bindgen(js_name = setNodeAuth)]
-  pub fn set_node_auth(
+  #[wasm_bindgen(js_name = nodeAuth)]
+  pub fn node_auth(
     &mut self,
     url: &str,
     jwt: Option<String>,
     username: Option<String>,
     password: Option<String>,
-  ) -> Result<(), JsValue> {
+  ) -> Result<ClientBuilder, JsValue> {
     self.try_with_mut(|builder| {
       builder
         .with_node_auth(url, jwt.clone(), to_basic_auth(&username, &password))
         .map_err(err)
-    })
+    })?;
+    Ok(self.clone())
   }
 
-  #[wasm_bindgen(js_name = setNodeSyncInterval)]
-  pub fn set_node_sync_interval(&mut self, value: u32) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_node_sync_interval(to_duration(value)))
+  #[wasm_bindgen(js_name = nodeSyncInterval)]
+  pub fn node_sync_interval(&mut self, value: u32) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_node_sync_interval(to_duration(value)))?;
+    Ok(self.clone())
   }
 
-  #[wasm_bindgen(js_name = setNodeSyncDisabled)]
-  pub fn set_node_sync_disabled(&mut self) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_node_sync_disabled())
+  #[wasm_bindgen(js_name = nodeSyncDisabled)]
+  pub fn node_sync_disabled(&mut self) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_node_sync_disabled())?;
+    Ok(self.clone())
   }
 
-  #[wasm_bindgen(js_name = setQuorum)]
-  pub fn set_quorum(&mut self, value: bool) -> Result<(), JsValue> {
+  #[wasm_bindgen(js_name = quorum)]
+  pub fn quorum(&mut self, value: bool) -> Result<(), JsValue> {
     self.with_mut(|builder| builder.with_quorum(value))
   }
 
-  #[wasm_bindgen(js_name = setQuorumSize)]
-  pub fn set_quorum_size(&mut self, value: usize) -> Result<(), JsValue> {
+  #[wasm_bindgen(js_name = quorumSize)]
+  pub fn quorum_size(&mut self, value: usize) -> Result<(), JsValue> {
     self.with_mut(|builder| builder.with_quorum_size(value))
   }
 
-  #[wasm_bindgen(js_name = setQuorumThreshold)]
-  pub fn set_quorum_threshold(&mut self, value: usize) -> Result<(), JsValue> {
+  #[wasm_bindgen(js_name = quorumThreshold)]
+  pub fn quorum_threshold(&mut self, value: usize) -> Result<(), JsValue> {
     self.with_mut(|builder| builder.with_quorum_threshold(value))
   }
 
-  #[wasm_bindgen(js_name = setLocalPoW)]
-  pub fn set_local_pow(&mut self, value: bool) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_local_pow(value))
-  }
+  // We currently don't support local PoW with wasm
+  // #[wasm_bindgen(js_name = localPoW)]
+  // pub fn local_pow(&mut self, value: bool) -> Result<(), JsValue> {
+  //   self.with_mut(|builder| builder.with_local_pow(value))
+  // }
 
-  #[wasm_bindgen(js_name = setTipsInterval)]
-  pub fn set_tips_interval(&mut self, value: u32) -> Result<(), JsValue> {
+  #[wasm_bindgen(js_name = tipsInterval)]
+  pub fn tips_interval(&mut self, value: u32) -> Result<(), JsValue> {
     self.with_mut(|builder| builder.with_tips_interval(u64::from(value)))
   }
 
-  #[wasm_bindgen(js_name = setRequestTimeout)]
-  pub fn set_request_timeout(&mut self, value: u32) -> Result<(), JsValue> {
+  #[wasm_bindgen(js_name = requestTimeout)]
+  pub fn request_timeout(&mut self, value: u32) -> Result<(), JsValue> {
     self.with_mut(|builder| builder.with_request_timeout(to_duration(value)))
   }
 
-  pub(crate) fn take_builder(&mut self) -> Result<ClientBuilder, JsValue> {
+  pub(crate) fn take_builder(&mut self) -> Result<RustClientBuilder, JsValue> {
     self.builder.take().ok_or_else(|| "Client Builder Consumed".into())
   }
 
-  fn with_mut(&mut self, f: impl Fn(ClientBuilder) -> ClientBuilder) -> Result<(), JsValue> {
+  fn with_mut(&mut self, f: impl Fn(RustClientBuilder) -> RustClientBuilder) -> Result<(), JsValue> {
     self.builder = Some(f(self.take_builder()?));
     Ok(())
   }
 
-  fn try_with_mut(&mut self, f: impl Fn(ClientBuilder) -> Result<ClientBuilder, JsValue>) -> Result<(), JsValue> {
+  fn try_with_mut(
+    &mut self,
+    f: impl Fn(RustClientBuilder) -> Result<RustClientBuilder, JsValue>,
+  ) -> Result<(), JsValue> {
     self.builder = Some(f(self.take_builder()?)?);
     Ok(())
   }
+
+  /// Build the client.
+  #[wasm_bindgen]
+  pub fn build(&mut self) -> Result<Client, JsValue> {
+    let future = self.take_builder()?.finish();
+    let output = executor::block_on(future).map_err(err)?;
+
+    Ok(Client {
+      client: Rc::new(output),
+    })
+  }
 }
 
-impl Default for Config {
+impl Default for ClientBuilder {
   fn default() -> Self {
     Self::new()
   }

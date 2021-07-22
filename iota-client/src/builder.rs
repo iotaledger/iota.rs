@@ -48,6 +48,7 @@ pub struct NetworkInfo {
 }
 
 /// Builder to construct client instance with sensible default values
+#[derive(Clone)]
 pub struct ClientBuilder {
     node_manager_builder: crate::node_manager::NodeManagerBuilder,
     #[cfg(not(feature = "wasm"))]
