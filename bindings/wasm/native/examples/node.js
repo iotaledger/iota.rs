@@ -6,7 +6,7 @@ const { ClientBuilder } = require('../node/iota_client_wasm')
 async function main() {
     let iota_client = new ClientBuilder().node("https://api.lb-0.testnet.chrysalis2.com").build();
     // Get the nodeinfo
-    // console.log(await iota_client.getInfo());
+    console.log(await iota_client.getInfo());
     // let message = await iota_client.message().index(new TextEncoder().encode("test index")).data(new TextEncoder().encode("test data")).submit()
     // console.log(message);
     // console.log(await iota_client.getMessage().data(message.messageId));
