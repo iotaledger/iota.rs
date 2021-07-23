@@ -5,11 +5,13 @@ use crate::client::Client;
 use crate::utils::err;
 use iota_client::bee_message::address::Address;
 use iota_client::bee_message::input::UtxoInput;
+use iota_client::bee_message::payload::transaction::TransactionId;
 use iota_client::bee_message::MessageId;
 use iota_client::bee_rest_api::types::dtos::MessageDto;
-// use iota_client::Seed;
+use iota_client::Seed;
 use js_sys::Promise;
 use std::ops::Range;
+use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 
@@ -56,82 +58,128 @@ impl MessageBuilder {
   }
 
   #[wasm_bindgen]
-  pub fn index(&mut self, index: &str) -> Result<MessageBuilder, JsValue> {
+  pub fn index(&mut self, index: Vec<u8>) -> Result<MessageBuilder, JsValue> {
     self.builder.index.replace(index.into());
     // is there a way we can do it without the clone?
     Ok(self.clone())
   }
 
-  // #[wasm_bindgen]
-  // pub fn data(&mut self, data: Vec<u8>) -> Result<MessageBuilder, JsValue> {
-  //   self.try_with_mut(|builder| builder.data.replace(data))?;
-  //   // is there a way we can do it without the clone?
-  //   Ok(self.clone())
-  // }
+  #[wasm_bindgen]
+  pub fn data(&mut self, data: Vec<u8>) -> Result<MessageBuilder, JsValue> {
+    self.builder.data.replace(data.into());
+    Ok(self.clone())
+  }
 
-  // #[wasm_bindgen(js_name = accountIndex)]
-  // pub fn account_index(&mut self, account_index: usize) -> Result<MessageBuilder, JsValue> {
-  //   self.try_with_mut(|builder| builder.with_account_index(account_index).map_err(err))?;
-  //   Ok(self.clone())
-  // }
+  #[wasm_bindgen]
+  pub fn seed(&mut self, seed: &str) -> Result<MessageBuilder, JsValue> {
+    self.builder.seed.replace(seed.into());
+    Ok(self.clone())
+  }
 
-  // pub(crate) fn take_builder(&mut self) -> Result<MessageBuilderHelper, JsValue> {
-  //   self.builder.take().ok_or_else(|| "Message Builder Consumed".into())
-  // }
+  #[wasm_bindgen(js_name = accountIndex)]
+  pub fn account_index(&mut self, account_index: usize) -> Result<MessageBuilder, JsValue> {
+    self.builder.account_index.replace(account_index);
+    Ok(self.clone())
+  }
 
-  // fn with_mut(&mut self, f: impl Fn(MessageBuilderHelper) -> MessageBuilderHelper) -> Result<(), JsValue> {
-  //   self.builder = Some(f(self.take_builder()?));
-  //   Ok(())
-  // }
+  #[wasm_bindgen(js_name = initialAddressIndex)]
+  pub fn initial_address_index(&mut self, initial_address_index: usize) -> Result<MessageBuilder, JsValue> {
+    self.builder.initial_address_index.replace(initial_address_index);
+    Ok(self.clone())
+  }
 
-  // fn try_with_mut(
-  //   &mut self,
-  //   f: impl Fn(MessageBuilderHelper) -> Result<MessageBuilderHelper, JsValue>,
-  // ) -> Result<(), JsValue> {
-  //   self.builder = Some(f(self.take_builder()?)?);
-  //   Ok(())
-  // }
+  #[wasm_bindgen]
+  pub fn parents(&mut self, parents: JsValue) -> Result<MessageBuilder, JsValue> {
+    let parents: Vec<String> = parents.into_serde().map_err(err)?;
+    let parents = parents
+      .iter()
+      .map(|message_id| MessageId::from_str(message_id))
+      .collect::<Result<Vec<MessageId>, iota_client::bee_message::Error>>()
+      .map_err(err)?;
+    self.builder.parents.replace(parents);
+    Ok(self.clone())
+  }
 
-  /// Build the client.
+  #[wasm_bindgen]
+  pub fn input(&mut self, transaction_id: &str, index: usize) -> Result<MessageBuilder, JsValue> {
+    let transaction_id = TransactionId::from_str(transaction_id).map_err(err)?;
+    self
+      .builder
+      .inputs
+      .push(UtxoInput::new(transaction_id, index as u16).map_err(err)?);
+    Ok(self.clone())
+  }
+
+  #[wasm_bindgen(js_name = inputRange)]
+  pub fn input_range(&mut self, start: usize, end: usize) -> Result<MessageBuilder, JsValue> {
+    self.builder.input_range.replace(start..end);
+    Ok(self.clone())
+  }
+
+  #[wasm_bindgen]
+  pub fn output(&mut self, address: &str, amount: u64) -> Result<MessageBuilder, JsValue> {
+    self
+      .builder
+      .outputs
+      .push((Address::try_from_bech32(address).map_err(err)?, amount));
+    Ok(self.clone())
+  }
+
+  #[wasm_bindgen(js_name = dustAllowanceOutput)]
+  pub fn dust_allowance_output(&mut self, address: &str, amount: u64) -> Result<MessageBuilder, JsValue> {
+    self
+      .builder
+      .dust_allowance_outputs
+      .push((Address::try_from_bech32(address).map_err(err)?, amount));
+    Ok(self.clone())
+  }
+
+  /// Build and sumbit the message.
   #[wasm_bindgen]
   pub fn submit(&self) -> Result<Promise, JsValue> {
     let input_data = self.builder.clone();
     let client = self.client.clone();
     let promise: Promise = future_to_promise(async move {
       let mut sender = client.client.message();
-      // if let Some(seed) = self.builder.unwrap().seed {
-      //     sender = sender.with_seed(Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex")));
-      // }
       if let Some(index) = input_data.index {
         sender = sender.with_index(index);
       }
       if let Some(data) = input_data.data {
         sender = sender.with_data(data.clone());
       }
-      // if let Some(parents) = parents {
-      //     sender = sender.with_parents(parents.clone())?;
-      // }
-      // if let Some(account_index) = account_index {
-      //     sender = sender.with_account_index(*account_index);
-      // }
-      // if let Some(initial_address_index) = initial_address_index {
-      //     sender = sender.with_initial_address_index(*initial_address_index);
-      // }
-      // for input in inputs {
-      //     sender = sender.with_input(input.clone());
-      // }
-      // if let Some(input_range) = input_range {
-      //     sender = sender.with_input_range(input_range.clone());
-      // }
-      // let bech32_hrp = client.get_bech32_hrp().await.map_err(err)?;
-      // for output in outputs {
-      //     sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp), output.1).map_err(err)?;
-      // }
-      // for output in dust_allowance_outputs {
-      //     sender =
-      //         sender.with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp), output.1).map_err(err)?;
-      // }
-      sender.finish().await.map_err(err).and_then(|message| {
+      if let Some(parents) = input_data.parents {
+        sender = sender.with_parents(parents.clone()).map_err(err)?;
+      }
+      if let Some(account_index) = input_data.account_index {
+        sender = sender.with_account_index(account_index);
+      }
+      if let Some(initial_address_index) = input_data.initial_address_index {
+        sender = sender.with_initial_address_index(initial_address_index);
+      }
+      for input in input_data.inputs {
+        sender = sender.with_input(input.clone());
+      }
+      if let Some(input_range) = input_data.input_range {
+        sender = sender.with_input_range(input_range.clone());
+      }
+      let bech32_hrp = client.client.get_bech32_hrp().await.map_err(err)?;
+      for output in input_data.outputs {
+        sender = sender
+          .with_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)
+          .map_err(err)?;
+      }
+      for output in input_data.dust_allowance_outputs {
+        sender = sender
+          .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)
+          .map_err(err)?;
+      }
+      let sender_future = if let Some(seed) = input_data.seed {
+        let seed = Seed::from_bytes(&hex::decode(&seed).map_err(err)?);
+        sender.with_seed(&seed).finish().await
+      } else {
+        sender.finish().await
+      };
+      sender_future.map_err(err).and_then(|message| {
         #[derive(Serialize)]
         struct MessageWrapper {
           #[serde(rename = "messageId")]
