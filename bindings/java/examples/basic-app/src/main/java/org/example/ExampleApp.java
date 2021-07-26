@@ -46,7 +46,7 @@ public class ExampleApp {
 
             NodeInfoWrapper info = iota.getInfo();
             System.out.println("Node url: " + info.url());
-            System.out.println("Node Info: " + info.nodeinfo());
+            System.out.println("Node Info: " + info.nodeInfo());
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
         }
