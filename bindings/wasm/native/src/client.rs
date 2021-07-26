@@ -7,8 +7,10 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 
+use crate::address_getter::AddressGetter;
 use crate::message_builder::MessageBuilder;
 use crate::message_getter::MessageGetter;
+use crate::unspent_address_getter::UnspentAddressGetter;
 use crate::utils::err;
 
 #[wasm_bindgen]
@@ -43,5 +45,15 @@ impl Client {
   #[wasm_bindgen(js_name = getMessage)]
   pub fn get_message(&self) -> MessageGetter {
     MessageGetter::new(self.clone())
+  }
+  /// Generate addresses.
+  #[wasm_bindgen(js_name = getAddresses)]
+  pub fn get_addresses(&self, seed: String) -> AddressGetter {
+    AddressGetter::new(self.clone(), seed)
+  }
+  /// Get an unspent address.
+  #[wasm_bindgen(js_name = getUnspentAddress)]
+  pub fn get_unspent_address(&self, seed: String) -> UnspentAddressGetter {
+    UnspentAddressGetter::new(self.clone(), seed)
   }
 }
