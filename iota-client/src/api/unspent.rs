@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Result};
+use crate::{node::OutputsOptions, Client, Result};
 
 use crypto::keys::slip10::Seed;
 
@@ -51,16 +51,24 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .finish()
                 .await?;
 
-            // TODO we assume all addresses are unspent and valid if balance > 0
             let mut address = None;
             for a in addresses {
-                let address_balance = self.client.get_address().balance(&a).await?;
-                match address_balance.balance {
-                    0 => {
-                        address.replace(a);
-                        break;
-                    }
-                    _ => index += 1,
+                let address_outputs = self
+                    .client
+                    .get_address()
+                    .outputs(
+                        &a,
+                        OutputsOptions {
+                            include_spent: true,
+                            output_type: None,
+                        },
+                    )
+                    .await?;
+                if address_outputs.is_empty() {
+                    address.replace(a);
+                    break;
+                } else {
+                    index += 1;
                 }
             }
 
