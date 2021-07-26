@@ -32,6 +32,7 @@ async function main() {
     //     .initialAddressIndex(0)
     //     .get();
     // console.log(unspent_address);
+    // console.log(await client.getBalance('256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2').accountIndex(0).initialAddressIndex(0).get());
 }
 
 main().then(() => {

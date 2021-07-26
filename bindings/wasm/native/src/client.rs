@@ -8,6 +8,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 
 use crate::address_getter::AddressGetter;
+use crate::balance_getter::BalanceGetter;
 use crate::message_builder::MessageBuilder;
 use crate::message_getter::MessageGetter;
 use crate::unspent_address_getter::UnspentAddressGetter;
@@ -55,5 +56,10 @@ impl Client {
   #[wasm_bindgen(js_name = getUnspentAddress)]
   pub fn get_unspent_address(&self, seed: String) -> UnspentAddressGetter {
     UnspentAddressGetter::new(self.clone(), seed)
+  }
+  /// Get the account balance.
+  #[wasm_bindgen(js_name = getBalance)]
+  pub fn get_balance(&self, seed: String) -> BalanceGetter {
+    BalanceGetter::new(self.clone(), seed)
   }
 }

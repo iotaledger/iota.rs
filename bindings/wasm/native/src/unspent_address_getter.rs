@@ -5,7 +5,6 @@ use crate::client::Client;
 use crate::utils::err;
 use iota_client::Seed;
 use js_sys::Promise;
-use std::ops::Range;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 

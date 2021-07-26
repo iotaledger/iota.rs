@@ -11,6 +11,7 @@ use wasm_bindgen::prelude::*;
 #[macro_use]
 mod macros;
 mod address_getter;
+mod balance_getter;
 mod client;
 mod client_builder;
 mod message_builder;
