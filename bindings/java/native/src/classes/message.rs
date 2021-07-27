@@ -309,8 +309,6 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Set indexation to the builder
     pub fn with_index_vec(&self, index: Vec<u8>) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
-        dbg!("INDEX");
-        dbg!(&index);
         fields.builder = fields.builder.with_index(index.clone());
         ClientMessageBuilder::new_with_fields(fields)
     }
