@@ -112,8 +112,8 @@ foreign_enum!(
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
     class BrokerOptions {
-        #[derive(camelCaseAliases)]
         self_type BrokerOptions;
         constructor BrokerOptions::new() -> BrokerOptions;
         fn BrokerOptions::automatic_disconnect(&self, disconnect: bool) -> BrokerOptions;
@@ -211,7 +211,7 @@ foreign_class!(
         /// since we are only checking and already know the address.
         fn Client::get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse>;
 
-        // Return the balance in iota for the given addresses; No seed or security level needed to do this
+        /// Return the balance in iota for the given addresses; No seed or security level needed to do this
         /// since we are only checking and already know the addresses.
         fn Client::get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>>;
 
@@ -224,7 +224,7 @@ foreign_class!(
         fn Client::get_milestone(&self, index: u32) -> Result<MilestoneResponse>;
         
         /// GET /api/v1/milestones/{index}/utxo-changes endpoint
-        /// Get the milestone by the given index.
+        /// Gets the utxo changes by the given milestone index.
         fn Client::get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse>;
 
         /// GET /api/v1/receipts endpoint
