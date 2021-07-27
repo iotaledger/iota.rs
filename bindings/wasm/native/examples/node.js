@@ -33,6 +33,11 @@ async function main() {
     //     .get();
     // console.log(unspent_address);
     // console.log(await client.getBalance('256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2').accountIndex(0).initialAddressIndex(0).get());
+    // console.log(await client.retry('8552b765a0025fe5104b5a99c770e989d675db8c909047c8bed776469e084c36'));
+
+    const address = "atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"
+    let hexAddress = client.bech32ToHex(address)
+    let bech32Address = await client.hexToBech32(hexAddress, "atoi")
 }
 
 main().then(() => {

@@ -1181,7 +1181,10 @@ impl Client {
         let mut messages_with_id = Vec::new();
         for _ in 0..max_attempts.unwrap_or(20) {
             #[cfg(feature = "wasm")]
-            std::thread::sleep(Duration::from_secs(interval.unwrap_or(5)));
+            {
+                use futures_timer::Delay;
+                Delay::new(Duration::from_secs(interval.unwrap_or(5))).await;
+            }
             #[cfg(not(feature = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;
             // Check inclusion state for each attachment

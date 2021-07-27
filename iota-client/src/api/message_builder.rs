@@ -726,7 +726,10 @@ impl<'a> ClientMessageBuilder<'a> {
                     #[cfg(not(feature = "wasm"))]
                     sleep(Duration::from_millis(time * 50)).await;
                     #[cfg(feature = "wasm")]
-                    std::thread::sleep(Duration::from_millis(time * 50));
+                    {
+                        use futures_timer::Delay;
+                        Delay::new(Duration::from_millis(time * 50)).await;
+                    }
                 }
                 self.client.get_message().data(&msg_id).await
             }

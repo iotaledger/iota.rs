@@ -48,9 +48,12 @@ rumqttc = { version = "0.5", features = ["websocket"], optional = true}
 # also used for storage
 once_cell = { version = "1.7", optional = true }
 
-#storage
+# storage
 async-trait = "0.1"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
+
+# wasm
+futures-timer = {version = "3.0.2", features = ["wasm-bindgen"], optional = true }
 
 [features]
 default = ["async"]
@@ -58,4 +61,4 @@ sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
-wasm = ["reqwest", "futures"]
+wasm = ["reqwest", "futures", "futures-timer"]
