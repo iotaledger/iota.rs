@@ -1,16 +1,16 @@
 # Examples
 
 :::warning
-It is not recommended to store passwords/seeds on host's environment variables or in the source code in a production setup! Please make sure you follow our [backup and security](https://chrysalis.docs.iota.org/guides/backup_security.html) recommendations for production use!
+It is not recommended to store passwords/seeds on host's environment variables or in the source code in a production setup! Please make sure you follow our [backup and security](https://chrysalis.docs.iota.org/guides/backup_security) recommendations for production use!
 :::
 
 ## Connecting to node(s)
 
-All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions over IOTA network (Tangle). This class has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node-software/node-software.html) that power IOTA network.
+All features of `iota.rs` library are accessible via an instance of `Client` class that provides high-level abstraction to all interactions over IOTA network (Tangle). This class has to be instantiated before starting any interactions with the library, or more precisely with [IOTA nodes](https://chrysalis.docs.iota.org/node_software) that power IOTA network.
 
 In `nodejs` binding, the `Client` instance is instantiated and optionally configured via chaining calls of `ClientBuilder` helper class.
 
-The library is designed to automatically choose a starting IOTA node based on the network type one would like to participate in: `testnet` or `mainnet`. So very simplistic example how to connect to [IOTA testnet](https://chrysalis.docs.iota.org/testnet.html) is the following one:
+The library is designed to automatically choose a starting IOTA node based on the network type one would like to participate in: `testnet` or `mainnet`. So very simplistic example how to connect to [IOTA testnet](https://chrysalis.docs.iota.org/testnet) is the following one:
 
 
 ```javascript
@@ -45,7 +45,7 @@ Output example of `getInfo()` function of the `ClientBuilder` instance:
 
 The most important properties:
 * `isHealthy`: indicates whether the given node is in sync with the network and so it is safe to use it. Even if a node is up and running it may not be fully prepared to process your API calls properly. The node should be "synced", meaning should be aware of all TXs in the Tangle. It is better to avoid not fully synced nodes
-* `bech32HRP`: indicates whether the given node is a part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](../../welcome.md#iota-15-address-anatomy)
+* `bech32HRP`: indicates whether the given node is a part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](https://chrysalis.docs.iota.org/guides/dev_guide#iota-15-address-anatomy)
 
 _Please note, when using node load balancers then mentioned health check may be quite useless since follow-up API calls may be served by different node behind the load balancer that may have not been actually checked. One should be aware of this fact and trust the given load balancer participates only with nodes that are in healthy state. `iota.rs` library additionally supports a management of internal node pool and so load-balancer-like behavior can be mimicked using this feature locally._
 
@@ -75,7 +75,7 @@ Please note, it is highly recommended to NOT use online seed generators at all. 
 :::
 
 :::warning
-We strongly recommend to use the official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
+We strongly recommend to use the official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet).
 :::
 
 IOTA uses `Ed25519` signature scheme and address is usually represented by Bech32 (checksummed base32) format string of 64 characters.
@@ -96,7 +96,7 @@ eff5c97c96ddab55d6fe78f914508750152eaab1b9692236bc79268895ecfd168e91eedd2489ed6c
 ```
  
 :::info
-In modern wallet implementations, such as our [wallet.rs library](https://chrysalis.docs.iota.org/libraries/wallet.html) and [firefly wallet](https://blog.iota.org/firefly-beta-release/), the seed is usually generated from a `seed mnemonic` (`seed phrase`), using [BIP39 standard](https://en.bitcoin.it/wiki/BIP_0039), to be better memorized/stored by humans. It is based on a randomly generated list of english words and later used to generate the seed. Either way, the seed is a root for all generated private keys and addresses.
+In modern wallet implementations, such as our [wallet.rs library](https://chrysalis.docs.iota.org/libraries/wallet) and [firefly wallet](https://blog.iota.org/firefly-beta-release/), the seed is usually generated from a `seed mnemonic` (`seed phrase`), using [BIP39 standard](https://en.bitcoin.it/wiki/BIP_0039), to be better memorized/stored by humans. It is based on a randomly generated list of english words and later used to generate the seed. Either way, the seed is a root for all generated private keys and addresses.
 :::
 
 ### Address/key space
@@ -125,7 +125,7 @@ And there are few additional interesting notes:
 * There may be also other `purposes` in the future, however, let's consider a single purpose for now. The constant `44` stands for BIP44
 * The standard was agreed upon different crypto communities, although not all `derivation path` components are always in active use. For example, `account` is not always actively leveraged across crypto space (if this is the case then `account=0` is usually used)
 * Using different `accounts` may be useful to split addresses/keys into some independent spaces and it is up to developers to implement.<br />
-_Please note, it may have a negative impact on a performance while [account discovery](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#account-discovery) phase. So if you are planning on using many multiple accounts then you may be interested in our stateful library [wallet.rs](https://chrysalis.docs.iota.org/libraries/wallet.html) that incorporates all business logic needed to efficiently manage independent accounts. Also our [exchange guide](https://chrysalis.docs.iota.org/guides/exchange_guide.html) provides some useful tips on how different accounts may be leveraged_
+_Please note, it may have a negative impact on a performance while [account discovery](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#account-discovery) phase. So if you are planning on using many multiple accounts then you may be interested in our stateful library [wallet.rs](https://chrysalis.docs.iota.org/libraries/wallet) that incorporates all business logic needed to efficiently manage independent accounts. Also our [exchange guide](https://chrysalis.docs.iota.org/guides/exchange_guide) provides some useful tips on how different accounts may be leveraged_
 
 ![address_generation](../../../static/img/libraries/nodejs/address_generation.svg)
 
@@ -155,7 +155,7 @@ Output example:
 ]
 ```
 
-IOTA addresses are represented by a checksumed base-32 string (Bech32) and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/dev_guide.html#iota-15-address-anatomy).
+IOTA addresses are represented by a checksumed base-32 string (Bech32) and you can see a detailed explanation on [Chrysalis docs](https://chrysalis.docs.iota.org/guides/dev_guide#iota-15-address-anatomy).
 Just a recap:
 * If an address starts with `atoi` then it means it is related to `testnet`. `iota` stands for mainnet
 * Number `1` at 5<sup>th</sup> position is just a separator
@@ -190,7 +190,7 @@ Example of output:
 Account balance: 0
 ```
 
-* `dustAllowed` indicates whether the given address is allowed to accept a dust due to [dust protection mechanism](https://chrysalis.docs.iota.org/guides/dev_guide.html#dust-protection)
+* `dustAllowed` indicates whether the given address is allowed to accept a dust due to [dust protection mechanism](https://chrysalis.docs.iota.org/guides/dev_guide#dust-protection)
 
 `Client.getBalance(seed)` performs a several tasks under the hood.
 It starts generating addresses for the provided `seed` and `.accountIndex` from `.initialAddressIndex(index)`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by the `.gapLimit(amount)` argument to know when to stop searching. If the `.gapLimit` amount of addresses in a row have no balance, the function returns results and searching does not continue.
@@ -536,12 +536,12 @@ As a minimum, it needs a valid seed, output addresses, and amount. The method fi
 ```
  
 :::info
-We recommend to use the official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
+We recommend to use the official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [Chrysalis docs](https://chrysalis.docs.iota.org/libraries/wallet).
 :::
 
 #### Dust protection
 
-Please also note, there is a [dust protection](https://chrysalis.docs.iota.org/guides/dev_guide.html#dust-protection) mechanism implemented in the network protocol to avoid malicious actors to spam network in order to decrease node performance while keeping track of unspent amount (`UTXO`):
+Please also note, there is a [dust protection](https://chrysalis.docs.iota.org/guides/dev_guide#dust-protection) mechanism implemented in the network protocol to avoid malicious actors to spam network in order to decrease node performance while keeping track of unspent amount (`UTXO`):
 
 :::info
 "... microtransaction below 1Mi of IOTA tokens [can be sent] to another address if there is already at least 1Mi on that address"
@@ -576,4 +576,4 @@ It offers several chaining calls:
 {@include: ../../../../bindings/nodejs/examples/10_mqtt.js}
 ```
 
-Please note: The IOTA node needs to have the MQTT layer enabled. There is a set of test nodes available that have MQTT enabled. See [testnet chapter](https://chrysalis.docs.iota.org/testnet.html) for more information.
+Please note: The IOTA node needs to have the MQTT layer enabled. There is a set of test nodes available that have MQTT enabled. See [testnet chapter](https://chrysalis.docs.iota.org/testnet) for more information.

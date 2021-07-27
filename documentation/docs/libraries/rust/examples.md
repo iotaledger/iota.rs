@@ -1,6 +1,6 @@
 # Examples
 
-It's possible to send transactions with iota.rs, but we strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [wallet docs](https://chrysalis.docs.iota.org/libraries/wallet.html).
+It's possible to send transactions with iota.rs, but we strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [wallet docs](https://chrysalis.docs.iota.org/libraries/wallet).
 
 ```bash
 git clone https://github.com/iotaledger/iota.rs
