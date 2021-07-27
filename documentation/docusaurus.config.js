@@ -5,7 +5,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 module.exports = {
   title: 'iota.rs',
   tagline: 'Official IOTA Client Software',
-  url: 'https://iota.rs.docs.iota.org/',
+  url: 'https://client-lib.docs.iota.org/',
   baseUrl: '/',
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'throw',
@@ -45,23 +45,23 @@ module.exports = {
           title: 'Documentation',
           items: [{
               label: 'Welcome',
-              to: '/welcome',
+              to: '/docs/welcome',
             },
             {
               label: 'Overview',
-              to: '/overview/',
+              to: '/docs/overview/',
             },
             {
               label: 'Libraries',
-              to: '/libraries/overview',
+              to: '/docs/libraries/overview',
             },
             {
               label: 'Specification',
-              to: '/specs',
+              to: '/docs/specs',
             },
             {
               label: 'Contribute',
-              to: '/contribute',
+              to: '/docs/contribute',
             },
           ],
         },
