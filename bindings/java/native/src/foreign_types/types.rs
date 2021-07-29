@@ -4,20 +4,21 @@
 use std::convert::TryInto;
 
 foreign_typemap!(
-    ($p:r_type) &[u8] => Vec<i16> {
-        $out = $p.iter().cloned().map(|x| x as i16).collect();
+    ($p:r_type) &[u8] => jbyteArray {
+        let it: Vec<i8> = $p.iter().cloned().map(|x| x as i8).collect();
+        $out = JavaByteArray::from_slice_to_raw(&it, env);
     };
 );
 
 foreign_typemap!(
-    ($p:r_type) &[u8] <= JavaShortArray {
+    ($p:r_type) &[u8] <= JavaByteArray {
         let iter: Vec<u8> = $p.to_slice().iter().cloned().map(|x| x as u8).collect();
         $out = iter.as_slice();
     };
 );
 
 foreign_typemap!(
-    ($p:r_type) Vec<u8> <= JavaShortArray {
+    ($p:r_type) Vec<u8> <= JavaByteArray {
         $out = $p.to_slice().iter().cloned().map(|x| x as u8).collect();
     };
 );
