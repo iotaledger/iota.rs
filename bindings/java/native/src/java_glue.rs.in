@@ -1405,12 +1405,15 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, Display)]
     class Output {
         self_type Output;
         private constructor = empty;
         private fn Output::to_string(&self) -> String; alias to_string;
         fn Output::kind(&self) -> OutputKind;
+        fn Output::as_signature_locked_single_output(&self) -> Result<SignatureLockedSingleOutput>;
+        fn Output::as_signature_locked_dust_allowance_output(&self) -> Result<SignatureLockedDustAllowanceOutput>;
+        fn Output::as_treasury_output(&self) -> Result<TreasuryOutput>;
     }
 );
 

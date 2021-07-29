@@ -228,10 +228,10 @@ public class ExampleApp {
         if (payload.isPresent() && payload.get().payloadType().equals(MessagePayloadType.TRANSACTION)) {
             TransactionPayload tx = payload.get().getAsTransaction().get();
             RegularEssence essence = tx.essence().getAsRegular().get();
-            OutputDto[] outputs = essence.outputs();
+            Output[] outputs = essence.outputs();
             for (int index = 0; index < outputs.length; index++) {
-                OutputDto output = outputs[index];
-                if (output.asSignatureLockedSingleOutputDto().amount() == 1_000_001) {
+                Output output = outputs[index];
+                if (output.asSignatureLockedSingleOutput().amount() == 1_000_001) {
                     initial_outputs.add(UtxoInput.from(tx.id(), index));
                 } 
             }
