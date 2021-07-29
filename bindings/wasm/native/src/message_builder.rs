@@ -59,14 +59,14 @@ impl MessageBuilder {
 
   #[wasm_bindgen]
   pub fn index(&mut self, index: Vec<u8>) -> Result<MessageBuilder, JsValue> {
-    self.builder.index.replace(index.into());
+    self.builder.index.replace(index);
     // is there a way we can do it without the clone?
     Ok(self.clone())
   }
 
   #[wasm_bindgen]
   pub fn data(&mut self, data: Vec<u8>) -> Result<MessageBuilder, JsValue> {
-    self.builder.data.replace(data.into());
+    self.builder.data.replace(data);
     Ok(self.clone())
   }
 
@@ -145,10 +145,10 @@ impl MessageBuilder {
         sender = sender.with_index(index);
       }
       if let Some(data) = input_data.data {
-        sender = sender.with_data(data.clone());
+        sender = sender.with_data(data);
       }
       if let Some(parents) = input_data.parents {
-        sender = sender.with_parents(parents.clone()).map_err(err)?;
+        sender = sender.with_parents(parents).map_err(err)?;
       }
       if let Some(account_index) = input_data.account_index {
         sender = sender.with_account_index(account_index);
@@ -160,7 +160,7 @@ impl MessageBuilder {
         sender = sender.with_input(input.clone());
       }
       if let Some(input_range) = input_data.input_range {
-        sender = sender.with_input_range(input_range.clone());
+        sender = sender.with_input_range(input_range);
       }
       let bech32_hrp = client.client.get_bech32_hrp().await.map_err(err)?;
       for output in input_data.outputs {

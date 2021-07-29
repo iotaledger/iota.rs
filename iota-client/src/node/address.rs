@@ -13,7 +13,7 @@ const OUTPUT_ID_LENGTH: usize = 68;
 const TRANSACTION_ID_LENGTH: usize = 64;
 
 /// Output type filter.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum OutputType {
     /// Signature locked single output.
     SignatureLockedSingle,
@@ -31,10 +31,12 @@ impl From<OutputType> for u16 {
 }
 
 /// The outputs query options.
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Serialize, Deserialize)]
 pub struct OutputsOptions {
     /// Whether the query should include spent outputs or not.
+    #[serde(rename = "includeSpent")]
     pub include_spent: bool,
+    #[serde(rename = "outputType")]
     /// The output type filter.
     pub output_type: Option<OutputType>,
 }

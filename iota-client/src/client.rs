@@ -1116,8 +1116,8 @@ impl Client {
         GetBalanceBuilder::new(self, seed)
     }
 
-    /// Return the balance in iota for the given addresses; No seed or security level needed to do this
-    /// since we are only checking and already know the addresses.
+    /// Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and
+    /// already know the addresses.
     pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
@@ -1148,7 +1148,7 @@ impl Client {
         Ok(Address::try_from_bech32(address)?)
     }
 
-    /// Checks if a String address is valid.
+    /// Checks if a String is a valid bech32 encoded address.
     pub fn is_address_valid(address: &str) -> bool {
         Address::try_from_bech32(address).is_ok()
     }

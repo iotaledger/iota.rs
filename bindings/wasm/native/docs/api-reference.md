@@ -9,6 +9,8 @@
 <dd></dd>
 <dt><a href="#ClientBuilder">ClientBuilder</a></dt>
 <dd></dd>
+<dt><a href="#GetAddressBuilder">GetAddressBuilder</a></dt>
+<dd></dd>
 <dt><a href="#MessageBuilder">MessageBuilder</a></dt>
 <dd></dd>
 <dt><a href="#MessageGetter">MessageGetter</a></dt>
@@ -171,10 +173,21 @@ Get the balance.
     * [.getAddresses(seed)](#Client+getAddresses) ⇒ [<code>AddressGetter</code>](#AddressGetter)
     * [.getUnspentAddress(seed)](#Client+getUnspentAddress) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
     * [.getBalance(seed)](#Client+getBalance) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+    * [.getAddress()](#Client+getAddress) ⇒ [<code>GetAddressBuilder</code>](#GetAddressBuilder)
     * [.getInfo()](#Client+getInfo) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getHealth()](#Client+getHealth) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getTips()](#Client+getTips) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getPeers()](#Client+getPeers) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getOutput(output_id)](#Client+getOutput) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.findMessages(indexation_keys, message_ids)](#Client+findMessages) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.findOutputs(outputs, addresses)](#Client+findOutputs) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getAddressBalances(addresses)](#Client+getAddressBalances) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getMilestone(index)](#Client+getMilestone) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getMilestoneUtxoChanges(index)](#Client+getMilestoneUtxoChanges) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getReceipts()](#Client+getReceipts) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getReceiptsMigratedAt(milestone_index)](#Client+getReceiptsMigratedAt) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getTreasury()](#Client+getTreasury) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getIncludedMessage(transaction_id)](#Client+getIncludedMessage) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.postMessage(message)](#Client+postMessage) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.retry(message_id)](#Client+retry) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.retryUntilIncluded(message_id, interval, max_attempts)](#Client+retryUntilIncluded) ⇒ <code>Promise.&lt;any&gt;</code>
@@ -183,6 +196,9 @@ Get the balance.
     * [.consolidateFunds(seed, account_index, start_index, end_index)](#Client+consolidateFunds) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.bech32ToHex(address)](#Client+bech32ToHex) ⇒ <code>string</code>
     * [.hexToBech32(address, bech32)](#Client+hexToBech32) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.isAddressValid(address)](#Client+isAddressValid) ⇒ <code>boolean</code>
+    * [.generateMnemonic()](#Client+generateMnemonic) ⇒ <code>string</code>
+    * [.mnemonicToHexSeed(mnemonic)](#Client+mnemonicToHexSeed) ⇒ <code>string</code>
 
 <a name="Client+message"></a>
 
@@ -229,6 +245,12 @@ Get the account balance.
 | --- | --- |
 | seed | <code>string</code> | 
 
+<a name="Client+getAddress"></a>
+
+### client.getAddress() ⇒ [<code>GetAddressBuilder</code>](#GetAddressBuilder)
+GET /api/v1/addresses/{address} endpoint
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
 <a name="Client+getInfo"></a>
 
 ### client.getInfo() ⇒ <code>Promise.&lt;any&gt;</code>
@@ -253,6 +275,117 @@ Get tips.
 Get peers.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getOutput"></a>
+
+### client.getOutput(output_id) ⇒ <code>Promise.&lt;any&gt;</code>
+GET /api/v1/outputs/{outputId} endpoint
+Find an output by its transaction_id and corresponding output_index.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| output_id | <code>string</code> | 
+
+<a name="Client+findMessages"></a>
+
+### client.findMessages(indexation_keys, message_ids) ⇒ <code>Promise.&lt;any&gt;</code>
+Find all messages by provided message IDs and/or indexation_keys.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| indexation_keys | <code>any</code> | 
+| message_ids | <code>any</code> | 
+
+<a name="Client+findOutputs"></a>
+
+### client.findOutputs(outputs, addresses) ⇒ <code>Promise.&lt;any&gt;</code>
+Find all outputs based on the requests criteria. This method will try to query multiple nodes if
+the request amount exceeds individual node limit.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| outputs | <code>any</code> | 
+| addresses | <code>any</code> | 
+
+<a name="Client+getAddressBalances"></a>
+
+### client.getAddressBalances(addresses) ⇒ <code>Promise.&lt;any&gt;</code>
+Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and
+already know the addresses.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| addresses | <code>any</code> | 
+
+<a name="Client+getMilestone"></a>
+
+### client.getMilestone(index) ⇒ <code>Promise.&lt;any&gt;</code>
+GET /api/v1/milestones/{index} endpoint
+Get the milestone by the given index.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| index | <code>number</code> | 
+
+<a name="Client+getMilestoneUtxoChanges"></a>
+
+### client.getMilestoneUtxoChanges(index) ⇒ <code>Promise.&lt;any&gt;</code>
+GET /api/v1/milestones/{index}/utxo-changes endpoint
+Get the milestone by the given index.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| index | <code>number</code> | 
+
+<a name="Client+getReceipts"></a>
+
+### client.getReceipts() ⇒ <code>Promise.&lt;any&gt;</code>
+GET /api/v1/receipts endpoint
+Get all receipts.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getReceiptsMigratedAt"></a>
+
+### client.getReceiptsMigratedAt(milestone_index) ⇒ <code>Promise.&lt;any&gt;</code>
+GET /api/v1/receipts/{migratedAt} endpoint
+Get the receipts by the given milestone index.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| milestone_index | <code>number</code> | 
+
+<a name="Client+getTreasury"></a>
+
+### client.getTreasury() ⇒ <code>Promise.&lt;any&gt;</code>
+GET /api/v1/treasury endpoint
+Get the treasury output.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getIncludedMessage"></a>
+
+### client.getIncludedMessage(transaction_id) ⇒ <code>Promise.&lt;any&gt;</code>
+GET /api/v1/transactions/{transactionId}/included-message
+Returns the included message of the transaction.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| transaction_id | <code>string</code> | 
+
 <a name="Client+postMessage"></a>
 
 ### client.postMessage(message) ⇒ <code>Promise.&lt;any&gt;</code>
@@ -353,6 +486,34 @@ Returns a parsed bech32 String from hex.
 | --- | --- |
 | address | <code>string</code> | 
 | bech32 | <code>string</code> \| <code>undefined</code> | 
+
+<a name="Client+isAddressValid"></a>
+
+### client.isAddressValid(address) ⇒ <code>boolean</code>
+Checks if a String is a valid bech32 encoded address.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| address | <code>string</code> | 
+
+<a name="Client+generateMnemonic"></a>
+
+### client.generateMnemonic() ⇒ <code>string</code>
+Generates a new mnemonic.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+mnemonicToHexSeed"></a>
+
+### client.mnemonicToHexSeed(mnemonic) ⇒ <code>string</code>
+Returns a hex encoded seed for a mnemonic.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| mnemonic | <code>string</code> | 
 
 <a name="ClientBuilder"></a>
 
@@ -495,6 +656,54 @@ Returns a parsed bech32 String from hex.
 Build the client.
 
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+<a name="GetAddressBuilder"></a>
+
+## GetAddressBuilder
+**Kind**: global class  
+
+* [GetAddressBuilder](#GetAddressBuilder)
+    * _instance_
+        * [.balance(address)](#GetAddressBuilder+balance) ⇒ <code>Promise.&lt;any&gt;</code>
+        * [.outputs(address, options)](#GetAddressBuilder+outputs) ⇒ <code>Promise.&lt;any&gt;</code>
+    * _static_
+        * [.new(client)](#GetAddressBuilder.new) ⇒ [<code>GetAddressBuilder</code>](#GetAddressBuilder)
+
+<a name="GetAddressBuilder+balance"></a>
+
+### getAddressBuilder.balance(address) ⇒ <code>Promise.&lt;any&gt;</code>
+Consume the builder and get the balance of a given Bech32 encoded address.
+If count equals maxResults, then there might be more outputs available but those were skipped for performance
+reasons. User should sweep the address to reduce the amount of outputs.
+
+**Kind**: instance method of [<code>GetAddressBuilder</code>](#GetAddressBuilder)  
+
+| Param | Type |
+| --- | --- |
+| address | <code>string</code> | 
+
+<a name="GetAddressBuilder+outputs"></a>
+
+### getAddressBuilder.outputs(address, options) ⇒ <code>Promise.&lt;any&gt;</code>
+Consume the builder and get all outputs that use a given address.
+If count equals maxResults, then there might be more outputs available but those were skipped for performance
+reasons. User should sweep the address to reduce the amount of outputs.
+
+**Kind**: instance method of [<code>GetAddressBuilder</code>](#GetAddressBuilder)  
+
+| Param | Type |
+| --- | --- |
+| address | <code>string</code> | 
+| options | <code>any</code> | 
+
+<a name="GetAddressBuilder.new"></a>
+
+### GetAddressBuilder.new(client) ⇒ [<code>GetAddressBuilder</code>](#GetAddressBuilder)
+**Kind**: static method of [<code>GetAddressBuilder</code>](#GetAddressBuilder)  
+
+| Param | Type |
+| --- | --- |
+| client | [<code>Client</code>](#Client) | 
+
 <a name="MessageBuilder"></a>
 
 ## MessageBuilder

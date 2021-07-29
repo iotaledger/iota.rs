@@ -207,11 +207,11 @@ foreign_class!(
         /// GET /api/v1/addresses/{address} endpoint
         fn Client::get_address(&self) -> GetAddressBuilder;
 
-        /// Return the balance in iota for the given address; No seed or security level needed to do this
+        /// Return the balance in iota for the given address; No seed needed to do this
         /// since we are only checking and already know the address.
         fn Client::get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse>;
 
-        // Return the balance in iota for the given addresses; No seed or security level needed to do this
+        // Return the balance in iota for the given addresses; No seed needed to do this
         /// since we are only checking and already know the addresses.
         fn Client::get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>>;
 
@@ -296,7 +296,7 @@ foreign_class!(
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
         /// Transforms hex to bech32
         fn Client::hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
-        /// Checks if a String address is valid.
+        /// Checks if a str is a valid bech32 encoded address.
         fn Client::is_address_valid(address: &str) -> bool;
 
         /// Returns a valid Address parsed from a String.

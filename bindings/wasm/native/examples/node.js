@@ -47,6 +47,21 @@ async function main() {
     //     data: Buffer.from(new TextEncoder().encode('indexation data')).toString('hex')
     // }
     // console.log(await client.postMessage({ payload: indexation }));
+    // console.log(await client.findMessages(["iota.rs binding - wasm"], ["3866d368da51b4f731c0643106b7d191bba0c9dd553e5786e62294b028dc4d6e"]));
+    // console.log(await client.getAddressBalances(["atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"]));
+    // console.log(client.isAddressValid("atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"));
+    // console.log(client.generateMnemonic());
+    // console.log(client.mnemonicToHexSeed(client.generateMnemonic()));
+    // console.log(await client.getOutput("17057e92991f836ff2f0f88f2abb93ba0d8eda37efc1312daad599c1326bce310100"));
+    // console.log(await client.getAddress().balance("atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"));
+    // console.log(await client.getAddress().outputs("atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", { includeSpent: false }));
+    // console.log(await client.findOutputs(["17057e92991f836ff2f0f88f2abb93ba0d8eda37efc1312daad599c1326bce310100"], ["atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"]));
+    // console.log(await client.getMilestone(973351));
+    // console.log(await client.getMilestoneUtxoChanges(973351));
+    // console.log(await client.getReceipts());
+    // console.log(await client.getReceiptsMigratedAt(973351));
+    // console.log(await client.getTreasury());
+    // console.log(await client.getIncludedMessage("17057e92991f836ff2f0f88f2abb93ba0d8eda37efc1312daad599c1326bce31"));
 }
 
 main().then(() => {

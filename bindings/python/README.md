@@ -573,7 +573,7 @@ Returns a parsed bech32 String from hex.
 
 #### is_address_valid(address): bool
 
-Checks if a given address is valid.
+Checks if a str is a valid bech32 encoded address.
 
 | Param   | Type             | Default                | Description               |
 | ------- | ---------------- | ---------------------- | ------------------------- |
