@@ -1,6 +1,10 @@
 ## Classes
 
 <dl>
+<dt><a href="#AddressGetter">AddressGetter</a></dt>
+<dd></dd>
+<dt><a href="#BalanceGetter">BalanceGetter</a></dt>
+<dd></dd>
 <dt><a href="#Client">Client</a></dt>
 <dd></dd>
 <dt><a href="#ClientBuilder">ClientBuilder</a></dt>
@@ -8,6 +12,8 @@
 <dt><a href="#MessageBuilder">MessageBuilder</a></dt>
 <dd></dd>
 <dt><a href="#MessageGetter">MessageGetter</a></dt>
+<dd></dd>
+<dt><a href="#UnspentAddressGetter">UnspentAddressGetter</a></dt>
 <dd></dd>
 </dl>
 
@@ -19,22 +25,165 @@
 </dd>
 </dl>
 
+<a name="AddressGetter"></a>
+
+## AddressGetter
+**Kind**: global class  
+
+* [AddressGetter](#AddressGetter)
+    * _instance_
+        * [.accountIndex(index)](#AddressGetter+accountIndex) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+        * [.range(start, end)](#AddressGetter+range) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+        * [.bech32Hrp(bech32_hrp)](#AddressGetter+bech32Hrp) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+        * [.includeInternal()](#AddressGetter+includeInternal) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+        * [.get()](#AddressGetter+get) ⇒ <code>Promise.&lt;any&gt;</code>
+    * _static_
+        * [.new(client, seed)](#AddressGetter.new) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+
+<a name="AddressGetter+accountIndex"></a>
+
+### addressGetter.accountIndex(index) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+Set the account index
+
+**Kind**: instance method of [<code>AddressGetter</code>](#AddressGetter)  
+
+| Param | Type |
+| --- | --- |
+| index | <code>number</code> | 
+
+<a name="AddressGetter+range"></a>
+
+### addressGetter.range(start, end) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+Set the address range
+
+**Kind**: instance method of [<code>AddressGetter</code>](#AddressGetter)  
+
+| Param | Type |
+| --- | --- |
+| start | <code>number</code> | 
+| end | <code>number</code> | 
+
+<a name="AddressGetter+bech32Hrp"></a>
+
+### addressGetter.bech32Hrp(bech32_hrp) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+Set the bech32 hrp
+
+**Kind**: instance method of [<code>AddressGetter</code>](#AddressGetter)  
+
+| Param | Type |
+| --- | --- |
+| bech32_hrp | <code>string</code> | 
+
+<a name="AddressGetter+includeInternal"></a>
+
+### addressGetter.includeInternal() ⇒ [<code>AddressGetter</code>](#AddressGetter)
+Include internal addresses
+
+**Kind**: instance method of [<code>AddressGetter</code>](#AddressGetter)  
+<a name="AddressGetter+get"></a>
+
+### addressGetter.get() ⇒ <code>Promise.&lt;any&gt;</code>
+Get the addresses.
+
+**Kind**: instance method of [<code>AddressGetter</code>](#AddressGetter)  
+<a name="AddressGetter.new"></a>
+
+### AddressGetter.new(client, seed) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+**Kind**: static method of [<code>AddressGetter</code>](#AddressGetter)  
+
+| Param | Type |
+| --- | --- |
+| client | [<code>Client</code>](#Client) | 
+| seed | <code>string</code> | 
+
+<a name="BalanceGetter"></a>
+
+## BalanceGetter
+**Kind**: global class  
+
+* [BalanceGetter](#BalanceGetter)
+    * _instance_
+        * [.accountIndex(index)](#BalanceGetter+accountIndex) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+        * [.initialAddressIndex(initial_address_index)](#BalanceGetter+initialAddressIndex) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+        * [.gap_limit(gap_limit)](#BalanceGetter+gap_limit) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+        * [.get()](#BalanceGetter+get) ⇒ <code>Promise.&lt;any&gt;</code>
+    * _static_
+        * [.new(client, seed)](#BalanceGetter.new) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+
+<a name="BalanceGetter+accountIndex"></a>
+
+### balanceGetter.accountIndex(index) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+Sets the account index
+
+**Kind**: instance method of [<code>BalanceGetter</code>](#BalanceGetter)  
+
+| Param | Type |
+| --- | --- |
+| index | <code>number</code> | 
+
+<a name="BalanceGetter+initialAddressIndex"></a>
+
+### balanceGetter.initialAddressIndex(initial_address_index) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+Sets the address index from which to start looking for balance
+
+**Kind**: instance method of [<code>BalanceGetter</code>](#BalanceGetter)  
+
+| Param | Type |
+| --- | --- |
+| initial_address_index | <code>number</code> | 
+
+<a name="BalanceGetter+gap_limit"></a>
+
+### balanceGetter.gap\_limit(gap_limit) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+Sets the gap limit to specify how many addresses will be checked each round.
+If gap_limit amount of addresses in a row have no balance the function will return.
+
+**Kind**: instance method of [<code>BalanceGetter</code>](#BalanceGetter)  
+
+| Param | Type |
+| --- | --- |
+| gap_limit | <code>number</code> | 
+
+<a name="BalanceGetter+get"></a>
+
+### balanceGetter.get() ⇒ <code>Promise.&lt;any&gt;</code>
+Get the balance.
+
+**Kind**: instance method of [<code>BalanceGetter</code>](#BalanceGetter)  
+<a name="BalanceGetter.new"></a>
+
+### BalanceGetter.new(client, seed) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+**Kind**: static method of [<code>BalanceGetter</code>](#BalanceGetter)  
+
+| Param | Type |
+| --- | --- |
+| client | [<code>Client</code>](#Client) | 
+| seed | <code>string</code> | 
+
 <a name="Client"></a>
 
 ## Client
 **Kind**: global class  
 
 * [Client](#Client)
-    * [.getInfo()](#Client+getInfo) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.message()](#Client+message) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
     * [.getMessage()](#Client+getMessage) ⇒ [<code>MessageGetter</code>](#MessageGetter)
+    * [.getAddresses(seed)](#Client+getAddresses) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+    * [.getUnspentAddress(seed)](#Client+getUnspentAddress) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+    * [.getBalance(seed)](#Client+getBalance) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+    * [.getInfo()](#Client+getInfo) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getHealth()](#Client+getHealth) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getTips()](#Client+getTips) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getPeers()](#Client+getPeers) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.postMessage(message)](#Client+postMessage) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.retry(message_id)](#Client+retry) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.retryUntilIncluded(message_id, interval, max_attempts)](#Client+retryUntilIncluded) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.reattach(message_id)](#Client+reattach) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.promote(message_id)](#Client+promote) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.consolidateFunds(seed, account_index, start_index, end_index)](#Client+consolidateFunds) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.bech32ToHex(address)](#Client+bech32ToHex) ⇒ <code>string</code>
+    * [.hexToBech32(address, bech32)](#Client+hexToBech32) ⇒ <code>Promise.&lt;any&gt;</code>
 
-<a name="Client+getInfo"></a>
-
-### client.getInfo() ⇒ <code>Promise.&lt;any&gt;</code>
-Get the nodeinfo.
-
-**Kind**: instance method of [<code>Client</code>](#Client)  
 <a name="Client+message"></a>
 
 ### client.message() ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
@@ -47,6 +196,164 @@ Send a message to the Tangle.
 Get a message from the Tangle.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getAddresses"></a>
+
+### client.getAddresses(seed) ⇒ [<code>AddressGetter</code>](#AddressGetter)
+Generate addresses.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| seed | <code>string</code> | 
+
+<a name="Client+getUnspentAddress"></a>
+
+### client.getUnspentAddress(seed) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+Get an unspent address.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| seed | <code>string</code> | 
+
+<a name="Client+getBalance"></a>
+
+### client.getBalance(seed) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
+Get the account balance.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| seed | <code>string</code> | 
+
+<a name="Client+getInfo"></a>
+
+### client.getInfo() ⇒ <code>Promise.&lt;any&gt;</code>
+Get the nodeinfo.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getHealth"></a>
+
+### client.getHealth() ⇒ <code>Promise.&lt;any&gt;</code>
+Get the node health.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getTips"></a>
+
+### client.getTips() ⇒ <code>Promise.&lt;any&gt;</code>
+Get tips.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getPeers"></a>
+
+### client.getPeers() ⇒ <code>Promise.&lt;any&gt;</code>
+Get peers.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+postMessage"></a>
+
+### client.postMessage(message) ⇒ <code>Promise.&lt;any&gt;</code>
+Post message.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| message | <code>any</code> | 
+
+<a name="Client+retry"></a>
+
+### client.retry(message_id) ⇒ <code>Promise.&lt;any&gt;</code>
+Retries (promotes or reattaches) a message for provided message id. Message should only be
+retried only if they are valid and haven't been confirmed for a while.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| message_id | <code>string</code> | 
+
+<a name="Client+retryUntilIncluded"></a>
+
+### client.retryUntilIncluded(message_id, interval, max_attempts) ⇒ <code>Promise.&lt;any&gt;</code>
+Only works in browser because of the timeouts
+Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
+milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| message_id | <code>string</code> | 
+| interval | <code>BigInt</code> \| <code>undefined</code> | 
+| max_attempts | <code>BigInt</code> \| <code>undefined</code> | 
+
+<a name="Client+reattach"></a>
+
+### client.reattach(message_id) ⇒ <code>Promise.&lt;any&gt;</code>
+Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+confirmed for a while.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| message_id | <code>string</code> | 
+
+<a name="Client+promote"></a>
+
+### client.promote(message_id) ⇒ <code>Promise.&lt;any&gt;</code>
+Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+method should error out and should not allow unnecessary promotions.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| message_id | <code>string</code> | 
+
+<a name="Client+consolidateFunds"></a>
+
+### client.consolidateFunds(seed, account_index, start_index, end_index) ⇒ <code>Promise.&lt;any&gt;</code>
+Only works in browser because of the timeouts
+Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+Returns the address to which the funds got consolidated, if any were available
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| seed | <code>string</code> | 
+| account_index | <code>number</code> | 
+| start_index | <code>number</code> | 
+| end_index | <code>number</code> | 
+
+<a name="Client+bech32ToHex"></a>
+
+### client.bech32ToHex(address) ⇒ <code>string</code>
+Returns a parsed hex String from bech32.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| address | <code>string</code> | 
+
+<a name="Client+hexToBech32"></a>
+
+### client.hexToBech32(address, bech32) ⇒ <code>Promise.&lt;any&gt;</code>
+Returns a parsed bech32 String from hex.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| address | <code>string</code> | 
+| bech32 | <code>string</code> \| <code>undefined</code> | 
+
 <a name="ClientBuilder"></a>
 
 ## ClientBuilder
@@ -396,6 +703,57 @@ Get the metadata of a message with the message id.
 | Param | Type |
 | --- | --- |
 | client | [<code>Client</code>](#Client) | 
+
+<a name="UnspentAddressGetter"></a>
+
+## UnspentAddressGetter
+**Kind**: global class  
+
+* [UnspentAddressGetter](#UnspentAddressGetter)
+    * _instance_
+        * [.accountIndex(index)](#UnspentAddressGetter+accountIndex) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+        * [.initialAddressIndex(index)](#UnspentAddressGetter+initialAddressIndex) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+        * [.get()](#UnspentAddressGetter+get) ⇒ <code>Promise.&lt;any&gt;</code>
+    * _static_
+        * [.new(client, seed)](#UnspentAddressGetter.new) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+
+<a name="UnspentAddressGetter+accountIndex"></a>
+
+### unspentAddressGetter.accountIndex(index) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+Sets the account index
+
+**Kind**: instance method of [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)  
+
+| Param | Type |
+| --- | --- |
+| index | <code>number</code> | 
+
+<a name="UnspentAddressGetter+initialAddressIndex"></a>
+
+### unspentAddressGetter.initialAddressIndex(index) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+Sets the index of the address to start looking for balance
+
+**Kind**: instance method of [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)  
+
+| Param | Type |
+| --- | --- |
+| index | <code>number</code> | 
+
+<a name="UnspentAddressGetter+get"></a>
+
+### unspentAddressGetter.get() ⇒ <code>Promise.&lt;any&gt;</code>
+Get an unspent address with its index.
+
+**Kind**: instance method of [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)  
+<a name="UnspentAddressGetter.new"></a>
+
+### UnspentAddressGetter.new(client, seed) ⇒ [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)
+**Kind**: static method of [<code>UnspentAddressGetter</code>](#UnspentAddressGetter)  
+
+| Param | Type |
+| --- | --- |
+| client | [<code>Client</code>](#Client) | 
+| seed | <code>string</code> | 
 
 <a name="start"></a>
 

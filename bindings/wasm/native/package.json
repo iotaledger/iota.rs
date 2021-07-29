@@ -10,6 +10,7 @@
     "example": "examples"
   },
   "scripts": {
+    "install": "npm run build",
     "build:nodejs": "wasm-pack build --target nodejs --out-dir node && node ./build/node",
     "build:web": "wasm-pack build --target web --out-dir web && node ./build/web",
     "build:docs": "node ./build/docs",

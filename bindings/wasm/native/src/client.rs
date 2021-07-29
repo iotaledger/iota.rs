@@ -12,10 +12,29 @@ use crate::message_builder::MessageBuilder;
 use crate::message_getter::MessageGetter;
 use crate::unspent_address_getter::UnspentAddressGetter;
 use crate::utils::err;
+use iota_client::bee_message::parents::Parents;
+use iota_client::bee_message::MessageBuilder as RustMessageBuilder;
 use iota_client::bee_message::MessageId;
+use iota_client::bee_rest_api::types::dtos::PayloadDto;
+use iota_client::common::packable::Packable;
 use iota_client::Client as RustClient;
+use iota_client::ClientMiner;
 use iota_client::Seed;
-use std::str::FromStr;
+use std::{convert::TryInto, str::FromStr};
+// #[wasm_bindgen]
+// extern "C" {
+//     // Use `js_namespace` here to bind `console.log(..)` instead of just
+//     // `log(..)`
+//     #[wasm_bindgen(js_namespace = console)]
+//     fn log(s: &str);
+// }
+
+/// Struct for PostMessage
+#[derive(Serialize, Deserialize)]
+pub struct MessageDto {
+  pub parents: Option<Vec<String>>,
+  pub payload: PayloadDto,
+}
 
 #[wasm_bindgen]
 #[derive(Debug, Clone)]
@@ -57,6 +76,81 @@ impl Client {
     Ok(future_to_promise(async move {
       client
         .get_info()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// Get the node health.
+  #[wasm_bindgen(js_name = getHealth)]
+  pub fn get_health(&self) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .get_health()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// Get tips.
+  #[wasm_bindgen(js_name = getTips)]
+  pub fn get_tips(&self) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .get_tips()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// Get peers.
+  #[wasm_bindgen(js_name = getPeers)]
+  pub fn get_peers(&self) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .get_peers()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// Post message.
+  #[wasm_bindgen(js_name = postMessage)]
+  pub fn post_message(&self, message: JsValue) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    let message: MessageDto = serde_json::from_value(message.into_serde().map_err(err)?).map_err(err)?;
+    Ok(future_to_promise(async move {
+      let mut parent_msg_ids = match message.parents.as_ref() {
+        Some(parents) => {
+          let mut parent_ids = Vec::new();
+          for msg_id in parents {
+            parent_ids.push(MessageId::from_str(&msg_id).map_err(err)?)
+          }
+          parent_ids
+        }
+        None => client.get_tips().await.map_err(err)?,
+      };
+      parent_msg_ids.sort_unstable_by_key(|a| a.pack_new());
+      parent_msg_ids.dedup();
+      let network_id = client.get_network_id().await.map_err(err)?;
+      let nonce_provider = client.get_pow_provider().await;
+      let min_pow_score = client.get_min_pow_score().await.map_err(err)?;
+      let message = RustMessageBuilder::<ClientMiner>::new()
+        .with_network_id(network_id)
+        .with_parents(Parents::new(parent_msg_ids).map_err(err)?)
+        .with_nonce_provider(nonce_provider, min_pow_score)
+        .with_payload((&message.payload).try_into().map_err(err)?)
+        .finish()
+        .map_err(err)?;
+      client
+        .post_message(&message)
         .await
         .map_err(err)
         .and_then(|res| JsValue::from_serde(&res).map_err(err))

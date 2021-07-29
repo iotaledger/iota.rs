@@ -260,10 +260,11 @@ impl Task for ClientTask {
                     parent_msg_ids.dedup();
                     let network_id = client.get_network_id().await?;
                     let nonce_provider = client.get_pow_provider().await;
+                    let min_pow_score = client.get_min_pow_score().await?;
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(network_id)
                         .with_parents(Parents::new(parent_msg_ids)?)
-                        .with_nonce_provider(nonce_provider, 4000f64)
+                        .with_nonce_provider(nonce_provider, min_pow_score)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message = client.post_message(&message).await?;
