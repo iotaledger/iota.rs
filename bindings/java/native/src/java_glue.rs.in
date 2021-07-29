@@ -1213,7 +1213,7 @@ foreign_class!(
         /// Returns the signatures of a `MilestonePayload`.
         fn MilestonePayload::signatures(&self) -> Vec<MilestoneSignature>;
         /// Semantically validate a `MilestonePayload`.
-        fn MilestonePayload::validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize,) -> Result<()>;
+        fn MilestonePayload::validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize) -> Result<()>;
         /// Computes the identifier of a `MilestonePayload`.
         fn MilestonePayload::id(&self) -> String;
     }
@@ -1385,7 +1385,7 @@ foreign_class!(
     class RegularEssence {
         self_type RegularEssence;
         private constructor = empty;
-        private fn RegularEssence::to_string(&self) -> String;
+        private fn RegularEssence::to_string(&self) -> String; alias to_string;
         /// Gets the transaction inputs.
         fn RegularEssence::inputs(&self) -> Vec<Input>;
         /// Gets the transaction outputs.
@@ -1399,7 +1399,7 @@ foreign_class!(
     class Input {
         self_type Input;
         private constructor = empty;
-        private fn Input::to_string(&self) -> String;
+        private fn Input::to_string(&self) -> String; alias to_string;
         fn Input::kind(&self) -> InputKind;
     }
 );
@@ -1409,7 +1409,7 @@ foreign_class!(
     class Output {
         self_type Output;
         private constructor = empty;
-        private fn Output::to_string(&self) -> String;
+        private fn Output::to_string(&self) -> String; alias to_string;
         fn Output::kind(&self) -> OutputKind;
     }
 );
@@ -1419,7 +1419,7 @@ foreign_class!(
     class ReferenceUnlock {
         self_type ReferenceUnlock;
         private constructor = empty;
-        private fn ReferenceUnlock::to_string(&self) -> String;
+        private fn ReferenceUnlock::to_string(&self) -> String; alias to_string;
         /// Creates a new `ReferenceUnlock`.
         fn ReferenceUnlock::from(index: u16) -> Result<ReferenceUnlock>;
         /// Return the index of a `ReferenceUnlock`.
@@ -1432,7 +1432,7 @@ foreign_class!(
     class SignatureUnlock {
         self_type SignatureUnlock;
         constructor SignatureUnlock::from(public_key: Vec<u8>, signature: Vec<u8>) -> SignatureUnlock;
-        private fn SignatureUnlock::to_string(&self) -> String;
+        private fn SignatureUnlock::to_string(&self) -> String; alias to_string;
         
     }
 );
@@ -1442,7 +1442,7 @@ foreign_class!(
     class UnlockBlock {
         self_type UnlockBlock;
         private constructor = empty;
-        private fn UnlockBlock::to_string(&self) -> String;
+        private fn UnlockBlock::to_string(&self) -> String; alias to_string;
         fn UnlockBlock::kind(&self) -> UnlockBlockKind;
         
         fn UnlockBlock::get_as_reference(&self) -> Option<ReferenceUnlock>;
@@ -1455,7 +1455,7 @@ foreign_class!(
     class UnlockBlocks {
         self_type UnlockBlocks;
         private constructor = empty;
-        private fn UnlockBlocks::to_string(&self) -> String;
+        private fn UnlockBlocks::to_string(&self) -> String; alias to_string;
         fn UnlockBlocks::from(unlock_blocks: Vec<UnlockBlock>) -> Result<UnlockBlocks>;
         /// Gets a clone of an `UnlockBlock` from `UnlockBlocks`.
         /// Returns the referenced unlock block if the requested unlock block was a reference.
@@ -1468,7 +1468,7 @@ foreign_class!(
     class TreasuryPayload {
         self_type TreasuryPayload;
         constructor TreasuryPayload::new(input: TreasuryInput, output: TreasuryOutput) -> TreasuryPayload;
-        private fn TreasuryPayload::to_string(&self) -> String;
+        private fn TreasuryPayload::to_string(&self) -> String; alias to_string;
         fn TreasuryPayload::output(&self) -> TreasuryOutput;
         fn TreasuryPayload::input(&self) -> TreasuryInput;
     }
