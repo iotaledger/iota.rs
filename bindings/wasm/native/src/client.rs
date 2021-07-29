@@ -294,7 +294,7 @@ impl Client {
         Some(parents) => {
           let mut parent_ids = Vec::new();
           for msg_id in parents {
-            parent_ids.push(MessageId::from_str(&msg_id).map_err(err)?)
+            parent_ids.push(MessageId::from_str(msg_id).map_err(err)?)
           }
           parent_ids
         }
