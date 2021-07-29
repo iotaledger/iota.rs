@@ -717,7 +717,7 @@ Returns the nonce of a `Message`.
 
 Returns the parents of a `Message`.
 
-#### payload(): Optional<MessagePayload>
+#### payload(): Optional&lt;MessagePayload&gt;
 
 Returns the optional payload of a `Message`.
 
@@ -771,23 +771,23 @@ Serializes the message payload into a json string.
 
 Get the type of message this contains (used to select the correct getter). Possiple types are TRANSACTION, MILESTONE, INDEXATION, RECEIPT and TREASURY_TRANSACTION.
 
-#### getAsIndexation(): Optional<IndexationPayload>
+#### getAsIndexation(): Optional&lt;IndexationPayload&gt;
 
 Get this Payload as a Indexation payload type
 
-#### getAsTransaction(): Optional<TransactionPayload>
+#### getAsTransaction(): Optional&lt;TransactionPayload&gt;
 
 Get this Payload as a TransactionPayload type
 
-#### getAsTreasury(): Optional<TreasuryPayload>
+#### getAsTreasury(): Optional&lt;TreasuryPayload&gt;
 
 Get this Payload as a TreasuryPayload type
 
-#### getAsMilestone(): Optional<MilestonePayload>
+#### getAsMilestone(): Optional&lt;MilestonePayload&gt;
 
 Get this Payload as a MilestonePayload type
 
-#### getAsReceipt(): Optional<ReceiptPayload>
+#### getAsReceipt(): Optional&lt;ReceiptPayload&gt;
 
 Get this Payload as a ReceiptPayload type
 
@@ -940,7 +940,7 @@ The `TreasuryTransaction` used to fund the funds of a `ReceiptPayload`.
 
 ### Essence
 
-#### getAsRegular(): Optional<RegularEssence>
+#### getAsRegular(): Optional&lt;RegularEssence&gt;
 
 Get this Essence as a RegularEssence type
 
@@ -954,7 +954,7 @@ Gets the transaction inputs.
 
 Gets the transaction outputs.
 
-#### payload(): Optional<MessagePayload>
+#### payload(): Optional&lt;MessagePayload&gt;
 
 Gets the optional payload attached to this transaction
 
@@ -988,7 +988,7 @@ Returns the next proof of work index of a `MilestonePayloadEssence`.
 
 Returns the public keys of a `MilestonePayloadEssence`.
 
-#### receipt(): Optional<ReceiptPayload>
+#### receipt(): Optional&lt;ReceiptPayload&gt;
 
 Returns the optional receipt of a `MilestonePayloadEssence`.
 
@@ -1006,7 +1006,7 @@ Constructs an UnlockBlocks type from an array of blocks
 | ----- | ---------- | ----------- |
 | unlock_blocks | `UnlockBock[]` | The UnlockBocks to add |
 
-#### get(index) Optional<UnlockBlock>
+#### get(index) Optional&lt;UnlockBlock&gt;
 
 Gets a clone of an `UnlockBlock` from `UnlockBlocks`.
 Returns the referenced unlock block if the requested unlock block was a reference.
@@ -1021,11 +1021,11 @@ Returns the referenced unlock block if the requested unlock block was a referenc
 
 Get the type of message this contains (used to select the correct getter). Possiple types are ED25519 and REFERENCE.
 
-#### getAsReference(): Optional<ReferenceUnlock>
+#### getAsReference(): Optional&lt;ReferenceUnlock&gt;
 
 Get this UnockBock as a Reference Unlock type
 
-#### getAsSignature(): Optional<SignatureUnlock>
+#### getAsSignature(): Optional&lt;SignatureUnlock&gt;
 
 Get this UnockBock as a SignatureUnlock type
 
