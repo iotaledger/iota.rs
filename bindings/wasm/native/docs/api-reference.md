@@ -175,11 +175,16 @@ Get the balance.
     * [.getBalance(seed)](#Client+getBalance) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
     * [.getAddress()](#Client+getAddress) ⇒ [<code>GetAddressBuilder</code>](#GetAddressBuilder)
     * [.getInfo()](#Client+getInfo) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.networkInfo()](#Client+networkInfo) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getNetworkId()](#Client+getNetworkId) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getBech32Hrp()](#Client+getBech32Hrp) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getMinPowScore()](#Client+getMinPowScore) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getHealth()](#Client+getHealth) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getTips()](#Client+getTips) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getPeers()](#Client+getPeers) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getOutput(output_id)](#Client+getOutput) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.findMessages(indexation_keys, message_ids)](#Client+findMessages) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.findInputs(addresses, amount)](#Client+findInputs) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.findOutputs(outputs, addresses)](#Client+findOutputs) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getAddressBalances(addresses)](#Client+getAddressBalances) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getMilestone(index)](#Client+getMilestone) ⇒ <code>Promise.&lt;any&gt;</code>
@@ -199,6 +204,7 @@ Get the balance.
     * [.isAddressValid(address)](#Client+isAddressValid) ⇒ <code>boolean</code>
     * [.generateMnemonic()](#Client+generateMnemonic) ⇒ <code>string</code>
     * [.mnemonicToHexSeed(mnemonic)](#Client+mnemonicToHexSeed) ⇒ <code>string</code>
+    * [.getMessageId(message)](#Client+getMessageId) ⇒ <code>string</code>
 
 <a name="Client+message"></a>
 
@@ -257,6 +263,31 @@ GET /api/v1/addresses/{address} endpoint
 Get the nodeinfo.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+networkInfo"></a>
+
+### client.networkInfo() ⇒ <code>Promise.&lt;any&gt;</code>
+Gets the network related information such as network_id and min_pow_score
+and if it's the default one, sync it first.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getNetworkId"></a>
+
+### client.getNetworkId() ⇒ <code>Promise.&lt;any&gt;</code>
+Gets the network id of the node we're connecting to.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getBech32Hrp"></a>
+
+### client.getBech32Hrp() ⇒ <code>Promise.&lt;any&gt;</code>
+returns the bech32_hrp
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getMinPowScore"></a>
+
+### client.getMinPowScore() ⇒ <code>Promise.&lt;any&gt;</code>
+returns the bech32_hrp
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
 <a name="Client+getHealth"></a>
 
 ### client.getHealth() ⇒ <code>Promise.&lt;any&gt;</code>
@@ -298,6 +329,18 @@ Find all messages by provided message IDs and/or indexation_keys.
 | --- | --- |
 | indexation_keys | <code>any</code> | 
 | message_ids | <code>any</code> | 
+
+<a name="Client+findInputs"></a>
+
+### client.findInputs(addresses, amount) ⇒ <code>Promise.&lt;any&gt;</code>
+Function to find inputs from addresses for a provided amount (useful for offline signing)
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| addresses | <code>any</code> | 
+| amount | <code>BigInt</code> | 
 
 <a name="Client+findOutputs"></a>
 
@@ -515,6 +558,17 @@ Returns a hex encoded seed for a mnemonic.
 | --- | --- |
 | mnemonic | <code>string</code> | 
 
+<a name="Client+getMessageId"></a>
+
+### client.getMessageId(message) ⇒ <code>string</code>
+Returns the message id from a provided message.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| message | <code>string</code> | 
+
 <a name="ClientBuilder"></a>
 
 ## ClientBuilder
@@ -528,11 +582,12 @@ Returns a hex encoded seed for a mnemonic.
     * [.nodeAuth(url, jwt, username, password)](#ClientBuilder+nodeAuth) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncInterval(value)](#ClientBuilder+nodeSyncInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncDisabled()](#ClientBuilder+nodeSyncDisabled) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
-    * [.quorum(value)](#ClientBuilder+quorum)
-    * [.quorumSize(value)](#ClientBuilder+quorumSize)
-    * [.quorumThreshold(value)](#ClientBuilder+quorumThreshold)
-    * [.tipsInterval(value)](#ClientBuilder+tipsInterval)
-    * [.requestTimeout(value)](#ClientBuilder+requestTimeout)
+    * [.quorum(value)](#ClientBuilder+quorum) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.quorumSize(value)](#ClientBuilder+quorumSize) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.quorumThreshold(value)](#ClientBuilder+quorumThreshold) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.localPow(value)](#ClientBuilder+localPow) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.tipsInterval(value)](#ClientBuilder+tipsInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.requestTimeout(value)](#ClientBuilder+requestTimeout) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.build()](#ClientBuilder+build) ⇒ [<code>Client</code>](#Client)
 
 <a name="ClientBuilder+node"></a>
@@ -607,7 +662,7 @@ Returns a hex encoded seed for a mnemonic.
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 <a name="ClientBuilder+quorum"></a>
 
-### clientBuilder.quorum(value)
+### clientBuilder.quorum(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -616,7 +671,7 @@ Returns a hex encoded seed for a mnemonic.
 
 <a name="ClientBuilder+quorumSize"></a>
 
-### clientBuilder.quorumSize(value)
+### clientBuilder.quorumSize(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -625,16 +680,25 @@ Returns a hex encoded seed for a mnemonic.
 
 <a name="ClientBuilder+quorumThreshold"></a>
 
-### clientBuilder.quorumThreshold(value)
+### clientBuilder.quorumThreshold(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
 | --- | --- |
 | value | <code>number</code> | 
 
+<a name="ClientBuilder+localPow"></a>
+
+### clientBuilder.localPow(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+**Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+
+| Param | Type |
+| --- | --- |
+| value | <code>boolean</code> | 
+
 <a name="ClientBuilder+tipsInterval"></a>
 
-### clientBuilder.tipsInterval(value)
+### clientBuilder.tipsInterval(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -643,7 +707,7 @@ Returns a hex encoded seed for a mnemonic.
 
 <a name="ClientBuilder+requestTimeout"></a>
 
-### clientBuilder.requestTimeout(value)
+### clientBuilder.requestTimeout(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |

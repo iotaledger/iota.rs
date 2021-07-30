@@ -3,6 +3,7 @@
 
 use crate::client::Client;
 use crate::utils::err;
+use crate::MessageWrapper;
 use iota_client::bee_message::MessageId;
 use iota_client::bee_rest_api::types::dtos::MessageDto;
 use js_sys::Promise;
@@ -49,7 +50,14 @@ impl MessageGetter {
         .data(&MessageId::from_str(&message_id).map_err(err)?)
         .await
         .map_err(err)
-        .and_then(|message| JsValue::from_serde(&MessageDto::from(&message)).map_err(err))
+        .and_then(|message| {
+          let message_id = message.id().0;
+          JsValue::from_serde(&MessageWrapper {
+            message_id,
+            message: MessageDto::from(&message),
+          })
+          .map_err(err)
+        })
     });
     Ok(promise)
   }

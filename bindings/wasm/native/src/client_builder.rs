@@ -116,34 +116,40 @@ impl ClientBuilder {
   }
 
   #[wasm_bindgen(js_name = quorum)]
-  pub fn quorum(&mut self, value: bool) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_quorum(value))
+  pub fn quorum(&mut self, value: bool) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_quorum(value))?;
+    Ok(self.clone())
   }
 
   #[wasm_bindgen(js_name = quorumSize)]
-  pub fn quorum_size(&mut self, value: usize) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_quorum_size(value))
+  pub fn quorum_size(&mut self, value: usize) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_quorum_size(value))?;
+    Ok(self.clone())
   }
 
   #[wasm_bindgen(js_name = quorumThreshold)]
-  pub fn quorum_threshold(&mut self, value: usize) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_quorum_threshold(value))
+  pub fn quorum_threshold(&mut self, value: usize) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_quorum_threshold(value))?;
+    Ok(self.clone())
   }
 
   // We currently don't support local PoW with wasm
-  // #[wasm_bindgen(js_name = localPoW)]
-  // pub fn local_pow(&mut self, value: bool) -> Result<(), JsValue> {
-  //   self.with_mut(|builder| builder.with_local_pow(value))
-  // }
+  #[wasm_bindgen(js_name = localPow)]
+  pub fn local_pow(&mut self, value: bool) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_local_pow(value))?;
+    Ok(self.clone())
+  }
 
   #[wasm_bindgen(js_name = tipsInterval)]
-  pub fn tips_interval(&mut self, value: u32) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_tips_interval(u64::from(value)))
+  pub fn tips_interval(&mut self, value: u32) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_tips_interval(u64::from(value)))?;
+    Ok(self.clone())
   }
 
   #[wasm_bindgen(js_name = requestTimeout)]
-  pub fn request_timeout(&mut self, value: u32) -> Result<(), JsValue> {
-    self.with_mut(|builder| builder.with_request_timeout(to_duration(value)))
+  pub fn request_timeout(&mut self, value: u32) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_request_timeout(to_duration(value)))?;
+    Ok(self.clone())
   }
 
   pub(crate) fn take_builder(&mut self) -> Result<RustClientBuilder, JsValue> {

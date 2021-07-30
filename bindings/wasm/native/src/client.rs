@@ -16,14 +16,19 @@ use crate::utils::err;
 use iota_client::bee_message::input::UtxoInput;
 use iota_client::bee_message::parents::Parents;
 use iota_client::bee_message::payload::transaction::TransactionId;
+use iota_client::bee_message::Message;
 use iota_client::bee_message::MessageBuilder as RustMessageBuilder;
 use iota_client::bee_message::MessageId;
+use iota_client::bee_rest_api::types::dtos::MessageDto as BeeMessageDto;
 use iota_client::bee_rest_api::types::dtos::PayloadDto;
 use iota_client::common::packable::Packable;
 use iota_client::Client as RustClient;
 use iota_client::ClientMiner;
 use iota_client::Seed;
-use std::{convert::TryInto, str::FromStr};
+use std::{
+  convert::{TryFrom, TryInto},
+  str::FromStr,
+};
 // #[wasm_bindgen]
 // extern "C" {
 //     // Use `js_namespace` here to bind `console.log(..)` instead of just
@@ -85,6 +90,59 @@ impl Client {
     Ok(future_to_promise(async move {
       client
         .get_info()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// Gets the network related information such as network_id and min_pow_score
+  /// and if it's the default one, sync it first.
+  #[wasm_bindgen(js_name = networkInfo)]
+  pub fn get_network_info(&self) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .get_network_info()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// Gets the network id of the node we're connecting to.
+  #[wasm_bindgen(js_name = getNetworkId)]
+  pub fn get_network_id(&self) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .get_network_id()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// returns the bech32_hrp
+  #[wasm_bindgen(js_name = getBech32Hrp)]
+  pub fn get_bech32_hrp(&self) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .get_bech32_hrp()
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// returns the bech32_hrp
+  #[wasm_bindgen(js_name = getMinPowScore)]
+  pub fn get_min_pow_score(&self) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .get_min_pow_score()
         .await
         .map_err(err)
         .and_then(|res| JsValue::from_serde(&res).map_err(err))
@@ -158,6 +216,20 @@ impl Client {
     Ok(future_to_promise(async move {
       client
         .find_messages(&indexation_keys, &message_ids)
+        .await
+        .map_err(err)
+        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+    }))
+  }
+
+  /// Function to find inputs from addresses for a provided amount (useful for offline signing)
+  #[wasm_bindgen(js_name = findInputs)]
+  pub fn find_inputs(&self, addresses: JsValue, amount: u64) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    let addresses: Vec<String> = addresses.into_serde().map_err(err)?;
+    Ok(future_to_promise(async move {
+      client
+        .find_inputs(addresses, amount)
         .await
         .map_err(err)
         .and_then(|res| JsValue::from_serde(&res).map_err(err))
@@ -439,5 +511,16 @@ impl Client {
   #[wasm_bindgen(js_name = mnemonicToHexSeed)]
   pub fn mnemonic_to_hex_seed(&self, mnemonic: &str) -> Result<String, JsValue> {
     RustClient::mnemonic_to_hex_seed(mnemonic).map_err(err)
+  }
+
+  /// Returns the message id from a provided message.
+  #[wasm_bindgen(js_name = getMessageId)]
+  pub fn get_message_id(&self, message: &str) -> Result<String, JsValue> {
+    // Try BeeMessageDto and if it fails Message
+    let message = match serde_json::from_str::<BeeMessageDto>(message) {
+      Ok(message_dto) => Message::try_from(&message_dto).map_err(err)?,
+      Err(_) => serde_json::from_str::<Message>(message).map_err(err)?,
+    };
+    Ok(message.id().0.to_string())
   }
 }

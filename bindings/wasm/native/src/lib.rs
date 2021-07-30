@@ -6,6 +6,8 @@
 #[macro_use]
 extern crate serde;
 
+use iota_client::bee_message::MessageId;
+use iota_client::bee_rest_api::types::dtos::MessageDto;
 use wasm_bindgen::prelude::*;
 
 #[macro_use]
@@ -27,4 +29,12 @@ pub use client_builder::ClientBuilder;
 pub fn start() -> Result<(), JsValue> {
   console_error_panic_hook::set_once();
   Ok(())
+}
+
+/// Message wrapper to have the messageId together with the message
+#[derive(Serialize)]
+pub struct MessageWrapper {
+  #[serde(rename = "messageId")]
+  message_id: MessageId,
+  message: MessageDto,
 }

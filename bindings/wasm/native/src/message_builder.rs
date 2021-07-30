@@ -3,6 +3,7 @@
 
 use crate::client::Client;
 use crate::utils::err;
+use crate::MessageWrapper;
 use iota_client::bee_message::address::Address;
 use iota_client::bee_message::input::UtxoInput;
 use iota_client::bee_message::payload::transaction::TransactionId;
@@ -180,12 +181,6 @@ impl MessageBuilder {
         sender.finish().await
       };
       sender_future.map_err(err).and_then(|message| {
-        #[derive(Serialize)]
-        struct MessageWrapper {
-          #[serde(rename = "messageId")]
-          message_id: MessageId,
-          message: MessageDto,
-        }
         let message_id = message.id().0;
         JsValue::from_serde(&MessageWrapper {
           message_id,
