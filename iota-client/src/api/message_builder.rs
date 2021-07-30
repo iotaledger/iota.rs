@@ -274,7 +274,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let account_index = self.account_index.unwrap_or(0);
         for input in inputs {
             // Only add unspent outputs
-            if let Ok(output) = self.client.get_output(&input).await {
+            if let Ok(output) = self.client.get_output(input).await {
                 if !output.is_spent {
                     let (output_amount, output_address, check_treshold) =
                         ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
@@ -363,7 +363,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 let address_outputs = self
                     .client
                     .get_address()
-                    .outputs(&str_address, Default::default())
+                    .outputs(str_address, Default::default())
                     .await?;
 
                 // We store output responses locally in outputs and dust_allowance_outputs and after each output we sort
@@ -538,7 +538,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .cloned()
                 .filter(|d| d.1 == address)
                 .collect();
-            is_dust_allowed(&self.client, address, created_or_consumed_outputs).await?;
+            is_dust_allowed(self.client, address, created_or_consumed_outputs).await?;
         }
 
         // Build signed transaction payload
@@ -709,7 +709,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .1
                 .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
-            None => finish_pow(&self.client, payload).await?,
+            None => finish_pow(self.client, payload).await?,
         };
 
         let msg_id = self.client.post_message(&final_message).await?;
