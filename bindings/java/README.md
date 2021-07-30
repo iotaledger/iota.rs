@@ -27,6 +27,12 @@ cd iota.rs/bindings/java
 
 Make sure to make gradlew executable (`chmod +x gradlew`)
 
+- Running an example using maven
+```
+cd iota.rs/bindings/java/examples/basic-app
+mvn test
+```
+
 ## Example for an external project
 Project skeleton can be found [here](https://github.com/kwek20/iota-rs-java).
 

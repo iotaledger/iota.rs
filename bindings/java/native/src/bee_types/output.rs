@@ -310,6 +310,12 @@ impl Display for Output {
     }
 }
 
+impl From<&RustOutput> for Output {
+    fn from(output: &RustOutput) -> Output {
+        Output { output: output.clone() }
+    }
+}
+
 /// Describes a deposit to a single address which is unlocked via a signature.
 #[derive(Clone, Debug)]
 pub struct SignatureLockedSingleOutput(RustSignatureLockedSingleOutput);

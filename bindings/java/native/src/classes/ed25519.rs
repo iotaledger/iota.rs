@@ -6,6 +6,7 @@ use std::convert::AsMut;
 use iota_client::crypto::signatures::ed25519::{
     PublicKey as RustPublicKey, SecretKey as RustSecretKey, Signature as RustSignature,
 };
+use std::fmt::{Display, Formatter};
 
 use crate::Result;
 use anyhow::anyhow;
@@ -43,6 +44,16 @@ impl SecretKey {
     }
 }
 
+impl Display for SecretKey {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            hex::encode(self.to_le_bytes())
+        )
+    }
+}
+
 impl From<RustSecretKey> for SecretKey {
     fn from(key: RustSecretKey) -> Self {
         Self(key)
@@ -76,6 +87,17 @@ impl core::convert::TryFrom<&[u8; 32]> for PublicKey {
         }
     }
 }
+
+impl Display for PublicKey {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            hex::encode(self.to_compressed_bytes())
+        )
+    }
+}
+
 impl From<RustPublicKey> for PublicKey {
     fn from(output: RustPublicKey) -> Self {
         Self(output)
@@ -93,6 +115,16 @@ impl Signature {
         let mut bs_arr: [u8; SIGNATURE_LENGTH] = [0; SIGNATURE_LENGTH];
         bs_arr.copy_from_slice(&bs[0..SIGNATURE_LENGTH]);
         Self(RustSignature::from_bytes(bs_arr))
+    }
+}
+
+impl Display for Signature {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            hex::encode(self.to_bytes())
+        )
     }
 }
 

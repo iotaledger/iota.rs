@@ -609,6 +609,7 @@ impl HttpClient {
         {
             request_builder = request_builder.timeout(_timeout);
         }
+        request_builder = request_builder.header("Content-Type", "application/octet-stream");
         Self::parse_response(request_builder.body(body.to_vec()).send().await?).await
     }
 
@@ -648,6 +649,7 @@ impl HttpClient {
         if let Some(jwt) = node.jwt {
             request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
         }
+        request_builder = request_builder.set("Content-Type", "application/octet-stream");
         Ok(request_builder.send_bytes(body)?.into())
     }
 

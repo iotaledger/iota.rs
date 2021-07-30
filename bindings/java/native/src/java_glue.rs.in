@@ -112,8 +112,8 @@ foreign_enum!(
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases)]
     class BrokerOptions {
-        #[derive(camelCaseAliases)]
         self_type BrokerOptions;
         constructor BrokerOptions::new() -> BrokerOptions;
         fn BrokerOptions::automatic_disconnect(&self, disconnect: bool) -> BrokerOptions;
@@ -169,9 +169,9 @@ foreign_class!(
         fn ClientBuilder::with_local_pow(&mut self, local: bool) -> ClientBuilder;
         /// Sets after how many seconds new tips will be requested during PoW
         fn ClientBuilder::with_tips_interval(&mut self, tips: u64) -> ClientBuilder;
-        /// Sets the default request timeout.
+        /// Sets the default request timeout in seconds.
         fn ClientBuilder::with_request_timeout(&mut self, timeout: Duration) -> ClientBuilder;
-        /// Sets the request timeout for a specific API usage.
+        /// Sets the request timeout in seconds for a specific API usage.
         fn ClientBuilder::with_api_timeout(&mut self, api: Api, timeout: Duration) -> ClientBuilder;
         /// Build the Client instance.
         fn ClientBuilder::finish(&mut self) -> Result<Client>;
@@ -224,7 +224,7 @@ foreign_class!(
         fn Client::get_milestone(&self, index: u32) -> Result<MilestoneResponse>;
         
         /// GET /api/v1/milestones/{index}/utxo-changes endpoint
-        /// Get the milestone by the given index.
+        /// Gets the utxo changes by the given milestone index.
         fn Client::get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse>;
 
         /// GET /api/v1/receipts endpoint
@@ -312,7 +312,7 @@ foreign_class!(
         private fn NodeInfoWrapper::to_string(&self) -> String; alias to_string;
         private fn NodeInfoWrapper::eq(&self, o: &NodeInfoWrapper) -> bool; alias rustEq;
         fn NodeInfoWrapper::url(&self) -> &str;
-        fn NodeInfoWrapper::nodeinfo(&self) -> InfoResponse;
+        fn NodeInfoWrapper::nodeinfo(&self) -> InfoResponse; alias nodeInfo;
     }
 );
 
@@ -492,7 +492,9 @@ foreign_class!(
         self_type SignatureLockedSingleOutputDto;
         private constructor = empty;
         private fn SignatureLockedSingleOutputDto::to_string(&self) -> String; alias to_string;
+        /// Returns the amount of a `SignatureLockedSingleOutputDto`.
         fn SignatureLockedSingleOutputDto::amount(&self) -> u64;
+        /// Returns the address of a `SignatureLockedSingleOutputDto`.
         fn SignatureLockedSingleOutputDto::address(&self) -> AddressDto;
     }
 );
@@ -505,7 +507,9 @@ foreign_class!(
         self_type SignatureLockedDustAllowanceOutputDto;
         private constructor = empty;
         private fn SignatureLockedDustAllowanceOutputDto::to_string(&self) -> String; alias to_string;
+        /// Returns the amount of a `SignatureLockedDustAllowanceOutputDto`.
         fn SignatureLockedDustAllowanceOutputDto::amount(&self) -> u64;
+        /// Returns the address of a `SignatureLockedDustAllowanceOutputDto`.
         fn SignatureLockedDustAllowanceOutputDto::address(&self) -> AddressDto;
     }
 );
@@ -529,7 +533,7 @@ foreign_class!(
         private fn SignatureLockedSingleOutput::to_string(&self) -> String; alias to_string;
         /// Creates a new `SignatureLockedSingleOutput`.
         fn SignatureLockedSingleOutput::from(address: Address, amount: u64) -> Result<SignatureLockedSingleOutput>;
-        /// Returns the amount of a `SignatureLockedDustAllowanceOutput`.
+        /// Returns the amount of a `SignatureLockedSingleOutput`.
         fn SignatureLockedSingleOutput::amount(&self) -> u64;
         /// Returns the address of a `SignatureLockedSingleOutput`.
         fn SignatureLockedSingleOutput::address(&self) -> Address;
@@ -679,27 +683,39 @@ foreign_class!(
     }
 );
 foreign_class!(
-    #[derive(Display)]
+    /// Represent the object that nodes gossip around the network.
+    #[derive(Display, camelCaseAliases)]
     class Message {
         self_type Message;
         private constructor = empty;
         private fn Message::to_string(&self) -> String; alias to_string;
+        /// Creates a new `MessageBuilder` to construct an instance of a `Message`.
         fn Message::builder() -> MessageBuilder;
+        /// Returns the network id of a `Message`.
         fn Message::network_id(&self) -> u64;
+        /// Computes the identifier of the message.
         fn Message::id(&self) -> MessageId;
+        /// Returns the nonce of a `Message`.
         fn Message::nonce(&self) -> u64;
+        /// Returns the parents of a `Message`.
         fn Message::parents(&self) -> Vec<MessageId>;
+        /// Returns the optional payload of a `Message`.
         fn Message::payload(&self) -> Option<MessagePayload>;
     }
 );
 
 foreign_class!(
+    /// A builder to build a `Message`.
     #[derive(camelCaseAliases)]
     class MessageBuilder {
         self_type MessageBuilder;
+        /// Creates a new `MessageBuilder`.
         constructor MessageBuilder::new() -> MessageBuilder;
+        /// Adds a network id to a `MessageBuilder`.
         fn MessageBuilder::network_id(&self, network_id: u64) -> MessageBuilder;
+        /// Adds parents to a `MessageBuilder`.
         fn MessageBuilder::parents(&self, parents: Vec<MessageId>) -> Result<MessageBuilder>;
+        /// Adds a payload to a `MessageBuilder`.
         fn MessageBuilder::payload(&self, payload: MessagePayload) -> MessageBuilder;
         //fn MessageBuilder::nonce_provider(&self) -> MessageBuilder;
         fn MessageBuilder::finish(&self) -> Result<Message>;
@@ -896,10 +912,17 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// Builder of GET /api/v1/address/{address} endpoint
     class GetAddressBuilder {
         self_type GetAddressBuilder<'a>;
         private constructor = empty;
+        /// Consume the builder and get the balance of a given Bech32 encoded address.
+        /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
+        /// reasons. User should sweep the address to reduce the amount of outputs.
         fn GetAddressBuilder::balance(&self, address: &str) -> Result<BalanceAddressResponse>;
+        /// Consume the builder and get all outputs that use a given address.
+        /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
+        /// reasons. User should sweep the address to reduce the amount of outputs.
         fn GetAddressBuilder::outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>>;
     }
 );
@@ -1093,20 +1116,22 @@ foreign_class!(class RustHex {
 });
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class Signature {
         self_type Signature;
         private constructor = empty;
+        private fn Signature::to_string(&self) -> String; alias to_string;
         fn Signature::to_bytes(&self) -> Vec<u8>;
         fn Signature::from_bytes(bs: Vec<u8>) -> Signature;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class PublicKey {
         self_type PublicKey;
         private constructor = empty;
+        private fn PublicKey::to_string(&self) -> String; alias to_string;
         fn PublicKey::verify(&self, sig: Signature, msg: Vec<u8>) -> bool;
         fn PublicKey::to_compressed_bytes(&self) -> Vec<u8>;
         fn PublicKey::from_compressed_bytes(bs: Vec<u8>) -> Result<PublicKey>;
@@ -1114,10 +1139,11 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class SecretKey {
         self_type SecretKey;
         private constructor = empty;
+        private fn SecretKey::to_string(&self) -> String; alias to_string;
         fn SecretKey::generate() -> Result<SecretKey>;
         fn SecretKey::from_le_bytes(bs: Vec<u8>) -> Result<SecretKey>;
         
@@ -1166,7 +1192,7 @@ foreign_class!(
         private fn IndexationPayload::to_string(&self) -> String; alias to_string;
         /// Creates a new `IndexationPayload`.
         fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias fromBytes;
-        /// Creates a new `IndexationPayload` fro strings
+        /// Creates a new `IndexationPayload` from strings
         fn IndexationPayload::new_from_string(index: &str, data: &str) -> Result<IndexationPayload>; alias fromStrings;
         /// Returns the index of an `IndexationPayload`.
         fn IndexationPayload::index(&self) -> &[u8];
@@ -1176,6 +1202,7 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// A payload which defines the inclusion set of other messages in the Tangle.
     #[derive(camelCaseAliases, Display)]
     class MilestonePayload {
         self_type MilestonePayload;
@@ -1186,7 +1213,7 @@ foreign_class!(
         /// Returns the signatures of a `MilestonePayload`.
         fn MilestonePayload::signatures(&self) -> Vec<MilestoneSignature>;
         /// Semantically validate a `MilestonePayload`.
-        fn MilestonePayload::validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize,) -> Result<()>;
+        fn MilestonePayload::validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize) -> Result<()>;
         /// Computes the identifier of a `MilestonePayload`.
         fn MilestonePayload::id(&self) -> String;
     }
@@ -1218,7 +1245,7 @@ foreign_class!(
         fn MilestonePayloadEssence::merkle_proof(&self) -> Vec<u8>;
         /// Returns the next proof of work score of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::next_pow_score(&self) -> u32;
-        /// Returns the newt proof of work index of a `MilestonePayloadEssence`.
+        /// Returns the next proof of work index of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::next_pow_score_milestone(&self) -> u32;
         /// Returns the public keys of a `MilestonePayloadEssence`.
         fn MilestonePayloadEssence::public_keys(&self) -> Vec<PublicKey>;
@@ -1358,11 +1385,11 @@ foreign_class!(
     class RegularEssence {
         self_type RegularEssence;
         private constructor = empty;
-        private fn RegularEssence::to_string(&self) -> String;
+        private fn RegularEssence::to_string(&self) -> String; alias to_string;
         /// Gets the transaction inputs.
         fn RegularEssence::inputs(&self) -> Vec<Input>;
         /// Gets the transaction outputs.
-        fn RegularEssence::outputs(&self) -> Vec<OutputDto>;
+        fn RegularEssence::outputs(&self) -> Vec<Output>;
         // Gets the transaction chained payload.
         fn RegularEssence::payload(&self) -> Option<MessagePayload>;
     }
@@ -1372,18 +1399,21 @@ foreign_class!(
     class Input {
         self_type Input;
         private constructor = empty;
-        private fn Input::to_string(&self) -> String;
+        private fn Input::to_string(&self) -> String; alias to_string;
         fn Input::kind(&self) -> InputKind;
     }
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, Display)]
     class Output {
         self_type Output;
         private constructor = empty;
-        private fn Output::to_string(&self) -> String;
+        private fn Output::to_string(&self) -> String; alias to_string;
         fn Output::kind(&self) -> OutputKind;
+        fn Output::as_signature_locked_single_output(&self) -> Result<SignatureLockedSingleOutput>;
+        fn Output::as_signature_locked_dust_allowance_output(&self) -> Result<SignatureLockedDustAllowanceOutput>;
+        fn Output::as_treasury_output(&self) -> Result<TreasuryOutput>;
     }
 );
 
@@ -1392,7 +1422,7 @@ foreign_class!(
     class ReferenceUnlock {
         self_type ReferenceUnlock;
         private constructor = empty;
-        private fn ReferenceUnlock::to_string(&self) -> String;
+        private fn ReferenceUnlock::to_string(&self) -> String; alias to_string;
         /// Creates a new `ReferenceUnlock`.
         fn ReferenceUnlock::from(index: u16) -> Result<ReferenceUnlock>;
         /// Return the index of a `ReferenceUnlock`.
@@ -1405,17 +1435,17 @@ foreign_class!(
     class SignatureUnlock {
         self_type SignatureUnlock;
         constructor SignatureUnlock::from(public_key: Vec<u8>, signature: Vec<u8>) -> SignatureUnlock;
-        private fn SignatureUnlock::to_string(&self) -> String;
+        private fn SignatureUnlock::to_string(&self) -> String; alias to_string;
         
     }
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, Display)]
     class UnlockBlock {
         self_type UnlockBlock;
         private constructor = empty;
-        private fn UnlockBlock::to_string(&self) -> String;
+        private fn UnlockBlock::to_string(&self) -> String; alias to_string;
         fn UnlockBlock::kind(&self) -> UnlockBlockKind;
         
         fn UnlockBlock::get_as_reference(&self) -> Option<ReferenceUnlock>;
@@ -1428,7 +1458,7 @@ foreign_class!(
     class UnlockBlocks {
         self_type UnlockBlocks;
         private constructor = empty;
-        private fn UnlockBlocks::to_string(&self) -> String;
+        private fn UnlockBlocks::to_string(&self) -> String; alias to_string;
         fn UnlockBlocks::from(unlock_blocks: Vec<UnlockBlock>) -> Result<UnlockBlocks>;
         /// Gets a clone of an `UnlockBlock` from `UnlockBlocks`.
         /// Returns the referenced unlock block if the requested unlock block was a reference.
@@ -1441,7 +1471,7 @@ foreign_class!(
     class TreasuryPayload {
         self_type TreasuryPayload;
         constructor TreasuryPayload::new(input: TreasuryInput, output: TreasuryOutput) -> TreasuryPayload;
-        private fn TreasuryPayload::to_string(&self) -> String;
+        private fn TreasuryPayload::to_string(&self) -> String; alias to_string;
         fn TreasuryPayload::output(&self) -> TreasuryOutput;
         fn TreasuryPayload::input(&self) -> TreasuryInput;
     }
