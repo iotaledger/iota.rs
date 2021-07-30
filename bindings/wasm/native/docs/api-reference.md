@@ -582,6 +582,7 @@ Returns the message id from a provided message.
     * [.nodeAuth(url, jwt, username, password)](#ClientBuilder+nodeAuth) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncInterval(value)](#ClientBuilder+nodeSyncInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncDisabled()](#ClientBuilder+nodeSyncDisabled) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.offlineMode()](#ClientBuilder+offlineMode) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorum(value)](#ClientBuilder+quorum) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumSize(value)](#ClientBuilder+quorumSize) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumThreshold(value)](#ClientBuilder+quorumThreshold) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
@@ -659,6 +660,10 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+nodeSyncDisabled"></a>
 
 ### clientBuilder.nodeSyncDisabled() ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+**Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+<a name="ClientBuilder+offlineMode"></a>
+
+### clientBuilder.offlineMode() ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 <a name="ClientBuilder+quorum"></a>
 
@@ -781,10 +786,13 @@ reasons. User should sweep the address to reduce the amount of outputs.
         * [.accountIndex(account_index)](#MessageBuilder+accountIndex) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
         * [.initialAddressIndex(initial_address_index)](#MessageBuilder+initialAddressIndex) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
         * [.parents(parents)](#MessageBuilder+parents) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
-        * [.input(transaction_id, index)](#MessageBuilder+input) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+        * [.input(output_id)](#MessageBuilder+input) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
         * [.inputRange(start, end)](#MessageBuilder+inputRange) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
         * [.output(address, amount)](#MessageBuilder+output) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
         * [.dustAllowanceOutput(address, amount)](#MessageBuilder+dustAllowanceOutput) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+        * [.prepareTransaction()](#MessageBuilder+prepareTransaction) ⇒ <code>Promise.&lt;any&gt;</code>
+        * [.signTransaction(prepared_transaction_data, seed, input_range_start, input_range_end)](#MessageBuilder+signTransaction) ⇒ <code>Promise.&lt;any&gt;</code>
+        * [.finishMessage(payload)](#MessageBuilder+finishMessage) ⇒ <code>Promise.&lt;any&gt;</code>
         * [.submit()](#MessageBuilder+submit) ⇒ <code>Promise.&lt;any&gt;</code>
     * _static_
         * [.new(client)](#MessageBuilder.new) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
@@ -845,13 +853,12 @@ reasons. User should sweep the address to reduce the amount of outputs.
 
 <a name="MessageBuilder+input"></a>
 
-### messageBuilder.input(transaction_id, index) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+### messageBuilder.input(output_id) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
 | --- | --- |
-| transaction_id | <code>string</code> | 
-| index | <code>number</code> | 
+| output_id | <code>string</code> | 
 
 <a name="MessageBuilder+inputRange"></a>
 
@@ -882,6 +889,37 @@ reasons. User should sweep the address to reduce the amount of outputs.
 | --- | --- |
 | address | <code>string</code> | 
 | amount | <code>BigInt</code> | 
+
+<a name="MessageBuilder+prepareTransaction"></a>
+
+### messageBuilder.prepareTransaction() ⇒ <code>Promise.&lt;any&gt;</code>
+Prepare a transaction
+
+**Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
+<a name="MessageBuilder+signTransaction"></a>
+
+### messageBuilder.signTransaction(prepared_transaction_data, seed, input_range_start, input_range_end) ⇒ <code>Promise.&lt;any&gt;</code>
+Sign a transaction
+
+**Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
+
+| Param | Type |
+| --- | --- |
+| prepared_transaction_data | <code>any</code> | 
+| seed | <code>string</code> | 
+| input_range_start | <code>number</code> \| <code>undefined</code> | 
+| input_range_end | <code>number</code> \| <code>undefined</code> | 
+
+<a name="MessageBuilder+finishMessage"></a>
+
+### messageBuilder.finishMessage(payload) ⇒ <code>Promise.&lt;any&gt;</code>
+Create a message with a provided payload
+
+**Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
+
+| Param | Type |
+| --- | --- |
+| payload | <code>any</code> | 
 
 <a name="MessageBuilder+submit"></a>
 

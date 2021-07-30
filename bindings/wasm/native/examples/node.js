@@ -4,7 +4,7 @@
 const { ClientBuilder } = require('../node/iota_client_wasm')
 
 async function main() {
-    let client = new ClientBuilder().node("https://api.lb-0.testnet.chrysalis2.com").build();
+    let client = new ClientBuilder().offlineMode().build();
     // Get the nodeinfo
     console.log(await client.getInfo());
     // let message = await client.message().index(new TextEncoder().encode("test index")).data(new TextEncoder().encode("test data")).submit()
@@ -62,7 +62,6 @@ async function main() {
     // console.log(await client.getReceiptsMigratedAt(973351));
     // console.log(await client.getTreasury());
     // console.log(await client.getIncludedMessage("17057e92991f836ff2f0f88f2abb93ba0d8eda37efc1312daad599c1326bce31"));
-    // console.log(await client.findInputs(["atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"], BigInt(1000000)));
     // console.log(await client.findInputs(["atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf"], BigInt(1000000)));
     // console.log(await client.networkInfo());
     // console.log(await client.getNetworkId());

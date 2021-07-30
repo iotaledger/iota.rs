@@ -74,6 +74,9 @@ impl AddressGetter {
       if let Some(range) = options.range {
         address_gettter = address_gettter.with_range(range);
       }
+      if let Some(bech32_hrp) = options.bech32_hrp {
+        address_gettter = address_gettter.with_bech32_hrp(bech32_hrp);
+      }
       if options.include_internal {
         address_gettter
           .get_all()

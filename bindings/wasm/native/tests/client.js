@@ -150,4 +150,25 @@ describe('Client', () => {
     assert.strictEqual('name' in info.nodeinfo, true)
     assert.strictEqual(info.nodeinfo.name, 'HORNET')
   })
+
+  it('offline transaction', async () => {
+    const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
+    const addresses = await client.getAddresses(seed)
+      .bech32Hrp("atoi")
+      .accountIndex(0)
+      .range(0, 5)
+      .get();
+    let inputs = await client.findInputs(addresses, BigInt(1000000));
+    const prepared_transaction = await client
+      .message()
+      .input(inputs[0])
+      .output('atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf', BigInt(1000000))
+      .prepareTransaction();
+    const signed_transaction = await client
+      .message()
+      .signTransaction(prepared_transaction, seed);
+    const message = await client
+      .message()
+      .finishMessage(signed_transaction);
+  })
 })

@@ -115,6 +115,12 @@ impl ClientBuilder {
     Ok(self.clone())
   }
 
+  #[wasm_bindgen(js_name = offlineMode)]
+  pub fn offline_mode(&mut self) -> Result<ClientBuilder, JsValue> {
+    self.with_mut(|builder| builder.with_offline_mode())?;
+    Ok(self.clone())
+  }
+
   #[wasm_bindgen(js_name = quorum)]
   pub fn quorum(&mut self, value: bool) -> Result<ClientBuilder, JsValue> {
     self.with_mut(|builder| builder.with_quorum(value))?;
