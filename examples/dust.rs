@@ -26,10 +26,10 @@ async fn main() -> Result<()> {
         .message()
         .with_seed(&seed)
         .with_dust_allowance_output(
-            &"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
+            "atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
             1_000_000,
         )?
-        .with_output(&"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", 1)?
+        .with_output("atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", 1)?
         .finish()
         .await?;
 

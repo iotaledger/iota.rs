@@ -173,7 +173,7 @@ impl Task for ClientTask {
                     bech32_hrp,
                     include_internal,
                 } => {
-                    let mut getter = client.get_addresses(&seed);
+                    let mut getter = client.get_addresses(seed);
                     if let Some(account_index) = account_index {
                         getter = getter.with_account_index(*account_index);
                     }
@@ -250,7 +250,7 @@ impl Task for ClientTask {
                         Some(parents) => {
                             let mut parent_ids = Vec::new();
                             for msg_id in parents {
-                                parent_ids.push(MessageId::from_str(&msg_id)?)
+                                parent_ids.push(MessageId::from_str(msg_id)?)
                             }
                             parent_ids
                         }
@@ -274,19 +274,19 @@ impl Task for ClientTask {
                     serde_json::to_string(&messages)?
                 }
                 Api::GetMessage(id) => {
-                    let message = client.get_message().data(&id).await?;
+                    let message = client.get_message().data(id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
                         message: BeeMessageDto::from(&message),
                     })?
                 }
                 Api::GetMessageMetadata(id) => {
-                    let metadata = client.get_message().metadata(&id).await?;
+                    let metadata = client.get_message().metadata(id).await?;
                     serde_json::to_string(&metadata)?
                 }
-                Api::GetRawMessage(id) => client.get_message().raw(&id).await?,
+                Api::GetRawMessage(id) => client.get_message().raw(id).await?,
                 Api::GetMessageChildren(id) => {
-                    let messages = client.get_message().children(&id).await?;
+                    let messages = client.get_message().children(id).await?;
                     serde_json::to_string(&messages)?
                 }
                 Api::GetOutput(id) => {
