@@ -46,11 +46,7 @@ impl SecretKey {
 
 impl Display for SecretKey {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            hex::encode(self.to_le_bytes())
-        )
+        write!(f, "{}", hex::encode(self.to_le_bytes()))
     }
 }
 
@@ -90,11 +86,7 @@ impl core::convert::TryFrom<&[u8; 32]> for PublicKey {
 
 impl Display for PublicKey {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            hex::encode(self.to_compressed_bytes())
-        )
+        write!(f, "{}", hex::encode(self.to_compressed_bytes()))
     }
 }
 
@@ -120,11 +112,7 @@ impl Signature {
 
 impl Display for Signature {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            hex::encode(self.to_bytes())
-        )
+        write!(f, "{}", hex::encode(self.to_bytes()))
     }
 }
 
