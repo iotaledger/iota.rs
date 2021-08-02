@@ -59,8 +59,9 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
         self
     }
 
-    /// Send GetInputs request and returns the inputs with their total balance, spent status and bundlehashes
-    pub async fn finish(self) -> Result<(u64, Vec<InputData>)> {
+    /// Send GetInputs request and returns the inputs with their total balance, spent status and bundlehashes, bool defines if any address were spent
+    pub async fn finish(self) -> Result<(u64, Vec<InputData>, bool)> {
+        let mut spent_addresses = false;
         let seed = match self.seed {
             Some(s) => s,
             None => return Err(Error::MissingSeed),
@@ -114,6 +115,7 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
             let mut spent_bundle_hashes = Vec::new();
             for (index, spent) in spent_status.states.iter().enumerate() {
                 if *spent {
+                    spent_addresses = true;
                     let tx_hashes_on_spent_addresses = self
                         .client
                         .find_transactions()
@@ -183,6 +185,6 @@ impl<'a> GetAccountDataForMigrationBuilder<'a> {
             index += self.gap_limit;
         }
 
-        Ok((total_balance, inputs))
+        Ok((total_balance, inputs, spent_addresses))
     }
 }
