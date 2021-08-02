@@ -565,7 +565,7 @@ impl Client {
         crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
             .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
         let mut mnemonic_seed = [0u8; 64];
-        mnemonic_to_seed(mnemonic, &"", &mut mnemonic_seed);
+        mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
         Ok(hex::encode(mnemonic_seed))
     }
 
@@ -844,7 +844,7 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
-            let address_outputs = self.get_address().outputs(&address, Default::default()).await?;
+            let address_outputs = self.get_address().outputs(address, Default::default()).await?;
             for output in address_outputs.iter() {
                 output_to_query.insert(output.to_owned());
             }
@@ -854,7 +854,7 @@ impl Client {
                 let address_dust_allowance_outputs = self
                     .get_address()
                     .outputs(
-                        &address,
+                        address,
                         OutputsOptions {
                             include_spent: false,
                             output_type: Some(OutputType::SignatureLockedDustAllowance),
@@ -1073,7 +1073,7 @@ impl Client {
 
     /// Return a list of addresses from the seed regardless of their validity.
     pub fn get_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
-        GetAddressesBuilder::new(seed).with_client(&self)
+        GetAddressesBuilder::new(seed).with_client(self)
     }
 
     /// Find all messages by provided message IDs and/or indexation_keys.
@@ -1121,7 +1121,7 @@ impl Client {
     pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
-            let balance_response = self.get_address().balance(&address).await?;
+            let balance_response = self.get_address().balance(address).await?;
             address_balance_pairs.push(balance_response);
         }
         Ok(address_balance_pairs)
@@ -1190,7 +1190,7 @@ impl Client {
             // Check inclusion state for each attachment
             let message_ids_len = message_ids.len();
             for (index, msg_id) in message_ids.clone().iter().enumerate() {
-                let message_metadata = self.get_message().metadata(&msg_id).await?;
+                let message_metadata = self.get_message().metadata(msg_id).await?;
                 if message_metadata.ledger_inclusion_state.is_some() {
                     return Ok(messages_with_id);
                 }
@@ -1198,10 +1198,10 @@ impl Client {
                 if index == message_ids_len - 1 {
                     if message_metadata.should_promote.unwrap_or(false) {
                         // Safe to unwrap since we iterate over it
-                        self.promote_unchecked(&message_ids.last().unwrap()).await?;
+                        self.promote_unchecked(message_ids.last().unwrap()).await?;
                     } else if message_metadata.should_reattach.unwrap_or(false) {
                         // Safe to unwrap since we iterate over it
-                        let reattached = self.reattach_unchecked(&message_ids.last().unwrap()).await?;
+                        let reattached = self.reattach_unchecked(message_ids.last().unwrap()).await?;
                         message_ids.push(reattached.0);
                         messages_with_id.push(reattached);
                     }
@@ -1219,7 +1219,7 @@ impl Client {
         account_index: usize,
         address_range: Range<usize>,
     ) -> crate::Result<String> {
-        crate::api::consolidate_funds(&self, seed, account_index, address_range).await
+        crate::api::consolidate_funds(self, seed, account_index, address_range).await
     }
 }
 

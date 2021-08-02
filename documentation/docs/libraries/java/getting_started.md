@@ -1,4 +1,4 @@
-# Getting Started with Rust
+# Getting Started with Java
 
 ## Prerequisite
 
