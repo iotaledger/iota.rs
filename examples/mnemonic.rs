@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
     let mut mnemonic_seed = [0u8; 64];
     mnemonic_to_seed(
         &env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC").unwrap(),
-        &"",
+        "",
         &mut mnemonic_seed,
     );
 

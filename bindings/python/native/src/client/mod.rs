@@ -72,7 +72,7 @@ impl Client {
             for input in nodes_name_password {
                 let (url, jwt, basic_auth_name_pwd) = get_url_jwt_auth(input);
                 if let Some(url) = url {
-                    client = client.with_node_auth(&url, jwt, basic_auth_name_pwd).unwrap();
+                    client = client.with_node_auth(url, jwt, basic_auth_name_pwd).unwrap();
                 }
             }
         }
@@ -80,7 +80,7 @@ impl Client {
             for input in permanodes_name_password {
                 let (url, jwt, basic_auth_name_pwd) = get_url_jwt_auth(input);
                 if let Some(url) = url {
-                    client = client.with_permanode(&url, jwt, basic_auth_name_pwd).unwrap();
+                    client = client.with_permanode(url, jwt, basic_auth_name_pwd).unwrap();
                 }
             }
         }
