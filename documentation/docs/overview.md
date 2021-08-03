@@ -4,7 +4,7 @@ To communicate with the IOTA network, you have to connect and interact with a [n
 
 Beyond establishing the initial connection to a node, iota.rs has no state. Operations use only the data that you pass during a call and have no effect on your software beyond returning a value. You are in full control of the data flow in your application.
 
-This stateless approach makes iota.rs easier for you to use and understand. But since you are in full control of the data management, you also fully responsible for it, which could feel overwhelming if you have to handle complex or sensitive data. If you plan on managing funds in your application, take a look at our [wallet.rs](https://wallet-lib.docs.iota.org/) library instead. It allows you to safely manage your user's funds, and it already includes our best security practices. It uses [stronghold.rs](https://stronghold-docs.iota.org/) to store sensitive data and iota.rs to communicate with the IOTA network. Unlike iota.rs, it has a state.
+This stateless approach makes iota.rs easier for you to use and understand. But since you are in full control of the data management, you also fully responsible for it, which could feel overwhelming if you have to handle complex or sensitive data. If you plan on managing funds in your application, take a look at our [wallet.rs](https://wallet-lib.docs.iota.org/) library instead. It allows you to safely manage your user's funds, and it already includes our best security practices. It uses [stronghold.rs](https://stronghold.docs.iota.org/) to store sensitive data and iota.rs to communicate with the IOTA network. Unlike iota.rs, it has a state.
 
 ## Supported Languages
 
