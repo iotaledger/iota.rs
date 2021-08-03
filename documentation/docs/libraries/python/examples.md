@@ -113,7 +113,7 @@ And there are few additional interesting notes:
 Please note, it may have a negative impact on a performance while [account discovery](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#account-discovery) phase. So if you are after using many multiple accounts then you may be interested in our stateful library [wallet.rs](https://chrysalis.docs.iota.org/libraries/wallet) that incorporates all business logic needed to efficiently manage independent accounts. Also our [exchange guide](https://chrysalis.docs.iota.org/guides/exchange_guide) provides some useful tips how different accounts may be leveraged
 :::
 
-![address_generation](../../../static/img/libraries/python/address_generation.svg)
+![address_generation](/img/libraries/python/address_generation.svg)
 
 So in case of IOTA, the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The levels `purpose` and `coin_type` are given, the rest levels are up to developers to integrate.
 
@@ -212,7 +212,7 @@ There are already implemented core payloads, such as `SignedTransaction`, `Miles
 
 Needless to say, IOTA network ensures the outer structure of message itself is valid and definitely aligned with a network consensus protocol, however the inner structure is very flexible, future-proof, and offer an unmatched network extensibility.
 
-![messages_in_tangle](../../../static/img/libraries/python/messages_in_tangle.svg)
+![messages_in_tangle](/img/libraries/python/messages_in_tangle.svg)
 
 The current IOTA network incorporates the following core payloads:
 * `SignedTransaction`: payload that describes `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `message` can be also cryptographically signed
@@ -231,7 +231,7 @@ Simplified analogy:
 * **New state of ledger**: `Output B` = 20 tokens, `Output C` = 30 tokens and `Output D` = 50 tokens
 * Total supply remains the same. Just number of outputs differs and some outputs were replaced by other outputs in the process
 
-![utxo](../../../static/img/libraries/python/utxo.svg)
+![utxo](/img/libraries/python/utxo.svg)
 
 The key takeaway of the outlined process is the fact that each unique `output` can be spent **only once**. Once the given `output` is spent, can't be used any more and is irrelevant in regards to the ledger state.
 

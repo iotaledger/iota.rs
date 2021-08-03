@@ -16,7 +16,7 @@ Your application communicates with iota.rs either directly in Rust or through on
 
 Different nodes could run on a different software, but they always expose the same interface to clients. For example, one node could be a [Hornet](https://hornet.docs.iota.org/) node and the other could be a [Bee](https://bee.docs.iota.org/) node, and they both would appear the same for any client.
 
-![A diagram that illustrates the text above. It has three layers: the application layer that includes iota.rs and its bindings, communication layer (the Internet network), and IOTA network layer with nodes that operate on one of the IOTA networks.](../static/img/overview/layered_overview.svg "An overview of IOTA layers.")
+![A diagram that illustrates the text above. It has three layers: the application layer that includes iota.rs and its bindings, communication layer (the Internet network), and IOTA network layer with nodes that operate on one of the IOTA networks.](/img/overview/layered_overview.svg "An overview of IOTA layers.")
 
 ## API Design
 
