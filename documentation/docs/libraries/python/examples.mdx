@@ -3,6 +3,7 @@ import get_info from '!!raw-loader!./../../../../bindings/python/examples/01_get
 import generate_seed from '!!raw-loader!./../../../../bindings/python/examples/02_generate_seed.py';
 import generate_addresses from '!!raw-loader!./../../../../bindings/python/examples/03_generate_addresses.py';
 import get_balance from '!!raw-loader!./../../../../bindings/python/examples/04_get_balance.py';
+import a_get_address_outputs from '!!raw-loader!./../../../../bindings/python/examples/05a_get_address_outputs.py';
 import get_output from '!!raw-loader!./../../../../bindings/python/examples/05b_get_output.py';
 import find_outputs from '!!raw-loader!./../../../../bindings/python/examples/05c_find_outputs.py';
 import simple_message from '!!raw-loader!./../../../../bindings/python/examples/06_simple_message.py';
@@ -263,9 +264,9 @@ There are three functions to get `UTXO` outputs (related to the given address):
 
 `Client.get_address_outputs(str)` returns `transaction_ids` and `indexes` in a raw form (in bytes) defined on protocol level and so usually some quick conversion is needed:
 
-```python
-{@import  ../../../../bindings/python/examples/05a_get_address_outputs.py}
-```
+<CodeBlock className="language-python">
+  {a_get_address_outputs}
+</CodeBlock>
 
 Output example:
 ```plaintext
