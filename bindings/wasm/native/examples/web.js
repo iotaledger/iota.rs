@@ -8,8 +8,17 @@ async function run(Iota) {
   let client = new ClientBuilder().node("https://api.lb-0.testnet.chrysalis2.com").build();
   // Get the nodeinfo
   console.log(await client.getInfo());
+  // let message = await client.message().index(new TextEncoder().encode("test")).submit();
+  // let read = await client.getMessage().data(message.messageId)
+  // // function to convert hex data back to utf
+  // function hexToUtf8(hex) {
+  //   for (var bytes = [], c = 0; c < hex.length; c += 2)
+  //     bytes.push(parseInt(hex.substr(c, 2), 16));
+  //   return new TextDecoder().decode(new Uint8Array(bytes));
+  // }
+  // console.log(hexToUtf8(read.message.payload.index));
+
   // console.log(await client.message().index(new TextEncoder().encode("test")).submit());
-  // console.log(await client.getMessage().data(message.messageId));
   // console.log(await client.getMessage().index(new TextEncoder().encode("test")));
   // console.log(await client.retryUntilIncluded("131d9d289ca4258a1b1874257532340bcd8155a548bbacdeec147c69a1636b51", BigInt(2), BigInt(2)));
   // console.log(await client.getBalance('256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2').accountIndex(0).initialAddressIndex(0).get());
