@@ -58,8 +58,7 @@ async function run(Iota) {
   // console.log(await client.getReceiptsMigratedAt(973351));
   // console.log(await client.getTreasury());
   // console.log(await client.getIncludedMessage("17057e92991f836ff2f0f88f2abb93ba0d8eda37efc1312daad599c1326bce31"));
-  // Browser only
-  // console.log(await client.retryUntilIncluded(message.messageId, BigInt(2), BigInt(2)));
+  // console.log(await client.retryUntilIncluded(message.messageId, BigInt(5), BigInt(5)));
   // console.log(await client.consolidateFunds('256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2', 0, 0, 10));
 
 }

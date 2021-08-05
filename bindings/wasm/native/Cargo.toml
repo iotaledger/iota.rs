@@ -26,6 +26,10 @@ wasm-bindgen-futures = { version = "0.4", default-features = false }
 hex = "0.4"
 iota-client = { path = "../../../iota-client", features = ["wasm"], default-features = false }
 
+# import needed for the wasm-bindgen feature
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+parking_lot = { version = "0.11", features = ["wasm-bindgen"] }
+
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }
 

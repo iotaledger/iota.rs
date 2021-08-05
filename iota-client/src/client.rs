@@ -1182,8 +1182,8 @@ impl Client {
         for _ in 0..max_attempts.unwrap_or(20) {
             #[cfg(feature = "wasm")]
             {
-                use futures_timer::Delay;
-                Delay::new(Duration::from_secs(interval.unwrap_or(5))).await;
+                use wasm_timer::Delay;
+                Delay::new(Duration::from_secs(interval.unwrap_or(5))).await?;
             }
             #[cfg(not(feature = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;

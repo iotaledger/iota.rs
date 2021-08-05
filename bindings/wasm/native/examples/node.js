@@ -67,6 +67,9 @@ async function main() {
     // console.log(await client.getNetworkId());
     // console.log(await client.getBech32Hrp());
     // console.log(await client.getMinPowScore());
+    // todo: find out why calling these functions will keep the process running even after they returned (related to the timeouts with wasm-timer)
+    // console.log(await client.retryUntilIncluded(message.messageId, BigInt(5), BigInt(5)));
+    // console.log(await client.consolidateFunds('256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2', 0, 0, 10));
 }
 
 main().then(() => {

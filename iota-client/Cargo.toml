@@ -53,7 +53,8 @@ async-trait = "0.1"
 rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 
 # wasm
-futures-timer = {version = "3.0.2", features = ["wasm-bindgen"], optional = true }
+# patched version to work in browser and node.js
+wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "8c619e895ce0b74e3aab86f5758d89b3e6d2567a", optional = true }
 
 [features]
 default = ["async"]
@@ -61,4 +62,4 @@ sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
-wasm = ["reqwest", "futures", "futures-timer"]
+wasm = ["reqwest", "futures", "wasm-timer"]
