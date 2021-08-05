@@ -1,24 +1,27 @@
 export declare interface Input {
-  type: 'UTXO'
-  data: string
+  type: number // 0 == 'UtxoInput', 1 == 'TreasuryInput'
+  // UtxoInput
+  transactionId?: string
+  transactionOutputIndex?: number
+  // TreasuryInput
+  milestoneId?: string
 }
 
 export declare interface Output {
-  type: 'SignatureLockedSingle' | 'DustAllowance'
-  data: {
-    address: string
-    amount: number
-  }
+  type: number // 0 == 'SignatureLockedSingle', 1 == 'DustAllowance' 2 == 'TreasuryOutput'
+  address: Ed25519Address
+  amount: number
 }
 
 export declare interface TransactionPayloadEssence {
+  type: number,
   inputs: Input[]
   outputs: Output[]
   payload?: Payload
 }
 
 export declare interface Ed25519SignatureUnlockBlock {
-  type: 'Ed25519'
+  type: number //0 'Ed25519'
   data: {
     publicKey: number[]
     signature: number[]
@@ -26,23 +29,25 @@ export declare interface Ed25519SignatureUnlockBlock {
 }
 
 export declare interface SignatureUnlockBlock {
-  type: 'Signature'
+  type: number //0
   data: Ed25519SignatureUnlockBlock
 }
 
 export declare interface ReferenceUnlockBlock {
-  type: 'Reference'
+  type: number //1 'Reference'
   data: number
 }
 
 export declare type UnlockBlock = SignatureUnlockBlock | ReferenceUnlockBlock
 
 export declare interface TransactionPayload {
+  type: number // 0
   essence: TransactionPayloadEssence
   unlockBlocks: UnlockBlock[]
 }
 
 export declare interface IndexationPayload {
+  type: number // 2
   index: Uint8Array
   data: number[]
 }
@@ -55,16 +60,16 @@ export declare interface MilestoneEssence {
   nextPoWScore: number
   nextPoWScoreMilestoneIndex: number
   publicKeys: number[]
+  receipt?: ReceiptPayload
 }
 
 export declare interface MilestonePayload {
+  type: number // 1
   essence: MilestoneEssence
   signatures: number[][]
 }
 
-export declare type Payload = { type: 'Indexation', data: IndexationPayload } |
-{ type: 'Milestone', data: MilestonePayload } |
-{ type: 'Transaction', data: TransactionPayload }
+export declare type Payload = TransactionPayload | MilestonePayload | IndexationPayload
 
 export declare interface Message {
   networkId: number
@@ -78,8 +83,8 @@ export declare interface MessageWrapper {
   message: Message
 }
 
-export declare interface Receipts {
-  type: number
+export declare interface ReceiptPayload {
+  type: number // 3
   migratedAt: number
   funds: MigratedFundsEntry[]
   transaction: TreasuryTransactionPayload
@@ -87,21 +92,9 @@ export declare interface Receipts {
 }
 
 export declare interface TreasuryTransactionPayload {
-  type: number
+  type: number // 4
   input: Input
   output: Output
-}
-
-export declare interface Input {
-  kind: number
-  transactionId: string
-  transactionOutputIndex: number
-}
-
-export declare interface Output {
-  kind: number
-  address: string
-  amount: number
 }
 
 export declare interface MigratedFundsEntry {

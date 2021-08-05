@@ -144,7 +144,7 @@ pub async fn search_address(
     range: Range<usize>,
     address: &Address,
 ) -> Result<(usize, bool)> {
-    let addresses = GetAddressesBuilder::new(&seed)
+    let addresses = GetAddressesBuilder::new(seed)
         .with_bech32_hrp(bech32_hrp.to_owned())
         .with_account_index(account_index)
         .with_range(range.clone())

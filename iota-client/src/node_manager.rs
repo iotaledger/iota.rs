@@ -94,7 +94,7 @@ impl NodeManager {
               Regex::new(r"milestones/[0-9]").expect("regex failed"),
             ].to_vec() => Vec<Regex>
         );
-        if permanode_regexes.iter().any(|re| re.is_match(&path)) || (path == "api/v1/messages" && query.is_some()) {
+        if permanode_regexes.iter().any(|re| re.is_match(path)) || (path == "api/v1/messages" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
                 // remove api/v1/ since permanodes can have custom keyspaces
                 // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
@@ -166,7 +166,7 @@ impl NodeManager {
         // submit message with local PoW should use primary pow node
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false).await?;
-        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && nodes.len() < self.quorum_size {
+        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(path)) && nodes.len() < self.quorum_size {
             return Err(Error::QuorumPoolSizeError(nodes.len(), self.quorum_size));
         }
 
@@ -178,7 +178,7 @@ impl NodeManager {
         let wasm = true;
         #[cfg(not(feature = "wasm"))]
         let wasm = false;
-        if !wasm && self.quorum && quorum_regexes.iter().any(|re| re.is_match(&path)) && query.is_none() {
+        if !wasm && self.quorum && quorum_regexes.iter().any(|re| re.is_match(path)) && query.is_none() {
             #[cfg(not(feature = "wasm"))]
             {
                 let mut tasks = Vec::new();
@@ -231,7 +231,7 @@ impl NodeManager {
                             // Without quorum it's enough if we got one response
                             if !self.quorum
                             || result_counter >= self.quorum_size
-                            || !quorum_regexes.iter().any(|re| re.is_match(&path))
+                            || !quorum_regexes.iter().any(|re| re.is_match(path))
                             // with query we ignore quorum because the nodes can store a different amount of history
                             || query.is_some()
                             {
@@ -256,7 +256,7 @@ impl NodeManager {
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
             || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
-            || !quorum_regexes.iter().any(|re| re.is_match(&path))
+            || !quorum_regexes.iter().any(|re| re.is_match(path))
             // with query we ignore quorum because the nodes can store a different amount of history
             || query.is_some()
         {
@@ -607,11 +607,12 @@ impl HttpClient {
         {
             request_builder = request_builder.timeout(_timeout);
         }
+        request_builder = request_builder.header("Content-Type", "application/octet-stream");
         Self::parse_response(request_builder.body(body.to_vec()).send().await?).await
     }
 
     pub(crate) async fn post_json(&self, node: Node, _timeout: Duration, json: Value) -> Result<Response> {
-        let mut request_builder = self.client.get(node.url);
+        let mut request_builder = self.client.post(node.url);
         if let Some(jwt) = node.jwt {
             request_builder = request_builder.bearer_auth(jwt);
         }
@@ -646,6 +647,7 @@ impl HttpClient {
         if let Some(jwt) = node.jwt {
             request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
         }
+        request_builder = request_builder.set("Content-Type", "application/octet-stream");
         Ok(request_builder.send_bytes(body)?.into())
     }
 

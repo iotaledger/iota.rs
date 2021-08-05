@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    bee_types::{Input, MessagePayload, OutputDto, UnlockBlock, UnlockBlocks},
+    bee_types::{Input, MessagePayload, Output, UnlockBlock, UnlockBlocks},
     Result,
 };
 
 use anyhow::anyhow;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use std::{
     cell::RefCell,
@@ -97,7 +97,6 @@ impl Display for Essence {
     }
 }
 
-
 impl From<RustEssence> for Essence {
     fn from(essence: RustEssence) -> Self {
         Self(essence)
@@ -113,7 +112,7 @@ impl RegularEssence {
     }
 
     /// Gets the transaction outputs.
-    pub fn outputs(&self) -> Vec<OutputDto> {
+    pub fn outputs(&self) -> Vec<Output> {
         self.0.outputs().iter().map(|output| output.into()).collect()
     }
     // Gets the transaction chained payload.

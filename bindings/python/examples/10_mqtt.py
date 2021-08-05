@@ -35,7 +35,7 @@ broker_options = {
 }
 
 
-def worker(topics):
+def worker():
     """The worker to process the queued events.
     """
     received_events = 0
@@ -43,9 +43,13 @@ def worker(topics):
         item = q.get(True)
         event = json.loads(item)
         print(f'Received Event: {event}')
-        message_id = client.get_message_id(str(event['payload']))
-        print(f'Received message_id: {message_id}')
+        if event['topic'] == "message":
+            message_id = client.get_message_id(str(event['payload']))
+            print(f'Received message_id: {message_id}')
         received_events += 1
+        # unsubscribe from topic "messages", will continue to receive events for "milestones/latest"
+        if received_events == 7:
+            client.unsubscribe_topics(['messages'])
         q.task_done()
 
 
@@ -56,7 +60,7 @@ def on_mqtt_event(event):
 
 
 if __name__ == '__main__':
-    client.subscribe_topics(['messages'], on_mqtt_event)
-    worker(['messages'])
+    client.subscribe_topics(['messages', 'milestones/confirmed'], on_mqtt_event)
+    worker()
     client.disconnect()
     q.queue.clear()

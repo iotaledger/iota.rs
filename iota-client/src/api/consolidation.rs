@@ -19,7 +19,7 @@ pub async fn consolidate_funds(
     address_range: Range<usize>,
 ) -> Result<String> {
     let addresses = client
-        .get_addresses(&seed)
+        .get_addresses(seed)
         .with_account_index(account_index)
         .with_range(address_range.clone())
         .finish()
@@ -37,7 +37,7 @@ pub async fn consolidate_funds(
             let signature_locked_outputs = client
                 .get_address()
                 .outputs(
-                    &address,
+                    address,
                     OutputsOptions {
                         include_spent: false,
                         output_type: Some(OutputType::SignatureLockedSingle),
@@ -47,7 +47,7 @@ pub async fn consolidate_funds(
             let dust_allowance_outputs = client
                 .get_address()
                 .outputs(
-                    &address,
+                    address,
                     OutputsOptions {
                         include_spent: false,
                         output_type: Some(OutputType::SignatureLockedDustAllowance),
@@ -78,7 +78,7 @@ pub async fn consolidate_funds(
             let outputs_chunks = output_with_metadata.chunks(INPUT_OUTPUT_COUNT_MAX);
 
             for chunk in outputs_chunks {
-                let mut message_builder = client.message().with_seed(&seed);
+                let mut message_builder = client.message().with_seed(seed);
                 let mut total_amount = 0;
                 for (input, amount) in chunk {
                     message_builder = message_builder.with_input(input.clone());

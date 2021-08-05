@@ -1,13 +1,13 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use iota_client::bee_message::payload::Payload as RustPayload;
 
 use crate::{
-    Result,
     bee_types::{IndexationPayload, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload},
+    Result,
 };
 
 pub enum MessagePayloadType {
@@ -32,7 +32,7 @@ impl From<RustPayload> for MessagePayload {
 impl MessagePayload {
     pub fn deserialize(serialised_data: &str) -> Result<MessagePayload> {
         let res = serde_json::from_str(&serialised_data);
-        
+
         match res {
             Ok(s) => Ok(s),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),

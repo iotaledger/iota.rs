@@ -1,0 +1,74 @@
+import CodeBlock from '@theme/CodeBlock';
+import get_info from '!!raw-loader!./../../../../examples/01_get_info.rs';
+import generate_seed from '!!raw-loader!./../../../../examples/02_generate_seed.rs';
+import generate_addresses from '!!raw-loader!./../../../../examples/03_generate_addresses.rs';
+import get_balance from '!!raw-loader!./../../../../examples/04_get_balance.rs';
+import get_address_outputs from '!!raw-loader!./../../../../examples/05_get_address_outputs.rs';
+import simple_message from '!!raw-loader!./../../../../examples/06_simple_message.rs';
+import get_message_metadata from '!!raw-loader!./../../../../examples/07_get_message_metadata.rs';
+import data_message from '!!raw-loader!./../../../../examples/08_data_message.rs';
+import transaction from '!!raw-loader!./../../../../examples/09_transaction.rs';
+import mqtt from '!!raw-loader!./../../../../examples/10_mqtt.rs';
+
+# Examples
+
+It's possible to send transactions with iota.rs, but we strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [wallet docs](https://chrysalis.docs.iota.org/libraries/wallet).
+
+```bash
+git clone https://github.com/iotaledger/iota.rs
+```
+
+```bash
+cd iota.rs
+```
+
+Rename the `.env.example` file to `.env`.
+
+Run the examples like:
+
+```bash
+cargo run --example 01_get_info --release
+```
+
+
+<CodeBlock className="language-rust">
+  {get_info}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {generate_seed}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {generate_addresses}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {get_balance}
+</CodeBlock>
+
+<CodeBlock className="languag-rust">
+  {get_address_outputs}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {simple_message}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {get_message_metadata}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {data_message}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {transaction}
+</CodeBlock>
+
+<CodeBlock className="language-rust">
+  {mqtt}
+</CodeBlock>
+
+You can find more advanced examples in the [examples](https://github.com/iotaledger/iota.rs/tree/dev/examples) folder.

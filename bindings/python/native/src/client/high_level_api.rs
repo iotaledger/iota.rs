@@ -215,9 +215,9 @@ impl Client {
     ///     message_id (str): The identifier of message.
     fn get_message_id(&self, payload_str: &str) -> Result<String> {
         // Try BeeMessageDto and if it fails Message
-        let message = match serde_json::from_str::<BeeMessageDto>(&payload_str) {
+        let message = match serde_json::from_str::<BeeMessageDto>(payload_str) {
             Ok(message_dto) => RustMessage::try_from(&message_dto).expect("invalid message"),
-            Err(_) => serde_json::from_str::<RustMessage>(&payload_str).expect("invalid message"),
+            Err(_) => serde_json::from_str::<RustMessage>(payload_str).expect("invalid message"),
         };
         let message_id = message.id().0.to_string();
         Ok(message_id)

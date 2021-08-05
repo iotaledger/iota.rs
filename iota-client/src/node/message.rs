@@ -33,7 +33,7 @@ impl<'a> GetMessageBuilder<'a> {
             .client
             .node_manager
             .get_request(
-                &path,
+                path,
                 Some(&format!("index={}", hex::encode(index))),
                 self.client.get_timeout(Api::GetMessage),
             )
@@ -78,7 +78,7 @@ impl<'a> GetMessageBuilder<'a> {
         let resp: ResponseWrapper = self
             .client
             .node_manager
-            .get_request(&path, None, self.client.get_timeout(Api::GetMessage))
+            .get_request(path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
         Ok(resp.data)
@@ -91,7 +91,7 @@ impl<'a> GetMessageBuilder<'a> {
         let resp = self
             .client
             .node_manager
-            .get_request_text(&path, None, self.client.get_timeout(Api::GetMessage))
+            .get_request_text(path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
         Ok(resp)
@@ -108,7 +108,7 @@ impl<'a> GetMessageBuilder<'a> {
         let resp: ResponseWrapper = self
             .client
             .node_manager
-            .get_request(&path, None, self.client.get_timeout(Api::GetMessage))
+            .get_request(path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
         resp.data

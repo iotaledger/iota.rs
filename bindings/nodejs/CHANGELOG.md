@@ -1,5 +1,20 @@
 # Changelog
 
+## \[0.6.5]
+
+- Order parent messages always, fix POST JSON request.
+  - [1d6a84c4](https://github.com/iotaledger/iota.rs/commit/1d6a84c4fde2c1c0e46380509f9c66123842ca72) add change file on 2021-07-14
+
+## \[0.6.4]
+
+- Fixed receipt payload conversion.
+  - [86857df1](https://github.com/iotaledger/iota.rs/commit/86857df1815dd26ea7d2d62b410efe1c76328e93) update dependencies on 2021-07-12
+
+## \[0.6.3]
+
+- Fixed ts interfaces
+  - [49100701](https://github.com/iotaledger/iota.rs/commit/491007014eedce0cf8d90d4272b547ae83854094) add change file on 2021-07-07
+
 ## \[0.6.2]
 
 - Fixed retryUntilIncluded.

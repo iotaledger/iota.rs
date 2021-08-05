@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use anyhow::Error;
 use getset::{CopyGetters, Getters};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::{
     convert::TryFrom,
     fmt::{Display, Formatter},
@@ -34,6 +34,8 @@ pub struct OutputResponse {
     #[getset(get_copy = "pub")]
     pub is_spent: bool,
     pub output: OutputDto,
+    #[getset(get_copy = "pub")]
+    pub ledger_index: u32,
 }
 
 impl OutputResponse {
@@ -48,6 +50,7 @@ impl OutputResponse {
             output_index: self.output_index,
             is_spent: self.is_spent,
             output: self.output.to_inner_clone(),
+            ledger_index: self.ledger_index,
         }
     }
 }
@@ -76,6 +79,7 @@ impl From<RustOutputResponse> for OutputResponse {
             output: OutputDto {
                 output: output.output.clone(),
             },
+            ledger_index: output.ledger_index,
         }
     }
 }
@@ -303,6 +307,12 @@ impl Output {
 impl Display for Output {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(f, "({:?})", self.output)
+    }
+}
+
+impl From<&RustOutput> for Output {
+    fn from(output: &RustOutput) -> Output {
+        Output { output: output.clone() }
     }
 }
 
