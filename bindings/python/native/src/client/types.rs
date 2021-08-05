@@ -632,6 +632,22 @@ impl Segment {
     }
 }
 
+impl TryFrom<UtxoInput> for RustUtxoInput {
+    type Error = Error;
+    fn try_from(input: UtxoInput) -> Result<Self> {
+        let mut input_array: [u8; 32] = Default::default();
+        input_array.copy_from_slice(&input.transaction_id[..32]);
+        Ok(
+            RustUtxoInput::new(RustTransactionId::from(input_array), input.index).unwrap_or_else(|_| {
+                panic!(
+                    "invalid UtxoInput transaction_id: {:?} with input index {}",
+                    input.transaction_id, input.index
+                )
+            }),
+        )
+    }
+}
+
 impl From<RustAddressIndexRecorder> for AddressIndexRecorder {
     fn from(recorder: RustAddressIndexRecorder) -> Self {
         Self {
