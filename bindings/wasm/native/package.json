@@ -1,6 +1,6 @@
 {
   "name": "test-iota-client-wasm",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "WASM bindings for the IOTA client library. To be used in Javascript/Typescript",
   "repository": {
     "type": "git",
@@ -10,7 +10,6 @@
     "example": "examples"
   },
   "scripts": {
-    "install": "npm run build",
     "build:nodejs": "wasm-pack build --target nodejs --out-dir node && node ./build/node",
     "build:web": "wasm-pack build --target web --out-dir web && node ./build/web",
     "build:docs": "node ./build/docs",
