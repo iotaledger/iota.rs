@@ -341,21 +341,21 @@ Get the included message of a transaction.
 
 Build a message.
 
-| Param                    | Type                      | Default     | Description                                  |
-| ------------------------ | ------------------------- | ----------- | -------------------------------------------- |
-| [seed]                   | `str`                     | `undefined` | The hex-encoded seed of the account to spend |
-| [account_index]          | `int`                     | `undefined` | The account index                            |
-| [initial_address_index]  | `int`                     | `undefined` | The initial address index                    |
-| [inputs]                 | `list[[Input](#input)]`   | `undefined` | Inputs                                       |
-| [input_range_begin]      | `int`                     | `undefined` | The begin index of the input                 |
-| [input_range_end]        | `int`                     | `undefined` | The end index of the input                   |
-| [outputs]                | `list[[Output](#output)]` | `undefined` | Outputs                                      |
-| [dust_allowance_outputs] | `list[[Output](#output)]` | `undefined` | Dust allowance output to the transaction     |
-| [index]                  | `str`                     | `undefined` | The indexation string                        |
-| [index_raw]              | `list[int]`               | `undefined` | The indexation byte array                    |
-| [data]                   | `list[int]`               | `undefined` | The data in bytes                            |
-| [data_str]               | `str`                     | `undefined` | The data string                              |
-| [parents]                | `list[str]`               | `undefined` | The message ids of the parents               |
+| Param                    | Type                                       | Default                | Description                                  |
+| ------------------------ | ------------------------------------------ | ---------------------- | -------------------------------------------- |
+| [seed]                   | `str`                                      | `undefined`            | The hex-encoded seed of the account to spend |
+| [account_index]          | `int`                                      | `undefined`            | The account index                            |
+| [initial_address_index]  | `int`                                      | `undefined`            | The initial address index                    |
+| [inputs]                 | <code>list[[UtxoInput](#utxoinput)]</code> | <code>undefined</code> | UtxoInputs                                   |
+| [input_range_begin]      | `int`                                      | `undefined`            | The begin index of the input                 |
+| [input_range_end]        | `int`                                      | `undefined`            | The end index of the input                   |
+| [outputs]                | `list[[Output](#output)]`                  | `undefined`            | Outputs                                      |
+| [dust_allowance_outputs] | `list[[Output](#output)]`                  | `undefined`            | Dust allowance output to the transaction     |
+| [index]                  | `str`                                      | `undefined`            | The indexation string                        |
+| [index_raw]              | `list[int]`                                | `undefined`            | The indexation byte array                    |
+| [data]                   | `list[int]`                                | `undefined`            | The data in bytes                            |
+| [data_str]               | `str`                                      | `undefined`            | The data string                              |
+| [parents]                | `list[str]`                                | `undefined`            | The message ids of the parents               |
 
 **Returns** the built [Message](#message).
 
