@@ -12,6 +12,8 @@ const {
   BalanceGetter
 } = require('../build/Release/index.node')
 
+global.TextEncoder = require("util").TextEncoder;
+
 function promisify(fn, parse = true) {
   return function () {
     return new Promise((resolve, reject) => fn.apply(this, [...Array.from(arguments), (err, data) => {
