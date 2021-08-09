@@ -16,11 +16,11 @@ mod address_getter;
 mod balance_getter;
 mod client;
 mod client_builder;
+mod error;
 mod get_address;
 mod message_builder;
 mod message_getter;
 mod unspent_address_getter;
-mod utils;
 
 pub use client_builder::ClientBuilder;
 

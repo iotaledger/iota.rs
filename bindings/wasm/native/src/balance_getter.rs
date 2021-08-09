@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::Client;
-use crate::utils::err;
+use crate::error::wasm_error;
 use iota_client::Seed;
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
@@ -57,7 +57,7 @@ impl BalanceGetter {
   pub fn get(&self) -> Result<Promise, JsValue> {
     let options = self.clone();
     let promise: Promise = future_to_promise(async move {
-      let seed = Seed::from_bytes(&hex::decode(&options.seed).map_err(err)?);
+      let seed = Seed::from_bytes(&hex::decode(&options.seed).map_err(wasm_error)?);
       let mut balance_getter = options.client.client.get_balance(&seed);
       if let Some(account_index) = options.account_index {
         balance_getter = balance_getter.with_account_index(account_index);
@@ -72,8 +72,8 @@ impl BalanceGetter {
       balance_getter
         .finish()
         .await
-        .map_err(err)
-        .and_then(|balance| JsValue::from_serde(&balance).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|balance| JsValue::from_serde(&balance).map_err(wasm_error))
     });
     Ok(promise)
   }

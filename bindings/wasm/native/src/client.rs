@@ -8,11 +8,11 @@ use wasm_bindgen_futures::future_to_promise;
 
 use crate::address_getter::AddressGetter;
 use crate::balance_getter::BalanceGetter;
+use crate::error::wasm_error;
 use crate::get_address::GetAddressBuilder;
 use crate::message_builder::MessageBuilder;
 use crate::message_getter::MessageGetter;
 use crate::unspent_address_getter::UnspentAddressGetter;
-use crate::utils::err;
 use iota_client::bee_message::input::UtxoInput;
 use iota_client::bee_message::parents::Parents;
 use iota_client::bee_message::payload::transaction::TransactionId;
@@ -29,13 +29,6 @@ use std::{
   convert::{TryFrom, TryInto},
   str::FromStr,
 };
-// #[wasm_bindgen]
-// extern "C" {
-//     // Use `js_namespace` here to bind `console.log(..)` instead of just
-//     // `log(..)`
-//     #[wasm_bindgen(js_namespace = console)]
-//     fn log(s: &str);
-// }
 
 /// Struct for PostMessage
 #[derive(Serialize, Deserialize)]
@@ -91,8 +84,8 @@ impl Client {
       client
         .get_info()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -105,8 +98,8 @@ impl Client {
       client
         .get_network_info()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -118,8 +111,8 @@ impl Client {
       client
         .get_network_id()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -131,8 +124,8 @@ impl Client {
       client
         .get_bech32_hrp()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -144,8 +137,8 @@ impl Client {
       client
         .get_min_pow_score()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -157,8 +150,8 @@ impl Client {
       client
         .get_health()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -170,8 +163,8 @@ impl Client {
       client
         .get_tips()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -183,8 +176,8 @@ impl Client {
       client
         .get_peers()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -193,13 +186,13 @@ impl Client {
   #[wasm_bindgen(js_name = getOutput)]
   pub fn get_output(&self, output_id: &str) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let output_id = UtxoInput::from_str(output_id).map_err(err)?;
+    let output_id = UtxoInput::from_str(output_id).map_err(wasm_error)?;
     Ok(future_to_promise(async move {
       client
         .get_output(&output_id)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -207,18 +200,18 @@ impl Client {
   #[wasm_bindgen(js_name = findMessages)]
   pub fn find_messages(&self, indexation_keys: JsValue, message_ids: JsValue) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let indexation_keys: Vec<String> = indexation_keys.into_serde().map_err(err)?;
-    let message_ids: Vec<String> = message_ids.into_serde().map_err(err)?;
+    let indexation_keys: Vec<String> = indexation_keys.into_serde().map_err(wasm_error)?;
+    let message_ids: Vec<String> = message_ids.into_serde().map_err(wasm_error)?;
     let message_ids = message_ids
       .into_iter()
-      .map(|m| MessageId::from_str(&m).map_err(err))
+      .map(|m| MessageId::from_str(&m).map_err(wasm_error))
       .collect::<Result<Vec<MessageId>, JsValue>>()?;
     Ok(future_to_promise(async move {
       client
         .find_messages(&indexation_keys, &message_ids)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -226,13 +219,13 @@ impl Client {
   #[wasm_bindgen(js_name = findInputs)]
   pub fn find_inputs(&self, addresses: JsValue, amount: u64) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let addresses: Vec<String> = addresses.into_serde().map_err(err)?;
+    let addresses: Vec<String> = addresses.into_serde().map_err(wasm_error)?;
     Ok(future_to_promise(async move {
       client
         .find_inputs(addresses, amount)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -241,18 +234,18 @@ impl Client {
   #[wasm_bindgen(js_name = findOutputs)]
   pub fn find_outputs(&self, outputs: JsValue, addresses: JsValue) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let outputs: Vec<String> = outputs.into_serde().map_err(err)?;
-    let addresses: Vec<String> = addresses.into_serde().map_err(err)?;
+    let outputs: Vec<String> = outputs.into_serde().map_err(wasm_error)?;
+    let addresses: Vec<String> = addresses.into_serde().map_err(wasm_error)?;
     let outputs = outputs
       .into_iter()
-      .map(|o| UtxoInput::from_str(&o).map_err(err))
+      .map(|o| UtxoInput::from_str(&o).map_err(wasm_error))
       .collect::<Result<Vec<UtxoInput>, JsValue>>()?;
     Ok(future_to_promise(async move {
       client
         .find_outputs(&outputs, &addresses)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -261,13 +254,13 @@ impl Client {
   #[wasm_bindgen(js_name = getAddressBalances)]
   pub fn get_address_balances(&self, addresses: JsValue) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let addresses: Vec<String> = addresses.into_serde().map_err(err)?;
+    let addresses: Vec<String> = addresses.into_serde().map_err(wasm_error)?;
     Ok(future_to_promise(async move {
       client
         .get_address_balances(&addresses)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -280,8 +273,8 @@ impl Client {
       client
         .get_milestone(index)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -294,8 +287,8 @@ impl Client {
       client
         .get_milestone_utxo_changes(index)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -308,8 +301,8 @@ impl Client {
       client
         .get_receipts()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -322,8 +315,8 @@ impl Client {
       client
         .get_receipts_migrated_at(milestone_index)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -336,8 +329,8 @@ impl Client {
       client
         .get_treasury()
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -346,13 +339,13 @@ impl Client {
   #[wasm_bindgen(js_name = getIncludedMessage)]
   pub fn get_included_message(&self, transaction_id: &str) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let transaction_id = TransactionId::from_str(transaction_id).map_err(err)?;
+    let transaction_id = TransactionId::from_str(transaction_id).map_err(wasm_error)?;
     Ok(future_to_promise(async move {
       client
         .get_included_message(&transaction_id)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -360,35 +353,35 @@ impl Client {
   #[wasm_bindgen(js_name = postMessage)]
   pub fn post_message(&self, message: JsValue) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let message: MessageDto = serde_json::from_value(message.into_serde().map_err(err)?).map_err(err)?;
+    let message: MessageDto = serde_json::from_value(message.into_serde().map_err(wasm_error)?).map_err(wasm_error)?;
     Ok(future_to_promise(async move {
       let mut parent_msg_ids = match message.parents.as_ref() {
         Some(parents) => {
           let mut parent_ids = Vec::new();
           for msg_id in parents {
-            parent_ids.push(MessageId::from_str(msg_id).map_err(err)?)
+            parent_ids.push(MessageId::from_str(msg_id).map_err(wasm_error)?)
           }
           parent_ids
         }
-        None => client.get_tips().await.map_err(err)?,
+        None => client.get_tips().await.map_err(wasm_error)?,
       };
       parent_msg_ids.sort_unstable_by_key(|a| a.pack_new());
       parent_msg_ids.dedup();
-      let network_id = client.get_network_id().await.map_err(err)?;
+      let network_id = client.get_network_id().await.map_err(wasm_error)?;
       let nonce_provider = client.get_pow_provider().await;
-      let min_pow_score = client.get_min_pow_score().await.map_err(err)?;
+      let min_pow_score = client.get_min_pow_score().await.map_err(wasm_error)?;
       let message = RustMessageBuilder::<ClientMiner>::new()
         .with_network_id(network_id)
-        .with_parents(Parents::new(parent_msg_ids).map_err(err)?)
+        .with_parents(Parents::new(parent_msg_ids).map_err(wasm_error)?)
         .with_nonce_provider(nonce_provider, min_pow_score)
-        .with_payload((&message.payload).try_into().map_err(err)?)
+        .with_payload((&message.payload).try_into().map_err(wasm_error)?)
         .finish()
-        .map_err(err)?;
+        .map_err(wasm_error)?;
       client
         .post_message(&message)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -399,10 +392,10 @@ impl Client {
     let client: Rc<RustClient> = self.client.clone();
     Ok(future_to_promise(async move {
       client
-        .retry(&MessageId::from_str(&message_id).map_err(err)?)
+        .retry(&MessageId::from_str(&message_id).map_err(wasm_error)?)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -419,10 +412,14 @@ impl Client {
     let client: Rc<RustClient> = self.client.clone();
     Ok(future_to_promise(async move {
       client
-        .retry_until_included(&MessageId::from_str(&message_id).map_err(err)?, interval, max_attempts)
+        .retry_until_included(
+          &MessageId::from_str(&message_id).map_err(wasm_error)?,
+          interval,
+          max_attempts,
+        )
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -433,10 +430,10 @@ impl Client {
     let client: Rc<RustClient> = self.client.clone();
     Ok(future_to_promise(async move {
       client
-        .reattach(&MessageId::from_str(&message_id).map_err(err)?)
+        .reattach(&MessageId::from_str(&message_id).map_err(wasm_error)?)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -447,10 +444,10 @@ impl Client {
     let client: Rc<RustClient> = self.client.clone();
     Ok(future_to_promise(async move {
       client
-        .promote(&MessageId::from_str(&message_id).map_err(err)?)
+        .promote(&MessageId::from_str(&message_id).map_err(wasm_error)?)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -466,20 +463,20 @@ impl Client {
     end_index: usize,
   ) -> Result<Promise, JsValue> {
     let client: Rc<RustClient> = self.client.clone();
-    let seed = Seed::from_bytes(&hex::decode(&seed).map_err(err)?);
+    let seed = Seed::from_bytes(&hex::decode(&seed).map_err(wasm_error)?);
     Ok(future_to_promise(async move {
       client
         .consolidate_funds(&seed, account_index, start_index..end_index)
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
   /// Returns a parsed hex String from bech32.
   #[wasm_bindgen(js_name = bech32ToHex)]
   pub fn bech32_to_hex(&self, address: &str) -> Result<String, JsValue> {
-    RustClient::bech32_to_hex(address).map_err(err)
+    RustClient::bech32_to_hex(address).map_err(wasm_error)
   }
 
   /// Returns a parsed bech32 String from hex.
@@ -490,8 +487,8 @@ impl Client {
       client
         .hex_to_bech32(&address, bech32.as_deref())
         .await
-        .map_err(err)
-        .and_then(|res| JsValue::from_serde(&res).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
     }))
   }
 
@@ -504,13 +501,13 @@ impl Client {
   /// Generates a new mnemonic.
   #[wasm_bindgen(js_name = generateMnemonic)]
   pub fn generate_mnemonic(&self) -> Result<String, JsValue> {
-    RustClient::generate_mnemonic().map_err(err)
+    RustClient::generate_mnemonic().map_err(wasm_error)
   }
 
   /// Returns a hex encoded seed for a mnemonic.
   #[wasm_bindgen(js_name = mnemonicToHexSeed)]
   pub fn mnemonic_to_hex_seed(&self, mnemonic: &str) -> Result<String, JsValue> {
-    RustClient::mnemonic_to_hex_seed(mnemonic).map_err(err)
+    RustClient::mnemonic_to_hex_seed(mnemonic).map_err(wasm_error)
   }
 
   /// Returns the message id from a provided message.
@@ -518,8 +515,8 @@ impl Client {
   pub fn get_message_id(&self, message: &str) -> Result<String, JsValue> {
     // Try BeeMessageDto and if it fails Message
     let message = match serde_json::from_str::<BeeMessageDto>(message) {
-      Ok(message_dto) => Message::try_from(&message_dto).map_err(err)?,
-      Err(_) => serde_json::from_str::<Message>(message).map_err(err)?,
+      Ok(message_dto) => Message::try_from(&message_dto).map_err(wasm_error)?,
+      Err(_) => serde_json::from_str::<Message>(message).map_err(wasm_error)?,
     };
     Ok(message.id().0.to_string())
   }

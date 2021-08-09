@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::Client;
-use crate::utils::err;
+use crate::error::wasm_error;
 use crate::MessageWrapper;
 use iota_client::bee_message::address::Address;
 use iota_client::bee_message::input::UtxoInput;
@@ -90,19 +90,22 @@ impl MessageBuilder {
 
   #[wasm_bindgen]
   pub fn parents(&mut self, parents: JsValue) -> Result<MessageBuilder, JsValue> {
-    let parents: Vec<String> = parents.into_serde().map_err(err)?;
+    let parents: Vec<String> = parents.into_serde().map_err(wasm_error)?;
     let parents = parents
       .iter()
       .map(|message_id| MessageId::from_str(message_id))
       .collect::<Result<Vec<MessageId>, iota_client::bee_message::Error>>()
-      .map_err(err)?;
+      .map_err(wasm_error)?;
     self.builder.parents.replace(parents);
     Ok(self.clone())
   }
 
   #[wasm_bindgen]
   pub fn input(&mut self, output_id: &str) -> Result<MessageBuilder, JsValue> {
-    self.builder.inputs.push(UtxoInput::from_str(output_id).map_err(err)?);
+    self
+      .builder
+      .inputs
+      .push(UtxoInput::from_str(output_id).map_err(wasm_error)?);
     Ok(self.clone())
   }
 
@@ -117,7 +120,7 @@ impl MessageBuilder {
     self
       .builder
       .outputs
-      .push((Address::try_from_bech32(address).map_err(err)?, amount));
+      .push((Address::try_from_bech32(address).map_err(wasm_error)?, amount));
     Ok(self.clone())
   }
 
@@ -126,7 +129,7 @@ impl MessageBuilder {
     self
       .builder
       .dust_allowance_outputs
-      .push((Address::try_from_bech32(address).map_err(err)?, amount));
+      .push((Address::try_from_bech32(address).map_err(wasm_error)?, amount));
     Ok(self.clone())
   }
 
@@ -144,7 +147,7 @@ impl MessageBuilder {
         sender = sender.with_data(data);
       }
       if let Some(parents) = input_data.parents {
-        sender = sender.with_parents(parents).map_err(err)?;
+        sender = sender.with_parents(parents).map_err(wasm_error)?;
       }
       if let Some(account_index) = input_data.account_index {
         sender = sender.with_account_index(account_index);
@@ -158,26 +161,26 @@ impl MessageBuilder {
       if let Some(input_range) = input_data.input_range {
         sender = sender.with_input_range(input_range);
       }
-      let bech32_hrp = client.client.get_bech32_hrp().await.map_err(err)?;
+      let bech32_hrp = client.client.get_bech32_hrp().await.map_err(wasm_error)?;
       for output in input_data.outputs {
         sender = sender
           .with_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)
-          .map_err(err)?;
+          .map_err(wasm_error)?;
       }
       for output in input_data.dust_allowance_outputs {
         sender = sender
           .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)
-          .map_err(err)?;
+          .map_err(wasm_error)?;
       }
       let sender_future = if let Some(seed) = input_data.seed {
-        let seed = Seed::from_bytes(&hex::decode(&seed).map_err(err)?);
+        let seed = Seed::from_bytes(&hex::decode(&seed).map_err(wasm_error)?);
         sender.with_seed(&seed).prepare_transaction().await
       } else {
         sender.prepare_transaction().await
       };
       sender_future
-        .map_err(err)
-        .and_then(|transaction| JsValue::from_serde(&transaction).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|transaction| JsValue::from_serde(&transaction).map_err(wasm_error))
     });
 
     Ok(promise)
@@ -195,18 +198,18 @@ impl MessageBuilder {
     let client = self.client.clone();
     let range = input_range_start.unwrap_or(0)..input_range_end.unwrap_or(100);
     let promise: Promise = future_to_promise(async move {
-      let seed = Seed::from_bytes(&hex::decode(&seed).map_err(err)?);
+      let seed = Seed::from_bytes(&hex::decode(&seed).map_err(wasm_error)?);
       client
         .client
         .message()
         .sign_transaction(
-          prepared_transaction_data.into_serde().map_err(err)?,
+          prepared_transaction_data.into_serde().map_err(wasm_error)?,
           Some(&seed),
           Some(range),
         )
         .await
-        .map_err(err)
-        .and_then(|transaction| JsValue::from_serde(&transaction).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|transaction| JsValue::from_serde(&transaction).map_err(wasm_error))
     });
 
     Ok(promise)
@@ -220,16 +223,16 @@ impl MessageBuilder {
       client
         .client
         .message()
-        .finish_message(Some(payload.into_serde().map_err(err)?))
+        .finish_message(Some(payload.into_serde().map_err(wasm_error)?))
         .await
-        .map_err(err)
+        .map_err(wasm_error)
         .and_then(|message| {
           let message_id = message.id().0;
           JsValue::from_serde(&MessageWrapper {
             message_id,
             message: MessageDto::from(&message),
           })
-          .map_err(err)
+          .map_err(wasm_error)
         })
     });
 
@@ -250,7 +253,7 @@ impl MessageBuilder {
         sender = sender.with_data(data);
       }
       if let Some(parents) = input_data.parents {
-        sender = sender.with_parents(parents).map_err(err)?;
+        sender = sender.with_parents(parents).map_err(wasm_error)?;
       }
       if let Some(account_index) = input_data.account_index {
         sender = sender.with_account_index(account_index);
@@ -264,30 +267,30 @@ impl MessageBuilder {
       if let Some(input_range) = input_data.input_range {
         sender = sender.with_input_range(input_range);
       }
-      let bech32_hrp = client.client.get_bech32_hrp().await.map_err(err)?;
+      let bech32_hrp = client.client.get_bech32_hrp().await.map_err(wasm_error)?;
       for output in input_data.outputs {
         sender = sender
           .with_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)
-          .map_err(err)?;
+          .map_err(wasm_error)?;
       }
       for output in input_data.dust_allowance_outputs {
         sender = sender
           .with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)
-          .map_err(err)?;
+          .map_err(wasm_error)?;
       }
       let sender_future = if let Some(seed) = input_data.seed {
-        let seed = Seed::from_bytes(&hex::decode(&seed).map_err(err)?);
+        let seed = Seed::from_bytes(&hex::decode(&seed).map_err(wasm_error)?);
         sender.with_seed(&seed).finish().await
       } else {
         sender.finish().await
       };
-      sender_future.map_err(err).and_then(|message| {
+      sender_future.map_err(wasm_error).and_then(|message| {
         let message_id = message.id().0;
         JsValue::from_serde(&MessageWrapper {
           message_id,
           message: MessageDto::from(&message),
         })
-        .map_err(err)
+        .map_err(wasm_error)
       })
     });
 

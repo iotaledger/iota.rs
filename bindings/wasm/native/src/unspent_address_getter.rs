@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::Client;
-use crate::utils::err;
+use crate::error::wasm_error;
 use iota_client::Seed;
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
@@ -47,7 +47,7 @@ impl UnspentAddressGetter {
   pub fn get(&self) -> Result<Promise, JsValue> {
     let options = self.clone();
     let promise: Promise = future_to_promise(async move {
-      let seed = Seed::from_bytes(&hex::decode(&options.seed).map_err(err)?);
+      let seed = Seed::from_bytes(&hex::decode(&options.seed).map_err(wasm_error)?);
       let mut address_gettter = options.client.client.get_unspent_address(&seed);
       if let Some(account_index) = options.account_index {
         address_gettter = address_gettter.with_account_index(account_index);
@@ -58,8 +58,8 @@ impl UnspentAddressGetter {
       address_gettter
         .get()
         .await
-        .map_err(err)
-        .and_then(|address| JsValue::from_serde(&address).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|address| JsValue::from_serde(&address).map_err(wasm_error))
     });
     Ok(promise)
   }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::Client;
-use crate::utils::err;
+use crate::error::wasm_error;
 use iota_client::node::OutputsOptions;
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
@@ -32,8 +32,8 @@ impl GetAddressBuilder {
         .get_address()
         .balance(&address)
         .await
-        .map_err(err)
-        .and_then(|balance| JsValue::from_serde(&balance).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|balance| JsValue::from_serde(&balance).map_err(wasm_error))
     });
     Ok(promise)
   }
@@ -44,15 +44,15 @@ impl GetAddressBuilder {
   #[wasm_bindgen]
   pub fn outputs(&self, address: String, options: JsValue) -> Result<Promise, JsValue> {
     let client = self.client.clone();
-    let options: OutputsOptions = options.into_serde().map_err(err)?;
+    let options: OutputsOptions = options.into_serde().map_err(wasm_error)?;
     let promise: Promise = future_to_promise(async move {
       client
         .client
         .get_address()
         .outputs(&address, options)
         .await
-        .map_err(err)
-        .and_then(|outputs| JsValue::from_serde(&outputs).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|outputs| JsValue::from_serde(&outputs).map_err(wasm_error))
     });
     Ok(promise)
   }

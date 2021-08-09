@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::Client;
-use crate::utils::err;
+use crate::error::wasm_error;
 use iota_client::Seed;
 use js_sys::Promise;
 use std::ops::Range;
@@ -66,7 +66,7 @@ impl AddressGetter {
   pub fn get(&self) -> Result<Promise, JsValue> {
     let options = self.clone();
     let promise: Promise = future_to_promise(async move {
-      let seed = Seed::from_bytes(&hex::decode(&options.seed).map_err(err)?);
+      let seed = Seed::from_bytes(&hex::decode(&options.seed).map_err(wasm_error)?);
       let mut address_gettter = options.client.client.get_addresses(&seed);
       if let Some(account_index) = options.account_index {
         address_gettter = address_gettter.with_account_index(account_index);
@@ -81,14 +81,14 @@ impl AddressGetter {
         address_gettter
           .get_all()
           .await
-          .map_err(err)
-          .and_then(|addresses| JsValue::from_serde(&addresses).map_err(err))
+          .map_err(wasm_error)
+          .and_then(|addresses| JsValue::from_serde(&addresses).map_err(wasm_error))
       } else {
         address_gettter
           .finish()
           .await
-          .map_err(err)
-          .and_then(|addresses| JsValue::from_serde(&addresses).map_err(err))
+          .map_err(wasm_error)
+          .and_then(|addresses| JsValue::from_serde(&addresses).map_err(wasm_error))
       }
     });
     Ok(promise)

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::Client;
-use crate::utils::err;
+use crate::error::wasm_error;
 use crate::MessageWrapper;
 use iota_client::bee_message::MessageId;
 use iota_client::bee_rest_api::types::dtos::MessageDto;
@@ -33,8 +33,8 @@ impl MessageGetter {
         .get_message()
         .index(index)
         .await
-        .map_err(err)
-        .and_then(|message_ids| JsValue::from_serde(&message_ids).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|message_ids| JsValue::from_serde(&message_ids).map_err(wasm_error))
     });
     Ok(promise)
   }
@@ -47,16 +47,16 @@ impl MessageGetter {
       client
         .client
         .get_message()
-        .data(&MessageId::from_str(&message_id).map_err(err)?)
+        .data(&MessageId::from_str(&message_id).map_err(wasm_error)?)
         .await
-        .map_err(err)
+        .map_err(wasm_error)
         .and_then(|message| {
           let message_id = message.id().0;
           JsValue::from_serde(&MessageWrapper {
             message_id,
             message: MessageDto::from(&message),
           })
-          .map_err(err)
+          .map_err(wasm_error)
         })
     });
     Ok(promise)
@@ -70,10 +70,10 @@ impl MessageGetter {
       client
         .client
         .get_message()
-        .raw(&MessageId::from_str(&message_id).map_err(err)?)
+        .raw(&MessageId::from_str(&message_id).map_err(wasm_error)?)
         .await
-        .map_err(err)
-        .and_then(|message| JsValue::from_serde(&message).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|message| JsValue::from_serde(&message).map_err(wasm_error))
     });
     Ok(promise)
   }
@@ -86,10 +86,10 @@ impl MessageGetter {
       client
         .client
         .get_message()
-        .children(&MessageId::from_str(&message_id).map_err(err)?)
+        .children(&MessageId::from_str(&message_id).map_err(wasm_error)?)
         .await
-        .map_err(err)
-        .and_then(|message| JsValue::from_serde(&message).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|message| JsValue::from_serde(&message).map_err(wasm_error))
     });
     Ok(promise)
   }
@@ -102,10 +102,10 @@ impl MessageGetter {
       client
         .client
         .get_message()
-        .metadata(&MessageId::from_str(&message_id).map_err(err)?)
+        .metadata(&MessageId::from_str(&message_id).map_err(wasm_error)?)
         .await
-        .map_err(err)
-        .and_then(|message| JsValue::from_serde(&message).map_err(err))
+        .map_err(wasm_error)
+        .and_then(|message| JsValue::from_serde(&message).map_err(wasm_error))
     });
     Ok(promise)
   }

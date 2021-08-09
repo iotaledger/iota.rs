@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::client::Client;
-use crate::utils::err;
+use crate::error::wasm_error;
 use futures::executor;
 use iota_client::ClientBuilder as RustClientBuilder;
 use std::rc::Rc;
@@ -34,7 +34,7 @@ impl ClientBuilder {
 
   #[wasm_bindgen]
   pub fn node(&mut self, url: &str) -> Result<ClientBuilder, JsValue> {
-    self.try_with_mut(|builder: RustClientBuilder| builder.with_node(url).map_err(err))?;
+    self.try_with_mut(|builder: RustClientBuilder| builder.with_node(url).map_err(wasm_error))?;
     // is there a way we can do it without the clone?
     Ok(self.clone())
   }
@@ -50,7 +50,7 @@ impl ClientBuilder {
     self.try_with_mut(|builder| {
       builder
         .with_primary_node(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(err)
+        .map_err(wasm_error)
     })?;
     Ok(self.clone())
   }
@@ -66,7 +66,7 @@ impl ClientBuilder {
     self.try_with_mut(|builder| {
       builder
         .with_primary_pow_node(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(err)
+        .map_err(wasm_error)
     })?;
     Ok(self.clone())
   }
@@ -82,7 +82,7 @@ impl ClientBuilder {
     self.try_with_mut(|builder| {
       builder
         .with_permanode(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(err)
+        .map_err(wasm_error)
     })?;
     Ok(self.clone())
   }
@@ -98,7 +98,7 @@ impl ClientBuilder {
     self.try_with_mut(|builder| {
       builder
         .with_node_auth(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(err)
+        .map_err(wasm_error)
     })?;
     Ok(self.clone())
   }
@@ -179,7 +179,7 @@ impl ClientBuilder {
   #[wasm_bindgen]
   pub fn build(&mut self) -> Result<Client, JsValue> {
     let future = self.take_builder()?.finish();
-    let output = executor::block_on(future).map_err(err)?;
+    let output = executor::block_on(future).map_err(wasm_error)?;
 
     Ok(Client {
       client: Rc::new(output),
