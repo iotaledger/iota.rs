@@ -258,63 +258,6 @@ impl NonceProvider for ClientMiner {
     }
 }
 
-// /// The single thread miner builder.
-// #[derive(Default)]
-// pub struct SingleThreadClientMinerBuilder {
-//     local_pow: bool,
-//     client: Option<Client>,
-// }
-
-// impl SingleThreadClientMinerBuilder {
-//     /// Sets the local PoW config
-//     pub fn with_local_pow(mut self, value: bool) -> Self {
-//         self.local_pow = value;
-//         self
-//     }
-//     // /// Set cancel miner
-//     // pub fn with_cancel(mut self, cancel: MinerCancel) -> Self {
-//     //     self.cancel = cancel;
-//     //     self
-//     // }
-// }
-
-// impl NonceProviderBuilder for SingleThreadClientMinerBuilder {
-//     type Provider = SingleThreadClientMiner;
-
-//     fn new() -> Self {
-//         Self::default()
-//     }
-
-//     fn finish(self) -> SingleThreadClientMiner {
-//         SingleThreadClientMiner {
-//             local_pow: self.local_pow,
-//             client: self.client,
-//         }
-//     }
-// }
-
-// /// The single thread miner used for PoW with Wasm
-// pub struct SingleThreadClientMiner {
-//     local_pow: bool,
-//     client: Option<Client>,
-// }
-
-// impl NonceProvider for SingleThreadClientMiner {
-//     type Builder = SingleThreadClientMinerBuilder;
-//     type Error = crate::Error;
-
-//     fn nonce(&self, bytes: &[u8], target_score: f64) -> std::result::Result<u64, Self::Error> {
-//         if self.local_pow {
-//             match &self.client {
-//                 Some(client) => nonce(client, bytes, target_score).map_err(|e| crate::Error::Pow(e.to_string())),
-//                 None => return Err(crate::Error::MissingClientError),
-//             }
-//         } else {
-//             Ok(0)
-//         }
-//     }
-// }
-
 /// Each of the node APIs the client uses.
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub enum Api {
