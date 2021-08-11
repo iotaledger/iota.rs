@@ -567,6 +567,7 @@ pub(crate) struct HttpClient {
 }
 
 #[cfg(all(feature = "sync", not(feature = "async")))]
+#[derive(Clone)]
 pub(crate) struct HttpClient;
 
 #[cfg(any(feature = "async", feature = "wasm"))]
