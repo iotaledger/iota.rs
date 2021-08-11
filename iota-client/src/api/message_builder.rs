@@ -666,7 +666,7 @@ impl<'a> ClientMessageBuilder<'a> {
             let min_pow_score = self.client.get_min_pow_score().await?;
             let network_id = self.client.get_network_id().await?;
             finish_single_thread_pow(
-                &self.client,
+                self.client,
                 network_id,
                 Some(parent_message_ids),
                 payload,
@@ -909,7 +909,7 @@ async fn finish_single_thread_pow(
         parent_messages.dedup();
         Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
         option_payload_pack(&mut message_bytes, payload.clone().as_ref())?;
-        (0 as u64).pack(&mut message_bytes).unwrap();
+        (0_u64).pack(&mut message_bytes).unwrap();
         return Ok(Message::unpack(&mut message_bytes.reader())?);
     }
 

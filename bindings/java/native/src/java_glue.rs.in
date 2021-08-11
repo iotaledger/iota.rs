@@ -1133,8 +1133,8 @@ foreign_class!(
         private constructor = empty;
         private fn PublicKey::to_string(&self) -> String; alias to_string;
         fn PublicKey::verify(&self, sig: Signature, msg: Vec<u8>) -> bool;
-        fn PublicKey::to_compressed_bytes(&self) -> Vec<u8>;
-        fn PublicKey::from_compressed_bytes(bs: Vec<u8>) -> Result<PublicKey>;
+        fn PublicKey::to_bytes(&self) -> Vec<u8>;
+        fn PublicKey::try_from_bytes(bs: Vec<u8>) -> Result<PublicKey>;
     }
 );
 
@@ -1145,10 +1145,10 @@ foreign_class!(
         private constructor = empty;
         private fn SecretKey::to_string(&self) -> String; alias to_string;
         fn SecretKey::generate() -> Result<SecretKey>;
-        fn SecretKey::from_le_bytes(bs: Vec<u8>) -> Result<SecretKey>;
+        fn SecretKey::from_bytes(bs: Vec<u8>) -> SecretKey;
         
         fn SecretKey::public_key(&self) -> PublicKey;
-        fn SecretKey::to_le_bytes(&self) -> Vec<u8>;
+        fn SecretKey::to_bytes(&self) -> Vec<u8>;
         fn SecretKey::sign(&self, msg: Vec<u8>) -> Signature;
     }
 );
