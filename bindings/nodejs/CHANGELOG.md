@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.6.6]
+
+- Import TextEncoder for older Node.js versions
+  - [2c718365](https://github.com/iotaledger/iota.rs/commit/2c71836544ddd63571e6fd47cdf555a94afb322e) Import TextEncoder for older Node.js versions on 2021-08-06
+
 ## \[0.6.5]
 
 - Order parent messages always, fix POST JSON request.
