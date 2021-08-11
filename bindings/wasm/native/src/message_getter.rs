@@ -1,11 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client::Client;
-use crate::error::wasm_error;
-use crate::MessageWrapper;
-use iota_client::bee_message::MessageId;
-use iota_client::bee_rest_api::types::dtos::MessageDto;
+use crate::{client::Client, error::wasm_error, MessageWrapper};
+use iota_client::{bee_message::MessageId, bee_rest_api::types::dtos::MessageDto};
 use js_sys::Promise;
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;

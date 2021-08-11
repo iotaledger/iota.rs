@@ -143,4 +143,10 @@ pub enum Error {
     /// Invalid mnemonic error
     #[error("Invalid mnemonic {0}")]
     InvalidMnemonic(String),
+    /// PoW error
+    #[error("{0}")]
+    PowError(#[from] bee_pow::providers::miner::Error),
+    /// API error
+    #[error("Invalid API name")]
+    ApiError,
 }

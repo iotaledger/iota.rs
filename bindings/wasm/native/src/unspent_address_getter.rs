@@ -1,8 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client::Client;
-use crate::error::wasm_error;
+use crate::{client::Client, error::wasm_error};
 use iota_client::Seed;
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;

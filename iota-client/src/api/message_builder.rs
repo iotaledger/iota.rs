@@ -125,7 +125,7 @@ impl<'a> ClientMessageBuilder<'a> {
         self
     }
 
-    /// Set a custom range in which to search for addresses for custom inputs. Default: 0..100
+    /// Set a custom range in which to search for addresses for custom provided inputs. Default: 0..100
     pub fn with_input_range(mut self, range: Range<usize>) -> Self {
         self.input_range = range;
         self
@@ -616,8 +616,8 @@ impl<'a> ClientMessageBuilder<'a> {
                     .or(self.seed)
                     .ok_or(crate::Error::MissingParameter("Seed"))?
                     .derive(Curve::Ed25519, &recorder.chain)?
-                    .secret_key()?;
-                let public_key = private_key.public_key().to_compressed_bytes();
+                    .secret_key();
+                let public_key = private_key.public_key().to_bytes();
                 // The signature unlock block needs to sign the hash of the entire transaction essence of the
                 // transaction payload
                 let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
@@ -658,35 +658,21 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
         #[cfg(feature = "wasm")]
-        let final_message = match self.parents {
-            Some(mut parents) => {
-                // Sort parents
-                parents.sort_unstable_by_key(|a| a.pack_new());
-                parents.dedup();
-
-                let network_id = self.client.get_network_id().await?;
-                let mut message = MessageBuilder::<ClientMiner>::new();
-                message = message.with_network_id(network_id);
-                if let Some(p) = payload {
-                    message = message.with_payload(p);
-                }
-                message
-                    .with_parents(Parents::new(parents)?)
-                    .finish()
-                    .map_err(Error::MessageError)?
-            }
-            _ => {
-                let network_id = self.client.get_network_id().await?;
-                let mut tips = self.client.get_tips().await?;
-                tips.sort_unstable_by_key(|a| a.pack_new());
-                tips.dedup();
-                let mut message = MessageBuilder::<ClientMiner>::new();
-                message = message.with_network_id(network_id).with_parents(Parents::new(tips)?);
-                if let Some(p) = payload {
-                    message = message.with_payload(p);
-                }
-                message.finish().map_err(Error::MessageError)?
-            }
+        let final_message = {
+            let parent_message_ids = match self.parents {
+                Some(parents) => parents,
+                _ => self.client.get_tips().await?,
+            };
+            let min_pow_score = self.client.get_min_pow_score().await?;
+            let network_id = self.client.get_network_id().await?;
+            finish_single_thread_pow(
+                &self.client,
+                network_id,
+                Some(parent_message_ids),
+                payload,
+                min_pow_score,
+            )
+            .await?
         };
         #[cfg(not(feature = "wasm"))]
         let final_message = match self.parents {
@@ -876,4 +862,113 @@ pub fn do_pow(
         .finish()
         .map_err(Error::MessageError)?;
     Ok((message.nonce(), Some(message)))
+}
+
+// Single threaded PoW for wasm
+#[cfg(feature = "wasm")]
+use bee_crypto::ternary::{
+    sponge::{BatchHasher, CurlPRounds, BATCH_SIZE},
+    HASH_LENGTH,
+};
+#[cfg(feature = "wasm")]
+use bee_message::payload::option_payload_pack;
+#[cfg(feature = "wasm")]
+use bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf};
+#[cfg(feature = "wasm")]
+use bytes::Buf;
+#[cfg(feature = "wasm")]
+use crypto::hashes::{blake2b::Blake2b256, Digest};
+
+// Precomputed natural logarithm of 3 for performance reasons.
+// See https://oeis.org/A002391.
+#[cfg(feature = "wasm")]
+const LN_3: f64 = 1.098_612_288_668_109;
+#[cfg(feature = "wasm")]
+// should take around one second to reach on an average CPU, so shouldn't cause a noticeable delay on tips_interval
+const POW_ROUNDS_BEFORE_INTERVAL_CHECK: usize = 3000;
+#[cfg(feature = "wasm")]
+async fn finish_single_thread_pow(
+    client: &Client,
+    network_id: u64,
+    parent_messages: Option<Vec<MessageId>>,
+    payload: Option<bee_message::payload::Payload>,
+    target_score: f64,
+) -> crate::Result<Message> {
+    // let mut message_bytes: Vec<u8> = bytes.clone().into();
+    let mut parent_messages = match parent_messages {
+        Some(parents) => parents,
+        None => client.get_tips().await?,
+    };
+
+    // return with 0 as nonce if remote PoW should be used
+    if !client.get_local_pow().await {
+        let mut message_bytes: Vec<u8> = Vec::new();
+        network_id.pack(&mut message_bytes).unwrap();
+        // sort parent messages
+        parent_messages.sort_unstable_by_key(|a| a.pack_new());
+        parent_messages.dedup();
+        Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
+        option_payload_pack(&mut message_bytes, payload.clone().as_ref())?;
+        (0 as u64).pack(&mut message_bytes).unwrap();
+        return Ok(Message::unpack(&mut message_bytes.reader())?);
+    }
+
+    let tips_interval = client.get_tips_interval().await;
+
+    loop {
+        let mut message_bytes: Vec<u8> = Vec::new();
+        network_id.pack(&mut message_bytes).unwrap();
+        // sort parent messages
+        parent_messages.sort_unstable_by_key(|a| a.pack_new());
+        parent_messages.dedup();
+        Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
+        option_payload_pack(&mut message_bytes, payload.clone().as_ref())?;
+
+        let mut pow_digest = TritBuf::<T1B1Buf>::new();
+        let target_zeros =
+            (((message_bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score).ln() / LN_3).ceil() as usize;
+
+        if target_zeros > HASH_LENGTH {
+            return Err(bee_pow::providers::miner::Error::InvalidPowScore(target_score, target_zeros).into());
+        }
+
+        let hash = Blake2b256::digest(&message_bytes);
+
+        b1t6::encode::<T1B1Buf>(&hash).iter().for_each(|t| pow_digest.push(t));
+
+        let mut nonce = 0;
+        let mut hasher = BatchHasher::<T1B1Buf>::new(HASH_LENGTH, CurlPRounds::Rounds81);
+        let mut buffers = Vec::<TritBuf<T1B1Buf>>::with_capacity(BATCH_SIZE);
+        for _ in 0..BATCH_SIZE {
+            let mut buffer = TritBuf::<T1B1Buf>::zeros(HASH_LENGTH);
+            buffer[..pow_digest.len()].copy_from(&pow_digest);
+            buffers.push(buffer);
+        }
+        let mining_start = wasm_timer::Instant::now();
+        // counter to reduce amount of mining_start.elapsed() calls
+        let mut counter = 0;
+        loop {
+            if counter % POW_ROUNDS_BEFORE_INTERVAL_CHECK == 0
+                && mining_start.elapsed() > Duration::from_secs(tips_interval)
+            {
+                // update parents
+                parent_messages = client.get_tips().await?;
+                break;
+            }
+            for (i, buffer) in buffers.iter_mut().enumerate() {
+                let nonce_trits = b1t6::encode::<T1B1Buf>(&(nonce + i as u64).to_le_bytes());
+                buffer[pow_digest.len()..pow_digest.len() + nonce_trits.len()].copy_from(&nonce_trits);
+                hasher.add(buffer.clone());
+            }
+            for (i, hash) in hasher.hash_batched().enumerate() {
+                let trailing_zeros = hash.iter().rev().take_while(|t| *t == Btrit::Zero).count();
+                if trailing_zeros >= target_zeros {
+                    (nonce + i as u64).pack(&mut message_bytes).unwrap();
+                    return Ok(Message::unpack(&mut message_bytes.reader())?);
+                }
+            }
+            nonce += BATCH_SIZE as u64;
+            counter += 1;
+        }
+    }
 }

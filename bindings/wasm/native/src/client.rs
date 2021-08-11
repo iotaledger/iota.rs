@@ -1,34 +1,27 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::{
+  address_getter::AddressGetter, balance_getter::BalanceGetter, error::wasm_error, get_address::GetAddressBuilder,
+  message_builder::MessageBuilder, message_getter::MessageGetter, unspent_address_getter::UnspentAddressGetter,
+};
+use iota_client::{
+  bee_message::{
+    input::UtxoInput, parents::Parents, payload::transaction::TransactionId, Message,
+    MessageBuilder as RustMessageBuilder, MessageId,
+  },
+  bee_rest_api::types::dtos::{MessageDto as BeeMessageDto, PayloadDto},
+  common::packable::Packable,
+  Client as RustClient, ClientMiner, Seed,
+};
 use js_sys::Promise;
 use std::rc::Rc;
-use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::future_to_promise;
-
-use crate::address_getter::AddressGetter;
-use crate::balance_getter::BalanceGetter;
-use crate::error::wasm_error;
-use crate::get_address::GetAddressBuilder;
-use crate::message_builder::MessageBuilder;
-use crate::message_getter::MessageGetter;
-use crate::unspent_address_getter::UnspentAddressGetter;
-use iota_client::bee_message::input::UtxoInput;
-use iota_client::bee_message::parents::Parents;
-use iota_client::bee_message::payload::transaction::TransactionId;
-use iota_client::bee_message::Message;
-use iota_client::bee_message::MessageBuilder as RustMessageBuilder;
-use iota_client::bee_message::MessageId;
-use iota_client::bee_rest_api::types::dtos::MessageDto as BeeMessageDto;
-use iota_client::bee_rest_api::types::dtos::PayloadDto;
-use iota_client::common::packable::Packable;
-use iota_client::Client as RustClient;
-use iota_client::ClientMiner;
-use iota_client::Seed;
 use std::{
   convert::{TryFrom, TryInto},
   str::FromStr,
 };
+use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::future_to_promise;
 
 /// Struct for PostMessage
 #[derive(Serialize, Deserialize)]

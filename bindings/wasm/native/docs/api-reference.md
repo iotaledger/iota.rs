@@ -575,25 +575,37 @@ Returns the message id from a provided message.
 **Kind**: global class  
 
 * [ClientBuilder](#ClientBuilder)
+    * [new ClientBuilder()](#new_ClientBuilder_new)
     * [.node(url)](#ClientBuilder+node) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.primaryNode(url, jwt, username, password)](#ClientBuilder+primaryNode) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.primaryPowNode(url, jwt, username, password)](#ClientBuilder+primaryPowNode) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.permanode(url, jwt, username, password)](#ClientBuilder+permanode) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeAuth(url, jwt, username, password)](#ClientBuilder+nodeAuth) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.nodes(urls)](#ClientBuilder+nodes) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncInterval(value)](#ClientBuilder+nodeSyncInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncDisabled()](#ClientBuilder+nodeSyncDisabled) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.offlineMode()](#ClientBuilder+offlineMode) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.nodePoolUrls(node_pool_urls)](#ClientBuilder+nodePoolUrls) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorum(value)](#ClientBuilder+quorum) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumSize(value)](#ClientBuilder+quorumSize) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumThreshold(value)](#ClientBuilder+quorumThreshold) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.network(network)](#ClientBuilder+network) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.localPow(value)](#ClientBuilder+localPow) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.tipsInterval(value)](#ClientBuilder+tipsInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.requestTimeout(value)](#ClientBuilder+requestTimeout) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.apiTimeout(api, timeout)](#ClientBuilder+apiTimeout) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.build()](#ClientBuilder+build) ⇒ [<code>Client</code>](#Client)
+
+<a name="new_ClientBuilder_new"></a>
+
+### new ClientBuilder()
+Creates an IOTA client builder.
 
 <a name="ClientBuilder+node"></a>
 
 ### clientBuilder.node(url) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Adds an IOTA node by its URL.
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -603,6 +615,8 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+primaryNode"></a>
 
 ### clientBuilder.primaryNode(url, jwt, username, password) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Adds an IOTA node by its URL to be used as primary node, with optional jwt and or basic authentication
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -615,6 +629,9 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+primaryPowNode"></a>
 
 ### clientBuilder.primaryPowNode(url, jwt, username, password) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
+authentication
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -627,6 +644,8 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+permanode"></a>
 
 ### clientBuilder.permanode(url, jwt, username, password) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Adds a permanode by its URL, with optional jwt and or basic authentication
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -639,6 +658,8 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+nodeAuth"></a>
 
 ### clientBuilder.nodeAuth(url, jwt, username, password) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Adds an IOTA node by its URL with optional jwt and or basic authentication
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -648,9 +669,22 @@ Returns the message id from a provided message.
 | username | <code>string</code> \| <code>undefined</code> | 
 | password | <code>string</code> \| <code>undefined</code> | 
 
+<a name="ClientBuilder+nodes"></a>
+
+### clientBuilder.nodes(urls) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Adds a list of IOTA nodes by their URLs.
+
+**Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+
+| Param | Type |
+| --- | --- |
+| urls | <code>any</code> | 
+
 <a name="ClientBuilder+nodeSyncInterval"></a>
 
 ### clientBuilder.nodeSyncInterval(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Set the node sync interval (has no effect because we can't spawn another thread in wasm to sync the nodes)
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -660,14 +694,32 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+nodeSyncDisabled"></a>
 
 ### clientBuilder.nodeSyncDisabled() ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Disables the node syncing process.
+Every node will be considered healthy and ready to use.
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 <a name="ClientBuilder+offlineMode"></a>
 
 ### clientBuilder.offlineMode() ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Allows creating the client without nodes for offline address generation or signing
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+<a name="ClientBuilder+nodePoolUrls"></a>
+
+### clientBuilder.nodePoolUrls(node_pool_urls) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Get node list from the node_pool_urls
+
+**Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+
+| Param | Type |
+| --- | --- |
+| node_pool_urls | <code>any</code> | 
+
 <a name="ClientBuilder+quorum"></a>
 
 ### clientBuilder.quorum(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Set if quroum should be used or not
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -677,6 +729,8 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+quorumSize"></a>
 
 ### clientBuilder.quorumSize(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Set amount of nodes which should be used for quorum
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -686,15 +740,32 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+quorumThreshold"></a>
 
 ### clientBuilder.quorumThreshold(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Set quorum_threshold
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
 | --- | --- |
 | value | <code>number</code> | 
 
+<a name="ClientBuilder+network"></a>
+
+### clientBuilder.network(network) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
+Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are
+provided.
+
+**Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+
+| Param | Type |
+| --- | --- |
+| network | <code>string</code> | 
+
 <a name="ClientBuilder+localPow"></a>
 
 ### clientBuilder.localPow(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Since we can only have a single thread in wasm, local PoW is much slower
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -704,6 +775,8 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+tipsInterval"></a>
 
 ### clientBuilder.tipsInterval(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Sets after how many seconds new tips will be requested during PoW
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
@@ -713,11 +786,25 @@ Returns the message id from a provided message.
 <a name="ClientBuilder+requestTimeout"></a>
 
 ### clientBuilder.requestTimeout(value) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Sets the default request timeout.
+
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 
 | Param | Type |
 | --- | --- |
 | value | <code>number</code> | 
+
+<a name="ClientBuilder+apiTimeout"></a>
+
+### clientBuilder.apiTimeout(api, timeout) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+Sets the request timeout for a specific API usage.
+
+**Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
+
+| Param | Type |
+| --- | --- |
+| api | <code>string</code> | 
+| timeout | <code>number</code> | 
 
 <a name="ClientBuilder+build"></a>
 
@@ -800,6 +887,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+index"></a>
 
 ### messageBuilder.index(index) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Set indexation to the builder
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -809,6 +898,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+data"></a>
 
 ### messageBuilder.data(data) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Set data to the builder
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -818,6 +909,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+seed"></a>
 
 ### messageBuilder.seed(seed) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Sets the seed.
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -827,6 +920,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+accountIndex"></a>
 
 ### messageBuilder.accountIndex(account_index) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Sets the account index.
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -836,6 +931,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+initialAddressIndex"></a>
 
 ### messageBuilder.initialAddressIndex(initial_address_index) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Sets the index of the address to start looking for balance.
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -845,6 +942,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+parents"></a>
 
 ### messageBuilder.parents(parents) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Set 1-8 custom parent message ids
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -854,6 +953,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+input"></a>
 
 ### messageBuilder.input(output_id) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Set a custom input(transaction output)
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -863,6 +964,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+inputRange"></a>
 
 ### messageBuilder.inputRange(start, end) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Set a custom range in which to search for addresses for custom provided inputs. Default: 0..100
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -873,6 +976,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+output"></a>
 
 ### messageBuilder.output(address, amount) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Set a transfer to the builder
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |
@@ -883,6 +988,8 @@ reasons. User should sweep the address to reduce the amount of outputs.
 <a name="MessageBuilder+dustAllowanceOutput"></a>
 
 ### messageBuilder.dustAllowanceOutput(address, amount) ⇒ [<code>MessageBuilder</code>](#MessageBuilder)
+Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+
 **Kind**: instance method of [<code>MessageBuilder</code>](#MessageBuilder)  
 
 | Param | Type |

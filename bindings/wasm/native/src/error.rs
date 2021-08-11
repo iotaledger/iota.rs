@@ -4,7 +4,6 @@
 // Copied from https://github.com/iotaledger/identity.rs/blob/dev/bindings/wasm/src/error.rs
 
 use std::borrow::Cow;
-
 use wasm_bindgen::JsValue;
 
 /// Convert an error into an idiomatic [js_sys::Error].

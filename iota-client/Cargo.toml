@@ -24,8 +24,7 @@ bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "8799deaa44e99
 bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# TODO: Use "0.6" when the iota-crypto is updated (higher than 0.6.0).
-iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"], rev = "e42be4d"}
+iota-crypto = { version = "0.7.0", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"]}
 url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -55,6 +54,10 @@ rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 # wasm
 # patched version to work in browser and node.js
 wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "8c619e895ce0b74e3aab86f5758d89b3e6d2567a", optional = true }
+# single thread pow for wasm
+bee-crypto = { version = "0.2.1-alph", optional = true }
+bee-ternary = { version = "0.4.2-alpha", optional = true }
+bytes = { version = "1.0", optional = true }
 
 [features]
 default = ["async"]
@@ -62,4 +65,4 @@ sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
-wasm = ["reqwest", "futures", "wasm-timer"]
+wasm = ["reqwest", "futures", "wasm-timer", "bee-crypto", "bee-ternary", "bytes"]

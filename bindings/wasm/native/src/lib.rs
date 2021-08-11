@@ -6,8 +6,7 @@
 #[macro_use]
 extern crate serde;
 
-use iota_client::bee_message::MessageId;
-use iota_client::bee_rest_api::types::dtos::MessageDto;
+use iota_client::{bee_message::MessageId, bee_rest_api::types::dtos::MessageDto};
 use wasm_bindgen::prelude::*;
 
 #[macro_use]

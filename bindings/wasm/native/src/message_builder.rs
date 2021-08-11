@@ -1,17 +1,14 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client::Client;
-use crate::error::wasm_error;
-use crate::MessageWrapper;
-use iota_client::bee_message::address::Address;
-use iota_client::bee_message::input::UtxoInput;
-use iota_client::bee_message::MessageId;
-use iota_client::bee_rest_api::types::dtos::MessageDto;
-use iota_client::Seed;
+use crate::{client::Client, error::wasm_error, MessageWrapper};
+use iota_client::{
+  bee_message::{address::Address, input::UtxoInput, MessageId},
+  bee_rest_api::types::dtos::MessageDto,
+  Seed,
+};
 use js_sys::Promise;
-use std::ops::Range;
-use std::str::FromStr;
+use std::{ops::Range, str::FromStr};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 
@@ -57,6 +54,7 @@ impl MessageBuilder {
     }
   }
 
+  /// Set indexation to the builder
   #[wasm_bindgen]
   pub fn index(&mut self, index: Vec<u8>) -> Result<MessageBuilder, JsValue> {
     self.builder.index.replace(index);
@@ -64,30 +62,35 @@ impl MessageBuilder {
     Ok(self.clone())
   }
 
+  /// Set data to the builder
   #[wasm_bindgen]
   pub fn data(&mut self, data: Vec<u8>) -> Result<MessageBuilder, JsValue> {
     self.builder.data.replace(data);
     Ok(self.clone())
   }
 
+  /// Sets the seed.
   #[wasm_bindgen]
   pub fn seed(&mut self, seed: &str) -> Result<MessageBuilder, JsValue> {
     self.builder.seed.replace(seed.into());
     Ok(self.clone())
   }
 
+  /// Sets the account index.
   #[wasm_bindgen(js_name = accountIndex)]
   pub fn account_index(&mut self, account_index: usize) -> Result<MessageBuilder, JsValue> {
     self.builder.account_index.replace(account_index);
     Ok(self.clone())
   }
 
+  /// Sets the index of the address to start looking for balance.
   #[wasm_bindgen(js_name = initialAddressIndex)]
   pub fn initial_address_index(&mut self, initial_address_index: usize) -> Result<MessageBuilder, JsValue> {
     self.builder.initial_address_index.replace(initial_address_index);
     Ok(self.clone())
   }
 
+  /// Set 1-8 custom parent message ids
   #[wasm_bindgen]
   pub fn parents(&mut self, parents: JsValue) -> Result<MessageBuilder, JsValue> {
     let parents: Vec<String> = parents.into_serde().map_err(wasm_error)?;
@@ -100,6 +103,7 @@ impl MessageBuilder {
     Ok(self.clone())
   }
 
+  /// Set a custom input(transaction output)
   #[wasm_bindgen]
   pub fn input(&mut self, output_id: &str) -> Result<MessageBuilder, JsValue> {
     self
@@ -109,12 +113,14 @@ impl MessageBuilder {
     Ok(self.clone())
   }
 
+  /// Set a custom range in which to search for addresses for custom provided inputs. Default: 0..100
   #[wasm_bindgen(js_name = inputRange)]
   pub fn input_range(&mut self, start: usize, end: usize) -> Result<MessageBuilder, JsValue> {
     self.builder.input_range.replace(start..end);
     Ok(self.clone())
   }
 
+  /// Set a transfer to the builder
   #[wasm_bindgen]
   pub fn output(&mut self, address: &str, amount: u64) -> Result<MessageBuilder, JsValue> {
     self
@@ -124,6 +130,7 @@ impl MessageBuilder {
     Ok(self.clone())
   }
 
+  /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
   #[wasm_bindgen(js_name = dustAllowanceOutput)]
   pub fn dust_allowance_output(&mut self, address: &str, amount: u64) -> Result<MessageBuilder, JsValue> {
     self
