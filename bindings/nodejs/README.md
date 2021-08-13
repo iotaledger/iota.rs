@@ -317,12 +317,23 @@ Returns a parsed hex String from bech32.
 
 #### hexToBech32(hex, bech32_hrp (optional))
 
-Returns a parsed bech32 String from hex.
+Returns a parsed bech32 address String from a hex encoded address.
 
-| Param       | Type                | Description               |
-| ----------- | ------------------- | ------------------------- |
-| bech32      | <code>string</code> | The address Bech32 string |
-| bech32_hrp  | <code>string</code> | The Bech32 hrp string     |
+| Param      | Type                | Description                    |
+| ---------- | ------------------- | ------------------------------ |
+| address    | <code>string</code> | The hex encoded address string |
+| bech32_hrp | <code>string</code> | The Bech32 hrp string          |
+
+**Returns** A String
+
+#### hexPublicKeyToBech32Address(hex, bech32_hrp (optional))
+
+Returns a parsed bech32 address String from a hex encoded public key.
+
+| Param       | Type                | Description                |
+| ----------- | ------------------- | -------------------------- |
+| publicKey   | <code>string</code> | The hex encoded public key |
+| bech32_hrp  | <code>string</code> | The Bech32 hrp string      |
 
 **Returns** A String
 
