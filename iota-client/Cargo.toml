@@ -59,6 +59,7 @@ bee-crypto = { version = "0.2.1-alph", optional = true }
 bee-ternary = { version = "0.4.2-alpha", optional = true }
 bytes = { version = "1.0", optional = true }
 
+web-sys = {version = "0.3.52", features = ["console"] }
 [features]
 default = ["async"]
 sync = ["ureq", "tokio", "futures"]

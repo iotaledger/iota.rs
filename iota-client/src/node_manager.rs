@@ -18,6 +18,7 @@ use std::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
+use web_sys::console;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -435,7 +436,10 @@ impl NodeManagerBuilder {
     /// Get node list from the node_pool_urls
     pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let nodes_details: Vec<NodeDetail> = crate::node_manager::HttpClient::new()
+            // console::log_1(&"before de_manager::HttpClient::new()".into());
+            let http_client = crate::node_manager::HttpClient::new();
+            // console::log_1(&"before de_mana2".into());
+            let nodes_details: Vec<NodeDetail> = http_client
                 .get(
                     Node {
                         url: validate_url(Url::parse(pool_url)?)?,
@@ -446,6 +450,7 @@ impl NodeManagerBuilder {
                 .await?
                 .json()
                 .await?;
+            // console::log_1(&"before for node_detail in nodes_details {".into());
             for node_detail in nodes_details {
                 let url = validate_url(Url::parse(&node_detail.node)?)?;
                 self.nodes.insert(Node { url, jwt: None });
@@ -470,20 +475,25 @@ impl NodeManagerBuilder {
         self
     }
     pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
+        // console::log_1(&"in add_default_nodes".into());
         let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
+        // console::log_1(&"default_testnet_node_pools".into());
         if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {
                 Some(ref network) => match network.to_lowercase().as_str() {
                     "testnet" | "devnet" | "test" | "dev" => {
+                        // console::log_1(&"before ool_urls(&default_testnet_node_pools[..]).await?;".into());
                         self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                     }
                     _ => return Err(Error::SyncedNodePoolEmpty),
                 },
                 _ => {
+                    // console::log_1(&"before ool_urls(&default_testnet_node_pools[..]).await?;".into());
                     self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                 }
             }
         }
+        // console::log_1(&"in add_default_nodes end".into());
         Ok(self)
     }
     pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
@@ -589,15 +599,22 @@ impl HttpClient {
     }
 
     pub(crate) async fn get(&self, node: Node, _timeout: Duration) -> Result<Response> {
+        // console::log_1(&"get 1".into());
+        // console::log_1(&format!("get 1 node url {}", node.url).into());
         let mut request_builder = self.client.get(node.url);
+        // console::log_1(&"get 2".into());
         if let Some(jwt) = node.jwt {
             request_builder = request_builder.bearer_auth(jwt);
         }
+        // console::log_1(&"get 3".into());
         #[cfg(not(feature = "wasm"))]
         {
             request_builder = request_builder.timeout(_timeout);
         }
-        Self::parse_response(request_builder.send().await?).await
+        // console::log_1(&"get 4".into());
+        let resp = request_builder.send().await?;
+        // console::log_1(&"get 5".into());
+        Self::parse_response(resp).await
     }
 
     pub(crate) async fn post_bytes(&self, node: Node, _timeout: Duration, body: &[u8]) -> Result<Response> {
