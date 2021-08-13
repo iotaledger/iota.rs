@@ -116,6 +116,7 @@ export declare class Client {
   mnemonicToHexSeed(mnemonic: string): string
   bech32ToHex(address: string): string
   hexToBech32(address: string, bech32_hrp?: string): Promise<string>
+  hexPublicKeyToBech32Address(publicKey: string, bech32_hrp?: string): Promise<string>
   isAddressValid(address: string): boolean
   getMessageId(message: string): string
   getMilestone(index: number): Promise<MilestoneMetadata>

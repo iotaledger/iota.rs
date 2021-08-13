@@ -150,4 +150,9 @@ describe('Client', () => {
     assert.strictEqual('name' in info.nodeinfo, true)
     assert.strictEqual(info.nodeinfo.name, 'HORNET')
   })
+
+  it('public key to address', async () => {
+    const address = await client.hexPublicKeyToBech32Address("2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a")
+    assert.strictEqual(address, 'atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
+  })
 })

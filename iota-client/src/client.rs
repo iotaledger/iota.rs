@@ -12,7 +12,10 @@ use crate::{
 use bee_common::packable::Packable;
 use bee_message::{
     constants::INPUT_OUTPUT_COUNT_MAX,
-    prelude::{Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput},
+    prelude::{
+        Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput,
+        ED25519_ADDRESS_LENGTH,
+    },
 };
 use bee_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
@@ -1133,9 +1136,24 @@ impl Client {
         Ok(ed.to_string())
     }
 
-    /// Transforms hex to bech32
+    /// Transforms a hex encoded address to a bech32 encoded address
     pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let address: Ed25519Address = hex.parse::<Ed25519Address>()?;
+        match bech32_hrp {
+            Some(hrp) => Ok(Address::Ed25519(address).to_bech32(hrp)),
+            None => Ok(Address::Ed25519(address).to_bech32(self.get_bech32_hrp().await?.as_str())),
+        }
+    }
+
+    /// Transforms a hex encoded public key to a bech32 encoded address
+    pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        let mut public_key = [0u8; ED25519_ADDRESS_LENGTH];
+        hex::decode_to_slice(&hex, &mut public_key)?;
+
+        let address = Blake2b256::digest(&public_key)
+            .try_into()
+            .map_err(|_e| Error::Blake2b256Error("Hashing the public key failed."))?;
+        let address: Ed25519Address = Ed25519Address::new(address);
         match bech32_hrp {
             Some(hrp) => Ok(Address::Ed25519(address).to_bech32(hrp)),
             None => Ok(Address::Ed25519(address).to_bech32(self.get_bech32_hrp().await?.as_str())),
