@@ -1152,7 +1152,7 @@ impl Client {
 
         let address = Blake2b256::digest(&public_key)
             .try_into()
-            .map_err(|_e| Error::Blake2b256Error("Hashing the public key while generating the address failed."))?;
+            .map_err(|_e| Error::Blake2b256Error("Hashing the public key failed."))?;
         let address: Ed25519Address = Ed25519Address::new(address);
         match bech32_hrp {
             Some(hrp) => Ok(Address::Ed25519(address).to_bech32(hrp)),
