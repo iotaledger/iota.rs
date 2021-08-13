@@ -317,12 +317,23 @@ Returns a parsed hex String from bech32.
 
 #### hexToBech32(hex, bech32_hrp (optional))
 
-Returns a parsed bech32 String from hex.
+Returns a parsed bech32 address String from a hex encoded address.
 
-| Param       | Type                | Description               |
-| ----------- | ------------------- | ------------------------- |
-| bech32      | <code>string</code> | The address Bech32 string |
-| bech32_hrp  | <code>string</code> | The Bech32 hrp string     |
+| Param      | Type                | Description                    |
+| ---------- | ------------------- | ------------------------------ |
+| address    | <code>string</code> | The hex encoded address string |
+| bech32_hrp | <code>string</code> | The Bech32 hrp string          |
+
+**Returns** A String
+
+#### hexPublicKeyToBech32Address(hex, bech32_hrp (optional))
+
+Returns a parsed bech32 address String from a hex encoded public key.
+
+| Param       | Type                | Description                |
+| ----------- | ------------------- | -------------------------- |
+| publicKey   | <code>string</code> | The hex encoded public key |
+| bech32_hrp  | <code>string</code> | The Bech32 hrp string      |
 
 **Returns** A String
 
@@ -912,7 +923,7 @@ All fields are optional.
 | --------- | -------------------------------- | ------------------------------------- |
 | networkId | <code>number</code>              | Network identifier                    |
 | parents   | <code>string[]</code>            | Message ids of the message references |
-| payload   | <code>[Payload](#payload)</code> | Message payload                       |
+| payload   | <code>[Payload](#payload) \| null</code> | Message payload                       |
 | nonce     | <code>number</code>              | Message nonce                         |
 
 ### MessageWrapper
@@ -924,14 +935,15 @@ All fields are optional.
 
 #### Payload
 
-| Field | Type                                                                                                                                                              | Description  |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| data  | <code>{ type: 'Transaction', data: TransactionPayload } \| { type: 'Indexation', data: IndexationPayload } \| { type: 'Milestone', data: MilestonePayload}</code> | Payload data |
+| Field | Type                                                                   | Description  |
+| ----- | ---------------------------------------------------------------------- | ------------ |
+| data  | <code>TransactionPayload \| IndexationPayload \| MilestonePayload \| ReceiptPayload</code> | Payload data |
 
 ##### TransactionPayload
 
 | Field         | Type                                   | Description         |
 | ------------- | -------------------------------------- | ------------------- |
+| type          | <code>number</code>                    | Payload type        |
 | essence       | <code>TransactionPayloadEssence</code> | Transaction essence |
 | unlock_blocks | <code>UnlockBlock[]</code>             | Unlock blocks       |
 
@@ -939,6 +951,7 @@ All fields are optional.
 
 | Field   | Type                              | Description          |
 | ------- | --------------------------------- | -------------------- |
+| type    | <code>number</code>               | Essence type         |
 | inputs  | <code>Input[]</code>              | Inputs               |
 | outputs | <code>Output[]</code>             | Outputs              |
 | payload | <code>Payload \| undefined</code> | Payload for chaining |
@@ -947,55 +960,60 @@ All fields are optional.
 
 | Field | Type                | Description              |
 | ----- | ------------------- | ------------------------ |
-| type  | <code>'UTXO'</code> | Input type identifier    |
+| type  | <code>number</code> | Input type identifier    |
 | data  | <code>string</code> | The associated output id |
 
 - Output
 
 | Field | Type                                             | Description            |
 | ----- | ------------------------------------------------ | ---------------------- |
-| type  | <code>'SignatureLockedSingle'</code>             | Output type identifier |
+| type  | <code>number</code>                              | Output type identifier |
 | data  | <code>{ address: string, amount: number }</code> | The output definition  |
 
 - UnlockBlock
 
-| Field | Type                                               | Description                                           |
-| ----- | -------------------------------------------------- | ----------------------------------------------------- |
-| type  | <code>'Signature' \| 'Reference'</code>            | Unlock block type identifier                          |
-| data  | <code>Ed25519SignatureUnlockBlock \| number</code> | Unlock block data (signature type or reference index) |
+| Field | Type                               | Description                                                           |
+| ----- | ---------------------------------- | --------------------------------------------------------------------- |
+| type  | <code>number</code>                | Unlock block type identifier                                          |
+| data  | <code>Ed25519SignatureUnlockBlock \| ReferenceUnlockBlock</code> | Unlock block data (signature type or reference index) |
 
 - Ed25519SignatureUnlockBlock
 
-| Field      | Type                  | Description        |
-| ---------- | --------------------- | ------------------ |
-| public_key | <code>number[]</code> | Ed25519 public key |
-| signature  | <code>number[]</code> | Ed25519 signature  |
+| Field      | Type                  | Description            |
+| ---------- | --------------------- | ---------------------- |
+| type       | <code>number</code>   | Unlock type identifier |
+| public_key | <code>string</code> | Ed25519 public key     |
+| signature  | <code>string</code> | Ed25519 signature      |
+
+- ReferenceUnlockBlock
+
+| Field     | Type                 | Description                                      |
+| --------- | -------------------- | ------------------------------------------------ |
+| type      | <code>number</code>  | Unlock block type identifier                     |
+| reference | <code> number</code> | Represents the index of a previous unlock block. |
 
 ##### IndexationPayload
 
-| Field | Type                  | Description                   |
-| ----- | --------------------- | ----------------------------- |
-| index | <code>string</code>   | Indexation key                |
-| data  | <code>number[]</code> | Indexation data as byte array |
+| Field | Type                | Description                   |
+| ----- | ------------------- | ----------------------------- |
+| type  | <code>number</code> | Payload type                  |
+| index | <code>string</code> | Indexation key                |
+| data  | <code>string</code> | Indexation data as byte array |
 
 ##### MilestonePayload
 
-| Field      | Type                          | Description          |
-| ---------- | ----------------------------- | -------------------- |
-| essence    | <code>MilestoneEssence</code> | Milestone essence    |
-| signatures | <code>number[][]</code>       | Milestone signatures |
-
-- MilestoneEssence
-
-| Field                      | Type                    | Description                                            |
-| -------------------------- | ----------------------- | ------------------------------------------------------ |
-| index                      | <code>number</code>     | Milestone index                                        |
-| timestamp                  | <code>number</code>     | Timestamp                                              |
-| parents                    | <code>string[]</code>   | Message ids of the messages the milestone references   |
-| merkleProof                | <code>number[]</code>   | Merkle proof                                           |
-| nextPoWScore               | <code>number</code>     | Next PoW score                                         |
-| nextPoWScoreMilestoneIndex | <code>number</code>     | Milestone index at which the nextPoWScore will be used |
-| publicKeys                 | <code>number[][]</code> | public keys                                            |
+| Field                      | Type                                       | Description                                            |
+| -------------------------- | ------------------------------------------ | ------------------------------------------------------ |
+| type                       | <code>number</code>                        | Payload type identifier                                |
+| index                      | <code>number</code>                        | Milestone index                                        |
+| timestamp                  | <code>number</code>                        | Timestamp                                              |
+| parentMessageIds           | <code>string[]</code>                      | Message ids of the messages the milestone references   |
+| inclusionMerkleProof       | <code>string</code>                        | Merkle proof                                           |
+| nextPoWScore               | <code>number</code>                        | Next PoW score                                         |
+| nextPoWScoreMilestoneIndex | <code>number</code>                        | Milestone index at which the nextPoWScore will be used |
+| publicKeys                 | <code>string[]</code>                      | public keys                                            |
+| receipt                    | <code>[Payload](#payload)\| null</code>    | Optional receipt payload                               |
+| signatures                 | <code>string[]</code>                      | Milestone signatures                                   |
 
 ### MessageDto
 
@@ -1047,10 +1065,10 @@ All fields are optional.
 
 ##### IndexationPayloadDto
 
-| Field | Type                    | Description     |
-| ----- | ----------------------- | --------------- |
-| index | <code>string</code>     | Indexation key  |
-| data  | <code>Uint8Array</code> | Indexation data |
+| Field | Type                | Description     |
+| ----- | ------------------- | --------------- |
+| index | <code>string</code> | Indexation key  |
+| data  | <code>string</code> | Indexation data |
 
 ##### AddressBalance
 
@@ -1130,7 +1148,7 @@ All fields are optional.
 | Field           | Type                 | Description     |
 | --------------- | -------------------- | --------------- |
 | receipt         | <code>receipt</code> | Receipt         |
-| milestoneIndex | <code>number</code>  | Milestone index |
+| milestoneIndex  | <code>number</code>  | Milestone index |
 
 ### Treasury
 

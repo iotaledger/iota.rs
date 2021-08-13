@@ -12,6 +12,8 @@ const {
   BalanceGetter
 } = require('../build/Release/index.node')
 
+global.TextEncoder = require("util").TextEncoder;
+
 function promisify(fn, parse = true) {
   return function () {
     return new Promise((resolve, reject) => fn.apply(this, [...Array.from(arguments), (err, data) => {
@@ -135,6 +137,7 @@ Client.prototype.consolidateFunds = promisify(Client.prototype.consolidateFunds)
 Client.prototype.reattach = promisify(Client.prototype.reattach)
 Client.prototype.promote = promisify(Client.prototype.promote)
 Client.prototype.hexToBech32 = promisify(Client.prototype.hexToBech32)
+Client.prototype.hexPublicKeyToBech32Address = promisify(Client.prototype.hexPublicKeyToBech32Address)
 
 const messageGetterIndexSetter = promisify(MessageGetter.prototype.index)
 MessageGetter.prototype.index = function (index) {

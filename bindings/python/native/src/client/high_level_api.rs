@@ -3,7 +3,7 @@
 
 use crate::client::{
     error::{Error, Result},
-    AddressBalancePair, AddressDto, Client, Input, Message, MessageMetadataResponse, Output, OutputDto, Payload,
+    AddressBalancePair, AddressDto, Client, Message, MessageMetadataResponse, Output, OutputDto, Payload,
     PreparedTransactionData, UtxoInput,
 };
 use iota_client::{
@@ -30,7 +30,7 @@ impl Client {
         seed: Option<String>,
         account_index: Option<usize>,
         initial_address_index: Option<usize>,
-        inputs: Option<Vec<Input>>,
+        inputs: Option<Vec<UtxoInput>>,
         input_range_begin: Option<usize>,
         input_range_end: Option<usize>,
         outputs: Option<Vec<Output>>,
@@ -57,10 +57,7 @@ impl Client {
         }
         if let Some(inputs) = inputs {
             for input in inputs {
-                send_builder = send_builder.with_input(RustUtxoInput::new(
-                    RustTransactionId::from_str(&input.transaction_id[..])?,
-                    input.index,
-                )?);
+                send_builder = send_builder.with_input(input.try_into()?);
             }
         }
 

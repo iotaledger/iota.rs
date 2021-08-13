@@ -341,21 +341,21 @@ Get the included message of a transaction.
 
 Build a message.
 
-| Param                    | Type                                 | Default                | Description                                  |
-| ------------------------ | ------------------------------------ | ---------------------- | -------------------------------------------- |
-| [seed]                   | <code>str</code>                     | <code>undefined</code> | The hex-encoded seed of the account to spend |
-| [account_index]          | <code>int</code>                     | <code>undefined</code> | The account index                            |
-| [initial_address_index]  | <code>int</code>                     | <code>undefined</code> | The initial address index                    |
-| [inputs]                 | <code>list[[Input](#input)]</code>   | <code>undefined</code> | Inputs                                       |
-| [input_range_begin]      | <code>int</code>                     | <code>undefined</code> | The begin index of the input                 |
-| [input_range_end]        | <code>int</code>                     | <code>undefined</code> | The end index of the input                   |
-| [outputs]                | <code>list[[Output](#output)]</code> | <code>undefined</code> | Outputs                                      |
-| [dust_allowance_outputs] | <code>list[[Output](#output)]</code> | <code>undefined</code> | Dust allowance output to the transaction     |
-| [index]                  | <code>str</code>                     | <code>undefined</code> | The indexation string                        |
-| [index_raw]              | <code>list[int]</code>               | <code>undefined</code> | The indexation byte array                    |
-| [data]                   | <code>list[int]</code>               | <code>undefined</code> | The data in bytes                            |
-| [data_str]               | <code>str</code>                     | <code>undefined</code> | The data string                              |
-| [parents]                | <code>list[str]</code>               | <code>undefined</code> | The message ids of the parents               |
+| Param                    | Type                                       | Default                | Description                                  |
+| ------------------------ | ------------------------------------------ | ---------------------- | -------------------------------------------- |
+| [seed]                   | <code>str</code>                           | <code>undefined</code> | The hex-encoded seed of the account to spend |
+| [account_index]          | <code>int</code>                           | <code>undefined</code> | The account index                            |
+| [initial_address_index]  | <code>int</code>                           | <code>undefined</code> | The initial address index                    |
+| [inputs]                 | <code>list[[UtxoInput](#utxoinput)]</code> | <code>undefined</code> | UtxoInputs                                   |
+| [input_range_begin]      | <code>int</code>                           | <code>undefined</code> | The begin index of the input                 |
+| [input_range_end]        | <code>int</code>                           | <code>undefined</code> | The end index of the input                   |
+| [outputs]                | <code>list[[Output](#output)]</code>       | <code>undefined</code> | Outputs                                      |
+| [dust_allowance_outputs] | <code>list[[Output](#output)]</code>       | <code>undefined</code> | Dust allowance output to the transaction     |
+| [index]                  | <code>str</code>                           | <code>undefined</code> | The indexation string                        |
+| [index_raw]              | <code>list[int]</code>                     | <code>undefined</code> | The indexation byte array                    |
+| [data]                   | <code>list[int]</code>                     | <code>undefined</code> | The data in bytes                            |
+| [data_str]               | <code>str</code>                           | <code>undefined</code> | The data string                              |
+| [parents]                | <code>list[str]</code>                     | <code>undefined</code> | The message ids of the parents               |
 
 #### get_output_amount_and_address(output): (int, AddressDto, bool)
 
@@ -664,9 +664,9 @@ Unsubscribe all topics.
 
 Unsubscribe from provided topics.
 
-| Param      | Type                   | Default                | Description            |
-| ---------- | ---------------------- | ---------------------- | ---------------------- |
-| [topics]   | <code>list[str]</code> | <code>undefined</code> | The MQTT topics        |
+| Param    | Type                   | Default                | Description     |
+| -------- | ---------------------- | ---------------------- | --------------- |
+| [topics] | <code>list[str]</code> | <code>undefined</code> | The MQTT topics |
 
 #### disconnect(): void
 

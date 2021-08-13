@@ -1,5 +1,15 @@
 # Changelog
 
+## \[0.7.0]
+
+- Add hexPublicKeyToBech32Address method
+  - [572bc72b](https://github.com/iotaledger/iota.rs/commit/572bc72b7a945528475132dbb9e86e0b21f08796) Add hexPublicKeyToBech32Address on 2021-08-13
+
+## \[0.6.6]
+
+- Import TextEncoder for older Node.js versions
+  - [2c718365](https://github.com/iotaledger/iota.rs/commit/2c71836544ddd63571e6fd47cdf555a94afb322e) Import TextEncoder for older Node.js versions on 2021-08-06
+
 ## \[0.6.5]
 
 - Order parent messages always, fix POST JSON request.

@@ -81,6 +81,7 @@ pub(crate) enum Api {
     Reattach(MessageId),
     Promote(MessageId),
     HexToBech32(String, Option<String>),
+    HexPublicKeyToBech32Address(String, Option<String>),
 }
 
 pub(crate) struct ClientTask {
@@ -418,6 +419,11 @@ impl Task for ClientTask {
                     let opt = bech32_hrp.as_ref().map(|opt| opt.as_str());
                     let bech32 = client.hex_to_bech32(hex, opt).await?;
                     serde_json::to_string(&bech32)?
+                }
+                Api::HexPublicKeyToBech32Address(hex, bech32_hrp) => {
+                    let opt = bech32_hrp.as_ref().map(|opt| opt.as_str());
+                    let bech32_address = client.hex_public_key_to_bech32_address(hex, opt).await?;
+                    serde_json::to_string(&bech32_address)?
                 }
             };
             Ok(res)
