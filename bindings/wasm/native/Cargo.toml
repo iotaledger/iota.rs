@@ -25,6 +25,7 @@ wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = { version = "0.4", default-features = false }
 hex = "0.4"
 iota-client = { path = "../../../iota-client", features = ["wasm"], default-features = false }
+web-sys = {version = "0.3.52", features = ["console"] }
 
 # import needed for the wasm-bindgen feature
 [target.'cfg(target_arch = "wasm32")'.dependencies]

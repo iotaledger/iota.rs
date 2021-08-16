@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-  address_getter::AddressGetter, balance_getter::BalanceGetter, error::wasm_error, get_address::GetAddressBuilder,
-  message_builder::MessageBuilder, message_getter::MessageGetter, unspent_address_getter::UnspentAddressGetter,
+  address_getter::AddressGetter, balance_getter::BalanceGetter, client_builder::to_basic_auth, error::wasm_error,
+  get_address::GetAddressBuilder, message_builder::MessageBuilder, message_getter::MessageGetter,
+  unspent_address_getter::UnspentAddressGetter,
 };
 use iota_client::{
   bee_message::{
@@ -76,6 +77,23 @@ impl Client {
     Ok(future_to_promise(async move {
       client
         .get_info()
+        .await
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
+    }))
+  }
+
+  /// Get the nodeinfo.
+  #[wasm_bindgen(js_name = getNodeInfo)]
+  pub fn get_node_info(
+    &self,
+    url: String,
+    jwt: Option<String>,
+    username: Option<String>,
+    password: Option<String>,
+  ) -> Result<Promise, JsValue> {
+    Ok(future_to_promise(async move {
+      RustClient::get_node_info(&url, jwt.clone(), to_basic_auth(&username, &password))
         .await
         .map_err(wasm_error)
         .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))

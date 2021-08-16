@@ -1,10 +1,10 @@
-function run() {
+async function run() {
     const crypto = require('crypto');
     const seed = crypto.createHash('sha256').update(crypto.randomBytes(256)).digest('hex');
     console.log(seed);
 
-    const { ClientBuilder } = require('test-iota-client-wasm');
-    const client = new ClientBuilder().build();
+    const { ClientBuilder } = require('../node/iota_client_wasm')
+    const client = await new ClientBuilder().build();
 
     const mnemonic = client.generateMnemonic();
     console.log(mnemonic);

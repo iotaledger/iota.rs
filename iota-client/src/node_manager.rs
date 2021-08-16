@@ -18,7 +18,6 @@ use std::sync::RwLock;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
 use url::Url;
-use web_sys::console;
 
 use std::{
     collections::{HashMap, HashSet},

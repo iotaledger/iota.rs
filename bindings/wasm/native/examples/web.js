@@ -5,7 +5,7 @@ async function run(Iota) {
     ClientBuilder
   } = Iota
 
-  let client = new ClientBuilder().node("https://api.lb-0.testnet.chrysalis2.com").build();
+  let client = await new ClientBuilder().node("https://api.lb-0.testnet.chrysalis2.com").build();
   // Get the nodeinfo
   console.log(await client.getInfo());
   // let message = await client.message().index(new TextEncoder().encode("test")).submit();

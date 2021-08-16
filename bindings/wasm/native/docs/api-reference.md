@@ -175,6 +175,7 @@ Get the balance.
     * [.getBalance(seed)](#Client+getBalance) ⇒ [<code>BalanceGetter</code>](#BalanceGetter)
     * [.getAddress()](#Client+getAddress) ⇒ [<code>GetAddressBuilder</code>](#GetAddressBuilder)
     * [.getInfo()](#Client+getInfo) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.getNodeInfo(url, jwt, username, password)](#Client+getNodeInfo) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.networkInfo()](#Client+networkInfo) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getNetworkId()](#Client+getNetworkId) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.getBech32Hrp()](#Client+getBech32Hrp) ⇒ <code>Promise.&lt;any&gt;</code>
@@ -263,6 +264,20 @@ GET /api/v1/addresses/{address} endpoint
 Get the nodeinfo.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
+<a name="Client+getNodeInfo"></a>
+
+### client.getNodeInfo(url, jwt, username, password) ⇒ <code>Promise.&lt;any&gt;</code>
+Get the nodeinfo.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| url | <code>string</code> | 
+| jwt | <code>string</code> \| <code>undefined</code> | 
+| username | <code>string</code> \| <code>undefined</code> | 
+| password | <code>string</code> \| <code>undefined</code> | 
+
 <a name="Client+networkInfo"></a>
 
 ### client.networkInfo() ⇒ <code>Promise.&lt;any&gt;</code>
@@ -585,7 +600,7 @@ Returns the message id from a provided message.
     * [.nodeSyncInterval(value)](#ClientBuilder+nodeSyncInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncDisabled()](#ClientBuilder+nodeSyncDisabled) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.offlineMode()](#ClientBuilder+offlineMode) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
-    * [.nodePoolUrls(node_pool_urls)](#ClientBuilder+nodePoolUrls) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+    * [.nodePoolUrls(node_pool_urls)](#ClientBuilder+nodePoolUrls) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.quorum(value)](#ClientBuilder+quorum) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumSize(value)](#ClientBuilder+quorumSize) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumThreshold(value)](#ClientBuilder+quorumThreshold) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
@@ -594,7 +609,7 @@ Returns the message id from a provided message.
     * [.tipsInterval(value)](#ClientBuilder+tipsInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.requestTimeout(value)](#ClientBuilder+requestTimeout) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.apiTimeout(api, timeout)](#ClientBuilder+apiTimeout) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
-    * [.build()](#ClientBuilder+build) ⇒ [<code>Client</code>](#Client)
+    * [.build()](#ClientBuilder+build) ⇒ <code>Promise.&lt;any&gt;</code>
 
 <a name="new_ClientBuilder_new"></a>
 
@@ -706,7 +721,7 @@ Allows creating the client without nodes for offline address generation or signi
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
 <a name="ClientBuilder+nodePoolUrls"></a>
 
-### clientBuilder.nodePoolUrls(node_pool_urls) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
+### clientBuilder.nodePoolUrls(node_pool_urls) ⇒ <code>Promise.&lt;any&gt;</code>
 Get node list from the node_pool_urls
 
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
@@ -808,7 +823,7 @@ Sets the request timeout for a specific API usage.
 
 <a name="ClientBuilder+build"></a>
 
-### clientBuilder.build() ⇒ [<code>Client</code>](#Client)
+### clientBuilder.build() ⇒ <code>Promise.&lt;any&gt;</code>
 Build the client.
 
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  

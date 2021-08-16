@@ -3,7 +3,6 @@
 
 //! Builder of the Client Instance
 use crate::{client::*, error::*};
-use web_sys::console;
 
 #[cfg(not(feature = "wasm"))]
 use tokio::{runtime::Runtime, sync::broadcast::channel};
@@ -254,23 +253,18 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
-        // console::log_1(&"Hello using web-sys".into());
         // Add default nodes
         if !self.offline {
-            // console::log_1(&"Hello using web-sys2".into());
             self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
-            // console::log_1(&"nach add_default_nodes finish".into());
             // Return error if we don't have a node
             if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
                 return Err(Error::MissingParameter("Node"));
             }
         }
-        // console::log_1(&"befaegeainish".into());
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
-        // console::log_1(&"before adad".into());
         #[cfg(feature = "wasm")]
         let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
         #[cfg(not(feature = "wasm"))]

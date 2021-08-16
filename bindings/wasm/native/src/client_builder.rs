@@ -2,16 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{client::Client, error::wasm_error};
-use futures::executor;
 use iota_client::{Api, ClientBuilder as RustClientBuilder};
+use js_sys::Promise;
 use std::{rc::Rc, str::FromStr, time::Duration};
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::future_to_promise;
 
 fn to_duration(seconds: u32) -> Duration {
   Duration::from_secs(u64::from(seconds))
 }
 
-fn to_basic_auth<'a>(username: &'a Option<String>, password: &'a Option<String>) -> Option<(&'a str, &'a str)> {
+pub(crate) fn to_basic_auth<'a>(
+  username: &'a Option<String>,
+  password: &'a Option<String>,
+) -> Option<(&'a str, &'a str)> {
   username.as_deref().zip(password.as_deref())
 }
 
@@ -143,11 +147,20 @@ impl ClientBuilder {
 
   /// Get node list from the node_pool_urls
   #[wasm_bindgen(js_name = nodePoolUrls)]
-  pub fn node_pool_urls(&mut self, node_pool_urls: JsValue) -> Result<ClientBuilder, JsValue> {
+  pub fn node_pool_urls(&mut self, node_pool_urls: JsValue) -> Result<Promise, JsValue> {
     let node_pool_urls: Vec<String> = node_pool_urls.into_serde().map_err(wasm_error)?;
-    self
-      .try_with_mut(|builder| executor::block_on(builder.with_node_pool_urls(&node_pool_urls)).map_err(wasm_error))?;
-    Ok(self.clone())
+    let mut clientbuilder = self.clone();
+    let promise: Promise = future_to_promise(async move {
+      clientbuilder.builder = Some(
+        clientbuilder
+          .take_builder()?
+          .with_node_pool_urls(&node_pool_urls[..])
+          .await
+          .map_err(wasm_error)?,
+      );
+      Ok(clientbuilder.into())
+    });
+    Ok(promise)
   }
 
   /// Set if quroum should be used or not
@@ -230,13 +243,18 @@ impl ClientBuilder {
 
   /// Build the client.
   #[wasm_bindgen]
-  pub fn build(&mut self) -> Result<Client, JsValue> {
+  pub fn build(&mut self) -> Result<Promise, JsValue> {
     let future = self.take_builder()?.finish();
-    let output = executor::block_on(future).map_err(wasm_error)?;
-
-    Ok(Client {
-      client: Rc::new(output),
-    })
+    let promise: Promise = future_to_promise(async move {
+      let output = future.await.map_err(wasm_error)?;
+      Ok(
+        Client {
+          client: Rc::new(output),
+        }
+        .into(),
+      )
+    });
+    Ok(promise)
   }
 }
 

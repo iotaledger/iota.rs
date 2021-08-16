@@ -465,7 +465,7 @@ async function run(){
     const { ClientBuilder } = require('@iota/client');
 
     // client will connect to testnet by default
-    const client = new ClientBuilder().build();
+    const client = await new ClientBuilder().build();
 
     const message_data = await client.getMessage().data("92f427d68c7008a81fde290b9cb99071373d9893d65718bfc22928273877e041");
     console.log(message_data);

@@ -43,7 +43,7 @@ impl GetAddressBuilder {
   #[wasm_bindgen]
   pub fn outputs(&self, address: String, options: JsValue) -> Result<Promise, JsValue> {
     let client = self.client.clone();
-    let options: OutputsOptions = options.into_serde().map_err(wasm_error)?;
+    let options: OutputsOptions = options.into_serde().unwrap_or(OutputsOptions::default());
     let promise: Promise = future_to_promise(async move {
       client
         .client
