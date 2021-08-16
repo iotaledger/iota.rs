@@ -503,6 +503,23 @@ impl Client {
     }))
   }
 
+  /// Transforms a hex encoded public key to a bech32 encoded address
+  #[wasm_bindgen(js_name = hexPublicKeyToBech32Address)]
+  pub fn hex_public_key_to_bech32_address(
+    &self,
+    public_key: String,
+    bech32: Option<String>,
+  ) -> Result<Promise, JsValue> {
+    let client: Rc<RustClient> = self.client.clone();
+    Ok(future_to_promise(async move {
+      client
+        .hex_public_key_to_bech32_address(&public_key, bech32.as_deref())
+        .await
+        .map_err(wasm_error)
+        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
+    }))
+  }
+
   /// Checks if a String is a valid bech32 encoded address.
   #[wasm_bindgen(js_name = isAddressValid)]
   pub fn is_address_valid(&self, address: String) -> bool {

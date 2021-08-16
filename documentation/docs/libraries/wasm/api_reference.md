@@ -202,6 +202,7 @@ Get the balance.
     * [.consolidateFunds(seed, account_index, start_index, end_index)](#Client+consolidateFunds) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.bech32ToHex(address)](#Client+bech32ToHex) ⇒ <code>string</code>
     * [.hexToBech32(address, bech32)](#Client+hexToBech32) ⇒ <code>Promise.&lt;any&gt;</code>
+    * [.hexPublicKeyToBech32Address(public_key, bech32)](#Client+hexPublicKeyToBech32Address) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.isAddressValid(address)](#Client+isAddressValid) ⇒ <code>boolean</code>
     * [.generateMnemonic()](#Client+generateMnemonic) ⇒ <code>string</code>
     * [.mnemonicToHexSeed(mnemonic)](#Client+mnemonicToHexSeed) ⇒ <code>string</code>
@@ -543,6 +544,18 @@ Returns a parsed bech32 String from hex.
 | Param | Type |
 | --- | --- |
 | address | <code>string</code> | 
+| bech32 | <code>string</code> \| <code>undefined</code> | 
+
+<a name="Client+hexPublicKeyToBech32Address"></a>
+
+### client.hexPublicKeyToBech32Address(public_key, bech32) ⇒ <code>Promise.&lt;any&gt;</code>
+Transforms a hex encoded public key to a bech32 encoded address
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| public_key | <code>string</code> | 
 | bech32 | <code>string</code> \| <code>undefined</code> | 
 
 <a name="Client+isAddressValid"></a>

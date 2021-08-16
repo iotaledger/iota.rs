@@ -53,7 +53,7 @@ rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 
 # wasm
 # patched version to work in browser and node.js
-wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "8c619e895ce0b74e3aab86f5758d89b3e6d2567a", optional = true }
+wasm-timer = { git = "https://github.com/Thoralf-M/wasm-timer", rev = "698c02da91f075a1574b4c711a5ea5d4103cb8bf", optional = true }
 # single thread pow for wasm
 bee-crypto = { version = "0.2.1-alph", optional = true }
 bee-ternary = { version = "0.4.2-alpha", optional = true }
