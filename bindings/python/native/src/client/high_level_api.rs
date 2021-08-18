@@ -396,6 +396,11 @@ impl Client {
             self.client.hex_to_bech32(hex, bech32_hrp).await
         })?)
     }
+    fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
+        Ok(crate::block_on(async {
+            self.client.hex_public_key_to_bech32_address(hex, bech32_hrp).await
+        })?)
+    }
     fn is_address_valid(&self, address: &str) -> bool {
         RustClient::is_address_valid(address)
     }

@@ -526,6 +526,17 @@ Returns a parsed bech32 String from hex.
 
 **Returns** A String
 
+#### hex_public_key_to_bech32_address(hex, bech32_hrp (optional))
+
+Returns the bech32 address from the hex public key.
+
+| Param      | Type  | Default     | Description               |
+| ---------- | ----- | ----------- | ------------------------- |
+| bech32     | `str` | `undefined` | The address Bech32 string |
+| bech32_hrp | `str` | `undefined` | The Bech32 hrp string     |
+
+**Returns** A String
+
 #### is_address_valid(address): bool
 
 Checks if a given address is valid.
