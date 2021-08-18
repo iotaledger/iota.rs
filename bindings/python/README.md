@@ -577,7 +577,7 @@ Returns the bech32 address from the hex public key.
 
 | Param      | Type             | Default                | Description               |
 | ---------- | ---------------- | ---------------------- | ------------------------- |
-| bech32     | <code>str</code> | <code>undefined</code> | The address Bech32 string |
+| hex        | <code>str</code> | <code>undefined</code> | Hex encoded public key    |
 | bech32_hrp | <code>str</code> | <code>undefined</code> | The Bech32 hrp string     |
 
 **Returns** A String
