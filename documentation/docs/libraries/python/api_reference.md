@@ -532,7 +532,7 @@ Returns the bech32 address from the hex public key.
 
 | Param      | Type  | Default     | Description               |
 | ---------- | ----- | ----------- | ------------------------- |
-| bech32     | `str` | `undefined` | The address Bech32 string |
+| hex     | `str` | `undefined` | Hex encoded public key |
 | bech32_hrp | `str` | `undefined` | The Bech32 hrp string     |
 
 **Returns** A String
