@@ -225,6 +225,7 @@ fn poll_mqtt(
                         });
                     }
                     Err(_) => {
+                        println!("error");
                         if error_instant.elapsed().as_secs() < 5 {
                             connection_failure_count += 1;
                         } else {

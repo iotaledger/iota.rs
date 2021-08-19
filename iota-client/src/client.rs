@@ -149,7 +149,7 @@ fn default_broker_port() -> u16 {
 
 #[cfg(feature = "mqtt")]
 fn default_max_reconnection_attempts() -> usize {
-    3
+    0
 }
 
 #[cfg(feature = "mqtt")]
@@ -196,7 +196,7 @@ impl BrokerOptions {
         self
     }
 
-    /// Sets the maximum number of reconnection attempts.
+    /// Sets the maximum number of reconnection attempts. 0 is unlimited.
     pub fn max_reconnection_attempts(mut self, max_reconnection_attempts: usize) -> Self {
         self.max_reconnection_attempts = max_reconnection_attempts;
         self
@@ -263,7 +263,7 @@ impl NonceProvider for ClientMiner {
 }
 
 /// Each of the node APIs the client uses.
-#[derive(Eq, PartialEq, Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub enum Api {
     /// `get_health` API
     GetHealth,
@@ -756,6 +756,7 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
+        println!("timeout {:?}", timeout);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageIdWrapper,

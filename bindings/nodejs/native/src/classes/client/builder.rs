@@ -389,7 +389,9 @@ declare_types! {
                 if ref_.node_sync_disabled {
                     builder = builder.with_node_sync_disabled();
                 }
-
+                for (key, timeout) in &ref_.api_timeout {
+                    builder = builder.with_api_timeout((*key).clone(), *timeout);
+                }
                 crate::block_on(builder.finish()).expect("failed to build client instance")
             };
             let id = crate::store_client(client);
