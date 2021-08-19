@@ -195,10 +195,10 @@ Sets the default HTTP request timeout.
 
 Sets the HTTP request timeout for the specified API.
 
-| Param   | Type                                                                                                 | Description                        |
-| ------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| api     | <code>'GetHealth' \| 'GetInfo' \| 'GetTips' \| 'PostMessage' \| 'GetOutput' \| 'GetMilestone'</code> | The API to set the request timeout |
-| timeout | <code>number</code>                                                                                  | The timeout in milliseconds        |
+| Param   | Type                                                                                                                                | Description                        |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| api     | <code>'GetHealth' \| 'GetInfo' \| 'GetTips' \| 'PostMessage' \| 'PostMessageWithRemotePow' \| 'GetOutput' \| 'GetMilestone'</code> | The API to set the request timeout |
+| timeout | <code>number</code>                                                                                                                 | The timeout in milliseconds        |
 
 **Returns** the client builder instance for chained calls.
 
