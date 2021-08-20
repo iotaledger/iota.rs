@@ -9,7 +9,7 @@ use std::{
     },
 };
 
-use iota_client::Topic;
+use iota_client::{bee_message::Message, bee_rest_api::types::dtos::MessageDto, Topic};
 use neon::prelude::*;
 
 struct WaitForMessageTask(Arc<Mutex<Receiver<String>>>);
@@ -67,7 +67,18 @@ impl Task for TopicTask {
                             .subscriber()
                             .with_topics(self.topics.clone())
                             .subscribe(move |event| {
+                                let mut event = event.clone();
                                 let s = sender.lock().unwrap();
+                                // convert message to message dtos so they have the same representation as the results
+                                // from the other functions of the library
+                                if event.topic.as_str() == "messages"
+                                    || event.topic.contains("messages/indexation/")
+                                    || event.topic.contains("transactions/")
+                                {
+                                    // save to unwrap since it get's encoded to this in the Rust library
+                                    let message: Message = serde_json::from_str(&event.payload).unwrap();
+                                    event.payload = serde_json::to_string(&MessageDto::from(&message)).unwrap();
+                                }
                                 let _ = s.send(serde_json::to_string(&event).unwrap());
                             }),
                     )
