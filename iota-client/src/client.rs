@@ -756,7 +756,6 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        println!("timeout {:?}", timeout);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageIdWrapper,
