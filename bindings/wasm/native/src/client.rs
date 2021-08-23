@@ -11,7 +11,7 @@ use iota_client::{
     input::UtxoInput, parents::Parents, payload::transaction::TransactionId, Message,
     MessageBuilder as RustMessageBuilder, MessageId,
   },
-  bee_rest_api::types::dtos::{MessageDto as BeeMessageDto, PayloadDto},
+  bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto, PayloadDto},
   common::packable::Packable,
   Client as RustClient, ClientMiner, Seed,
 };
@@ -196,14 +196,50 @@ impl Client {
   /// Find an output by its transaction_id and corresponding output_index.
   #[wasm_bindgen(js_name = getOutput)]
   pub fn get_output(&self, output_id: &str) -> Result<Promise, JsValue> {
+    #[derive(Serialize)]
+    struct OutputResponseDto {
+      #[serde(rename = "messageId")]
+      pub message_id: String,
+      #[serde(rename = "transactionId")]
+      pub transaction_id: String,
+      #[serde(rename = "outputIndex")]
+      pub output_index: u16,
+      #[serde(rename = "isSpent")]
+      pub is_spent: bool,
+      pub address: String,
+      pub amount: u64,
+      pub kind: String,
+      #[serde(rename = "ledgerIndex")]
+      pub ledger_index: u32,
+    }
     let client: Rc<RustClient> = self.client.clone();
     let output_id = UtxoInput::from_str(output_id).map_err(wasm_error)?;
     Ok(future_to_promise(async move {
-      client
-        .get_output(&output_id)
-        .await
-        .map_err(wasm_error)
-        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
+      let response = client.get_output(&output_id).await.map_err(wasm_error)?;
+
+      let (address, amount, kind) = match response.output {
+        OutputDto::SignatureLockedSingle(o) => match o.address {
+          AddressDto::Ed25519(addr) => (addr.address, o.amount, "SignatureLockedSingle".to_string()),
+        },
+        OutputDto::SignatureLockedDustAllowance(o) => match o.address {
+          AddressDto::Ed25519(addr) => (addr.address, o.amount, "SignatureLockedDustAllowance".to_string()),
+        },
+        OutputDto::Treasury(o) => ("".to_string(), o.amount, "Treasury".to_string()),
+      };
+      let output = OutputResponseDto {
+        message_id: response.message_id,
+        transaction_id: response.transaction_id,
+        output_index: response.output_index,
+        is_spent: response.is_spent,
+        address: client
+          .hex_to_bech32(&address.to_string(), None)
+          .await
+          .map_err(wasm_error)?,
+        amount,
+        kind,
+        ledger_index: response.ledger_index,
+      };
+      JsValue::from_serde(&output).map_err(wasm_error)
     }))
   }
 
@@ -244,6 +280,29 @@ impl Client {
   /// the request amount exceeds individual node limit.
   #[wasm_bindgen(js_name = findOutputs)]
   pub fn find_outputs(&self, outputs: JsValue, addresses: JsValue) -> Result<Promise, JsValue> {
+    #[derive(Serialize)]
+    struct OutputMetadataDto {
+      /// Message ID of the output
+      #[serde(rename = "messageId")]
+      pub message_id: String,
+      /// Transaction ID of the output
+      #[serde(rename = "transactionId")]
+      pub transaction_id: String,
+      /// Output index.
+      #[serde(rename = "outputIndex")]
+      pub output_index: u16,
+      /// Spend status of the output
+      #[serde(rename = "isSpent")]
+      pub is_spent: bool,
+      /// Corresponding address
+      pub address: String,
+      /// Balance amount
+      pub amount: u64,
+      /// Output kind
+      pub kind: String,
+      #[serde(rename = "ledgerIndex")]
+      pub ledger_index: u32,
+    }
     let client: Rc<RustClient> = self.client.clone();
     let outputs: Vec<String> = outputs.into_serde().map_err(wasm_error)?;
     let addresses: Vec<String> = addresses.into_serde().map_err(wasm_error)?;
@@ -252,11 +311,33 @@ impl Client {
       .map(|o| UtxoInput::from_str(&o).map_err(wasm_error))
       .collect::<Result<Vec<UtxoInput>, JsValue>>()?;
     Ok(future_to_promise(async move {
-      client
-        .find_outputs(&outputs, &addresses)
-        .await
-        .map_err(wasm_error)
-        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
+      let outputs = client.find_outputs(&outputs, &addresses).await.map_err(wasm_error)?;
+      let mut results = Vec::new();
+      for output in outputs {
+        let (address, amount, kind) = match output.output {
+          OutputDto::SignatureLockedSingle(o) => match o.address {
+            AddressDto::Ed25519(addr) => (addr.address, o.amount, "SignatureLockedSingle".to_string()),
+          },
+          OutputDto::SignatureLockedDustAllowance(o) => match o.address {
+            AddressDto::Ed25519(addr) => (addr.address, o.amount, "SignatureLockedDustAllowance".to_string()),
+          },
+          OutputDto::Treasury(o) => ("".to_string(), o.amount, "Treasury".to_string()),
+        };
+        results.push(OutputMetadataDto {
+          message_id: output.message_id,
+          transaction_id: output.transaction_id,
+          output_index: output.output_index,
+          is_spent: output.is_spent,
+          address: client
+            .hex_to_bech32(&address.to_string(), None)
+            .await
+            .map_err(wasm_error)?,
+          amount,
+          kind,
+          ledger_index: output.ledger_index,
+        })
+      }
+      JsValue::from_serde(&results).map_err(wasm_error)
     }))
   }
 
@@ -264,14 +345,33 @@ impl Client {
   /// already know the addresses.
   #[wasm_bindgen(js_name = getAddressBalances)]
   pub fn get_address_balances(&self, addresses: JsValue) -> Result<Promise, JsValue> {
+    #[derive(Serialize)]
+    struct AddressBalanceDto {
+      pub address: String,
+      pub balance: u64,
+      #[serde(rename = "dustAllowed")]
+      pub dust_allowed: bool,
+      #[serde(rename = "ledgerIndex")]
+      pub ledger_index: u32,
+    }
+
     let client: Rc<RustClient> = self.client.clone();
     let addresses: Vec<String> = addresses.into_serde().map_err(wasm_error)?;
     Ok(future_to_promise(async move {
-      client
-        .get_address_balances(&addresses)
-        .await
-        .map_err(wasm_error)
-        .and_then(|res| JsValue::from_serde(&res).map_err(wasm_error))
+      let balances = client.get_address_balances(&addresses).await.map_err(wasm_error)?;
+      let mut results = Vec::new();
+      for balance in balances {
+        results.push(AddressBalanceDto {
+          address: client
+            .hex_to_bech32(&balance.address.to_string(), None)
+            .await
+            .map_err(wasm_error)?,
+          balance: balance.balance,
+          dust_allowed: balance.dust_allowed,
+          ledger_index: balance.ledger_index,
+        })
+      }
+      JsValue::from_serde(&results).map_err(wasm_error)
     }))
   }
 

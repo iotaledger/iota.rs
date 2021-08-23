@@ -24,15 +24,34 @@ impl GetAddressBuilder {
   /// reasons. User should sweep the address to reduce the amount of outputs.
   #[wasm_bindgen]
   pub fn balance(&self, address: String) -> Result<Promise, JsValue> {
+    #[derive(Serialize)]
+    struct BalanceAddressResponseDto {
+      pub address: String,
+      pub balance: u64,
+      #[serde(rename = "dustAllowed")]
+      pub dust_allowed: bool,
+      #[serde(rename = "ledgerIndex")]
+      pub ledger_index: u32,
+    }
     let client = self.client.clone();
     let promise: Promise = future_to_promise(async move {
-      client
+      let res = client
         .client
         .get_address()
         .balance(&address)
         .await
-        .map_err(wasm_error)
-        .and_then(|balance| JsValue::from_serde(&balance).map_err(wasm_error))
+        .map_err(wasm_error)?;
+      let balance = BalanceAddressResponseDto {
+        address: client
+          .client
+          .hex_to_bech32(&res.address, None)
+          .await
+          .map_err(wasm_error)?,
+        balance: res.balance,
+        dust_allowed: res.dust_allowed,
+        ledger_index: res.ledger_index,
+      };
+      JsValue::from_serde(&balance).map_err(wasm_error)
     });
     Ok(promise)
   }
