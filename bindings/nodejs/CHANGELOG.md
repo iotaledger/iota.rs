@@ -1,5 +1,15 @@
 # Changelog
 
+## \[1.0.0]
+
+- Fixed custom provided API timeouts
+  - [5f8fd262](https://github.com/iotaledger/iota.rs/commit/5f8fd262526aa09e2f548b3711964ea8fc18bc0b) Fix API timeouts for node.js binding, update message format for MQTT and default reconnect attempts ([#652](https://github.com/iotaledger/iota.rs/pull/652)) on 2021-08-25
+- Return messages in MQTT in the same format as from all other functions (byte arrays converted to hex strings)
+  Changed default max reconnection attempts to be unlimited
+  - [98dad972](https://github.com/iotaledger/iota.rs/commit/98dad972549339d32fba6c06057a9df7582e0b51) Mqtt websocket first iteration ([#561](https://github.com/iotaledger/iota.rs/pull/561)) on 2021-05-17
+  - [24a4b3fb](https://github.com/iotaledger/iota.rs/commit/24a4b3fbffd2a5108eecbf43308fe8bbb9ddfe4a) apply version updates ([#563](https://github.com/iotaledger/iota.rs/pull/563)) on 2021-05-18
+  - [5f8fd262](https://github.com/iotaledger/iota.rs/commit/5f8fd262526aa09e2f548b3711964ea8fc18bc0b) Fix API timeouts for node.js binding, update message format for MQTT and default reconnect attempts ([#652](https://github.com/iotaledger/iota.rs/pull/652)) on 2021-08-25
+
 ## \[0.7.0]
 
 - Add hexPublicKeyToBech32Address method
