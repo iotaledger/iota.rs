@@ -14,16 +14,10 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-# TODO: Use crates.io versions when bee-rest-api got updated.
-# bee-rest-api = "0.1"
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "66fff6f4d5406c439240c9f7461b254a818a6a01" }
-# bee-message = "0.1"
-# bee-pow = "0.1"
-# bee-common = "0.4"
-
-bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
+bee-rest-api = "0.1"
+bee-message = "0.1"
+bee-pow = "0.1"
+bee-common = "0.4"
 iota-crypto = { version = "0.7.0", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"]}
 url = "2.2"
 serde = { version = "1.0", features = ["derive"] }
@@ -43,7 +37,9 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], def
 futures = { version = "0.3", optional = true }
 
 # MQTT
-rumqttc = { version = "0.5", features = ["websocket"], optional = true}
+# todo replace by crates.io if 0.9 is released
+rumqttc = { git = "https://github.com/bytebeamio/rumqtt", rev = "621a7b526936450e4e54a999eae0171bfd5bff6f", features = ["websocket"], optional = true }
+# rumqttc = { version = "0.8", features = ["websocket"], optional = true}
 # also used for storage
 once_cell = { version = "1.7", optional = true }
 
@@ -53,7 +49,7 @@ rusqlite = { version = "0.24", features = ["bundled"], optional = true }
 
 # wasm
 # patched version to work in browser and node.js
-wasm-timer = { git = "https://github.com/Thoralf-M/wasm-timer", rev = "698c02da91f075a1574b4c711a5ea5d4103cb8bf", optional = true }
+wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "448c2be0c4feeb6b5df1da265489232dff2f03c1", optional = true }
 # single thread pow for wasm
 bee-crypto = { version = "0.2.1-alph", optional = true }
 bee-ternary = { version = "0.4.2-alpha", optional = true }
