@@ -148,7 +148,7 @@ fn default_broker_port() -> u16 {
 
 #[cfg(feature = "mqtt")]
 fn default_max_reconnection_attempts() -> usize {
-    3
+    0
 }
 
 #[cfg(feature = "mqtt")]
@@ -195,7 +195,7 @@ impl BrokerOptions {
         self
     }
 
-    /// Sets the maximum number of reconnection attempts.
+    /// Sets the maximum number of reconnection attempts. 0 is unlimited.
     pub fn max_reconnection_attempts(mut self, max_reconnection_attempts: usize) -> Self {
         self.max_reconnection_attempts = max_reconnection_attempts;
         self

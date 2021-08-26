@@ -61,7 +61,7 @@ Needless to say, the `Client` class constructor provides several parameters via 
 The most common ones:
 * `network`: can be `Testnet` or `Mainnet`. It instructs the library whether to automatically select testnet nodes or mainnet nodes
 * `node`: specify address of actual running IOTA node that should be used to communicate with (in format `https://node:port`), for ex: https://api.lb-0.testnet.chrysalis2.com:443
-* `node_pool_urls`: library also supports a management of pool of nodes. You can provide a list of nodes and library manages access to them automatically (selecting them based on their sync status)
+* `node_pool_urls`: library also supports a management of a pool of nodes. You can provide a list of nodes and library manages access to them automatically (selecting them based on their sync status)
 * `local_pow`: `local_pow==True` (by default) means a `Proof-of-work` is done locally and not remotely
 * `node_sync_disabled`: `node_sync_disabled==False` (by default) means that library checks for sync status of node(s) periodically before its use. `node_sync_disabled==True` means library also uses nodes that _are not_ in sync with network. This parameter is usually useful if one would like to interact with local test node that is not fully synced. This parameter should not be used in production
 
@@ -213,7 +213,7 @@ Return balance for the given seed and account_index:
 It starts generating addresses for the provided `seed` and `account_index` from `initial_address_index`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `gap_limit` argument when to stop searching. If `gap_limit` amount of addresses in a row have no balance the function returns result and searching does not continue.
 
 ## Messages, payload and transactions
-Before we continue, let's introduce some additional terms that describe an unit that is actually broadcasted in IOTA network. IOTA is based on a concept of `messages` and `payloads`.
+Before we continue, let's introduce some additional terms that describe a unit that is actually broadcasted in IOTA network. IOTA is based on a concept of `messages` and `payloads`.
 
 `Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle graph. It can refer to up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
 

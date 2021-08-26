@@ -14,9 +14,9 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<()> {
     let iota = Client::builder()
-        .with_node("https://api.hornet-0.testnet.chrysalis2.com")?
         .with_node("https://api.hornet-1.testnet.chrysalis2.com")?
         .with_node("https://api.hornet-2.testnet.chrysalis2.com")?
+        .with_node("https://api.hornet-3.testnet.chrysalis2.com")?
         .with_quorum(true)
         .with_quorum_size(3)
         .with_quorum_threshold(66)

@@ -16,11 +16,11 @@ name = "iota_client"
 [dependencies]
 # TODO: Use crates.io versions when bee-rest-api got updated.
 # bee-rest-api = "0.1"
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "66fff6f4d5406c439240c9f7461b254a818a6a01" }
 # bee-message = "0.1"
 # bee-pow = "0.1"
 # bee-common = "0.4"
 
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "8799deaa44e99eaee01e9444a403ba4f2a75727c" }
 bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-pow = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
 bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }

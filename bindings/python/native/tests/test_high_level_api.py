@@ -51,7 +51,8 @@ def test_get_message_index():
 
 
 def test_find_messages():
-    messages = client.find_messages(indexation_keys=[tv['INDEXATION']['INDEX'][2]])
+    messages = client.find_messages(
+        indexation_keys=[tv['INDEXATION']['INDEX'][2]])
     assert isinstance(messages, list)
 
 
@@ -122,3 +123,14 @@ def test_promote():
         assert False
     except ValueError as e:
         assert "doesn't need to be promoted or reattached" in str(e)
+
+
+def test_hex_public_key_to_bech32_address():
+
+    hex_public_key = tv['HEX_PUBLIC_KEY']
+    bech32_hrp = tv['BECH32_HRP']
+    bech32_address = tv['BECH32_ADDRESS']
+    converted_address = client.hex_public_key_to_bech32_address(
+        hex_public_key, bech32_hrp)
+
+    assert bech32_address == converted_address
