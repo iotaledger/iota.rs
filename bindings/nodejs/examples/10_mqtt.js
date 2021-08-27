@@ -5,7 +5,7 @@ async function run() {
 
     // client connects to a node that has MQTT enabled
     const client = new ClientBuilder()
-        .node('https://api.hornet-2.testnet.chrysalis2.com')
+        .node('https://api.thin-hornet-2.h.chrysalis-devnet.iota.cafe')
         .build();
 
     client.subscriber().topics(['milestones/confirmed', 'messages']).subscribe((err, data) => {

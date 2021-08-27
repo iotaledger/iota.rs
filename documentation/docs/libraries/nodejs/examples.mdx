@@ -54,7 +54,7 @@ Output example of `getInfo()` function of the `ClientBuilder` instance:
          "PoW"
       ]
    },
-   "url":"https://api.lb-0.testnet.chrysalis2.com"
+   "url":"https://api.lb-0.h.chrysalis-devnet.iota.cafe"
 }
 ```
 
@@ -68,7 +68,7 @@ Needless to say, the `ClientBuilder` helper class provides several chaining call
 
 The most common ones:
 * `.network(str)`: can be `testnet` or `mainnet`. It instructs the library whether to automatically select testnet nodes or mainnet nodes
-* `.node(url)`: specify address of actual running IOTA node that should be used to communicate with (in format `https://node:port`), for ex: https://api.lb-0.testnet.chrysalis2.com:443
+* `.node(url)`: specify address of actual running IOTA node that should be used to communicate with (in format `https://node:port`), for ex: https://api.lb-0.h.chrysalis-devnet.iota.cafe:443
 * `.nodePoolUrls(urls)`: library also supports a management of pool of nodes. You can provide a list of nodes and library manages access to them automatically (selecting them based on their sync status)
 * `.localPow(bool)`: `.localPow (True)` (by default) means a `Proof-of-work` is done locally and not remotely
 * `.disableNodeSync()`: when called, it means library also uses nodes that _are not_ in sync with network. This parameter is usually useful if one would like to interact with local test node that is not fully synced. This parameter should not be used in production

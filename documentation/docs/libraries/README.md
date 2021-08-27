@@ -12,7 +12,7 @@ There are currently available the following official bindings to `iota.rs`:
 - [Wasm](wasm/getting_started.md) 
 
 ## Getting Started
-It is a recommended approach to start your interactions with IOTA on a `testnet` network. API load balancer: https://api.lb-0.testnet.chrysalis2.com:443
+It is a recommended approach to start your interactions with IOTA on a `testnet` network. API load balancer: https://api.lb-0.h.chrysalis-devnet.iota.cafe:443
 
 Network explorer is available at [IOTA Tangle Explorer](https://explorer.iota.org/testnet).
 

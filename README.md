@@ -67,6 +67,7 @@ Bindings to other programming languages.
 * [Node.js binding](bindings/nodejs/)
 * [Python binding](bindings/python/)
 * [Java binding](bindings/java/)
+* [Wasm binding](bindings/wasm/native)
 
 ## Joining the discussion
 
