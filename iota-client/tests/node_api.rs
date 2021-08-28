@@ -286,13 +286,17 @@ async fn test_get_peers() {
 #[tokio::test]
 #[ignore]
 async fn test_get_milestone() {
-    let r = iota_client::Client::builder()
+    let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
         .await
-        .unwrap()
-        .get_milestone(3)
+        .unwrap();
+    // get nodeinfo first, because if we hardocde the milestones get pruned and if we hardcode an index it would fail
+    // after some time
+    let nodeinfo = client.get_info().await.unwrap();
+    let r = client
+        .get_milestone(nodeinfo.nodeinfo.latest_milestone_index)
         .await
         .unwrap();
 

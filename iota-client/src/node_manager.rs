@@ -143,7 +143,7 @@ impl NodeManager {
         Ok(nodes_with_modified_url)
     }
 
-    pub(crate) async fn get_request<T: serde::de::DeserializeOwned>(
+    pub(crate) async fn get_request<T: serde::de::DeserializeOwned + std::fmt::Debug + serde::Serialize>(
         &self,
         path: &str,
         query: Option<&str>,
@@ -194,7 +194,7 @@ impl NodeManager {
                     match res {
                         Ok(res) => {
                             if let Ok(res_text) = res.text().await {
-                                let counters = result.entry(res_text).or_insert(0);
+                                let counters = result.entry(res_text.to_string()).or_insert(0);
                                 *counters += 1;
                                 result_counter += 1;
                             } else {
@@ -212,31 +212,54 @@ impl NodeManager {
             for node in nodes {
                 match self.http_client.get(node.clone(), timeout).await {
                     Ok(res) => {
+                        let status = res.status();
                         if let Ok(res_text) = res.text().await {
-                            // Handle nodeinfo extra because we also want to return the url
-                            if path == "api/v1/info" {
-                                #[derive(Debug, Serialize, Deserialize)]
-                                struct ResponseWrapper {
-                                    data: NodeInfo,
+                            match status {
+                                200 => {
+                                    // Handle nodeinfo extra because we also want to return the url
+                                    if path == "api/v1/info" {
+                                        #[derive(Debug, Serialize, Deserialize)]
+                                        struct ResponseWrapper {
+                                            data: NodeInfo,
+                                        }
+                                        if let Ok(nodeinfo) = serde_json::from_str::<ResponseWrapper>(&res_text) {
+                                            let wrapper = crate::client::NodeInfoWrapper {
+                                                nodeinfo: nodeinfo.data,
+                                                url: format!(
+                                                    "{}://{}",
+                                                    node.url.scheme(),
+                                                    node.url.host_str().unwrap_or("")
+                                                ),
+                                            };
+                                            let serde_res = serde_json::to_string(&wrapper)?;
+                                            return Ok(serde_json::from_str(&serde_res)?);
+                                        }
+                                    }
+
+                                    match serde_json::from_str::<T>(&res_text) {
+                                        Ok(result_data) => {
+                                            let counters =
+                                                result.entry(serde_json::to_string(&result_data)?).or_insert(0);
+                                            *counters += 1;
+                                            result_counter += 1;
+                                            // Without quorum it's enough if we got one response
+                                            if !self.quorum
+                                            || result_counter >= self.quorum_size
+                                            || !quorum_regexes.iter().any(|re| re.is_match(path))
+                                            // with query we ignore quorum because the nodes can store a different amount of history
+                                            || query.is_some()
+                                            {
+                                                break;
+                                            }
+                                        }
+                                        Err(e) => {
+                                            error.replace(e.into());
+                                        }
+                                    }
                                 }
-                                let wrapper = crate::client::NodeInfoWrapper {
-                                    nodeinfo: serde_json::from_str::<ResponseWrapper>(&res_text)?.data,
-                                    url: format!("{}://{}", node.url.scheme(), node.url.host_str().unwrap_or("")),
-                                };
-                                let serde_res = serde_json::to_string(&wrapper)?;
-                                return Ok(serde_json::from_str(&serde_res)?);
-                            }
-                            let counters = result.entry(res_text).or_insert(0);
-                            *counters += 1;
-                            result_counter += 1;
-                            // Without quorum it's enough if we got one response
-                            if !self.quorum
-                            || result_counter >= self.quorum_size
-                            || !quorum_regexes.iter().any(|re| re.is_match(path))
-                            // with query we ignore quorum because the nodes can store a different amount of history
-                            || query.is_some()
-                            {
-                                break;
+                                _ => {
+                                    error.replace(crate::Error::NodeError(res_text));
+                                }
                             }
                         } else {
                             warn!("Couldn't convert noderesult to text");
@@ -252,7 +275,7 @@ impl NodeManager {
         let res = result
             .into_iter()
             .max_by_key(|v| v.1)
-            .ok_or_else(|| error.unwrap_or(Error::NodeError))?;
+            .ok_or_else(|| error.unwrap_or_else(|| Error::NodeError("Couldn't get a result from any node".into())))?;
 
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
@@ -273,6 +296,7 @@ impl NodeManager {
         // Send requests
         for node in nodes {
             if let Ok(res) = self.http_client.get(node, timeout).await {
+                // todo use status
                 if let Ok(res_text) = res.text().await {
                     // Without quorum it's enough if we got one response
                     return Ok(res_text);
@@ -281,7 +305,7 @@ impl NodeManager {
                 }
             }
         }
-        Err(Error::NodeError)
+        Err(Error::NodeError("Couldn't get a result from any node".into()))
     }
     pub(crate) async fn post_request_bytes<T: serde::de::DeserializeOwned>(
         &self,
@@ -294,6 +318,7 @@ impl NodeManager {
         // Send requests
         for node in nodes {
             if let Ok(res) = self.http_client.post_bytes(node, timeout, body).await {
+                // todo use status
                 if let Ok(res_text) = res.text().await {
                     return Ok(serde_json::from_str(&res_text)?);
                 } else {
@@ -301,7 +326,7 @@ impl NodeManager {
                 }
             }
         }
-        Err(Error::NodeError)
+        Err(Error::NodeError("Couldn't get a result from any node".into()))
     }
 
     pub(crate) async fn post_request_json<T: serde::de::DeserializeOwned>(
@@ -315,6 +340,7 @@ impl NodeManager {
         // Send requests
         for node in nodes {
             if let Ok(res) = self.http_client.post_json(node, timeout, json.clone()).await {
+                // todo use status
                 if let Ok(res_text) = res.text().await {
                     return Ok(serde_json::from_str(&res_text)?);
                 } else {
@@ -322,7 +348,7 @@ impl NodeManager {
                 }
             }
         }
-        Err(Error::NodeError)
+        Err(Error::NodeError("Couldn't get a result from any node".into()))
     }
 }
 
