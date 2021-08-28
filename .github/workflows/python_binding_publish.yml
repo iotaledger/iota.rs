@@ -3,6 +3,7 @@ name: Build python binding wheels
 on:
   push:
     branches:
+      - wasm
       - dev
       - main
 
