@@ -501,7 +501,7 @@ impl Client {
             let info = self.get_info().await?.nodeinfo;
             let network_id = hash_network(&info.network_id).ok();
             {
-                let mut client_network_info = self.network_info.write().map_err(|e| e).unwrap();
+                let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
                 client_network_info.network_id = network_id;
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp;
@@ -764,10 +764,54 @@ impl Client {
             #[serde(rename = "messageId")]
             message_id: String,
         }
-        let resp: ResponseWrapper = self
+
+        // fallback to local PoW if remote PoW fails
+        let resp: ResponseWrapper = match self
             .node_manager
             .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
-            .await?;
+            .await
+        {
+            Ok(res) => res,
+            Err(e) => {
+                if let Error::NodeError(e) = e {
+                    // hornet and bee return different error messages
+                    if e == *"No available nodes with remote PoW"
+                        || e.contains("proof of work is not enabled")
+                        || e.contains("`PoW` not enabled")
+                    {
+                        let mut client_network_info =
+                            self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                        // switch to local PoW
+                        client_network_info.local_pow = true;
+                        drop(client_network_info);
+                        let message_with_local_pow = match crate::api::finish_pow(self, message.payload().clone()).await
+                        {
+                            Ok(msg) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                msg
+                            }
+                            Err(e) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                return Err(e);
+                            }
+                        };
+                        self.node_manager
+                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_new(), true)
+                            .await?
+                    } else {
+                        return Err(Error::NodeError(e));
+                    }
+                } else {
+                    return Err(e);
+                }
+            }
+        };
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
@@ -783,7 +827,7 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        let message = MessageDto::from(message);
+        let message_dto = MessageDto::from(message);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageIdWrapper,
@@ -794,10 +838,55 @@ impl Client {
             message_id: String,
         }
 
-        let resp: ResponseWrapper = self
+        // fallback to local PoW if remote PoW fails
+        let resp: ResponseWrapper = match self
             .node_manager
-            .post_request_json(path, timeout, serde_json::to_value(message)?, local_pow)
-            .await?;
+            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, local_pow)
+            .await
+        {
+            Ok(res) => res,
+            Err(e) => {
+                if let Error::NodeError(e) = e {
+                    // hornet and bee return different error messages
+                    if e == *"No available nodes with remote PoW"
+                        || e.contains("proof of work is not enabled")
+                        || e.contains("`PoW` not enabled")
+                    {
+                        let mut client_network_info =
+                            self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                        // switch to local PoW
+                        client_network_info.local_pow = true;
+                        drop(client_network_info);
+                        let message_with_local_pow = match crate::api::finish_pow(self, message.payload().clone()).await
+                        {
+                            Ok(msg) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                msg
+                            }
+                            Err(e) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                return Err(e);
+                            }
+                        };
+                        let message_dto = MessageDto::from(&message_with_local_pow);
+
+                        self.node_manager
+                            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, true)
+                            .await?
+                    } else {
+                        return Err(Error::NodeError(e));
+                    }
+                } else {
+                    return Err(e);
+                }
+            }
+        };
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;

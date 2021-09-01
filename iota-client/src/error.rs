@@ -149,4 +149,7 @@ pub enum Error {
     /// API error
     #[error("Invalid API name")]
     ApiError,
+    /// Rw lock failed.
+    #[error("Rw lock failed")]
+    PoisonError,
 }

@@ -75,7 +75,7 @@ impl NodeManager {
     pub(crate) fn builder() -> NodeManagerBuilder {
         NodeManagerBuilder::new()
     }
-    pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, remote_pow: bool) -> Result<Vec<Node>> {
+    pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, local_pow: bool) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
 
         // Endpoints for which only permanodes will be used if provided
@@ -108,7 +108,7 @@ impl NodeManager {
             }
         }
 
-        if remote_pow {
+        if local_pow {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
                 pow_node.url.set_path(path);
                 pow_node.url.set_query(query);
@@ -293,15 +293,25 @@ impl NodeManager {
     pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false).await?;
+        let mut error = None;
         // Send requests
         for node in nodes {
-            if let Ok(res) = self.http_client.get(node, timeout).await {
-                // todo use status
-                if let Ok(res_text) = res.text().await {
-                    // Without quorum it's enough if we got one response
-                    return Ok(res_text);
-                } else {
-                    warn!("Couldn't convert noderesult to text");
+            match self.http_client.get(node, timeout).await {
+                Ok(res) => {
+                    let status = res.status();
+                    if let Ok(res_text) = res.text().await {
+                        // Without quorum it's enough if we got one response
+                        match status {
+                            200 => match serde_json::from_str(&res_text) {
+                                Ok(res) => return Ok(res),
+                                Err(e) => error.replace(e.into()),
+                            },
+                            _ => error.replace(crate::Error::NodeError(res_text)),
+                        };
+                    }
+                }
+                Err(e) => {
+                    error.replace(crate::Error::NodeError(e.to_string()));
                 }
             }
         }
@@ -312,21 +322,34 @@ impl NodeManager {
         path: &str,
         timeout: Duration,
         body: &[u8],
-        remote_pow: bool,
+        local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, remote_pow).await?;
+        let nodes = self.get_nodes(path, None, local_pow).await?;
+        if nodes.is_empty() {
+            return Err(Error::NodeError("No available nodes with remote PoW".into()));
+        }
+        let mut error = None;
         // Send requests
         for node in nodes {
-            if let Ok(res) = self.http_client.post_bytes(node, timeout, body).await {
-                // todo use status
-                if let Ok(res_text) = res.text().await {
-                    return Ok(serde_json::from_str(&res_text)?);
-                } else {
-                    warn!("Couldn't convert noderesult to text");
+            match self.http_client.post_bytes(node, timeout, body).await {
+                Ok(res) => {
+                    let status = res.status();
+                    if let Ok(res_text) = res.text().await {
+                        match status {
+                            200 | 201 => match serde_json::from_str(&res_text) {
+                                Ok(res) => return Ok(res),
+                                Err(e) => error.replace(e.into()),
+                            },
+                            _ => error.replace(crate::Error::NodeError(res_text)),
+                        };
+                    }
+                }
+                Err(e) => {
+                    error.replace(crate::Error::NodeError(e.to_string()));
                 }
             }
         }
-        Err(Error::NodeError("Couldn't get a result from any node".into()))
+        Err(error.unwrap_or_else(|| Error::NodeError("Couldn't get a result from any node".into())))
     }
 
     pub(crate) async fn post_request_json<T: serde::de::DeserializeOwned>(
@@ -334,21 +357,34 @@ impl NodeManager {
         path: &str,
         timeout: Duration,
         json: Value,
-        remote_pow: bool,
+        local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, remote_pow).await?;
+        let nodes = self.get_nodes(path, None, local_pow).await?;
+        if nodes.is_empty() {
+            return Err(Error::NodeError("No available nodes with remote PoW".into()));
+        }
+        let mut error = None;
         // Send requests
         for node in nodes {
-            if let Ok(res) = self.http_client.post_json(node, timeout, json.clone()).await {
-                // todo use status
-                if let Ok(res_text) = res.text().await {
-                    return Ok(serde_json::from_str(&res_text)?);
-                } else {
-                    warn!("Couldn't convert noderesult to text");
+            match self.http_client.post_json(node, timeout, json.clone()).await {
+                Ok(res) => {
+                    let status = res.status();
+                    if let Ok(res_text) = res.text().await {
+                        match status {
+                            200 | 201 => match serde_json::from_str(&res_text) {
+                                Ok(res) => return Ok(res),
+                                Err(e) => error.replace(e.into()),
+                            },
+                            _ => error.replace(crate::Error::NodeError(res_text)),
+                        };
+                    }
+                }
+                Err(e) => {
+                    error.replace(crate::Error::NodeError(e.to_string()));
                 }
             }
         }
-        Err(Error::NodeError("Couldn't get a result from any node".into()))
+        Err(error.unwrap_or_else(|| Error::NodeError("Couldn't get a result from any node".into())))
     }
 }
 
