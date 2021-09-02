@@ -12,10 +12,10 @@ async function run() {
     console.log(message_data);
 
     // get indexation data by index
-    const messages = await client.getMessage().index("IOTA.RS BINDING - NODE.JS")
-    for (message in messages) {
-        const message = await client.getMessage().data(messages[0])
-        console.log(Buffer.from(message.message.payload.data, 'hex').toString('utf8'));
+    const message_ids = await client.getMessage().index("IOTA.RS BINDING - NODE.JS")
+    for (message_id of message_ids) {
+        const message_wrapper = await client.getMessage().data(message_id)
+        console.log(Buffer.from(message_wrapper.message.payload.data, 'hex').toString('utf8'));
     }
 }
 
