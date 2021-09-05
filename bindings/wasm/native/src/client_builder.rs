@@ -51,9 +51,10 @@ impl ClientBuilder {
     username: Option<String>,
     password: Option<String>,
   ) -> Result<ClientBuilder, JsValue> {
-    self.builder = self.builder
-        .with_primary_node(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(wasm_error)?;
+    self.builder = self
+      .builder
+      .with_primary_node(url, jwt, to_basic_auth(&username, &password))
+      .map_err(wasm_error)?;
     Ok(self)
   }
 
@@ -67,9 +68,10 @@ impl ClientBuilder {
     username: Option<String>,
     password: Option<String>,
   ) -> Result<ClientBuilder, JsValue> {
-    self.builder = self.builder
-        .with_primary_pow_node(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(wasm_error)?;
+    self.builder = self
+      .builder
+      .with_primary_pow_node(url, jwt, to_basic_auth(&username, &password))
+      .map_err(wasm_error)?;
     Ok(self)
   }
 
@@ -82,9 +84,10 @@ impl ClientBuilder {
     username: Option<String>,
     password: Option<String>,
   ) -> Result<ClientBuilder, JsValue> {
-    self.builder = self.builder
-        .with_permanode(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(wasm_error)?;
+    self.builder = self
+      .builder
+      .with_permanode(url, jwt, to_basic_auth(&username, &password))
+      .map_err(wasm_error)?;
     Ok(self)
   }
 
@@ -97,18 +100,20 @@ impl ClientBuilder {
     username: Option<String>,
     password: Option<String>,
   ) -> Result<ClientBuilder, JsValue> {
-    self.builder = self.builder
-        .with_node_auth(url, jwt.clone(), to_basic_auth(&username, &password))
-        .map_err(wasm_error)?;
+    self.builder = self
+      .builder
+      .with_node_auth(url, jwt, to_basic_auth(&username, &password))
+      .map_err(wasm_error)?;
     Ok(self)
   }
   /// Adds a list of IOTA nodes by their URLs.
   #[wasm_bindgen(js_name = nodes)]
   pub fn nodes(mut self, urls: JsValue) -> Result<ClientBuilder, JsValue> {
     let urls: Vec<String> = urls.into_serde().map_err(wasm_error)?;
-    self.builder = self.builder
-        .with_nodes(&urls.iter().map(std::ops::Deref::deref).collect::<Vec<&str>>())
-        .map_err(wasm_error)?;
+    self.builder = self
+      .builder
+      .with_nodes(&urls.iter().map(std::ops::Deref::deref).collect::<Vec<&str>>())
+      .map_err(wasm_error)?;
     Ok(self)
   }
 
@@ -136,15 +141,15 @@ impl ClientBuilder {
 
   /// Get node list from the node_pool_urls
   #[wasm_bindgen(js_name = nodePoolUrls)]
-  pub fn node_pool_urls(mut self, node_pool_urls: JsValue) -> Result<Promise, JsValue> {
+  pub fn node_pool_urls(self, node_pool_urls: JsValue) -> Result<Promise, JsValue> {
     let node_pool_urls: Vec<String> = node_pool_urls.into_serde().map_err(wasm_error)?;
     let mut clientbuilder = self.clone();
     let promise: Promise = future_to_promise(async move {
-      clientbuilder.builder = clientbuilder
-          .builder
-          .with_node_pool_urls(&node_pool_urls[..])
-          .await
-          .map_err(wasm_error)?;
+      clientbuilder.builder = self
+        .builder
+        .with_node_pool_urls(&node_pool_urls[..])
+        .await
+        .map_err(wasm_error)?;
       Ok(clientbuilder.into())
     });
     Ok(promise)
@@ -207,7 +212,7 @@ impl ClientBuilder {
     let api = Api::from_str(&api)
       .map_err(|_| iota_client::Error::ApiError)
       .map_err(wasm_error)?;
-    self.builder = self.builder.with_api_timeout(api.clone(), to_duration(timeout));
+    self.builder = self.builder.with_api_timeout(api, to_duration(timeout));
     Ok(self)
   }
 
