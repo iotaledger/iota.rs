@@ -7,7 +7,7 @@ const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 async function test() {
 
   const client = await new ClientBuilder()
-    .node('https://api.thin-hornet-2.h.chrysalis-devnet.iota.cafe/')
+    .node('https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe/')
     .build()
 
   describe('Client', () => {
