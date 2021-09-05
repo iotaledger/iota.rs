@@ -4,7 +4,13 @@
 const { ClientBuilder } = require('../node/iota_client_wasm')
 
 async function main() {
-    let client = await new ClientBuilder().node("https://api.lb-0.h.chrysalis-devnet.iota.cafe").build();
+    let client = await new ClientBuilder()
+        .node("https://api.lb-0.testnet.chrysalis2.com:443")
+        .localPow(false)
+        .nodeSyncDisabled(true)
+        .quorumSize(1)
+        .tipsInterval(19)
+        .build();
     // Get the nodeinfo
     console.log(await client.getInfo());
     // let message = await client.message().index(new TextEncoder().encode("test index")).data(new TextEncoder().encode("test data")).submit()
