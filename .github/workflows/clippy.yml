@@ -105,3 +105,13 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --manifest-path ./bindings/python/native/Cargo.toml --all-targets --all-features -- -D warnings
         name: python-binding
+        
+    - name: Cache python binding cargo target
+      uses: actions/cache@v2.1.4
+      with:
+        path: bindings/python/native/target
+        # Add date to the cache to keep it up to date
+        key: ${{ matrix.os }}-stable-cargo-build-python-target-${{ hashFiles('**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          ${{ matrix.os }}-stable-cargo-build-python-target-${{ hashFiles('**/Cargo.toml') }}
