@@ -110,7 +110,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-18.04, macos-latest, windows-latest]
         python-version: [3.9]
 
     steps:
@@ -124,7 +124,7 @@ jobs:
 
     - name: Get current date
       run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-      if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-18.04'
 
     - name: Get current date
       if: matrix.os == 'windows-latest'
