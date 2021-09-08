@@ -228,7 +228,6 @@ declare_types! {
             let seed = cx.argument::<JsString>(1)?.value();
             let seed = Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"));
             let inputs_range  = if cx.len() > 4 {
-
                 let start: Option<usize> = match cx.argument_opt(2) {
                     Some(arg) => {
                         Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as usize)
@@ -241,11 +240,10 @@ declare_types! {
                     },
                     None => None,
                 };
-                let inputs_range = if start.is_some() && end.is_some() {
+                if start.is_some() && end.is_some() {
                     //save to unwrap since we checked if they are some
                     Some(start.expect("no start index")..end.expect("no end index"))
-                }else{None};
-                inputs_range
+                }else{None}
             }else{None};
 
             let cb = cx.argument::<JsFunction>(cx.len()-1)?;
