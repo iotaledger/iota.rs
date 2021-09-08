@@ -887,7 +887,8 @@ const LN_3: f64 = 1.098_612_288_668_109;
 // should take around one second to reach on an average CPU, so shouldn't cause a noticeable delay on tips_interval
 const POW_ROUNDS_BEFORE_INTERVAL_CHECK: usize = 3000;
 #[cfg(feature = "wasm")]
-async fn finish_single_thread_pow(
+/// Single threaded PoW function for wasm
+pub async fn finish_single_thread_pow(
     client: &Client,
     network_id: u64,
     parent_messages: Option<Vec<MessageId>>,

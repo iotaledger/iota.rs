@@ -784,8 +784,22 @@ impl Client {
                         // switch to local PoW
                         client_network_info.local_pow = true;
                         drop(client_network_info);
-                        let message_with_local_pow = match crate::api::finish_pow(self, message.payload().clone()).await
-                        {
+                        #[cfg(not(feature = "wasm"))]
+                        let msg_res = crate::api::finish_pow(self, message.payload().clone()).await;
+                        #[cfg(feature = "wasm")]
+                        let msg_res = {
+                            let min_pow_score = self.get_min_pow_score().await?;
+                            let network_id = self.get_network_id().await?;
+                            crate::api::finish_single_thread_pow(
+                                self,
+                                network_id,
+                                None,
+                                message.payload().clone(),
+                                min_pow_score,
+                            )
+                            .await
+                        };
+                        let message_with_local_pow = match msg_res {
                             Ok(msg) => {
                                 // reset local PoW state
                                 let mut client_network_info =
@@ -857,8 +871,22 @@ impl Client {
                         // switch to local PoW
                         client_network_info.local_pow = true;
                         drop(client_network_info);
-                        let message_with_local_pow = match crate::api::finish_pow(self, message.payload().clone()).await
-                        {
+                        #[cfg(not(feature = "wasm"))]
+                        let msg_res = crate::api::finish_pow(self, message.payload().clone()).await;
+                        #[cfg(feature = "wasm")]
+                        let msg_res = {
+                            let min_pow_score = self.get_min_pow_score().await?;
+                            let network_id = self.get_network_id().await?;
+                            crate::api::finish_single_thread_pow(
+                                self,
+                                network_id,
+                                None,
+                                message.payload().clone(),
+                                min_pow_score,
+                            )
+                            .await
+                        };
+                        let message_with_local_pow = match msg_res {
                             Ok(msg) => {
                                 // reset local PoW state
                                 let mut client_network_info =
