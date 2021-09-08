@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_client::{
-    bee_message::prelude::{Address, MessageId, TransactionId, UtxoInput},
+    api::PreparedTransactionData,
+    bee_message::prelude::{Address, MessageId, Payload, UtxoInput},
     Seed,
 };
 use neon::prelude::*;
@@ -170,14 +171,13 @@ declare_types! {
         }
 
         method input(mut cx) {
-            let transaction_id = cx.argument::<JsString>(0)?.value();
-            let transaction_id = TransactionId::from_str(&transaction_id).expect("invalid transaction id");
-            let index = cx.argument::<JsNumber>(1)?.value() as u16;
+            let output_id = cx.argument::<JsString>(0)?.value();
+            let utxo_input = UtxoInput::from_str(&output_id).expect("invalid UTXO input");
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
                 let inputs = &mut this.borrow_mut(&guard).inputs;
-                inputs.push(UtxoInput::new(transaction_id, index).expect("invalid UTXO input"));
+                inputs.push(utxo_input);
             }
 
             Ok(cx.this().upcast())
@@ -193,6 +193,98 @@ declare_types! {
                 input_range.replace(start..end);
             }
             Ok(cx.this().upcast())
+        }
+
+        method prepareTransaction(mut cx){
+            let cb = cx.argument::<JsFunction>(0)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::PrepareTransaction {
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"))),
+                        index: ref_.index.clone(),
+                        data: ref_.data.clone(),
+                        parents: ref_.parents.clone(),
+                        account_index: ref_.account_index,
+                        initial_address_index: ref_.initial_address_index,
+                        inputs: ref_.inputs.clone(),
+                        input_range: ref_.input_range.clone(),
+                        outputs: ref_.outputs.clone(),
+                        dust_allowance_outputs: ref_.dust_allowance_outputs.clone(),
+                    },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method signTransaction(mut cx){
+            let transaction_data_string = cx.argument::<JsString>(0)?.value();
+            let transaction_data: PreparedTransactionData = serde_json::from_str(&transaction_data_string).expect("invalid prepared transaction data");
+            let seed = cx.argument::<JsString>(1)?.value();
+            let seed = Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"));
+            let inputs_range  = if cx.len() > 4 {
+
+                let start: Option<usize> = match cx.argument_opt(2) {
+                    Some(arg) => {
+                        Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as usize)
+                    },
+                    None => None,
+                };
+                let end: Option<usize> = match cx.argument_opt(3) {
+                    Some(arg) => {
+                        Some(arg.downcast::<JsNumber>().or_throw(&mut cx)?.value() as usize)
+                    },
+                    None => None,
+                };
+                let inputs_range = if start.is_some() && end.is_some() {
+                    //save to unwrap since we checked if they are some
+                    Some(start.expect("no start index")..end.expect("no end index"))
+                }else{None};
+                inputs_range
+            }else{None};
+
+            let cb = cx.argument::<JsFunction>(cx.len()-1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::SignTransaction {
+                        transaction_data,
+                        seed,
+                        inputs_range,
+                    },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
+        method finishMessage(mut cx){
+            let payload = cx.argument::<JsString>(0)?.value();
+            let payload: Payload = serde_json::from_str(&payload).expect("invalid payload");
+            let cb = cx.argument::<JsFunction>(1)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let ref_ = &(*this.borrow(&guard));
+                let client_task = ClientTask {
+                    client_id: ref_.client_id.clone(),
+                    api: Api::FinishMessage {
+                        payload
+                    },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
         }
 
         method submit(mut cx) {

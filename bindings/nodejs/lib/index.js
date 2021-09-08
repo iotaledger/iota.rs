@@ -79,6 +79,7 @@ ClientBuilder.prototype.primaryPowNode = function (url, authOptions) {
 
 Client.prototype.networkInfo = promisify(Client.prototype.networkInfo)
 
+Client.prototype.findInputs = promisify(Client.prototype.findInputs)
 Client.prototype.findMessages = promisify(Client.prototype.findMessages)
 Client.prototype.getAddressBalances = promisify(Client.prototype.getAddressBalances)
 Client.prototype.getInfo = promisify(Client.prototype.getInfo)
@@ -151,6 +152,18 @@ MessageGetter.prototype.raw = promisify(MessageGetter.prototype.raw, false)
 MessageGetter.prototype.children = promisify(MessageGetter.prototype.children)
 MessageGetter.prototype.metadata = promisify(MessageGetter.prototype.metadata)
 
+MessageSender.prototype.prepareTransaction = promisify(MessageSender.prototype.prepareTransaction)
+const signTransactionFn = MessageSender.prototype.signTransaction
+MessageSender.prototype.signTransaction = function (preparedTransactionData, seed, startIndex, endIndex) {
+  if (startIndex !== undefined && endIndex !== undefined) {
+    return promisify(signTransactionFn).apply(this, [JSON.stringify(preparedTransactionData), seed, startIndex, endIndex])
+  }
+  return promisify(signTransactionFn).apply(this, [JSON.stringify(preparedTransactionData), seed])
+}
+const finishMessageFn = MessageSender.prototype.finishMessage
+MessageSender.prototype.finishMessage = function (payload) {
+  return promisify(finishMessageFn).apply(this, [JSON.stringify(payload)])
+}
 MessageSender.prototype.submit = promisify(MessageSender.prototype.submit)
 const messageSenderDataSetter = MessageSender.prototype.data
 MessageSender.prototype.data = function (data) {

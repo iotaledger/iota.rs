@@ -92,8 +92,7 @@ Add a list of nodes to use in a node pool
 
 #### withOfflineMode(): ClientBuilder
 
-Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
-Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are provided.
+Allows creating the client without nodes for offline address generation or signing
 
 #### withNetwork(network): ClientBuilder
 

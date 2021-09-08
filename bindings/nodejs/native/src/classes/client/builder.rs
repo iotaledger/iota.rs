@@ -21,6 +21,7 @@ pub struct ClientBuilderWrapper {
     network: Option<String>,
     broker_options: Option<BrokerOptions>,
     node_sync_interval: Option<NonZeroU64>,
+    offline_mode: bool,
     request_timeout: Option<Duration>,
     api_timeout: HashMap<Api, Duration>,
     local_pow: bool,
@@ -53,6 +54,7 @@ declare_types! {
                 network: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
+                offline_mode: Default::default(),
                 request_timeout: Default::default(),
                 api_timeout: Default::default(),
                 local_pow: true,
@@ -263,6 +265,16 @@ declare_types! {
             Ok(cx.this().upcast())
         }
 
+        method offlineMode(mut cx) {
+            {
+                let mut this = cx.this();
+                let guard = cx.lock();
+                let offline_mode = &mut this.borrow_mut(&guard).offline_mode;
+                *offline_mode = true;
+            }
+            Ok(cx.this().upcast())
+        }
+
         method requestTimeout(mut cx) {
             let timeout = cx.argument::<JsNumber>(0)?.value() as u64;
             {
@@ -388,6 +400,9 @@ declare_types! {
                 }
                 if ref_.node_sync_disabled {
                     builder = builder.with_node_sync_disabled();
+                }
+                if ref_.offline_mode{
+                    builder = builder.with_offline_mode();
                 }
                 for (key, timeout) in &ref_.api_timeout {
                     builder = builder.with_api_timeout((*key).clone(), *timeout);
