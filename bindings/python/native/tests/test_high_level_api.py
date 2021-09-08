@@ -24,6 +24,41 @@ def test_message():
     message_id_indexation = message_id_indexation_dict['message_id']
 
 
+def test_get_output_amount_and_address():
+    output = tv['OUTPUT_DTO']
+    try:
+        client.get_output_amount_and_address(output)
+    except ValueError as e:
+        assert "Treasury output is no supported" in str(e)
+
+
+def test_prepare_transaction():
+    inputs = tv['OFFLINE_SIGNING']['inputs']
+    outputs = tv['OFFLINE_SIGNING']['outputs']
+    try:
+        prepared_transaction_data = client.prepare_transaction(inputs, outputs)
+    except ValueError as e:
+        assert "The wallet account doesn't have enough balance" in str(e)
+
+
+def test_sign_transaction():
+    prepared_transaction_data = tv['OFFLINE_SIGNING']['prepared_transaction_data']
+    seed = tv['NONSECURE_SEED'][0]
+    try:
+        signed_transaction = client.sign_transaction(
+            prepared_transaction_data, seed, 0, 100)
+    except ValueError as e:
+        assert "not found in range" in str(e)
+
+
+def test_finish_message():
+    singed_transaction = tv['OFFLINE_SIGNING']['signed_transaction']
+    try:
+        client.finish_message(singed_transaction)
+    except BaseException as e:
+        assert "invalid SignatureLockedSingleOutput" in str(e)
+
+
 def test_get_message_metadata():
     message_metadata = client.get_message_metadata(message_id_indexation)
     assert isinstance(message_metadata,
