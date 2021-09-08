@@ -1,7 +1,7 @@
 {
     "MESSAGE_ID_LENGTH": 64,
-    "NODE_URL": "https://api.lb-0.h.chrysalis-devnet.iota.cafe",
-    "MQTT_NODE_URL": "https://api.lb-0.h.chrysalis-devnet.iota.cafe/",
+    "NODE_URL": "https://api.lb-0.testnet.chrysalis2.com",
+    "MQTT_NODE_URL": "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe",
     "NONSECURE_SEED": [
         "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2",
         "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b3"
@@ -36,7 +36,437 @@
     "MESSAGE_ID": [
         "f541e53e98ccffdd94036f08af07f9eb060449ee7838c2279f230acc933de6d8"
     ],
+    "TRANSACTION_ID": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    "OUTPUT_DTO": {
+        "treasury": {
+            "kind": 0,
+            "amount": 100
+        },
+        "signature_locked_single": null,
+        "signature_locked_dust_allowance": null
+    },
+    "OFFLINE_SIGNING": {
+        "inputs": [
+            {
+                "transaction_id": [
+                    159,
+                    133,
+                    151,
+                    166,
+                    191,
+                    23,
+                    134,
+                    249,
+                    161,
+                    51,
+                    143,
+                    93,
+                    61,
+                    65,
+                    85,
+                    90,
+                    216,
+                    47,
+                    0,
+                    56,
+                    14,
+                    225,
+                    94,
+                    213,
+                    137,
+                    198,
+                    125,
+                    217,
+                    120,
+                    185,
+                    219,
+                    191
+                ],
+                "index": 0
+            }
+        ],
+        "outputs": [
+            {
+                "address": "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq",
+                "amount": 1000000
+            }
+        ],
+        "prepared_transaction_data": {
+            "essence": {
+                "inputs": [
+                    {
+                        "transaction_id": "9f8597a6bf1786f9a1338f5d3d41555ad82f00380ee15ed589c67dd978b9dbbf",
+                        "index": 0
+                    }
+                ],
+                "outputs": [
+                    {
+                        "signature_locked_single": {
+                            "address": "atoi1qrzmm09talgydgsatg3x99lmstefl8hlndhx52rhf3nqc7dzxpw0vcnjwwr",
+                            "amount": 9000000
+                        },
+                        "signature_locked_dust_allowance": null
+                    },
+                    {
+                        "signature_locked_single": {
+                            "address": "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq",
+                            "amount": 1000000
+                        },
+                        "signature_locked_dust_allowance": null
+                    }
+                ],
+                "payload": null
+            },
+            "address_index_recorders": [
+                {
+                    "account_index": 0,
+                    "input": {
+                        "transaction_id": "9f8597a6bf1786f9a1338f5d3d41555ad82f00380ee15ed589c67dd978b9dbbf",
+                        "index": 0
+                    },
+                    "output": {
+                        "message_id": "ee7f7e075cc81547caed7fc25a8cefb5192241345f905f59df9836940418849e",
+                        "transaction_id": "9f8597a6bf1786f9a1338f5d3d41555ad82f00380ee15ed589c67dd978b9dbbf",
+                        "output_index": 0,
+                        "is_spent": false,
+                        "output": {
+                            "treasury": null,
+                            "signature_locked_single": {
+                                "kind": 0,
+                                "address": {
+                                    "ed25519": {
+                                        "kind": 0,
+                                        "address": "c5bdbcabefd046a21d5a226297fb82f29f9eff9b6e6a28774c660c79a2305cf6"
+                                    }
+                                },
+                                "amount": 10000000
+                            },
+                            "signature_locked_dust_allowance": null
+                        },
+                        "ledger_index": 1324620
+                    },
+                    "address_index": 0,
+                    "chain": [
+                        {
+                            "hardened": true,
+                            "bs": [
+                                128,
+                                0,
+                                0,
+                                44
+                            ]
+                        },
+                        {
+                            "hardened": true,
+                            "bs": [
+                                128,
+                                0,
+                                16,
+                                122
+                            ]
+                        },
+                        {
+                            "hardened": true,
+                            "bs": [
+                                128,
+                                0,
+                                0,
+                                0
+                            ]
+                        },
+                        {
+                            "hardened": true,
+                            "bs": [
+                                128,
+                                0,
+                                0,
+                                0
+                            ]
+                        },
+                        {
+                            "hardened": true,
+                            "bs": [
+                                128,
+                                0,
+                                0,
+                                0
+                            ]
+                        }
+                    ],
+                    "internal": false,
+                    "bech32_address": "atoi1qrzmm09talgydgsatg3x99lmstefl8hlndhx52rhf3nqc7dzxpw0vcnjwwr"
+                }
+            ]
+        },
+        "signed_transaction": {
+            "transaction": [
+                {
+                    "essence": {
+                        "inputs": [
+                            {
+                                "transaction_id": "9f8597a6bf1786f9a1338f5d3d41555ad82f00380ee15ed589c67dd978b9dbbf",
+                                "index": 0
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "signature_locked_single": {
+                                    "address": "atoi1qrzmm09talgydgsatg3x99lmstefl8hlndhx52rhf3nqc7dzxpw0vcnjwwr",
+                                    "amount": 9000000000000000
+                                },
+                                "signature_locked_dust_allowance": null
+                            },
+                            {
+                                "signature_locked_single": {
+                                    "address": "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq",
+                                    "amount": 1000000
+                                },
+                                "signature_locked_dust_allowance": null
+                            }
+                        ],
+                        "payload": null
+                    },
+                    "unlock_blocks": [
+                        {
+                            "signature": {
+                                "public_key": [
+                                    229,
+                                    204,
+                                    134,
+                                    255,
+                                    243,
+                                    159,
+                                    118,
+                                    195,
+                                    16,
+                                    178,
+                                    150,
+                                    252,
+                                    153,
+                                    114,
+                                    192,
+                                    126,
+                                    216,
+                                    66,
+                                    8,
+                                    35,
+                                    50,
+                                    134,
+                                    144,
+                                    150,
+                                    90,
+                                    123,
+                                    221,
+                                    47,
+                                    213,
+                                    207,
+                                    97,
+                                    215
+                                ],
+                                "signature": [
+                                    239,
+                                    125,
+                                    183,
+                                    134,
+                                    148,
+                                    149,
+                                    211,
+                                    94,
+                                    6,
+                                    220,
+                                    229,
+                                    96,
+                                    53,
+                                    146,
+                                    113,
+                                    46,
+                                    155,
+                                    127,
+                                    239,
+                                    60,
+                                    88,
+                                    100,
+                                    250,
+                                    138,
+                                    219,
+                                    0,
+                                    44,
+                                    158,
+                                    75,
+                                    219,
+                                    220,
+                                    74,
+                                    42,
+                                    127,
+                                    89,
+                                    131,
+                                    149,
+                                    22,
+                                    154,
+                                    121,
+                                    16,
+                                    185,
+                                    170,
+                                    40,
+                                    21,
+                                    51,
+                                    104,
+                                    216,
+                                    154,
+                                    200,
+                                    140,
+                                    55,
+                                    175,
+                                    39,
+                                    195,
+                                    121,
+                                    102,
+                                    94,
+                                    24,
+                                    74,
+                                    81,
+                                    18,
+                                    187,
+                                    2
+                                ]
+                            },
+                            "reference": null
+                        }
+                    ]
+                }
+            ],
+            "milestone": null,
+            "indexation": null,
+            "receipt": null,
+            "treasury_transaction": null
+        }
+    },
+    "MESSAGE_PAYLOAD": {
+        "network_id": 1454675179895816119,
+        "parents": [
+            "3702b65a8f98a1e7e1a09bacf75f46fc607336bcd0aa058cc8e170700a224a2b",
+            "8754947cb1bc355894408b9cbf1b3e226a178c6e356daea536f878162991ad5f",
+            "8bc081f1e4d0d5a9f6c5101bf0e88943875d142059b642334470165aaa3d9158",
+            "b285c25830edc877e12be4a1d3d9c4d93339c447a1db9f2e25732de1a64eefdd"
+        ],
+        "payload": {
+            "type": "Indexation",
+            "data": {
+                "index": [
+                    84,
+                    101,
+                    115,
+                    116,
+                    110,
+                    101,
+                    116,
+                    32,
+                    83,
+                    112,
+                    97,
+                    109,
+                    109,
+                    101,
+                    114
+                ],
+                "data": [
+                    83,
+                    112,
+                    97,
+                    109,
+                    109,
+                    105,
+                    110,
+                    103,
+                    32,
+                    100,
+                    97,
+                    116,
+                    97,
+                    46,
+                    10,
+                    67,
+                    111,
+                    117,
+                    110,
+                    116,
+                    58,
+                    32,
+                    48,
+                    57,
+                    54,
+                    52,
+                    48,
+                    49,
+                    10,
+                    84,
+                    105,
+                    109,
+                    101,
+                    115,
+                    116,
+                    97,
+                    109,
+                    112,
+                    58,
+                    32,
+                    50,
+                    48,
+                    50,
+                    49,
+                    45,
+                    48,
+                    57,
+                    45,
+                    48,
+                    56,
+                    84,
+                    48,
+                    57,
+                    58,
+                    52,
+                    54,
+                    58,
+                    51,
+                    52,
+                    43,
+                    48,
+                    50,
+                    58,
+                    48,
+                    48,
+                    10,
+                    84,
+                    105,
+                    112,
+                    115,
+                    101,
+                    108,
+                    101,
+                    99,
+                    116,
+                    105,
+                    111,
+                    110,
+                    58,
+                    32,
+                    53,
+                    57,
+                    194,
+                    181,
+                    115
+                ]
+            }
+        },
+        "nonce": 2649801
+    },
     "HEX_PUBLIC_KEY": "2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a",
     "BECH32_HRP": "atoi",
-    "BECH32_ADDRESS": "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r"
+    "BECH32_ADDRESS": "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+    "BECH32_HEX_PAIR": {
+        "bech32": "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+        "hex": "96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813"
+    }
 }

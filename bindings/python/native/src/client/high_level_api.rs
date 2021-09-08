@@ -206,7 +206,7 @@ impl Client {
     /// Get the message id from the payload string.
     ///
     /// Args:
-    ///     payload_str (str): The identifier of message.
+    ///     payload_str (str): The message payload string.
     ///
     /// Returns:
     ///     message_id (str): The identifier of message.

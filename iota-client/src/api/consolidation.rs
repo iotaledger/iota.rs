@@ -27,10 +27,13 @@ pub async fn consolidate_funds(
     let consolidation_address = addresses[0].clone();
 
     let mut last_transfer_index = address_range.start;
+    let offset = address_range.start;
     'consolidation: loop {
         let mut message_ids = Vec::new();
         // Iterate over addresses reversed so the funds end up on the first address in the range
         for (index, address) in addresses.iter().enumerate().rev() {
+            // add the offset so the index matches the address index also for higher start indexes
+            let index = index + offset;
             // We request the different output types separated so we don't get problems with the dust protection,
             // since the maximum is 100 dust and when we add the signature locked single outptus first we will always
             // have > 1 Mi for the output

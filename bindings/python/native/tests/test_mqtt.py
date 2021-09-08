@@ -66,7 +66,7 @@ def test_mqtt():
     q.queue.clear()
     client.subscribe_topic('messages', on_mqtt_event)
     worker('messages')
-    client.disconnect()
+    client.unsubscribe_topics(['messages'])
     client.subscribe_topics(
         ['milestones/confirmed', 'messages'], on_mqtt_event)
     worker(['milestones/confirmed', 'messages'])
