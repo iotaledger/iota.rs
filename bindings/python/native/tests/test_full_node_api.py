@@ -113,3 +113,11 @@ def test_get_treasury():
     treasury_response = client.get_treasury()
     assert isinstance(treasury_response,
                       dict) and 'milestone_id' in treasury_response
+
+
+def test_get_included_message():
+    transaction_id = tv['TRANSACTION_ID'][0]
+    try:
+        response = client.get_included_message(transaction_id)
+    except ValueError as e:
+        assert "output for transaction" in str(e)

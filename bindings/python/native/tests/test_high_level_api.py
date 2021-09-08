@@ -24,6 +24,41 @@ def test_message():
     message_id_indexation = message_id_indexation_dict['message_id']
 
 
+def test_get_output_amount_and_address():
+    output = tv['OUTPUT_DTO']
+    try:
+        client.get_output_amount_and_address(output)
+    except ValueError as e:
+        assert "Treasury output is no supported" in str(e)
+
+
+def test_prepare_transaction():
+    inputs = tv['OFFLINE_SIGNING']['inputs']
+    outputs = tv['OFFLINE_SIGNING']['outputs']
+    try:
+        prepared_transaction_data = client.prepare_transaction(inputs, outputs)
+    except ValueError as e:
+        assert "The wallet account doesn't have enough balance" in str(e)
+
+
+def test_sign_transaction():
+    prepared_transaction_data = tv['OFFLINE_SIGNING']['prepared_transaction_data']
+    seed = tv['NONSECURE_SEED'][0]
+    try:
+        signed_transaction = client.sign_transaction(
+            prepared_transaction_data, seed, 0, 100)
+    except ValueError as e:
+        assert "not found in range" in str(e)
+
+
+def test_finish_message():
+    singed_transaction = tv['OFFLINE_SIGNING']['signed_transaction']
+    try:
+        client.finish_message(singed_transaction)
+    except BaseException as e:
+        assert "invalid SignatureLockedSingleOutput" in str(e)
+
+
 def test_get_message_metadata():
     message_metadata = client.get_message_metadata(message_id_indexation)
     assert isinstance(message_metadata,
@@ -48,6 +83,15 @@ def test_get_message_children():
 def test_get_message_index():
     message_index = client.get_message_index(message_id_indexation)
     assert isinstance(message_index, list)
+
+
+def test_get_message_id():
+    message_payload = tv['MESSAGE_PAYLOAD']
+    json_payload = str(json.dumps(message_payload, indent=4))
+    try:
+        id = client.get_message_id(json_payload)
+    except ValueError as e:
+        assert "invalid message" in str(e)
 
 
 def test_find_messages():
@@ -78,6 +122,44 @@ def test_get_balance_in_seed():
     assert isinstance(balance, int)
 
 
+def test_get_address_balances():
+    addresses = [tv['ADDRESS'][0]]
+    address_balance_pairs = client.get_address_balances(addresses)
+    assert isinstance(addresses, list)
+
+
+def test_generate_mnemonic():
+    mnemonic = client.generate_mnemonic()
+    assert isinstance(mnemonic, str)
+
+
+def test_mnemonic_to_hex_seed():
+    mnemonic = client.generate_mnemonic()
+    seed = client.mnemonic_to_hex_seed(mnemonic)
+    assert isinstance(seed, str)
+
+
+def test_find_inputs():
+    addresses = [tv['ADDRESS'][0]]
+    amount = 100
+    inputs = client.find_inputs(addresses, amount)
+    assert isinstance(inputs, list)
+
+
+def test_bech32_to_hex():
+    bech32 = tv['BECH32_HEX_PAIR']['bech32']
+    hex_str = tv['BECH32_HEX_PAIR']['hex']
+    result = client.bech32_to_hex(bech32)
+    assert hex_str == result
+
+
+def test_hex_to_bech32():
+    bech32 = tv['BECH32_HEX_PAIR']['bech32']
+    hex_str = tv['BECH32_HEX_PAIR']['hex']
+    result = client.hex_to_bech32(hex_str)
+    assert bech32 == result
+
+
 def test_indexation_with_data_str():
     message_id_indexation = client.message(
         index=tv['INDEXATION']['INDEX'][1], data_str=tv['INDEXATION']['DATA_STRING'][0])
@@ -105,6 +187,12 @@ def test_retry_until_included():
         assert isinstance(result, list)
     except ValueError as e:
         assert "couldn't get included into the Tangle" in str(e)
+
+
+def test_consolidate_funds():
+    seed = tv['NONSECURE_SEED'][0]
+    result = client.consolidate_funds(seed, 0, 0, 1)
+    assert isinstance(result, str)
 
 
 def test_reattach():
