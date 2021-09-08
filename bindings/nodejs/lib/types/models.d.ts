@@ -77,16 +77,6 @@ export declare interface PreparedTransactionData {
   essence: TransactionPayloadEssence
   address_index_recorders: AddressIndexRecorder[]
 }
-
-// export declare interface TransactionPayloadEssence {
-//   type: string,
-//   data: {
-//     inputs: Input[]
-//     outputs: OutputDto[]
-//     payload?: IndexationPayloadDto
-//   }
-// }
-
 export declare interface AddressIndexRecorder {
   account_index: number,
   input: Input,
@@ -96,17 +86,6 @@ export declare interface AddressIndexRecorder {
   internal: boolean,
   bech32_address: string,
 }
-// export declare interface Input {
-//   type: string,
-//   data: string
-// }
-// export declare interface Output {
-//   type: string,
-//   data: {
-//     address: { type: string, data: string }
-//     amount: number
-//   }
-// }
 export declare interface OutputResponse {
   messageId: string,
   transactionId: string,
