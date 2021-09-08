@@ -85,6 +85,15 @@ def test_get_message_index():
     assert isinstance(message_index, list)
 
 
+def test_get_message_id():
+    message_payload = tv['MESSAGE_PAYLOAD']
+    json_payload = str(json.dumps(message_payload, indent=4))
+    try:
+        id = client.get_message_id(json_payload)
+    except ValueError as e:
+        assert "invalid message" in str(e)
+
+
 def test_find_messages():
     messages = client.find_messages(
         indexation_keys=[tv['INDEXATION']['INDEX'][2]])
@@ -111,6 +120,44 @@ def test_get_addresses_and_get_address_balance():
 def test_get_balance_in_seed():
     balance = client.get_balance(seed=tv['NONSECURE_SEED'][1])
     assert isinstance(balance, int)
+
+
+def test_get_address_balances():
+    addresses = [tv['ADDRESS'][0]]
+    address_balance_pairs = client.get_address_balances(addresses)
+    assert isinstance(addresses, list)
+
+
+def test_generate_mnemonic():
+    mnemonic = client.generate_mnemonic()
+    assert isinstance(mnemonic, str)
+
+
+def test_mnemonic_to_hex_seed():
+    mnemonic = client.generate_mnemonic()
+    seed = client.mnemonic_to_hex_seed(mnemonic)
+    assert isinstance(seed, str)
+
+
+def test_find_inputs():
+    addresses = [tv['ADDRESS'][0]]
+    amount = 100
+    inputs = client.find_inputs(addresses, amount)
+    assert isinstance(inputs, list)
+
+
+def test_bech32_to_hex():
+    bech32 = tv['BECH32_HEX_PAIR']['bech32']
+    hex_str = tv['BECH32_HEX_PAIR']['hex']
+    result = client.bech32_to_hex(bech32)
+    assert hex_str == result
+
+
+def test_hex_to_bech32():
+    bech32 = tv['BECH32_HEX_PAIR']['bech32']
+    hex_str = tv['BECH32_HEX_PAIR']['hex']
+    result = client.hex_to_bech32(hex_str)
+    assert bech32 == result
 
 
 def test_indexation_with_data_str():
@@ -140,6 +187,12 @@ def test_retry_until_included():
         assert isinstance(result, list)
     except ValueError as e:
         assert "couldn't get included into the Tangle" in str(e)
+
+
+def test_consolidate_funds():
+    seed = tv['NONSECURE_SEED'][0]
+    result = client.consolidate_funds(seed, 0, 0, 1)
+    assert isinstance(result, str)
 
 
 def test_reattach():
