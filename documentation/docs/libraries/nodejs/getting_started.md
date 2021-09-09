@@ -1,3 +1,14 @@
+---
+description: Getting started with the official IOTA Client Library Node.js binding.
+image: /img/logo/iota_mark_light.png
+keywords:
+- Node.js
+- dotenv
+- install
+- npm
+- yarn
+- security
+---
 # Getting Started with Node.js
 
 ## Installation

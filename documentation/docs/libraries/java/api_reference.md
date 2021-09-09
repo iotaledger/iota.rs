@@ -1,9 +1,20 @@
+---
+description: Official IOTA Client Library Java API reference.
+image: /img/logo/iota_mark_light.png
+keywords:
+- api
+- Java
+- param
+- type
+- endpoint
+- builder
+---
 # API Reference - IOTA Client Library - Java binding
 
 ### Api
 
 The Api enum contains a list of node endpoints we can call.
-It is used in setting a timeout for a specific api call during the buiding of a client using `withApiTimeout(api, timeout)` .  
+It is used in setting a timeout for a specific api call during the building of a client using `withApiTimeout(api, timeout)` .  
 
 GET_HEALTH
 GET_INFO
@@ -118,7 +129,7 @@ Every node will be considered healthy and ready to use.
 
 #### withQuorum(quorum): ClientBuilder
 
-Set if quroum should be used or not
+Set if quorum should be used or not
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -419,7 +430,7 @@ milestone). Default interval is 5 seconds and max attempts is 10. Returns reatta
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
 | message_id | `MessageId` | the id of the message we wish to have included |
-| interval | `long` | delay inbetween retries in seconds |
+| interval | `long` | delay in between retries in seconds |
 | max_attempts | `long` | maximum amount of retries before we error out |
 
 #### findInputs(addresses, amount): UtxoInput[]
@@ -428,7 +439,7 @@ Function to find inputs from addresses for a provided amount (useful for offline
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
-| addresses | `String[]` | A list of addressesto check for inputs |
+| addresses | `String[]` | A list of addresses to check for inputs |
 | amount | `long` | The value we need these inputs to contain in total |
 
 ### ClientMessageBuilder
@@ -622,7 +633,7 @@ Consume the builder and search for messages matching the index
 #### data(message_id): Message
 
 GET /api/v1/messages/{messageID} endpoint
-Consume the builder and find a message by its identifer. This method returns the given message object if it exists.
+Consume the builder and find a message by its identifier. This method returns the given message object if it exists.
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -631,7 +642,7 @@ Consume the builder and find a message by its identifer. This method returns the
 #### metadata(message_id): MessageMetadata
 
 GET /api/v1/messages/{messageID}/metadata endpoint
-Consume the builder and find a message by its identifer. This method returns the given message metadata if it exists.
+Consume the builder and find a message by its identifier. This method returns the given message metadata if it exists.
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -640,7 +651,7 @@ Consume the builder and find a message by its identifer. This method returns the
 #### raw(message_id): String
 
 GET /api/v1/messages/{messageID}/raw endpoint
-Consume the builder and find a message by its identifer. This method returns the given message raw data if it exists.
+Consume the builder and find a message by its identifier. This method returns the given message raw data if it exists.
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -705,7 +716,7 @@ Represent the object that nodes gossip around the network.
 
 Creates a new `MessageBuilder` to construct an instance of a `Message`.
 
-#### netorkId(): long
+#### networkId(): long
 
 Returns the network id of a `Message`.
 
@@ -751,7 +762,7 @@ Adds a payload to a `MessageBuilder`.
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
-| payload | `MessagePayload` | The payoad of the message |
+| payload | `MessagePayload` | The payload of the message |
 
 ### MessagePayload
 
@@ -769,7 +780,7 @@ Serializes the message payload into a json string.
 
 #### payloadType(): MessagePayloadType
 
-Get the type of message this contains (used to select the correct getter). Possiple types are TRANSACTION, MILESTONE, INDEXATION, RECEIPT and TREASURY_TRANSACTION.
+Get the type of message this contains (used to select the correct getter). Possible types are TRANSACTION, MILESTONE, INDEXATION, RECEIPT and TREASURY_TRANSACTION.
 
 #### getAsIndexation(): Optional&lt;IndexationPayload&gt;
 
@@ -1015,19 +1026,19 @@ Returns the referenced unlock block if the requested unlock block was a referenc
 | ----- | ---------- | ----------- |
 | index | `long` | The UnlockBock to get |
 
-### UnockBock
+### UnlockBock
 
 #### kind(): UnlockBlockKind
 
-Get the type of message this contains (used to select the correct getter). Possiple types are ED25519 and REFERENCE.
+Get the type of message this contains (used to select the correct getter). Possible types are ED25519 and REFERENCE.
 
 #### getAsReference(): Optional&lt;ReferenceUnlock&gt;
 
-Get this UnockBock as a Reference Unlock type
+Get this UnlockBock as a Reference Unlock type
 
 #### getAsSignature(): Optional&lt;SignatureUnlock&gt;
 
-Get this UnockBock as a SignatureUnlock type
+Get this UnlockBock as a SignatureUnlock type
 
 ### ReferenceUnlock
 
