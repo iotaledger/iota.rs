@@ -1,0 +1,306 @@
+name: Publish python binding wheels to pypi
+
+on:
+  push:
+    branches:
+      - pip_workflow
+
+jobs:
+
+  linux-wheels-py36:
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+          toolchain: stable
+          override: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.6
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: linux-iota-client-py3.6-wheels
+         path: bindings/python/native/target/wheels/
+
+  linux-wheels-py37:
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+          toolchain: stable
+          override: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.7
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py37/g' "Cargo.toml"
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: linux-iota-client-py3.7-wheels
+         path: bindings/python/native/target/wheels/
+
+  linux-wheels-py38:
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+          toolchain: stable
+          override: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.8
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py38/g' "Cargo.toml"
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: linux-iota-client-py3.8-wheels
+         path: bindings/python/native/target/wheels/
+
+  linux-wheels-py39:
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+          toolchain: stable
+          override: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.9
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py39/g' "Cargo.toml"
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: linux-iota-client-py3.9-wheels
+         path: bindings/python/native/target/wheels/
+
+
+  osx-wheels-py36:
+    runs-on: macos-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.6
+       
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: osx-iota-client-py3.6-wheels
+         path: bindings/python/native/target/wheels/
+
+  osx-wheels-py37:
+    runs-on: macos-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.7
+       
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i '' 's/py36/py37/g' "Cargo.toml"
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: osx-iota-client-py3.7-wheels
+         path: bindings/python/native/target/wheels/
+
+  osx-wheels-py38:
+    runs-on: macos-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.8
+       
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i '' 's/py36/py38/g' "Cargo.toml"
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: osx-iota-client-py3.8-wheels
+         path: bindings/python/native/target/wheels/
+
+  osx-wheels-py39:
+    runs-on: macos-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.9
+       
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i '' 's/py36/py39/g' "Cargo.toml"
+         maturin build --release --manylinux off
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v2
+       with:
+         name: osx-iota-client-py3.9-wheels
+         path: bindings/python/native/target/wheels/
+
+  windows-wheels-py36:
+    runs-on: windows-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true         
+     - name: Get current date
+       run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.6
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         maturin build --release --manylinux off --interpreter python3.6
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v1
+       with:
+         name: windows-iota-client-py3.6-wheels
+         path: bindings/python/native/target/wheels/
+
+  windows-wheels-py37:
+    runs-on: windows-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true         
+     - name: Get current date
+       run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.7
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py37/g' "Cargo.toml"
+         maturin build --release --manylinux off --interpreter python3.7
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v1
+       with:
+         name: windows-iota-client-py3.7-wheels
+         path: bindings/python/native/target/wheels/
+
+  windows-wheels-py38:
+    runs-on: windows-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true         
+     - name: Get current date
+       run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.8
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py38/g' "Cargo.toml"
+         maturin build --release --manylinux off --interpreter python3.8
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v1
+       with:
+         name: windows-iota-client-py3.8-wheels
+         path: bindings/python/native/target/wheels/
+
+  windows-wheels-py39:
+    runs-on: windows-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions-rs/toolchain@v1
+       with:
+         toolchain: stable
+         default: true         
+     - name: Get current date
+       run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+     - uses: actions/setup-python@v2
+       with:
+         python-version: 3.9
+
+     - name: Build wheels and publish
+       working-directory: bindings/python/native
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py39/g' "Cargo.toml"
+         maturin build --release --manylinux off --interpreter python3.9
+         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+     - uses: actions/upload-artifact@v1
+       with:
+         name: windows-iota-client-py3.9-wheels
+         path: bindings/python/native/target/wheels/

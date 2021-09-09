@@ -2,7 +2,7 @@
 
 [package]
 name = "iota-client-python"
-version = "0.2.0-alpha.3"
+version = "0.2.0-alpha.20"
 authors = ["Bing-Yang Lin <bingyang.lin@iota.org>"]
 edition = "2018"
 description = "Client library of IOTA"
