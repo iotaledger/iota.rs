@@ -37,9 +37,26 @@ jobs:
 
      - name: Build wheels
        working-directory: bindings/python/native
+       if: ${{ matrix.python-version }} == 3.6
        run: |
          python3 -m pip install -Iv maturin==0.9.4
          maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
+       if: ${{ matrix.python-version }} == 3.7
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py37/g' "Cargo.toml"
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
+       if: ${{ matrix.python-version }} == 3.8
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py38/g' "Cargo.toml"
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
+       if: ${{ matrix.python-version }} == 3.9
+       run: |
+         python3 -m pip install -Iv maturin==0.9.4
+         sed -i 's/py36/py39/g' "Cargo.toml"
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
+
      - uses: actions/upload-artifact@v2
        with:
          name: linux-iota-client-py${{ matrix.python-version }}-wheel
