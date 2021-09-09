@@ -18,13 +18,14 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.6
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
        run: |
          python3 -m pip install -Iv maturin==0.9.4
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: linux-iota-client-py3.6-wheels
@@ -41,6 +42,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.7
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -48,7 +50,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py37/g' "Cargo.toml"
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: linux-iota-client-py3.7-wheels
@@ -65,6 +67,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.8
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -72,7 +75,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py38/g' "Cargo.toml"
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: linux-iota-client-py3.8-wheels
@@ -89,6 +92,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.9
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -96,7 +100,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py39/g' "Cargo.toml"
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: linux-iota-client-py3.9-wheels
@@ -114,13 +118,14 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.6
+         token: ${{ secrets.PYPI_TOKEN }}
        
      - name: Build wheels and publish
        working-directory: bindings/python/native
        run: |
          python3 -m pip install -Iv maturin==0.9.4
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: osx-iota-client-py3.6-wheels
@@ -137,6 +142,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.7
+         token: ${{ secrets.PYPI_TOKEN }}
        
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -144,7 +150,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i '' 's/py36/py37/g' "Cargo.toml"
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: osx-iota-client-py3.7-wheels
@@ -161,6 +167,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.8
+         token: ${{ secrets.PYPI_TOKEN }}
        
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -168,7 +175,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i '' 's/py36/py38/g' "Cargo.toml"
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: osx-iota-client-py3.8-wheels
@@ -185,6 +192,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.9
+         token: ${{ secrets.PYPI_TOKEN }}
        
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -192,7 +200,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i '' 's/py36/py39/g' "Cargo.toml"
          maturin build --release --manylinux off
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v2
        with:
          name: osx-iota-client-py3.9-wheels
@@ -212,13 +220,14 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.6
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
        run: |
          python3 -m pip install -Iv maturin==0.9.4
          maturin build --release --manylinux off --interpreter python3.6
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v1
        with:
          name: windows-iota-client-py3.6-wheels
@@ -238,6 +247,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.7
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -245,7 +255,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py37/g' "Cargo.toml"
          maturin build --release --manylinux off --interpreter python3.7
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v1
        with:
          name: windows-iota-client-py3.7-wheels
@@ -265,6 +275,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.8
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -272,7 +283,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py38/g' "Cargo.toml"
          maturin build --release --manylinux off --interpreter python3.8
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v1
        with:
          name: windows-iota-client-py3.8-wheels
@@ -292,6 +303,7 @@ jobs:
      - uses: actions/setup-python@v2
        with:
          python-version: 3.9
+         token: ${{ secrets.PYPI_TOKEN }}
 
      - name: Build wheels and publish
        working-directory: bindings/python/native
@@ -299,7 +311,7 @@ jobs:
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py39/g' "Cargo.toml"
          maturin build --release --manylinux off --interpreter python3.9
-         maturin publish -u ${{ __token__ }} -p ${{ secrets.PYPI_TOKEN }}
+         maturin publish
      - uses: actions/upload-artifact@v1
        with:
          name: windows-iota-client-py3.9-wheels
