@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - main
+      - pip_workflow
 
 jobs:
 
@@ -38,11 +39,11 @@ jobs:
        working-directory: bindings/python/native
        run: |
          python3 -m pip install -Iv maturin==0.9.4
-         maturin build --release --manylinux off
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
      - uses: actions/upload-artifact@v2
        with:
          name: linux-iota-client-py${{ matrix.python-version }}-wheel
-         path: bindings/python/native/target/wheels/
+         path: bindings/python/native/${{ matrix.python-version }}-wheels/
 
   osx-wheels:
     runs-on: ${{ matrix.os }}
@@ -74,11 +75,11 @@ jobs:
        working-directory: bindings/python/native
        run: |
          python3 -m pip install -Iv maturin==0.9.4
-         maturin build --release --manylinux off
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
      - uses: actions/upload-artifact@v2
        with:
          name: osx-iota-client-py${{ matrix.python-version }}-wheel
-         path: bindings/python/native/target/wheels/
+         path: bindings/python/native/${{ matrix.python-version }}-wheels/
 
   windows-wheels:
     runs-on: ${{ matrix.os }}
@@ -113,8 +114,8 @@ jobs:
        working-directory: bindings/python/native
        run: |
          python3 -m pip install -Iv maturin==0.9.4
-         maturin build --release --manylinux off
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
      - uses: actions/upload-artifact@v1
        with:
          name: windows-iota-client-py${{ matrix.python-version }}-wheels
-         path: bindings/python/native/target/wheels/
+         path: bindings/python/native/${{ matrix.python-version }}-wheels/
