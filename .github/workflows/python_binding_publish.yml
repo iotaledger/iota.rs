@@ -163,7 +163,7 @@ jobs:
        if: matrix.python-version == 3.6
        run: |
          python3 -m pip install -Iv maturin==0.9.4
-         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels  --interpreter python3.6
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
 
      - name: Build wheels py37
        working-directory: bindings/python/native
@@ -171,7 +171,7 @@ jobs:
        run: |
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py37/g' "Cargo.toml"
-         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels --interpreter python3.7
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
 
      - name: Build wheels py38
        working-directory: bindings/python/native
@@ -179,7 +179,7 @@ jobs:
        run: |
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py38/g' "Cargo.toml"
-         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels --interpreter python3.8
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
 
      - name: Build wheels py39
        working-directory: bindings/python/native
@@ -187,7 +187,7 @@ jobs:
        run: |
          python3 -m pip install -Iv maturin==0.9.4
          sed -i 's/py36/py39/g' "Cargo.toml"
-         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels --interpreter python3.9
+         maturin build --release --manylinux off --out ${{ matrix.python-version }}-wheels
          
      - uses: actions/upload-artifact@v1
        with:
