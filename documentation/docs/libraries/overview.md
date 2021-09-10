@@ -1,5 +1,5 @@
 ---
-description: There are Rust, Node.js, Python and Java bindings for the iota.rs clien library.
+description: There are Node.js, Python and Java bindings for the iota.rs client Rust library.
 image: /img/logo/iota_mark_light.png
 keywords:
 - Rust
