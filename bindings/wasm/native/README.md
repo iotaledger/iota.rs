@@ -37,12 +37,14 @@ or for the `web` with
 ## NodeJS Setup
 
 ```js
-const iota = require('@iota/client-wasm/node')
+const { ClientBuilder } = require('@iota/client-wasm/node')
 
 async function main() {
-  // Get the nodeinfo
-  let iota_client = await iota.Client.withNode("https://api.lb-0.h.chrysalis-devnet.iota.cafe/");
-  console.log("Nodeinfo: ", await iota_client.getInfo())
+    let client = await new ClientBuilder()
+        .node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")
+        .build();
+    // Get the nodeinfo
+    console.log("Nodeinfo: ", await client.getInfo());
 }
 main()
 ```
@@ -111,7 +113,7 @@ import * as iota from "@iota/client-wasm/web";
 iota.init().then(() => {
 async function main() {
   // Get the nodeinfo
-  let iota_client = await iota.Client.withNode("https://api.lb-0.h.chrysalis-devnet.iota.cafe/");
+  let iota_client =  await new iota.ClientBuilder().node("https://api.lb-0.h.chrysalis-devnet.iota.cafe/").build();
   console.log("Nodeinfo: ", await iota_client.getInfo())
 }
 main()
@@ -122,7 +124,7 @@ main()
 (async () => {
   await iota.init()
   // Get the nodeinfo
-  let iota_client = await iota.Client.withNode("https://api.lb-0.h.chrysalis-devnet.iota.cafe/");
+  let iota_client = await new iota.ClientBuilder().node("https://api.lb-0.h.chrysalis-devnet.iota.cafe/").build();
   console.log("Nodeinfo: ", await iota_client.getInfo())
 })()
 
