@@ -10,7 +10,6 @@ license = "Apache-2.0"
 repository = "https://github.com/iotaledger/iota.rs"
 homepage = "https://iota.org"
 readme = "../README.md"
-repository = "https://github.com/iotaledger/iota.rs"
 documentation = "https://docs.rs/iota-client"
 license = "Apache-2.0"
 
