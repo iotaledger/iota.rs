@@ -47,6 +47,8 @@
      - [windows-iota-client-py3.9-wheels](https://github.com/iotaledger/iota.rs/suites/2929447645/artifacts/65772316)
    - **NOTE: Please download the wheel files generated in the commit version you want to use.**
    - `$ pip3 install [THE_DOWNLOADED_WHEEL_FILE]`
+4. Install from pip directly.
+   - `pip3 install iota-client-python`
 
 Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
 ## Testing
@@ -575,10 +577,10 @@ Returns a parsed bech32 String from hex.
 
 Returns the bech32 address from the hex public key.
 
-| Param      | Type             | Default                | Description               |
-| ---------- | ---------------- | ---------------------- | ------------------------- |
-| hex        | <code>str</code> | <code>undefined</code> | Hex encoded public key    |
-| bech32_hrp | <code>str</code> | <code>undefined</code> | The Bech32 hrp string     |
+| Param      | Type             | Default                | Description            |
+| ---------- | ---------------- | ---------------------- | ---------------------- |
+| hex        | <code>str</code> | <code>undefined</code> | Hex encoded public key |
+| bech32_hrp | <code>str</code> | <code>undefined</code> | The Bech32 hrp string  |
 
 **Returns** A String
 
