@@ -2,8 +2,8 @@ name: Publish python binding wheels to pypi
 
 on:
   push:
-    branches:
-      - pip_workflow
+    # branches:
+    #   - pip_workflow
     paths:
       - 'bindings/python/native/Cargo.toml'
 
