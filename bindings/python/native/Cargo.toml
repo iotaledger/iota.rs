@@ -2,7 +2,7 @@
 
 [package]
 name = "iota-client-python"
-version = "0.2.0-alpha.25"
+version = "0.2.0-alpha.26"
 authors = ["Thoralf Müller <thoralf.mueller@iota.org", "Antony Dikov <antoni.dikov@iota.org>", "Bing-Yang Lin <bingyang.lin@iota.org>", "Lucas Nogueira <lucas.nogueira@iota.org>", "Nathan Jaremko <nathan@jaremko.ca>", "Yu-Wei Wu <wusyong9104@gmail.com>"]
 edition = "2018"
 description = "Client library of IOTA"
