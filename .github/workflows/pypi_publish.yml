@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - pip_workflow
+    paths:
+      - 'bindings/python/native/Cargo.toml'
 
 jobs:
 
