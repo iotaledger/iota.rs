@@ -3,7 +3,6 @@
 ## \[1.0.1]
 
 - Fix consolidation for higher start indexes
-  - [cce6254f](https://github.com/iotaledger/iota.rs/commit/cce6254f37af65a08e5daf53dae6c3f3ba9f9abd) apply version updates ([#538](https://github.com/iotaledger/iota.rs/pull/538)) on 2021-05-09
   - [3ca3a2d7](https://github.com/iotaledger/iota.rs/commit/3ca3a2d7ee9a25556ca7fe2a4eb1221bdb6accfe) Handle higher start indexes in consolidation ([#666](https://github.com/iotaledger/iota.rs/pull/666)) on 2021-09-08
 
 ## \[1.0.0]
