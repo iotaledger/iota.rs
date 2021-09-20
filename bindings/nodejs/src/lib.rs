@@ -113,14 +113,23 @@ pub(crate) fn convert_panics<T, F: FnOnce() -> Result<T>>(f: F) -> Result<T> {
     }
 }
 
-register_module!(mut cx, {
-    cx.export_class::<JsClientBuilder>("ClientBuilder")?;
-    cx.export_class::<JsClient>("Client")?;
-    cx.export_class::<JsTopicSubscriber>("TopicSubscriber")?;
-    cx.export_class::<JsMessageGetter>("MessageGetter")?;
-    cx.export_class::<JsMessageSender>("MessageSender")?;
-    cx.export_class::<JsUnspentAddressGetter>("UnspentAddressGetter")?;
-    cx.export_class::<JsAddressGetter>("AddressGetter")?;
-    cx.export_class::<JsBalanceGetter>("BalanceGetter")?;
+
+pub static RUNTIME: Lazy<Runtime> = Lazy::new(|| Runtime::new().unwrap());
+
+// use bee_common::logger::{logger_init, LoggerConfigBuilder};
+
+// pub fn init_logger(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+//     let config = cx.argument::<JsString>(0)?.value(&mut cx);
+//     let config: LoggerConfigBuilder = serde_json::from_str(&config).expect("invalid logger config");
+//     logger_init(config.finish()).expect("failed to init logger");
+//     Ok(cx.undefined())
+// }
+
+#[neon::main]
+fn main(mut cx: ModuleContext) -> NeonResult<()> {
+    // Account methods.
+    // cx.export_function("accountNew", classes::account::account_new)?;
+
+    // cx.export_function("initLogger", init_logger)?;
     Ok(())
-});
+}
