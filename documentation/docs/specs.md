@@ -1,60 +1,22 @@
+---
+description: IOTA Client Library user-friendly API specifications.
+image: /img/logo/iota_mark_light.png
+keywords:
+- definition
+- message
+- return
+- types
+- parameters
+- address
+- account
+---
 # High Level API Specification
 
-## Table of Contents
+## Introduction
 
-* [Introduction](#Introduction)
-* [Builder](#Builder)
-* [General high level API](#General-high-level-API)
-  * [`message`](#message)
-  * [`get_message`](#get_message)
-  * [`find_messages`](#find_messages)
-  * [`get_unspent_address`](#get_unspent_address)
-  * [`get_addresses`](#get_addresses)
-  * [`get_balance`](#get_balance)
-  * [`get_address_balances`](#get_address_balances)
-  * [`bech32_to_hex`](#bech32_to_hex)
-  * [`hex_to_bech32`](#hex_to_bech32)
-  * [`parse_bech32_address`](#parse_bech32_address)
-  * [`is_address_valid`](#is_address_valid)
-  * [`subscriber`](#subscriber)
-  * [`retry`](#retry)
-  * [`retry_until_included`](#retry_until_included)
-  * [`consolidate_funds`](#consolidate_funds)
-  * [`reattach`](#reattach)
-  * [`promote`](#promote)
-* [Full node API](#Full-node-API)
-  * [`get_health`](#get_health)
-  * [`get_health`](#get_peers)
-  * [`get_info`](#get_info)
-  * [`get_tips`](#get_tips)
-  * [`post_message`](#post_message)
-  * [`get_output`](#get_output)
-  * [`get_address`](#get_address)
-  * [`find_outputs`](#find_outputs)
-  * [`get_milestone`](#get_milestone)
-  * [`get_milestone_utxo_changes`](#get_milestone_utxo_changes)
-  * [`get_receipts`](#get_receipts)
-  * [`get_receipts_migrated_at`](#get_receipts_migrated_at)
-  * [`get_treasury`](#get_treasury)
-  * [`get_included_message`](#get_included_message)
-* [Objects](#Objects)
-  * [Network]
-  * [Seed]
-  * [Message]
-  * [Payload]
-  * [Output]
-  * [Address]
-  * [AddressBalancePair]
-  * [Milestone]
-  * [API]
-  * [BrokerOptions]
-  * [Topic]
+This document specifies a user-friendly API to be used in the client libraries. The main implementation will be in Rust which will receive automatically compiled client libraries in other languages via C or Webassembly bindings. There are also many crates to support developers creating foreign function interfaces with native bindings.
 
-# Introduction
-
-This document specifies a user friendly API to be used in the client libraries. The main implementation will be in Rust which will receive automatically compiled client libraries in other languages via C or Webassembly bindings. There are also many crates to support developers creating foreign function interfaces with native bindings.
-
-# Builder
+## Builder
 
 The data structure to initialize the instance of the Higher level client library. This is always called first when starting a new interaction with the library. Note: This is the common approach to do initialization in Rust. Different languages might use different methods such as just calling an initialization function directly.
 

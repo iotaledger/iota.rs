@@ -1,3 +1,15 @@
+---
+description: Official IOTA Client Library which can be used to easily integrate an IOTA Client into your application 
+image: /img/logo/iota_mark_light.png
+keywords:
+- requirements
+- wallet
+- software
+- library
+- rust
+- python
+- nodejs
+---
 # Welcome
 
 The iota.rs library is a library that handles communications between your software and the IOTA network. 

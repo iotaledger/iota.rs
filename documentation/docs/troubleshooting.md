@@ -1,3 +1,14 @@
+---
+description: Troubleshooting the IOTA Client Library.  
+image: /img/logo/iota_mark_light.png
+keywords:
+- discussion
+- channel
+- problem
+- solution
+- discord
+- stackexchange
+---
 # Troubleshooting
 
 
