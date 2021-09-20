@@ -1,4 +1,19 @@
-# Getting Started with IOTA Client Python binding
+---
+description: Getting started with the official IOTA Client Library Python binding.
+image: /img/logo/iota_mark_light.png
+keywords:
+- Python
+- install
+- pip
+- unpack
+---
+# Getting Started with IOTA Client Python Binding
+
+## Security
+
+:::warning
+In a production setup, do not store passwords in the host's environment variables or in the source code. See our [backup and security recommendations](https://chrysalis.docs.iota.org/guides/backup_security) for production setups.
+:::
 
 ## Installation
 Easiest way how to get python binding up and running is to leverage pre-built python libraries for linux/macos/windows that can be installed to your python environment (3.6+) via `pip`. The binding is automagically generated using github [actions](https://github.com/iotaledger/iota.rs/actions/workflows/python_binding_publish.yml).

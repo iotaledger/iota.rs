@@ -1,5 +1,10 @@
 # Changelog
 
+## \[1.0.1]
+
+- Fix consolidation for higher start indexes
+  - [3ca3a2d7](https://github.com/iotaledger/iota.rs/commit/3ca3a2d7ee9a25556ca7fe2a4eb1221bdb6accfe) Handle higher start indexes in consolidation ([#666](https://github.com/iotaledger/iota.rs/pull/666)) on 2021-09-08
+
 ## \[1.0.0]
 
 - Fixed custom provided API timeouts

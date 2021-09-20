@@ -1,3 +1,13 @@
+---
+description: Official IOTA Client Library Node.js API reference.
+image: /img/logo/iota_mark_light.png
+keywords:
+- api
+- nodejs
+- param
+- type
+- client builder
+---
 # API Reference - IOTA Client Library - Node.js binding
 
 Node.js binding to the IOTA client library.

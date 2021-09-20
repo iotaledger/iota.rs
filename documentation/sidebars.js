@@ -37,8 +37,8 @@ module.exports = {
       items: [
         {
           type: 'doc',
-          id: 'libraries/rust/getting_started',
-          label: 'Getting Started'
+          id: 'libraries/overview',
+          label: 'Overview',
         },
         {
           type: 'doc',

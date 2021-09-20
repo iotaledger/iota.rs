@@ -1,8 +1,18 @@
+---
+description: Getting started with the official IOTA Client Library Java binding.
+image: /img/logo/iota_mark_light.png
+keywords:
+- Java
+- Rust
+- jar
+- maven
+- environment variable
+---
 # Getting Started with Java
 
 ## Prerequisite
 
-To use the library, we recommend you update Rust to latest stable version [`$ rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but some changes might not be compatible.
+To use the library, we recommend you update Rust to the latest stable version [`$ rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but some changes might not be compatible.
 
 - Download or clone the `iota.rs` repository
 ```

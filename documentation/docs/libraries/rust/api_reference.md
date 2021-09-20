@@ -1,3 +1,12 @@
+---
+description: Official IOTA Client Library Rust API reference.
+image: /img/logo/iota_mark_light.png
+keywords:
+- api
+- rust
+- cargo
+- crate
+---
 # API Reference
 
 API reference

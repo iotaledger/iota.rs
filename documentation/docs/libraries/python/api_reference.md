@@ -1,3 +1,13 @@
+---
+description: Official IOTA Client Library Python API reference.
+image: /img/logo/iota_mark_light.png
+keywords:
+- api
+- python
+- param
+- type
+- run
+---
 # IOTA Client Python Library
 
 ## Requirements
