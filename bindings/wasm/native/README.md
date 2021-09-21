@@ -8,16 +8,16 @@
 
 Latest Release: This version matches the main branch of this repository, is stable and will have changelogs.
 ```bash
-$ npm install @iota/client-wasm
+npm install @iota/client-wasm
 // or using yarn
-$ yarn add @iota/client-wasm
+yarn add @iota/client-wasm
 ```
 
 Development Release: This version matches the dev branch of this repository, may see frequent breaking changes and has the latest code changes.
 ```bash
-$ npm install @iota/client-wasm@dev
+npm install @iota/client-wasm@dev
 // or using yarn
-$ yarn add @iota/client-wasm@dev
+yarn add @iota/client-wasm@dev
 ```
 
 ## Build
@@ -58,9 +58,9 @@ The library loads the WASM file with an HTTP GET request, so the .wasm file must
 - Install `rollup-plugin-copy`:
 
 ```bash
-$ npm install rollup-plugin-copy --save-dev
+npm install rollup-plugin-copy --save-dev
 // or using yarn
-$ yarn add rollup-plugin-copy --dev
+yarn add rollup-plugin-copy --dev
 ```
 
 - Add the copy plugin usage to the `plugins` array under `rollup.config.js`:
@@ -84,9 +84,9 @@ copy({
 - Install `copy-webpack-plugin`:
 
 ```bash
-$ npm install copy-webpack-plugin --save-dev
+npm install copy-webpack-plugin --save-dev
 // or using yarn
-$ yarn add copy-webpack-plugin --dev
+yarn add copy-webpack-plugin --dev
 ```
 
 ```js

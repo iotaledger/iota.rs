@@ -28,7 +28,7 @@ module.exports = {
     collapsed: false,
     items: [{
       type: 'doc',
-      id: 'libraries/README',
+      id: 'libraries/overview',
       label: 'Overview',
     },
     {
