@@ -142,8 +142,11 @@ def test_mnemonic_to_hex_seed():
 def test_find_inputs():
     addresses = [tv['ADDRESS'][0]]
     amount = 100
-    inputs = client.find_inputs(addresses, amount)
-    assert isinstance(inputs, list)
+    try:
+        inputs = client.find_inputs(addresses, amount)
+        assert isinstance(inputs, list)
+    except ValueError as e:
+        assert "The wallet account doesn't have enough balance." in str(e)
 
 
 def test_bech32_to_hex():

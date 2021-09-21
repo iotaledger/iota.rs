@@ -48,8 +48,11 @@ def test_post_message():
 
 
 def test_get_output():
-    output = client.get_output(tv['UTXOINPUT'][0])
-    assert isinstance(output, dict) and 'output' in output
+    try:
+        output = client.get_output(tv['UTXOINPUT'][0])
+        assert isinstance(output, dict) and 'output' in output
+    except ValueError as e:
+        assert 'output not found' in str(e)
 
 
 def test_get_address_balance():
@@ -122,4 +125,4 @@ def test_get_included_message():
     try:
         response = client.get_included_message(transaction_id)
     except ValueError as e:
-        assert "output for transaction" in str(e)
+        assert "transaction not found" in str(e)
