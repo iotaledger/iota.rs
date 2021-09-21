@@ -33,7 +33,7 @@ def custom_inputs():
             f'Transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
     except:
         print(f'Please send tokens to {addresses[0][0]}')
-        print('Websites to send tokens: https://faucet.testnet.chrysalis2.com/ or https://faucet.tanglekit.de/')
+        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
 
 
 def custom_parent():
