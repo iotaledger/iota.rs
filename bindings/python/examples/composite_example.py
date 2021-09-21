@@ -76,7 +76,7 @@ def dust():
             f'First transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
     except ValueError as e:
         print(e)
-        print('Websites to send tokens: https://faucet.testnet.chrysalis2.com/ or https://faucet.tanglekit.de/')
+        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
 
 
 def get_fund():
