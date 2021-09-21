@@ -10,7 +10,7 @@ name = "iota_client"
 crate-type = ["cdylib"]
 
 [dependencies]
-iota-client = { path = "../../../iota-client", features = ["mqtt"] }
+iota-client = { path = "../../../iota-client", features = ["mqtt", "pow-fallback"] }
 
 # Java gen
 jni = "0.19" # Used in directly verifying binding linkage

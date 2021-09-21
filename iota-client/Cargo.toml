@@ -62,3 +62,5 @@ async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
 wasm = ["reqwest", "futures", "wasm-timer", "bee-crypto", "bee-ternary", "bytes"]
+#fallback to local PoW
+pow-fallback = []

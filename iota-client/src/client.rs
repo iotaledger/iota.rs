@@ -765,6 +765,13 @@ impl Client {
             message_id: String,
         }
 
+        #[cfg(not(feature = "pow-fallback"))]
+        let resp: ResponseWrapper = self
+            .node_manager
+            .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
+            .await?;
+
+        #[cfg(feature = "pow-fallback")]
         // fallback to local PoW if remote PoW fails
         let resp: ResponseWrapper = match self
             .node_manager
