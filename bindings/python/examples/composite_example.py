@@ -192,7 +192,7 @@ def peer():
 def quorum():
     node_1 = 'https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe'
     node_2 = 'https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe'
-    node_3 = 'https://api.thin-hornet-2.h.chrysalis-devnet.iota.cafe'
+    node_3 = 'https://api.lb-0.h.chrysalis-devnet.iota.cafe'
     try:
         client = iota_client.Client(nodes_name_password=[
                                     [node_1], [node_2], [node_3]], quorum=True, quorum_size=3, quorum_threshold=66)
