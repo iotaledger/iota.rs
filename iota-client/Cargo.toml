@@ -42,7 +42,8 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], def
 futures = { version = "0.3", optional = true }
 
 # MQTT
-rumqttc = { version = "0.5", features = ["websocket"], optional = true}
+rumqttc = { git = "https://github.com/bytebeamio/rumqtt", rev = "621a7b526936450e4e54a999eae0171bfd5bff6f", features = ["websocket"], optional = true}
+
 # also used for storage
 once_cell = { version = "1.7", optional = true }
 
