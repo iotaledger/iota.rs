@@ -244,7 +244,7 @@ def split_all():
 
     if total_balance == 0:
         print('Addresses belonging to the seed should contain tokens!')
-        print('Websites to send tokens: https://faucet.testnet.chrysalis2.com/ or https://faucet.tanglekit.de/')
+        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
         return
 
     available = total_balance
