@@ -206,6 +206,23 @@ def quorum():
         print('Please provide enough healthy nodes.')
 
 
+def search_address():
+    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    client = iota_client.Client(nodes_name_password=[[node_url]])
+    seed = os.getenv('MY_IOTA_SEED')
+    address = client.get_addresses(
+        seed, input_range_begin=9, input_range_end=10)[0][0]
+    print(f'Address: {address}')
+
+    info = client.get_info()
+    bech32_hrp = info['nodeinfo']['bech32_hrp']
+    searched_address = client.search_address(
+        seed, bech32_hrp, 0, 0, 10, address)
+
+    print(
+        f'Address index: {searched_address[0]}\nIs internal address: {searched_address[1]}')
+
+
 def send_all():
     node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
     client = iota_client.Client(nodes_name_password=[[node_url]])
@@ -489,6 +506,7 @@ if __name__ == '__main__':
     # multiple_outputs()
     # peer()
     # quorum()
+    # search_address()
     # send_all()
     # split_all()
     # split_outputs_single_address()
