@@ -198,6 +198,15 @@ def test_consolidate_funds():
     assert isinstance(result, str)
 
 
+def test_search_address():
+    seed = tv['NONSECURE_SEED'][0]
+    address = bech32_address = tv['BECH32_ADDRESS']
+    bech32_hrp = tv['BECH32_HRP']
+    searched_address = client.search_address(
+        seed, bech32_hrp, 0, 0, 10, address)
+    assert isinstance(searched_address, tuple)
+
+
 def test_reattach():
     try:
         retried_message = client.reattach(message_id_indexation)

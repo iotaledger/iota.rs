@@ -40,6 +40,7 @@ futures = { version = "0.3.17", optional = true }
 # todo replace by crates.io if 0.9 is released
 rumqttc = { git = "https://github.com/bytebeamio/rumqtt", rev = "621a7b526936450e4e54a999eae0171bfd5bff6f", features = ["websocket"], optional = true }
 # rumqttc = { version = "0.9", features = ["websocket"], optional = true}
+
 # also used for storage
 once_cell = { version = "1.8.0", optional = true }
 

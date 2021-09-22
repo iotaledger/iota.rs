@@ -7,10 +7,13 @@ use crate::client::{
     PreparedTransactionData, UtxoInput,
 };
 use iota_client::{
-    api::{ClientMessageBuilder as RustClientMessageBuilder, PreparedTransactionData as RustPreparedTransactionData},
+    api::{
+        search_address, ClientMessageBuilder as RustClientMessageBuilder,
+        PreparedTransactionData as RustPreparedTransactionData,
+    },
     bee_message::prelude::{
-        Message as RustMessage, MessageId as RustMessageId, Payload as RustPayload, TransactionId as RustTransactionId,
-        UtxoInput as RustUtxoInput,
+        Address as RustAddress, Message as RustMessage, MessageId as RustMessageId, Payload as RustPayload,
+        TransactionId as RustTransactionId, UtxoInput as RustUtxoInput,
     },
     bee_rest_api::types::dtos::MessageDto as BeeMessageDto,
     Client as RustClient, Seed as RustSeed,
@@ -440,6 +443,23 @@ impl Client {
                 .await
         })?;
         Ok(address)
+    }
+    fn search_address(
+        &self,
+        seed: String,
+        bech32_hrp: String,
+        account_index: usize,
+        start_index: usize,
+        end_index: usize,
+        address: String,
+    ) -> Result<(usize, bool)> {
+        let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
+        let address =
+            RustAddress::try_from_bech32(&address).unwrap_or_else(|_| panic!("invalid Input Address: {}", address));
+        let result = crate::block_on(async {
+            search_address(&seed, &bech32_hrp, account_index, start_index..end_index, &address).await
+        })?;
+        Ok(result)
     }
     fn reattach(&self, message_id: String) -> Result<(String, Message)> {
         let message_id_message =
