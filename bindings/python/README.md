@@ -575,10 +575,10 @@ Returns a parsed bech32 String from hex.
 
 Returns the bech32 address from the hex public key.
 
-| Param      | Type             | Default                | Description               |
-| ---------- | ---------------- | ---------------------- | ------------------------- |
-| hex        | <code>str</code> | <code>undefined</code> | Hex encoded public key    |
-| bech32_hrp | <code>str</code> | <code>undefined</code> | The Bech32 hrp string     |
+| Param      | Type             | Default                | Description            |
+| ---------- | ---------------- | ---------------------- | ---------------------- |
+| hex        | <code>str</code> | <code>undefined</code> | Hex encoded public key |
+| bech32_hrp | <code>str</code> | <code>undefined</code> | The Bech32 hrp string  |
 
 **Returns** A String
 
@@ -626,6 +626,21 @@ Function to consolidate all funds from a range of addresses to the address with 
 | [end_index]     | <code>int</code> | The address index until which funds will be consolidated              |
 
 **Returns** the address to which the funds got consolidated, if any were available.
+
+#### search_address(seed, bech32_hrp, account_index, start_index, end_index, address): (int, bool)
+
+Function to find the index and address type of an address
+
+| Param           | Type                | Description                                                          |
+| --------------- | ------------------- | -------------------------------------------------------------------- |
+| [seed]          | <code>str</code>    | The seed                                                             |
+| [bech32_hrp]    | <code>string</code> | The Bech32 HRP                                                       |
+| [account_index] | <code>int</code>    | The account index                                                    |
+| [start_index]   | <code>int</code>    | The lowest address index, funds will be consolidated to this address |
+| [end_index]     | <code>int</code>    | The address index until which funds will be consolidated             |
+| [address]       | <code>str</code>    | The address Bech32 string                                            |
+
+**Returns** index and address type of an address.
 
 #### reattach(message_id): (str, Message)
 
