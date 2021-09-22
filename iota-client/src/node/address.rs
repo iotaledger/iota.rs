@@ -127,4 +127,27 @@ impl<'a> GetAddressBuilder<'a> {
             })
             .collect::<Result<Box<[UtxoInput]>>>()
     }
+
+    /// Consume the builder and get the OutputsAddressResponse for a given address.
+    /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
+    /// reasons. User should sweep the address to reduce the amount of outputs.
+    pub async fn outputs_response(self, address: &str, options: OutputsOptions) -> Result<OutputsAddressResponse> {
+        let path = format!("api/v1/addresses/{}/outputs", address);
+        #[derive(Debug, Serialize, Deserialize)]
+        struct ResponseWrapper {
+            data: OutputsAddressResponse,
+        }
+
+        let resp: ResponseWrapper = self
+            .client
+            .node_manager
+            .get_request(
+                &path,
+                options.into_query().as_deref(),
+                self.client.get_timeout(Api::GetOutput),
+            )
+            .await?;
+
+        Ok(resp.data)
+    }
 }
