@@ -596,14 +596,14 @@ Function to consolidate all funds from a range of addresses to the address with 
 
 Function to find the index and address type of an address
 
-| Param           | Type                | Description                                                          |
-| --------------- | ------------------- | -------------------------------------------------------------------- |
-| [seed]          | <code>str</code>    | The seed                                                             |
-| [bech32_hrp]    | <code>string</code> | The Bech32 HRP                                                       |
-| [account_index] | <code>int</code>    | The account index                                                    |
-| [start_index]   | <code>int</code>    | The lowest address index, funds will be consolidated to this address |
-| [end_index]     | <code>int</code>    | The address index until which funds will be consolidated             |
-| [address]       | <code>str</code>    | The address Bech32 string                                            |
+| Param           | Type                | Description                      |
+| --------------- | ------------------- | -------------------------------- |
+| [seed]          | <code>str</code>    | The seed                         |
+| [bech32_hrp]    | <code>string</code> | The Bech32 HRP                   |
+| [account_index] | <code>int</code>    | The account index                |
+| [start_index]   | <code>int</code>    | The start address index          |
+| [end_index]     | <code>int</code>    | The end address index (excluded) |
+| [address]       | <code>str</code>    | The address Bech32 string        |
 
 **Returns** index and address type of an address.
 
