@@ -10,7 +10,10 @@ import {
   Address,
   AddressBalance,
   MessageDto,
-  MessageWrapper
+  MessageWrapper,
+  Payload,
+  TransactionPayload,
+  PreparedTransactionData
 } from './types'
 
 export declare type Api = 'GetHealth' | 'GetInfo' | 'GetTips' | 'PostMessage' | 'PostMessageWithRemotePoW' | 'GetOutput' | 'GetMilestone'
@@ -36,6 +39,7 @@ export declare class ClientBuilder {
   brokerOptions(options: BrokerOptions): ClientBuilder
   nodeSyncInterval(interval: number): ClientBuilder
   disableNodeSync(): ClientBuilder
+  offlineMode(): ClientBuilder
   requestTimeout(timeoutMs: number): ClientBuilder
   apiTimeout(api: Api, timeoutMs: number): ClientBuilder
   localPow(local: boolean): ClientBuilder
@@ -49,10 +53,13 @@ export declare class MessageSender {
   parents(messageIds: string[]): MessageSender
   accountIndex(index: number): MessageSender
   initialAddressIndex(index: number): MessageSender
-  input(transactionId: string, index: number): MessageSender
+  input(outputId: string): MessageSender
   inputRange(start: number, end: number): MessageSender
   output(address: string, value: number): MessageSender
   dustAllowanceOutput(address: string, value: number): MessageSender
+  prepareTransaction(): Promise<PreparedTransactionData>
+  signTransaction(preparedTransactionData: PreparedTransactionData, seed: string, startIndex?: number, endIndex?: number): Promise<TransactionPayload>
+  finishMessage(payload: Payload): Promise<MessageWrapper>
   submit(): Promise<MessageWrapper>
 }
 
@@ -96,6 +103,7 @@ export declare class Client {
   message(): MessageSender
   getUnspentAddress(seed: string): UnspentAddressGetter
   getAddresses(seed: string): AddressGetter
+  findInputs(addresses: string[], amount: number): Promise<string[]>
   findMessages(indexationKeys: string[], messageIds: string[]): Promise<MessageWrapper[]>
   getBalance(seed: string): BalanceGetter
   getAddressBalances(addresses: string[]): Promise<AddressBalance[]>

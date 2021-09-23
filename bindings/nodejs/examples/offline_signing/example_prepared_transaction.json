@@ -1,0 +1,110 @@
+{
+    "essence": {
+        "type": "Regular",
+        "data": {
+            "inputs": [
+                {
+                    "type": "Utxo",
+                    "data": "9f8e51a1eca2c5b1c6b761e07b10d198ebd2dc1fb49f32048ebc9e544bbcc32d0100"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "SignatureLockedSingle",
+                    "data": {
+                        "address": {
+                            "type": "Ed25519",
+                            "data": "96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813"
+                        },
+                        "amount": 881000177
+                    }
+                },
+                {
+                    "type": "SignatureLockedSingle",
+                    "data": {
+                        "address": {
+                            "type": "Ed25519",
+                            "data": "f8208cdcda8b1afc710fbcb2e822fe70661c3213172189b845d49a64dd52a7a4"
+                        },
+                        "amount": 1000000
+                    }
+                }
+            ],
+            "payload": null
+        }
+    },
+    "address_index_recorders": [
+        {
+            "account_index": 0,
+            "input": {
+                "type": "Utxo",
+                "data": "9f8e51a1eca2c5b1c6b761e07b10d198ebd2dc1fb49f32048ebc9e544bbcc32d0100"
+            },
+            "output": {
+                "messageId": "c661cd282d4f89f57e4c8227f91afbdce140f99333d0dabc530fdfe3a6fd14f9",
+                "transactionId": "9f8e51a1eca2c5b1c6b761e07b10d198ebd2dc1fb49f32048ebc9e544bbcc32d",
+                "outputIndex": 1,
+                "isSpent": false,
+                "output": {
+                    "type": 0,
+                    "address": {
+                        "type": 0,
+                        "address": "96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813"
+                    },
+                    "amount": 882000177
+                },
+                "ledgerIndex": 1326076
+            },
+            "address_index": 0,
+            "chain": [
+                {
+                    "hardened": true,
+                    "bs": [
+                        128,
+                        0,
+                        0,
+                        44
+                    ]
+                },
+                {
+                    "hardened": true,
+                    "bs": [
+                        128,
+                        0,
+                        16,
+                        122
+                    ]
+                },
+                {
+                    "hardened": true,
+                    "bs": [
+                        128,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "hardened": true,
+                    "bs": [
+                        128,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "hardened": true,
+                    "bs": [
+                        128,
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            ],
+            "internal": false,
+            "bech32_address": "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r"
+        }
+    ]
+}
