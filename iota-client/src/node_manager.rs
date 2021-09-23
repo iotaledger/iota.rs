@@ -302,10 +302,7 @@ impl NodeManager {
                     if let Ok(res_text) = res.text().await {
                         // Without quorum it's enough if we got one response
                         match status {
-                            200 => match serde_json::from_str(&res_text) {
-                                Ok(res) => return Ok(res),
-                                Err(e) => error.replace(e.into()),
-                            },
+                            200 => return Ok(res_text),
                             _ => error.replace(crate::Error::NodeError(res_text)),
                         };
                     }
@@ -315,7 +312,7 @@ impl NodeManager {
                 }
             }
         }
-        Err(Error::NodeError("Couldn't get a result from any node".into()))
+        Err(error.unwrap_or_else(|| Error::NodeError("Couldn't get a result from any node".into())))
     }
     pub(crate) async fn post_request_bytes<T: serde::de::DeserializeOwned>(
         &self,

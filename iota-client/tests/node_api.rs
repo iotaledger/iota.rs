@@ -256,7 +256,7 @@ async fn test_get_output() {
         .unwrap()
         .get_output(
             &UtxoInput::new(
-                TransactionId::from_str("74cc3bc2f7d4aa23725f695d053fab1cb70c833c62320e743b91f9aaf4cd053a").unwrap(),
+                TransactionId::from_str("3e18e19045d0b44dd2be3c466d6fe419c09342bacdb587f2985f2e607a92e38e").unwrap(),
                 0,
             )
             .unwrap(),
@@ -377,7 +377,7 @@ async fn test_get_included_message() {
         .await
         .unwrap()
         .get_included_message(
-            &TransactionId::from_str("74cc3bc2f7d4aa23725f695d053fab1cb70c833c62320e743b91f9aaf4cd053a").unwrap(),
+            &TransactionId::from_str("3e18e19045d0b44dd2be3c466d6fe419c09342bacdb587f2985f2e607a92e38e").unwrap(),
         )
         .await
         .unwrap();
