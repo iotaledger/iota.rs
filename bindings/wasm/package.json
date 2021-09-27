@@ -10,10 +10,10 @@
     "example": "examples"
   },
   "scripts": {
-    "build:nodejs": "wasm-pack build --target nodejs --out-dir node && node ./build/node",
-    "build:web": "wasm-pack build --target web --out-dir web && node ./build/web",
-    "build:docs": "node ./build/docs",
-    "build": "npm run build:web && npm run build:nodejs && npm run build:docs && node ./build/clean",
+    "build:nodejs": "cd native && wasm-pack build --target nodejs --out-dir ../node && cd .. && node ./build_scripts/node",
+    "build:web": "cd native && wasm-pack build --target web --out-dir ../web && cd .. && node ./build_scripts/web",
+    "build:docs": "node ./build_scripts/docs",
+    "build": "npm run build:web && npm run build:nodejs && npm run build:docs && node ./build_scripts/clean",
     "pretest": "npm run build:nodejs",
     "prepublishOnly": "npm run build",
     "serve": "webpack serve",

@@ -4,7 +4,7 @@ async function run() {
     // client will connect to testnet by default
     const client = await new ClientBuilder().build();
 
-    const output = await client.getOutput('fb95fc3c2d587e12a91df7e3e9e7a63648e621c5946ce5db750a4421cfd5fbff0100');
+    const output = await client.getOutput('3e18e19045d0b44dd2be3c466d6fe419c09342bacdb587f2985f2e607a92e38e0100');
     console.log(output);
 }
 

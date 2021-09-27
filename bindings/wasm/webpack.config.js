@@ -26,7 +26,8 @@ module.exports = {
     }),
 
     new WasmPackPlugin({
-      crateDirectory: __dirname,
+      crateDirectory: __dirname + "\\native",
+      outDir: "../pkg",
     }),
   ],
   // Makes the output less verbose

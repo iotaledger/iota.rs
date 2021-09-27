@@ -1,4 +1,4 @@
-const { ClientBuilder } = require('../node')
+const { ClientBuilder } = require('../native/node/iota_client_wasm')
 const { assertAddress, assertMessageId, assertMessageWrapper } = require('./assertions')
 const assert = require('assert')
 
@@ -16,7 +16,7 @@ async function test() {
       assert.strictEqual(typeof info, 'object')
       assert.strictEqual(info.localPow, false)
       assert.strictEqual(info.bech32HRP, 'atoi')
-      assert.strictEqual(info.minPoWScore, 4000)
+      assert.strictEqual(info.minPoWScore, 2000)
     })
 
     it('gets tips', async () => {

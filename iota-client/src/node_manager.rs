@@ -530,17 +530,24 @@ impl NodeManagerBuilder {
         self
     }
     pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
-        let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
+        // todo update with new node pool
+        // let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
+        let default_testnet_nodes = vec![
+            "https://api.lb-0.h.chrysalis-devnet.iota.cafe/",
+            "https://api.lb-1.h.chrysalis-devnet.iota.cafe/",
+        ];
         if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {
                 Some(ref network) => match network.to_lowercase().as_str() {
                     "testnet" | "devnet" | "test" | "dev" => {
-                        self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
+                        self = self.with_nodes(&default_testnet_nodes[..])?;
+                        // self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                     }
                     _ => return Err(Error::SyncedNodePoolEmpty),
                 },
                 _ => {
-                    self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
+                    self = self.with_nodes(&default_testnet_nodes[..])?;
+                    // self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                 }
             }
         }
