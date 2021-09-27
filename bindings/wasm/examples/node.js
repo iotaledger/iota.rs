@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-const { ClientBuilder } = require('../node/iota_client_wasm')
+const { ClientBuilder } = require('../node')
 
 async function main() {
     let client = await new ClientBuilder()

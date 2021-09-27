@@ -1,5 +1,5 @@
 async function run() {
-  const { ClientBuilder } = require('../node/iota_client_wasm')
+  const { ClientBuilder } = require('../node')
 
   // Get the seed from environment variable
   const IOTA_SEED_SECRET = process.env.IOTA_SEED_SECRET;

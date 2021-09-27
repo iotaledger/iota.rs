@@ -1,4 +1,4 @@
-const { ClientBuilder } = require('../native/node/iota_client_wasm')
+const { ClientBuilder } = require('../native/node/client_wasm')
 const { assertAddress, assertMessageId, assertMessageWrapper } = require('./assertions')
 const assert = require('assert')
 

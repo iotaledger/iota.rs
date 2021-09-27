@@ -1,6 +1,6 @@
 
 async function run() {
-    const { ClientBuilder } = require('../node/iota_client_wasm')
+    const { ClientBuilder } = require('../node')
 
     // client will connect to testnet by default
     const client = await new ClientBuilder()

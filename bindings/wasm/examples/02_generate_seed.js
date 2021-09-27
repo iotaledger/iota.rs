@@ -3,7 +3,7 @@ async function run() {
     const seed = crypto.createHash('sha256').update(crypto.randomBytes(256)).digest('hex');
     console.log(seed);
 
-    const { ClientBuilder } = require('../node/iota_client_wasm')
+    const { ClientBuilder } = require('../node')
     const client = await new ClientBuilder().build();
 
     const mnemonic = client.generateMnemonic();

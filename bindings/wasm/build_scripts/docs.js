@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const jsdoc2md = require('jsdoc-to-markdown')
 
-const importFile = path.join(__dirname, '../node/iota_client_wasm.js')
+const importFile = path.join(__dirname, '../node/client_wasm.js')
 const exportFile = path.join(__dirname, '../docs/api-reference.md')
 const exportFileDocs = path.join(__dirname, '../../../documentation/docs/libraries/wasm/api_reference.md')
 

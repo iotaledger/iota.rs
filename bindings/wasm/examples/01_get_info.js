@@ -1,4 +1,4 @@
-const { ClientBuilder } = require('../node/iota_client_wasm')
+const { ClientBuilder } = require('../node/')
 
 async function run() {
     let client = await new ClientBuilder()

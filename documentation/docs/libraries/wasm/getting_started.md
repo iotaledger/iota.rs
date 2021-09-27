@@ -66,9 +66,9 @@ import copy from 'rollup-plugin-copy'
 // Add the copy plugin to the `plugins` array of your rollup config:
 copy({
   targets: [{
-    src: 'node_modules/@iota/client-wasm/web/iota_client_wasm_bg.wasm',
+    src: 'node_modules/@iota/client-wasm/web/client_wasm_bg.wasm',
     dest: 'public',
-    rename: 'iota_client_wasm_bg.wasm'
+    rename: 'client_wasm_bg.wasm'
   }]
 })
 ```
@@ -92,8 +92,8 @@ const CopyWebPlugin= require('copy-webpack-plugin');
 new CopyWebPlugin({
   patterns: [
     {
-      from: 'node_modules/@iota/client-wasm/web/iota_client_wasm_bg.wasm',
-      to: 'iota_client_wasm_bg.wasm'
+      from: 'node_modules/@iota/client-wasm/web/client_wasm_bg.wasm',
+      to: 'client_wasm_bg.wasm'
     }
   ]
 }),
@@ -122,8 +122,8 @@ main()
   console.log("Nodeinfo: ", await iota_client.getInfo())
 })()
 
-// Default path is "iota_client_wasm_bg.wasm", but you can override it like this
-await iota.init("./static/iota_client_wasm_bg.wasm");
+// Default path is "client_wasm_bg.wasm", but you can override it like this
+await iota.init("./static/client_wasm_bg.wasm");
 ```
 
 `iota.init().then(<callback>)` or `await iota.init()` is required to load the wasm file (from the server if not available, because of that it will only be slow for the first time)
