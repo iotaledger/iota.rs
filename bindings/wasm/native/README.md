@@ -1,6 +1,6 @@
-# IOTA client WASM
+# IOTA client WASM — Alpha Version
 
-> This is the beta version of the official WASM bindings for [IOTA client library](https://github.com/iotaledger/iota.rs).
+> This is the alpha version of the official WASM bindings for [IOTA client library](https://github.com/iotaledger/iota.rs).
 
 ## [API Reference](docs/api-reference.md)
 
