@@ -29,7 +29,7 @@
       ]
     },
     "wasm-binding": {
-      "path": "./bindings/wasm/native",
+      "path": "./bindings/wasm/",
       "manager": "javascript",
       "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
       "publish": [
