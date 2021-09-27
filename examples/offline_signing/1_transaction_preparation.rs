@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
 
     // Get inputs and create transaction essence online
     let iota_online = Client::builder()
-        .with_node("https://api.lb-0.testnet.chrysalis2.com")? // Insert your node URL here
+        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")? // Insert your node URL here
         .finish()
         .await?;
 

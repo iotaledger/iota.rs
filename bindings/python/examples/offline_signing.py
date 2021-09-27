@@ -11,7 +11,7 @@ client_offline = iota_client.Client(offline=True)
 
 # Create the Client object in online mode
 client = iota_client.Client(
-    nodes_name_password=[['https://api.lb-0.testnet.chrysalis2.com']])
+    nodes_name_password=[['https://api.lb-0.h.chrysalis-devnet.iota.cafe']])
 
 # Random seed (NOTE: DO NOT USE THIS for production)
 rnd_seed = hashlib.sha256(os.urandom(256)).hexdigest()

@@ -39,7 +39,7 @@ After you linked the library, you can create a `Client` instance and interface w
 ```javascript
 const { ClientBuilder } = require('@iota/client')
 const client = new ClientBuilder()
-    .node('https://api.lb-0.testnet.chrysalis2.com')
+    .node('https://api.lb-0.h.chrysalis-devnet.iota.cafe')
     .build()
 client.getInfo().then(console.log).catch(console.error)
 ```

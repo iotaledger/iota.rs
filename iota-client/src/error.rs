@@ -46,8 +46,8 @@ pub enum Error {
     #[error("Not enough nodes for quorum {0} {1}")]
     QuorumPoolSizeError(usize, usize),
     /// Error on API request
-    #[error("Failed to get an answer from all nodes")]
-    NodeError,
+    #[error("Node error: {0}")]
+    NodeError(String),
     /// Error on RwLock read
     #[error("Failed to read node RwLock")]
     NodeReadError,
@@ -143,4 +143,13 @@ pub enum Error {
     /// Invalid mnemonic error
     #[error("Invalid mnemonic {0}")]
     InvalidMnemonic(String),
+    /// PoW error
+    #[error("{0}")]
+    PowError(#[from] bee_pow::providers::miner::Error),
+    /// API error
+    #[error("Invalid API name")]
+    ApiError,
+    /// Rw lock failed.
+    #[error("Rw lock failed")]
+    PoisonError,
 }

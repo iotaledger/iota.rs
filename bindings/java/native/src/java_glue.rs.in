@@ -207,11 +207,11 @@ foreign_class!(
         /// GET /api/v1/addresses/{address} endpoint
         fn Client::get_address(&self) -> GetAddressBuilder;
 
-        /// Return the balance in iota for the given address; No seed or security level needed to do this
+        /// Return the balance in iota for the given address; No seed needed to do this
         /// since we are only checking and already know the address.
         fn Client::get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse>;
 
-        /// Return the balance in iota for the given addresses; No seed or security level needed to do this
+        // Return the balance in iota for the given addresses; No seed needed to do this
         /// since we are only checking and already know the addresses.
         fn Client::get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>>;
 
@@ -296,7 +296,7 @@ foreign_class!(
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
         /// Transforms hex to bech32
         fn Client::hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
-        /// Checks if a String address is valid.
+        /// Checks if a str is a valid bech32 encoded address.
         fn Client::is_address_valid(address: &str) -> bool;
 
         /// Returns a valid Address parsed from a String.
@@ -1133,8 +1133,8 @@ foreign_class!(
         private constructor = empty;
         private fn PublicKey::to_string(&self) -> String; alias to_string;
         fn PublicKey::verify(&self, sig: Signature, msg: Vec<u8>) -> bool;
-        fn PublicKey::to_compressed_bytes(&self) -> Vec<u8>;
-        fn PublicKey::from_compressed_bytes(bs: Vec<u8>) -> Result<PublicKey>;
+        fn PublicKey::to_bytes(&self) -> Vec<u8>;
+        fn PublicKey::try_from_bytes(bs: Vec<u8>) -> Result<PublicKey>;
     }
 );
 
@@ -1145,10 +1145,10 @@ foreign_class!(
         private constructor = empty;
         private fn SecretKey::to_string(&self) -> String; alias to_string;
         fn SecretKey::generate() -> Result<SecretKey>;
-        fn SecretKey::from_le_bytes(bs: Vec<u8>) -> Result<SecretKey>;
+        fn SecretKey::from_bytes(bs: Vec<u8>) -> SecretKey;
         
         fn SecretKey::public_key(&self) -> PublicKey;
-        fn SecretKey::to_le_bytes(&self) -> Vec<u8>;
+        fn SecretKey::to_bytes(&self) -> Vec<u8>;
         fn SecretKey::sign(&self, msg: Vec<u8>) -> Signature;
     }
 );

@@ -329,7 +329,7 @@ impl Client {
         }
     }
 
-    /// Checks if a String address is valid.
+    /// Checks if a str is a valid bech32 encoded address.
     pub fn is_address_valid(address: &str) -> bool {
         iota_client::Client::is_address_valid(address)
     }

@@ -48,6 +48,7 @@ pub struct NetworkInfo {
 }
 
 /// Builder to construct client instance with sensible default values
+#[derive(Clone)]
 pub struct ClientBuilder {
     node_manager_builder: crate::node_manager::NodeManagerBuilder,
     #[cfg(not(feature = "wasm"))]
@@ -261,12 +262,10 @@ impl ClientBuilder {
                 return Err(Error::MissingParameter("Node"));
             }
         }
-
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self.node_manager_builder.nodes.clone();
         #[cfg(not(feature = "wasm"))]
         let node_sync_interval = self.node_sync_interval;
-
         #[cfg(feature = "wasm")]
         let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
         #[cfg(not(feature = "wasm"))]

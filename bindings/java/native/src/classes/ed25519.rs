@@ -24,19 +24,16 @@ impl SecretKey {
         }
     }
 
-    pub fn from_le_bytes(bs: Vec<u8>) -> crate::Result<Self> {
-        match RustSecretKey::from_le_bytes(clone_into_array(&bs[0..SECRET_KEY_LENGTH])) {
-            Ok(s) => Ok(Self(s)),
-            Err(e) => Err(anyhow!(e.to_string())),
-        }
+    pub fn from_bytes(bs: Vec<u8>) -> Self {
+        Self(RustSecretKey::from_bytes(clone_into_array(&bs[0..SECRET_KEY_LENGTH])))
     }
 
     pub fn public_key(&self) -> PublicKey {
         PublicKey(self.0.public_key())
     }
 
-    pub fn to_le_bytes(&self) -> Vec<u8> {
-        self.0.to_le_bytes().to_vec()
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes().to_vec()
     }
 
     pub fn sign(&self, msg: Vec<u8>) -> Signature {
@@ -46,11 +43,7 @@ impl SecretKey {
 
 impl Display for SecretKey {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            hex::encode(self.to_le_bytes())
-        )
+        write!(f, "{}", hex::encode(self.to_bytes()))
     }
 }
 
@@ -67,12 +60,12 @@ impl PublicKey {
         self.0.verify(&sig.0, &msg)
     }
 
-    pub fn to_compressed_bytes(&self) -> Vec<u8> {
-        self.0.to_compressed_bytes().to_vec()
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes().to_vec()
     }
 
-    pub fn from_compressed_bytes(bs: Vec<u8>) -> Result<Self> {
-        match RustPublicKey::from_compressed_bytes(clone_into_array(&bs[0..SECRET_KEY_LENGTH])) {
+    pub fn try_from_bytes(bs: Vec<u8>) -> Result<Self> {
+        match RustPublicKey::try_from_bytes(clone_into_array(&bs[0..SECRET_KEY_LENGTH])) {
             Ok(bytes) => Ok(Self(bytes)),
             Err(e) => Err(anyhow!(e.to_string())),
         }
@@ -81,7 +74,7 @@ impl PublicKey {
 impl core::convert::TryFrom<&[u8; 32]> for PublicKey {
     type Error = anyhow::Error;
     fn try_from(bytes: &[u8; 32]) -> Result<Self, Self::Error> {
-        match RustPublicKey::from_compressed_bytes(*bytes) {
+        match RustPublicKey::try_from_bytes(*bytes) {
             Ok(k) => Ok(Self(k)),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
@@ -90,11 +83,7 @@ impl core::convert::TryFrom<&[u8; 32]> for PublicKey {
 
 impl Display for PublicKey {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            hex::encode(self.to_compressed_bytes())
-        )
+        write!(f, "{}", hex::encode(self.to_bytes()))
     }
 }
 
@@ -120,11 +109,7 @@ impl Signature {
 
 impl Display for Signature {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            hex::encode(self.to_bytes())
-        )
+        write!(f, "{}", hex::encode(self.to_bytes()))
     }
 }
 

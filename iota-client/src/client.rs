@@ -39,7 +39,6 @@ use crypto::{
 
 use zeroize::Zeroize;
 
-#[cfg(not(feature = "wasm"))]
 use crate::builder::TIPS_INTERVAL;
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
@@ -309,6 +308,7 @@ impl FromStr for Api {
 }
 
 /// An instance of the client using HORNET or Bee URI
+#[cfg_attr(feature = "wasm", derive(Clone))]
 pub struct Client {
     #[allow(dead_code)]
     #[cfg(not(feature = "wasm"))]
@@ -501,7 +501,7 @@ impl Client {
             let info = self.get_info().await?.nodeinfo;
             let network_id = hash_network(&info.network_id).ok();
             {
-                let mut client_network_info = self.network_info.write().map_err(|e| e).unwrap();
+                let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
                 client_network_info.network_id = network_id;
                 client_network_info.min_pow_score = info.min_pow_score;
                 client_network_info.bech32_hrp = info.bech32_hrp;
@@ -525,7 +525,6 @@ impl Client {
     }
 
     /// returns the tips interval
-    #[cfg(not(feature = "wasm"))]
     pub async fn get_tips_interval(&self) -> u64 {
         self.network_info
             .read()
@@ -765,10 +764,75 @@ impl Client {
             #[serde(rename = "messageId")]
             message_id: String,
         }
+
+        #[cfg(not(feature = "pow-fallback"))]
         let resp: ResponseWrapper = self
             .node_manager
             .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
             .await?;
+
+        #[cfg(feature = "pow-fallback")]
+        // fallback to local PoW if remote PoW fails
+        let resp: ResponseWrapper = match self
+            .node_manager
+            .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
+            .await
+        {
+            Ok(res) => res,
+            Err(e) => {
+                if let Error::NodeError(e) = e {
+                    // hornet and bee return different error messages
+                    if e == *"No available nodes with remote PoW"
+                        || e.contains("proof of work is not enabled")
+                        || e.contains("`PoW` not enabled")
+                    {
+                        let mut client_network_info =
+                            self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                        // switch to local PoW
+                        client_network_info.local_pow = true;
+                        drop(client_network_info);
+                        #[cfg(not(feature = "wasm"))]
+                        let msg_res = crate::api::finish_pow(self, message.payload().clone()).await;
+                        #[cfg(feature = "wasm")]
+                        let msg_res = {
+                            let min_pow_score = self.get_min_pow_score().await?;
+                            let network_id = self.get_network_id().await?;
+                            crate::api::finish_single_thread_pow(
+                                self,
+                                network_id,
+                                None,
+                                message.payload().clone(),
+                                min_pow_score,
+                            )
+                            .await
+                        };
+                        let message_with_local_pow = match msg_res {
+                            Ok(msg) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                msg
+                            }
+                            Err(e) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                return Err(e);
+                            }
+                        };
+                        self.node_manager
+                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_new(), true)
+                            .await?
+                    } else {
+                        return Err(Error::NodeError(e));
+                    }
+                } else {
+                    return Err(e);
+                }
+            }
+        };
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
@@ -784,7 +848,7 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        let message = MessageDto::from(message);
+        let message_dto = MessageDto::from(message);
         #[derive(Debug, Serialize, Deserialize)]
         struct ResponseWrapper {
             data: MessageIdWrapper,
@@ -795,10 +859,69 @@ impl Client {
             message_id: String,
         }
 
-        let resp: ResponseWrapper = self
+        // fallback to local PoW if remote PoW fails
+        let resp: ResponseWrapper = match self
             .node_manager
-            .post_request_json(path, timeout, serde_json::to_value(message)?, local_pow)
-            .await?;
+            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, local_pow)
+            .await
+        {
+            Ok(res) => res,
+            Err(e) => {
+                if let Error::NodeError(e) = e {
+                    // hornet and bee return different error messages
+                    if e == *"No available nodes with remote PoW"
+                        || e.contains("proof of work is not enabled")
+                        || e.contains("`PoW` not enabled")
+                    {
+                        let mut client_network_info =
+                            self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                        // switch to local PoW
+                        client_network_info.local_pow = true;
+                        drop(client_network_info);
+                        #[cfg(not(feature = "wasm"))]
+                        let msg_res = crate::api::finish_pow(self, message.payload().clone()).await;
+                        #[cfg(feature = "wasm")]
+                        let msg_res = {
+                            let min_pow_score = self.get_min_pow_score().await?;
+                            let network_id = self.get_network_id().await?;
+                            crate::api::finish_single_thread_pow(
+                                self,
+                                network_id,
+                                None,
+                                message.payload().clone(),
+                                min_pow_score,
+                            )
+                            .await
+                        };
+                        let message_with_local_pow = match msg_res {
+                            Ok(msg) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                msg
+                            }
+                            Err(e) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                return Err(e);
+                            }
+                        };
+                        let message_dto = MessageDto::from(&message_with_local_pow);
+
+                        self.node_manager
+                            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, true)
+                            .await?
+                    } else {
+                        return Err(Error::NodeError(e));
+                    }
+                } else {
+                    return Err(e);
+                }
+            }
+        };
 
         let mut message_id_bytes = [0u8; 32];
         hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
@@ -1118,8 +1241,8 @@ impl Client {
         GetBalanceBuilder::new(self, seed)
     }
 
-    /// Return the balance in iota for the given addresses; No seed or security level needed to do this
-    /// since we are only checking and already know the addresses.
+    /// Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and
+    /// already know the addresses.
     pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
@@ -1165,7 +1288,7 @@ impl Client {
         Ok(Address::try_from_bech32(address)?)
     }
 
-    /// Checks if a String address is valid.
+    /// Checks if a String is a valid bech32 encoded address.
     pub fn is_address_valid(address: &str) -> bool {
         Address::try_from_bech32(address).is_ok()
     }
@@ -1198,7 +1321,10 @@ impl Client {
         let mut messages_with_id = Vec::new();
         for _ in 0..max_attempts.unwrap_or(20) {
             #[cfg(feature = "wasm")]
-            std::thread::sleep(Duration::from_secs(interval.unwrap_or(5)));
+            {
+                use wasm_timer::Delay;
+                Delay::new(Duration::from_secs(interval.unwrap_or(5))).await?;
+            }
             #[cfg(not(feature = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;
             // Check inclusion state for each attachment

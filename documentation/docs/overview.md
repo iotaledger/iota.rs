@@ -18,7 +18,7 @@ This stateless approach makes iota.rs easier for you to use and understand. But 
 
 ## Supported Languages
 
-We have implemented the iota.rs library in Rust and prepared bindings for JavaScript, Python, and Java, each carefully tailored as we adjust every binding for the language's conventions and best practices. For example, Python developers avoid the Builder programming pattern, so our Python binding uses named constructor arguments instead. We never change the meaning behind our API, however. The API stays equally powerful no matter the language you choose. 
+We have implemented the iota.rs library in Rust and prepared bindings for JavaScript, Python, Java, and Wasm, each carefully tailored as we adjust every binding for the language's conventions and best practices. For example, Python developers avoid the Builder programming pattern, so our Python binding uses named constructor arguments instead. We never change the meaning behind our API, however. The API stays equally powerful no matter the language you choose. 
 
 ## Your Application In the IOTA Network
 

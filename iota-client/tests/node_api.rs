@@ -8,7 +8,7 @@ use crypto::keys::slip10::Seed;
 
 use std::str::FromStr;
 
-const DEFAULT_NODE_URL: &str = "https://api.hornet-1.testnet.chrysalis2.com";
+const DEFAULT_NODE_URL: &str = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe";
 
 // Sends a full message object to the node with already computed nonce. Serves as a test object.
 async fn setup_indexation_message() -> MessageId {
@@ -256,7 +256,7 @@ async fn test_get_output() {
         .unwrap()
         .get_output(
             &UtxoInput::new(
-                TransactionId::from_str("74cc3bc2f7d4aa23725f695d053fab1cb70c833c62320e743b91f9aaf4cd053a").unwrap(),
+                TransactionId::from_str("3e18e19045d0b44dd2be3c466d6fe419c09342bacdb587f2985f2e607a92e38e").unwrap(),
                 0,
             )
             .unwrap(),
@@ -286,13 +286,17 @@ async fn test_get_peers() {
 #[tokio::test]
 #[ignore]
 async fn test_get_milestone() {
-    let r = iota_client::Client::builder()
+    let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .finish()
         .await
-        .unwrap()
-        .get_milestone(3)
+        .unwrap();
+    // get nodeinfo first, because if we hardocde the milestones get pruned and if we hardcode an index it would fail
+    // after some time
+    let nodeinfo = client.get_info().await.unwrap();
+    let r = client
+        .get_milestone(nodeinfo.nodeinfo.latest_milestone_index)
         .await
         .unwrap();
 
@@ -373,7 +377,7 @@ async fn test_get_included_message() {
         .await
         .unwrap()
         .get_included_message(
-            &TransactionId::from_str("74cc3bc2f7d4aa23725f695d053fab1cb70c833c62320e743b91f9aaf4cd053a").unwrap(),
+            &TransactionId::from_str("3e18e19045d0b44dd2be3c466d6fe419c09342bacdb587f2985f2e607a92e38e").unwrap(),
         )
         .await
         .unwrap();

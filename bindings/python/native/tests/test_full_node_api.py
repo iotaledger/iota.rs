@@ -68,6 +68,8 @@ def test_get_address_outputs():
 def test_find_outputs():
     outputs = client.find_outputs(addresses=[tv['ADDRESS'][0]])
     assert isinstance(outputs, list)
+    if len(outputs) > 0:
+        assert 'message_id' in outputs[0]
 
 
 def test_get_milestone():
@@ -76,8 +78,8 @@ def test_get_milestone():
         milestone = client.get_milestone(1000)
         assert isinstance(milestone, dict) and 'message_id' in milestone
     except ValueError as e:
-        # Else the error must be milestone not found
-        assert "milestone not found" in str(e)
+        # Else the error must be milestone not found or forbidden
+        assert "milestone not found" in str(e) or "Forbidden" in str(e)
 
 
 def test_get_milestone_utxo_changes():
@@ -88,7 +90,8 @@ def test_get_milestone_utxo_changes():
             milestone_utxo, dict) and 'consumed_outputs' in milestone_utxo
     except ValueError as e:
         # Else the error must be milestone not found
-        assert 'Forbidden' in str(e)
+        assert ("load milestone diff for index" in str(
+            e) and "key not found" in str(e)) or "Forbidden" in str(e)
 
 
 def test_get_receipts():
