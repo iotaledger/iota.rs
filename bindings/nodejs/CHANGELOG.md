@@ -1,5 +1,16 @@
 # Changelog
 
+## \[2.1.0]
+
+- Updated default testnet nodes
+  - [4f060388](https://github.com/iotaledger/iota.rs/commit/4f060388a19ece1deee6b54748b13498078d0cef) Wasm binding ([#631](https://github.com/iotaledger/iota.rs/pull/631)) on 2021-09-27
+  - [191c7b25](https://github.com/iotaledger/iota.rs/commit/191c7b25d3d55ed20f14dff099bb89322f30dce9) apply version updates ([#693](https://github.com/iotaledger/iota.rs/pull/693)) on 2021-09-27
+  - [4b37dcd2](https://github.com/iotaledger/iota.rs/commit/4b37dcd2581478fa366647fe2e3d97cb37aa83fb) Revert "apply version updates ([#693](https://github.com/iotaledger/iota.rs/pull/693))" on 2021-09-28
+- Added fallback to local PoW if no provided node has remote PoW enabled
+  - [4f060388](https://github.com/iotaledger/iota.rs/commit/4f060388a19ece1deee6b54748b13498078d0cef) Wasm binding ([#631](https://github.com/iotaledger/iota.rs/pull/631)) on 2021-09-27
+  - [191c7b25](https://github.com/iotaledger/iota.rs/commit/191c7b25d3d55ed20f14dff099bb89322f30dce9) apply version updates ([#693](https://github.com/iotaledger/iota.rs/pull/693)) on 2021-09-27
+  - [4b37dcd2](https://github.com/iotaledger/iota.rs/commit/4b37dcd2581478fa366647fe2e3d97cb37aa83fb) Revert "apply version updates ([#693](https://github.com/iotaledger/iota.rs/pull/693))" on 2021-09-28
+
 ## \[2.0.0]
 
 - Changed input() to accept the output id as string instead of the transaction id and the output index
