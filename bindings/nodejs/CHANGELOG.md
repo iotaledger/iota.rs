@@ -2,16 +2,10 @@
 
 ## \[2.1.0]
 
-- Cleaned installation instructions and fixed the link for the API reference
-  - [4b825fe2](https://github.com/iotaledger/iota.rs/commit/4b825fe271f3eb6fd07fd59d7087c144290b68e8) Clean readme and revert commit 191c7b2 ([#698](https://github.com/iotaledger/iota.rs/pull/698)) on 2021-09-28
 - Updated default testnet nodes
   - [4f060388](https://github.com/iotaledger/iota.rs/commit/4f060388a19ece1deee6b54748b13498078d0cef) Wasm binding ([#631](https://github.com/iotaledger/iota.rs/pull/631)) on 2021-09-27
-  - [191c7b25](https://github.com/iotaledger/iota.rs/commit/191c7b25d3d55ed20f14dff099bb89322f30dce9) apply version updates ([#693](https://github.com/iotaledger/iota.rs/pull/693)) on 2021-09-27
-  - [4b825fe2](https://github.com/iotaledger/iota.rs/commit/4b825fe271f3eb6fd07fd59d7087c144290b68e8) Clean readme and revert commit 191c7b2 ([#698](https://github.com/iotaledger/iota.rs/pull/698)) on 2021-09-28
 - Added fallback to local PoW if no provided node has remote PoW enabled
   - [4f060388](https://github.com/iotaledger/iota.rs/commit/4f060388a19ece1deee6b54748b13498078d0cef) Wasm binding ([#631](https://github.com/iotaledger/iota.rs/pull/631)) on 2021-09-27
-  - [191c7b25](https://github.com/iotaledger/iota.rs/commit/191c7b25d3d55ed20f14dff099bb89322f30dce9) apply version updates ([#693](https://github.com/iotaledger/iota.rs/pull/693)) on 2021-09-27
-  - [4b825fe2](https://github.com/iotaledger/iota.rs/commit/4b825fe271f3eb6fd07fd59d7087c144290b68e8) Clean readme and revert commit 191c7b2 ([#698](https://github.com/iotaledger/iota.rs/pull/698)) on 2021-09-28
 
 ## \[2.0.0]
 
