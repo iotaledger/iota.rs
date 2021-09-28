@@ -53,7 +53,7 @@ jobs:
   nodejs-binding-prebuild:
     runs-on: ${{ matrix.os }}
     needs: version-or-publish
-    if: needs.version-or-publish.outputs.successfulPublish == 'true'
+    if: needs.version-or-publish.outputs.successfulPublish == 'true' && contains(needs.version-or-publish.outputs.packagesPublished, 'nodejs-binding')
     strategy:
       fail-fast: false
       matrix:
@@ -117,7 +117,7 @@ jobs:
   electron-binding-prebuild:
     runs-on: ${{ matrix.os }}
     needs: version-or-publish
-    if: needs.version-or-publish.outputs.successfulPublish == 'true'
+    if: needs.version-or-publish.outputs.successfulPublish == 'true' && contains(needs.version-or-publish.outputs.packagesPublished, 'nodejs-binding')
     strategy:
       fail-fast: false
       matrix:
@@ -176,63 +176,3 @@ jobs:
       - name: Upload prebuild to GitHub release
         run: yarn prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --tag-prefix nodejs-binding-v
         working-directory: bindings/nodejs
-
-  wasm-binding-prebuild:
-      runs-on: ${{ matrix.os }}
-      needs: version-or-publish
-      if: needs.version-or-publish.outputs.successfulPublish == 'true'
-      strategy:
-        fail-fast: false
-        matrix:
-          os: [ubuntu-latest]
-          node-version: ['14.x']
-
-      steps:
-        - uses: actions/checkout@v2
-
-        - name: Set up Node.js ${{ matrix.node-version }}
-          uses: actions/setup-node@v2
-          with:
-            node-version: ${{ matrix.node-version }}
-
-        - name: Install Rust toolchain
-          uses: actions-rs/toolchain@v1
-          with:
-            toolchain: stable
-            override: true
-
-        - name: Get current date
-          run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-          if: matrix.os == 'ubuntu-latest'
-
-        - name: Cache cargo registry
-          uses: actions/cache@v2.1.4
-          with:
-            path: ~/.cargo/registry
-            # Add date to the cache to keep it up to date
-            key: ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
-            # Restore from outdated cache for speed
-            restore-keys: |
-              ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-              ${{ matrix.os }}-stable-cargo-registry-
-        - name: Cache cargo index
-          uses: actions/cache@v2.1.4
-          with:
-            path: ~/.cargo/git
-            # Add date to the cache to keep it up to date
-            key: ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
-            # Restore from outdated cache for speed
-            restore-keys: |
-              ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-              ${{ matrix.os }}-stable-cargo-index-
-        - name: Install dependencies
-          run: yarn
-          working-directory: bindings/wasm
-
-        - name: Build Wasm
-          run: yarn build
-          working-directory: bindings/wasm
-
-        - name: Upload build to GitHub release
-          run: yarn build --upload-all ${{ secrets.GITHUB_TOKEN }} --tag-prefix wasm-binding-v
-          working-directory: bindings/wasm
