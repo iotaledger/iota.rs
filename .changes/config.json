@@ -34,6 +34,9 @@
       "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
       "publish": [
         {
+          "command": "yarn install"
+        },
+        {
           "command": "yarn publish --access public --loglevel silly"
         }
       ]
