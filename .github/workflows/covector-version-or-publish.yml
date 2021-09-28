@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev
-      - covector-workflow
 
 jobs:
   version-or-publish:
