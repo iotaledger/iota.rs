@@ -74,6 +74,7 @@ The data structure to initialize the instance of the Higher level client library
 | **node_sync_interval** | ✘ | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync |
 | **node_sync_disabled** | ✘ | false | bool | If disabled also unhealty nodes will be used |
 | **node_pool_urls** | None | ✘ | &[String] | A list of node_pool_urls from which nodes are added. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked. |
+| **offline_mode** | ✘ | false | bool | If enabled no node needs to be provided to build the client, can be used for offline address generation or signing. |
 | **quorum** | ✘ | false | bool | Define if quorum should be used for the requests |
 | **quorum_size** | ✘ | 3 | usize | Define how many nodes should be used for quorum |
 | **quorum_threshold** | ✘ | 66 | usize | Define the % of nodes that need to return the same response to accept it |
@@ -263,7 +264,7 @@ Following are the steps for implementing this method:
 
 ## `get_address_balances()`
 
-Return the balance in iota for the given addresses; No seed or security level needed to do this since we are only checking and already know the addresses.
+Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and already know the addresses.
 
 ### Parameters
 

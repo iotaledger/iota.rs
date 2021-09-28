@@ -7,7 +7,8 @@ use super::MessageDto;
 
 use crate::classes::client::dto::{AddressBalanceDto, MessageWrapper, OutputMetadataDto};
 use iota_client::{
-    bee_message::prelude::{Address, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput},
+    api::PreparedTransactionData,
+    bee_message::prelude::{Address, MessageBuilder, MessageId, Parents, Payload, TransactionId, UtxoInput},
     bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto as BeeOutput},
     common::packable::Packable,
     AddressOutputsOptions, ClientMiner, Seed,
@@ -28,6 +29,26 @@ pub(crate) enum Api {
         outputs: Vec<(Address, u64)>,
         dust_allowance_outputs: Vec<(Address, u64)>,
     },
+    PrepareTransaction {
+        seed: Option<Seed>,
+        index: Option<Vec<u8>>,
+        data: Option<Vec<u8>>,
+        parents: Option<Vec<MessageId>>,
+        account_index: Option<usize>,
+        initial_address_index: Option<usize>,
+        inputs: Vec<UtxoInput>,
+        input_range: Option<Range<usize>>,
+        outputs: Vec<(Address, u64)>,
+        dust_allowance_outputs: Vec<(Address, u64)>,
+    },
+    SignTransaction {
+        transaction_data: PreparedTransactionData,
+        seed: Seed,
+        inputs_range: Option<Range<usize>>,
+    },
+    FinishMessage {
+        payload: Payload,
+    },
     GetUnspentAddress {
         seed: Seed,
         account_index: Option<usize>,
@@ -39,6 +60,10 @@ pub(crate) enum Api {
         range: Option<Range<usize>>,
         bech32_hrp: Option<String>,
         include_internal: bool,
+    },
+    FindInputs {
+        addresses: Vec<String>,
+        amount: u64,
     },
     FindMessages {
         indexation_keys: Vec<String>,
@@ -152,6 +177,72 @@ impl Task for ClientTask {
                         message: BeeMessageDto::from(&message),
                     })?
                 }
+                Api::PrepareTransaction {
+                    seed,
+                    index,
+                    data,
+                    parents,
+                    account_index,
+                    initial_address_index,
+                    inputs,
+                    input_range,
+                    outputs,
+                    dust_allowance_outputs,
+                } => {
+                    let mut sender = client.message();
+                    if let Some(seed) = seed {
+                        sender = sender.with_seed(seed);
+                    }
+                    if let Some(index) = index {
+                        sender = sender.with_index(index);
+                    }
+                    if let Some(data) = data {
+                        sender = sender.with_data(data.clone());
+                    }
+                    if let Some(parents) = parents {
+                        sender = sender.with_parents(parents.clone())?;
+                    }
+                    if let Some(account_index) = account_index {
+                        sender = sender.with_account_index(*account_index);
+                    }
+                    if let Some(initial_address_index) = initial_address_index {
+                        sender = sender.with_initial_address_index(*initial_address_index);
+                    }
+                    for input in inputs {
+                        sender = sender.with_input(input.clone());
+                    }
+                    if let Some(input_range) = input_range {
+                        sender = sender.with_input_range(input_range.clone());
+                    }
+                    let bech32_hrp = client.get_bech32_hrp().await?;
+                    for output in outputs {
+                        sender = sender.with_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)?;
+                    }
+                    for output in dust_allowance_outputs {
+                        sender =
+                            sender.with_dust_allowance_output(&output.0.clone().to_bech32(&bech32_hrp), output.1)?;
+                    }
+                    let prepared_transaction = sender.prepare_transaction().await?;
+                    serde_json::to_string(&prepared_transaction)?
+                }
+                Api::SignTransaction {
+                    transaction_data,
+                    seed,
+                    inputs_range,
+                } => {
+                    let signed_transaction_payload = client
+                        .message()
+                        .sign_transaction(transaction_data.clone(), Some(seed), inputs_range.clone())
+                        .await?;
+                    serde_json::to_string(&signed_transaction_payload)?
+                }
+                Api::FinishMessage { payload } => {
+                    let message = client.message().finish_message(Some(payload.clone())).await?;
+                    serde_json::to_string(&MessageWrapper {
+                        message_id: message.id().0,
+                        message: BeeMessageDto::from(&message),
+                    })?
+                }
                 Api::GetUnspentAddress {
                     seed,
                     account_index,
@@ -192,6 +283,10 @@ impl Task for ClientTask {
                     }
                     let public_addresses = getter.finish().await?;
                     serde_json::to_string(&public_addresses)?
+                }
+                Api::FindInputs { addresses, amount } => {
+                    let inputs = client.find_inputs(addresses.to_vec(), *amount).await?;
+                    serde_json::to_string(&inputs)?
                 }
                 Api::FindMessages {
                     indexation_keys,
@@ -261,10 +356,11 @@ impl Task for ClientTask {
                     parent_msg_ids.dedup();
                     let network_id = client.get_network_id().await?;
                     let nonce_provider = client.get_pow_provider().await;
+                    let min_pow_score = client.get_min_pow_score().await?;
                     let message = MessageBuilder::<ClientMiner>::new()
                         .with_network_id(network_id)
                         .with_parents(Parents::new(parent_msg_ids)?)
-                        .with_nonce_provider(nonce_provider, 4000f64)
+                        .with_nonce_provider(nonce_provider, min_pow_score)
                         .with_payload(message.payload.clone().try_into()?)
                         .finish()?;
                     let message = client.post_message(&message).await?;

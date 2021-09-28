@@ -1,3 +1,9 @@
+import {
+  TransactionPayloadEssence,
+  Input,
+  Output
+} from './message'
+
 export declare interface NodeInfoWrapper {
   url: string
   nodeinfo: NodeInfo
@@ -65,4 +71,31 @@ export declare interface AddressBalance {
   address: Address
   balance: number
   dustAllowed: boolean
+}
+
+export declare interface PreparedTransactionData {
+  essence: TransactionPayloadEssence
+  address_index_recorders: AddressIndexRecorder[]
+}
+export declare interface AddressIndexRecorder {
+  account_index: number,
+  input: Input,
+  output: OutputResponse,
+  address_index: number,
+  chain: Segment[],
+  internal: boolean,
+  bech32_address: string,
+}
+export declare interface OutputResponse {
+  messageId: string,
+  transactionId: string,
+  outputIndex: number,
+  isSpent: boolean,
+  output: Output,
+  ledgerIndex: number,
+}
+
+export declare interface Segment {
+  hardened: boolean,
+  bs: number[],
 }

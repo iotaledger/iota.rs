@@ -4,7 +4,7 @@ function run() {
 
     // client will connect to testnet by default
     const client = new ClientBuilder()
-        .node('https://api.lb-0.testnet.chrysalis2.com:443')    // custom node
+        .node('https://api.lb-0.h.chrysalis-devnet.iota.cafe:443')    // custom node
         .localPow(true)                                         // pow is done locally
         .disableNodeSync()                                      // even non-synced node is fine - do not use in production
         .build();

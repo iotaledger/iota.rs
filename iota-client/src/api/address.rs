@@ -125,9 +125,9 @@ fn generate_address(seed: &Seed, account_index: u32, address_index: u32, interna
     let chain = Chain::from_u32_hardened(vec![44, 4218, account_index, internal as u32, address_index]);
     let public_key = seed
         .derive(Curve::Ed25519, &chain)?
-        .secret_key()?
+        .secret_key()
         .public_key()
-        .to_compressed_bytes();
+        .to_bytes();
     // Hash the public key to get the address
     let result = Blake2b256::digest(&public_key)
         .try_into()

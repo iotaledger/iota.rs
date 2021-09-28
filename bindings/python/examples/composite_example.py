@@ -14,6 +14,80 @@ def consolidation():
     print(f'Funds consolidated to {address}')
 
 
+def create_max_dust():
+    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    client = iota_client.Client(nodes_name_password=[[node_url]])
+
+    seed = os.getenv('MY_IOTA_SEED')
+    seed_2 = os.getenv('MY_IOTA_SEED_2')
+    new_addresses = client.get_addresses(
+        seed_2, input_range_begin=0, input_range_end=1)
+    print(f'New addresses: {new_addresses}')
+
+    try:
+        dust_allowance_message = client.message(seed=seed, dust_allowance_outputs=[
+            {'address': new_addresses[0][0],
+             'amount': 10_000_000}])
+
+        message_id = dust_allowance_message['message_id']
+        print(f'Message id: {message_id}')
+
+        client.retry_until_included(message_id)
+
+        # Split funds to own addresses
+        addresses = client.get_addresses(
+            seed, input_range_begin=1, input_range_end=101)
+        outputs = []
+        for address in addresses:
+            outputs.append(
+                {'address': address[0],
+                 'amount': 1_000_001})
+
+        message = client.message(seed=seed, outputs=outputs)
+        message_id = message['message_id']
+        print(
+            f'First transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+        client.retry_until_included(message_id)
+
+        # At this point we have 100 Mi on 100 addresses and we will just send it to the final address
+        # We use the outputs directly so we don't double spend them
+        initial_outputs = []
+        for index, output in enumerate(message['payload']['transaction']['essence']['outputs']):
+            # Only include 1 Mi outputs, otherwise it fails for the remainder address
+            if output['signature_locked_single']['amount'] == 1_000_001:
+                transaction_id = message['payload']['transaction']['essence']['inputs'][0]['transaction_id']
+                initial_outputs.append(
+                    {'transaction_id': transaction_id.encode('ascii'), 'index': index})
+
+        first_address_old_seed = client.get_addresses(
+            seed, input_range_begin=0, input_range_end=1)
+        for i, output in enumerate(initial_outputs):
+            message = client.message(seed, inputs=[output[i]], input_range_begin=1, input_range_end=101,  outputs=[
+                {'address': new_addresses[0][0], 'amount': 1},
+                {'address': first_address_old_seed[0][0], 'amount': 1_000_000}])
+            message_id = message['message_id']
+            print(
+                f'Transaction {i} sent: https://explorer.iota.org/testnet/message/{message_id}')
+            client.retry_until_included(message_id)
+
+        # Send all funds back to first address
+        total_balance = client.get_balance(seed)
+        print(f'Total balance: {total_balance}')
+
+        message = client.message(seed=seed, outputs=[
+            {'address': first_address_old_seed[0][0],
+             'amount': total_balance}])
+        message_id = message['message_id']
+
+        print(
+            f'Final tx sent: https://explorer.iota.org/testnet/message/{message_id}')
+        iota.retry_until_included(message_id)
+
+    except ValueError as e:
+        print(e)
+        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+
+
 def custom_inputs():
     node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
     client = iota_client.Client(nodes_name_password=[[node_url]])
@@ -204,6 +278,23 @@ def quorum():
     except ValueError as e:
         print(e)
         print('Please provide enough healthy nodes.')
+
+
+def search_address():
+    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    client = iota_client.Client(nodes_name_password=[[node_url]])
+    seed = os.getenv('MY_IOTA_SEED')
+    address = client.get_addresses(
+        seed, input_range_begin=9, input_range_end=10)[0][0]
+    print(f'Address: {address}')
+
+    info = client.get_info()
+    bech32_hrp = info['nodeinfo']['bech32_hrp']
+    searched_address = client.search_address(
+        seed, bech32_hrp, 0, 0, 10, address)
+
+    print(
+        f'Address index: {searched_address[0]}\nIs internal address: {searched_address[1]}')
 
 
 def send_all():
@@ -478,6 +569,7 @@ if __name__ == '__main__':
     """Please uncomment the example function to use it.
     """
     consolidation()
+    # create_max_dust()
     # custom_inputs()
     # custom_parent()
     # custom_payload()
@@ -489,6 +581,7 @@ if __name__ == '__main__':
     # multiple_outputs()
     # peer()
     # quorum()
+    # search_address()
     # send_all()
     # split_all()
     # split_outputs_single_address()

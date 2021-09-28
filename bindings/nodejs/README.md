@@ -29,7 +29,7 @@ After you linked the library, you can create a `Client` instance and interface w
 ```javascript
 const { ClientBuilder } = require('@iota/client')
 const client = new ClientBuilder()
-    .node('https://api.lb-0.testnet.chrysalis2.com')
+    .node('https://api.lb-0.h.chrysalis-devnet.iota.cafe')
     .build()
 client.getInfo().then(console.log).catch(console.error)
 ```
@@ -178,6 +178,12 @@ Sets the node syncing interval.
 #### disableNodeSync(): ClientBuilder
 
 Disables the node syncing process. Every node will be considered healthy and ready to use.
+
+**Returns** the client builder instance for chained calls.
+
+#### offlineMode(): ClientBuilder
+
+Allows creating the client without nodes for offline address generation or signing.
 
 **Returns** the client builder instance for chained calls.
 
@@ -441,6 +447,17 @@ Gets the UTXO outputs associated with the given output ids and addresses.
 | outputIds | <code>string[]</code> | The list of output ids to search |
 
 **Returns** a promise resolving to a list of [OutputMetadata](#outputmetadata).
+
+#### findInputs(addresses, amount): Promise<string[]>
+
+Function to find inputs from addresses for a provided amount (useful for offline signing)
+
+| Param     | Type                  | Description                      |
+| --------- | --------------------- | -------------------------------- |
+| addresses | <code>string[]</code> | The list of addresses to search  |
+| amount    | <code>number</code>   | The balance to search inputs for |
+
+**Returns** a promise resolving to a list of outputIds: string[].
 
 #### getAddressOutputs(address[, options]): Promise<string[]>
 
@@ -712,11 +729,40 @@ Sets the initial address index to search for balance. Defaults to 0 if the funct
 
 **Returns** the message submit instance for chained calls.
 
+#### prepareTransaction(index): Promise<PreparedTransactionData>
+
+Prepares a transaction with the provided inputs.
+
+**Returns** prepared transaction data that can be signed offline.
+
+#### signTransaction(preparedTransactionData: PreparedTransactionData, seed: string[, startIndex: number, endIndex: number]): Promise<TransactionPayload>
+
+Sets the initial address index to search for balance. Defaults to 0 if the function isn't called.
+
+| Param                   | Type                                 | Description                                                 |
+| ----------------------- | ------------------------------------ | ----------------------------------------------------------- |
+| preparedTransactionData | <code>PreparedTransactionData</code> | The prepared transaction data from prepareTransaction()     |
+| seed                    | <code>string</code>                  | The seed                                                    |
+| startIndex              | <code>number</code>                  | Start index to find the addresses for signing, default is 0 |
+| endIndex                | <code>number</code>                  | End index to find the addresses for signing, default is 100 |
+
+**Returns** the signed transaction payload.
+
+#### finishMessage(Payload): Promise<MessageWrapper>
+
+Creates a message with the provided payload.
+
+| Param   | Type                 | Description       |
+| ------- | -------------------- | ----------------- |
+| payload | <code>Payload</code> | A message payload |
+
+**Returns** a promise resolving to the MessageWrapper.
+
 #### submit(): Promise<MessageWrapper>
 
 Submits the message.
 
-**Returns** a promise resolving to the message identifier.
+**Returns** a promise resolving to the MessageWrapper.
 
 ### UnspentAddressGetter
 

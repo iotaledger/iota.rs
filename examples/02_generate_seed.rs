@@ -10,5 +10,5 @@ use iota_client::crypto::signatures::ed25519::SecretKey;
 #[tokio::main]
 async fn main() {
     let secret_key = SecretKey::generate().unwrap();
-    println!("{}", hex::encode(&secret_key.to_le_bytes()));
+    println!("{}", hex::encode(&secret_key.to_bytes()));
 }

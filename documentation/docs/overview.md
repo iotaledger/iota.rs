@@ -10,21 +10,21 @@ keywords:
 ---
 # Overview
 
-To communicate with the IOTA network, you have to connect and interact with a [node](https://chrysalis.docs.iota.org/node_software), the task that the iota.rs library is designed to simplify. It will generate addresses for you, send messages, sign and send transactions, and more.
+To communicate with the IOTA network, you have to connect and interact with a [node](https://wiki.iota.org/chrysalis-docs/node_software), the task that the iota.rs library is designed to simplify. It will generate addresses for you, send messages, sign and send transactions, and more.
 
 Beyond establishing the initial connection to a node, iota.rs has no state. Operations use only the data that you pass during a call and have no effect on your software beyond returning a value. You are in full control of the data flow in your application.
 
-This stateless approach makes iota.rs easier for you to use and understand. But since you are in full control of the data management, you also fully responsible for it, which could feel overwhelming if you have to handle complex or sensitive data. If you plan on managing funds in your application, take a look at our [wallet.rs](https://wallet-lib.docs.iota.org/) library instead. It allows you to safely manage your user's funds, and it already includes our best security practices. It uses [stronghold.rs](https://stronghold.docs.iota.org/) to store sensitive data and iota.rs to communicate with the IOTA network. Unlike iota.rs, it has a state.
+This stateless approach makes iota.rs easier for you to use and understand. But since you are in full control of the data management, you also fully responsible for it, which could feel overwhelming if you have to handle complex or sensitive data. If you plan on managing funds in your application, take a look at our [wallet.rs](https://wiki.iota.org/wallet.rs/welcome) library instead. It allows you to safely manage your user's funds, and it already includes our best security practices. It uses [stronghold.rs](https://wiki.iota.org/stronghold.rs/welcome) to store sensitive data and iota.rs to communicate with the IOTA network. Unlike iota.rs, it has a state.
 
 ## Supported Languages
 
-We have implemented the iota.rs library in Rust and prepared bindings for JavaScript, Python, and Java, each carefully tailored as we adjust every binding for the language's conventions and best practices. For example, Python developers avoid the Builder programming pattern, so our Python binding uses named constructor arguments instead. We never change the meaning behind our API, however. The API stays equally powerful no matter the language you choose. 
+We have implemented the iota.rs library in Rust and prepared bindings for JavaScript, Python, Java, and Wasm, each carefully tailored as we adjust every binding for the language's conventions and best practices. For example, Python developers avoid the Builder programming pattern, so our Python binding uses named constructor arguments instead. We never change the meaning behind our API, however. The API stays equally powerful no matter the language you choose. 
 
 ## Your Application In the IOTA Network
 
 Your application communicates with iota.rs either directly in Rust or through one of the language bindings. The iota.rs library turns your requests into REST API calls and sends them to a node through the Internet. The node, in turn, interacts with the rest of an IOTA network, which could be the main operational network (mainnet) or a network for testing purposes (devnet).
 
-Different nodes could run on a different software, but they always expose the same interface to clients. For example, one node could be a [Hornet](https://hornet.docs.iota.org/) node and the other could be a [Bee](https://bee.docs.iota.org/) node, and they both would appear the same for any client.
+Different nodes could run on a different software, but they always expose the same interface to clients. For example, one node could be a [Hornet](https://hornet.docs.iota.org/) node and the other could be a [Bee](https://wiki.iota.org/bee/welcome) node, and they both would appear the same for any client.
 
 ![A diagram that illustrates the text above. It has three layers: the application layer that includes iota.rs and its bindings, communication layer (the Internet network), and IOTA network layer with nodes that operate on one of the IOTA networks.](/img/overview/layered_overview.svg "An overview of IOTA layers.")
 

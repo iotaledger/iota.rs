@@ -1,5 +1,18 @@
 # Changelog
 
+## \[2.1.0]
+
+- Updated default testnet nodes
+  - [4f060388](https://github.com/iotaledger/iota.rs/commit/4f060388a19ece1deee6b54748b13498078d0cef) Wasm binding ([#631](https://github.com/iotaledger/iota.rs/pull/631)) on 2021-09-27
+- Added fallback to local PoW if no provided node has remote PoW enabled
+  - [4f060388](https://github.com/iotaledger/iota.rs/commit/4f060388a19ece1deee6b54748b13498078d0cef) Wasm binding ([#631](https://github.com/iotaledger/iota.rs/pull/631)) on 2021-09-27
+
+## \[2.0.0]
+
+- Changed input() to accept the output id as string instead of the transaction id and the output index
+  Add functionality for offline signing: offlineMode(), findInputs(), prepareTransaction(), signTransaction(), finishMessage()
+  - [9489d319](https://github.com/iotaledger/iota.rs/commit/9489d319e971a18f44e4c88d38789f6b6b4d4d7e) Nodejs offline signing ([#674](https://github.com/iotaledger/iota.rs/pull/674)) on 2021-09-23
+
 ## \[1.0.1]
 
 - Fix consolidation for higher start indexes

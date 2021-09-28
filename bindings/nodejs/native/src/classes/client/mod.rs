@@ -134,6 +134,30 @@ declare_types! {
             Ok(JsAddressGetter::new(&mut cx, vec![client_id, seed])?.upcast())
         }
 
+        method findInputs(mut cx) {
+            let js_addresses: Vec<Handle<JsValue>> = cx.argument::<JsArray>(0)?.to_vec(&mut cx)?;
+            let mut addresses = vec![];
+            for js_address in js_addresses {
+                let address: Handle<JsString> = js_address.downcast_or_throw(&mut cx)?;
+                addresses.push(address.value());
+            }
+            let amount = cx.argument::<JsNumber>(1)?.value() as u64;
+
+            let cb = cx.argument::<JsFunction>(2)?;
+            {
+                let this = cx.this();
+                let guard = cx.lock();
+                let id = &this.borrow(&guard).0;
+                let client_task = ClientTask {
+                    client_id: id.clone(),
+                    api: Api::FindInputs { addresses, amount },
+                };
+                client_task.schedule(cb);
+            }
+
+            Ok(cx.undefined().upcast())
+        }
+
         method findMessages(mut cx) {
             let js_indexation_keys: Vec<Handle<JsValue>> = cx.argument::<JsArray>(0)?.to_vec(&mut cx)?;
             let js_message_ids: Vec<Handle<JsValue>> = cx.argument::<JsArray>(1)?.to_vec(&mut cx)?;
