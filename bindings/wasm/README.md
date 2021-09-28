@@ -2,22 +2,14 @@
 
 > This is the alpha version of the official WASM bindings for [IOTA client library](https://github.com/iotaledger/iota.rs).
 
-## [API Reference](docs/api-reference.md)
+## [API Reference](https://wiki.iota.org/iota.rs/libraries/wasm/api_reference)
 
 ## Install the library:
 
-Latest Release: This version matches the main branch of this repository, is stable and will have changelogs.
 ```bash
 npm install @iota/client-wasm
 // or using yarn
 yarn add @iota/client-wasm
-```
-
-Development Release: This version matches the dev branch of this repository, may see frequent breaking changes and has the latest code changes.
-```bash
-npm install @iota/client-wasm@dev
-// or using yarn
-yarn add @iota/client-wasm@dev
 ```
 
 ## Build
