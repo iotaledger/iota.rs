@@ -2,7 +2,7 @@
 
 > This is the alpha version of the official WASM bindings for [IOTA client library](https://github.com/iotaledger/iota.rs).
 
-## [API Reference](docs/api-reference.md)
+## [API Reference](https://wiki.iota.org/iota.rs/libraries/wasm/api_reference)
 
 ## Install the library:
 
