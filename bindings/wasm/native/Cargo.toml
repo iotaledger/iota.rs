@@ -1,5 +1,3 @@
-[workspace]
-
 [package]
 name = "client-wasm"
 version = "0.0.1"
