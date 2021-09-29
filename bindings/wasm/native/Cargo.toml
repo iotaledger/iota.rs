@@ -1,5 +1,5 @@
 [package]
-name = "client_wasm"
+name = "client-wasm"
 version = "0.0.1"
 authors = ["IOTA Stiftung"]
 edition = "2018"
