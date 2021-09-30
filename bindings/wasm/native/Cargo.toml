@@ -11,6 +11,8 @@ keywords = ["iota", "tangle", "wasm"]
 homepage = "https://www.iota.org"
 
 [lib]
+name = "client_wasm"
+path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

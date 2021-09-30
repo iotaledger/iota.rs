@@ -37,6 +37,12 @@ pub struct Client {
   pub(crate) client: Rc<RustClient>,
 }
 
+impl Client {
+  pub fn to_inner(&self) -> Rc<RustClient> {
+    self.client.clone()
+  }
+}
+
 #[wasm_bindgen]
 impl Client {
   /// Send a message to the Tangle.
