@@ -38,7 +38,7 @@ pub struct Client {
 }
 
 impl Client {
-  pub fn to_inner(&self) -> RustClient {
+  pub fn into_inner(&self) -> RustClient {
     RustClient::clone(&self.client)
   }
 }
