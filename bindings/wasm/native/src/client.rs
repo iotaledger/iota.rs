@@ -38,8 +38,8 @@ pub struct Client {
 }
 
 impl Client {
-  pub fn to_inner(&self) -> Rc<RustClient> {
-    self.client.clone()
+  pub fn to_inner(&self) -> RustClient {
+    RustClient::clone(&self.client)
   }
 }
 
