@@ -1,6 +1,5 @@
 [workspace]
 members = [
   "iota-client",
-  "bindings/wasm/native",
   "examples",
 ]
