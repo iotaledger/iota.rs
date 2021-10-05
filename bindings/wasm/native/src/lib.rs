@@ -11,15 +11,15 @@ use wasm_bindgen::prelude::*;
 
 #[macro_use]
 mod macros;
-mod address_getter;
-mod balance_getter;
+pub mod address_getter;
+pub mod balance_getter;
 pub mod client;
 pub mod client_builder;
 mod error;
-mod get_address;
-mod message_builder;
-mod message_getter;
-mod unspent_address_getter;
+pub mod get_address;
+pub mod message_builder;
+pub mod message_getter;
+pub mod unspent_address_getter;
 
 pub use client_builder::ClientBuilder;
 
