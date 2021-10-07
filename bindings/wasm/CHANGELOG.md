@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.1.3]
+
+- Reduced WASM build size
+  - [8163754b](https://github.com/iotaledger/iota.rs/commit/8163754be208c24471e45e66020b0cd333ecb0dc) Reduce WASM build size ([#708](https://github.com/iotaledger/iota.rs/pull/708)) on 2021-10-07
+
 ## \[0.1.2]
 
 - Cleaned installation instructions and fixed the link for the API reference
