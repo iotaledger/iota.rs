@@ -46,7 +46,7 @@ def create_max_dust():
         message = client.message(seed=seed, outputs=outputs)
         message_id = message['message_id']
         print(
-            f'First transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'First transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
         client.retry_until_included(message_id)
 
         # At this point we have 100 Mi on 100 addresses and we will just send it to the final address
@@ -67,7 +67,7 @@ def create_max_dust():
                 {'address': first_address_old_seed[0][0], 'amount': 1_000_000}])
             message_id = message['message_id']
             print(
-                f'Transaction {i} sent: https://explorer.iota.org/testnet/message/{message_id}')
+                f'Transaction {i} sent: https://explorer.iota.org/devnet/message/{message_id}')
             client.retry_until_included(message_id)
 
         # Send all funds back to first address
@@ -80,12 +80,12 @@ def create_max_dust():
         message_id = message['message_id']
 
         print(
-            f'Final tx sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Final tx sent: https://explorer.iota.org/devnet/message/{message_id}')
         iota.retry_until_included(message_id)
 
     except ValueError as e:
         print(e)
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 def custom_inputs():
@@ -104,10 +104,10 @@ def custom_inputs():
                                  'amount': 1000}])
         message_id = message['message_id']
         print(
-            f'Transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
     except:
         print(f'Please send tokens to {addresses[0][0]}')
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 def custom_parent():
@@ -119,7 +119,7 @@ def custom_parent():
         message = client.message(parents=[parent])
         message_id = message['message_id']
         print(
-            f'Empty message sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Empty message sent: https://explorer.iota.org/devnet/message/{message_id}')
     except:
         print('Please select a valid parent message id')
 
@@ -147,10 +147,10 @@ def dust():
                       'amount': 1}])
         message_id = message['message_id']
         print(
-            f'First transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'First transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
     except ValueError as e:
         print(e)
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 def get_fund():
@@ -164,7 +164,7 @@ def get_fund():
     address = addresses[0][0]
 
     try:
-        my_url = f'https://faucet.testnet.chrysalis2.com/api?address={address}'
+        my_url = f'https://faucet.chrysalis-devnet.iota.cafe/api?address={address}'
         print(f'my_url: {my_url}')
 
         uClient = uReq(my_url)
@@ -246,10 +246,10 @@ def multiple_outputs():
                                            'amount': 3_000_000}])
         message_id = message['message_id']
         print(
-            f'Transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
     except ValueError as e:
         print(e)
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 def peer():
@@ -316,11 +316,11 @@ def send_all():
              'amount': total_balance}])
         message_id = message['message_id']
         print(
-            f'Transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
         client.retry_until_included(message_id)
     except ValueError as e:
         print(e)
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 def split_all():
@@ -335,7 +335,7 @@ def split_all():
 
     if total_balance == 0:
         print('Addresses belonging to the seed should contain tokens!')
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
         return
 
     available = total_balance
@@ -363,7 +363,7 @@ def split_all():
     message = client.message(seed, outputs=outputs)
     message_id = message['message_id']
     print(
-        f'Transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+        f'Transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
 
 def split_outputs_single_address():
@@ -388,7 +388,7 @@ def split_outputs_single_address():
         message_id = message['message_id']
 
         print(
-            f'First transaction sent: https://explorer.iota.org/testnet/message/{messag_id}')
+            f'First transaction sent: https://explorer.iota.org/devnet/message/{messag_id}')
         client.retry_until_included(message_id)
 
         # At this point we have 100 Mi on 100 addresses and we will just send it to the final address
@@ -405,12 +405,12 @@ def split_outputs_single_address():
                 {'address': 'atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r', 'amount': 1_000_000}])
             message_id = message['message_id']
             print(
-                f'Transaction {i} sent: https://explorer.iota.org/testnet/message/{message_id}')
+                f'Transaction {i} sent: https://explorer.iota.org/devnet/message/{message_id}')
             client.retry_until_included(message_id)
 
     except ValueError as e:
         print(e)
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 def storage():
@@ -466,7 +466,7 @@ def transaction():
             seed, outputs=[{'address': address, 'amount': 3_000_000}])
         message_id = message['message_id']
         print(
-            f'First transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'First transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
         client.retry_until_included(message_id)
 
@@ -480,7 +480,7 @@ def transaction():
 
         message_id = message['message_id']
         print(
-            f'Second transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Second transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
         client.retry_until_included(message_id)
 
@@ -494,7 +494,7 @@ def transaction():
 
         message_id = message['message_id']
         print(
-            f'Third transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Third transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
         client.retry_until_included(message_id)
 
@@ -509,7 +509,7 @@ def transaction():
 
         message_id = message['message_id']
         print(
-            f'Last transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'Last transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
         client.retry_until_included(message_id)
 
@@ -519,7 +519,7 @@ def transaction():
 
     except ValueError as e:
         print(e)
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 def txspam():
@@ -541,7 +541,7 @@ def txspam():
         print(message)
         message_id = message['message_id']
         print(
-            f'First transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+            f'First transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
         client.retry_until_included(message_id)
 
@@ -558,11 +558,11 @@ def txspam():
                 {'address': output[0], 'amount': 1_000_000}])
             message_id = message['message_id']
             print(
-                f'Transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+                f'Transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
     except ValueError as e:
         print(e)
-        print('Website to get test tokens: https://faucet.testnet.chrysalis2.com/')
+        print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
 if __name__ == '__main__':

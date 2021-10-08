@@ -43,7 +43,7 @@ async fn main() {
     println!("{}", addresses[0]);
     for i in 0..1 {
         let response: FaucetResponse = ureq::get(&format!(
-            "https://faucet.testnet.chrysalis2.com/api?address={}",
+            "https://faucet.chrysalis-devnet.iota.cafe/api?address={}",
             addresses[0]
         ))
         .call()
