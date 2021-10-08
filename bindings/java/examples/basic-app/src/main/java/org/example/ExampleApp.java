@@ -137,7 +137,7 @@ public class ExampleApp {
 
         Message message = iota.message().withIndexString("Hello").withDataString("Tangle").finish();
 
-        System.out.println("Message sent https://explorer.iota.org/testnet/message/" + message.id());
+        System.out.println("Message sent https://explorer.iota.org/devnet/message/" + message.id());
 
         MessageId[] fetched_message_ids = iota.getMessage().indexString("Hello");
         System.out.println("Messages with Hello index: " + Arrays.toString(fetched_message_ids));
@@ -157,7 +157,7 @@ public class ExampleApp {
                         iota.getAddresses(seed_1).withRange(0, 1).finish()[0], 1000000
             ).finish();
 
-        System.out.println("Transaction sent: https://explorer.iota.org/testnet/message/" +  message.id());
+        System.out.println("Transaction sent: https://explorer.iota.org/devnet/message/" +  message.id());
     }
 
     public static void mqtt() {
@@ -215,7 +215,7 @@ public class ExampleApp {
         Message message = message_builder.finish();
 
         System.out.println(
-            "First transaction sent: https://explorer.iota.org/testnet/message/" + message.id()
+            "First transaction sent: https://explorer.iota.org/devnet/message/" + message.id()
         );
 
         msgs = iota.retryUntilIncluded(message.id(), -1, -1);
@@ -247,7 +247,7 @@ public class ExampleApp {
                     .withOutput(first_address_old_seed[0], 1_000_000)
                 .finish()
                     .id();
-            System.out.printf("Transaction %i sent: https://explorer.iota.org/testnet/message/%s" + input.index(),
+            System.out.printf("Transaction %i sent: https://explorer.iota.org/devnet/message/%s" + input.index(),
                     message_id
             );
             sent_messages.add(message_id);
@@ -265,7 +265,7 @@ public class ExampleApp {
             .withOutput(first_address_old_seed[0], total_balance)
             .finish();
 
-        System.out.println("Final tx sent: https://explorer.iota.org/testnet/message/" + message.id());
+        System.out.println("Final tx sent: https://explorer.iota.org/devnet/message/" + message.id());
 
         msgs = iota.retryUntilIncluded(message.id(), -1, -1);
     }

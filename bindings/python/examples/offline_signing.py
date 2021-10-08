@@ -80,7 +80,7 @@ def message_sending(signed_transaction):
     message_id = message['message_id']
 
     print(
-        f'Transaction sent: https://explorer.iota.org/testnet/message/{message_id}')
+        f'Transaction sent: https://explorer.iota.org/devnet/message/{message_id}')
 
 
 if __name__ == '__main__':
@@ -88,9 +88,9 @@ if __name__ == '__main__':
 
     address = addresses[0]
     print(f'Please send tokens to {address}')
-    print('Websites to send tokens: https://faucet.testnet.chrysalis2.com/ or https://faucet.tanglekit.de/')
+    print('Websites to send tokens: https://faucet.chrysalis-devnet.iota.cafe/ or https://faucet.tanglekit.de/')
     print(
-        f'After sending tokens, please check https://explorer.iota.org/testnet/addr/{address}')
+        f'After sending tokens, please check https://explorer.iota.org/devnet/addr/{address}')
     input(
         f'Press Enter to continue after the address already gets tokens successfully...')
 

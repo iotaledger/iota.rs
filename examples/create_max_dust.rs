@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
     let message = message_builder.finish().await?;
 
     println!(
-        "First transaction sent: https://explorer.iota.org/testnet/message/{}",
+        "First transaction sent: https://explorer.iota.org/devnet/message/{}",
         message.id().0
     );
 
@@ -93,7 +93,7 @@ async fn main() -> Result<()> {
             .id()
             .0;
         println!(
-            "Transaction {} sent: https://explorer.iota.org/testnet/message/{}",
+            "Transaction {} sent: https://explorer.iota.org/devnet/message/{}",
             index, message_id
         );
         sent_messages.push(message_id);
@@ -115,7 +115,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Final tx sent: https://explorer.iota.org/testnet/message/{}",
+        "Final tx sent: https://explorer.iota.org/devnet/message/{}",
         message.id().0
     );
 

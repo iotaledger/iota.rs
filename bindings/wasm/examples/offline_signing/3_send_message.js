@@ -15,7 +15,7 @@ async function run() {
     let message = await iota_online
         .message().finishMessage(signed_transaction);
 
-    console.log('Transaction sent: https://explorer.iota.org/testnet/message/' + message.messageId)
+    console.log('Transaction sent: https://explorer.iota.org/devnet/message/' + message.messageId)
 }
 
 run()

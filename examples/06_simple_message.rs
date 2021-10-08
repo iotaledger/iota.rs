@@ -17,7 +17,7 @@ async fn main() -> Result<()> {
     let message = iota.message().finish().await?;
 
     println!(
-        "Empty message sent: https://explorer.iota.org/testnet/message/{}",
+        "Empty message sent: https://explorer.iota.org/devnet/message/{}",
         message.id().0
     );
     Ok(())
