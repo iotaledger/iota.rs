@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/testnet/message/{}",
+        "Transaction sent: https://explorer.iota.org/devnet/message/{}",
         message.id().0
     );
 

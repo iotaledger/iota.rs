@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
     let message = message_builder.finish().await?;
 
     println!(
-        "First transaction sent: https://explorer.iota.org/testnet/message/{}",
+        "First transaction sent: https://explorer.iota.org/devnet/message/{}",
         message.id().0
     );
 
@@ -67,7 +67,7 @@ async fn main() -> Result<()> {
             .finish()
             .await?;
         println!(
-            "Transaction sent: https://explorer.iota.org/testnet/message/{}",
+            "Transaction sent: https://explorer.iota.org/devnet/message/{}",
             message.id().0
         );
     }
