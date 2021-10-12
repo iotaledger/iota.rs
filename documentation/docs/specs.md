@@ -361,7 +361,7 @@ Following are the steps for implementing this method:
 
 ## `retry_until_included()`
 
-Retries (promotes or reattaches) a message for provided [MessageId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 10. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
+Retries (promotes or reattaches) a message for provided [MessageId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 40. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
 ### Parameters
 
 | Parameter        | Required | Type         | Definition                                    |

@@ -1313,7 +1313,7 @@ impl Client {
     }
 
     /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-    /// milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages
+    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages
     pub async fn retry_until_included(
         &self,
         message_id: &MessageId,
@@ -1324,7 +1324,7 @@ impl Client {
         let mut message_ids = vec![*message_id];
         // Reattached Messages that get returned
         let mut messages_with_id = Vec::new();
-        for _ in 0..max_attempts.unwrap_or(20) {
+        for _ in 0..max_attempts.unwrap_or(40) {
             #[cfg(feature = "wasm")]
             {
                 use wasm_timer::Delay;

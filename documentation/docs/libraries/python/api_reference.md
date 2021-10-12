@@ -562,7 +562,7 @@ Retries (promotes or reattaches) the message associated with the given id.
 | ------------ | ----- | ----------- | ------------------------------------------------------ |
 | [message_id] | `str` | `undefined` | The message id                                         |
 | interval     | `int` | `5`         | The interval in seconds in which we retry the message. |
-| max_attempts | `int` | `10`        | The maximum of attempts we retry the message.          |
+| max_attempts | `int` | `40`        | The maximum of attempts we retry the message.          |
 
 **Returns** the message ids and [Message](#message) of reattached messages.
 
