@@ -1,4 +1,4 @@
-const { ClientBuilder } = require('../native/node/client_wasm')
+const { ClientBuilder } = require('../node/client_wasm')
 const { assertAddress, assertMessageId, assertMessageWrapper } = require('./assertions')
 const assert = require('assert')
 
@@ -177,6 +177,52 @@ async function test() {
     it('public key to address', async () => {
       const address = await client.hexPublicKeyToBech32Address("2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a")
       assert.strictEqual(address, 'atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
+    })
+
+    it('transaction id', async () => {
+      const transaction_id = await client.getTransactionId(JSON.stringify({
+        "type": 0,
+        "essence": {
+          "type": 0,
+          "inputs": [
+            {
+              "type": 0,
+              "transactionId": "fd9a483662c27877825f227fcebdc4f43b3897e6445573610bf0217f0c1d2f43",
+              "transactionOutputIndex": 0
+            }
+          ],
+          "outputs": [
+            {
+              "type": 0,
+              "address": {
+                "type": 0,
+                "address": "2aacd2b0fb5d641e5369fd70696750706ffc1c759302d6cacc33249b7e487f5b"
+              },
+              "amount": 30000000
+            },
+            {
+              "type": 0,
+              "address": {
+                "type": 0,
+                "address": "96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813"
+              },
+              "amount": 8000000
+            }
+          ],
+          "payload": null
+        },
+        "unlockBlocks": [
+          {
+            "type": 0,
+            "signature": {
+              "type": 0,
+              "publicKey": "2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a",
+              "signature": "65fe3702699418bbb973265a2a4d8de0b5f8a1e70a7c3932b2679aac5176c289248e1d5f48f82760c2fead97deed59d68ed74577bf00442eddd9093648f1a60e"
+            }
+          }
+        ]
+      }))
+      assert.strictEqual(transaction_id, 'dda4d34eb0138eecd58f3a4cade9f35ea593866e69f657910cebc63297e5898c')
     })
   })
 }
