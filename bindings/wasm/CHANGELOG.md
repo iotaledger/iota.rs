@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.2.0]
+
+- Add getTransactionId() method
+  - [fe441d79](https://github.com/iotaledger/iota.rs/commit/fe441d791450ee77d10bfd842ff7e250c971dfca) Add get_transaction_id ([#714](https://github.com/iotaledger/iota.rs/pull/714)) on 2021-10-13
+
 ## \[0.1.3]
 
 - Reduced WASM build size
