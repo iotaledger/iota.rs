@@ -438,15 +438,15 @@ Get the message id from the payload string.
 
 **Returns** The identifier of message.
 
-#### get_transaction_id(payload_str): str
+#### get_transaction_id(payload): str
 
-Get the transaction id from the payload string.
+Get the transaction id from a payload dict.
 
-| Param       | Type             | Default                | Description                                   |
-| ----------- | ---------------- | ---------------------- | --------------------------------------------- |
-| payload_str | <code>str</code> | <code>undefined</code> | The payload string from a transaction payload |
+| Param   | Type                 | Default                | Description                |
+| ------- | -------------------- | ---------------------- | -------------------------- |
+| payload | <code>Payload</code> | <code>undefined</code> | The payload from a message |
 
-**Returns** The identifier of a transaction.
+**Returns** The identifier of the transaction.
 
 #### get_message_index(index): list[str]
 

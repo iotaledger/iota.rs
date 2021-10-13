@@ -95,9 +95,10 @@ def test_get_message_id():
 
 def test_get_transaction_id():
     transaction_payload = tv['TRANSACTION_PAYLOAD']
-    json_payload = str(json.dumps(transaction_payload, indent=4))
+    transaction_id = tv['TRANSACTION_PAYLOAD_ID']
     try:
-        id = client.get_transaction_id(json_payload)
+        id = client.get_transaction_id(transaction_payload)
+        assert id == transaction_id
     except ValueError as e:
         assert "invalid transaction" in str(e)
 
