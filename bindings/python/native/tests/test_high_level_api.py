@@ -93,6 +93,15 @@ def test_get_message_id():
     except ValueError as e:
         assert "invalid message" in str(e)
 
+def test_get_transaction_id():
+    transaction_payload = tv['TRANSACTION_PAYLOAD']
+    transaction_id = tv['TRANSACTION_PAYLOAD_ID']
+    try:
+        id = client.get_transaction_id(transaction_payload)
+        assert id == transaction_id
+    except ValueError as e:
+        assert "invalid transaction" in str(e)
+
 
 def test_find_messages():
     messages = client.find_messages(

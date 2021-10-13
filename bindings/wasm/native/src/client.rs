@@ -8,10 +8,10 @@ use crate::{
 };
 use iota_client::{
   bee_message::{
-    input::UtxoInput, parents::Parents, payload::transaction::TransactionId, Message,
-    MessageBuilder as RustMessageBuilder, MessageId,
+    input::UtxoInput, parents::Parents, payload::transaction::TransactionId, payload::transaction::TransactionPayload,
+    Message, MessageBuilder as RustMessageBuilder, MessageId,
   },
-  bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto, PayloadDto},
+  bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto, PayloadDto, TransactionPayloadDto},
   common::packable::Packable,
   Client as RustClient, ClientMiner, Seed,
 };
@@ -653,5 +653,16 @@ impl Client {
       Err(_) => serde_json::from_str::<Message>(message).map_err(wasm_error)?,
     };
     Ok(message.id().0.to_string())
+  }
+
+  /// Returns the transaction id from a provided transaction payload.
+  #[wasm_bindgen(js_name = getTransactionId)]
+  pub fn get_transaction_id(&self, transaction: &str) -> Result<String, JsValue> {
+    // Try TransactionPayloadDto and if it fails TransactionPayload
+    let transaction = match serde_json::from_str::<TransactionPayloadDto>(transaction) {
+      Ok(transaction_dto) => TransactionPayload::try_from(&transaction_dto).map_err(wasm_error)?,
+      Err(_) => serde_json::from_str::<TransactionPayload>(transaction).map_err(wasm_error)?,
+    };
+    Ok(transaction.id().to_string())
   }
 }

@@ -222,6 +222,22 @@ impl Client {
         let message_id = message.id().0.to_string();
         Ok(message_id)
     }
+    /// Get the transaction id from a transaction payload.
+    ///
+    /// Args:
+    ///     payload (str): The transaction payload.
+    ///
+    /// Returns:
+    ///     transaction_id (str): The identifier of a transaction.
+    fn get_transaction_id(&self, payload: Payload) -> Result<String> {
+        let payload: RustPayload = payload.try_into()?;
+        let transaction = match payload {
+            RustPayload::Transaction(tx) => *tx,
+            _ => panic!("no transaction payload"),
+        };
+        let transaction_id = transaction.id().to_string();
+        Ok(transaction_id)
+    }
     /// Get the list of message indices from the message_id.
     ///
     /// Args:

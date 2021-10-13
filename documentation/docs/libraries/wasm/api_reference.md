@@ -207,6 +207,7 @@ Get the balance.
     * [.generateMnemonic()](#Client+generateMnemonic) ⇒ <code>string</code>
     * [.mnemonicToHexSeed(mnemonic)](#Client+mnemonicToHexSeed) ⇒ <code>string</code>
     * [.getMessageId(message)](#Client+getMessageId) ⇒ <code>string</code>
+    * [.getTransactionId(transaction)](#Client+getTransactionId) ⇒ <code>string</code>
 
 <a name="Client+message"></a>
 
@@ -596,6 +597,17 @@ Returns the message id from a provided message.
 | Param | Type |
 | --- | --- |
 | message | <code>string</code> | 
+
+<a name="Client+getTransactionId"></a>
+
+### client.getTransactionId(transaction) ⇒ <code>string</code>
+Returns the transaction id from a provided transaction payload.
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| transaction | <code>string</code> | 
 
 <a name="ClientBuilder"></a>
 

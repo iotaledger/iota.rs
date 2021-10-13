@@ -438,6 +438,16 @@ Get the message id from the payload string.
 
 **Returns** The identifier of message.
 
+#### get_transaction_id(payload): str
+
+Get the transaction id from a payload dict.
+
+| Param   | Type                 | Default                | Description                |
+| ------- | -------------------- | ---------------------- | -------------------------- |
+| payload | <code>Payload</code> | <code>undefined</code> | The payload from a message |
+
+**Returns** The identifier of the transaction.
+
 #### get_message_index(index): list[str]
 
 Gets the list of message indices from the message_id.

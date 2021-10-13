@@ -46,7 +46,7 @@ def main():
 
     print(f'message() 100 tokens to address {EMPTY_ADDRESS}')
     message_id = client.message(
-        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['message_id']
+        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 1_000_000}])['message_id']
     print(f'Token sent with message_id: {message_id}')
     print(f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id}')
 
@@ -57,6 +57,10 @@ def main():
     print(f'get_message_data() for message_id {message_id}')
     message_data = client.get_message_data(message_id)
     print(f'message_data: {message_data}')
+
+    print(f'get_transaction_id() for message {message_data}')
+    transaction_id = client.get_transaction_id(message_data['payload'])
+    print(f'transaction_id: {transaction_id}')
 
     print(f'get_message_raw() for message_id {message_id}')
     message_raw = client.get_message_raw(message_id)
