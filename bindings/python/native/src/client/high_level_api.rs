@@ -222,33 +222,19 @@ impl Client {
         let message_id = message.id().0.to_string();
         Ok(message_id)
     }
-    /// Get the transaction id from a transaction payload string.
+    /// Get the transaction id from a transaction payload.
     ///
     /// Args:
-    ///     payload_str (str): The transaction payload string.
+    ///     payload (str): The transaction payload.
     ///
     /// Returns:
     ///     transaction_id (str): The identifier of a transaction.
     fn get_transaction_id(&self, payload: Payload) -> Result<String> {
-        // Try BeeTransactionPayloadDto and if it fails TransactionPayload
         let payload: RustPayload = payload.try_into()?;
         let transaction = match payload {
             RustPayload::Transaction(tx) => *tx,
             _ => panic!("no transaction payload"),
         };
-        // let transaction = match serde_json::from_str::<BeeTransactionPayloadDto>(payload_str) {
-        //     Ok(transaction_dto) => RustTransactionPayload::try_from(&transaction_dto).expect("invalid transaction"),
-        //     Err(_) => match serde_json::from_str::<RustTransactionPayload>(payload_str) {
-        //         Ok(transaction_payload) => transaction_payload,
-        //         Err(_) => {
-        //             let rust_payload = serde_json::from_str::<RustPayload>(payload_str).expect("no payload");
-        //             match rust_payload {
-        //                 RustPayload::Transaction(tx) => *tx,
-        //                 _ => panic!("no transaction payload"),
-        //             }
-        //         }
-        //     },
-        // };
         let transaction_id = transaction.id().to_string();
         Ok(transaction_id)
     }
