@@ -14,16 +14,16 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = "0.1"
-bee-message = "0.1"
-bee-pow = "0.1"
-bee-common = "0.4"
+bee-rest-api = "0.1.1"
+bee-message = "0.1.5"
+bee-pow = "0.1.0"
+bee-common = "0.4.1"
 iota-crypto = { version = "0.7.0", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"]}
 url = "2.2.2"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-hex = "0.4"
-tokio = { version = "1.11", features = ["macros", "sync", "rt-multi-thread", "rt", "time"], optional = true }
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.68"
+hex = "0.4.3"
+tokio = { version = "1.12.0", features = ["macros", "sync", "rt-multi-thread", "rt", "time"], optional = true }
 thiserror = "1.0.29"
 num_cpus = "1.13.0"
 log = "0.4.14"
@@ -33,7 +33,7 @@ zeroize = { version = "1.4.1", features = ["zeroize_derive"] }
 # sync
 ureq = { version = "2.2.0", features = ["json"], optional = true }
 # async
-reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
+reqwest = { version = "0.11.4", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
 futures = { version = "0.3.17", optional = true }
 
 # MQTT
@@ -45,8 +45,8 @@ rumqttc = { git = "https://github.com/bytebeamio/rumqtt", rev = "621a7b526936450
 once_cell = { version = "1.8.0", optional = true }
 
 # storage
-async-trait = "0.1"
-rusqlite = { version = "0.24", features = ["bundled"], optional = true }
+async-trait = "0.1.51"
+rusqlite = { version = "0.24.2", features = ["bundled"], optional = true }
 
 # wasm
 # patched version to work in browser and node.js
