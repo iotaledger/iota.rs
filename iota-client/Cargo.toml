@@ -14,11 +14,12 @@ license = "Apache-2.0"
 name = "iota_client"
 
 [dependencies]
-bee-rest-api = "0.1.1"
-bee-message = "0.1.5"
+bee-rest-api = { version = "0.1.2", default-features = false }
+bee-message = { version  = "0.1.5", features = ["serde"] }
 bee-pow = "0.1.0"
 bee-common = "0.4.1"
 iota-crypto = { version = "0.7.0", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"]}
+
 url = "2.2.2"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.68"
