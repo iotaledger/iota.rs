@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.2.1]
+
+- Select another reqwest version, so posting a message doesn't fail.
+  - [f3692e13](https://github.com/iotaledger/iota.rs/commit/f3692e1385aa5e45b61e6222f738415af0a264ba) Lock dependencies to a specific version ([#719](https://github.com/iotaledger/iota.rs/pull/719)) on 2021-10-21
+
 ## \[0.2.0]
 
 - Add getTransactionId() method

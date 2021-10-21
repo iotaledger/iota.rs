@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.1.1]
+
+- Removed dependencies that failed to compile on a Raspberry Pi.
+  - [f3692e13](https://github.com/iotaledger/iota.rs/commit/f3692e1385aa5e45b61e6222f738415af0a264ba) Lock dependencies to a specific version ([#719](https://github.com/iotaledger/iota.rs/pull/719)) on 2021-10-21
+
 ## \[2.1.0]
 
 - Updated default testnet nodes
