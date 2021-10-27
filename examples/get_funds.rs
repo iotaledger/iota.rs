@@ -3,22 +3,9 @@
 
 //! cargo run --example get_funds --release
 use iota_client::{Client, Seed};
-use serde::Deserialize;
-use std::time::Duration;
-use tokio::time::sleep;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
-
-#[derive(Debug, Deserialize)]
-struct FaucetMessageResponse {
-    id: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct FaucetResponse {
-    data: FaucetMessageResponse,
-}
 
 #[tokio::main]
 async fn main() {
@@ -41,17 +28,15 @@ async fn main() {
         .await
         .unwrap();
     println!("{}", addresses[0]);
-    for i in 0..1 {
-        let response: FaucetResponse = ureq::get(&format!(
-            "https://faucet.chrysalis-devnet.iota.cafe/api?address={}",
-            addresses[0]
-        ))
-        .call()
+
+    let faucet_response = ureq::post("https://faucet.chrysalis-devnet.iota.cafe/api/plugins/faucet/enqueue")
+        .set("Content-Type", "application/json")
+        .send_json(ureq::json!({
+            "address": addresses[0],
+        }))
         .unwrap()
-        .into_json()
+        .into_string()
         .unwrap();
-        println!("{}: {:?}", i, response);
-        // Faucet spam protection time
-        sleep(Duration::from_secs(60)).await;
-    }
+
+    println!("{}", faucet_response);
 }
