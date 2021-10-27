@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.2.2]
+
+- Fixed reattach function
+  - [64dcf583](https://github.com/iotaledger/iota.rs/commit/64dcf583fc53b2e6ad80103ee3aaf2485dfee51c) Fix reattach for wasm binding ([#713](https://github.com/iotaledger/iota.rs/pull/713)) on 2021-10-27
+
 ## \[0.2.1]
 
 - Select another reqwest version, so posting a message doesn't fail.
