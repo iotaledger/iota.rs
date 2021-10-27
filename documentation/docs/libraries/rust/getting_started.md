@@ -23,7 +23,7 @@ Using the library is easy, just add it as dependency in your `Cargo.toml`:
 [dependencies]
 iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 # asynchronous runtime
-tokio = { version = "1.5", features = ["full"] }
+tokio = { version = "1.12.0", features = ["full"] }
 ```
 
 And then you can use the library in your code with `use iota_client;`.
