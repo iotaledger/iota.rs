@@ -1122,7 +1122,12 @@ impl Client {
             #[cfg(feature = "wasm")]
             {
                 let network_id = self.get_network_id().await?;
-                let mut message_builder = MessageBuilder::<ClientMiner>::new().with_network_id(network_id);
+                let mut tips = self.get_tips().await?;
+                tips.sort_unstable_by_key(|a| a.pack_new());
+                tips.dedup();
+                let mut message_builder = MessageBuilder::<ClientMiner>::new()
+                    .with_network_id(network_id)
+                    .with_parents(Parents::new(tips)?);
                 if let Some(p) = message.payload().to_owned() {
                     message_builder = message_builder.with_payload(p)
                 }
@@ -1308,7 +1313,7 @@ impl Client {
     }
 
     /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-    /// milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages
+    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages
     pub async fn retry_until_included(
         &self,
         message_id: &MessageId,
@@ -1319,7 +1324,7 @@ impl Client {
         let mut message_ids = vec![*message_id];
         // Reattached Messages that get returned
         let mut messages_with_id = Vec::new();
-        for _ in 0..max_attempts.unwrap_or(20) {
+        for _ in 0..max_attempts.unwrap_or(40) {
             #[cfg(feature = "wasm")]
             {
                 use wasm_timer::Delay;

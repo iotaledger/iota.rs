@@ -275,7 +275,7 @@ foreign_class!(
         fn Client::get_addresses(&self, seed: &str) -> GetAddressesBuilder;
 
         /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-        /// milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages. Set to -1 for defaults.
+        /// milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages. Set to -1 for defaults.
         fn Client::retry_until_included(&self, message_id: MessageId,
             interval: usize,
             max_attempts: usize) -> Result<Vec<MessageWrap>>;

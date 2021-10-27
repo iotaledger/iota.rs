@@ -518,7 +518,7 @@ impl Client {
 
   /// Only works in browser because of the timeouts
   /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-  /// milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages
+  /// milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages
   #[wasm_bindgen(js_name = retryUntilIncluded)]
   pub fn retry_until_included(
     &self,
