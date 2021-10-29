@@ -13,29 +13,29 @@ crate-type = ["cdylib"]
 iota-client = { path = "../../../iota-client", features = ["mqtt", "pow-fallback"] }
 
 # Java gen
-jni = "0.19" # Used in directly verifying binding linkage
-flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
+jni = "0.19.0" # Used in directly verifying binding linkage
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs", rev = "6a5e38b02781b47b955b88e88f70b10195b563d2" }
 
-log = "0.4.6"
+log = { version = "0.4.14", default-features = false }
 chrono = "0.4.6"
-env_logger = "0.8"
+env_logger = "0.9.0"
 anyhow = "1.0.38"
-hex = "0.4"
-getset = "0.1"
+hex = { version = "0.4.3", default-features = false }
+getset = "0.1.1"
 
 # Needed for prepared transaction data serialization
-serde = "1.0"
-serde_json = "1.0"
+serde = { version = "1.0.130", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0.68", default-features = false }
 
 # await block_on etc management
-tokio = { version = "1.2" }
-once_cell = "1.4"
-futures = "0.3"
+tokio = { version = "1.12.0", default-features = false, features = ["macros"] }
+once_cell = { version = "1.8.0", default-features = false }
+futures = { version = "0.3.17", default-features = false }
 
 [build-dependencies]
-flapigen = { git = "https://github.com/Dushistov/flapigen-rs" }
-env_logger = "0.8"
-bindgen = "0.58"
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs", rev = "6a5e38b02781b47b955b88e88f70b10195b563d2" }
+env_logger = "0.9.0"
+bindgen = "0.58.1"
 
 [features]
 default = ["mqtt", "iota-client/default"]

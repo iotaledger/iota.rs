@@ -15,47 +15,47 @@ name = "iota_client"
 
 [dependencies]
 bee-rest-api = { version = "0.1.2", default-features = false }
-bee-message = { version  = "0.1.5", features = ["serde"] }
-bee-pow = "0.1.0"
-bee-common = "0.4.1"
-iota-crypto = { version = "0.7.0", features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"]}
+bee-message = { version  = "0.1.5", default-features = false, features = ["serde"] }
+bee-pow = { version = "0.1.0", default-features = false }
+bee-common = { version = "0.4.1", default-features = false }
+iota-crypto = { version = "0.7.0", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
 
-url = "2.2.2"
-serde = { version = "1.0.130", features = ["derive"] }
-serde_json = "1.0.68"
-hex = "0.4.3"
-tokio = { version = "1.12.0", features = ["macros", "sync", "rt-multi-thread", "rt", "time"], optional = true }
-thiserror = "1.0.29"
-num_cpus = "1.13.0"
-log = "0.4.14"
-regex = "1.5.4"
-zeroize = { version = "1.4.1", features = ["zeroize_derive"] }
+url = { version = "2.2.2", default-features = false }
+serde = { version = "1.0.130", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0.68", default-features = false }
+hex = { version = "0.4.3", default-features = false }
+tokio = { version = "1.12.0", default-features = false, features = ["macros"], optional = true }
+thiserror = { version = "1.0.29", default-features = false }
+num_cpus = { version = "1.13.0", default-features = false }
+log = { version = "0.4.14", default-features = false }
+regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
+zeroize = { version = "1.4.1", default-features = false }
 
 # sync
-ureq = { version = "2.2.0", features = ["json"], optional = true }
+ureq = { version = "2.2.0", default-features = false, features = ["tls", "json"], optional = true }
 # async
-reqwest = { version = "0.11.6", features = ["json", "rustls-tls", "blocking"], default-features = false, optional = true }
-futures = { version = "0.3.17", optional = true }
+reqwest = { version = "0.11.6", default-features = false, features = ["json", "rustls-tls", "blocking"], optional = true }
+futures = { version = "0.3.17", default-features = false, optional = true }
 
 # MQTT
-# todo replace by crates.io if 0.9 is released
-rumqttc = { git = "https://github.com/bytebeamio/rumqtt", rev = "621a7b526936450e4e54a999eae0171bfd5bff6f", features = ["websocket"], optional = true }
-# rumqttc = { version = "0.9", features = ["websocket"], optional = true}
+# todo replace by crates.io if 0.10 is released
+rumqttc = { git = "https://github.com/bytebeamio/rumqtt", rev = "621a7b526936450e4e54a999eae0171bfd5bff6f", default-features = false, features = ["websocket"], optional = true }
+# rumqttc = { version = "0.10", default-features = false, features = ["websocket"], optional = true }
 
 # also used for storage
-once_cell = { version = "1.8.0", optional = true }
+once_cell = { version = "1.8.0", default-features = false, optional = true }
 
 # storage
-async-trait = "0.1.51"
-rusqlite = { version = "0.24.2", features = ["bundled"], optional = true }
+async-trait = {version = "0.1.51", default-features = false }
+rusqlite = { version = "0.24.2", default-features = false, features = ["bundled"], optional = true }
 
 # wasm
 # patched version to work in browser and node.js
-wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "448c2be0c4feeb6b5df1da265489232dff2f03c1", optional = true }
+wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "448c2be0c4feeb6b5df1da265489232dff2f03c1", default-features = false, optional = true }
 # single thread pow for wasm
-bee-crypto = { version = "0.2.1-alpha", optional = true }
-bee-ternary = { version = "0.4.2-alpha", optional = true }
-bytes = { version = "1.1.0", optional = true }
+bee-crypto = { version = "0.2.1-alpha", default-features = false, optional = true }
+bee-ternary = { version = "0.4.2-alpha", default-features = false, optional = true }
+bytes = { version = "1.1.0", default-features = false, optional = true }
 
 [features]
 default = ["async"]
