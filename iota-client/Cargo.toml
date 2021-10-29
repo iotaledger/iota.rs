@@ -18,32 +18,29 @@ iota-bundle-miner = { path = "../iota-bundle-miner" }
 bee-transaction = { git = "https://github.com/Alex6323/bee-p.git", rev = "cf47287dbb37861668d378ea3ae3b8c0f2852566" }
 bee-ternary = { version = "0.4.2-alpha", features = ["serde1"] }
 #reqwest = { version = "0.10.6", features = ["json", "rustls-tls", "native-tls-vendored", "blocking"], default-features = false }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = "0.4.12"
-ureq = { version = "2.0", features = ["json"] }
+serde = { version = "1.0.130", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0.68", default-features = false }
+chrono = { version = "0.4.12", default-features = false }
+ureq = { version = "2.2.0", features = ["json"] }
 #chrysalis2
-slip10 = "0.4"
+slip10 = "0.4.3"
 iota-crypto = { version = "0.5.0", features = ["ed25519", "random", "wots_deprecated_do_not_use", "kerl_deprecated_do_not_use"] }
-blake2 = "0.9"
+blake2 = "0.9.2"
 bee-common-derive = "0.1.1-alpha"
-# bee-message = "0.1.1"
-# bee-common = "0.4.1"
-bee-message = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-bee-common = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-# bee-common-derive = { git = "https://github.com/iotaledger/bee.git", branch = "dev" }
-hex = "0.4.2"
-tokio = { version = "1.4", features = ["sync"] }
+bee-message = { version  = "0.1.5", default-features = false, features = ["serde"] }
+bee-common = { version = "0.4.1", default-features = false }
+hex = { version = "0.4.3", default-features = false }
+tokio = { version = "1.12.0", default-features = false, features = ["sync"] }
 
 #quorum
 once_cell = "1.7.2"
 
 #pow
 iota-model = {git = "https://github.com/iotaledger/iota.rs", rev = "0aa7e11b075bea17ae52b1f7dff51f3a13c9d914"}
-num_cpus = "1.10"
-crossbeam = "0.7"
-failure = "0.1"
-iota-conversion = "0.5"
+num_cpus = { version = "1.13.0", default-features = false }
+crossbeam = "0.7.3"
+failure = "0.1.8"
+iota-conversion = "0.5.1"
 
 [dev-dependencies]
 anyhow = "1.0.31"
