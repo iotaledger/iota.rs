@@ -1,4 +1,5 @@
 ---
+title: Examples
 description: Official IOTA Wallet Library Software Python examples.
 image: /img/logo/iota_mark_light.png
 keywords:
@@ -21,7 +22,6 @@ import get_message_data from '!!raw-loader!./../../../../bindings/python/example
 import data_message from '!!raw-loader!./../../../../bindings/python/examples/08_data_message.py';
 import transaction from '!!raw-loader!./../../../../bindings/python/examples/09_transaction.py';
 
-# Examples
 
 :::warning
 It is not recommended to store passwords/seeds on host's environment variables or in the source code in a production setup! Please make sure you follow our [backup and security](https://wiki.iota.org/chrysalis-docs/guides/backup_security) recommendations for production use!
@@ -62,7 +62,7 @@ Output example of `get_info()` function of the `Client` instance:
 ```
 The most important properties:
 * `is_healthy`: indicates whether the given node is in sync with the network and so it is safe to use it. Even if a node is up and running it may not be fully prepared to process your API calls properly. The node should be "synced", meaning should be aware of all TXs in the Tangle. It is better to avoid not fully synced nodes. A node healthiness can be alternatively obtained also with a method `Client.get_health()`
-* `bech32_hrp`: it indicates whether the given node is a part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](https://wiki.iota.org/chrysalis-docs/guides/developer/#iota-15-address-anatom)
+* `bech32_hrp`: it indicates whether the given node is a part of testnet (`atoi`) or mainnet (`iota`). See more info regarding [IOTA address format](https://wiki.iota.org/chrysalis-docs/guides/developer/#iota-15-address-anatomy)
 
 _Please note, when using node load balancers then mentioned health check may be quite useless since follow-up API calls may be served by different node behind the load balancer that may have not been actually checked. One should be aware of this fact and trust the given load balancer participates only with nodes that are in healthy state. `iota.rs` library additionally supports a management of internal node pool and so load-balancer-like behavior can be mimicked using this feature locally._
 
@@ -133,7 +133,7 @@ And there are few additional interesting notes:
 * Using different `accounts` may be useful to split addresses/key into some independent spaces and it is up to developers to implement.
 
 :::info
-Please note, it may have a negative impact on a performance while [account discovery](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#account-discovery) phase. So if you are after using many multiple accounts then you may be interested in our stateful library [wallet.rs](https://wiki.iota.org/wallet.rs/welcome) that incorporates all business logic needed to efficiently manage independent accounts. Also our [exchange guide](https://wiki.iota.org/docs/build/exchange-integration/exchange-integration-guide) provides some useful tips how different accounts may be leveraged
+Please note, it may have a negative impact on a performance while [account discovery](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#account-discovery) phase. So if you are after using many multiple accounts then you may be interested in our stateful library [wallet.rs](https://wiki.iota.org/wallet.rs/welcome) that incorporates all business logic needed to efficiently manage independent accounts. Also our [exchange guide](https://wiki.iota.org/build/exchange-integration/exchange-integration-guide) provides some useful tips how different accounts may be leveraged
 :::
 
 ![address_generation](/img/libraries/address_generation.svg)
