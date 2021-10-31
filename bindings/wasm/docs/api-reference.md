@@ -474,7 +474,7 @@ retried only if they are valid and haven't been confirmed for a while.
 ### client.retryUntilIncluded(message_id, interval, max_attempts) ⇒ <code>Promise.&lt;any&gt;</code>
 Only works in browser because of the timeouts
 Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-milestone). Default interval is 5 seconds and max attempts is 10. Returns reattached messages
+milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
 
