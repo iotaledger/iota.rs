@@ -61,7 +61,9 @@ jobs:
 
     steps:
       - run: echo "needs.version-or-publish ${{ needs.version-or-publish }}"
-      - run: echo "needs.version-or-publish.outputs ${{ needs.version-or-publish.outputs }}"
+      - run: echo ${{ needs.version-or-publish }}"
+      - run: echo "needs.version-or-publish.outputs ${{ parseJSON(needs.version-or-publish.outputs) }}"
+      - run: echo "needs.version-or-publish.outputs ${{ fromJSON(needs.version-or-publish.outputs) }}"
       - run: echo "needs.version-or-publish.outputs.packagesPublished ${{ needs.version-or-publish.outputs.packagesPublished }}"
 
   nodejs-binding-prebuild:
