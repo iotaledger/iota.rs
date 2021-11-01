@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - workflow-test
 
 jobs:
   version-or-publish:
@@ -48,6 +49,19 @@ jobs:
           commit-message: "apply version updates"
           labels: "version updates"
           body: ${{ steps.covector.outputs.change }}
+
+  test-prebuild:
+    runs-on: ${{ matrix.os }}
+    needs: version-or-publish
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04]
+        node-version: ['14.x']
+
+    steps:
+      - run: echo needs
+      - run: echo needs.version-or-publish.outputs.packagesPublished
 
   nodejs-binding-prebuild:
     runs-on: ${{ matrix.os }}
