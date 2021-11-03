@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.0]
+
+- Changed "discovered" to "autopeered" in the result from getPeers().
+  - [f43b9dea](https://github.com/iotaledger/iota.rs/commit/f43b9deac867cc52bff92a6c400ff54cbd06add2) add change file and updated covector workflow on 2021-11-03
+
 ## \[2.1.1]
 
 - Removed dependencies that failed to compile on a Raspberry Pi.
