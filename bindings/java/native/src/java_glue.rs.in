@@ -68,7 +68,7 @@ foreign_enum!(
     enum Relation {
         KNOWN = Relation::KNOWN,
         UNKNOWN = Relation::UNKNOWN,
-        DISCOVERED = Relation::DISCOVERED,
+        AUTOPEERED = Relation::AUTOPEERED,
     }
 );
 
