@@ -32,7 +32,7 @@ impl PeerDto {
 pub enum Relation {
     KNOWN,
     UNKNOWN,
-    DISCOVERED,
+    AUTOPEERED,
 }
 
 impl From<RustPeerDto> for PeerDto {
@@ -54,7 +54,7 @@ impl From<RustRelationDto> for Relation {
         match relation {
             RustRelationDto::Known => Relation::KNOWN,
             RustRelationDto::Unknown => Relation::UNKNOWN,
-            RustRelationDto::Discovered => Relation::DISCOVERED,
+            RustRelationDto::Autopeered => Relation::AUTOPEERED,
         }
     }
 }
