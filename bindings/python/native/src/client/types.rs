@@ -1037,7 +1037,7 @@ impl From<RustRelationDto> for RelationDto {
             RustRelationDto::Unknown => Self {
                 relation: "unknown".to_string(),
             },
-            RustRelationDto::Discovered => Self {
+            RustRelationDto::Autopeered => Self {
                 relation: "discovered".to_string(),
             },
         }
