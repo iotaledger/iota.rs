@@ -12,6 +12,7 @@ use crate::{
 use bee_common::packable::Packable;
 use bee_message::{
     constants::INPUT_OUTPUT_COUNT_MAX,
+    payload::Payload,
     prelude::{
         Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput,
         ED25519_ADDRESS_LENGTH,
@@ -22,7 +23,7 @@ use bee_pow::providers::{
     NonceProvider, NonceProviderBuilder,
 };
 use bee_rest_api::types::{
-    dtos::{MessageDto, PeerDto, ReceiptDto},
+    dtos::{LedgerInclusionStateDto, MessageDto, PeerDto, ReceiptDto},
     responses::{
         BalanceAddressResponse, InfoResponse as NodeInfo, MilestoneResponse as MilestoneResponseDto, OutputResponse,
         ReceiptsResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
@@ -1313,7 +1314,8 @@ impl Client {
     }
 
     /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages
+    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first position
+    /// and additional reattached messages
     pub async fn retry_until_included(
         &self,
         message_id: &MessageId,
@@ -1334,10 +1336,28 @@ impl Client {
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;
             // Check inclusion state for each attachment
             let message_ids_len = message_ids.len();
+            let mut conflicting = false;
             for (index, msg_id) in message_ids.clone().iter().enumerate() {
                 let message_metadata = self.get_message().metadata(msg_id).await?;
-                if message_metadata.ledger_inclusion_state.is_some() {
-                    return Ok(messages_with_id);
+                if let Some(inclusion_state) = message_metadata.ledger_inclusion_state {
+                    match inclusion_state {
+                        LedgerInclusionStateDto::Included | LedgerInclusionStateDto::NoTransaction => {
+                            // if original message, request it so we can return it on first position
+                            if message_id == msg_id {
+                                let mut included_and_reattached_messages =
+                                    vec![(*message_id, self.get_message().data(message_id).await?)];
+                                included_and_reattached_messages.extend(messages_with_id);
+                                return Ok(included_and_reattached_messages);
+                            } else {
+                                // Move included message to first position
+                                messages_with_id.rotate_left(index);
+                                return Ok(messages_with_id);
+                            }
+                        }
+                        // only set it as conflicting here and don't return, because another reattached message could
+                        // have the included transaction
+                        LedgerInclusionStateDto::Conflicting => conflicting = true,
+                    };
                 }
                 // Only reattach or promote latest attachment of the message
                 if index == message_ids_len - 1 {
@@ -1350,6 +1370,17 @@ impl Client {
                         message_ids.push(reattached.0);
                         messages_with_id.push(reattached);
                     }
+                }
+            }
+            // After we checked all our reattached messages, check if the transaction got reattached in another message
+            // and confirmed
+            if conflicting {
+                let message = self.get_message().data(message_id).await?;
+                if let Some(Payload::Transaction(transaction_payload)) = message.payload() {
+                    let included_message = self.get_included_message(&transaction_payload.id()).await?;
+                    let mut included_and_reattached_messages = vec![(included_message.id().0, included_message)];
+                    included_and_reattached_messages.extend(messages_with_id);
+                    return Ok(included_and_reattached_messages);
                 }
             }
         }
