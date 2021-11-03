@@ -12,6 +12,8 @@ async function run() {
     console.log(message);
     console.log("Index:", Buffer.from(message.message.payload.index, 'hex').toString("utf8"));
     console.log("Data:", Buffer.from(message.message.payload.data, 'hex').toString("utf8"));
+    let r = await client.retryUntilIncluded(message.messageId);
+    console.log(r);
 }
 
 run()
