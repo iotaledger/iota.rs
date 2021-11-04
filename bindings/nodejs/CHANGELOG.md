@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.1]
+
+- Fixed binaries upload
+  - [1b5044b1](https://github.com/iotaledger/iota.rs/commit/1b5044b17eb63cd33cf0cbbc72fb08286b64f3ef) fix workflow for binaries, clean wasm readme ([#738](https://github.com/iotaledger/iota.rs/pull/738)) on 2021-11-04
+
 ## \[2.2.0]
 
 - Changed "discovered" to "autopeered" in the result from getPeers().
