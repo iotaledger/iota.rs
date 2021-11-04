@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: Get covector output
-        run: echo ${{ needs.version-or-publish.outputs }}"
+        run: echo ${{ needs.version-or-publish.outputs }}
 
       - uses: actions/checkout@v2
 
