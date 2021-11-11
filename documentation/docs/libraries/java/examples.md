@@ -96,10 +96,10 @@ Client iota = node();
 Message messageToSend = iota.message().finish();
 
 // getMessage.metadata() returns message metadata from the MessageId we supplied
-MessageMetadata metadata = iota.getMessage().metadata(message.id());
+MessageMetadata metadata = iota.getMessage().metadata(messageToSend.id());
 System.out.println("Message metadata: " + metadata);
 
-// Now we send a message by index "Hello". The message itself will contain "Tangle" as data here, but this coulld be anything.
+// Now we send a message by index "Hello". The message itself will contain "Tangle" as data here, but this could be anything.
 Message message = iota.message().withIndexString("Hello").withDataString("Tangle").finish();
 System.out.println("Message sent https://explorer.iota.org/mainnet/message/" + message.id());
 
