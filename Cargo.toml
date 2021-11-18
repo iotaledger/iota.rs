@@ -62,11 +62,7 @@ bee-ternary = { version = "0.4.2-alpha", default-features = false, optional = tr
 bytes = { version = "1.1.0", default-features = false, optional = true }
 
 [dev-dependencies]
-tokio = { version = "1.12.0", default-features = false, features = ["full"] }
-hex = { version = "0.4.3", default-features = false }
 dotenv = { version =  "0.15.0", default-features = false }
-serde_json = { version = "1.0.68", default-features = false }
-serde = { version = "1.0.130", default-features = false }
 ureq = { version = "2.2.0", default-features = false, features = ["tls", "json"] }
 
 [features]
