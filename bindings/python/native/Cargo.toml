@@ -2,7 +2,7 @@
 name = "iota-client-python"
 version = "0.2.0-alpha.3"
 authors = ["IOTA Stiftung"]
-edition = "2018"
+edition = "2021"
 description = "Python bindings for the IOTA client library"
 documentation = "https://wiki.iota.org/iota.rs/welcome"
 homepage = "https://www.iota.org/"

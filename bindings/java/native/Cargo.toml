@@ -2,7 +2,7 @@
 name = "iota-client-java"
 version = "0.1.0"
 authors = ["IOTA Stiftung"]
-edition = "2018"
+edition = "2021"
 description = "Java bindings for the IOTA client library"
 documentation = "https://wiki.iota.org/iota.rs/welcome"
 homepage = "https://www.iota.org/"
