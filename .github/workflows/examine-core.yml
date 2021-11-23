@@ -1,0 +1,153 @@
+name: Examine the Rust Core
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/examine-core.yml'
+      - '.github/actions/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'examples/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/examine-core.yml'
+      - '.github/actions/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'examples/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    if: ${{ ! github.event.schedule }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          cache: true
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+
+      - name: Run Cargo Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features --release
+
+  lint:
+    name: Lint
+    # if: ${{ ! github.event.schedule }}
+    # FIXME: Fix clippy warnings. (#782)
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Clippy
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: clippy
+          cache: true
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+
+      - name: Run Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features --all-targets -- --deny warnings
+          name: Clippy Results for the Rust Core
+
+  check-unused-deps:
+    name: Check Unused Dependencies
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Install Cargo-udeps with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          install: cargo-udeps
+          cache: true
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+
+      - name: Run Cargo Udeps
+        uses: actions-rs/cargo@v1
+        with:
+          command: udeps
+          args: --all-targets
+
+  check-format:
+    name: Check Format
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Rustfmt
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: rustfmt
+          cache: false
+
+      - name: Run Cargo Fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  audit:
+    name: Perform Security Audit
+    # FIXME: Fix cargo-audit warnings. (#782)
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Install Cargo-audit with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          install: cargo-audit
+          cache: true
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+
+      - name: Run Cargo Audit
+        uses: actions-rs/cargo@v1
+        with:
+          command: audit
+          args: --file Cargo.lock --deny warnings

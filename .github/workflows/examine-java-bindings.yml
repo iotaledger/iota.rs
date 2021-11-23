@@ -1,0 +1,175 @@
+name: Examine the Java Bindings
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/examine-java-bindings.yml'
+      - '.github/actions/**'
+      - 'bindings/java/**'
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/examine-java-bindings.yml'
+      - '.github/actions/**'
+      - 'bindings/java/**'
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    if: ${{ ! github.event.schedule }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        # java: ['8', '11', '17']
+        # FIXME: Make tests work on the newer Java LTS version 17. (#782)
+        java: ['8', '11']
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          cache: true
+          cache-root: bindings/java/native/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.java }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Set Up Java ${{ matrix.java }} and Gradle Cache
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: gradle
+
+      # This step is required for bindgen to work on Windows.
+      - name: Set Up Clang/LLVM (Windows)
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        uses: ./.github/actions/setup-clang
+
+      - name: Run Cargo Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --manifest-path bindings/java/native/Cargo.toml --all-features --release
+
+      - name: Run Gradle Test
+        working-directory: bindings/java/
+        run: ./gradlew test
+
+  lint:
+    name: Lint
+    # if: ${{ ! github.event.schedule }}
+    # FIXME: Fix clippy warnings. (#782)
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Clippy
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: clippy
+          cache: true
+          cache-root: bindings/java/native/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Run Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path bindings/java/native/Cargo.toml --all-features --all-targets -- --deny warnings
+          name: Clippy Results for the Java Bindings
+
+      # TODO: Lint the Java code too
+
+  check-unused-deps:
+    name: Check Unused Dependencies
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Install Cargo-udeps with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          cache: true
+          install: cargo-udeps
+          cache-root: bindings/java/native/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Run Cargo Udeps
+        uses: actions-rs/cargo@v1
+        with:
+          command: udeps
+          args: --manifest-path bindings/java/native/Cargo.toml --all-targets
+
+      # TODO: Check gradle too
+
+  check-format:
+    name: Check Format
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Rustfmt
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: rustfmt
+          cache: false
+
+      - name: Run Cargo Fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path bindings/java/native/Cargo.toml --all -- --check
+
+      # TODO: Check the Java code too
+
+  audit:
+    name: Perform Security Audit
+    # FIXME: Fix cargo-audit warnings. (#782)
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Install Cargo-audit with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          install: cargo-audit
+          cache: true
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Run Cargo Audit
+        uses: actions-rs/cargo@v1
+        with:
+          command: audit
+          args: --file bindings/java/native/Cargo.lock --deny warnings
+
+      # TODO: Check the Java code too

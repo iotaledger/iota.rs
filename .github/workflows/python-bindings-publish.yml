@@ -1,0 +1,57 @@
+name: Build and Upload Wheels for the Python Bindings
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/python-bindings-publish.yml
+      - bindings/python/**
+      - src/**
+      - Cargo.lock
+      - Cargo.toml
+
+jobs:
+  wheels:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        # FIXME: Temporary limit to Python 3.6, as this is controlled by the feature gate for PyO3,
+        # which is currently just 3.6. (#782)
+        python: ['3.6']
+        include:
+          - os: ubuntu-latest
+            identifier: linux
+          - os: macos-latest
+            identifier: macos
+          - os: windows-latest
+            identifier: windows
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Stable Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: stable
+          cache: false
+
+      - name: Set Up Python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Build Wheels
+        working-directory: bindings/python/native
+        run: |
+          python3 -m pip install -v maturin
+          maturin build --release --manylinux off
+
+      - name: Upload Wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.identifier }}-iota-wallet-py${{ matrix.python }}-wheel
+          path: bindings/python/native/target/wheels/
