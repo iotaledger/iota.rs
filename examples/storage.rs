@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example storage --release
+//! cargo run --example storage --features=storage --release
 
 use iota_client::{
     storage::{sqlite, StorageAdapter},

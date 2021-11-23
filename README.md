@@ -1,10 +1,10 @@
-# iota.rs
+# iota.rs (iota-client)
 
-Official Rust library.
+The official, general-purpose IOTA client library in Rust for interaction with the IOTA network (Tangle).
 
-The goal of this library is to have `one source code of truth`, which means there is one implementation in Rust and [bindings](#bindings) to other programming languages.
+The goal of this library is to have _one source code of truth_, which means that there is one implementation in Rust and [bindings](#bindings) to other programming languages.
 
-For value transfers we recommend to use [wallet.rs](https://github.com/iotaledger/wallet.rs).
+For value transfers we recommend using [wallet.rs](https://github.com/iotaledger/wallet.rs).
 
 This library allows you to do the following:
 
@@ -14,31 +14,52 @@ This library allows you to do the following:
 * Generate addresses
 * Interact with an IOTA node
 
-## Requirements
-
-To use the library, we recommend you update Rust to latest stable version [`$ rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but some changes might not be compatible.
-
-`no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
-
 ## Using the library
 
-Using the library is easy, just add it as dependency in `Cargo.toml`:
+We recommend you to first update the Rust compiler to the latest stable version:
 
-```bash
+```shell
+rustup update stable
+```
+
+The nightly Rust compiler should be fine but some changes might not be compatible.
+
+Add `iota-client` as a dependency in `Cargo.toml`:
+
+```toml
 [dependencies]
 iota-client = "1.1.0"
 ```
 
-or for the latest changes
+Or, for the latest changes:
 
-```bash
+```toml
 [dependencies]
 iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 ```
 
-And then you can use the library in your code with `use iota_client;`.
+Then, use the library in code with:
 
-When using the "MQTT" feature, connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
+```rust
+// Note that the hyphen is replaced with an underscore
+use iota_client;
+```
+
+## Limitations
+
+- `no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
+- When using the `mqtt` feature, connecting to a MQTT broker using raw IP doesn't work with TCP. This is a limitation of `rustls`.
+
+## Examples
+
+You can see examples using the library in the [examples](examples/) directory. Try them with:
+
+```shell
+# cargo run --example <name of the example without .rs>
+cargo run --example 01_get_info
+```
+
+For examples where a seed is required (e.g. `03_generate_addresses`) you need to create a `.env` file under the current directory. You can do so by renaming [`.env.example`](.env.example) to `.env`.
 
 ## API reference
 
@@ -46,23 +67,13 @@ You can read the [API reference](https://docs.rs/iota-client) here, or generate 
 
 If you'd like to explore the implementation in more depth, the following command generates docs for the whole crate, including private modules:
 
-```bash
+```shell
 cargo doc --document-private-items --no-deps --open
 ```
 
-## Examples
-
-You can see the examples in the [examples](examples/) directory and try them like:
-
-```bash
-cargo run --example 01_get_info
-```
-
-For the examples where a seed is required you have to rename `.env.example` to `.env`.
-
 ## Bindings
 
-Bindings to other programming languages.
+Bindings to other programming languages are available under the folder [bindings](bindings/).
 
 * [Node.js binding](bindings/nodejs/)
 * [Python binding](bindings/python/)

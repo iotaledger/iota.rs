@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 10_mqtt --release
+//! cargo run --example 10_mqtt --features=mqtt --release
 
 use iota_client::{bee_message::Message, Client, MqttEvent, Result, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
