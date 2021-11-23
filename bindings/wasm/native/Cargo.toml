@@ -25,14 +25,10 @@ wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }
 wasm-bindgen-futures = { version = "0.4.28", default-features = false }
 hex = { version = "0.4.3", default-features = false }
 iota-client = { path = "../../..", features = ["wasm", "pow-fallback"], default-features = false }
-web-sys = {version = "0.3.52", features = ["console"] }
 
 # import needed for the wasm-bindgen feature
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 parking_lot = { version = "0.11.2", features = ["wasm-bindgen"] }
-
-[dev-dependencies]
-wasm-bindgen-test = { version = "0.3" }
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = true
