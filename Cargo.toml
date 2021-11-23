@@ -2,7 +2,7 @@
 name = "iota-client"
 version = "1.1.0"
 authors = ["IOTA Stiftung"]
-edition = "2018"
+edition = "2021"
 description = "The official, general-purpose IOTA client library in Rust for interaction with the IOTA network (Tangle)"
 documentation = "https://wiki.iota.org/iota.rs/welcome"
 homepage = "https://www.iota.org/"
