@@ -40,14 +40,12 @@ pub fn class_to_string(code: &mut Vec<u8>, class_name: &str) {
     let insert_pos = class_pos + needle.len();
     code.splice(
         insert_pos..insert_pos,
-        format!(
-            r#"
+        r#"
     @Override
     public String toString() {{
         return this.to_string();
     }}
-"#
-        )
+"#.to_string()
         .as_bytes()
         .iter()
         .copied(),
