@@ -45,7 +45,8 @@ pub fn class_to_string(code: &mut Vec<u8>, class_name: &str) {
     public String toString() {{
         return this.to_string();
     }}
-"#.to_string()
+"#
+        .to_string()
         .as_bytes()
         .iter()
         .copied(),
