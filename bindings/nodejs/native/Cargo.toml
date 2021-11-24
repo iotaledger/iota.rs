@@ -1,12 +1,12 @@
-[workspace]
-
 [package]
-name = "iota-client"
+name = "iota-client-nodejs"
 version = "0.1.0"
 authors = ["IOTA Stiftung"]
-license = "Apache-2.0"
-build = "build.rs"
 edition = "2018"
+description = "Node.js bindings for the IOTA client library"
+repository = "https://github.com/iotaledger/iota.rs"
+license = "Apache-2.0"
+keywords = ["iota", "tangle", "client", "nodejs"]
 exclude = ["artifacts.json", "index.node"]
 
 [lib]

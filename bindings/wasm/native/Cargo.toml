@@ -1,16 +1,12 @@
-[workspace]
-
 [package]
-name = "client-wasm"
+name = "iota-client-wasm"
 version = "0.0.1"
 authors = ["IOTA Stiftung"]
 edition = "2018"
-description = "Web Assembly bindings for the iota-client crate."
-readme = "README.md"
+description = "WebAssembly bindings for the IOTA client library"
 repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
-keywords = ["iota", "tangle", "wasm"]
-homepage = "https://www.iota.org"
+keywords = ["iota", "tangle", "client", "wasm"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

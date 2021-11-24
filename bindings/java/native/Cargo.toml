@@ -1,8 +1,12 @@
 [package]
-name = "iota-client"
+name = "iota-client-java"
 version = "0.1.0"
 authors = ["IOTA Stiftung"]
 edition = "2018"
+description = "Java bindings for the IOTA client library"
+repository = "https://github.com/iotaledger/iota.rs"
+license = "Apache-2.0"
+keywords = ["iota", "tangle", "client", "java"]
 build = "build.rs"
 
 [lib]
