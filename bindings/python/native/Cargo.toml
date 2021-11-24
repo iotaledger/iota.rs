@@ -3,7 +3,7 @@
 [package]
 name = "iota-client-python"
 version = "0.2.0-alpha.3"
-authors = ["Bing-Yang Lin <bingyang.lin@iota.org>"]
+authors = ["IOTA Stiftung"]
 edition = "2018"
 description = "Client library of IOTA"
 license = "Apache-2.0"
