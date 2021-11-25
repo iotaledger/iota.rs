@@ -1,5 +1,7 @@
 [package]
-name = "iota-client-wasm"
+# NOTE: cargo-cp-artifact reads the name of crate for artifacts, so this stays
+# the same as the one specified in `../package.json`.
+name = "client-wasm"
 version = "0.0.1"
 authors = ["IOTA Stiftung"]
 edition = "2018"
