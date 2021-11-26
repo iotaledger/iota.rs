@@ -6,9 +6,12 @@ version = "0.1.0"
 authors = ["IOTA Stiftung"]
 edition = "2018"
 description = "Node.js bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
 keywords = ["iota", "tangle", "client", "nodejs"]
+categories = ["cryptography::cryptocurrencies"]
 exclude = ["artifacts.json", "index.node"]
 
 [lib]
