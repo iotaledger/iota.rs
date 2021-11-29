@@ -1,21 +1,15 @@
 [package]
 name = "iota-client"
 version = "1.1.0"
-authors = [
-  "Thoralf Müller <thoralf.mueller@iota.org",
-  "Antony Dikov <antoni.dikov@iota.org>",
-  "Bing-Yang Lin <bingyang.lin@iota.org>",
-  "Lucas Nogueira <lucas.nogueira@iota.org>",
-  "Nathan Jaremko <nathan@jaremko.ca>",
-  "Yu-Wei Wu <wusyong9104@gmail.com>"
-]
+authors = ["IOTA Stiftung"]
 edition = "2018"
-description = "Client to use IOTA APIs"
-readme = "README.md"
+description = "The official, general-purpose IOTA client library in Rust for interaction with the IOTA network (Tangle)"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
-homepage = "https://www.iota.org"
-documentation = "https://docs.rs/iota-client"
 license = "Apache-2.0"
+keywords = ["iota", "tangle", "client"]
+categories = ["cryptography::cryptocurrencies"]
 
 [package.metadata.cargo-udeps.ignore]
 normal = ["async-trait"]

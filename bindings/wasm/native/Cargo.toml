@@ -1,16 +1,17 @@
-[workspace]
-
 [package]
+# NOTE: cargo-cp-artifact reads the name of crate for artifacts, so this stays
+# the same as the one specified in `../package.json`.
 name = "client-wasm"
 version = "0.0.1"
 authors = ["IOTA Stiftung"]
 edition = "2018"
-description = "Web Assembly bindings for the iota-client crate."
-readme = "README.md"
+description = "WebAssembly bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
-keywords = ["iota", "tangle", "wasm"]
-homepage = "https://www.iota.org"
+keywords = ["iota", "tangle", "client", "wasm"]
+categories = ["cryptography::cryptocurrencies"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

@@ -1,5 +1,5 @@
 [book]
-authors = ["Thoralf Müller <thoralf.mueller@iota.org",  "Sebastian Heusser <sebastian.heusser@iota.org>", "Antony Dikov <antoni.dikov@iota.org>", "Bing-Yang Lin <bingyang.lin@iota.org>"]
+authors = ["IOTA Stiftung"]
 language = "en"
 multilingual = false
 src = "./docs"
