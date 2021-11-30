@@ -42,7 +42,7 @@ futures = { version = "0.3.17", default-features = false, optional = true }
 rumqttc = { version = "0.10.0", default-features = false, features = ["websocket"], optional = true }
 
 # also used for storage
-once_cell = { version = "1.8.0", default-features = false, optional = true }
+once_cell = { version = "1.8.0", default-features = false, features = ["std"], optional = true }
 
 # storage
 async-trait = {version = "0.1.51", default-features = false }
