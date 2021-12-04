@@ -312,11 +312,8 @@ impl<'a> MqttTopicManager<'a> {
     }
 
     /// Subscribe to the given topics with the callback.
-    pub async fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(
-        mut self,
-        callback: C,
-    ) -> Result<()> {
-        let client = get_mqtt_client(&mut self.client).await?;
+    pub async fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(self, callback: C) -> Result<()> {
+        let client = get_mqtt_client(self.client).await?;
         let cb = Arc::new(Box::new(callback) as Box<dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static>);
         client
             .subscribe_many(
