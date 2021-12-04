@@ -1,12 +1,17 @@
-[workspace]
-
 [package]
-name = "iota-client"
+# NOTE: cargo-cp-artifact reads the name of crate for artifacts, so this stays
+# the same as the one specified in `../package.json`.
+name = "client"
 version = "0.1.0"
-authors = ["Lucas Nogueira <lucas.nogueira@iota.org>"]
+authors = ["IOTA Stiftung"]
+edition = "2021"
+description = "Node.js bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
+repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
-build = "build.rs"
-edition = "2018"
+keywords = ["iota", "tangle", "client", "nodejs"]
+categories = ["cryptography::cryptocurrencies"]
 exclude = ["artifacts.json", "index.node"]
 
 [lib]
@@ -18,10 +23,10 @@ neon-build = "0.5"
 
 [dependencies]
 neon = "0.8"
-iota-client = { path = "../../../iota-client", features = ["mqtt", "pow-fallback"] }
+iota-client = { path = "../../..", features = ["mqtt", "pow-fallback"] }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.68", default-features = false }
-once_cell = { version = "1.8.0", default-features = false }
+once_cell = { version = "1.8.0", default-features = false, features = ["std"] }
 rand = "0.7.3"
 futures = { version = "0.3.17", default-features = false }
 backtrace = "0.3.62"

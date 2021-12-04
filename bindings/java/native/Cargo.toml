@@ -1,8 +1,15 @@
 [package]
-name = "iota-client"
+name = "iota-client-java"
 version = "0.1.0"
-authors = ["Brord van Wierst <brord@iota.org>"]
-edition = "2018"
+authors = ["IOTA Stiftung"]
+edition = "2021"
+description = "Java bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
+repository = "https://github.com/iotaledger/iota.rs"
+license = "Apache-2.0"
+keywords = ["iota", "tangle", "client", "java"]
+categories = ["cryptography::cryptocurrencies"]
 build = "build.rs"
 
 [lib]
@@ -10,7 +17,7 @@ name = "iota_client"
 crate-type = ["cdylib"]
 
 [dependencies]
-iota-client = { path = "../../../iota-client", features = ["mqtt", "pow-fallback"] }
+iota-client = { path = "../../..", features = ["mqtt", "pow-fallback"] }
 
 # Java gen
 jni = "0.19.0" # Used in directly verifying binding linkage

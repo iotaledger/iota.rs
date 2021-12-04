@@ -1,16 +1,17 @@
-[workspace]
-
 [package]
+# NOTE: cargo-cp-artifact reads the name of crate for artifacts, so this stays
+# the same as the one specified in `../package.json`.
 name = "client-wasm"
 version = "0.0.1"
 authors = ["IOTA Stiftung"]
-edition = "2018"
-description = "Web Assembly bindings for the iota-client crate."
-readme = "README.md"
+edition = "2021"
+description = "WebAssembly bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
-keywords = ["iota", "tangle", "wasm"]
-homepage = "https://www.iota.org"
+keywords = ["iota", "tangle", "client", "wasm"]
+categories = ["cryptography::cryptocurrencies"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -24,15 +25,11 @@ serde_json = { version = "1.0.68", default-features = false }
 wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }
 wasm-bindgen-futures = { version = "0.4.28", default-features = false }
 hex = { version = "0.4.3", default-features = false }
-iota-client = { path = "../../../iota-client", features = ["wasm", "pow-fallback"], default-features = false }
-web-sys = {version = "0.3.52", features = ["console"] }
+iota-client = { path = "../../..", features = ["wasm", "pow-fallback"], default-features = false }
 
 # import needed for the wasm-bindgen feature
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 parking_lot = { version = "0.11.2", features = ["wasm-bindgen"] }
-
-[dev-dependencies]
-wasm-bindgen-test = { version = "0.3" }
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = true

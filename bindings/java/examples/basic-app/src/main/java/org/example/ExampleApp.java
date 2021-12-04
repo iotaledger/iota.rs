@@ -55,7 +55,7 @@ public class ExampleApp {
     public static void generateSeed() {
         try {
             SecretKey secret_key = SecretKey.generate();
-            System.out.println(RustHex.encode(secret_key.to_bytes()));
+            System.out.println(RustHex.encode(secret_key.toBytes()));
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());
         }

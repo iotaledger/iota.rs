@@ -1,14 +1,15 @@
-[workspace]
-
 [package]
 name = "iota-client-python"
 version = "0.2.0-alpha.3"
-authors = ["Bing-Yang Lin <bingyang.lin@iota.org>"]
-edition = "2018"
-description = "Client library of IOTA"
-license = "Apache-2.0"
+authors = ["IOTA Stiftung"]
+edition = "2021"
+description = "Python bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
-homepage = "https://iota.org"
+license = "Apache-2.0"
+keywords = ["iota", "tangle", "client", "python"]
+categories = ["cryptography::cryptocurrencies"]
 
 [lib]
 name = "iota_client"
@@ -17,10 +18,10 @@ crate-type = ["cdylib"]
 [dependencies]
 tokio = { version = "1.12.0", default-features = false, features = ["macros"] }
 hex = { version = "0.4.3", default-features = false }
-iota-client = { path = "../../../iota-client", features = ["mqtt", "pow-fallback"] }
+iota-client = { path = "../../..", features = ["mqtt", "pow-fallback"] }
 dict_derive = "0.3.0"
 serde_json = { version = "1.0.68", default-features = false }
-once_cell = { version = "1.8.0", default-features = false }
+once_cell = { version = "1.8.0", default-features = false, features = ["std"] }
 futures = { version = "0.3.17", default-features = false }
 
 [dependencies.pyo3]
