@@ -107,7 +107,7 @@ pub(crate) async fn convert_async_panics<T, F: Future<Output = Result<T>>>(f: im
 }
 
 pub(crate) fn convert_panics<T, F: FnOnce() -> Result<T>>(f: F) -> Result<T> {
-    match catch_unwind(AssertUnwindSafe(|| f())) {
+    match catch_unwind(AssertUnwindSafe(f)) {
         Ok(result) => result,
         Err(panic) => Err(Error::Panic(panic_to_response_message(panic))),
     }
