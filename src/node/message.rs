@@ -4,8 +4,10 @@
 use crate::{Api, Client, Result};
 use bee_message::{Message, MessageId};
 use bee_rest_api::types::{
-    dtos::MessageDto,
-    responses::{MessageChildrenResponse, MessageMetadataResponse as MessageMetadata, MessagesFindResponse},
+    body::SuccessBody,
+    responses::{
+        MessageChildrenResponse, MessageMetadataResponse as MessageMetadata, MessageResponse, MessagesFindResponse,
+    },
 };
 
 use std::convert::TryFrom;
@@ -25,11 +27,8 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and search for messages matching the index
     pub async fn index<I: AsRef<[u8]>>(self, index: I) -> Result<Box<[MessageId]>> {
         let path = "api/v1/messages";
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessagesFindResponse,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: SuccessBody<MessagesFindResponse> = self
             .client
             .node_manager
             .get_request(
@@ -54,28 +53,22 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
     pub async fn data(self, message_id: &MessageId) -> Result<Message> {
         let path = &format!("api/v1/messages/{}", message_id);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessageDto,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: SuccessBody<MessageResponse> = self
             .client
             .node_manager
             .get_request(path, None, self.client.get_timeout(Api::GetMessage))
             .await?;
 
-        Ok(Message::try_from(&resp.data)?)
+        Ok(Message::try_from(&resp.data.0)?)
     }
 
     /// GET /api/v1/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
     pub async fn metadata(self, message_id: &MessageId) -> Result<MessageMetadata> {
         let path = &format!("api/v1/messages/{}/metadata", message_id);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessageMetadata,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: SuccessBody<MessageMetadata> = self
             .client
             .node_manager
             .get_request(path, None, self.client.get_timeout(Api::GetMessage))
@@ -101,11 +94,8 @@ impl<'a> GetMessageBuilder<'a> {
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
     pub async fn children(self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
         let path = &format!("api/v1/messages/{}/children", message_id);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessageChildrenResponse,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: SuccessBody<MessageChildrenResponse> = self
             .client
             .node_manager
             .get_request(path, None, self.client.get_timeout(Api::GetMessage))
