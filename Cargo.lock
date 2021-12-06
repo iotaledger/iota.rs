@@ -157,9 +157,9 @@ dependencies = [
 
 [[package]]
 name = "bee-rest-api"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e028cd999f57e03d91e1299414f7f5005e1dfd0aaaf51680ddef5c315a5d1dfe"
+checksum = "fc6f55c2e988960410cc45528a909fd40857524e3d80fb01066233716d91b6ec"
 dependencies = [
  "bee-ledger",
  "bee-message",

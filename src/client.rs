@@ -1017,7 +1017,7 @@ impl Client {
 
         let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
-        Ok(resp.data.0)
+        Ok(resp.data.receipts)
     }
 
     /// GET /api/v1/receipts/{migratedAt} endpoint
@@ -1027,7 +1027,7 @@ impl Client {
 
         let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
-        Ok(resp.data.0)
+        Ok(resp.data.receipts)
     }
 
     /// GET /api/v1/treasury endpoint
