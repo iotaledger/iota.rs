@@ -23,11 +23,11 @@ use bee_pow::providers::{
     NonceProvider, NonceProviderBuilder,
 };
 use bee_rest_api::types::{
-    body::{BodyInner, SuccessBody},
+    body::SuccessBody,
     dtos::{LedgerInclusionStateDto, MessageDto, PeerDto, ReceiptDto},
     responses::{
         BalanceAddressResponse, InfoResponse as NodeInfo, MessageResponse, MilestoneResponse as MilestoneResponseDto,
-        OutputResponse, PeersResponse, ReceiptsResponse, TipsResponse, TreasuryResponse,
+        OutputResponse, PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse,
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
@@ -749,22 +749,16 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        #[derive(Debug, Serialize, Deserialize)]
-        struct MessageIdWrapper {
-            #[serde(rename = "messageId")]
-            message_id: String,
-        }
-        impl BodyInner for MessageIdWrapper {}
 
         #[cfg(not(feature = "pow-fallback"))]
-        let resp: SuccessBody<MessageIdWrapper> = self
+        let resp: SuccessBody<SubmitMessageResponse> = self
             .node_manager
             .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
             .await?;
 
         #[cfg(feature = "pow-fallback")]
         // fallback to local PoW if remote PoW fails
-        let resp: SuccessBody<MessageIdWrapper> = match self
+        let resp: SuccessBody<SubmitMessageResponse> = match self
             .node_manager
             .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
             .await
@@ -840,19 +834,9 @@ impl Client {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
         let message_dto = MessageDto::from(message);
-        // todo change when Deserialize was added to https://github.com/iotaledger/bee/blob/44bd84b4108ea50acc75a0e52ad385a092e058f0/bee-api/bee-rest-api/src/types/responses.rs#L56
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessageIdWrapper,
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        struct MessageIdWrapper {
-            #[serde(rename = "messageId")]
-            message_id: String,
-        }
 
         // fallback to local PoW if remote PoW fails
-        let resp: ResponseWrapper = match self
+        let resp: SuccessBody<SubmitMessageResponse> = match self
             .node_manager
             .post_request_json(path, timeout, serde_json::to_value(message_dto)?, local_pow)
             .await
