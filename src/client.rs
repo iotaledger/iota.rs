@@ -23,10 +23,12 @@ use bee_pow::providers::{
     NonceProvider, NonceProviderBuilder,
 };
 use bee_rest_api::types::{
+    body::SuccessBody,
     dtos::{LedgerInclusionStateDto, MessageDto, PeerDto, ReceiptDto},
     responses::{
-        BalanceAddressResponse, InfoResponse as NodeInfo, MilestoneResponse as MilestoneResponseDto, OutputResponse,
-        ReceiptsResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
+        BalanceAddressResponse, InfoResponse as NodeInfo, MessageResponse, MilestoneResponse as MilestoneResponseDto,
+        OutputResponse, PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse,
+        UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
 use crypto::{
@@ -686,11 +688,8 @@ impl Client {
 
         let path = "api/v1/info";
         url.set_path(path);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: NodeInfo,
-        }
-        let resp: ResponseWrapper = crate::node_manager::HttpClient::new()
+
+        let resp: SuccessBody<NodeInfo> = crate::node_manager::HttpClient::new()
             .get(Node { url, jwt }, GET_API_TIMEOUT)
             .await?
             .json()
@@ -714,26 +713,20 @@ impl Client {
     /// GET /api/v1/peers endpoint
     pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
         let path = "api/v1/peers";
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: Vec<PeerDto>,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: SuccessBody<PeersResponse> = self
             .node_manager
             .get_request(path, None, self.get_timeout(Api::GetPeers))
             .await?;
 
-        Ok(resp.data)
+        Ok(resp.data.0)
     }
 
     /// GET /api/v1/tips endpoint
     pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
         let path = "api/v1/tips";
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: TipsResponse,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: SuccessBody<TipsResponse> = self
             .node_manager
             .get_request(path, None, self.get_timeout(Api::GetTips))
             .await?;
@@ -756,25 +749,16 @@ impl Client {
         } else {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessageIdWrapper,
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        struct MessageIdWrapper {
-            #[serde(rename = "messageId")]
-            message_id: String,
-        }
 
         #[cfg(not(feature = "pow-fallback"))]
-        let resp: ResponseWrapper = self
+        let resp: SuccessBody<SubmitMessageResponse> = self
             .node_manager
             .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
             .await?;
 
         #[cfg(feature = "pow-fallback")]
         // fallback to local PoW if remote PoW fails
-        let resp: ResponseWrapper = match self
+        let resp: SuccessBody<SubmitMessageResponse> = match self
             .node_manager
             .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
             .await
@@ -850,18 +834,9 @@ impl Client {
             self.get_timeout(Api::PostMessageWithRemotePow)
         };
         let message_dto = MessageDto::from(message);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessageIdWrapper,
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        struct MessageIdWrapper {
-            #[serde(rename = "messageId")]
-            message_id: String,
-        }
 
         // fallback to local PoW if remote PoW fails
-        let resp: ResponseWrapper = match self
+        let resp: SuccessBody<SubmitMessageResponse> = match self
             .node_manager
             .post_request_json(path, timeout, serde_json::to_value(message_dto)?, local_pow)
             .await
@@ -943,11 +918,7 @@ impl Client {
             hex::encode(output_id.output_id().index().to_le_bytes())
         );
 
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: OutputResponse,
-        }
-        let resp: ResponseWrapper = self
+        let resp: SuccessBody<OutputResponse> = self
             .node_manager
             .get_request(path, None, self.get_timeout(Api::GetOutput))
             .await?;
@@ -1010,12 +981,8 @@ impl Client {
     /// Get the milestone by the given index.
     pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
         let path = &format!("api/v1/milestones/{}", index);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MilestoneResponseDto,
-        }
 
-        let resp: ResponseWrapper = self
+        let resp: SuccessBody<MilestoneResponseDto> = self
             .node_manager
             .get_request(path, None, self.get_timeout(Api::GetMilestone))
             .await?;
@@ -1034,11 +1001,8 @@ impl Client {
     /// Get the milestone by the given index.
     pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
         let path = &format!("api/v1/milestones/{}/utxo-changes", index);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MilestoneUTXOChanges,
-        }
-        let resp: ResponseWrapper = self
+
+        let resp: SuccessBody<MilestoneUTXOChanges> = self
             .node_manager
             .get_request(path, None, self.get_timeout(Api::GetMilestone))
             .await?;
@@ -1050,45 +1014,28 @@ impl Client {
     /// Get all receipts.
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
         let path = &"api/v1/receipts";
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: ReceiptsResponseWrapper,
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ReceiptsResponseWrapper {
-            receipts: ReceiptsResponse,
-        }
-        let resp: ResponseWrapper = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
-        Ok(resp.data.receipts.0)
+        let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+
+        Ok(resp.data.receipts)
     }
 
     /// GET /api/v1/receipts/{migratedAt} endpoint
     /// Get the receipts by the given milestone index.
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
         let path = &format!("api/v1/receipts/{}", milestone_index);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: ReceiptsResponseWrapper,
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ReceiptsResponseWrapper {
-            receipts: ReceiptsResponse,
-        }
-        let resp: ResponseWrapper = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
-        Ok(resp.data.receipts.0)
+        let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+
+        Ok(resp.data.receipts)
     }
 
     /// GET /api/v1/treasury endpoint
     /// Get the treasury output.
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
         let path = "api/v1/treasury";
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: TreasuryResponse,
-        }
-        let resp: ResponseWrapper = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+
+        let resp: SuccessBody<TreasuryResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
         Ok(resp.data)
     }
@@ -1097,12 +1044,9 @@ impl Client {
     /// Returns the included message of the transaction.
     pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
         let path = &format!("api/v1/transactions/{}/included-message", transaction_id);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: MessageDto,
-        }
-        let resp: ResponseWrapper = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
-        Ok(Message::try_from(&resp.data)?)
+
+        let resp: SuccessBody<MessageResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+        Ok(Message::try_from(&resp.data.0)?)
     }
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.

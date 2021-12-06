@@ -5,7 +5,10 @@ use crate::{Api, Client, Error, Result};
 
 use bee_message::prelude::{TransactionId, UtxoInput};
 
-use bee_rest_api::types::responses::{BalanceAddressResponse, OutputsAddressResponse};
+use bee_rest_api::types::{
+    body::SuccessBody,
+    responses::{BalanceAddressResponse, OutputsAddressResponse},
+};
 
 use std::convert::TryInto;
 
@@ -75,11 +78,7 @@ impl<'a> GetAddressBuilder<'a> {
     pub async fn balance(self, address: &str) -> Result<BalanceAddressResponse> {
         let path = &format!("api/v1/addresses/{}", address);
 
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: BalanceAddressResponse,
-        }
-        let resp: ResponseWrapper = self
+        let resp: SuccessBody<BalanceAddressResponse> = self
             .client
             .node_manager
             .get_request(path, None, self.client.get_timeout(Api::GetBalance))
@@ -93,12 +92,8 @@ impl<'a> GetAddressBuilder<'a> {
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Box<[UtxoInput]>> {
         let path = format!("api/v1/addresses/{}/outputs", address);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: OutputsAddressResponse,
-        }
 
-        let resp: ResponseWrapper = self
+        let resp: SuccessBody<OutputsAddressResponse> = self
             .client
             .node_manager
             .get_request(
@@ -133,12 +128,8 @@ impl<'a> GetAddressBuilder<'a> {
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs_response(self, address: &str, options: OutputsOptions) -> Result<OutputsAddressResponse> {
         let path = format!("api/v1/addresses/{}/outputs", address);
-        #[derive(Debug, Serialize, Deserialize)]
-        struct ResponseWrapper {
-            data: OutputsAddressResponse,
-        }
 
-        let resp: ResponseWrapper = self
+        let resp: SuccessBody<OutputsAddressResponse> = self
             .client
             .node_manager
             .get_request(
