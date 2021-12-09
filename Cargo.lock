@@ -92,16 +92,16 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 
 [[package]]
 name = "bee-common"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e70a15b5cdc7f8fc726fb18c4c4cc8bb725e56f27706d9254fdc94363bc883d3"
+checksum = "967d987fbd588c72178d80b1cbd53e9c9a62771993dd280d568d8bbb811d44c2"
 dependencies = [
  "autocfg",
- "chrono",
  "fern",
  "log",
  "serde",
  "thiserror",
+ "time",
 ]
 
 [[package]]
@@ -115,45 +115,31 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-crypto"
-version = "0.2.1-alpha"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e9be03c91825c26fa8c93613362341df1136da233c8462ec2c59fe1be81c237"
-dependencies = [
- "bee-ternary",
- "byteorder",
- "lazy_static",
- "thiserror",
- "tiny-keccak",
-]
-
-[[package]]
 name = "bee-message"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34340c856750db4c2c0bed1e709503c0fee94a82c984fa024bf9490be4ae18cd"
+checksum = "5e611e476d403e86d0a0ce74bd204b96aaefad2ab402972deca850b00eaad81c"
 dependencies = [
  "bech32",
  "bee-common",
  "bee-pow",
- "bee-ternary",
+ "bee-ternary 0.5.2",
  "bytemuck",
  "digest",
  "hex",
- "iota-crypto 0.4.2",
+ "iota-crypto 0.9.1",
  "serde",
  "thiserror",
 ]
 
 [[package]]
 name = "bee-pow"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "612452ebcbc440512f0131a7058db63470b13828f1dc9c9b2024302673c767de"
+checksum = "4f1665dbc6b6d802c4aedea8220093df165f69c193e5c1c66bd5c4bfec37bf6f"
 dependencies = [
- "bee-crypto",
- "bee-ternary",
- "iota-crypto 0.4.2",
+ "bee-ternary 0.5.2",
+ "iota-crypto 0.9.1",
  "thiserror",
 ]
 
@@ -169,11 +155,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bee-ternary"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e8479555c8e9bf3cad36daf16e6a2f77771774e977276a08df4d8ac5f1dda66"
+dependencies = [
+ "autocfg",
+ "num-traits",
+ "serde",
+]
+
+[[package]]
 name = "bee-transaction"
 version = "0.1.0-alpha"
 source = "git+https://github.com/Alex6323/bee-p.git?rev=cf47287dbb37861668d378ea3ae3b8c0f2852566#cf47287dbb37861668d378ea3ae3b8c0f2852566"
 dependencies = [
- "bee-ternary",
+ "bee-ternary 0.4.2-alpha",
  "iota-crypto 0.5.1",
  "serde",
  "thiserror",
@@ -310,7 +307,6 @@ dependencies = [
  "libc",
  "num-integer",
  "num-traits",
- "time",
  "winapi",
 ]
 
@@ -894,7 +890,7 @@ dependencies = [
 name = "iota-bundle-miner"
 version = "0.1.0-alpha.0"
 dependencies = [
- "bee-ternary",
+ "bee-ternary 0.4.2-alpha",
  "bee-transaction",
  "criterion",
  "futures",
@@ -913,7 +909,7 @@ dependencies = [
  "bee-common",
  "bee-common-derive",
  "bee-message",
- "bee-ternary",
+ "bee-ternary 0.4.2-alpha",
  "bee-transaction",
  "blake2",
  "chrono",
@@ -971,7 +967,7 @@ dependencies = [
 name = "iota-core"
 version = "0.2.0-alpha.3"
 dependencies = [
- "bee-ternary",
+ "bee-ternary 0.4.2-alpha",
  "bee-transaction",
  "iota-bundle-miner",
  "iota-client",
@@ -992,23 +988,12 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "558466ca403e13e2b849f6b1aa0ec98a602dd21a49421a24d69aa265261c2290"
-dependencies = [
- "blake2",
- "digest",
- "ed25519-zebra",
-]
-
-[[package]]
-name = "iota-crypto"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cccb8160eb8a88434fb3a0a3fc852e625aceab6c0272f0f03cc3f47c125bceab"
 dependencies = [
  "bee-common-derive",
- "bee-ternary",
+ "bee-ternary 0.4.2-alpha",
  "byteorder",
  "ed25519-zebra",
  "getrandom 0.2.3",
@@ -1017,6 +1002,19 @@ dependencies = [
  "sha3",
  "tiny-keccak",
  "zeroize",
+]
+
+[[package]]
+name = "iota-crypto"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c98a3248cde6b42cb479a52089fe4fc20d12de51b8edd923294cd5240ec89b0"
+dependencies = [
+ "bee-ternary 0.5.2",
+ "blake2",
+ "digest",
+ "ed25519-zebra",
+ "lazy_static",
 ]
 
 [[package]]
@@ -1067,6 +1065,9 @@ name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+dependencies = [
+ "spin",
+]
 
 [[package]]
 name = "libc"
@@ -1732,12 +1733,12 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.1.43"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca8a50ef2360fbd1eeb0ecd46795a87a19024eb4b53c5dc916ca1fd95fe62438"
+checksum = "41effe7cfa8af36f439fac33861b66b049edc6f9a32331e2312660529c1c24ad"
 dependencies = [
+ "itoa",
  "libc",
- "winapi",
 ]
 
 [[package]]
