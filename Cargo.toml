@@ -15,11 +15,11 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { version = "0.1.6", default-features = false }
-bee-message = { version  = "0.1.5", default-features = false, features = ["serde"] }
-bee-pow = { version = "0.1.0", default-features = false }
-bee-common = { version = "0.4.1", default-features = false }
-iota-crypto = { version = "0.7.0", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
+bee-rest-api = { version = "0.1.7", default-features = false }
+bee-message = { version  = "0.1.6", default-features = false, features = ["serde"] }
+bee-pow = { version = "0.2.0", default-features = false }
+bee-common = { version = "0.5.0", default-features = false }
+iota-crypto = { version = "0.9.1", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
 
 url = { version = "2.2.2", default-features = false }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
