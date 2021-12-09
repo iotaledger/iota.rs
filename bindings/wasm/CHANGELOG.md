@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.3.1]
+
+- Updated dependencies to fix compilation.
+  - [0838d48e](https://github.com/iotaledger/iota.rs/commit/0838d48e4683ab8d10f685c444f4ed097cf76493) Update dependencies ([#767](https://github.com/iotaledger/iota.rs/pull/767)) on 2021-12-09
+
 ## \[0.3.0]
 
 - Changed "discovered" to "autopeered" in the result from getPeers().
