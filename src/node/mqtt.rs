@@ -7,6 +7,7 @@ use crate::{
 };
 use bee_common::packable::Packable;
 use bee_message::Message;
+use crypto::utils;
 use log::warn;
 use regex::Regex;
 use rumqttc::{
@@ -96,7 +97,9 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
             };
             for node in nodes.iter() {
                 let host = node.url.host_str().expect("Can't get host from URL");
-                let id = "iota.rs";
+                let mut entropy = [0u8; 8];
+                utils::rand::fill(&mut entropy)?;
+                let id = format!("iotars{}", hex::encode(entropy));
                 let port = client.broker_options.port;
                 let mut uri = format!(
                     "{}://{}:{}/mqtt",
