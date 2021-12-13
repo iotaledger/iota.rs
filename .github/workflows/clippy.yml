@@ -3,10 +3,10 @@ name: Clippy
 on:
   push:
     branches:
-      - main
+      - mainnet
   pull_request:
     branches:
-      - main
+      - mainnet
       - dev
     paths-ignore:
       - 'specs/**'
