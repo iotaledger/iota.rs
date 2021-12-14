@@ -1,3 +1,3 @@
 # iota.rs examples
 
-[Examples documentation page](https://client-lib.docs.iota.org/docs/libraries/rust/examples)
+[Examples documentation page](https://wiki.iota.org/iota.rs/libraries/rust/examples)

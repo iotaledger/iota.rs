@@ -3,7 +3,7 @@
 
 use crate::{Client, Error, Result};
 
-use bee_message::prelude::{Address, Ed25519Address};
+use bee_message::address::{Address, Ed25519Address};
 use core::convert::TryInto;
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},

@@ -4,7 +4,8 @@
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
-use bee_message::{constants::INPUT_OUTPUT_COUNT_MAX, prelude::*};
+use bee_message::address::Address;
+use bee_message::input::INPUT_COUNT_MAX;
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
 use bee_rest_api::types::{
@@ -404,7 +405,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         for (_offset, output_wrapper) in iterator
                             .iter()
                             // Max inputs is 127
-                            .take(INPUT_OUTPUT_COUNT_MAX)
+                            .take(INPUT_COUNT_MAX)
                             .enumerate()
                         {
                             total_already_spent += output_wrapper.amount;
@@ -472,7 +473,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     .chain(dust_allowance_outputs.iter())
                     .fold(0, |acc, output| acc + output.amount);
                 let inputs_amount = outputs.len() + dust_allowance_outputs.len();
-                if inputs_balance >= total_to_spend && inputs_amount > INPUT_OUTPUT_COUNT_MAX {
+                if inputs_balance >= total_to_spend && inputs_amount > INPUT_COUNT_MAX {
                     return Err(Error::ConsolidationRequired(inputs_amount));
                 } else if inputs_balance > total_to_spend {
                     return Err(Error::DustError(format!(
@@ -515,7 +516,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let (mut inputs_for_essence, mut outputs_for_essence, address_index_recorders) = match &self.inputs {
             Some(inputs) => {
                 // 127 is the maximum input amount
-                if inputs.len() > INPUT_OUTPUT_COUNT_MAX {
+                if inputs.len() > INPUT_COUNT_MAX {
                     return Err(Error::ConsolidationRequired(inputs.len()));
                 }
                 self.get_custom_inputs(inputs, total_to_spend, dust_and_allowance_recorders.as_mut())

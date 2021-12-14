@@ -4,7 +4,7 @@
 //! cargo run --example custom_payload --release
 
 use iota_client::{
-    bee_message::prelude::{IndexationPayload, Payload},
+    bee_message::payload::{IndexationPayload, Payload},
     Client,
 };
 

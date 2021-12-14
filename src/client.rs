@@ -11,12 +11,8 @@ use crate::{
 };
 use bee_common::packable::Packable;
 use bee_message::{
-    constants::INPUT_OUTPUT_COUNT_MAX,
-    payload::Payload,
-    prelude::{
-        Address, Ed25519Address, Message, MessageBuilder, MessageId, Parents, TransactionId, UtxoInput,
-        ED25519_ADDRESS_LENGTH,
-    },
+    address::Address, address::Ed25519Address, input::UtxoInput, input::INPUT_COUNT_MAX, message::Parents,
+    payload::transaction::TransactionId, payload::Payload, Message, MessageBuilder, MessageId,
 };
 use bee_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
@@ -603,7 +599,7 @@ impl Client {
             .into_iter()
             .chain(dust_allowance_outputs.into_iter())
             // Max inputs is 127
-            .take(INPUT_OUTPUT_COUNT_MAX)
+            .take(INPUT_COUNT_MAX)
             .enumerate()
         {
             // Break if we have enough funds and don't create dust for the remainder

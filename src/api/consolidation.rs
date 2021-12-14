@@ -6,7 +6,7 @@ use crate::{
     node::{OutputType, OutputsOptions},
     Client, Result,
 };
-use bee_message::constants::INPUT_OUTPUT_COUNT_MAX;
+use bee_message::input::INPUT_COUNT_MAX;
 use crypto::keys::slip10::Seed;
 use std::ops::Range;
 
@@ -78,7 +78,7 @@ pub async fn consolidate_funds(
                 }
             }
 
-            let outputs_chunks = output_with_metadata.chunks(INPUT_OUTPUT_COUNT_MAX);
+            let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX);
 
             for chunk in outputs_chunks {
                 let mut message_builder = client.message().with_seed(seed);
