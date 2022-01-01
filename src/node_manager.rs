@@ -28,6 +28,7 @@ use std::{
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 const DEFAULT_QUORUM_SIZE: usize = 3;
 const DEFAULT_QUORUM_THRESHOLD: usize = 66;
+pub(crate) const DEFAULT_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
 /// Node struct
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -394,6 +395,7 @@ pub(crate) struct NodeManagerBuilder {
     quorum: bool,
     quorum_size: usize,
     quorum_threshold: usize,
+    user_agent: String,
 }
 
 impl NodeManagerBuilder {
@@ -492,7 +494,7 @@ impl NodeManagerBuilder {
     /// Get node list from the node_pool_urls
     pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
-            let http_client = crate::node_manager::HttpClient::new();
+            let http_client = crate::node_manager::HttpClient::new(DEFAULT_USER_AGENT.to_owned());
             let nodes_details: Vec<NodeDetail> = http_client
                 .get(
                     Node {
@@ -525,6 +527,10 @@ impl NodeManagerBuilder {
     }
     pub(crate) fn with_quorum_threshold(mut self, threshold: usize) -> Self {
         self.quorum_threshold = threshold;
+        self
+    }
+    pub(crate) fn with_user_agent(mut self, user_agent: String) -> Self {
+        self.user_agent = user_agent;
         self
     }
     pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
@@ -563,7 +569,7 @@ impl NodeManagerBuilder {
             quorum: self.quorum,
             quorum_size: self.quorum_size,
             quorum_threshold: self.quorum_threshold,
-            http_client: HttpClient::new(),
+            http_client: HttpClient::new(self.user_agent),
         }
     }
 }
@@ -580,6 +586,7 @@ impl Default for NodeManagerBuilder {
             quorum: false,
             quorum_size: DEFAULT_QUORUM_SIZE,
             quorum_threshold: DEFAULT_QUORUM_THRESHOLD,
+            user_agent: DEFAULT_USER_AGENT.to_owned(),
         }
     }
 }
@@ -635,13 +642,15 @@ pub(crate) struct HttpClient {
 
 #[cfg(all(feature = "sync", not(feature = "async")))]
 #[derive(Clone)]
-pub(crate) struct HttpClient;
+pub(crate) struct HttpClient {
+    user_agent: String,
+}
 
 #[cfg(any(feature = "async", feature = "wasm"))]
 impl HttpClient {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(user_agent: String) -> Self {
         Self {
-            client: reqwest::Client::new(),
+            client: reqwest::Client::builder().user_agent(user_agent).build().unwrap(),
         }
     }
 
@@ -695,8 +704,8 @@ impl HttpClient {
 
 #[cfg(all(feature = "sync", not(feature = "async")))]
 impl HttpClient {
-    pub(crate) fn new() -> Self {
-        Self {}
+    pub(crate) fn new(user_agent: String) -> Self {
+        Self { user_agent: user_agent }
     }
 
     pub(crate) fn clone(&self) -> Self {
@@ -729,7 +738,11 @@ impl HttpClient {
     }
 
     fn get_ureq_agent(timeout: Duration) -> Agent {
-        AgentBuilder::new().timeout_read(timeout).timeout_write(timeout).build()
+        AgentBuilder::new()
+            .timeout_read(timeout)
+            .timeout_write(timeout)
+            .user_agent(self.user_agent)
+            .build()
     }
 }
 

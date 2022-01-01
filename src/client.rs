@@ -7,7 +7,7 @@ use crate::{
     builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
     error::*,
     node::*,
-    node_manager::Node,
+    node_manager::{Node, DEFAULT_USER_AGENT},
 };
 use bee_common::packable::Packable;
 use bee_message::{
@@ -651,7 +651,7 @@ impl Client {
     pub async fn get_node_health(url: &str) -> Result<bool> {
         let mut url = Url::parse(url)?;
         url.set_path("health");
-        let status = crate::node_manager::HttpClient::new()
+        let status = crate::node_manager::HttpClient::new(DEFAULT_USER_AGENT.into())
             .get(Node { url, jwt: None }, GET_API_TIMEOUT)
             .await?
             .status();
@@ -689,7 +689,7 @@ impl Client {
         let path = "api/v1/info";
         url.set_path(path);
 
-        let resp: SuccessBody<NodeInfo> = crate::node_manager::HttpClient::new()
+        let resp: SuccessBody<NodeInfo> = crate::node_manager::HttpClient::new(DEFAULT_USER_AGENT.into())
             .get(Node { url, jwt }, GET_API_TIMEOUT)
             .await?
             .json()

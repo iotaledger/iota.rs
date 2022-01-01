@@ -212,6 +212,13 @@ impl ClientBuilder {
         self
     }
 
+    /// Set User-Agent header for requests
+    /// Default is "iota-client/[version]"
+    pub fn with_user_agent(mut self, user_agent: &str) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_user_agent(user_agent.into());
+        self
+    }
+
     /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
     /// Nodes that don't belong to this network are ignored. The &str must match a part or all of the networkId returned
     /// in the nodeinfo from a node. For example, if the networkId is `"private-tangle"`, `"tangle"` can be used.
