@@ -22,7 +22,7 @@ Runs on push to dev and creates a release when necessary.
 
 ## deploy-docs-to-gh-pages
 
-Runs on pull request or pushes to the dev or main branch and will deploy the docs from the documentation folder.
+Runs on pull request or pushes to the dev or mainnet branch and will deploy the docs from the documentation folder.
 
 ## format
 
@@ -30,8 +30,8 @@ Runs `cargo fmt check` on all crates (iota_client and bindings) bindings when th
 
 ## python_binding_publish
 
-Builds python wheels on pushes to the dev or main branch.
+Builds python wheels on pushes to the dev or mainnet branch.
 
 ## udeps
 
-Checks for unused dependencies on pull requests or pushes to the dev or main branch.
+Checks for unused dependencies on pull requests or pushes to the dev or mainnet branch.
