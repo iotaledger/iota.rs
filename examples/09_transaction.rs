@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
 
     println!(
         "Transaction sent: https://explorer.iota.org/devnet/message/{}",
-        message.id().0
+        message.id()
     );
     Ok(())
 }

@@ -724,7 +724,7 @@ declare_types! {
                 Ok(message_dto) => Message::try_from(&message_dto).expect("invalid message"),
                 Err(_) => serde_json::from_str::<Message>(&message_string).expect("invalid message"),
             };
-            let message_id = message.id().0.to_string();
+            let message_id = message.id().to_string();
             Ok(cx.string(message_id).upcast())
         }
     }

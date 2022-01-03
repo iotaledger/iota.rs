@@ -78,7 +78,7 @@ pub async fn consolidate_funds(
                 }
             }
 
-            let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX);
+            let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
 
             for chunk in outputs_chunks {
                 let mut message_builder = client.message().with_seed(seed);
@@ -94,7 +94,7 @@ pub async fn consolidate_funds(
                     .with_initial_address_index(0)
                     .finish()
                     .await?;
-                message_ids.push(message.id().0);
+                message_ids.push(message.id());
             }
         }
 

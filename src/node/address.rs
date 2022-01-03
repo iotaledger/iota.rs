@@ -3,8 +3,7 @@
 
 use crate::{Api, Client, Error, Result};
 
-use bee_message::input::UtxoInput;
-use bee_message::payload::transaction::TransactionId;
+use bee_message::{input::UtxoInput, payload::transaction::TransactionId};
 
 use bee_rest_api::types::{
     body::SuccessBody,

@@ -52,8 +52,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("First transaction sent: {}{}", EXPLORER_URL, message.id().0);
-    let _ = iota.retry_until_included(&message.id().0, None, None).await?;
+    println!("First transaction sent: {}{}", EXPLORER_URL, message.id());
+    let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
     let message = iota
         .message()
@@ -65,8 +65,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Second transaction sent: {}{}", EXPLORER_URL, message.id().0);
-    let _ = iota.retry_until_included(&message.id().0, None, None).await?;
+    println!("Second transaction sent: {}{}", EXPLORER_URL, message.id());
+    let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
     let message = iota
         .message()
@@ -78,8 +78,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Third transaction sent: {}{}", EXPLORER_URL, message.id().0);
-    let _ = iota.retry_until_included(&message.id().0, None, None).await?;
+    println!("Third transaction sent: {}{}", EXPLORER_URL, message.id());
+    let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
     let message = iota
         .message()
@@ -96,10 +96,10 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Last transaction sent: {}{}", EXPLORER_URL, message.id().0);
-    let _ = iota.retry_until_included(&message.id().0, None, None).await?;
+    println!("Last transaction sent: {}{}", EXPLORER_URL, message.id());
+    let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
-    let message_metadata = iota.get_message().metadata(&message.id().0).await;
+    let message_metadata = iota.get_message().metadata(&message.id()).await;
     println!("Ledger Inclusion State: {:?}", message_metadata?.ledger_inclusion_state);
 
     Ok(())

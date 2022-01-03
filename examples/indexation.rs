@@ -24,7 +24,7 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("Message ID: {}\n", message.id().0);
+    println!("Message ID: {}\n", message.id());
 
     let fetched_message_ids = iota.get_message().index("Hello").await.unwrap();
     println!("{:#?}\n", fetched_message_ids);

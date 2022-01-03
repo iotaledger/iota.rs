@@ -652,7 +652,7 @@ impl Client {
       Ok(message_dto) => Message::try_from(&message_dto).map_err(wasm_error)?,
       Err(_) => serde_json::from_str::<Message>(message).map_err(wasm_error)?,
     };
-    Ok(message.id().0.to_string())
+    Ok(message.id().to_string())
   }
 
   /// Returns the transaction id from a provided transaction payload.

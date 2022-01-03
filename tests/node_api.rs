@@ -3,9 +3,7 @@
 
 // These are E2E test samples, so they are ignored by default.
 
-use bee_message::input::UtxoInput;
-use bee_message::payload::transaction::TransactionId;
-use bee_message::MessageId;
+use bee_message::{input::UtxoInput, payload::transaction::TransactionId, MessageId};
 use crypto::keys::slip10::Seed;
 
 use std::str::FromStr;

@@ -176,7 +176,7 @@ Also for all the optional values, the default values are the same as the ones in
 
 ### Client
 
-#### constructor(network (optional), storage (optional), password (optional), polling_interval (optional)): [AccountManager](#accountmanager)
+#### constructor(network (optional), password (optional), polling_interval (optional)): [AccountManager](#accountmanager)
 
 Creates a new instance of the Client.
 

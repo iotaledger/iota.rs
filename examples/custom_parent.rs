@@ -31,6 +31,6 @@ async fn main() {
 
     println!(
         "Empty message sent: https://explorer.iota.org/devnet/message/{}",
-        message.id().0
+        message.id()
     );
 }

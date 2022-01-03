@@ -41,9 +41,9 @@ async fn main() -> Result<()> {
 
     println!(
         "Transaction sent: https://explorer.iota.org/devnet/message/{}",
-        message.id().0
+        message.id()
     );
 
-    let _ = iota.retry_until_included(&message.id().0, None, None).await.unwrap();
+    let _ = iota.retry_until_included(&message.id(), None, None).await.unwrap();
     Ok(())
 }

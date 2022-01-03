@@ -15,10 +15,10 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/thibault-martinez/bee", branch = "stardust-layouts", default-features = false }
-bee-message = { git = "https://github.com/thibault-martinez/bee", branch = "stardust-layouts", default-features = false }
-bee-pow = { git = "https://github.com/thibault-martinez/bee", branch = "stardust-layouts", default-features = false }
-bee-common = { git = "https://github.com/thibault-martinez/bee", branch = "stardust-layouts", default-features = false }
+bee-rest-api = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false }
+bee-message = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false }
+bee-common = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false }
 iota-crypto = { version = "0.9.1", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
 
 url = { version = "2.2.2", default-features = false }
@@ -40,8 +40,6 @@ futures = { version = "0.3.17", default-features = false, optional = true }
 
 # MQTT
 rumqttc = { version = "0.10.0", default-features = false, features = ["websocket"], optional = true }
-
-# also used for storage
 once_cell = { version = "1.8.0", default-features = false, features = ["std"], optional = true }
 
 # wasm

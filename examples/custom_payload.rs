@@ -26,5 +26,5 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("Message ID: {}", message.id().0);
+    println!("Message ID: {}", message.id());
 }

@@ -19,7 +19,7 @@
 //!    .finish()
 //!    .await?;
 //!
-//! println!("Message sent {}", message.id().0);
+//! println!("Message sent {}", message.id());
 //! ```
 
 #![deny(unused_extern_crates)]
@@ -44,9 +44,6 @@ pub mod client;
 pub mod error;
 pub mod node;
 pub mod node_manager;
-#[cfg(feature = "storage")]
-#[cfg_attr(docsrs, doc(cfg(feature = "storage")))]
-pub mod storage;
 
 pub use bee_common as common;
 pub use bee_message;
@@ -59,8 +56,6 @@ pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use node::{OutputType, OutputsOptions as AddressOutputsOptions};
-#[cfg(feature = "storage")]
-pub use storage::*;
 pub use url::Url;
 
 #[cfg(feature = "mqtt")]

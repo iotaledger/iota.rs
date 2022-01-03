@@ -173,7 +173,7 @@ impl Task for ClientTask {
                     }
                     let message = sender.finish().await?;
                     serde_json::to_string(&MessageWrapper {
-                        message_id: message.id().0,
+                        message_id: message.id(),
                         message: BeeMessageDto::from(&message),
                     })?
                 }
@@ -239,7 +239,7 @@ impl Task for ClientTask {
                 Api::FinishMessage { payload } => {
                     let message = client.message().finish_message(Some(payload.clone())).await?;
                     serde_json::to_string(&MessageWrapper {
-                        message_id: message.id().0,
+                        message_id: message.id(),
                         message: BeeMessageDto::from(&message),
                     })?
                 }
@@ -296,7 +296,7 @@ impl Task for ClientTask {
                     let message_wrappers: Vec<MessageWrapper> = messages
                         .into_iter()
                         .map(|message| MessageWrapper {
-                            message_id: message.id().0,
+                            message_id: message.id(),
                             message: BeeMessageDto::from(&message),
                         })
                         .collect();
@@ -373,7 +373,7 @@ impl Task for ClientTask {
                 Api::GetMessage(id) => {
                     let message = client.get_message().data(id).await?;
                     serde_json::to_string(&MessageWrapper {
-                        message_id: message.id().0,
+                        message_id: message.id(),
                         message: BeeMessageDto::from(&message),
                     })?
                 }
@@ -465,7 +465,7 @@ impl Task for ClientTask {
                 Api::GetIncludedMessage(transaction_id) => {
                     let message = client.get_included_message(&*transaction_id).await?;
                     serde_json::to_string(&MessageWrapper {
-                        message_id: message.id().0,
+                        message_id: message.id(),
                         message: BeeMessageDto::from(&message),
                     })?
                 }

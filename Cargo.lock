@@ -79,7 +79,7 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-common"
 version = "0.5.0"
-source = "git+https://github.com/thibault-martinez/bee?branch=stardust-layouts#2e5ceb61efab25f54c17302c29cdf34777a15bed"
+source = "git+https://github.com/rufsam/bee?branch=output-dtos-shimmer#7f695e8c05d92db6d60fc3804f65eccac2bb5a6a"
 dependencies = [
  "autocfg",
  "fern",
@@ -105,8 +105,8 @@ dependencies = [
 
 [[package]]
 name = "bee-ledger"
-version = "0.6.0"
-source = "git+https://github.com/thibault-martinez/bee?branch=stardust-layouts#2e5ceb61efab25f54c17302c29cdf34777a15bed"
+version = "0.7.0"
+source = "git+https://github.com/rufsam/bee?branch=output-dtos-shimmer#7f695e8c05d92db6d60fc3804f65eccac2bb5a6a"
 dependencies = [
  "bee-common",
  "bee-message",
@@ -115,8 +115,8 @@ dependencies = [
 
 [[package]]
 name = "bee-message"
-version = "0.1.6"
-source = "git+https://github.com/thibault-martinez/bee?branch=stardust-layouts#2e5ceb61efab25f54c17302c29cdf34777a15bed"
+version = "0.2.0"
+source = "git+https://github.com/rufsam/bee?branch=output-dtos-shimmer#7f695e8c05d92db6d60fc3804f65eccac2bb5a6a"
 dependencies = [
  "bech32",
  "bee-common",
@@ -128,13 +128,15 @@ dependencies = [
  "hex",
  "iota-crypto",
  "primitive-types",
+ "serde",
+ "serde-big-array",
  "thiserror",
 ]
 
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/thibault-martinez/bee?branch=stardust-layouts#2e5ceb61efab25f54c17302c29cdf34777a15bed"
+source = "git+https://github.com/rufsam/bee?branch=output-dtos-shimmer#7f695e8c05d92db6d60fc3804f65eccac2bb5a6a"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -144,11 +146,12 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
-source = "git+https://github.com/thibault-martinez/bee?branch=stardust-layouts#2e5ceb61efab25f54c17302c29cdf34777a15bed"
+source = "git+https://github.com/rufsam/bee?branch=output-dtos-shimmer#7f695e8c05d92db6d60fc3804f65eccac2bb5a6a"
 dependencies = [
  "bee-ledger",
  "bee-message",
  "hex",
+ "primitive-types",
  "serde",
  "serde_json",
  "thiserror",
@@ -1305,6 +1308,16 @@ version = "1.0.130"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f12d06de37cf59146fbdecab66aa99f9fe4f78722e3607577a5375d66bd0c913"
 dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde-big-array"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18b20e7752957bbe9661cff4e0bb04d183d0948cdab2ea58cdb9df36a61dfe62"
+dependencies = [
+ "serde",
  "serde_derive",
 ]
 

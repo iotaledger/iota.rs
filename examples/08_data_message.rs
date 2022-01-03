@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
 
     println!(
         "Message sent https://explorer.iota.org/devnet/message/{}\n",
-        message.id().0
+        message.id()
     );
 
     let fetched_message_ids = iota.get_message().index("Hello").await.unwrap();

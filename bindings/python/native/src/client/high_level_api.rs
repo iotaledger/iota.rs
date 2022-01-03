@@ -219,7 +219,7 @@ impl Client {
             Ok(message_dto) => RustMessage::try_from(&message_dto).expect("invalid message"),
             Err(_) => serde_json::from_str::<RustMessage>(payload_str).expect("invalid message"),
         };
-        let message_id = message.id().0.to_string();
+        let message_id = message.id().to_string();
         Ok(message_id)
     }
     /// Get the transaction id from a transaction payload.

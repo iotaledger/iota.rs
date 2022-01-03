@@ -11,8 +11,11 @@ use crate::{
 };
 use bee_common::packable::Packable;
 use bee_message::{
-    address::Address, address::Ed25519Address, input::UtxoInput, input::INPUT_COUNT_MAX, message::Parents,
-    payload::transaction::TransactionId, payload::Payload, Message, MessageBuilder, MessageId,
+    address::{Address, Ed25519Address},
+    input::{UtxoInput, INPUT_COUNT_MAX},
+    parent::Parents,
+    payload::{transaction::TransactionId, Payload},
+    Message, MessageBuilder, MessageId,
 };
 use bee_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
@@ -599,7 +602,7 @@ impl Client {
             .into_iter()
             .chain(dust_allowance_outputs.into_iter())
             // Max inputs is 127
-            .take(INPUT_COUNT_MAX)
+            .take(INPUT_COUNT_MAX.into())
             .enumerate()
         {
             // Break if we have enough funds and don't create dust for the remainder
@@ -851,7 +854,7 @@ impl Client {
                         client_network_info.local_pow = true;
                         drop(client_network_info);
                         #[cfg(not(feature = "wasm"))]
-                        let msg_res = crate::api::finish_pow(self, message.payload().clone()).await;
+                        let msg_res = crate::api::finish_pow(self, message.payload().cloned()).await;
                         #[cfg(feature = "wasm")]
                         let msg_res = {
                             let min_pow_score = self.get_min_pow_score().await?;
@@ -1076,7 +1079,7 @@ impl Client {
             }
             #[cfg(not(feature = "wasm"))]
             {
-                finish_pow(self, message.payload().to_owned()).await?
+                finish_pow(self, message.payload().cloned()).await?
             }
         };
 
@@ -1201,8 +1204,11 @@ impl Client {
     /// Transforms bech32 to hex
     pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
         let address = Address::try_from_bech32(bech32)?;
-        let Address::Ed25519(ed) = address;
-        Ok(ed.to_string())
+        Ok(match address {
+            Address::Ed25519(addr) => addr.to_string(),
+            Address::Alias(addr) => addr.to_string(),
+            Address::Nft(addr) => addr.to_string(),
+        })
     }
 
     /// Transforms a hex encoded address to a bech32 encoded address
@@ -1216,7 +1222,7 @@ impl Client {
 
     /// Transforms a hex encoded public key to a bech32 encoded address
     pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let mut public_key = [0u8; ED25519_ADDRESS_LENGTH];
+        let mut public_key = [0u8; Ed25519Address::LENGTH];
         hex::decode_to_slice(&hex, &mut public_key)?;
 
         let address = Blake2b256::digest(&public_key)
@@ -1318,7 +1324,7 @@ impl Client {
                 let message = self.get_message().data(message_id).await?;
                 if let Some(Payload::Transaction(transaction_payload)) = message.payload() {
                     let included_message = self.get_included_message(&transaction_payload.id()).await?;
-                    let mut included_and_reattached_messages = vec![(included_message.id().0, included_message)];
+                    let mut included_and_reattached_messages = vec![(included_message.id(), included_message)];
                     included_and_reattached_messages.extend(messages_with_id);
                     return Ok(included_and_reattached_messages);
                 }

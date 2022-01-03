@@ -11,8 +11,9 @@ use std::env;
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe") // Insert the node here
+        .with_node("http://localhost:14265") // Insert the node here
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
@@ -29,7 +30,7 @@ async fn main() {
         .unwrap();
     println!("{}", addresses[0]);
 
-    let faucet_response = ureq::post("https://faucet.chrysalis-devnet.iota.cafe/api/plugins/faucet/enqueue")
+    let faucet_response = ureq::post("http://localhost:14265/api/plugins/faucet/enqueue")
         .set("Content-Type", "application/json")
         .send_json(ureq::json!({
             "address": addresses[0],

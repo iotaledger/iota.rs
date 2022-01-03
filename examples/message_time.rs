@@ -23,7 +23,7 @@ async fn main() {
         .await
         .unwrap();
 
-    let message_id = message.id().0;
+    let message_id = message.id();
     println!("Message ID: {}", message_id);
 
     let _ = iota.retry_until_included(&message_id, None, None).await.unwrap();

@@ -103,7 +103,7 @@ impl From<RustMessage> for Message {
             parents: message.parents().to_vec(),
             payload: payload,
             nonce: message.nonce(),
-            id: message.id().0,
+            id: message.id(),
         }
     }
 }

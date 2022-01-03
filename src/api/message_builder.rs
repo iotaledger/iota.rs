@@ -4,8 +4,19 @@
 use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
 
 use bee_common::packable::Packable;
-use bee_message::address::Address;
-use bee_message::input::INPUT_COUNT_MAX;
+use bee_message::{
+    address::{Address, Ed25519Address},
+    input::{Input, UtxoInput, INPUT_COUNT_MAX},
+    output::{ExtendedOutput, Output},
+    parent::Parents,
+    payload::{
+        transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayloadBuilder},
+        IndexationPayload, Payload,
+    },
+    signature::{Ed25519Signature, Signature},
+    unlock_block::{ReferenceUnlockBlock, SignatureUnlockBlock, UnlockBlock, UnlockBlocks},
+    Message, MessageBuilder, MessageId,
+};
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
 use bee_rest_api::types::{
@@ -32,7 +43,7 @@ const DUST_THRESHOLD: u64 = 1_000_000;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PreparedTransactionData {
     /// Transaction essence
-    pub essence: Essence,
+    pub essence: TransactionEssence,
     /// Required address information for signing
     pub address_index_recorders: Vec<AddressIndexRecorder>,
 }
@@ -134,27 +145,27 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder
     pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(Address::from_str(address)?, amount)?.into();
-        self.outputs.push(output);
+        let output = ExtendedOutput::new(Address::from_str(address)?, amount);
+        self.outputs.push(Output::Extended(output));
         Ok(self)
     }
 
-    /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
-    pub fn with_dust_allowance_output(mut self, address: &str, amount: u64) -> Result<Self> {
-        if amount < DUST_THRESHOLD {
-            return Err(Error::DustError(
-                "Amount for SignatureLockedDustAllowanceOutput needs to be >= 1_000_000".into(),
-            ));
-        }
-        let output = SignatureLockedDustAllowanceOutput::new(Address::from_str(address)?, amount)?.into();
-        self.outputs.push(output);
-        Ok(self)
-    }
+    // /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+    // pub fn with_dust_allowance_output(mut self, address: &str, amount: u64) -> Result<Self> {
+    //     if amount < DUST_THRESHOLD {
+    //         return Err(Error::DustError(
+    //             "Amount for ExtendedOutput needs to be >= 1_000_000".into(),
+    //         ));
+    //     }
+    //     let output = ExtendedOutput::new(Address::from_str(address)?, amount);
+    //     self.outputs.push(Output::Extended(output));
+    //     Ok(self)
+    // }
 
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = SignatureLockedSingleOutput::new(address.parse::<Ed25519Address>()?.into(), amount)?.into();
-        self.outputs.push(output);
+        let output = ExtendedOutput::new(address.parse::<Ed25519Address>()?.into(), amount);
+        self.outputs.push(Output::Extended(output));
         Ok(self)
     }
 
@@ -245,18 +256,16 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, bool)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
-            OutputDto::SignatureLockedSingle(ref r) => match &r.address {
+            OutputDto::Extended(ref r) => match &r.address {
                 AddressDto::Ed25519(addr) => {
                     let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
                     Ok((r.amount, output_address, true))
                 }
+                // todo support other addresses
+                _ => Err(Error::OutputError("Only Ed25519Address is implemented")),
             },
-            OutputDto::SignatureLockedDustAllowance(ref r) => match &r.address {
-                AddressDto::Ed25519(addr) => {
-                    let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-                    Ok((r.amount, output_address, false))
-                }
-            },
+            // todo add other outputs
+            _ => Err(Error::OutputError("Output is not implemented")),
         }
     }
 
@@ -324,7 +333,10 @@ impl<'a> ClientMessageBuilder<'a> {
             if remainder_address_balance.1 < DUST_THRESHOLD {
                 dust_and_allowance_recorders.push((remainder_address_balance.1, address, true));
             }
-            outputs_for_essence.push(SignatureLockedSingleOutput::new(address, remainder_address_balance.1)?.into());
+            outputs_for_essence.push(Output::Extended(ExtendedOutput::new(
+                address,
+                remainder_address_balance.1,
+            )));
         }
 
         if total_already_spent < total_to_spend {
@@ -383,9 +395,10 @@ impl<'a> ClientMessageBuilder<'a> {
                             address: str_address.clone(),
                         };
                         match output_wrapper.output.output {
-                            OutputDto::SignatureLockedSingle(_) => outputs.push(output_wrapper),
-                            OutputDto::SignatureLockedDustAllowance(_) => dust_allowance_outputs.push(output_wrapper),
+                            OutputDto::Extended(_) => outputs.push(output_wrapper),
                             OutputDto::Treasury(_) => {}
+                            // todo: add other outputs
+                            _ => unimplemented!(),
                         };
 
                         // Order outputs descending, so that as few inputs as necessary are used
@@ -398,14 +411,15 @@ impl<'a> ClientMessageBuilder<'a> {
                         // We only need dust_allowance_outputs in the last iterator, because otherwise we could use
                         // a dust allowance output as input while still having dust on the address
                         if output_index == address_outputs.len() - 1 {
-                            dust_allowance_outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
+                            dust_allowance_outputs
+                                .sort_by(|l: &OutputWrapper, r: &OutputWrapper| r.amount.cmp(&l.amount));
                             iterator = iterator.into_iter().chain(dust_allowance_outputs.iter()).collect();
                         }
 
                         for (_offset, output_wrapper) in iterator
                             .iter()
                             // Max inputs is 127
-                            .take(INPUT_COUNT_MAX)
+                            .take(INPUT_COUNT_MAX.into())
                             .enumerate()
                         {
                             total_already_spent += output_wrapper.amount;
@@ -425,13 +439,10 @@ impl<'a> ClientMessageBuilder<'a> {
                                 let remaining_balance = total_already_spent - total_to_spend;
                                 // Output possible remaining tokens back to the original address
                                 if remaining_balance != 0 {
-                                    outputs_for_essence.push(
-                                        SignatureLockedSingleOutput::new(
-                                            Address::try_from_bech32(&output_wrapper.address)?,
-                                            remaining_balance,
-                                        )?
-                                        .into(),
-                                    );
+                                    outputs_for_essence.push(Output::Extended(ExtendedOutput::new(
+                                        Address::try_from_bech32(&output_wrapper.address)?,
+                                        remaining_balance,
+                                    )));
                                 }
                                 break 'input_selection;
                             }
@@ -473,7 +484,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     .chain(dust_allowance_outputs.iter())
                     .fold(0, |acc, output| acc + output.amount);
                 let inputs_amount = outputs.len() + dust_allowance_outputs.len();
-                if inputs_balance >= total_to_spend && inputs_amount > INPUT_COUNT_MAX {
+                if inputs_balance >= total_to_spend && inputs_amount > INPUT_COUNT_MAX.into() {
                     return Err(Error::ConsolidationRequired(inputs_amount));
                 } else if inputs_balance > total_to_spend {
                     return Err(Error::DustError(format!(
@@ -498,16 +509,13 @@ impl<'a> ClientMessageBuilder<'a> {
         let mut total_to_spend = 0;
         for output in &self.outputs {
             match output {
-                Output::SignatureLockedSingle(x) => {
+                Output::Extended(x) => {
                     total_to_spend += x.amount();
                     if x.amount() < DUST_THRESHOLD {
                         dust_and_allowance_recorders.push((x.amount(), *x.address(), true));
                     }
                 }
-                Output::SignatureLockedDustAllowance(x) => {
-                    total_to_spend += x.amount();
-                    dust_and_allowance_recorders.push((x.amount(), *x.address(), true));
-                }
+                // todo: support other output types
                 _ => {}
             }
         }
@@ -516,7 +524,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let (mut inputs_for_essence, mut outputs_for_essence, address_index_recorders) = match &self.inputs {
             Some(inputs) => {
                 // 127 is the maximum input amount
-                if inputs.len() > INPUT_COUNT_MAX {
+                if inputs.len() > INPUT_COUNT_MAX.into() {
                     return Err(Error::ConsolidationRequired(inputs.len()));
                 }
                 self.get_custom_inputs(inputs, total_to_spend, dust_and_allowance_recorders.as_mut())
@@ -547,7 +555,7 @@ impl<'a> ClientMessageBuilder<'a> {
             outputs_for_essence.push(output);
         }
 
-        let mut essence = RegularEssence::builder();
+        let mut essence = RegularTransactionEssence::builder();
         // Order inputs and add them to the essence
         inputs_for_essence.sort_unstable_by_key(|a| a.pack_new());
         essence = essence.with_inputs(inputs_for_essence);
@@ -562,7 +570,7 @@ impl<'a> ClientMessageBuilder<'a> {
             essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
         }
         let regular_essence = essence.finish()?;
-        let essence = Essence::Regular(regular_essence);
+        let essence = TransactionEssence::Regular(regular_essence);
 
         Ok(PreparedTransactionData {
             essence,
@@ -610,7 +618,7 @@ impl<'a> ClientMessageBuilder<'a> {
             // Format to differentiate between public and internal addresses
             let index = format!("{}{}", recorder.address_index, recorder.internal);
             if let Some(block_index) = signature_indexes.get(&index) {
-                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
+                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
             } else {
                 // If not, we need to create a signature unlock block
                 let private_key = seed
@@ -622,8 +630,8 @@ impl<'a> ClientMessageBuilder<'a> {
                 // The signature unlock block needs to sign the hash of the entire transaction essence of the
                 // transaction payload
                 let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
-                unlock_blocks.push(UnlockBlock::Signature(SignatureUnlock::Ed25519(Ed25519Signature::new(
-                    public_key, *signature,
+                unlock_blocks.push(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
+                    Ed25519Signature::new(public_key, *signature),
                 ))));
                 signature_indexes.insert(index, current_block_index);
             }
@@ -766,15 +774,11 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
     let address_outputs_metadata = client.find_outputs(&[], &[address.to_bech32(&bech32_hrp)]).await?;
     for output_metadata in address_outputs_metadata {
         match output_metadata.output {
-            OutputDto::Treasury(_) => {}
-            OutputDto::SignatureLockedDustAllowance(d_a_o) => {
+            OutputDto::Extended(d_a_o) => {
                 dust_allowance_balance += d_a_o.amount as i64;
             }
-            OutputDto::SignatureLockedSingle(s_o) => {
-                if s_o.amount < DUST_THRESHOLD {
-                    dust_outputs_amount += 1;
-                }
-            }
+            OutputDto::Treasury(_) => {}
+            _ => {}
         }
     }
 

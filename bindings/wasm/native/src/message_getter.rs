@@ -48,7 +48,7 @@ impl MessageGetter {
         .await
         .map_err(wasm_error)
         .and_then(|message| {
-          let message_id = message.id().0;
+          let message_id = message.id();
           JsValue::from_serde(&MessageWrapper {
             message_id,
             message: MessageDto::from(&message),

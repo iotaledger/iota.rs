@@ -413,42 +413,6 @@ def split_outputs_single_address():
         print('Website to get test tokens: https://faucet.chrysalis-devnet.iota.cafe/')
 
 
-def storage():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
-    client = iota_client.Client(nodes_name_password=[[node_url]])
-
-    indexation_key = 'Hello'
-    indexation_data = 'Tangle'
-    message = client.message(index=indexation_key, data_str=indexation_data)
-
-    message_id = message['message_id']
-    db = 'my-storage.db'
-
-    con = sqlite3.connect(db)
-
-    cur = con.cursor()
-
-    # Create table
-    cur.execute('''CREATE TABLE message_ids (message_id text)''')
-
-    # Insert a row of data
-    cur.execute(f"INSERT INTO message_ids VALUES ('{message_id}')")
-
-    # Save (commit) the changes
-    con.commit()
-
-    # We can also close the connection if we are done with it.
-    # Just be sure any changes have been committed or they will be lost.
-    con.close()
-
-    # Connect to the database and get the message ids
-    con = sqlite3.connect(db)
-    cur = con.cursor()
-
-    for row in cur.execute('SELECT * FROM message_ids'):
-        print(f'Message ID from storage: {row[0]}')
-
-
 def transaction():
     node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
     client = iota_client.Client(nodes_name_password=[[node_url]])
@@ -585,6 +549,5 @@ if __name__ == '__main__':
     # send_all()
     # split_all()
     # split_outputs_single_address()
-    # storage()
     # transaction()
     # txspam()
