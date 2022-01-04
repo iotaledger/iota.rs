@@ -352,8 +352,8 @@ impl<'a> ClientMessageBuilder<'a> {
         total_to_spend: u64,
         _dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
-        let mut outputs = Vec::new();
-        let mut dust_allowance_outputs = Vec::new();
+        // let mut outputs = Vec::new();
+        // let mut dust_allowance_outputs = Vec::new();
         let mut inputs_for_essence = Vec::new();
         let mut outputs_for_essence = Vec::new();
         let mut address_index_recorders = Vec::new();
@@ -372,129 +372,129 @@ impl<'a> ClientMessageBuilder<'a> {
                 .await?;
             // For each address, get the address outputs
             let mut address_index = gap_index;
-            for (index, (str_address, internal)) in addresses.iter().enumerate() {
-                let address_outputs = self
-                    .client
-                    .get_address()
-                    .outputs(str_address, Default::default())
-                    .await?;
+            // for (index, (str_address, internal)) in addresses.iter().enumerate() {
+            // let address_outputs = self
+            //     .client
+            //     .get_address()
+            //     .outputs(str_address, Default::default())
+            //     .await?;
 
-                // We store output responses locally in outputs and dust_allowance_outputs and after each output we sort
-                // them and try to get enough inputs for the transaction, so we don't request more
-                // outputs than we need
-                for (output_index, output_id) in address_outputs.iter().enumerate() {
-                    let output = self.client.get_output(output_id).await?;
-                    if !output.is_spent {
-                        let (amount, _, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+            // // We store output responses locally in outputs and dust_allowance_outputs and after each output we sort
+            // // them and try to get enough inputs for the transaction, so we don't request more
+            // // outputs than we need
+            // for (output_index, output_id) in address_outputs.iter().enumerate() {
+            //     let output = self.client.get_output(output_id).await?;
+            //     if !output.is_spent {
+            //         let (amount, _, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
 
-                        let output_wrapper = OutputWrapper {
-                            output,
-                            address_index,
-                            internal: *internal,
-                            amount,
-                            address: str_address.clone(),
-                        };
-                        match output_wrapper.output.output {
-                            OutputDto::Extended(_) => outputs.push(output_wrapper),
-                            OutputDto::Treasury(_) => {}
-                            // todo: add other outputs
-                            _ => unimplemented!(),
-                        };
+            //         let output_wrapper = OutputWrapper {
+            //             output,
+            //             address_index,
+            //             internal: *internal,
+            //             amount,
+            //             address: str_address.clone(),
+            //         };
+            //         match output_wrapper.output.output {
+            //             OutputDto::Extended(_) => outputs.push(output_wrapper),
+            //             OutputDto::Treasury(_) => {}
+            //             // todo: add other outputs
+            //             _ => unimplemented!(),
+            //         };
 
-                        // Order outputs descending, so that as few inputs as necessary are used
-                        outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
+            //         // Order outputs descending, so that as few inputs as necessary are used
+            //         outputs.sort_by(|l, r| r.amount.cmp(&l.amount));
 
-                        // We start using the signature locked outputs, so we don't move dust_allowance_outputs first
-                        // which could result in a unconfirmable transaction if we still have
-                        // dust on that address
-                        let mut iterator: Vec<&OutputWrapper> = outputs.iter().collect();
-                        // We only need dust_allowance_outputs in the last iterator, because otherwise we could use
-                        // a dust allowance output as input while still having dust on the address
-                        if output_index == address_outputs.len() - 1 {
-                            dust_allowance_outputs
-                                .sort_by(|l: &OutputWrapper, r: &OutputWrapper| r.amount.cmp(&l.amount));
-                            iterator = iterator.into_iter().chain(dust_allowance_outputs.iter()).collect();
-                        }
+            //         // We start using the signature locked outputs, so we don't move dust_allowance_outputs first
+            //         // which could result in a unconfirmable transaction if we still have
+            //         // dust on that address
+            //         let mut iterator: Vec<&OutputWrapper> = outputs.iter().collect();
+            //         // We only need dust_allowance_outputs in the last iterator, because otherwise we could use
+            //         // a dust allowance output as input while still having dust on the address
+            //         if output_index == address_outputs.len() - 1 {
+            //             dust_allowance_outputs
+            //                 .sort_by(|l: &OutputWrapper, r: &OutputWrapper| r.amount.cmp(&l.amount));
+            //             iterator = iterator.into_iter().chain(dust_allowance_outputs.iter()).collect();
+            //         }
 
-                        for (_offset, output_wrapper) in iterator
-                            .iter()
-                            // Max inputs is 127
-                            .take(INPUT_COUNT_MAX.into())
-                            .enumerate()
-                        {
-                            total_already_spent += output_wrapper.amount;
-                            let address_index_record = ClientMessageBuilder::create_address_index_recorder(
-                                account_index,
-                                output_wrapper.address_index,
-                                output_wrapper.internal,
-                                &output_wrapper.output,
-                                str_address.to_owned(),
-                            )?;
-                            inputs_for_essence.push(address_index_record.input.clone());
-                            address_index_recorders.push(address_index_record);
-                            // Break if we have enough funds and don't create dust for the remainder
-                            if total_already_spent == total_to_spend
-                                || total_already_spent >= total_to_spend + DUST_THRESHOLD
-                            {
-                                let remaining_balance = total_already_spent - total_to_spend;
-                                // Output possible remaining tokens back to the original address
-                                if remaining_balance != 0 {
-                                    outputs_for_essence.push(Output::Extended(ExtendedOutput::new(
-                                        Address::try_from_bech32(&output_wrapper.address)?,
-                                        remaining_balance,
-                                    )));
-                                }
-                                break 'input_selection;
-                            }
-                        }
-                        // We need to cleare all gathered records if we haven't reached the total amount we need in this
-                        // iteration.
-                        inputs_for_essence.clear();
-                        outputs_for_essence.clear();
-                        address_index_recorders.clear();
-                        total_already_spent = 0;
-                    }
-                }
+            //         for (_offset, output_wrapper) in iterator
+            //             .iter()
+            //             // Max inputs is 127
+            //             .take(INPUT_COUNT_MAX.into())
+            //             .enumerate()
+            //         {
+            //             total_already_spent += output_wrapper.amount;
+            //             let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+            //                 account_index,
+            //                 output_wrapper.address_index,
+            //                 output_wrapper.internal,
+            //                 &output_wrapper.output,
+            //                 str_address.to_owned(),
+            //             )?;
+            //             inputs_for_essence.push(address_index_record.input.clone());
+            //             address_index_recorders.push(address_index_record);
+            //             // Break if we have enough funds and don't create dust for the remainder
+            //             if total_already_spent == total_to_spend
+            //                 || total_already_spent >= total_to_spend + DUST_THRESHOLD
+            //             {
+            //                 let remaining_balance = total_already_spent - total_to_spend;
+            //                 // Output possible remaining tokens back to the original address
+            //                 if remaining_balance != 0 {
+            //                     outputs_for_essence.push(Output::Extended(ExtendedOutput::new(
+            //                         Address::try_from_bech32(&output_wrapper.address)?,
+            //                         remaining_balance,
+            //                     )));
+            //                 }
+            //                 break 'input_selection;
+            //             }
+            //         }
+            //         // We need to cleare all gathered records if we haven't reached the total amount we need in this
+            //         // iteration.
+            //         inputs_for_essence.clear();
+            //         outputs_for_essence.clear();
+            //         address_index_recorders.clear();
+            //         total_already_spent = 0;
+            //     }
+            // }
 
-                // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
-                // looking up the addresses belonging to the seed. Note that we don't
-                // really count the exact 20 consecutive empty addresses, which is
-                // unnecessary. We just need to check the address range,
-                // (index * ADDRESS_GAP_RANGE, index * ADDRESS_GAP_RANGE + ADDRESS_GAP_RANGE), where index is
-                // natural number, and to see if the outputs are all empty.
-                if address_outputs.is_empty() {
-                    // Accumulate the empty_address_count for each run of output address searching
-                    empty_address_count += 1;
-                } else {
-                    // Reset counter if there is an output
-                    empty_address_count = 0;
-                }
+            // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
+            // looking up the addresses belonging to the seed. Note that we don't
+            // really count the exact 20 consecutive empty addresses, which is
+            // unnecessary. We just need to check the address range,
+            // (index * ADDRESS_GAP_RANGE, index * ADDRESS_GAP_RANGE + ADDRESS_GAP_RANGE), where index is
+            // natural number, and to see if the outputs are all empty.
+            //     if address_outputs.is_empty() {
+            //         // Accumulate the empty_address_count for each run of output address searching
+            //         empty_address_count += 1;
+            //     } else {
+            //         // Reset counter if there is an output
+            //         empty_address_count = 0;
+            //     }
 
-                // if we just processed an even index, increase the address index
-                // (because the list has public and internal addresses)
-                if index % 2 == 1 {
-                    address_index += 1;
-                }
-            }
-            gap_index += super::ADDRESS_GAP_RANGE;
-            // The gap limit is 20 and use reference 40 here because there's public and internal addresses
-            if empty_address_count >= (super::ADDRESS_GAP_RANGE * 2) as u64 {
-                let inputs_balance = outputs
-                    .iter()
-                    .chain(dust_allowance_outputs.iter())
-                    .fold(0, |acc, output| acc + output.amount);
-                let inputs_amount = outputs.len() + dust_allowance_outputs.len();
-                if inputs_balance >= total_to_spend && inputs_amount > INPUT_COUNT_MAX.into() {
-                    return Err(Error::ConsolidationRequired(inputs_amount));
-                } else if inputs_balance > total_to_spend {
-                    return Err(Error::DustError(format!(
-                        "Transaction would create a dust output with {}i",
-                        inputs_balance - total_to_spend
-                    )));
-                } else {
-                    return Err(Error::NotEnoughBalance(inputs_balance, total_to_spend));
-                }
-            }
+            //     // if we just processed an even index, increase the address index
+            //     // (because the list has public and internal addresses)
+            //     if index % 2 == 1 {
+            //         address_index += 1;
+            //     }
+            // }
+            // gap_index += super::ADDRESS_GAP_RANGE;
+            // // The gap limit is 20 and use reference 40 here because there's public and internal addresses
+            // if empty_address_count >= (super::ADDRESS_GAP_RANGE * 2) as u64 {
+            //     let inputs_balance = outputs
+            //         .iter()
+            //         .chain(dust_allowance_outputs.iter())
+            //         .fold(0, |acc, output| acc + output.amount);
+            //     let inputs_amount = outputs.len() + dust_allowance_outputs.len();
+            //     if inputs_balance >= total_to_spend && inputs_amount > INPUT_COUNT_MAX.into() {
+            //         return Err(Error::ConsolidationRequired(inputs_amount));
+            //     } else if inputs_balance > total_to_spend {
+            //         return Err(Error::DustError(format!(
+            //             "Transaction would create a dust output with {}i",
+            //             inputs_balance - total_to_spend
+            //         )));
+            //     } else {
+            //         return Err(Error::NotEnoughBalance(inputs_balance, total_to_spend));
+            //     }
+            // }
         }
 
         Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
@@ -753,21 +753,21 @@ async fn is_dust_allowed(client: &Client, address: Address, outputs: Vec<(u64, A
 
     let bech32_hrp = client.get_bech32_hrp().await?;
 
-    let address_data = client.get_address().balance(&address.to_bech32(&bech32_hrp)).await?;
-    // If we create a dust output and a dust allowance output we don't need to check more outputs if the balance/100_000
-    // is < 100 because then we are sure that we didn't reach the max dust outputs
-    if address_data.dust_allowed
-        && dust_outputs_amount == 1
-        && dust_allowance_balance >= 0
-        && address_data.balance as i64 / DUST_DIVISOR < MAX_ALLOWED_DUST_OUTPUTS
-    {
-        return Ok(());
-    } else if !address_data.dust_allowed && dust_outputs_amount == 1 && dust_allowance_balance <= 0 {
-        return Err(Error::DustError(format!(
-            "No dust output allowed on address {}",
-            address.to_bech32(&bech32_hrp)
-        )));
-    }
+    // let address_data = client.get_address().balance(&address.to_bech32(&bech32_hrp)).await?;
+    // // If we create a dust output and a dust allowance output we don't need to check more outputs if the
+    // balance/100_000 // is < 100 because then we are sure that we didn't reach the max dust outputs
+    // if address_data.dust_allowed
+    //     && dust_outputs_amount == 1
+    //     && dust_allowance_balance >= 0
+    //     && address_data.balance as i64 / DUST_DIVISOR < MAX_ALLOWED_DUST_OUTPUTS
+    // {
+    //     return Ok(());
+    // } else if !address_data.dust_allowed && dust_outputs_amount == 1 && dust_allowance_balance <= 0 {
+    //     return Err(Error::DustError(format!(
+    //         "No dust output allowed on address {}",
+    //         address.to_bech32(&bech32_hrp)
+    //     )));
+    // }
 
     // Check all outputs of the address because we want to consume a dust allowance output and don't know if we are
     // allowed to do that

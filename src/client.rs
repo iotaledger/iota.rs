@@ -577,7 +577,7 @@ impl Client {
         // Get outputs from node and select inputs
         let mut available_outputs = Vec::new();
         for address in addresses {
-            available_outputs.extend_from_slice(&self.get_address().outputs(&address, Default::default()).await?);
+            // available_outputs.extend_from_slice(&self.get_address().outputs(&address, Default::default()).await?);
         }
 
         let mut signature_locked_outputs = Vec::new();
@@ -940,27 +940,27 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
-            let address_outputs = self.get_address().outputs(address, Default::default()).await?;
-            for output in address_outputs.iter() {
-                output_to_query.insert(output.to_owned());
-            }
-            // 1000 is the max amount of outputs we get from the node, so if we reach that limit we maybe don't get all
-            // outputs and that's why we additionally only request dust allowance outputs
-            if address_outputs.len() == RESPONSE_MAX_OUTPUTS {
-                let address_dust_allowance_outputs = self
-                    .get_address()
-                    .outputs(
-                        address,
-                        OutputsOptions {
-                            include_spent: false,
-                            output_type: Some(OutputType::SignatureLockedDustAllowance),
-                        },
-                    )
-                    .await?;
-                for output in address_dust_allowance_outputs.iter() {
-                    output_to_query.insert(output.to_owned());
-                }
-            }
+            // let address_outputs = self.get_address().outputs(address, Default::default()).await?;
+            // for output in address_outputs.iter() {
+            //     output_to_query.insert(output.to_owned());
+            // }
+            // // 1000 is the max amount of outputs we get from the node, so if we reach that limit we maybe don't get
+            // all // outputs and that's why we additionally only request dust allowance outputs
+            // if address_outputs.len() == RESPONSE_MAX_OUTPUTS {
+            //     let address_dust_allowance_outputs = self
+            //         .get_address()
+            //         .outputs(
+            //             address,
+            //             OutputsOptions {
+            //                 include_spent: false,
+            //                 output_type: Some(OutputType::SignatureLockedDustAllowance),
+            //             },
+            //         )
+            //         .await?;
+            //     for output in address_dust_allowance_outputs.iter() {
+            //         output_to_query.insert(output.to_owned());
+            //     }
+            // }
         }
 
         // Use `get_output` API to get the `OutputMetadata`.
@@ -1194,10 +1194,10 @@ impl Client {
     /// already know the addresses.
     pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
-        for address in addresses {
-            let balance_response = self.get_address().balance(address).await?;
-            address_balance_pairs.push(balance_response);
-        }
+        // for address in addresses {
+        //     let balance_response = self.get_address().balance(address).await?;
+        //     address_balance_pairs.push(balance_response);
+        // }
         Ok(address_balance_pairs)
     }
 

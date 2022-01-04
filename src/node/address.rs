@@ -7,6 +7,7 @@ use bee_message::{input::UtxoInput, payload::transaction::TransactionId};
 
 use bee_rest_api::types::{
     body::SuccessBody,
+    dtos::OutputDto,
     responses::{BalanceAddressResponse, OutputsAddressResponse},
 };
 
@@ -76,34 +77,12 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn balance(self, address: &str) -> Result<BalanceAddressResponse> {
-        let path = &format!("api/v1/addresses/{}", address);
-
-        let resp: SuccessBody<BalanceAddressResponse> = self
+        let outputs_response = self
             .client
-            .node_manager
-            .get_request(path, None, self.client.get_timeout(Api::GetBalance))
+            .get_address()
+            .outputs_response(&address, Default::default())
             .await?;
-
-        Ok(resp.data)
-    }
-
-    /// Consume the builder and get all outputs that use a given address.
-    /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
-    /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Box<[UtxoInput]>> {
-        let path = format!("api/v1/addresses/{}/outputs", address);
-
-        let resp: SuccessBody<OutputsAddressResponse> = self
-            .client
-            .node_manager
-            .get_request(
-                &path,
-                options.into_query().as_deref(),
-                self.client.get_timeout(Api::GetOutput),
-            )
-            .await?;
-
-        resp.data
+        let output_ids = outputs_response
             .output_ids
             .iter()
             .map(|s| {
@@ -120,9 +99,26 @@ impl<'a> GetAddressBuilder<'a> {
                     Err(Error::OutputError("Invalid output length from API response"))
                 }
             })
-            .collect::<Result<Box<[UtxoInput]>>>()
-    }
+            .collect::<Result<Box<[UtxoInput]>>>()?;
+        let mut total_balance = 0;
 
+        for output_id in output_ids.iter() {
+            let output = self.client.get_output(output_id).await?;
+            let amount = match output.output {
+                OutputDto::Extended(o) => o.amount,
+                _ => 0,
+            };
+            total_balance += amount;
+        }
+
+        Ok(BalanceAddressResponse {
+            address: address.to_string(),
+            // todo remove this and only use the bech32 address?
+            address_type: 0,
+            balance: total_balance,
+            ledger_index: outputs_response.ledger_index,
+        })
+    }
     /// Consume the builder and get the OutputsAddressResponse for a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.

@@ -15,10 +15,14 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false }
-bee-message = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false, features = ["serde1"] }
-bee-pow = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false }
-bee-common = { git = "https://github.com/rufsam/bee", branch = "output-dtos-shimmer", default-features = false }
+bee-rest-api = { git = "https://github.com/Thoralf-M/bee", branch = "patch-1", default-features = false }
+bee-message = { git = "https://github.com/Thoralf-M/bee", branch = "patch-1", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/Thoralf-M/bee", branch = "patch-1", default-features = false }
+bee-common = { git = "https://github.com/Thoralf-M/bee", branch = "patch-1", default-features = false }
+# bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
+# bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
+# bee-pow = { path = "../bee/bee-pow",  default-features = false }
+# bee-common = { path = "../bee/bee-common/bee-common",  default-features = false }
 iota-crypto = { version = "0.9.1", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
 
 url = { version = "2.2.2", default-features = false }

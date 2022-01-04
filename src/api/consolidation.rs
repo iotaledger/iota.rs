@@ -37,65 +37,65 @@ pub async fn consolidate_funds(
             // We request the different output types separated so we don't get problems with the dust protection,
             // since the maximum is 100 dust and when we add the signature locked single outptus first we will always
             // have > 1 Mi for the output
-            let signature_locked_outputs = client
-                .get_address()
-                .outputs(
-                    address,
-                    OutputsOptions {
-                        include_spent: false,
-                        output_type: Some(OutputType::SignatureLockedSingle),
-                    },
-                )
-                .await?;
-            let dust_allowance_outputs = client
-                .get_address()
-                .outputs(
-                    address,
-                    OutputsOptions {
-                        include_spent: false,
-                        output_type: Some(OutputType::SignatureLockedDustAllowance),
-                    },
-                )
-                .await?;
+            // let signature_locked_outputs = client
+            //     .get_address()
+            //     .outputs(
+            //         address,
+            //         OutputsOptions {
+            //             include_spent: false,
+            //             output_type: Some(OutputType::SignatureLockedSingle),
+            //         },
+            //     )
+            //     .await?;
+            // let dust_allowance_outputs = client
+            //     .get_address()
+            //     .outputs(
+            //         address,
+            //         OutputsOptions {
+            //             include_spent: false,
+            //             output_type: Some(OutputType::SignatureLockedDustAllowance),
+            //         },
+            //     )
+            //     .await?;
 
-            let mut output_with_metadata = Vec::new();
+            // let mut output_with_metadata = Vec::new();
 
-            for out in signature_locked_outputs.iter().chain(dust_allowance_outputs.iter()) {
-                let output_metadata = client.get_output(out).await?;
-                let (amount, _output_address, _check_treshold) =
-                    ClientMessageBuilder::get_output_amount_and_address(&output_metadata.output)?;
-                output_with_metadata.push((out.clone(), amount));
-            }
+            // for out in signature_locked_outputs.iter().chain(dust_allowance_outputs.iter()) {
+            //     let output_metadata = client.get_output(out).await?;
+            //     let (amount, _output_address, _check_treshold) =
+            //         ClientMessageBuilder::get_output_amount_and_address(&output_metadata.output)?;
+            //     output_with_metadata.push((out.clone(), amount));
+            // }
 
-            if !output_with_metadata.is_empty() {
-                // If we reach the same index again
-                if last_transfer_index == index {
-                    if output_with_metadata.len() < 2 {
-                        break 'consolidation;
-                    }
-                } else {
-                    last_transfer_index = index;
-                }
-            }
+            // if !output_with_metadata.is_empty() {
+            //     // If we reach the same index again
+            //     if last_transfer_index == index {
+            //         if output_with_metadata.len() < 2 {
+            //             break 'consolidation;
+            //         }
+            //     } else {
+            //         last_transfer_index = index;
+            //     }
+            // }
 
-            let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
+            // let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
 
-            for chunk in outputs_chunks {
-                let mut message_builder = client.message().with_seed(seed);
-                let mut total_amount = 0;
-                for (input, amount) in chunk {
-                    message_builder = message_builder.with_input(input.clone());
-                    total_amount += amount;
-                }
+            // for chunk in outputs_chunks {
+            //     let mut message_builder = client.message().with_seed(seed);
+            //     let mut total_amount = 0;
+            //     for (input, amount) in chunk {
+            //         message_builder = message_builder.with_input(input.clone());
+            //         total_amount += amount;
+            //     }
 
-                let message = message_builder
-                    .with_input_range(index..index + 1)
-                    .with_output(&consolidation_address, total_amount)?
-                    .with_initial_address_index(0)
-                    .finish()
-                    .await?;
-                message_ids.push(message.id());
-            }
+            //     let message = message_builder
+            //         .with_input_range(index..index + 1)
+            //         .with_output(&consolidation_address, total_amount)?
+            //         .with_initial_address_index(0)
+            //         .finish()
+            //         .await?;
+            //     message_ids.push(message.id());
+            // }
         }
 
         if message_ids.is_empty() {

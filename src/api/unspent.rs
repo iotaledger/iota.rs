@@ -52,25 +52,25 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .await?;
 
             let mut address = None;
-            for a in addresses {
-                let address_outputs = self
-                    .client
-                    .get_address()
-                    .outputs(
-                        &a,
-                        OutputsOptions {
-                            include_spent: true,
-                            output_type: None,
-                        },
-                    )
-                    .await?;
-                if address_outputs.is_empty() {
-                    address.replace(a);
-                    break;
-                } else {
-                    index += 1;
-                }
-            }
+            // for a in addresses {
+            //     let address_outputs = self
+            //         .client
+            //         .get_address()
+            //         .outputs(
+            //             &a,
+            //             OutputsOptions {
+            //                 include_spent: true,
+            //                 output_type: None,
+            //             },
+            //         )
+            //         .await?;
+            //     if address_outputs.is_empty() {
+            //         address.replace(a);
+            //         break;
+            //     } else {
+            //         index += 1;
+            //     }
+            // }
 
             if let Some(a) = address {
                 break (a, index);

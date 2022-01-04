@@ -31,10 +31,11 @@ async fn main() {
 
     let address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 
-    let response = iota.get_address().balance(address).await.unwrap();
-    println!("The balance of {:?} is {:?}i\n", address, response.balance);
-
-    let outputs = iota.get_address().outputs(address, Default::default()).await.unwrap();
+    let outputs = iota
+        .get_address()
+        .outputs_response(address, Default::default())
+        .await
+        .unwrap();
 
     println!("The outputs of address {:?} are: {:?}", address, outputs);
 }
