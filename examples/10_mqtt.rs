@@ -11,7 +11,8 @@ use std::sync::{mpsc::channel, Arc, Mutex};
 async fn main() -> Result<()> {
     // Create a client instance
     let mut iota = Client::builder()
-        .with_node("https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe")?
+        .with_node("http://localhost:14265")?
+        .with_node_sync_disabled()
         .finish()
         .await?;
 

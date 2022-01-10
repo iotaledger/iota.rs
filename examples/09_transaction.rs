@@ -12,10 +12,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")?
-        .finish()
-        .await?;
+    let iota = Client::builder().with_node("http://localhost:14265")?.finish().await?;
 
     // This example uses dotenv, which is not safe for use in production
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance

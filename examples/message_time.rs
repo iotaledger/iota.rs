@@ -9,7 +9,7 @@ use iota_client::Client;
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe") // Insert your node URL here
+        .with_node("http://localhost:14265") // Insert your node URL here
         .unwrap()
         .finish()
         .await

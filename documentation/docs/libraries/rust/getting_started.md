@@ -38,7 +38,7 @@ use iota_client::Client;
 #[tokio::main]
 async fn main() {
     let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")
+        .with_node("http://localhost:14265")
         .unwrap()
         .finish()
         .await

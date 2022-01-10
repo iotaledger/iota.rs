@@ -10,7 +10,8 @@ use iota_client::{Client, Result};
 #[tokio::main]
 async fn main() -> Result<()> {
     let iota = Client::builder()
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")?
+        .with_node("http://localhost:14265")?
+        .with_node_sync_disabled()
         .finish()
         .await?;
 

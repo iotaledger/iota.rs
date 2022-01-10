@@ -15,7 +15,7 @@ use std::env;
 async fn main() -> Result<()> {
     let iota = Client::builder()
         .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe/")?
-        .with_node("https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe")?
+        .with_node("http://localhost:14265")?
         .with_node("https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe/")?
         .with_quorum(true)
         .with_quorum_size(3)

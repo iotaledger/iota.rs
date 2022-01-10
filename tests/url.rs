@@ -8,6 +8,6 @@ async fn invalid_url() {
 }
 #[tokio::test]
 async fn valid_url() {
-    let client = iota_client::Client::builder().with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe");
+    let client = iota_client::Client::builder().with_node("http://localhost:14265");
     assert!(client.is_ok());
 }

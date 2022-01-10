@@ -6,7 +6,7 @@ import sqlite3
 
 
 def consolidation():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -15,7 +15,7 @@ def consolidation():
 
 
 def create_max_dust():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -89,7 +89,7 @@ def create_max_dust():
 
 
 def custom_inputs():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -111,7 +111,7 @@ def custom_inputs():
 
 
 def custom_parent():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
     parent = 'b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b'
 
@@ -125,7 +125,7 @@ def custom_parent():
 
 
 def custom_payload():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     indexation_key = 'My indexation payload key'
@@ -135,7 +135,7 @@ def custom_payload():
 
 
 def dust():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -154,7 +154,7 @@ def dust():
 
 
 def get_fund():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -177,7 +177,7 @@ def get_fund():
 
 
 def indexation():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     indexation_key = 'Hello'
@@ -192,7 +192,7 @@ def indexation():
 
 
 def message_time():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     indexation_key = 'Hello'
@@ -217,7 +217,7 @@ def message_time():
 
 
 def mnemonic():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     mnemonic = client.generate_mnemonic()
@@ -231,7 +231,7 @@ def mnemonic():
 
 def multiple_outputs():
 
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     # Seed must contain non-zero balance
@@ -253,7 +253,7 @@ def multiple_outputs():
 
 
 def peer():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
     try:
         peers = client.get_peers()
@@ -264,7 +264,7 @@ def peer():
 
 
 def quorum():
-    node_1 = 'https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe'
+    node_1 = 'http://localhost:14265'
     node_2 = 'https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe'
     node_3 = 'https://api.lb-0.h.chrysalis-devnet.iota.cafe'
     try:
@@ -281,7 +281,7 @@ def quorum():
 
 
 def search_address():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
     seed = os.getenv('MY_IOTA_SEED')
     address = client.get_addresses(
@@ -298,7 +298,7 @@ def search_address():
 
 
 def send_all():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -324,7 +324,7 @@ def send_all():
 
 
 def split_all():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -367,7 +367,7 @@ def split_all():
 
 
 def split_outputs_single_address():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -414,7 +414,7 @@ def split_outputs_single_address():
 
 
 def transaction():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')
@@ -487,7 +487,7 @@ def transaction():
 
 
 def txspam():
-    node_url = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe"
+    node_url = "http://localhost:14265"
     client = iota_client.Client(nodes_name_password=[[node_url]])
 
     seed = os.getenv('MY_IOTA_SEED')

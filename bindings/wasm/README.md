@@ -33,7 +33,7 @@ const { ClientBuilder } = require('@iota/client-wasm/node')
 
 async function main() {
     let client = await new ClientBuilder()
-        .node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")
+        .node("http://localhost:14265")
         .build();
     // Get the nodeinfo
     console.log("Nodeinfo: ", await client.getInfo());

@@ -8,7 +8,7 @@ use crypto::keys::slip10::Seed;
 
 use std::str::FromStr;
 
-const DEFAULT_NODE_URL: &str = "https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe";
+const DEFAULT_NODE_URL: &str = "http://localhost:14265";
 
 // Sends a full message object to the node with already computed nonce. Serves as a test object.
 async fn setup_indexation_message() -> MessageId {

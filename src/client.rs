@@ -911,11 +911,7 @@ impl Client {
     /// GET /api/v1/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
     pub async fn get_output(&self, output_id: &UtxoInput) -> Result<OutputResponse> {
-        let path = &format!(
-            "api/v1/outputs/{}{}",
-            output_id.output_id().transaction_id().to_string(),
-            hex::encode(output_id.output_id().index().to_le_bytes())
-        );
+        let path = &format!("api/v1/outputs/{}", output_id.output_id());
 
         let resp: SuccessBody<OutputResponse> = self
             .node_manager

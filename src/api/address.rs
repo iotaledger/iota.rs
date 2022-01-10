@@ -80,12 +80,10 @@ impl<'a> GetAddressesBuilder<'a> {
     pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
         let bech32_hrp = match self.bech32_hrp.clone() {
             Some(bech32_hrp) => bech32_hrp,
-            None => {
-                self.client
-                    .ok_or(Error::MissingParameter("Client or bech32_hrp"))?
-                    .get_bech32_hrp()
-                    .await?
-            }
+            None => match self.client {
+                Some(client) => client.get_bech32_hrp().await?,
+                None => "iota".to_string(),
+            },
         };
         let addresses = self
             .get_all_raw()

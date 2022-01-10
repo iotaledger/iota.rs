@@ -8,7 +8,7 @@
 //! ## Sending a message with an indexation payload
 //!  ```compile_fail
 //! let iota = Client::builder()
-//!    .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")?
+//!    .with_node("http://localhost:14265")?
 //!    .finish()
 //!    .await?;
 //!
