@@ -3,7 +3,10 @@
 
 //! cargo run --example 05_get_address_outputs --release
 
-use iota_client::{bee_message::input::UtxoInput, bee_message::output::OutputId, Client, Result};
+use iota_client::{
+    bee_message::{input::UtxoInput, output::OutputId},
+    Client, Result,
+};
 use std::str::FromStr;
 
 /// In this example we will get the outputs of a known address
