@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.3]
+
+- Fixes getIncludedMessage().
+  - [070ea632](https://github.com/iotaledger/iota.rs/commit/070ea632c538108484958b052a2568afa73540a0) Fix getIncludedMessage() ([#780](https://github.com/iotaledger/iota.rs/pull/780)) on 2022-01-10
+
 ## \[2.2.2]
 
 - Updated dependencies to fix compilation.
