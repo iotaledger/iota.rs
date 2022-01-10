@@ -591,7 +591,7 @@ declare_types! {
             let transaction_id = cx.argument::<JsString>(0)?.value();
             let transaction_id = TransactionId::from_str(transaction_id.as_str()).expect("invalid transaction id");
 
-            let cb = cx.argument::<JsFunction>(0)?;
+            let cb = cx.argument::<JsFunction>(1)?;
             {
                 let this = cx.this();
                 let guard = cx.lock();
