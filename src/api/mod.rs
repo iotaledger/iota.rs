@@ -15,4 +15,4 @@ pub use consolidation::*;
 pub use message_builder::*;
 pub use unspent::*;
 
-const ADDRESS_GAP_RANGE: usize = 20;
+const ADDRESS_GAP_RANGE: u32 = 20;

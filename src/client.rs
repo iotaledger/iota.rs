@@ -8,6 +8,7 @@ use crate::{
     error::*,
     node::*,
     node_manager::Node,
+    signing::SignerHandle,
 };
 use bee_common::packable::Packable;
 use bee_message::{
@@ -1157,13 +1158,13 @@ impl Client {
     }
 
     /// Return a valid unspent address.
-    pub fn get_unspent_address<'a>(&'a self, seed: &'a Seed) -> GetUnspentAddressBuilder<'a> {
-        GetUnspentAddressBuilder::new(self, seed)
+    pub fn get_unspent_address<'a>(&'a self, signer: &'a SignerHandle) -> GetUnspentAddressBuilder<'a> {
+        GetUnspentAddressBuilder::new(self, signer)
     }
 
-    /// Return a list of addresses from the seed regardless of their validity.
-    pub fn get_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
-        GetAddressesBuilder::new(seed).with_client(self)
+    /// Return a list of addresses from the signer regardless of their validity.
+    pub fn get_addresses<'a>(&'a self, signer: &'a SignerHandle) -> GetAddressesBuilder<'a> {
+        GetAddressesBuilder::new(signer).with_client(self)
     }
 
     /// Find all messages by provided message IDs and/or indexation_keys.
@@ -1199,11 +1200,11 @@ impl Client {
         Ok(messages)
     }
 
-    /// Return the balance for a provided seed and its wallet chain account index.
+    /// Return the balance for a provided signer and its wallet chain account index.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
     /// balance address.
-    pub fn get_balance<'a>(&'a self, seed: &'a Seed) -> GetBalanceBuilder<'a> {
-        GetBalanceBuilder::new(self, seed)
+    pub fn get_balance<'a>(&'a self, signer: &'a SignerHandle) -> GetBalanceBuilder<'a> {
+        GetBalanceBuilder::new(self, signer)
     }
 
     /// Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and
@@ -1353,11 +1354,11 @@ impl Client {
     /// Returns the address to which the funds got consolidated, if any were available
     pub async fn consolidate_funds(
         &self,
-        seed: &Seed,
-        account_index: usize,
-        address_range: Range<usize>,
+        signer: &SignerHandle,
+        account_index: u32,
+        address_range: Range<u32>,
     ) -> crate::Result<String> {
-        crate::api::consolidate_funds(self, seed, account_index, address_range).await
+        crate::api::consolidate_funds(self, signer, account_index, address_range).await
     }
 }
 

@@ -44,6 +44,7 @@ pub mod client;
 pub mod error;
 pub mod node;
 pub mod node_manager;
+pub mod signing;
 
 pub use bee_common as common;
 pub use bee_message;

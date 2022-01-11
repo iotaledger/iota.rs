@@ -25,6 +25,7 @@ bee-common = { git = "https://github.com/Thoralf-M/bee", branch = "patch-1", def
 # bee-common = { path = "../bee/bee-common/bee-common",  default-features = false }
 iota-crypto = { version = "0.9.1", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
 
+async-trait =  { version ="0.1.51", default-features = false }
 url = { version = "2.2.2", default-features = false }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.68", default-features = false }
@@ -46,6 +47,9 @@ futures = { version = "0.3.17", default-features = false, optional = true }
 rumqttc = { version = "0.10.0", default-features = false, features = ["websocket"], optional = true }
 once_cell = { version = "1.8.0", default-features = false, features = ["std"], optional = true }
 
+# ledger hardware wallets
+iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "8c239b13b80e169aaa19cde9cd825e8444be0973", default-features = false, optional = true }
+
 # wasm
 # to enable timeouts for browser and node.js
 # patched version
@@ -65,9 +69,11 @@ default = ["async"]
 sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
-# wasm = ["reqwest", "futures", "wasm-timer", "bee-crypto", "bee-ternary", "bytes"]
+wasm = ["reqwest", "futures", "wasm-timer", "bee-crypto", "bee-ternary", "bytes"]
 #fallback to local PoW
 pow-fallback = []
+ledger-nano = ["iota-ledger"]
+ledger-nano-simulator = ["iota-ledger"]
 
 [[example]]
 name = "10_mqtt"

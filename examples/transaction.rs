@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example transaction --release
-use iota_client::{Client, Result, Seed};
+use iota_client::{
+    signing::{mnemonic::MnemonicSigner, SignerHandle},
+    Client, Result,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -38,15 +41,19 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let seed_1 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
-    let seed_2 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?);
+    let signer_1 = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
+        &env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap(),
+    )?));
+    let signer_2 = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
+        &env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap(),
+    )?));
 
     let message = iota
         .message()
-        .with_seed(&seed_1)
+        .with_signer(&signer_1)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &iota.get_addresses(&seed_2).with_range(0..1).finish().await?[0],
+            &iota.get_addresses(&signer_2).with_range(0..1).finish().await?[0],
             3_000_000,
         )?
         .finish()
@@ -57,9 +64,9 @@ async fn main() -> Result<()> {
 
     let message = iota
         .message()
-        .with_seed(&seed_1)
+        .with_signer(&signer_1)
         .with_output(
-            &iota.get_addresses(&seed_2).with_range(1..2).finish().await?[0],
+            &iota.get_addresses(&signer_2).with_range(1..2).finish().await?[0],
             3_000_000,
         )?
         .finish()
@@ -70,9 +77,9 @@ async fn main() -> Result<()> {
 
     let message = iota
         .message()
-        .with_seed(&seed_1)
+        .with_signer(&signer_1)
         .with_output(
-            &iota.get_addresses(&seed_2).with_range(2..3).finish().await?[0],
+            &iota.get_addresses(&signer_2).with_range(2..3).finish().await?[0],
             3_000_000,
         )?
         .finish()
@@ -83,14 +90,14 @@ async fn main() -> Result<()> {
 
     let message = iota
         .message()
-        .with_seed(&seed_2)
+        .with_signer(&signer_2)
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            &iota.get_addresses(&seed_1).with_range(1..2).finish().await?[0],
+            &iota.get_addresses(&signer_1).with_range(1..2).finish().await?[0],
             3_000_000,
         )?
         .with_output(
-            &iota.get_addresses(&seed_1).with_range(2..3).finish().await?[0],
+            &iota.get_addresses(&signer_1).with_range(2..3).finish().await?[0],
             3_000_000,
         )?
         .finish()

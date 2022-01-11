@@ -1,24 +1,23 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Result};
-use crypto::keys::slip10::Seed;
+use crate::{signing::SignerHandle, Client, Result};
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
     client: &'a Client,
-    seed: &'a Seed,
-    account_index: usize,
-    initial_address_index: usize,
-    gap_limit: usize,
+    signer: &'a SignerHandle,
+    account_index: u32,
+    initial_address_index: u32,
+    gap_limit: u32,
 }
 
 impl<'a> GetBalanceBuilder<'a> {
     /// Create get_balance builder
-    pub fn new(client: &'a Client, seed: &'a Seed) -> Self {
+    pub fn new(client: &'a Client, signer: &'a SignerHandle) -> Self {
         Self {
             client,
-            seed,
+            signer,
             account_index: 0,
             initial_address_index: 0,
             gap_limit: super::ADDRESS_GAP_RANGE,
@@ -26,20 +25,20 @@ impl<'a> GetBalanceBuilder<'a> {
     }
 
     /// Sets the account index.
-    pub fn with_account_index(mut self, account_index: usize) -> Self {
+    pub fn with_account_index(mut self, account_index: u32) -> Self {
         self.account_index = account_index;
         self
     }
 
     /// Sets the index of the address to start looking for balance.
-    pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
+    pub fn with_initial_address_index(mut self, initial_address_index: u32) -> Self {
         self.initial_address_index = initial_address_index;
         self
     }
 
     /// Sets the gap limit to specify how many addresses will be checked each round.
     /// If gap_limit amount of addresses in a row have no balance the function will return.
-    pub fn with_gap_limit(mut self, gap_limit: usize) -> Self {
+    pub fn with_gap_limit(mut self, gap_limit: u32) -> Self {
         self.gap_limit = gap_limit;
         self
     }
@@ -55,7 +54,7 @@ impl<'a> GetBalanceBuilder<'a> {
         loop {
             let addresses = self
                 .client
-                .get_addresses(self.seed)
+                .get_addresses(self.signer)
                 .with_account_index(self.account_index)
                 .with_range(index..index + self.gap_limit)
                 .get_all()

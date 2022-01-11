@@ -4,7 +4,8 @@
 //! cargo run --example custom_inputs --release
 use iota_client::{
     bee_message::{input::UtxoInput, output::OutputId},
-    Client, Result, Seed,
+    signing::{mnemonic::MnemonicSigner, SignerHandle},
+    Client, Result,
 };
 extern crate dotenv;
 use dotenv::dotenv;
@@ -25,7 +26,9 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
+    let seed = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
+        &env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
+    )?));
 
     let addresses = iota.get_addresses(&seed).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
@@ -38,7 +41,7 @@ async fn main() -> Result<()> {
 
     let message = iota
         .message()
-        .with_seed(&seed)
+        .with_signer(&seed)
         .with_input(UtxoInput::from(OutputId::from_str(&outputs.output_ids[0])?))
         //.with_input_range(20..25)
         .with_output(

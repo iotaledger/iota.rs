@@ -1,7 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::address::search_address, Client, ClientMiner, Error, Result};
+use crate::{
+    api::address::search_address,
+    signing::{mnemonic::IOTA_COIN_TYPE, Network, SignMessageMetadata, SignerHandle},
+    Client, ClientMiner, Error, Result,
+};
 
 use bee_common::packable::Packable;
 use bee_message::{
@@ -13,8 +17,7 @@ use bee_message::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayloadBuilder},
         IndexationPayload, Payload,
     },
-    signature::{Ed25519Signature, Signature},
-    unlock_block::{ReferenceUnlockBlock, SignatureUnlockBlock, UnlockBlock, UnlockBlocks},
+    unlock_block::UnlockBlocks,
     Message, MessageBuilder, MessageId,
 };
 #[cfg(not(feature = "wasm"))]
@@ -23,11 +26,11 @@ use bee_rest_api::types::{
     dtos::{AddressDto, OutputDto},
     responses::OutputResponse,
 };
-use crypto::keys::slip10::{Chain, Curve, Seed};
+use crypto::keys::slip10::Chain;
 #[cfg(not(feature = "wasm"))]
 use tokio::time::sleep;
 
-use std::{collections::HashMap, ops::Range, str::FromStr, time::Duration};
+use std::{ops::Range, str::FromStr, time::Duration};
 
 const DUST_THRESHOLD: u64 = 1_000_000;
 
@@ -44,13 +47,13 @@ pub struct PreparedTransactionData {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressIndexRecorder {
     /// Index of the account
-    pub account_index: usize,
+    pub account_index: u32,
     /// The input used
     pub input: Input,
     /// The output information
     pub output: OutputResponse,
     /// index of this address on the seed
-    pub address_index: usize,
+    pub address_index: u32,
     /// The chain derived from seed
     pub chain: Chain,
     /// Whether this is an internal address
@@ -62,7 +65,7 @@ pub struct AddressIndexRecorder {
 #[derive(Debug, Clone)]
 struct OutputWrapper {
     output: OutputResponse,
-    address_index: usize,
+    address_index: u32,
     internal: bool,
     amount: u64,
     address: String,
@@ -71,11 +74,11 @@ struct OutputWrapper {
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
-    seed: Option<&'a Seed>,
-    account_index: Option<usize>,
-    initial_address_index: Option<usize>,
+    signer: Option<&'a SignerHandle>,
+    account_index: Option<u32>,
+    initial_address_index: Option<u32>,
     inputs: Option<Vec<UtxoInput>>,
-    input_range: Range<usize>,
+    input_range: Range<u32>,
     outputs: Vec<Output>,
     index: Option<Box<[u8]>>,
     data: Option<Vec<u8>>,
@@ -87,7 +90,7 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
         Self {
             client,
-            seed: None,
+            signer: None,
             account_index: None,
             initial_address_index: None,
             inputs: None,
@@ -100,19 +103,19 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Sets the seed.
-    pub fn with_seed(mut self, seed: &'a Seed) -> Self {
-        self.seed.replace(seed);
+    pub fn with_signer(mut self, signer: &'a SignerHandle) -> Self {
+        self.signer.replace(signer);
         self
     }
 
     /// Sets the account index.
-    pub fn with_account_index(mut self, account_index: usize) -> Self {
+    pub fn with_account_index(mut self, account_index: u32) -> Self {
         self.account_index.replace(account_index);
         self
     }
 
     /// Sets the index of the address to start looking for balance.
-    pub fn with_initial_address_index(mut self, initial_address_index: usize) -> Self {
+    pub fn with_initial_address_index(mut self, initial_address_index: u32) -> Self {
         self.initial_address_index.replace(initial_address_index);
         self
     }
@@ -130,7 +133,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Set a custom range in which to search for addresses for custom provided inputs. Default: 0..100
-    pub fn with_input_range(mut self, range: Range<usize>) -> Self {
+    pub fn with_input_range(mut self, range: Range<u32>) -> Self {
         self.input_range = range;
         self
     }
@@ -180,13 +183,39 @@ impl<'a> ClientMessageBuilder<'a> {
             return Err(Error::MissingParameter("output"));
         }
         if !self.outputs.is_empty() {
-            if self.seed.is_none() && self.inputs.is_none() {
+            if self.signer.is_none() && self.inputs.is_none() {
                 return Err(Error::MissingParameter("Seed"));
             }
             // Send message with transaction
             let prepared_transaction_data = self.prepare_transaction().await?;
-            let tx_payload = self.sign_transaction(prepared_transaction_data, None, None).await?;
-            self.finish_message(Some(tx_payload)).await
+            let signer = self.signer.as_ref().ok_or(Error::MissingParameter("signer"))?.clone();
+            let mut signer = signer.lock().await;
+            let unlock_blocks = signer
+                .sign_transaction_essence(
+                    IOTA_COIN_TYPE,
+                    self.account_index.unwrap_or(0),
+                    &prepared_transaction_data.essence,
+                    // todo provide inputs
+                    &mut vec![],
+                    // todo set correct data
+                    SignMessageMetadata {
+                        remainder_value: 0,
+                        remainder_deposit_address: None,
+                        network: match self.client.get_network_id().await? {
+                            1454675179895816119 => Network::Mainnet,
+                            _ => Network::Testnet,
+                        },
+                    },
+                )
+                .await?;
+            let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
+            let tx_payload = TransactionPayloadBuilder::new()
+                .with_essence(prepared_transaction_data.essence)
+                .with_unlock_blocks(unlock_blocks)
+                .finish()
+                .map_err(|_| Error::TransactionError)?;
+            self.finish_message(Some(Payload::Transaction(Box::new(tx_payload))))
+                .await
         } else if self.index.is_some() {
             // Send message with indexation payload
             self.finish_indexation().await
@@ -198,8 +227,8 @@ impl<'a> ClientMessageBuilder<'a> {
 
     // Used to store the address data for an input so we can later sign it
     fn create_address_index_recorder(
-        account_index: usize,
-        address_index: usize,
+        account_index: u32,
+        address_index: u32,
         internal: bool,
         output: &OutputResponse,
         bech32_address: String,
@@ -269,10 +298,10 @@ impl<'a> ClientMessageBuilder<'a> {
 
                     total_already_spent += output_amount;
                     let bech32_hrp = self.client.get_bech32_hrp().await?;
-                    let (address_index, internal) = match self.seed {
-                        Some(seed) => {
+                    let (address_index, internal) = match self.signer.clone() {
+                        Some(signer) => {
                             search_address(
-                                seed,
+                                &signer,
                                 &bech32_hrp,
                                 account_index,
                                 self.input_range.clone(),
@@ -332,7 +361,7 @@ impl<'a> ClientMessageBuilder<'a> {
             // Get the addresses in the BIP path/index ~ path/index+20
             let addresses = self
                 .client
-                .get_addresses(self.seed.ok_or(crate::Error::MissingParameter("seed"))?)
+                .get_addresses(self.signer.as_ref().ok_or(crate::Error::MissingParameter("signer"))?)
                 .with_account_index(account_index)
                 .with_range(gap_index..gap_index + super::ADDRESS_GAP_RANGE)
                 .get_all()
@@ -514,72 +543,74 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Sign the transaction
-    pub async fn sign_transaction(
-        &self,
-        prepared_transaction_data: PreparedTransactionData,
-        seed: Option<&'a Seed>,
-        inputs_range: Option<Range<usize>>,
-    ) -> Result<Payload> {
-        let essence = prepared_transaction_data.essence;
-        let mut address_index_recorders = prepared_transaction_data.address_index_recorders;
-        let hashed_essence = essence.hash();
-        let mut unlock_blocks = Vec::new();
-        let mut signature_indexes = HashMap::<String, usize>::new();
-        address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
+    // pub async fn sign_transaction(
+    //     &self,
+    //     prepared_transaction_data: PreparedTransactionData,
+    //     signer: Option<SignerHandle>,
+    //     inputs_range: Option<Range<u32>>,
+    // ) -> Result<Payload> {
+    //     let essence = prepared_transaction_data.essence;
+    //     let mut address_index_recorders = prepared_transaction_data.address_index_recorders;
+    //     let hashed_essence = essence.hash();
+    //     let mut unlock_blocks = Vec::new();
+    //     let mut signature_indexes = HashMap::<String, usize>::new();
+    //     address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
 
-        for (current_block_index, mut recorder) in address_index_recorders.into_iter().enumerate() {
-            // If seed is provided we assume an essence that got prepared without seed and need to find the correct
-            // address indexes and public/internal
-            if seed.is_some() {
-                let (address_index, internal) = search_address(
-                    seed.or(self.seed).ok_or(crate::Error::MissingParameter("Seed"))?,
-                    &recorder.bech32_address[0..4],
-                    recorder.account_index,
-                    inputs_range.clone().unwrap_or_else(|| self.input_range.clone()),
-                    &Address::try_from_bech32(&recorder.bech32_address)?,
-                )
-                .await?;
-                recorder = ClientMessageBuilder::create_address_index_recorder(
-                    recorder.account_index,
-                    address_index,
-                    internal,
-                    &recorder.output,
-                    recorder.bech32_address,
-                )?;
-            }
+    //     for (current_block_index, mut recorder) in address_index_recorders.into_iter().enumerate() {
+    //         // If seed is provided we assume an essence that got prepared without seed and need to find the correct
+    //         // address indexes and public/internal
+    //         if signer.is_some() {
+    //             let (address_index, internal) = search_address(
+    //                 signer.or(self.signer).ok_or(crate::Error::MissingParameter("signer"))?,
+    //                 &recorder.bech32_address[0..4],
+    //                 recorder.account_index,
+    //                 inputs_range.clone().unwrap_or_else(|| self.input_range.clone()),
+    //                 &Address::try_from_bech32(&recorder.bech32_address)?,
+    //             )
+    //             .await?;
+    //             recorder = ClientMessageBuilder::create_address_index_recorder(
+    //                 recorder.account_index,
+    //                 address_index,
+    //                 internal,
+    //                 &recorder.output,
+    //                 recorder.bech32_address,
+    //             )?;
+    //         }
 
-            // Check if current path is same as previous path
-            // If so, add a reference unlock block
-            // Format to differentiate between public and internal addresses
-            let index = format!("{}{}", recorder.address_index, recorder.internal);
-            if let Some(block_index) = signature_indexes.get(&index) {
-                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
-            } else {
-                // If not, we need to create a signature unlock block
-                let private_key = seed
-                    .or(self.seed)
-                    .ok_or(crate::Error::MissingParameter("Seed"))?
-                    .derive(Curve::Ed25519, &recorder.chain)?
-                    .secret_key();
-                let public_key = private_key.public_key().to_bytes();
-                // The signature unlock block needs to sign the hash of the entire transaction essence of the
-                // transaction payload
-                let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
-                unlock_blocks.push(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
-                    Ed25519Signature::new(public_key, *signature),
-                ))));
-                signature_indexes.insert(index, current_block_index);
-            }
-        }
+    //         // Check if current path is same as previous path
+    //         // If so, add a reference unlock block
+    //         // Format to differentiate between public and internal addresses
+    //         let index = format!("{}{}", recorder.address_index, recorder.internal);
+    //         if let Some(block_index) = signature_indexes.get(&index) {
+    //             unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
+    //         } else {
+    //             let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
+    //             let mut signer = signer.lock().await;
+    //             // If not, we need to create a signature unlock block
+    //             let private_key = signer
+    //                 .or(self.signer)
+    //                 .ok_or(crate::Error::MissingParameter("signer"))?
+    //                 .derive(Curve::Ed25519, &recorder.chain)?
+    //                 .secret_key();
+    //             let public_key = private_key.public_key().to_bytes();
+    //             // The signature unlock block needs to sign the hash of the entire transaction essence of the
+    //             // transaction payload
+    //             let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
+    //             unlock_blocks.push(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
+    //                 Ed25519Signature::new(public_key, *signature),
+    //             ))));
+    //             signature_indexes.insert(index, current_block_index);
+    //         }
+    //     }
 
-        let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-        let payload = TransactionPayloadBuilder::new()
-            .with_essence(essence)
-            .with_unlock_blocks(unlock_blocks)
-            .finish()
-            .map_err(|_| Error::TransactionError)?;
-        Ok(Payload::Transaction(Box::new(payload)))
-    }
+    //     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
+    //     let payload = TransactionPayloadBuilder::new()
+    //         .with_essence(essence)
+    //         .with_unlock_blocks(unlock_blocks)
+    //         .finish()
+    //         .map_err(|_| Error::TransactionError)?;
+    //     Ok(Payload::Transaction(Box::new(payload)))
+    // }
 
     /// Consume the builder and get the API result
     pub async fn finish_indexation(self) -> Result<Message> {

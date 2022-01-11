@@ -3,8 +3,9 @@
 
 // These are E2E test samples, so they are ignored by default.
 
+use iota_client::signing::{mnemonic::MnemonicSigner, SignerHandle};
+
 use bee_message::{input::UtxoInput, payload::transaction::TransactionId, MessageId};
-use crypto::keys::slip10::Seed;
 
 use std::str::FromStr;
 
@@ -27,7 +28,6 @@ async fn setup_indexation_message() -> MessageId {
         .await
         .unwrap()
         .id()
-        .0
 }
 
 const DEFAULT_NODE_POOL_URLS: &str = "https://giftiota.com/nodes.json";
@@ -92,7 +92,7 @@ async fn test_post_message_with_indexation() {
         .await
         .unwrap();
 
-    println!("{}", r.id().0);
+    println!("{}", r.id());
 }
 
 #[tokio::test]
@@ -106,12 +106,12 @@ async fn test_post_message_with_transaction() {
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    let seed =
-        Seed::from_bytes(&hex::decode("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap());
-
+    let mnemonic_signer =
+        MnemonicSigner::new_from_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap();
+    let signer = SignerHandle::new(Box::new(mnemonic_signer));
     let message_id = iota
         .message()
-        .with_seed(&seed)
+        .with_signer(&signer)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .with_output_hex(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8", // Insert the address to search for

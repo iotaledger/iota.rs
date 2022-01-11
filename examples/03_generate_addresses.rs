@@ -3,7 +3,11 @@
 
 //! cargo run --example 03_generate_addresses --release
 
-use iota_client::{api::GetAddressesBuilder, Client, Seed};
+use iota_client::{
+    api::GetAddressesBuilder,
+    signing::{mnemonic::MnemonicSigner, SignerHandle},
+    Client, Result,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -11,7 +15,7 @@ use std::env;
 /// In this example we will create addresses from a seed defined in .env
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("http://localhost:14265") // Insert your node URL here
@@ -24,15 +28,15 @@ async fn main() {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
-
+    let seed = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
+    let signer = SignerHandle::new(Box::new(seed));
     // Generate addresses with default account index and range
-    let addresses = iota.get_addresses(&seed).finish().await.unwrap();
+    let addresses = iota.get_addresses(&signer).finish().await.unwrap();
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate addresses with custom account index and range
     let addresses = iota
-        .get_addresses(&seed)
+        .get_addresses(&signer)
         .with_account_index(0)
         .with_range(0..4)
         .finish()
@@ -42,11 +46,11 @@ async fn main() {
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate public (false) & internal (true) addresses
-    let addresses = iota.get_addresses(&seed).with_range(0..4).get_all().await.unwrap();
+    let addresses = iota.get_addresses(&signer).with_range(0..4).get_all().await.unwrap();
     println!("List of generated public and internal addresses:\n{:?}\n", addresses);
 
     // Generate public addresses offline with the bech32_hrp defined
-    let addresses = GetAddressesBuilder::new(&seed)
+    let addresses = GetAddressesBuilder::new(&signer)
         .with_bech32_hrp("atoi".into())
         .with_account_index(0)
         .with_range(0..4)
@@ -55,4 +59,5 @@ async fn main() {
         .unwrap();
 
     println!("List of offline generated public addresses:\n{:?}\n", addresses);
+    Ok(())
 }

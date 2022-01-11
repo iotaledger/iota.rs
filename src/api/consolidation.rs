@@ -4,6 +4,7 @@
 use crate::{
     api::message_builder::ClientMessageBuilder,
     node::{OutputType, OutputsOptions},
+    signing::SignerHandle,
     Client, Result,
 };
 use bee_message::{
@@ -11,7 +12,6 @@ use bee_message::{
     output::OutputId,
     payload::transaction::TransactionId,
 };
-use crypto::keys::slip10::Seed;
 
 use std::{ops::Range, str::FromStr};
 
@@ -19,12 +19,12 @@ use std::{ops::Range, str::FromStr};
 /// Returns the address to which the funds got consolidated, if any were available
 pub async fn consolidate_funds(
     client: &Client,
-    seed: &Seed,
-    account_index: usize,
-    address_range: Range<usize>,
+    signer: &SignerHandle,
+    account_index: u32,
+    address_range: Range<u32>,
 ) -> Result<String> {
     let addresses = client
-        .get_addresses(seed)
+        .get_addresses(signer)
         .with_account_index(account_index)
         .with_range(address_range.clone())
         .finish()
@@ -37,6 +37,7 @@ pub async fn consolidate_funds(
         let mut message_ids = Vec::new();
         // Iterate over addresses reversed so the funds end up on the first address in the range
         for (index, address) in addresses.iter().enumerate().rev() {
+            let index = index as u32;
             // add the offset so the index matches the address index also for higher start indexes
             let index = index + offset;
 
@@ -72,7 +73,7 @@ pub async fn consolidate_funds(
             let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
 
             for chunk in outputs_chunks {
-                let mut message_builder = client.message().with_seed(seed);
+                let mut message_builder = client.message().with_signer(&signer);
                 let mut total_amount = 0;
                 for (input, amount) in chunk {
                     message_builder = message_builder.with_input(UtxoInput::from(OutputId::new(

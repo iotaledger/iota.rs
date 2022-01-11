@@ -3,7 +3,11 @@
 
 //! cargo run --example search_address --release
 
-use iota_client::{api::search_address, Client, Seed};
+use iota_client::{
+    api::search_address,
+    signing::{mnemonic::MnemonicSigner, SignerHandle},
+    Client, Result,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::{convert::TryInto, env};
@@ -11,7 +15,7 @@ use std::{convert::TryInto, env};
 /// In this example we will try to find the index and address type of an address
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("http://localhost:14265") // Insert your node URL here
@@ -23,10 +27,11 @@ async fn main() {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+    let mnemonic_signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
+    let signer = SignerHandle::new(Box::new(mnemonic_signer));
 
     let addresses = iota
-        .get_addresses(&seed)
+        .get_addresses(&signer)
         .with_account_index(0)
         .with_range(9..10)
         .finish()
@@ -36,7 +41,7 @@ async fn main() {
     println!("{:?}", addresses[0]);
 
     let res = search_address(
-        &seed,
+        &signer,
         &iota.get_bech32_hrp().await.unwrap(),
         0,
         0..10,
@@ -46,4 +51,5 @@ async fn main() {
     .unwrap();
 
     println!("Address index: {}\nIs internal address: {}", res.0, res.1);
+    Ok(())
 }
