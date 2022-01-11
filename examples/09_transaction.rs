@@ -3,7 +3,7 @@
 
 //! cargo run --example 09_transaction --release
 
-use iota_client::{Client, Result, Seed};
+use iota_client::{Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
-    let seed_1 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
+    let seed_1 = Client::mnemonic_to_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     let message = iota
         .message()

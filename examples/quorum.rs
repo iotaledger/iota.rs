@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+    let seed = Client::mnemonic_to_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     let seed_balance = iota.get_balance(&seed).finish().await.unwrap();
     println!("Account balance: {:?}i\n", seed_balance);

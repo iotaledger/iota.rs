@@ -27,16 +27,8 @@ use crypto::keys::slip10::{Chain, Curve, Seed};
 #[cfg(not(feature = "wasm"))]
 use tokio::time::sleep;
 
-use std::{
-    collections::{HashMap, HashSet},
-    ops::Range,
-    str::FromStr,
-    time::Duration,
-};
+use std::{collections::HashMap, ops::Range, str::FromStr, time::Duration};
 
-// https://github.com/GalRogozinski/protocol-rfcs/blob/dust/text/0032-dust-protection/0032-dust-protection.md
-const MAX_ALLOWED_DUST_OUTPUTS: i64 = 100;
-const DUST_DIVISOR: i64 = 100_000;
 const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Helper struct for offline signing
@@ -239,14 +231,14 @@ impl<'a> ClientMessageBuilder<'a> {
         })
     }
 
-    /// Get output amount and address from an OutputDto, str represents the output type: todo replace with enum
-    pub fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address, str)> {
+    /// Get output amount and address from an OutputDto
+    pub fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
             OutputDto::Extended(ref r) => match &r.address {
                 AddressDto::Ed25519(addr) => {
                     let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-                    Ok((r.amount, output_address, "extended"))
+                    Ok((r.amount, output_address))
                 }
                 // todo support other addresses
                 _ => Err(Error::OutputError("Only Ed25519Address is implemented")),
@@ -272,7 +264,7 @@ impl<'a> ClientMessageBuilder<'a> {
             // Only add unspent outputs
             if let Ok(output) = self.client.get_output(input).await {
                 if !output.is_spent {
-                    let (output_amount, output_address, check_treshold) =
+                    let (output_amount, output_address) =
                         ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
 
                     total_already_spent += output_amount;
@@ -381,7 +373,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 // outputs than we need
                 for output in address_outputs.into_iter() {
                     if !output.is_spent {
-                        let (amount, _, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+                        let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
 
                         let output_wrapper = OutputWrapper {
                             output,

@@ -3,7 +3,7 @@
 
 //! cargo run --example 04_get_balance --release
 
-use iota_client::{Client, Seed};
+use iota_client::{Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -11,31 +11,26 @@ use std::env;
 /// In this example we will get the account balance of a known seed and the balance and outputs of a known address
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("http://localhost:14265") // Insert your node URL here
-        .unwrap()
+        .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
+    let seed = Client::mnemonic_to_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let seed_balance = iota.get_balance(&seed).finish().await.unwrap();
+    let seed_balance = iota.get_balance(&seed).finish().await?;
     println!("Account balance: {:?}i\n", seed_balance);
 
     let address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 
-    let outputs = iota
-        .get_address()
-        .outputs_response(address, Default::default())
-        .await
-        .unwrap();
+    let outputs = iota.get_address().outputs_response(address, Default::default()).await?;
 
     println!("The outputs of address {:?} are: {:?}", address, outputs);
+    Ok(())
 }

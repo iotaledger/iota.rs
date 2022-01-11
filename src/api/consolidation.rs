@@ -6,9 +6,14 @@ use crate::{
     node::{OutputType, OutputsOptions},
     Client, Result,
 };
-use bee_message::input::INPUT_COUNT_MAX;
+use bee_message::{
+    input::{UtxoInput, INPUT_COUNT_MAX},
+    output::OutputId,
+    payload::transaction::TransactionId,
+};
 use crypto::keys::slip10::Seed;
-use std::ops::Range;
+
+use std::{ops::Range, str::FromStr};
 
 /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
 /// Returns the address to which the funds got consolidated, if any were available
@@ -34,68 +39,57 @@ pub async fn consolidate_funds(
         for (index, address) in addresses.iter().enumerate().rev() {
             // add the offset so the index matches the address index also for higher start indexes
             let index = index + offset;
-            // We request the different output types separated so we don't get problems with the dust protection,
-            // since the maximum is 100 dust and when we add the signature locked single outptus first we will always
-            // have > 1 Mi for the output
-            // let signature_locked_outputs = client
-            //     .get_address()
-            //     .outputs(
-            //         address,
-            //         OutputsOptions {
-            //             include_spent: false,
-            //             output_type: Some(OutputType::SignatureLockedSingle),
-            //         },
-            //     )
-            //     .await?;
-            // let dust_allowance_outputs = client
-            //     .get_address()
-            //     .outputs(
-            //         address,
-            //         OutputsOptions {
-            //             include_spent: false,
-            //             output_type: Some(OutputType::SignatureLockedDustAllowance),
-            //         },
-            //     )
-            //     .await?;
 
-            // let mut output_with_metadata = Vec::new();
+            let extended_outputs = client
+                .get_address()
+                .outputs(
+                    address,
+                    OutputsOptions {
+                        include_spent: false,
+                        output_type: Some(OutputType::SignatureLockedSingle),
+                    },
+                )
+                .await?;
 
-            // for out in signature_locked_outputs.iter().chain(dust_allowance_outputs.iter()) {
-            //     let output_metadata = client.get_output(out).await?;
-            //     let (amount, _output_address, _check_treshold) =
-            //         ClientMessageBuilder::get_output_amount_and_address(&output_metadata.output)?;
-            //     output_with_metadata.push((out.clone(), amount));
-            // }
+            let mut output_with_metadata = Vec::new();
 
-            // if !output_with_metadata.is_empty() {
-            //     // If we reach the same index again
-            //     if last_transfer_index == index {
-            //         if output_with_metadata.len() < 2 {
-            //             break 'consolidation;
-            //         }
-            //     } else {
-            //         last_transfer_index = index;
-            //     }
-            // }
+            for output in extended_outputs.iter() {
+                let (amount, _output_address) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+                output_with_metadata.push((output.clone(), amount));
+            }
 
-            // let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
+            if !output_with_metadata.is_empty() {
+                // If we reach the same index again
+                if last_transfer_index == index {
+                    if output_with_metadata.len() < 2 {
+                        break 'consolidation;
+                    }
+                } else {
+                    last_transfer_index = index;
+                }
+            }
 
-            // for chunk in outputs_chunks {
-            //     let mut message_builder = client.message().with_seed(seed);
-            //     let mut total_amount = 0;
-            //     for (input, amount) in chunk {
-            //         message_builder = message_builder.with_input(input.clone());
-            //         total_amount += amount;
-            //     }
+            let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
 
-            //     let message = message_builder
-            //         .with_input_range(index..index + 1)
-            //         .with_output(&consolidation_address, total_amount)?
-            //         .with_initial_address_index(0)
-            //         .finish()
-            //         .await?;
-            //     message_ids.push(message.id());
-            // }
+            for chunk in outputs_chunks {
+                let mut message_builder = client.message().with_seed(seed);
+                let mut total_amount = 0;
+                for (input, amount) in chunk {
+                    message_builder = message_builder.with_input(UtxoInput::from(OutputId::new(
+                        TransactionId::from_str(&input.transaction_id)?,
+                        input.output_index,
+                    )?));
+                    total_amount += amount;
+                }
+
+                let message = message_builder
+                    .with_input_range(index..index + 1)
+                    .with_output(&consolidation_address, total_amount)?
+                    .with_initial_address_index(0)
+                    .finish()
+                    .await?;
+                message_ids.push(message.id());
+            }
         }
 
         if message_ids.is_empty() {

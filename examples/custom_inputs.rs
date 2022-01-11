@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_inputs --release
-use iota_client::{Client, Result, Seed};
+use iota_client::{
+    bee_message::{input::UtxoInput, output::OutputId},
+    Client, Result, Seed,
+};
 extern crate dotenv;
 use dotenv::dotenv;
-use std::env;
+use std::{env, str::FromStr};
 
 /// In this example we will send 1_000_000 tokens to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
 /// This address belongs to the first seed in .env.example
@@ -27,13 +30,16 @@ async fn main() -> Result<()> {
     let addresses = iota.get_addresses(&seed).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
 
-    let outputs = iota.get_address().outputs(&addresses[0], Default::default()).await?;
+    let outputs = iota
+        .get_address()
+        .outputs_response(&addresses[0], Default::default())
+        .await?;
     println!("{:?}", outputs);
 
     let message = iota
         .message()
         .with_seed(&seed)
-        .with_input(outputs[0].clone())
+        .with_input(UtxoInput::from(OutputId::from_str(&outputs.output_ids[0])?))
         //.with_input_range(20..25)
         .with_output(
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",

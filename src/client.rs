@@ -13,6 +13,7 @@ use bee_common::packable::Packable;
 use bee_message::{
     address::{Address, Ed25519Address},
     input::{UtxoInput, INPUT_COUNT_MAX},
+    output::OutputId,
     parent::Parents,
     payload::{transaction::TransactionId, Payload},
     Message, MessageBuilder, MessageId,
@@ -564,6 +565,8 @@ impl Client {
 
     /// Returns a hex encoded seed for a mnemonic.
     pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
+        // trim because empty spaces could create a different seed https://github.com/iotaledger/crypto.rs/issues/125
+        let mnemonic = mnemonic.trim();
         // first we check if the mnemonic is valid to give meaningful errors
         crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
             .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
@@ -572,35 +575,46 @@ impl Client {
         Ok(hex::encode(mnemonic_seed))
     }
 
+    /// Returns a hex encoded seed for a mnemonic.
+    pub fn mnemonic_to_seed(mnemonic: &str) -> Result<Seed> {
+        // trim because empty spaces could create a different seed https://github.com/iotaledger/crypto.rs/issues/125
+        let mnemonic = mnemonic.trim();
+        // first we check if the mnemonic is valid to give meaningful errors
+        crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+        let mut mnemonic_seed = [0u8; 64];
+        mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
+        Ok(Seed::from_bytes(&mnemonic_seed))
+    }
+
     /// Function to find inputs from addresses for a provided amount (useful for offline signing)
     pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
         // Get outputs from node and select inputs
         let mut available_outputs = Vec::new();
         for address in addresses {
-            // available_outputs.extend_from_slice(&self.get_address().outputs(&address, Default::default()).await?);
+            available_outputs.extend_from_slice(
+                &self
+                    .get_address()
+                    .outputs_response(&address, Default::default())
+                    .await?
+                    .output_ids,
+            );
         }
 
-        let mut signature_locked_outputs = Vec::new();
-        let mut dust_allowance_outputs = Vec::new();
+        let mut extended_outputs = Vec::new();
 
         for output in available_outputs.into_iter() {
-            let output_data = self.get_output(&output).await?;
-            let (amount, _, signature_locked) =
-                ClientMessageBuilder::get_output_amount_and_address(&output_data.output)?;
-            if signature_locked {
-                signature_locked_outputs.push((output, amount));
-            } else {
-                dust_allowance_outputs.push((output, amount));
-            }
+            let utxo_input = UtxoInput::from(OutputId::from_str(&output)?);
+            let output_data = self.get_output(&utxo_input).await?;
+            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_data.output)?;
+            extended_outputs.push((utxo_input, amount));
         }
-        signature_locked_outputs.sort_by(|l, r| r.1.cmp(&l.1));
-        dust_allowance_outputs.sort_by(|l, r| r.1.cmp(&l.1));
+        extended_outputs.sort_by(|l, r| r.1.cmp(&l.1));
 
         let mut total_already_spent = 0;
         let mut selected_inputs = Vec::new();
-        for (_offset, output_wrapper) in signature_locked_outputs
+        for (_offset, output_wrapper) in extended_outputs
             .into_iter()
-            .chain(dust_allowance_outputs.into_iter())
             // Max inputs is 127
             .take(INPUT_COUNT_MAX.into())
             .enumerate()
@@ -936,27 +950,33 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
-            // let address_outputs = self.get_address().outputs(address, Default::default()).await?;
-            // for output in address_outputs.iter() {
-            //     output_to_query.insert(output.to_owned());
-            // }
-            // // 1000 is the max amount of outputs we get from the node, so if we reach that limit we maybe don't get
-            // all // outputs and that's why we additionally only request dust allowance outputs
-            // if address_outputs.len() == RESPONSE_MAX_OUTPUTS {
-            //     let address_dust_allowance_outputs = self
-            //         .get_address()
-            //         .outputs(
-            //             address,
-            //             OutputsOptions {
-            //                 include_spent: false,
-            //                 output_type: Some(OutputType::SignatureLockedDustAllowance),
-            //             },
-            //         )
-            //         .await?;
-            //     for output in address_dust_allowance_outputs.iter() {
-            //         output_to_query.insert(output.to_owned());
-            //     }
-            // }
+            let address_outputs = self.get_address().outputs(address, Default::default()).await?;
+            for output in address_outputs.iter() {
+                output_to_query.insert(UtxoInput::from(OutputId::new(
+                    TransactionId::from_str(&output.transaction_id)?,
+                    output.output_index,
+                )?));
+            }
+            // 1000 is the max amount of outputs we get from the node, so if we reach that limit we maybe don't get
+            // all outputs and that's why we additionally only request dust allowance outputs
+            if address_outputs.len() == RESPONSE_MAX_OUTPUTS {
+                let address_dust_allowance_outputs = self
+                    .get_address()
+                    .outputs(
+                        address,
+                        OutputsOptions {
+                            include_spent: false,
+                            output_type: Some(OutputType::SignatureLockedDustAllowance),
+                        },
+                    )
+                    .await?;
+                for output in address_dust_allowance_outputs.iter() {
+                    output_to_query.insert(UtxoInput::from(OutputId::new(
+                        TransactionId::from_str(&output.transaction_id)?,
+                        output.output_index,
+                    )?));
+                }
+            }
         }
 
         // Use `get_output` API to get the `OutputMetadata`.
@@ -1190,10 +1210,10 @@ impl Client {
     /// already know the addresses.
     pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceAddressResponse>> {
         let mut address_balance_pairs = Vec::new();
-        // for address in addresses {
-        //     let balance_response = self.get_address().balance(address).await?;
-        //     address_balance_pairs.push(balance_response);
-        // }
+        for address in addresses {
+            let balance_response = self.get_address().balance(address).await?;
+            address_balance_pairs.push(balance_response);
+        }
         Ok(address_balance_pairs)
     }
 

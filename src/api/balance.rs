@@ -1,20 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Error, Result};
-use bee_message::{input::UtxoInput, payload::transaction::TransactionId};
+use crate::{Client, Result};
 use crypto::keys::slip10::Seed;
-
-use bee_rest_api::types::{
-    body::SuccessBody,
-    dtos::OutputDto,
-    responses::{BalanceAddressResponse, OutputsAddressResponse},
-};
-
-use std::convert::TryInto;
-
-const OUTPUT_ID_LENGTH: usize = 68;
-const TRANSACTION_ID_LENGTH: usize = 64;
 
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
