@@ -37,12 +37,12 @@ pub struct SignMessageMetadata<'a> {
 pub struct AccountAddress {
     /// The address.
     // todo: should we also use an address wrapper like in wallet.rs?
-    pub(crate) address: Address,
+    pub address: Address,
     /// The address key index.
     #[serde(rename = "keyIndex")]
-    pub(crate) key_index: u32,
+    pub key_index: u32,
     /// Determines if an address is a public or an internal (change) address.
-    pub(crate) internal: bool,
+    pub internal: bool,
 }
 
 /// Metadata provided to [generate_address](trait.Signer.html#method.generate_address).
