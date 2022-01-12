@@ -1,17 +1,12 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{
-    api::GetAddressesBuilder,
-    signing::{mnemonic::MnemonicSigner, SignerHandle},
-    Client,
-};
+use iota_client::{api::GetAddressesBuilder, signing::mnemonic::MnemonicSigner, Client};
 
 #[tokio::test]
 async fn addresses() {
-    let mnemonic_signer =
+    let signer =
         MnemonicSigner::new_from_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap();
-    let signer = SignerHandle::new(Box::new(mnemonic_signer));
     let addresses = GetAddressesBuilder::new(&signer)
         .with_bech32_hrp("atoi".into())
         .with_account_index(0)

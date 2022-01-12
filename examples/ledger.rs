@@ -3,10 +3,7 @@
 
 //! cargo run --example ledger --features=ledger-nano --release
 
-use iota_client::{
-    signing::{ledger::LedgerNanoSigner, SignerHandle},
-    Client, Result,
-};
+use iota_client::{signing::ledger::LedgerNanoSigner, Client, Result};
 
 /// In this example we will create addresses with a ledger nano hardware wallet
 
@@ -19,15 +16,11 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    let ledger_signer = LedgerNanoSigner {
-        is_simulator: false,
-        ..Default::default()
-    };
-    let signer = SignerHandle::new(Box::new(ledger_signer));
+    let ledger_signer = LedgerNanoSigner::new(false);
 
     // Generate addresses with custom account index and range
     let addresses = iota
-        .get_addresses(&signer)
+        .get_addresses(&ledger_signer)
         .with_account_index(0)
         .with_range(0..2)
         .finish()

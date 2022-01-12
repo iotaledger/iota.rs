@@ -3,11 +3,7 @@
 
 //! cargo run --example consolidation --release
 
-use iota_client::{
-    api::consolidate_funds,
-    signing::{mnemonic::MnemonicSigner, SignerHandle},
-    Client, Result,
-};
+use iota_client::{api::consolidate_funds, signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -24,9 +20,7 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let seed = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
-        &env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
-    )?));
+    let seed = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
     // Here all funds will be send to the address with the lowest index in the range
     let address = consolidate_funds(&iota, &seed, 0, address_range).await?;

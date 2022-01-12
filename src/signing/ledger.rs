@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::signing::LedgerStatus;
+use crate::signing::{LedgerStatus, SignerHandle};
 
 use std::{collections::HashMap, fmt, path::Path};
 
@@ -21,6 +21,16 @@ pub struct LedgerNanoSigner {
     pub is_simulator: bool,
     pub address_pool: Mutex<HashMap<Address, HashMap<AddressPoolEntry, [u8; 32]>>>,
     pub mutex: Mutex<()>,
+}
+
+impl LedgerNanoSigner {
+    /// Create a new LedgerNanoSigner SignerHandle
+    pub fn new(simulator: bool) -> SignerHandle {
+        SignerHandle::new(Box::new(LedgerNanoSigner {
+            is_simulator: simulator,
+            ..Default::default()
+        }))
+    }
 }
 
 /// A record matching an Input with its address.

@@ -89,7 +89,13 @@ impl<'a> GetAddressesBuilder<'a> {
         let mut signer = signer.lock().await;
         for address_index in self.range {
             let address = signer
-                .generate_address(4219, self.account_index, address_index, false, self.metadata.clone())
+                .generate_address(
+                    IOTA_COIN_TYPE,
+                    self.account_index,
+                    address_index,
+                    false,
+                    self.metadata.clone(),
+                )
                 .await?;
             addresses.push(address.to_bech32(&bech32_hrp));
         }

@@ -73,7 +73,7 @@ pub async fn consolidate_funds(
             let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
 
             for chunk in outputs_chunks {
-                let mut message_builder = client.message().with_signer(&signer);
+                let mut message_builder = client.message().with_signer(signer);
                 let mut total_amount = 0;
                 for (input, amount) in chunk {
                     message_builder = message_builder.with_input(UtxoInput::from(OutputId::new(

@@ -2,7 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example 2_transaction_signing --release
-use iota_client::{api::PreparedTransactionData, bee_message::payload::Payload, Client, Result, Seed};
+use iota_client::{
+    api::PreparedTransactionData,
+    bee_message::{
+        address::Address,
+        payload::{transaction::TransactionPayloadBuilder, Payload},
+        unlock_block::UnlockBlocks,
+    },
+    signing::{
+        mnemonic::{MnemonicSigner, IOTA_COIN_TYPE},
+        verify_unlock_blocks, Network, SignMessageMetadata, TransactionInput,
+    },
+    Result,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::{
@@ -19,29 +31,53 @@ const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_tran
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Create a client instance
-    let iota_offline = Client::builder().with_offline_mode().finish().await?;
-
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
+    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     let prepared_transaction_data = read_prepared_transactiondata_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
+    let mut tx_inputs = Vec::new();
+    let mut input_addresses = Vec::new();
+    for address_index_recorder in prepared_transaction_data.address_index_recorders {
+        tx_inputs.push(TransactionInput {
+            input: address_index_recorder.input,
+            address_index: address_index_recorder.address_index,
+            address_internal: address_index_recorder.internal,
+        });
+        input_addresses.push(Address::try_from_bech32(&address_index_recorder.bech32_address)?);
+    }
+
     // Sign prepared transaction offline
-    let signed_transaction = iota_offline
-        .message()
-        .sign_transaction(
-            prepared_transaction_data,
-            Some(&seed),
-            // indexes for the input addresses need to be in this range
-            Some(0..100),
+    let mut signer = signer.lock().await;
+    let unlock_blocks = signer
+        .sign_transaction_essence(
+            IOTA_COIN_TYPE,
+            0,
+            &prepared_transaction_data.essence,
+            &mut tx_inputs,
+            // todo set correct data
+            SignMessageMetadata {
+                remainder_value: 0,
+                remainder_deposit_address: None,
+                network: Network::Testnet,
+            },
         )
         .await?;
+    let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
+    let signed_transaction = TransactionPayloadBuilder::new()
+        .with_essence(prepared_transaction_data.essence)
+        .with_unlock_blocks(unlock_blocks)
+        .finish()?;
+
+    verify_unlock_blocks(&signed_transaction, input_addresses)?;
 
     println!("Signed transaction");
 
-    write_signed_transaction_to_file(SIGNED_TRANSACTION_FILE_NAME, signed_transaction)?;
+    write_signed_transaction_to_file(
+        SIGNED_TRANSACTION_FILE_NAME,
+        Payload::Transaction(Box::new(signed_transaction)),
+    )?;
     Ok(())
 }
 

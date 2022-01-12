@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Client, Result};
+use crate::{signing::SignerHandle, Client, Result};
 use bee_message::{
     address::{Address, Ed25519Address},
     payload::transaction::TransactionEssence,
@@ -15,8 +15,8 @@ use crypto::{
 
 use std::{collections::HashMap, ops::Deref, path::Path};
 
-// https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-pub(crate) const IOTA_COIN_TYPE: u32 = 4218;
+/// IOTA coin type https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+pub const IOTA_COIN_TYPE: u32 = 4218;
 
 fn generate_address(
     seed: &Seed,
@@ -51,14 +51,14 @@ impl Deref for MnemonicSigner {
 }
 
 impl MnemonicSigner {
-    /// Create a new MnemonicSigner with a given BIP39 mnemonic from the English wordlist
+    /// Create a new MnemonicSigner SignerHandle with a given BIP39 mnemonic from the English wordlist
     /// for more information see https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-    pub fn new(mnemonic: &str) -> Result<MnemonicSigner> {
-        Ok(Self(Client::mnemonic_to_seed(mnemonic)?))
+    pub fn new(mnemonic: &str) -> Result<SignerHandle> {
+        Ok(SignerHandle::new(Box::new(Self(Client::mnemonic_to_seed(mnemonic)?))))
     }
-    /// Create a new MnemonicSigner with a given hex encoded seed
-    pub fn new_from_seed(seed: &str) -> Result<MnemonicSigner> {
-        Ok(Self(Seed::from_bytes(&hex::decode(seed)?)))
+    /// Create a new MnemonicSigner SignerHandle with a given hex encoded seed
+    pub fn new_from_seed(seed: &str) -> Result<SignerHandle> {
+        Ok(SignerHandle::new(Box::new(Self(Seed::from_bytes(&hex::decode(seed)?)))))
     }
 }
 
@@ -144,12 +144,14 @@ mod tests {
     #[tokio::test]
     async fn address() {
         use super::IOTA_COIN_TYPE;
-        use crate::signing::{GenerateAddressMetadata, Network, Signer};
+        use crate::signing::{GenerateAddressMetadata, Network};
 
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
-        let mut mnemonic_signer = super::MnemonicSigner::new(mnemonic).unwrap();
+        let mnemonic_signer = super::MnemonicSigner::new(mnemonic).unwrap();
 
         let address = mnemonic_signer
+            .lock()
+            .await
             .generate_address(
                 IOTA_COIN_TYPE,
                 0,
@@ -172,12 +174,14 @@ mod tests {
     #[tokio::test]
     async fn seed_address() {
         use super::IOTA_COIN_TYPE;
-        use crate::signing::{GenerateAddressMetadata, Network, Signer};
+        use crate::signing::{GenerateAddressMetadata, Network};
 
         let seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
-        let mut mnemonic_signer = super::MnemonicSigner::new_from_seed(seed).unwrap();
+        let mnemonic_signer = super::MnemonicSigner::new_from_seed(seed).unwrap();
 
         let address = mnemonic_signer
+            .lock()
+            .await
             .generate_address(
                 IOTA_COIN_TYPE,
                 0,

@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example transaction --release
-use iota_client::{
-    signing::{mnemonic::MnemonicSigner, SignerHandle},
-    Client, Result,
-};
+use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -41,12 +38,8 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let signer_1 = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
-        &env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap(),
-    )?));
-    let signer_2 = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
-        &env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap(),
-    )?));
+    let signer_1 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
+    let signer_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
 
     let message = iota
         .message()

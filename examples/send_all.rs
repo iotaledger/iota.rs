@@ -3,10 +3,7 @@
 
 //! cargo run --example send_all --release
 
-use iota_client::{
-    signing::{mnemonic::MnemonicSigner, SignerHandle},
-    Client, Result,
-};
+use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -26,12 +23,9 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let seed = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
-        &env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
-    )?));
-    let seed_2 = SignerHandle::new(Box::new(MnemonicSigner::new_from_seed(
-        &env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
-    )?));
+    let seed = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
+    let seed_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
+
     let total_balance = iota.get_balance(&seed).with_initial_address_index(0).finish().await?;
 
     println!("Total balance: {}", total_balance);

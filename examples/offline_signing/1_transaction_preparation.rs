@@ -23,6 +23,7 @@ async fn main() -> Result<()> {
     // Get inputs and create transaction essence online
     let iota_online = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
+        .with_node_sync_disabled()
         .finish()
         .await?;
 

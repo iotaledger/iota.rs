@@ -3,7 +3,12 @@
 
 //! Signing module to allow using different signer types for address generation and transaction essence signing
 
-use bee_message::{address::Address, payload::transaction::TransactionEssence, unlock_block::UnlockBlock};
+use bee_message::{
+    address::Address,
+    payload::transaction::{TransactionEssence, TransactionPayload},
+    signature::Signature,
+    unlock_block::{UnlockBlock, UnlockBlocks},
+};
 use tokio::sync::Mutex;
 
 use core::ops::Deref;
@@ -61,4 +66,41 @@ pub trait Signer {
         inputs: &mut Vec<TransactionInput>,
         metadata: SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<UnlockBlock>>;
+}
+
+/// Verify unlock blocks of a transaction
+pub fn verify_unlock_blocks(transaction_payload: &TransactionPayload, inputs: Vec<Address>) -> crate::Result<()> {
+    let essence_hash = transaction_payload.essence().hash();
+    let unlock_blocks = transaction_payload.unlock_blocks();
+    for (index, address) in inputs.iter().enumerate() {
+        verify_signature(address, unlock_blocks, index, &essence_hash)?;
+    }
+    Ok(())
+}
+
+fn verify_signature(
+    address: &Address,
+    unlock_blocks: &UnlockBlocks,
+    index: usize,
+    essence_hash: &[u8; 32],
+) -> crate::Result<()> {
+    let signature_unlock_block = match unlock_blocks.get(index) {
+        Some(unlock_block) => match unlock_block {
+            UnlockBlock::Signature(b) => b,
+            UnlockBlock::Reference(b) => match unlock_blocks.get(b.index().into()) {
+                Some(UnlockBlock::Signature(unlock_block)) => unlock_block,
+                _ => return Err(crate::Error::MissingUnlockBlock),
+            },
+            // todo add alias and nft unlock blocks
+            _ => todo!(),
+        },
+        None => return Err(crate::Error::MissingUnlockBlock),
+    };
+    let address = match address {
+        Address::Ed25519(address) => address,
+        // todo handle other addresses
+        _ => todo!(),
+    };
+    let Signature::Ed25519(ed25519_signature) = signature_unlock_block.signature();
+    Ok(address.verify(essence_hash, ed25519_signature)?)
 }

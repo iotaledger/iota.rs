@@ -78,3 +78,23 @@ ledger-nano-simulator = ["iota-ledger"]
 [[example]]
 name = "10_mqtt"
 required-features = ["mqtt"]
+
+[[example]]
+name = "ledger"
+required-features = ["ledger-nano"]
+
+[[example]]
+name = "0_address_generation"
+path = "examples/offline_signing/0_address_generation.rs"
+
+[[example]]
+name = "1_transaction_preparation"
+path = "examples/offline_signing/1_transaction_preparation.rs"
+
+[[example]]
+name = "2_transaction_signing"
+path = "examples/offline_signing/2_transaction_signing.rs"
+
+[[example]]
+name = "3_send_message"
+path = "examples/offline_signing/3_send_message.rs"

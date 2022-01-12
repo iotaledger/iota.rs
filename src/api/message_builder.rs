@@ -3,7 +3,9 @@
 
 use crate::{
     api::address::search_address,
-    signing::{mnemonic::IOTA_COIN_TYPE, Network, SignMessageMetadata, SignerHandle},
+    signing::{
+        mnemonic::IOTA_COIN_TYPE, verify_unlock_blocks, Network, SignMessageMetadata, SignerHandle, TransactionInput,
+    },
     Client, ClientMiner, Error, Result,
 };
 
@@ -188,15 +190,24 @@ impl<'a> ClientMessageBuilder<'a> {
             }
             // Send message with transaction
             let prepared_transaction_data = self.prepare_transaction().await?;
-            let signer = self.signer.as_ref().ok_or(Error::MissingParameter("signer"))?.clone();
+            let mut tx_inputs = Vec::new();
+            let mut input_addresses = Vec::new();
+            for address_index_recorder in prepared_transaction_data.address_index_recorders {
+                tx_inputs.push(TransactionInput {
+                    input: address_index_recorder.input,
+                    address_index: address_index_recorder.address_index,
+                    address_internal: address_index_recorder.internal,
+                });
+                input_addresses.push(Address::try_from_bech32(&address_index_recorder.bech32_address)?);
+            }
+            let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
             let mut signer = signer.lock().await;
             let unlock_blocks = signer
                 .sign_transaction_essence(
                     IOTA_COIN_TYPE,
                     self.account_index.unwrap_or(0),
                     &prepared_transaction_data.essence,
-                    // todo provide inputs
-                    &mut vec![],
+                    &mut tx_inputs,
                     // todo set correct data
                     SignMessageMetadata {
                         remainder_value: 0,
@@ -214,6 +225,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .with_unlock_blocks(unlock_blocks)
                 .finish()
                 .map_err(|_| Error::TransactionError)?;
+            verify_unlock_blocks(&tx_payload, input_addresses)?;
             self.finish_message(Some(Payload::Transaction(Box::new(tx_payload))))
                 .await
         } else if self.index.is_some() {
@@ -298,10 +310,10 @@ impl<'a> ClientMessageBuilder<'a> {
 
                     total_already_spent += output_amount;
                     let bech32_hrp = self.client.get_bech32_hrp().await?;
-                    let (address_index, internal) = match self.signer.clone() {
+                    let (address_index, internal) = match self.signer {
                         Some(signer) => {
                             search_address(
-                                &signer,
+                                signer,
                                 &bech32_hrp,
                                 account_index,
                                 self.input_range.clone(),

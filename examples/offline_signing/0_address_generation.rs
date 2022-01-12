@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example 0_address_generation --release
-use iota_client::{Client, Result, Seed};
+use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::{env, fs::File, io::BufWriter, path::Path};
@@ -18,11 +18,11 @@ async fn main() -> Result<()> {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?);
+    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     // Generate addresses offline
     let addresses = iota_offline
-        .get_addresses(&seed)
+        .get_addresses(&signer)
         .with_range(0..10)
         .with_bech32_hrp("atoi".into())
         .finish()

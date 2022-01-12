@@ -140,6 +140,9 @@ pub enum Error {
     /// Rw lock failed.
     #[error("Rw lock failed")]
     PoisonError,
+    /// Missing unlock block error
+    #[error("missing unlock block")]
+    MissingUnlockBlock,
     /// Ledger transport error
     #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
     #[error("ledger transport error")]

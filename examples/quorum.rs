@@ -3,10 +3,7 @@
 
 //! cargo run --example quorum --release
 
-use iota_client::{
-    signing::{mnemonic::MnemonicSigner, SignerHandle},
-    Client, Result,
-};
+use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -28,8 +25,7 @@ async fn main() -> Result<()> {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let mnemonic_signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
-    let signer = SignerHandle::new(Box::new(mnemonic_signer));
+    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     let seed_balance = iota.get_balance(&signer).finish().await.unwrap();
     println!("Account balance: {:?}i\n", seed_balance);
