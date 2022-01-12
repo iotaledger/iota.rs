@@ -144,31 +144,31 @@ pub enum Error {
     #[error("missing unlock block")]
     MissingUnlockBlock,
     /// Ledger transport error
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     #[error("ledger transport error")]
     LedgerMiscError,
     /// Dongle Locked
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     #[error("ledger locked")]
     LedgerDongleLocked,
     /// Denied by User
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     #[error("denied by user")]
     LedgerDeniedByUser,
     /// Ledger Device not found
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     #[error("ledger device not found")]
     LedgerDeviceNotFound,
     /// Ledger Essence Too Large
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     #[error("ledger essence too large")]
     LedgerEssenceTooLarge,
     /// Ledger transport error
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     #[error("ledger app compiled for testnet but used with mainnet or vice versa")]
     LedgerNetMismatch,
     /// Wrong ledger seed error
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
 }
@@ -180,7 +180,7 @@ pub enum Error {
 // LedgerDeviceNotFound: No usable Ledger device was found
 // LedgerMiscError: Everything else.
 // LedgerEssenceTooLarge: Essence with bip32 input indices need more space then the internal buffer is big
-#[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+#[cfg(feature = "ledger")]
 impl From<iota_ledger::api::errors::APIError> for Error {
     fn from(error: iota_ledger::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);

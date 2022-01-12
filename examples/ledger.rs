@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example ledger --features=ledger-nano --release
+//! cargo run --example ledger --features=ledger --release
 
 use iota_client::{signing::ledger::LedgerNanoSigner, Client, Result};
 

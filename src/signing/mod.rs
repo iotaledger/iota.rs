@@ -14,7 +14,7 @@ use tokio::sync::Mutex;
 use core::ops::Deref;
 use std::{path::Path, sync::Arc};
 
-#[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+#[cfg(feature = "ledger")]
 pub mod ledger;
 /// Module for signing with a mnemonic or seed
 pub mod mnemonic;

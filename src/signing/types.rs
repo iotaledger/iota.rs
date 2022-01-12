@@ -12,10 +12,10 @@ pub enum SignerType {
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     Stronghold,
     /// Ledger Device
-    #[cfg(any(feature = "ledger-nano", feature = "ledger-nano-simulator"))]
+    #[cfg(feature = "ledger")]
     LedgerNano,
     /// Ledger Speculos Simulator
-    #[cfg(feature = "ledger-nano-simulator")]
+    #[cfg(feature = "ledger")]
     LedgerNanoSimulator,
     /// Mnemonic, not recommended since it's not as secure as Stronghold or Ledger
     #[cfg(feature = "mnemonic")]

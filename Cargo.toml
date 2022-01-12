@@ -72,8 +72,7 @@ mqtt = ["rumqttc", "once_cell", "futures"]
 wasm = ["reqwest", "futures", "wasm-timer", "bee-crypto", "bee-ternary", "bytes"]
 #fallback to local PoW
 pow-fallback = []
-ledger-nano = ["iota-ledger"]
-ledger-nano-simulator = ["iota-ledger"]
+ledger = ["iota-ledger"]
 
 [[example]]
 name = "10_mqtt"
@@ -81,7 +80,7 @@ required-features = ["mqtt"]
 
 [[example]]
 name = "ledger"
-required-features = ["ledger-nano"]
+required-features = ["ledger"]
 
 [[example]]
 name = "0_address_generation"
