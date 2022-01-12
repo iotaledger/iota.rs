@@ -1,7 +1,10 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{signing::SignerHandle, Client, Result};
+use crate::{
+    signing::{SignerHandle, SignerType},
+    Client, Result,
+};
 use bee_message::{
     address::{Address, Ed25519Address},
     payload::transaction::TransactionEssence,
@@ -54,11 +57,17 @@ impl MnemonicSigner {
     /// Create a new MnemonicSigner SignerHandle with a given BIP39 mnemonic from the English wordlist
     /// for more information see https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
     pub fn new(mnemonic: &str) -> Result<SignerHandle> {
-        Ok(SignerHandle::new(Box::new(Self(Client::mnemonic_to_seed(mnemonic)?))))
+        Ok(SignerHandle::new(
+            SignerType::Mnemonic,
+            Box::new(Self(Client::mnemonic_to_seed(mnemonic)?)),
+        ))
     }
     /// Create a new MnemonicSigner SignerHandle with a given hex encoded seed
     pub fn new_from_seed(seed: &str) -> Result<SignerHandle> {
-        Ok(SignerHandle::new(Box::new(Self(Seed::from_bytes(&hex::decode(seed)?)))))
+        Ok(SignerHandle::new(
+            SignerType::Mnemonic,
+            Box::new(Self(Seed::from_bytes(&hex::decode(seed)?))),
+        ))
     }
 }
 

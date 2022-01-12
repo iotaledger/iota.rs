@@ -28,25 +28,32 @@ pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetad
 
 /// SignerHandle, possible signers are mnemonic, Stronghold and Ledger
 #[derive(Clone)]
-pub struct SignerHandle(pub(crate) Arc<Mutex<Box<dyn Signer + Sync + Send>>>);
+pub struct SignerHandle {
+    pub(crate) signer: Arc<Mutex<Box<dyn Signer + Sync + Send>>>,
+    /// SignerType
+    pub signer_type: SignerType,
+}
 
 impl Debug for SignerHandle {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "SignerHandle")
+        write!(f, "{:?}", self.signer_type)
     }
 }
 
 impl SignerHandle {
     /// Create a new SignerHandle
-    pub fn new(signer: Box<dyn Signer + Sync + Send>) -> Self {
-        Self(Arc::new(Mutex::new(signer)))
+    pub fn new(signer_type: SignerType, signer: Box<dyn Signer + Sync + Send>) -> Self {
+        Self {
+            signer_type,
+            signer: Arc::new(Mutex::new(signer)),
+        }
     }
 }
 
 impl Deref for SignerHandle {
     type Target = Arc<Mutex<Box<dyn Signer + Sync + Send>>>;
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.signer
     }
 }
 

@@ -17,8 +17,7 @@ pub enum SignerType {
     /// Ledger Speculos Simulator
     #[cfg(feature = "ledger")]
     LedgerNanoSimulator,
-    /// Mnemonic, not recommended since it's not as secure as Stronghold or Ledger
-    #[cfg(feature = "mnemonic")]
+    /// Mnemonic, not as secure as Stronghold or Ledger
     Mnemonic,
 }
 

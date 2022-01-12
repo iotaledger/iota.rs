@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::signing::{LedgerStatus, SignerHandle};
+use crate::signing::{LedgerStatus, SignerHandle, SignerType};
 
 use std::{collections::HashMap, fmt, path::Path};
 
@@ -26,7 +26,14 @@ pub struct LedgerNanoSigner {
 impl LedgerNanoSigner {
     /// Create a new LedgerNanoSigner SignerHandle
     pub fn new(simulator: bool) -> SignerHandle {
-        SignerHandle::new(Box::new(LedgerNanoSigner {
+        let signer_type = if simulator {
+            SignerType::LedgerNano
+        } else {
+            SignerType::LedgerNanoSimulator
+        };
+        SignerHandle::new(
+            signer_type,
+            Box::new(LedgerNanoSigner {
             is_simulator: simulator,
             ..Default::default()
         }))
