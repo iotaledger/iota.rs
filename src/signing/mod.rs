@@ -12,7 +12,11 @@ use bee_message::{
 use tokio::sync::Mutex;
 
 use core::ops::Deref;
-use std::{path::Path, sync::Arc};
+use std::{
+    fmt::{Debug, Formatter, Result},
+    path::Path,
+    sync::Arc,
+};
 
 #[cfg(feature = "ledger")]
 pub mod ledger;
@@ -26,12 +30,19 @@ pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetad
 #[derive(Clone)]
 pub struct SignerHandle(pub(crate) Arc<Mutex<Box<dyn Signer + Sync + Send>>>);
 
+impl Debug for SignerHandle {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "SignerHandle")
+    }
+}
+
 impl SignerHandle {
     /// Create a new SignerHandle
     pub fn new(signer: Box<dyn Signer + Sync + Send>) -> Self {
         Self(Arc::new(Mutex::new(signer)))
     }
 }
+
 impl Deref for SignerHandle {
     type Target = Arc<Mutex<Box<dyn Signer + Sync + Send>>>;
     fn deref(&self) -> &Self::Target {
