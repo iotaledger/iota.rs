@@ -65,7 +65,7 @@ dotenv = { version =  "0.15.0", default-features = false }
 ureq = { version = "2.2.0", default-features = false, features = ["tls", "json"] }
 
 [features]
-default = ["async"]
+default = ["async", "ledger"]
 sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]

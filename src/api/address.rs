@@ -10,6 +10,24 @@ use bee_message::address::Address;
 
 use std::ops::Range;
 
+/// Generated addresses
+#[derive(Debug, Clone)]
+pub struct RawAddresses {
+    /// Public addresses
+    pub public: Vec<Address>,
+    /// Internal/change addresses https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change
+    pub internal: Vec<Address>,
+}
+
+/// Generated addresses bech32 encoded
+#[derive(Debug, Clone)]
+pub struct Bech32Addresses {
+    /// Public addresses
+    pub public: Vec<String>,
+    /// Internal/change addresses https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change
+    pub internal: Vec<String>,
+}
+
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
@@ -84,27 +102,26 @@ impl<'a> GetAddressesBuilder<'a> {
                 None => "iota".to_string(),
             },
         };
-        let mut addresses = Vec::new();
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
         let mut signer = signer.lock().await;
-        for address_index in self.range {
-            let address = signer
-                .generate_address(
-                    IOTA_COIN_TYPE,
-                    self.account_index,
-                    address_index,
-                    false,
-                    self.metadata.clone(),
-                )
-                .await?;
-            addresses.push(address.to_bech32(&bech32_hrp));
-        }
+        let addresses = signer
+            .generate_addresses(
+                IOTA_COIN_TYPE,
+                self.account_index,
+                self.range,
+                false,
+                self.metadata.clone(),
+            )
+            .await?
+            .into_iter()
+            .map(|a| a.to_bech32(&bech32_hrp))
+            .collect();
 
         Ok(addresses)
     }
 
     /// Consume the builder and get the vector of public and internal addresses bech32 encoded
-    pub async fn get_all(self) -> Result<Vec<(String, bool)>> {
+    pub async fn get_all(self) -> Result<Bech32Addresses> {
         let bech32_hrp = match self.bech32_hrp.clone() {
             Some(bech32_hrp) => bech32_hrp,
             None => match self.client {
@@ -112,50 +129,50 @@ impl<'a> GetAddressesBuilder<'a> {
                 None => "iota".to_string(),
             },
         };
-        let addresses = self
-            .get_all_raw()
-            .await?
-            .into_iter()
-            .map(|(a, b)| (a.to_bech32(&bech32_hrp), b))
-            .collect();
+        let addresses = self.get_all_raw().await?;
 
-        Ok(addresses)
+        Ok(Bech32Addresses {
+            public: addresses.public.into_iter().map(|a| a.to_bech32(&bech32_hrp)).collect(),
+            internal: addresses
+                .internal
+                .into_iter()
+                .map(|a| a.to_bech32(&bech32_hrp))
+                .collect(),
+        })
     }
 
     /// Consume the builder and get the vector of public and internal addresses
-    pub async fn get_all_raw(self) -> Result<Vec<(Address, bool)>> {
-        let mut addresses = Vec::new();
+    pub async fn get_all_raw(self) -> Result<RawAddresses> {
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
         let mut signer = signer.lock().await;
-        for address_index in self.range {
-            let address = signer
-                .generate_address(
-                    IOTA_COIN_TYPE,
-                    self.account_index,
-                    address_index,
-                    false,
-                    self.metadata.clone(),
-                )
-                .await?;
+        let public_addresses = signer
+            .generate_addresses(
+                IOTA_COIN_TYPE,
+                self.account_index,
+                self.range.clone(),
+                false,
+                self.metadata.clone(),
+            )
+            .await?;
 
-            let internal_address = signer
-                .generate_address(
-                    IOTA_COIN_TYPE,
-                    self.account_index,
-                    address_index,
-                    true,
-                    self.metadata.clone(),
-                )
-                .await?;
-            addresses.push((address, false));
-            addresses.push((internal_address, true));
-        }
+        let internal_addresses = signer
+            .generate_addresses(
+                IOTA_COIN_TYPE,
+                self.account_index,
+                self.range,
+                true,
+                self.metadata.clone(),
+            )
+            .await?;
 
-        Ok(addresses)
+        Ok(RawAddresses {
+            public: public_addresses,
+            internal: internal_addresses,
+        })
     }
 }
 
-/// Function to find the index and public or internal type of an Bech32 encoded address
+/// Function to find the index and public (false) or internal (true) type of an Bech32 encoded address
 pub async fn search_address(
     signer: &SignerHandle,
     bech32_hrp: &str,
@@ -164,18 +181,16 @@ pub async fn search_address(
     address: &Address,
 ) -> Result<(u32, bool)> {
     let addresses = GetAddressesBuilder::new(signer)
-        .with_bech32_hrp(bech32_hrp.to_owned())
         .with_account_index(account_index)
         .with_range(range.clone())
-        .get_all()
+        .get_all_raw()
         .await?;
-    let mut index_counter = range.start;
-    for address_internal in addresses {
-        if address_internal.0 == *address.to_bech32(bech32_hrp) {
-            return Ok((index_counter, address_internal.1));
+    for index in 0..addresses.public.len() {
+        if addresses.public[index] == *address {
+            return Ok((range.start + index as u32, false));
         }
-        if !address_internal.1 {
-            index_counter += 1;
+        if addresses.internal[index] == *address {
+            return Ok((range.start + index as u32, true));
         }
     }
     Err(crate::error::Error::InputAddressNotFound(

@@ -11,9 +11,9 @@ use bee_message::{
 };
 use tokio::sync::Mutex;
 
-use core::ops::Deref;
 use std::{
     fmt::{Debug, Formatter, Result},
+    ops::{Deref, Range},
     path::Path,
     sync::Arc,
 };
@@ -65,15 +65,15 @@ pub trait Signer {
     /// Initialises a mnemonic.
     async fn store_mnemonic(&mut self, storage_path: &Path, mnemonic: String) -> crate::Result<()>;
     /// Generates an address.
-    async fn generate_address(
+    async fn generate_addresses(
         &mut self,
         // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
         coin_type: u32,
         account_index: u32,
-        index: u32,
+        address_indexes: Range<u32>,
         internal: bool,
         metadata: GenerateAddressMetadata,
-    ) -> crate::Result<Address>;
+    ) -> crate::Result<Vec<Address>>;
     /// Signs transaction essence.
     async fn sign_transaction_essence<'a>(
         &mut self,

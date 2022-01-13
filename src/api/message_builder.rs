@@ -378,9 +378,16 @@ impl<'a> ClientMessageBuilder<'a> {
                 .with_range(gap_index..gap_index + super::ADDRESS_GAP_RANGE)
                 .get_all()
                 .await?;
+            // Have public and internal addresses with the index ascending ordered
+            let mut public_and_internal_addresses = Vec::new();
+            for index in 0..addresses.public.len() {
+                public_and_internal_addresses.push((addresses.public[index].clone(), false));
+                public_and_internal_addresses.push((addresses.internal[index].clone(), true));
+            }
+
             // For each address, get the address outputs
             let mut address_index = gap_index;
-            for (index, (str_address, internal)) in addresses.iter().enumerate() {
+            for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
                 let address_outputs_response = self
                     .client
                     .get_address()

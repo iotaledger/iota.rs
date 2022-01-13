@@ -16,15 +16,13 @@ async fn addresses() {
         .unwrap();
     println!("{:?}", addresses);
     assert_eq!(
-        *addresses[0].0,
+        *addresses.public[0],
         "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string()
     );
-    assert!(!addresses[0].1);
     assert_eq!(
-        *addresses[1].0,
+        *addresses.internal[0],
         "atoi1qprxpfvaz2peggq6f8k9cj8zfsxuw69e4nszjyv5kuf8yt70t2847shpjak".to_string()
     );
-    assert!(addresses[1].1);
 }
 #[tokio::test]
 async fn public_key_to_address() {

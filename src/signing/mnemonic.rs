@@ -16,34 +16,42 @@ use crypto::{
     keys::slip10::{Chain, Curve, Seed},
 };
 
-use std::{collections::HashMap, ops::Deref, path::Path};
+use std::{
+    collections::HashMap,
+    ops::{Deref, Range},
+    path::Path,
+};
 
 /// IOTA coin type https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 pub const IOTA_COIN_TYPE: u32 = 4218;
 
-fn generate_address(
+fn generate_addresses(
     seed: &Seed,
     coin_type: u32,
     account_index: u32,
-    address_index: u32,
+    address_indexes: Range<u32>,
     internal: bool,
-) -> crate::Result<Address> {
-    // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-    let chain = Chain::from_u32_hardened(vec![44, coin_type, account_index, internal as u32, address_index]);
-    let public_key = seed
-        .derive(Curve::Ed25519, &chain)?
-        .secret_key()
-        .public_key()
-        .to_bytes();
-    // Hash the public key to get the address
-    let result = Blake2b256::digest(&public_key)
-        .try_into()
-        .map_err(|_e| crate::Error::Blake2b256Error("Hashing the public key while generating the address failed."));
+) -> crate::Result<Vec<Address>> {
+    let mut addresses = Vec::new();
+    for address_index in address_indexes {
+        // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+        let chain = Chain::from_u32_hardened(vec![44, coin_type, account_index, internal as u32, address_index]);
+        let public_key = seed
+            .derive(Curve::Ed25519, &chain)?
+            .secret_key()
+            .public_key()
+            .to_bytes();
+        // Hash the public key to get the address
+        let result = Blake2b256::digest(&public_key)
+            .try_into()
+            .map_err(|_e| crate::Error::Blake2b256Error("Hashing the public key while generating the address failed."));
 
-    Ok(Address::Ed25519(Ed25519Address::new(result?)))
+        addresses.push(Address::Ed25519(Ed25519Address::new(result?)));
+    }
+    Ok(addresses)
 }
 
-/// MnemonicSigner
+/// MnemonicSigner, also used for seeds
 pub struct MnemonicSigner(Seed);
 
 impl Deref for MnemonicSigner {
@@ -87,16 +95,16 @@ impl crate::signing::Signer for MnemonicSigner {
         Ok(())
     }
 
-    async fn generate_address(
+    async fn generate_addresses(
         &mut self,
         // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
         coin_type: u32,
         account_index: u32,
-        address_index: u32,
+        address_indexes: Range<u32>,
         internal: bool,
         _: super::GenerateAddressMetadata,
-    ) -> crate::Result<Address> {
-        generate_address(self.deref(), coin_type, account_index, address_index, internal)
+    ) -> crate::Result<Vec<Address>> {
+        generate_addresses(self.deref(), coin_type, account_index, address_indexes, internal)
     }
 
     async fn sign_transaction_essence<'a>(
@@ -158,13 +166,13 @@ mod tests {
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
         let mnemonic_signer = super::MnemonicSigner::new(mnemonic).unwrap();
 
-        let address = mnemonic_signer
+        let addresses = mnemonic_signer
             .lock()
             .await
-            .generate_address(
+            .generate_addresses(
                 IOTA_COIN_TYPE,
                 0,
-                0,
+                0..1,
                 false,
                 GenerateAddressMetadata {
                     syncing: false,
@@ -175,7 +183,7 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            address.to_bech32("atoi"),
+            addresses[0].to_bech32("atoi"),
             "atoi1qpszqzadsym6wpppd6z037dvlejmjuke7s24hm95s9fg9vpua7vluehe53e".to_string()
         );
     }
@@ -188,13 +196,13 @@ mod tests {
         let seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
         let mnemonic_signer = super::MnemonicSigner::new_from_seed(seed).unwrap();
 
-        let address = mnemonic_signer
+        let addresses = mnemonic_signer
             .lock()
             .await
-            .generate_address(
+            .generate_addresses(
                 IOTA_COIN_TYPE,
                 0,
-                0,
+                0..1,
                 false,
                 GenerateAddressMetadata {
                     syncing: false,
@@ -205,7 +213,7 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            address.to_bech32("atoi"),
+            addresses[0].to_bech32("atoi"),
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string()
         );
     }

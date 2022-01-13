@@ -60,8 +60,9 @@ impl<'a> GetBalanceBuilder<'a> {
                 .get_all()
                 .await?;
 
-            for (address, _) in addresses {
-                let address_balance = self.client.get_address().balance(&address).await?;
+            // todo parallel requests
+            for address in addresses.public.iter().chain(addresses.internal.iter()) {
+                let address_balance = self.client.get_address().balance(address).await?;
                 match address_balance.balance {
                     0 => found_zero_balance += 1,
                     _ => {
