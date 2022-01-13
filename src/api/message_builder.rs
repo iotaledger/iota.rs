@@ -9,7 +9,6 @@ use crate::{
     Client, ClientMiner, Error, Result,
 };
 
-use bee_common::packable::Packable;
 use bee_message::{
     address::{Address, Ed25519Address},
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
@@ -22,6 +21,7 @@ use bee_message::{
     unlock_block::UnlockBlocks,
     Message, MessageBuilder, MessageId,
 };
+use bee_packable::PackableExt;
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
 use bee_rest_api::types::{
@@ -540,16 +540,16 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let mut essence = RegularTransactionEssence::builder();
         // Order inputs and add them to the essence
-        inputs_for_essence.sort_unstable_by_key(|a| a.pack_new());
+        inputs_for_essence.sort_unstable_by_key(|a| a.pack_to_vec());
         essence = essence.with_inputs(inputs_for_essence);
 
         // Order outputs and add them to the essence
-        outputs_for_essence.sort_unstable_by_key(|a| a.pack_new());
+        outputs_for_essence.sort_unstable_by_key(|a| a.pack_to_vec());
         essence = essence.with_outputs(outputs_for_essence);
 
         // Add indexation_payload if index set
         if let Some(index) = self.index.clone() {
-            let indexation_payload = IndexationPayload::new(&index, &self.data.clone().unwrap_or_default())?;
+            let indexation_payload = IndexationPayload::new((&index).to_vec(), self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
         }
         let regular_essence = essence.finish()?;
@@ -640,7 +640,7 @@ impl<'a> ClientMessageBuilder<'a> {
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
             // build indexation
-            let index = IndexationPayload::new(index.expect("No indexation tag"), data)
+            let index = IndexationPayload::new(index.expect("No indexation tag").to_vec(), data.to_vec())
                 .map_err(|e| Error::IndexationError(e.to_string()))?;
             payload = Payload::Indexation(Box::new(index));
         }
@@ -672,7 +672,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let final_message = match self.parents {
             Some(mut parents) => {
                 // Sort parents
-                parents.sort_unstable_by_key(|a| a.pack_new());
+                parents.sort_unstable_by_key(|a| a.pack_to_vec());
                 parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
@@ -729,7 +729,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         let cancel_2 = cancel.clone();
         let payload_ = payload.clone();
         let mut parent_messages = client.get_tips().await?;
-        parent_messages.sort_unstable_by_key(|a| a.pack_new());
+        parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
         parent_messages.dedup();
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
@@ -834,7 +834,7 @@ pub async fn finish_single_thread_pow(
         let mut message_bytes: Vec<u8> = Vec::new();
         network_id.pack(&mut message_bytes).unwrap();
         // sort parent messages
-        parent_messages.sort_unstable_by_key(|a| a.pack_new());
+        parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
         parent_messages.dedup();
         Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
         option_payload_pack(&mut message_bytes, payload.clone().as_ref())?;
@@ -848,7 +848,7 @@ pub async fn finish_single_thread_pow(
         let mut message_bytes: Vec<u8> = Vec::new();
         network_id.pack(&mut message_bytes).unwrap();
         // sort parent messages
-        parent_messages.sort_unstable_by_key(|a| a.pack_new());
+        parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
         parent_messages.dedup();
         Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
         option_payload_pack(&mut message_bytes, payload.clone().as_ref())?;

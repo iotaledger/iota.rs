@@ -5,8 +5,8 @@
 
 use crate::signing::{LedgerStatus, SignerHandle, SignerType};
 
-use bee_common::packable::Packable;
 use bee_message::{address::Address, unlock_block::UnlockBlock};
+use bee_packable::PackableExt;
 
 use iota_ledger::LedgerBIP32Index;
 use tokio::sync::Mutex;
@@ -239,7 +239,7 @@ impl super::Signer for LedgerSigner {
         }
 
         // pack essence into bytes
-        let essence_bytes = essence.pack_new();
+        let essence_bytes = essence.pack_to_vec();
 
         // prepare signing
         log::debug!("[LEDGER] prepare signing");
@@ -270,7 +270,7 @@ impl super::Signer for LedgerSigner {
         // unpack signature to unlockblocks
         let mut unlock_blocks = Vec::new();
         for _ in 0..input_len {
-            let unlock_block = UnlockBlock::unpack(&mut readable)?;
+            let unlock_block = UnlockBlock::unpack_verified(&mut readable).map_err(|_| crate::Error::PackableError)?;
             unlock_blocks.push(unlock_block);
         }
         Ok(unlock_blocks)

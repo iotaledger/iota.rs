@@ -96,7 +96,7 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-common"
 version = "0.5.0"
-source = "git+https://github.com/Thoralf-M/bee?branch=patch-1#89b85b165ced65aec512fa138153b19b4ade5b23"
+source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
 dependencies = [
  "autocfg",
  "fern",
@@ -123,22 +123,25 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/Thoralf-M/bee?branch=patch-1#89b85b165ced65aec512fa138153b19b4ade5b23"
+source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
 dependencies = [
  "bee-common",
  "bee-message",
+ "bee-packable",
  "thiserror",
 ]
 
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?branch=patch-1#89b85b165ced65aec512fa138153b19b4ade5b23"
+source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
 dependencies = [
  "bech32 0.8.1",
  "bee-common",
+ "bee-packable",
  "bee-pow",
  "bee-ternary",
+ "bitflags",
  "bytemuck",
  "derive_more",
  "digest",
@@ -151,9 +154,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "bee-packable"
+version = "0.1.0"
+source = "git+https://github.com/iotaledger/bee?branch=coordicide#856123277f2a7b5353fa7f2472ceaf1932be4df7"
+dependencies = [
+ "autocfg",
+ "bee-packable-derive",
+ "primitive-types",
+ "serde",
+]
+
+[[package]]
+name = "bee-packable-derive"
+version = "0.1.0"
+source = "git+https://github.com/iotaledger/bee?branch=coordicide#856123277f2a7b5353fa7f2472ceaf1932be4df7"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?branch=patch-1#89b85b165ced65aec512fa138153b19b4ade5b23"
+source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -163,7 +189,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
-source = "git+https://github.com/Thoralf-M/bee?branch=patch-1#89b85b165ced65aec512fa138153b19b4ade5b23"
+source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -802,6 +828,7 @@ dependencies = [
  "bee-common",
  "bee-crypto",
  "bee-message",
+ "bee-packable",
  "bee-pow",
  "bee-rest-api",
  "bee-ternary",
@@ -1201,6 +1228,30 @@ checksum = "1ebace6889caf889b4d3f76becee12e90353f2b8c7d875534a71e5742f8f6f83"
 dependencies = [
  "thiserror",
  "toml",
+]
+
+[[package]]
+name = "proc-macro-error"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
+dependencies = [
+ "proc-macro-error-attr",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "version_check",
+]
+
+[[package]]
+name = "proc-macro-error-attr"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "version_check",
 ]
 
 [[package]]

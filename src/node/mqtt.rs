@@ -5,8 +5,8 @@ use crate::{
     client::{BrokerOptions, Client, MqttEvent, TopicEvent, TopicHandlerMap},
     Result,
 };
-use bee_common::packable::Packable;
 use bee_message::Message;
+use bee_packable::PackableExt;
 use crypto::utils;
 use log::warn;
 use regex::Regex;

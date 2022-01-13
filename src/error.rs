@@ -134,6 +134,9 @@ pub enum Error {
     /// PoW error
     #[error("{0}")]
     PowError(#[from] bee_pow::providers::miner::Error),
+    /// Packable error
+    #[error("Bee packable error")]
+    PackableError,
     /// API error
     #[error("Invalid API name")]
     ApiError,

@@ -10,7 +10,6 @@ use crate::{
     node_manager::Node,
     signing::SignerHandle,
 };
-use bee_common::packable::Packable;
 use bee_message::{
     address::{Address, Ed25519Address},
     input::{UtxoInput, INPUT_COUNT_MAX},
@@ -19,6 +18,7 @@ use bee_message::{
     payload::{transaction::TransactionId, Payload},
     Message, MessageBuilder, MessageId,
 };
+use bee_packable::PackableExt;
 use bee_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
     NonceProvider, NonceProviderBuilder,
@@ -767,14 +767,14 @@ impl Client {
         #[cfg(not(feature = "pow-fallback"))]
         let resp: SuccessBody<SubmitMessageResponse> = self
             .node_manager
-            .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
+            .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
             .await?;
 
         #[cfg(feature = "pow-fallback")]
         // fallback to local PoW if remote PoW fails
         let resp: SuccessBody<SubmitMessageResponse> = match self
             .node_manager
-            .post_request_bytes(path, timeout, &message.pack_new(), local_pow)
+            .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
             .await
         {
             Ok(res) => res,
@@ -822,7 +822,7 @@ impl Client {
                             }
                         };
                         self.node_manager
-                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_new(), true)
+                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_to_vec(), true)
                             .await?
                     } else {
                         return Err(Error::NodeError(e));
@@ -1084,7 +1084,7 @@ impl Client {
             {
                 let network_id = self.get_network_id().await?;
                 let mut tips = self.get_tips().await?;
-                tips.sort_unstable_by_key(|a| a.pack_new());
+                tips.sort_unstable_by_key(|a| a.pack_to_vec());
                 tips.dedup();
                 let mut message_builder = MessageBuilder::<ClientMiner>::new()
                     .with_network_id(network_id)
@@ -1129,7 +1129,7 @@ impl Client {
         let network_id = self.get_network_id().await?;
         tips.push(*message_id);
         // Sort tips/parents
-        tips.sort_unstable_by_key(|a| a.pack_new());
+        tips.sort_unstable_by_key(|a| a.pack_to_vec());
         tips.dedup();
 
         let promote_message = MessageBuilder::<ClientMiner>::new()

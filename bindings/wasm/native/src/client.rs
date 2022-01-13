@@ -482,7 +482,7 @@ impl Client {
         }
         None => client.get_tips().await.map_err(wasm_error)?,
       };
-      parent_msg_ids.sort_unstable_by_key(|a| a.pack_new());
+      parent_msg_ids.sort_unstable_by_key(|a| a.pack_to_vec());
       parent_msg_ids.dedup();
       let network_id = client.get_network_id().await.map_err(wasm_error)?;
       let nonce_provider = client.get_pow_provider().await;
