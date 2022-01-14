@@ -48,6 +48,7 @@ pub mod signing;
 
 pub use bee_common as common;
 pub use bee_message;
+pub use bee_packable;
 pub use bee_pow as pow;
 pub use bee_rest_api;
 pub use builder::ClientBuilder;
