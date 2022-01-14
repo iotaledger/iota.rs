@@ -988,7 +988,7 @@ impl Client {
         Ok(output_metadata)
     }
 
-    /// GET /api/v1/addresses/{address} endpoint
+    /// GET /api/plugins/indexer/addresses/{address} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }

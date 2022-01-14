@@ -123,7 +123,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Vec<OutputResponse>> {
-        let path = format!("api/v1/addresses/{}/outputs", address);
+        let path = format!("api/plugins/indexer/addresses/{}/outputs", address);
 
         let outputs_response: SuccessBody<OutputsAddressResponse> = self
             .client
@@ -168,7 +168,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs_response(self, address: &str, options: OutputsOptions) -> Result<OutputsAddressResponse> {
-        let path = format!("api/v1/addresses/{}/outputs", address);
+        let path = format!("api/plugins/indexer/addresses/{}/outputs", address);
 
         let resp: SuccessBody<OutputsAddressResponse> = self
             .client

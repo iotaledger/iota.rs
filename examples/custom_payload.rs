@@ -18,7 +18,8 @@ async fn main() {
         .await
         .unwrap();
 
-    let indexation_payload = IndexationPayload::new("Your Index".as_bytes(), &"Your Data".as_bytes().to_vec()).unwrap();
+    let indexation_payload =
+        IndexationPayload::new("Your Index".as_bytes().to_vec(), "Your Data".as_bytes().to_vec()).unwrap();
 
     let message = iota
         .message()

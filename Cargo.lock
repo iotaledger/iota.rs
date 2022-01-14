@@ -841,6 +841,7 @@ dependencies = [
  "log",
  "num_cpus",
  "once_cell",
+ "primitive-types",
  "regex",
  "reqwest",
  "rumqttc",

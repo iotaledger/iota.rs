@@ -14,12 +14,10 @@ use std::env;
 async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("http://localhost:14265") // Insert your node URL here
-        .unwrap()
+        .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
@@ -35,13 +33,12 @@ async fn main() -> Result<()> {
         .with_account_index(0)
         .with_range(0..4)
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate public (false) & internal (true) addresses
-    let addresses = iota.get_addresses(&signer).with_range(0..4).get_all().await.unwrap();
+    let addresses = iota.get_addresses(&signer).with_range(0..4).get_all().await?;
     println!("List of generated public and internal addresses:\n{:?}\n", addresses);
 
     // Generate public addresses offline with the bech32_hrp defined
@@ -50,8 +47,7 @@ async fn main() -> Result<()> {
         .with_account_index(0)
         .with_range(0..4)
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     println!("List of offline generated public addresses:\n{:?}\n", addresses);
     Ok(())

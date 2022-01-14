@@ -70,7 +70,7 @@ impl Client {
     BalanceGetter::new(self.clone(), seed)
   }
 
-  /// GET /api/v1/addresses/{address} endpoint
+  /// GET /api/plugins/indexer/addresses/{address} endpoint
   #[wasm_bindgen(js_name = getAddress)]
   pub fn get_address(&self) -> GetAddressBuilder {
     GetAddressBuilder::new(self.clone())

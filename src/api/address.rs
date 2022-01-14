@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    api::types::{Bech32Addresses, RawAddresses},
     signing::{mnemonic::IOTA_COIN_TYPE, GenerateAddressMetadata, Network, SignerHandle},
     Client, Error, Result,
 };
@@ -9,24 +10,6 @@ use crate::{
 use bee_message::address::Address;
 
 use std::ops::Range;
-
-/// Generated addresses
-#[derive(Debug, Clone)]
-pub struct RawAddresses {
-    /// Public addresses
-    pub public: Vec<Address>,
-    /// Internal/change addresses https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change
-    pub internal: Vec<Address>,
-}
-
-/// Generated addresses bech32 encoded
-#[derive(Debug, Clone)]
-pub struct Bech32Addresses {
-    /// Public addresses
-    pub public: Vec<String>,
-    /// Internal/change addresses https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change
-    pub internal: Vec<String>,
-}
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {

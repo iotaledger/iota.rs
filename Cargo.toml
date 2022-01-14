@@ -27,15 +27,16 @@ bee-packable = { git = "https://github.com/iotaledger/bee", branch = "coordicide
 iota-crypto = { version = "0.9.1", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
 
 async-trait =  { version ="0.1.51", default-features = false }
-url = { version = "2.2.2", default-features = false }
+hex = { version = "0.4.3", default-features = false }
+log = { version = "0.4.14", default-features = false }
+num_cpus = { version = "1.13.0", default-features = false }
+primitive-types = { version = "0.10.1", default-features = false }
+regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.68", default-features = false }
-hex = { version = "0.4.3", default-features = false }
-tokio = { version = "1.12.0", default-features = false, features = ["macros"], optional = true }
 thiserror = { version = "1.0.29", default-features = false }
-num_cpus = { version = "1.13.0", default-features = false }
-log = { version = "0.4.14", default-features = false }
-regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
+tokio = { version = "1.12.0", default-features = false, features = ["macros"], optional = true }
+url = { version = "2.2.2", default-features = false }
 zeroize = { version = "1.4.1", default-features = false }
 
 # sync
