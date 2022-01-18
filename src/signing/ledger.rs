@@ -6,7 +6,7 @@
 use crate::signing::{LedgerStatus, SignerHandle, SignerType};
 
 use bee_message::{address::Address, unlock_block::UnlockBlock};
-use bee_packable::PackableExt;
+use packable::PackableExt;
 
 use iota_ledger::LedgerBIP32Index;
 use tokio::sync::Mutex;

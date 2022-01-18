@@ -6,9 +6,9 @@
 use crate::{Client, ClientMiner, Error, Result};
 
 use bee_message::{parent::Parents, payload::Payload, Message, MessageBuilder, MessageId};
-use bee_packable::PackableExt;
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
+use packable::PackableExt;
 
 /// Does PoW with always new tips
 #[cfg(not(feature = "wasm"))]

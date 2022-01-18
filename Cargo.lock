@@ -95,8 +95,22 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 
 [[package]]
 name = "bee-common"
-version = "0.5.0"
-source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70a0740d9b585483eba7812cd9e429fc6aa0337e624ea3b207545ceee3dc3c4f"
+dependencies = [
+ "autocfg",
+ "fern",
+ "log",
+ "serde",
+ "thiserror",
+ "time",
+]
+
+[[package]]
+name = "bee-common"
+version = "0.6.0"
+source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
 dependencies = [
  "autocfg",
  "fern",
@@ -123,22 +137,21 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
+source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
 dependencies = [
- "bee-common",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f)",
  "bee-message",
- "bee-packable",
+ "packable",
  "thiserror",
 ]
 
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
+source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
 dependencies = [
  "bech32 0.8.1",
- "bee-common",
- "bee-packable",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f)",
  "bee-pow",
  "bee-ternary",
  "bitflags",
@@ -147,6 +160,7 @@ dependencies = [
  "digest",
  "hex",
  "iota-crypto",
+ "packable",
  "primitive-types",
  "serde",
  "serde-big-array",
@@ -154,32 +168,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-packable"
-version = "0.1.0"
-source = "git+https://github.com/iotaledger/bee?branch=coordicide#856123277f2a7b5353fa7f2472ceaf1932be4df7"
-dependencies = [
- "autocfg",
- "bee-packable-derive",
- "primitive-types",
- "serde",
-]
-
-[[package]]
-name = "bee-packable-derive"
-version = "0.1.0"
-source = "git+https://github.com/iotaledger/bee?branch=coordicide#856123277f2a7b5353fa7f2472ceaf1932be4df7"
-dependencies = [
- "proc-macro-crate",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
+source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -189,7 +180,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
-source = "git+https://github.com/iotaledger/bee?branch=shimmer-develop#2397630198787c617e0c70baa88ac7a291bc44fd"
+source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -825,10 +816,9 @@ name = "iota-client"
 version = "1.1.0"
 dependencies = [
  "async-trait",
- "bee-common",
+ "bee-common 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bee-crypto",
  "bee-message",
- "bee-packable",
  "bee-pow",
  "bee-rest-api",
  "bee-ternary",
@@ -841,6 +831,7 @@ dependencies = [
  "log",
  "num_cpus",
  "once_cell",
+ "packable",
  "primitive-types",
  "regex",
  "reqwest",
@@ -1102,6 +1093,31 @@ name = "opaque-debug"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
+
+[[package]]
+name = "packable"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bcd3479b91e23fd284831750050730dfe65c56e79b3bb0bcce1d7ca4fbb0f8a0"
+dependencies = [
+ "autocfg",
+ "packable-derive",
+ "primitive-types",
+ "serde",
+]
+
+[[package]]
+name = "packable-derive"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd61aa925afa47c4e38093f25607e1d24f640c740a925ede989e5adbfc86c600"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "parity-scale-codec"

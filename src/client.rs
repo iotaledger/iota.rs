@@ -9,16 +9,20 @@ use crate::{
     node::*,
     node_manager::Node,
     signing::SignerHandle,
+    utils::{
+        bech32_to_hex, generate_mnemonic, hash_network, hex_public_key_to_bech32_address, hex_to_bech32,
+        is_address_valid, mnemonic_to_hex_seed, mnemonic_to_seed, parse_bech32_address,
+    },
 };
+
 use bee_message::{
-    address::{Address, Ed25519Address},
+    address::Address,
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::OutputId,
     parent::Parents,
     payload::{transaction::TransactionId, Payload},
     Message, MessageBuilder, MessageId,
 };
-use bee_packable::PackableExt;
 use bee_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
     NonceProvider, NonceProviderBuilder,
@@ -32,16 +36,8 @@ use bee_rest_api::types::{
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
-use crypto::{
-    hashes::{blake2b::Blake2b256, Digest},
-    keys::{
-        bip39::{mnemonic_to_seed, wordlist},
-        slip10::Seed,
-    },
-    utils,
-};
-
-use zeroize::Zeroize;
+use crypto::keys::slip10::Seed;
+use packable::PackableExt;
 
 use crate::builder::TIPS_INTERVAL;
 #[cfg(feature = "mqtt")]
@@ -552,40 +548,6 @@ impl Client {
                 .filter(|node| !synced.contains(node))
                 .collect()
         })
-    }
-
-    /// Generates a new mnemonic.
-    pub fn generate_mnemonic() -> Result<String> {
-        let mut entropy = [0u8; 32];
-        utils::rand::fill(&mut entropy)?;
-        let mnemonic = wordlist::encode(&entropy, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::MnemonicError(format!("{:?}", e)))?;
-        entropy.zeroize();
-        Ok(mnemonic)
-    }
-
-    /// Returns a hex encoded seed for a mnemonic.
-    pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
-        // trim because empty spaces could create a different seed https://github.com/iotaledger/crypto.rs/issues/125
-        let mnemonic = mnemonic.trim();
-        // first we check if the mnemonic is valid to give meaningful errors
-        crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
-        let mut mnemonic_seed = [0u8; 64];
-        mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
-        Ok(hex::encode(mnemonic_seed))
-    }
-
-    /// Returns a hex encoded seed for a mnemonic.
-    pub fn mnemonic_to_seed(mnemonic: &str) -> Result<Seed> {
-        // trim because empty spaces could create a different seed https://github.com/iotaledger/crypto.rs/issues/125
-        let mnemonic = mnemonic.trim();
-        // first we check if the mnemonic is valid to give meaningful errors
-        crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
-        let mut mnemonic_seed = [0u8; 64];
-        mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
-        Ok(Seed::from_bytes(&mnemonic_seed))
     }
 
     /// Function to find inputs from addresses for a provided amount (useful for offline signing)
@@ -1218,50 +1180,6 @@ impl Client {
         Ok(address_balance_pairs)
     }
 
-    /// Transforms bech32 to hex
-    pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
-        let address = Address::try_from_bech32(bech32)?;
-        Ok(match address {
-            Address::Ed25519(addr) => addr.to_string(),
-            Address::Alias(addr) => addr.to_string(),
-            Address::Nft(addr) => addr.to_string(),
-        })
-    }
-
-    /// Transforms a hex encoded address to a bech32 encoded address
-    pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let address: Ed25519Address = hex.parse::<Ed25519Address>()?;
-        match bech32_hrp {
-            Some(hrp) => Ok(Address::Ed25519(address).to_bech32(hrp)),
-            None => Ok(Address::Ed25519(address).to_bech32(self.get_bech32_hrp().await?.as_str())),
-        }
-    }
-
-    /// Transforms a hex encoded public key to a bech32 encoded address
-    pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let mut public_key = [0u8; Ed25519Address::LENGTH];
-        hex::decode_to_slice(&hex, &mut public_key)?;
-
-        let address = Blake2b256::digest(&public_key)
-            .try_into()
-            .map_err(|_e| Error::Blake2b256Error("Hashing the public key failed."))?;
-        let address: Ed25519Address = Ed25519Address::new(address);
-        match bech32_hrp {
-            Some(hrp) => Ok(Address::Ed25519(address).to_bech32(hrp)),
-            None => Ok(Address::Ed25519(address).to_bech32(self.get_bech32_hrp().await?.as_str())),
-        }
-    }
-
-    /// Returns a valid Address parsed from a String.
-    pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
-        Ok(Address::try_from_bech32(address)?)
-    }
-
-    /// Checks if a String is a valid bech32 encoded address.
-    pub fn is_address_valid(address: &str) -> bool {
-        Address::try_from_bech32(address).is_ok()
-    }
-
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
     /// retried only if they are valid and haven't been confirmed for a while.
     pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
@@ -1360,13 +1278,56 @@ impl Client {
     ) -> crate::Result<String> {
         crate::api::consolidate_funds(self, signer, account_index, address_range).await
     }
-}
 
-/// Hash the network id str from the nodeinfo to an u64 for the messageBuilder
-pub fn hash_network(network_id_string: &str) -> Result<u64> {
-    let bytes = Blake2b256::digest(network_id_string.as_bytes())[0..8]
-        .try_into()
-        .map_err(|_e| Error::Blake2b256Error("Hashing the network id failed."))?;
+    //////////////////////////////////////////////////////////////////////
+    // Utils
+    //////////////////////////////////////////////////////////////////////
 
-    Ok(u64::from_le_bytes(bytes))
+    /// Transforms bech32 to hex
+    pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
+        bech32_to_hex(bech32)
+    }
+
+    /// Transforms a hex encoded address to a bech32 encoded address
+    pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        let bech32_hrp = match bech32_hrp {
+            Some(hrp) => hrp.into(),
+            None => self.get_bech32_hrp().await?,
+        };
+        hex_to_bech32(hex, &bech32_hrp)
+    }
+
+    /// Transforms a hex encoded public key to a bech32 encoded address
+    pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        let bech32_hrp = match bech32_hrp {
+            Some(hrp) => hrp.into(),
+            None => self.get_bech32_hrp().await?,
+        };
+        hex_public_key_to_bech32_address(hex, &bech32_hrp)
+    }
+
+    /// Returns a valid Address parsed from a String.
+    pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
+        parse_bech32_address(address)
+    }
+
+    /// Checks if a String is a valid bech32 encoded address.
+    pub fn is_address_valid(address: &str) -> bool {
+        is_address_valid(address)
+    }
+
+    /// Generates a new mnemonic.
+    pub fn generate_mnemonic() -> Result<String> {
+        generate_mnemonic()
+    }
+
+    /// Returns a seed for a mnemonic.
+    pub fn mnemonic_to_seed(mnemonic: &str) -> Result<Seed> {
+        mnemonic_to_seed(mnemonic)
+    }
+
+    /// Returns a hex encoded seed for a mnemonic.
+    pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
+        mnemonic_to_hex_seed(mnemonic)
+    }
 }

@@ -45,10 +45,10 @@ pub mod error;
 pub mod node;
 pub mod node_manager;
 pub mod signing;
+pub mod utils;
 
 pub use bee_common as common;
 pub use bee_message;
-pub use bee_packable;
 pub use bee_pow as pow;
 pub use bee_rest_api;
 pub use builder::ClientBuilder;
@@ -58,7 +58,9 @@ pub use error::*;
 #[cfg(feature = "mqtt")]
 pub use node::Topic;
 pub use node::{OutputType, OutputsOptions as AddressOutputsOptions};
+pub use packable;
 pub use url::Url;
+pub use utils::*;
 
 #[cfg(feature = "mqtt")]
 mod async_runtime {

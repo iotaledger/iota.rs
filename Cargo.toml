@@ -15,11 +15,11 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", branch = "shimmer-develop", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", branch = "shimmer-develop", default-features = false, features = ["serde1"] }
-bee-pow = { git = "https://github.com/iotaledger/bee", branch = "shimmer-develop", default-features = false }
-bee-common = { git = "https://github.com/iotaledger/bee", branch = "shimmer-develop", default-features = false }
-bee-packable = { git = "https://github.com/iotaledger/bee", branch = "coordicide", default-features = false, features = [ "serde", "primitive-types" ] }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f", default-features = false }
+bee-common = { version = "0.6.0", default-features = false }
+packable = { version = "0.1.0", default-features = false, features = [ "serde", "primitive-types" ] }
 # bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
 # bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
 # bee-pow = { path = "../bee/bee-pow",  default-features = false }

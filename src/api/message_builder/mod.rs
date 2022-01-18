@@ -17,7 +17,6 @@ use bee_message::{
     payload::{transaction::TransactionId, IndexationPayload, Payload},
     Message, MessageId,
 };
-use bee_packable::PackableExt;
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{
@@ -25,6 +24,7 @@ use bee_rest_api::types::{
     responses::OutputResponse,
 };
 use crypto::keys::slip10::Chain;
+use packable::PackableExt;
 #[cfg(not(feature = "wasm"))]
 use tokio::time::sleep;
 

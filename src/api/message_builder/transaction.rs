@@ -19,7 +19,7 @@ use bee_message::{
     },
     unlock_block::UnlockBlocks,
 };
-use bee_packable::PackableExt;
+use packable::PackableExt;
 
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
@@ -61,7 +61,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
         outputs_for_essence.push(output);
     }
 
-    let mut essence = RegularTransactionEssence::builder();
+    let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
     // todo remove this, because ordering isn't required anymore?
     // Order inputs and add them to the essence
     inputs_for_essence.sort_unstable_by_key(|a| a.pack_to_vec());
