@@ -101,9 +101,13 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 utils::rand::fill(&mut entropy)?;
                 let id = format!("iotars{}", hex::encode(entropy));
                 let port = client.broker_options.port;
+                let ws_prefix = match node.url.scheme() {
+                    "https" => "wss",
+                    _ => "ws",
+                };
                 let mut uri = format!(
                     "{}://{}:{}/mqtt",
-                    if node.url.scheme() == "https" { "wss" } else { "ws" },
+                    ws_prefix,
                     host,
                     node.url.port_or_known_default().unwrap_or(port)
                 );
@@ -113,6 +117,23 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 };
                 let mut mqtt_options = MqttOptions::new(id, uri, port);
                 if client.broker_options.use_ws {
+                    #[cfg(feature = "rumqttc-native-certs")]
+                    {
+                        if ws_prefix == "wss" {
+                            let mut tls_config = rustls::ClientConfig::new();
+                            let mut roots = rustls::RootCertStore::empty();
+                            for cert in
+                                rustls_native_certs::load_native_certs().expect("Failed to load native certificates")
+                            {
+                                roots.add(&rustls::Certificate(cert.0)).unwrap();
+                            }
+                            tls_config.root_store = roots;
+                            mqtt_options.set_transport(Transport::wss_with_config(tls_config.into()));
+                        } else {
+                            mqtt_options.set_transport(Transport::ws());
+                        }
+                    }
+                    #[cfg(not(feature = "rumqttc-native-certs"))]
                     mqtt_options.set_transport(Transport::ws());
                 }
                 mqtt_options.set_connection_timeout(client.broker_options.timeout.as_secs());
