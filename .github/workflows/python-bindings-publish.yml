@@ -55,5 +55,5 @@ jobs:
       - name: Upload Wheels
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.identifier }}-iota-wallet-py${{ matrix.python }}-wheel
+          name: ${{ matrix.identifier }}-iota-client-py${{ matrix.python }}-wheel
           path: bindings/python/native/target/wheels/
