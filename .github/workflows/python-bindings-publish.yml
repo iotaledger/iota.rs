@@ -5,7 +5,7 @@ on:
     branches:
       - dev
     paths:
-      - '.github/workflows/examine-wasm-bindings.yml'
+      - '.github/workflows/python-bindings-publish.yml'
       - '.github/actions/**'
       - 'bindings/python/**'
       # Watch the Rust core too
