@@ -7,6 +7,10 @@ on:
       - '.github/workflows/examine-java-bindings.yml'
       - '.github/actions/**'
       - 'bindings/java/**'
+      # Watch the Rust core too
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
   pull_request:
     branches:
       - dev
@@ -14,6 +18,10 @@ on:
       - '.github/workflows/examine-java-bindings.yml'
       - '.github/actions/**'
       - 'bindings/java/**'
+      # Watch the Rust core too
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
   schedule:
     - cron: '0 1 * * *'
   workflow_dispatch:

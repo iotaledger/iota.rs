@@ -5,11 +5,13 @@ on:
     branches:
       - dev
     paths:
-      - .github/workflows/python-bindings-publish.yml
-      - bindings/python/**
-      - src/**
-      - Cargo.lock
-      - Cargo.toml
+      - '.github/workflows/examine-wasm-bindings.yml'
+      - '.github/actions/**'
+      - 'bindings/python/**'
+      # Watch the Rust core too
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
 
 jobs:
   wheels:
