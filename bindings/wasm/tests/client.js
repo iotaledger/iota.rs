@@ -16,6 +16,7 @@ async function test() {
       assert.strictEqual(typeof info, 'object')
       assert.strictEqual(info.localPow, false)
       assert.strictEqual(info.bech32HRP, 'atoi')
+      // 4000 in mainnet, 2000 in devnet
       assert.strictEqual(info.minPoWScore, 2000)
     })
 

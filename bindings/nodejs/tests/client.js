@@ -17,7 +17,8 @@ describe('Client', () => {
     assert.strictEqual(typeof info, 'object')
     assert.strictEqual(info.localPow, true)
     assert.strictEqual(info.bech32HRP, 'atoi')
-    assert.strictEqual(info.minPoWScore, 4000)
+    // 4000 in mainnet, 2000 in devnet
+    assert.strictEqual(info.minPoWScore, 2000)
   })
 
   it('gets tips', async () => {
