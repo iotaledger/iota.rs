@@ -80,7 +80,10 @@ jobs:
 
   lint:
     name: Lint
-    if: ${{ ! github.event.schedule }}
+    # if: ${{ ! github.event.schedule }}
+    # FIXME: Clippy is reporting hundreds of warnings to wasm-bindgen. Waiting for a fix.
+    # (rustwasm/wasm-bindgen#2774)
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     steps:
