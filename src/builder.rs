@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Client Instance
+#[cfg(feature = "mqtt")]
+use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{client::*, error::*};
 
 #[cfg(not(feature = "wasm"))]

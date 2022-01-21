@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example get_funds --release
-use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{signing::mnemonic::MnemonicSigner, utils::request_funds_from_faucet, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -30,14 +30,8 @@ async fn main() -> Result<()> {
         .unwrap();
     println!("{}", addresses[0]);
 
-    let faucet_response = ureq::post("http://localhost:14265/api/plugins/faucet/enqueue")
-        .set("Content-Type", "application/json")
-        .send_json(ureq::json!({
-            "address": addresses[0],
-        }))
-        .unwrap()
-        .into_string()
-        .unwrap();
+    let faucet_response =
+        request_funds_from_faucet("http://localhost:14265/api/plugins/faucet/enqueue", &addresses[0]).await?;
 
     println!("{}", faucet_response);
     Ok(())

@@ -5,6 +5,7 @@
 
 use crate::error::*;
 
+use bee_common::logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use bee_message::address::{Address, Ed25519Address};
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
@@ -12,7 +13,10 @@ use crypto::{
     utils,
 };
 
+pub use log::LevelFilter;
 use zeroize::Zeroize;
+
+use std::collections::HashMap;
 
 /// Hash the network id str from the nodeinfo to an u64 (used in messages)
 pub fn hash_network(network_id_string: &str) -> Result<u64> {
@@ -94,4 +98,24 @@ pub fn mnemonic_to_seed(mnemonic: &str) -> Result<Seed> {
     let mut mnemonic_seed = [0u8; 64];
     crypto::keys::bip39::mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
     Ok(Seed::from_bytes(&mnemonic_seed))
+}
+
+/// Requests funds from a faucet
+pub async fn request_funds_from_faucet(url: &str, bech32_address: &str) -> Result<String> {
+    let mut map = HashMap::new();
+    map.insert("address", bech32_address);
+
+    let client = reqwest::Client::new();
+    let faucet_response = client.post(url).json(&map).send().await?.text().await?;
+    Ok(faucet_response)
+}
+
+/// creates a file in which logs will be written in
+pub fn init_logger(filename: &str, levelfilter: LevelFilter) -> crate::Result<()> {
+    let output_config = LoggerOutputConfigBuilder::new()
+        .name(filename)
+        .level_filter(levelfilter);
+    let config = LoggerConfig::build().with_output(output_config).finish();
+    logger_init(config)?;
+    Ok(())
 }

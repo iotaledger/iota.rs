@@ -1,15 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Api, Client, Error, Result};
+use crate::{node::ExtendedOutputsResponse, Api, Client, Error, Result};
 
 use crate::bee_rest_api::types::responses::OutputResponse;
-use bee_message::{input::UtxoInput, payload::transaction::TransactionId};
-use bee_rest_api::types::{
-    body::SuccessBody,
-    dtos::OutputDto,
-    responses::{BalanceAddressResponse, OutputsAddressResponse},
-};
+use bee_message::{input::UtxoInput, output::OutputId, payload::transaction::TransactionId};
+use bee_rest_api::types::{dtos::OutputDto, responses::BalanceAddressResponse};
 
 use std::convert::TryInto;
 
@@ -37,22 +33,16 @@ impl From<OutputType> for u16 {
 /// The outputs query options.
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct OutputsOptions {
-    /// Whether the query should include spent outputs or not.
-    #[serde(rename = "includeSpent")]
-    pub include_spent: bool,
     #[serde(rename = "outputType")]
-    /// The output type filter.
-    pub output_type: Option<OutputType>,
+    /// The bech32_address type filter.
+    pub bech32_address: Option<String>,
 }
 
 impl OutputsOptions {
     fn into_query(self) -> Option<String> {
         let mut params = Vec::new();
-        if self.include_spent {
-            params.push("include-spent=true".to_string());
-        }
-        if let Some(output_type) = self.output_type {
-            params.push(format!("type={}", u16::from(output_type)))
+        if let Some(bech32_address) = self.bech32_address {
+            params.push(format!("address={}", bech32_address))
         }
         if params.is_empty() {
             None
@@ -77,34 +67,18 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn balance(self, address: &str) -> Result<BalanceAddressResponse> {
-        let outputs_response = self
+        let outputs_response: Vec<OutputResponse> = self
             .client
             .get_address()
-            .outputs_response(address, Default::default())
-            .await?;
-        let output_ids = outputs_response
-            .output_ids
-            .iter()
-            .map(|s| {
-                if s.len() == OUTPUT_ID_LENGTH {
-                    let mut transaction_id = [0u8; 32];
-                    hex::decode_to_slice(&s[..TRANSACTION_ID_LENGTH], &mut transaction_id)?;
-                    let index = u16::from_le_bytes(
-                        hex::decode(&s[TRANSACTION_ID_LENGTH..]).map_err(|_| Error::InvalidParameter("index"))?[..]
-                            .try_into()
-                            .map_err(|_| Error::InvalidParameter("index"))?,
-                    );
-                    Ok(UtxoInput::new(TransactionId::new(transaction_id), index)?)
-                } else {
-                    Err(Error::OutputError("Invalid output length from API response"))
-                }
+            .outputs(OutputsOptions {
+                bech32_address: Some(address.to_string()),
             })
-            .collect::<Result<Box<[UtxoInput]>>>()?;
+            .await?;
+
         let mut total_balance = 0;
 
-        for output_id in output_ids.iter() {
-            let output = self.client.get_output(output_id).await?;
-            let amount = match output.output {
+        for output in outputs_response.iter() {
+            let amount = match &output.output {
                 OutputDto::Extended(o) => o.amount,
                 _ => 0,
             };
@@ -116,28 +90,27 @@ impl<'a> GetAddressBuilder<'a> {
             // todo remove this and only use the bech32 address?
             address_type: 0,
             balance: total_balance,
-            ledger_index: outputs_response.ledger_index,
+            ledger_index: outputs_response[0].ledger_index,
         })
     }
-    /// Consume the builder and get the OutputsAddressResponse for a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs(self, address: &str, options: OutputsOptions) -> Result<Vec<OutputResponse>> {
-        let path = format!("api/plugins/indexer/addresses/{}/outputs", address);
+    pub async fn outputs(self, options: OutputsOptions) -> Result<Vec<OutputResponse>> {
+        let path = "api/plugins/indexer/outputs";
 
-        let outputs_response: SuccessBody<OutputsAddressResponse> = self
+        let outputs_response: ExtendedOutputsResponse = self
             .client
             .node_manager
             .get_request(
-                &path,
+                path,
                 options.into_query().as_deref(),
                 self.client.get_timeout(Api::GetOutput),
             )
             .await?;
-
+        println!("{:?}", outputs_response);
+        // todo pagination
         let output_ids = outputs_response
             .data
-            .output_ids
             .iter()
             .map(|s| {
                 if s.len() == OUTPUT_ID_LENGTH {
@@ -164,22 +137,39 @@ impl<'a> GetAddressBuilder<'a> {
         Ok(outputs)
     }
 
-    /// Consume the builder and get the OutputsAddressResponse for a given address.
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
-    pub async fn outputs_response(self, address: &str, options: OutputsOptions) -> Result<OutputsAddressResponse> {
-        let path = format!("api/plugins/indexer/addresses/{}/outputs", address);
+    pub async fn output_ids(self, options: OutputsOptions) -> Result<Box<[OutputId]>> {
+        let path = "api/plugins/indexer/outputs";
 
-        let resp: SuccessBody<OutputsAddressResponse> = self
+        let outputs_response: ExtendedOutputsResponse = self
             .client
             .node_manager
             .get_request(
-                &path,
+                path,
                 options.into_query().as_deref(),
                 self.client.get_timeout(Api::GetOutput),
             )
             .await?;
-
-        Ok(resp.data)
+        // todo pagination
+        let output_ids = outputs_response
+            .data
+            .iter()
+            .map(|s| {
+                if s.len() == OUTPUT_ID_LENGTH {
+                    let mut transaction_id = [0u8; 32];
+                    hex::decode_to_slice(&s[..TRANSACTION_ID_LENGTH], &mut transaction_id)?;
+                    let index = u16::from_le_bytes(
+                        hex::decode(&s[TRANSACTION_ID_LENGTH..]).map_err(|_| Error::InvalidParameter("index"))?[..]
+                            .try_into()
+                            .map_err(|_| Error::InvalidParameter("index"))?,
+                    );
+                    Ok(OutputId::new(TransactionId::new(transaction_id), index)?)
+                } else {
+                    Err(Error::OutputError("Invalid output length from API response"))
+                }
+            })
+            .collect::<Result<Box<[OutputId]>>>()?;
+        Ok(output_ids)
     }
 }

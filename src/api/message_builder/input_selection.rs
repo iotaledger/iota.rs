@@ -8,17 +8,16 @@ use crate::{
         types::{AddressIndexRecorder, OutputWrapper},
         ClientMessageBuilder, ADDRESS_GAP_RANGE,
     },
+    node::OutputsOptions,
     Error, Result,
 };
 
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{ExtendedOutput, Output, OutputId},
+    output::{ExtendedOutput, Output},
 };
 use bee_rest_api::types::dtos::OutputDto;
-
-use std::str::FromStr;
 
 // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
 pub(crate) async fn get_inputs(
@@ -57,19 +56,13 @@ pub(crate) async fn get_inputs(
         // For each address, get the address outputs
         let mut address_index = gap_index;
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
-            let address_outputs_response = message_builder
+            let address_outputs = message_builder
                 .client
                 .get_address()
-                .outputs_response(str_address, Default::default())
+                .outputs(OutputsOptions {
+                    bech32_address: Some(str_address.to_string()),
+                })
                 .await?;
-            let mut address_outputs = Vec::new();
-            for output in &address_outputs_response.output_ids {
-                let output = message_builder
-                    .client
-                    .get_output(&UtxoInput::from(OutputId::from_str(output)?))
-                    .await?;
-                address_outputs.push(output);
-            }
 
             // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
             // looking up the addresses belonging to the seed. Note that we don't

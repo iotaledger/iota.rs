@@ -54,13 +54,9 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 let address_outputs = self
                     .client
                     .get_address()
-                    .outputs(
-                        &a,
-                        OutputsOptions {
-                            include_spent: true,
-                            output_type: None,
-                        },
-                    )
+                    .outputs(OutputsOptions {
+                        bech32_address: Some(a.to_string()),
+                    })
                     .await?;
                 if address_outputs.is_empty() {
                     address.replace(a);

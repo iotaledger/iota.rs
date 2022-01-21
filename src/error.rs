@@ -54,6 +54,9 @@ pub enum Error {
     /// Hex string convert error
     #[error("{0}")]
     FromHexError(#[from] hex::FromHexError),
+    /// Bee common logger error
+    #[error("{0}")]
+    CommonError(#[from] bee_common::logger::Error),
     /// Message types error
     #[error("{0}")]
     MessageError(#[from] bee_message::Error),

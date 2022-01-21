@@ -1,75 +1,22 @@
-// Copyright 2021 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    client::{BrokerOptions, Client, MqttEvent, TopicEvent, TopicHandlerMap},
-    Result,
-};
+//! IOTA node MQTT API
+pub mod types;
+pub use types::*;
+
+use crate::{Client, Result};
 use bee_message::Message;
-use bee_packable::PackableExt;
 use crypto::utils;
 use log::warn;
-use regex::Regex;
+use packable::PackableExt;
 use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
     Transport,
 };
 use tokio::sync::{watch::Sender, RwLock};
 
-use std::{convert::TryFrom, sync::Arc, time::Instant};
-
-/// A MQTT topic.
-#[derive(Debug, Clone, Hash, Eq, PartialEq)]
-pub struct Topic(String);
-
-impl TryFrom<&str> for Topic {
-    type Error = crate::Error;
-
-    fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
-        Self::new(value)
-    }
-}
-
-impl Topic {
-    /// Creates a new topic and checks if it's valid.
-    pub fn new<S: Into<String>>(name: S) -> Result<Self> {
-        let mut name: String = name.into();
-        // Convert non hex index to hex
-        let indexation_beginning = "messages/indexation/";
-        if name.len() > indexation_beginning.len()
-            && &name[0..indexation_beginning.len()] == indexation_beginning
-            && hex::decode(&name[indexation_beginning.len()..name.len()]).is_err()
-        {
-            name = format!(
-                "messages/indexation/{}",
-                hex::encode(&name[indexation_beginning.len()..name.len()])
-            );
-        }
-
-        let valid_topics = lazy_static!(
-          ["milestones/latest", "milestones/confirmed", "messages", "messages/referenced"].to_vec() => Vec<&str>
-        );
-        let regexes = lazy_static!(
-          [
-            Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
-            Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
-            // bech32 address
-            Regex::new("addresses/(iota|atoi|iot|toi)1[A-Za-z0-9]+/outputs").expect("regex failed"),
-            // ED25519 address hex
-            Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
-            Regex::new(r"messages/indexation/([a-f0-9]{2,128})").expect("regex failed"),
-            Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
-          ].to_vec() => Vec<Regex>
-        );
-
-        if valid_topics.iter().any(|valid| valid == &name) || regexes.iter().any(|re| re.is_match(&name)) {
-            let topic = Self(name);
-            Ok(topic)
-        } else {
-            Err(crate::Error::InvalidMqttTopic(name))
-        }
-    }
-}
+use std::{sync::Arc, time::Instant};
 
 async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     // if the client was disconnected, we clear it so we can start over
@@ -196,7 +143,7 @@ fn poll_mqtt(
                                         || topic.contains("transactions/")
                                     {
                                         let mut payload = &*p.payload;
-                                        match Message::unpack(&mut payload) {
+                                        match Message::unpack_verified(&mut payload) {
                                             Ok(iota_message) => match serde_json::to_string(&iota_message) {
                                                 Ok(message) => Ok(TopicEvent {
                                                     topic,
@@ -208,7 +155,7 @@ fn poll_mqtt(
                                                 }
                                             },
                                             Err(e) => {
-                                                warn!("Message unpacking failed: {0}", e);
+                                                warn!("Message unpacking failed: {:?}", e);
                                                 Err(())
                                             }
                                         }
@@ -315,9 +262,13 @@ impl<'a> MqttTopicManager<'a> {
     }
 
     /// Subscribe to the given topics with the callback.
-    pub async fn subscribe<C: Fn(&crate::client::TopicEvent) + Send + Sync + 'static>(self, callback: C) -> Result<()> {
+    pub async fn subscribe<C: Fn(&crate::node_api::mqtt::TopicEvent) + Send + Sync + 'static>(
+        self,
+        callback: C,
+    ) -> Result<()> {
         let client = get_mqtt_client(self.client).await?;
-        let cb = Arc::new(Box::new(callback) as Box<dyn Fn(&crate::client::TopicEvent) + Send + Sync + 'static>);
+        let cb =
+            Arc::new(Box::new(callback) as Box<dyn Fn(&crate::node_api::mqtt::TopicEvent) + Send + Sync + 'static>);
         client
             .subscribe_many(
                 self.topics

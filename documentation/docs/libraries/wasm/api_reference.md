@@ -257,7 +257,7 @@ Get the account balance.
 <a name="Client+getAddress"></a>
 
 ### client.getAddress() ⇒ [<code>GetAddressBuilder</code>](#GetAddressBuilder)
-GET /api/plugins/indexer/addresses/{address} endpoint
+GET /api/plugins/indexer/outputs{query} endpoint
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
 <a name="Client+getInfo"></a>

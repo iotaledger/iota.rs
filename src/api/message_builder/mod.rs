@@ -1,11 +1,10 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(not(feature = "wasm"))]
+use crate::api::{do_pow, pow::finish_pow};
 use crate::{
-    api::{
-        pow::{do_pow, finish_pow},
-        types::{AddressIndexRecorder, PreparedTransactionData},
-    },
+    api::types::{AddressIndexRecorder, PreparedTransactionData},
     signing::SignerHandle,
     Client, Error, Result,
 };
@@ -277,7 +276,7 @@ impl<'a> ClientMessageBuilder<'a> {
             };
             let min_pow_score = self.client.get_min_pow_score().await?;
             let network_id = self.client.get_network_id().await?;
-            finish_single_thread_pow(
+            crate::api::pow::finish_single_thread_pow(
                 self.client,
                 network_id,
                 Some(parent_message_ids),

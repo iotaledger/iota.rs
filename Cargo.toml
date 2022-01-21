@@ -15,9 +15,9 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", rev = "ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f", default-features = false, features = ["serde1"] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "785dc53c1a5179fb7e91465b8ebeb841fb3a6c72", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "785dc53c1a5179fb7e91465b8ebeb841fb3a6c72", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "785dc53c1a5179fb7e91465b8ebeb841fb3a6c72", default-features = false }
 bee-common = { version = "0.6.0", default-features = false }
 packable = { version = "0.1.0", default-features = false, features = [ "serde", "primitive-types" ] }
 # bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
@@ -58,7 +58,7 @@ iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "8c239b13
 wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "448c2be0c4feeb6b5df1da265489232dff2f03c1", default-features = false, optional = true }
 # wasm-timer = { version =  "0.2.5", default-features = false, optional = true }
 # single thread pow for wasm
-bee-crypto = { version = "0.3.0", default-features = false, optional = true }
+# bee-crypto = { version = "0.3.0", default-features = false, optional = true }
 bee-ternary = { version = "0.5.2", default-features = false, optional = true }
 bytes = { version = "1.1.0", default-features = false, optional = true }
 
@@ -71,7 +71,7 @@ default = ["async", "ledger"]
 sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
-wasm = ["reqwest", "futures", "wasm-timer", "bee-crypto", "bee-ternary", "bytes"]
+wasm = ["reqwest", "futures", "wasm-timer", "bee-ternary", "bytes"]
 #fallback to local PoW
 pow-fallback = []
 ledger = ["iota-ledger"]

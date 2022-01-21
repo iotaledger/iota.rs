@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! The Client module to connect through HORNET or Bee with API usages
+#[cfg(feature = "mqtt")]
+use crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerMap};
+
 use crate::{
     api::*,
     builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
@@ -54,7 +57,7 @@ use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
-    convert::{TryFrom, TryInto},
+    convert::TryFrom,
     hash::Hash,
     ops::Range,
     str::FromStr,
@@ -84,122 +87,6 @@ pub struct MilestoneResponse {
     pub message_id: MessageId,
     /// Milestone timestamp.
     pub timestamp: u64,
-}
-
-#[cfg(feature = "mqtt")]
-type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
-#[cfg(feature = "mqtt")]
-pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
-
-/// An event from a MQTT topic.
-#[cfg(feature = "mqtt")]
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct TopicEvent {
-    /// the MQTT topic.
-    pub topic: String,
-    /// The MQTT event payload.
-    pub payload: String,
-}
-
-/// Mqtt events.
-#[cfg(feature = "mqtt")]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MqttEvent {
-    /// Client was connected.
-    Connected,
-    /// Client was disconnected.
-    Disconnected,
-}
-
-/// The MQTT broker options.
-#[cfg(feature = "mqtt")]
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct BrokerOptions {
-    #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
-    pub(crate) automatic_disconnect: bool,
-    #[serde(default = "default_broker_timeout")]
-    pub(crate) timeout: Duration,
-    #[serde(default = "default_broker_use_ws", rename = "useWs")]
-    pub(crate) use_ws: bool,
-    #[serde(default = "default_broker_port")]
-    pub(crate) port: u16,
-    #[serde(default = "default_max_reconnection_attempts", rename = "maxReconnectionAttempts")]
-    pub(crate) max_reconnection_attempts: usize,
-}
-
-#[cfg(feature = "mqtt")]
-fn default_broker_automatic_disconnect() -> bool {
-    true
-}
-
-#[cfg(feature = "mqtt")]
-fn default_broker_timeout() -> Duration {
-    Duration::from_secs(30)
-}
-#[cfg(feature = "mqtt")]
-fn default_broker_use_ws() -> bool {
-    true
-}
-
-#[cfg(feature = "mqtt")]
-fn default_broker_port() -> u16 {
-    1883
-}
-
-#[cfg(feature = "mqtt")]
-fn default_max_reconnection_attempts() -> usize {
-    0
-}
-
-#[cfg(feature = "mqtt")]
-impl Default for BrokerOptions {
-    fn default() -> Self {
-        Self {
-            automatic_disconnect: default_broker_automatic_disconnect(),
-            timeout: default_broker_timeout(),
-            use_ws: default_broker_use_ws(),
-            port: default_broker_port(),
-            max_reconnection_attempts: default_max_reconnection_attempts(),
-        }
-    }
-}
-
-#[cfg(feature = "mqtt")]
-impl BrokerOptions {
-    /// Creates the default broker options.
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    /// Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not.
-    pub fn automatic_disconnect(mut self, automatic_disconnect: bool) -> Self {
-        self.automatic_disconnect = automatic_disconnect;
-        self
-    }
-
-    /// Sets the timeout used for the MQTT operations.
-    pub fn timeout(mut self, timeout: Duration) -> Self {
-        self.timeout = timeout;
-        self
-    }
-
-    /// Sets the use_ws used for the MQTT operations.
-    pub fn use_ws(mut self, use_ws: bool) -> Self {
-        self.use_ws = use_ws;
-        self
-    }
-
-    /// Sets the port used for the MQTT operations.
-    pub fn port(mut self, port: u16) -> Self {
-        self.port = port;
-        self
-    }
-
-    /// Sets the maximum number of reconnection attempts. 0 is unlimited.
-    pub fn max_reconnection_attempts(mut self, max_reconnection_attempts: usize) -> Self {
-        self.max_reconnection_attempts = max_reconnection_attempts;
-        self
-    }
 }
 
 /// The miner builder.
@@ -558,16 +445,17 @@ impl Client {
             available_outputs.extend_from_slice(
                 &self
                     .get_address()
-                    .outputs_response(&address, Default::default())
-                    .await?
-                    .output_ids,
+                    .output_ids(OutputsOptions {
+                        bech32_address: Some(address.to_string()),
+                    })
+                    .await?,
             );
         }
 
         let mut extended_outputs = Vec::new();
 
-        for output in available_outputs.into_iter() {
-            let utxo_input = UtxoInput::from(OutputId::from_str(&output)?);
+        for output_id in available_outputs.into_iter() {
+            let utxo_input = UtxoInput::from(output_id);
             let output_data = self.get_output(&utxo_input).await?;
             let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_data.output)?;
             extended_outputs.push((utxo_input, amount));
@@ -720,6 +608,7 @@ impl Client {
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
         let path = "api/v1/messages";
         let local_pow = self.get_local_pow().await;
+        println!("{}", serde_json::to_string(&MessageDto::from(message))?);
         let timeout = if local_pow {
             self.get_timeout(Api::PostMessage)
         } else {
@@ -762,7 +651,7 @@ impl Client {
                                 self,
                                 network_id,
                                 None,
-                                message.payload().clone(),
+                                message.payload().cloned(),
                                 min_pow_score,
                             )
                             .await
@@ -840,7 +729,7 @@ impl Client {
                                 self,
                                 network_id,
                                 None,
-                                message.payload().clone(),
+                                message.payload().cloned(),
                                 min_pow_score,
                             )
                             .await
@@ -913,7 +802,12 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
-            let address_outputs = self.get_address().outputs(address, Default::default()).await?;
+            let address_outputs = self
+                .get_address()
+                .outputs(OutputsOptions {
+                    bech32_address: Some(address.to_string()),
+                })
+                .await?;
             for output in address_outputs.iter() {
                 output_to_query.insert(UtxoInput::from(OutputId::new(
                     TransactionId::from_str(&output.transaction_id)?,
@@ -925,13 +819,9 @@ impl Client {
             if address_outputs.len() == RESPONSE_MAX_OUTPUTS {
                 let address_dust_allowance_outputs = self
                     .get_address()
-                    .outputs(
-                        address,
-                        OutputsOptions {
-                            include_spent: false,
-                            output_type: Some(OutputType::SignatureLockedDustAllowance),
-                        },
-                    )
+                    .outputs(OutputsOptions {
+                        bech32_address: Some(address.to_string()),
+                    })
                     .await?;
                 for output in address_dust_allowance_outputs.iter() {
                     output_to_query.insert(UtxoInput::from(OutputId::new(
@@ -950,7 +840,7 @@ impl Client {
         Ok(output_metadata)
     }
 
-    /// GET /api/plugins/indexer/addresses/{address} endpoint
+    /// GET /api/plugins/indexer/outputs{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }
@@ -1052,7 +942,7 @@ impl Client {
                     .with_network_id(network_id)
                     .with_parents(Parents::new(tips)?);
                 if let Some(p) = message.payload().to_owned() {
-                    message_builder = message_builder.with_payload(p)
+                    message_builder = message_builder.with_payload(p.clone())
                 }
                 message_builder.finish().map_err(Error::MessageError)?
             }

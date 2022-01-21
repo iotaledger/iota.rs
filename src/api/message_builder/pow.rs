@@ -5,9 +5,13 @@
 
 use crate::{Client, ClientMiner, Error, Result};
 
+#[cfg(feature = "wasm")]
+use bee_message::payload::OptionalPayload;
 use bee_message::{parent::Parents, payload::Payload, Message, MessageBuilder, MessageId};
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
+#[cfg(feature = "wasm")]
+use packable::Packable;
 use packable::PackableExt;
 
 /// Does PoW with always new tips
@@ -87,16 +91,14 @@ pub fn do_pow(
 
 // Single threaded PoW for wasm
 #[cfg(feature = "wasm")]
-use bee_crypto::ternary::{
-    sponge::{BatchHasher, CurlPRounds, BATCH_SIZE},
+use bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf};
+#[cfg(feature = "wasm")]
+use crypto::hashes::ternary::{
+    curl_p::{CurlPBatchHasher, BATCH_SIZE},
     HASH_LENGTH,
 };
 #[cfg(feature = "wasm")]
-use bee_message::payload::option_payload_pack;
-#[cfg(feature = "wasm")]
-use bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf};
-#[cfg(feature = "wasm")]
-use bytes::Buf;
+// use bytes::Buf;
 #[cfg(feature = "wasm")]
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 
@@ -130,9 +132,10 @@ pub async fn finish_single_thread_pow(
         parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
         parent_messages.dedup();
         Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
-        option_payload_pack(&mut message_bytes, payload.clone().as_ref())?;
+        OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut message_bytes)
+            .map_err(|_| crate::Error::PackableError)?;
         (0_u64).pack(&mut message_bytes).unwrap();
-        return Ok(Message::unpack(&mut message_bytes.reader())?);
+        return Message::unpack_verified(&mut message_bytes.as_slice()).map_err(|_| crate::Error::PackableError);
     }
 
     let tips_interval = client.get_tips_interval().await;
@@ -144,7 +147,8 @@ pub async fn finish_single_thread_pow(
         parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
         parent_messages.dedup();
         Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
-        option_payload_pack(&mut message_bytes, payload.clone().as_ref())?;
+        OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut message_bytes)
+            .map_err(|_| crate::Error::PackableError)?;
 
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
         let target_zeros =
@@ -159,7 +163,7 @@ pub async fn finish_single_thread_pow(
         b1t6::encode::<T1B1Buf>(&hash).iter().for_each(|t| pow_digest.push(t));
 
         let mut nonce = 0;
-        let mut hasher = BatchHasher::<T1B1Buf>::new(HASH_LENGTH, CurlPRounds::Rounds81);
+        let mut hasher = CurlPBatchHasher::<T1B1Buf>::new(HASH_LENGTH);
         let mut buffers = Vec::<TritBuf<T1B1Buf>>::with_capacity(BATCH_SIZE);
         for _ in 0..BATCH_SIZE {
             let mut buffer = TritBuf::<T1B1Buf>::zeros(HASH_LENGTH);
@@ -171,7 +175,7 @@ pub async fn finish_single_thread_pow(
         let mut counter = 0;
         loop {
             if counter % POW_ROUNDS_BEFORE_INTERVAL_CHECK == 0
-                && mining_start.elapsed() > Duration::from_secs(tips_interval)
+                && mining_start.elapsed() > std::time::Duration::from_secs(tips_interval)
             {
                 // update parents
                 parent_messages = client.get_tips().await?;
@@ -182,11 +186,12 @@ pub async fn finish_single_thread_pow(
                 buffer[pow_digest.len()..pow_digest.len() + nonce_trits.len()].copy_from(&nonce_trits);
                 hasher.add(buffer.clone());
             }
-            for (i, hash) in hasher.hash_batched().enumerate() {
+            for (i, hash) in hasher.hash().enumerate() {
                 let trailing_zeros = hash.iter().rev().take_while(|t| *t == Btrit::Zero).count();
                 if trailing_zeros >= target_zeros {
-                    (nonce + i as u64).pack(&mut message_bytes).unwrap();
-                    return Ok(Message::unpack(&mut message_bytes.reader())?);
+                    Box::new(nonce + i as u64).pack(&mut message_bytes).unwrap();
+                    return Message::unpack_verified(&mut message_bytes.as_slice())
+                        .map_err(|_| crate::Error::PackableError);
                 }
             }
             nonce += BATCH_SIZE as u64;

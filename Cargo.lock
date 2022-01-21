@@ -110,7 +110,7 @@ dependencies = [
 [[package]]
 name = "bee-common"
 version = "0.6.0"
-source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
+source = "git+https://github.com/iotaledger/bee?rev=785dc53c1a5179fb7e91465b8ebeb841fb3a6c72#785dc53c1a5179fb7e91465b8ebeb841fb3a6c72"
 dependencies = [
  "autocfg",
  "fern",
@@ -121,25 +121,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-crypto"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66fc5a0d5986f9f22b44b8dbb5e2c205d08a4fc28def009a3a1703d54467cfb6"
-dependencies = [
- "bee-ternary",
- "byteorder",
- "iota-crypto",
- "lazy_static",
- "thiserror",
- "tiny-keccak",
-]
-
-[[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
+source = "git+https://github.com/iotaledger/bee?rev=785dc53c1a5179fb7e91465b8ebeb841fb3a6c72#785dc53c1a5179fb7e91465b8ebeb841fb3a6c72"
 dependencies = [
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f)",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=785dc53c1a5179fb7e91465b8ebeb841fb3a6c72)",
  "bee-message",
  "packable",
  "thiserror",
@@ -148,10 +134,10 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
+source = "git+https://github.com/iotaledger/bee?rev=785dc53c1a5179fb7e91465b8ebeb841fb3a6c72#785dc53c1a5179fb7e91465b8ebeb841fb3a6c72"
 dependencies = [
  "bech32 0.8.1",
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f)",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=785dc53c1a5179fb7e91465b8ebeb841fb3a6c72)",
  "bee-pow",
  "bee-ternary",
  "bitflags",
@@ -170,7 +156,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
+source = "git+https://github.com/iotaledger/bee?rev=785dc53c1a5179fb7e91465b8ebeb841fb3a6c72#785dc53c1a5179fb7e91465b8ebeb841fb3a6c72"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -180,7 +166,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
-source = "git+https://github.com/iotaledger/bee?rev=ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f#ceb6f968fd1ea7f4e737c177eb34e506b56f0d4f"
+source = "git+https://github.com/iotaledger/bee?rev=785dc53c1a5179fb7e91465b8ebeb841fb3a6c72#785dc53c1a5179fb7e91465b8ebeb841fb3a6c72"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -817,7 +803,6 @@ version = "1.1.0"
 dependencies = [
  "async-trait",
  "bee-common 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "bee-crypto",
  "bee-message",
  "bee-pow",
  "bee-rest-api",
@@ -1681,15 +1666,6 @@ checksum = "41effe7cfa8af36f439fac33861b66b049edc6f9a32331e2312660529c1c24ad"
 dependencies = [
  "itoa",
  "libc",
-]
-
-[[package]]
-name = "tiny-keccak"
-version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237"
-dependencies = [
- "crunchy",
 ]
 
 [[package]]
