@@ -76,7 +76,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Using Ubuntu 18.04 to provide glibc compatibility. (#588)
+        os: [ubuntu-18.04, macos-latest, windows-latest]
         node: ['12', '14', '16']
         exclude:
           # FIXME: fatal error C1083: Cannot open include file: 'node.h': No such file or directory
@@ -120,7 +121,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Using Ubuntu 18.04 to provide glibc compatibility. (#588)
+        os: [ubuntu-18.04, macos-latest, windows-latest]
 
     steps:
       - name: Checkout the Source Code
