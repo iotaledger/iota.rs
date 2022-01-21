@@ -1,5 +1,6 @@
 // Copyright 2020 IOTA Stiftung
-// SPDX-License-Identifier: Apache-2.
+// SPDX-License-Identifier: Apache-2.0
+
 use getset::{CopyGetters, Getters};
 use iota_client::{
     bee_message::{
@@ -39,8 +40,8 @@ impl core::fmt::Display for MilestoneResponse {
 impl From<RustMilestoneResponse> for MilestoneResponse {
     fn from(milestone: RustMilestoneResponse) -> Self {
         Self {
-            index: milestone.index.clone(),
-            message_id: milestone.message_id.clone(),
+            index: milestone.index,
+            message_id: milestone.message_id,
             timestamp: milestone.timestamp,
         }
     }
@@ -76,9 +77,9 @@ impl core::fmt::Display for MilestoneUtxoChangesResponse {
 impl From<RustUtxoChangesResponse> for MilestoneUtxoChangesResponse {
     fn from(changes: RustUtxoChangesResponse) -> Self {
         Self {
-            index: changes.index.clone(),
+            index: changes.index,
             created_outputs: changes.created_outputs.clone(),
-            consumed_outputs: changes.consumed_outputs.clone(),
+            consumed_outputs: changes.consumed_outputs,
         }
     }
 }
@@ -101,7 +102,7 @@ impl MilestonePayload {
         }
     }
     pub fn to_inner(self) -> RustMilestonePayload {
-        RustMilestonePayload::new(self.essence.clone(), self.signatures.clone()).unwrap()
+        RustMilestonePayload::new(self.essence.clone(), self.signatures).unwrap()
     }
 
     pub fn essence(&self) -> MilestonePayloadEssence {
@@ -115,9 +116,7 @@ impl MilestonePayload {
         self.signatures
             .clone()
             .iter()
-            .map(|signature| MilestoneSignature {
-                signature: signature.clone(),
-            })
+            .map(|signature| MilestoneSignature { signature: *signature })
             .collect()
     }
 
@@ -171,7 +170,7 @@ impl MilestonePayloadEssence {
     }
 
     pub fn parents(&self) -> Vec<MessageId> {
-        self.essence.parents().iter().map(|e| e.clone()).collect()
+        self.essence.parents().iter().copied().collect()
     }
 
     pub fn merkle_proof(&self) -> Vec<u8> {
@@ -196,10 +195,8 @@ impl MilestonePayloadEssence {
 
     pub fn receipt(&self) -> Option<ReceiptPayload> {
         let option = self.essence.receipt();
-        if let Some(payload) = option {
-            if let RustPayload::Receipt(receipt) = payload {
-                return Some((*receipt.clone()).into());
-            }
+        if let Some(RustPayload::Receipt(receipt)) = option {
+            return Some((*receipt.clone()).into());
         }
 
         None

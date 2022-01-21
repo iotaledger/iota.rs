@@ -24,7 +24,7 @@ pub struct PreparedTransactionData {
 
 impl PreparedTransactionData {
     pub fn deserialize(serialised_data: &str) -> Result<PreparedTransactionData> {
-        let res = serde_json::from_str(&serialised_data);
+        let res = serde_json::from_str(serialised_data);
 
         match res {
             Ok(s) => Ok(s),
@@ -37,7 +37,7 @@ impl PreparedTransactionData {
     }
 
     pub fn address_index_recorders(&self) -> Vec<AddressIndexRecorder> {
-        self.address_index_recorders.iter().cloned().collect()
+        self.address_index_recorders.to_vec()
     }
 
     pub fn serialize(&self) -> Result<String> {

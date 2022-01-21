@@ -15,7 +15,7 @@ impl IndexationPayload {
     }
 
     pub fn new(index: &[u8], data: &[u8]) -> Result<IndexationPayload> {
-        let index = RustIndexationPayload::new(&index, &data);
+        let index = RustIndexationPayload::new(index, data);
         match index {
             Err(e) => Err(anyhow!(e.to_string())),
             Ok(i) => Ok(IndexationPayload { payload: i }),

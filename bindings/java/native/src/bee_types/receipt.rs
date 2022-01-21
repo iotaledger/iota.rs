@@ -37,14 +37,14 @@ impl From<RustReceiptDto> for ReceiptDto {
     fn from(receipt: RustReceiptDto) -> Self {
         Self {
             receipt: receipt.receipt.into(),
-            milestone_index: receipt.milestone_index.clone(),
+            milestone_index: receipt.milestone_index,
         }
     }
 }
 
 impl Display for ReceiptDto {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "({}: {})", self.milestone_index, self.receipt.to_string())
+        write!(f, "({}: {})", self.milestone_index, self.receipt)
     }
 }
 
@@ -82,11 +82,11 @@ impl Display for ReceiptPayloadDto {
 impl From<RustReceiptPayloadDto> for ReceiptPayloadDto {
     fn from(payload: RustReceiptPayloadDto) -> Self {
         Self {
-            kind: payload.kind.clone(),
-            migrated_at: payload.migrated_at.clone(),
+            kind: payload.kind,
+            migrated_at: payload.migrated_at,
             funds: payload.funds.into_iter().map(|m| m.into()).collect(),
-            transaction: payload.transaction.into(),
-            last: payload.last.clone(),
+            transaction: payload.transaction,
+            last: payload.last,
         }
     }
 }
@@ -177,7 +177,7 @@ impl ReceiptPayload {
     pub fn funds(&self) -> Vec<MigratedFundsEntry> {
         self.payload
             .funds()
-            .into_iter()
+            .iter()
             .map(|m| MigratedFundsEntry { payload: m.clone() })
             .collect()
     }

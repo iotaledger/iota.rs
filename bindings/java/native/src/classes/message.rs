@@ -1,6 +1,6 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-use std::{cell::RefCell, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 
 use anyhow::anyhow;
 use getset::{CopyGetters, Getters};
@@ -41,7 +41,7 @@ impl MessageWrap {
     }
 
     pub fn message_id(&self) -> MessageId {
-        self.message_id.clone()
+        self.message_id
     }
 }
 
@@ -93,15 +93,12 @@ impl core::fmt::Debug for Message {
 
 impl From<RustMessage> for Message {
     fn from(message: RustMessage) -> Self {
-        let payload: Option<MessagePayload> = match message.payload() {
-            Some(p) => Some(p.clone().into()),
-            None => None,
-        };
+        let payload: Option<MessagePayload> = message.payload().as_ref().map(|p| p.clone().into());
         Self {
             rust_message: message.clone(),
             network_id: message.network_id(),
             parents: message.parents().to_vec(),
-            payload: payload,
+            payload,
             nonce: message.nonce(),
             id: message.id().0,
         }
@@ -114,7 +111,7 @@ impl Message {
     }
 
     pub fn id(&self) -> MessageId {
-        self.id.clone()
+        self.id
     }
 
     pub fn parents(&self) -> Vec<MessageId> {
@@ -126,7 +123,7 @@ impl Message {
     }
 
     pub fn to_inner_clone(self) -> RustMessage {
-        self.rust_message.clone()
+        self.rust_message
     }
 }
 
@@ -320,7 +317,7 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Set indexation to the builder
     pub fn with_index_vec(&self, index: Vec<u8>) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
-        fields.builder = fields.builder.with_index(index.clone());
+        fields.builder = fields.builder.with_index(index);
         ClientMessageBuilder::new_with_fields(fields)
     }
 
@@ -334,7 +331,7 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Set data to the builder
     pub fn with_data(&self, data: Vec<u8>) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
-        fields.builder = fields.builder.with_data(data.clone());
+        fields.builder = fields.builder.with_data(data);
         ClientMessageBuilder::new_with_fields(fields)
     }
 
@@ -371,7 +368,7 @@ impl<'a> ClientMessageBuilder<'a> {
         let second_seed = Some(RustSeed::from_bytes(&hex::decode(seed)?));
 
         let mut range = None;
-        if inputs_range_low != 0 && inputs_range_low != 0 {
+        if inputs_range_low != 0 {
             range = Some(inputs_range_low..inputs_range_high);
         }
 
@@ -522,7 +519,7 @@ pub struct GetMessageBuilder<'a> {
 
 impl<'a> GetMessageBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
-        Self { client: client }
+        Self { client }
     }
 
     pub fn index_string(&self, index: &str) -> Result<Vec<MessageId>> {
@@ -532,7 +529,7 @@ impl<'a> GetMessageBuilder<'a> {
                 .await
         });
         match res {
-            Ok(r) => Ok(r.iter().map(|message_id| message_id.clone().into()).collect()),
+            Ok(r) => Ok(r.to_vec()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
@@ -544,7 +541,7 @@ impl<'a> GetMessageBuilder<'a> {
                 .await
         });
         match res {
-            Ok(r) => Ok(r.iter().map(|message_id| message_id.clone().into()).collect()),
+            Ok(r) => Ok(r.to_vec()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
@@ -584,7 +581,7 @@ impl<'a> GetMessageBuilder<'a> {
                 .await
         });
         match res {
-            Ok(r) => Ok(r.iter().map(|message_id| message_id.clone().into()).collect()),
+            Ok(r) => Ok(r.to_vec()),
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }

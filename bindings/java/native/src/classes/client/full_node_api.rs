@@ -4,6 +4,7 @@
 use anyhow::anyhow;
 
 use std::{
+    borrow::{Borrow, BorrowMut},
     convert::{From, Into},
     str::FromStr,
 };
@@ -31,18 +32,22 @@ impl From<ClientRust> for Client {
 
 pub struct Client(ClientRust);
 
+impl Borrow<ClientRust> for Client {
+    fn borrow(&self) -> &ClientRust {
+        &self.0
+    }
+}
+
+impl BorrowMut<ClientRust> for Client {
+    fn borrow_mut(&mut self) -> &mut ClientRust {
+        &mut self.0
+    }
+}
+
 /// Full node API
 impl Client {
     pub fn builder() -> ClientBuilder {
         ClientBuilder::new()
-    }
-
-    pub fn borrow<'a>(&'a self) -> &'a ClientRust {
-        &self.0
-    }
-
-    pub fn borrow_mut<'a>(&'a mut self) -> &'a mut ClientRust {
-        &mut self.0
     }
 
     pub fn get_health(&self) -> Result<bool> {
@@ -317,7 +322,7 @@ impl Client {
     }
 
     pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
-        let res = crate::block_on(async { self.0.hex_to_bech32(hex, bech32_hrp).await }).into();
+        let res = crate::block_on(async { self.0.hex_to_bech32(hex, bech32_hrp).await });
         match res {
             Ok(s) => Ok(s),
             Err(e) => Err(anyhow!(e.to_string())),

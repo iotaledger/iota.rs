@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Error, Formatter};
 
 use iota_client::bee_message::payload::Payload as RustPayload;
 
@@ -29,18 +30,20 @@ impl From<RustPayload> for MessagePayload {
     }
 }
 
+impl Display for MessagePayload {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{:?}", self.payload)
+    }
+}
+
 impl MessagePayload {
     pub fn deserialize(serialised_data: &str) -> Result<MessagePayload> {
-        let res = serde_json::from_str(&serialised_data);
+        let res = serde_json::from_str(serialised_data);
 
         match res {
             Ok(s) => Ok(s),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
-    }
-
-    pub fn to_string(&self) -> String {
-        format!("{:?}", self.payload)
     }
 
     pub fn serialize(&self) -> Result<String> {
