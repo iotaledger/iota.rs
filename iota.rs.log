@@ -1,0 +1,35 @@
+2022-01-24 14:22:32 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:22:32 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/info
+2022-01-24 14:22:32 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:22:32 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '429 Too Many Requests' for http://localhost:14265/api/plugins/faucet/enqueue
+2022-01-24 14:22:32 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:22:32 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/plugins/indexer/v1/outputs?address=atoi1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vk92ryhu
+2022-01-24 14:22:32 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:22:32 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:22:32 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/a4313c1b6f0e0b740d0cff88198b50ec6dda50d78e0207b676e1d395e4a4b2ad0000
+2022-01-24 14:22:32 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/3e9df3a226c5f0f4bc2427b3c96c326b31aa41b5a21c4cdabda93ef321ca6bfe0000
+2022-01-24 14:22:32 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/2ba33c1df439cdaefbbbf90e8aded5f89fd72c28e771147d1c72455de7b3b7060000
+2022-01-24 14:40:16 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:40:16 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/info
+2022-01-24 14:40:16 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:40:16 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '202 Accepted' for http://localhost:14265/api/plugins/faucet/enqueue
+2022-01-24 14:40:16 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:40:16 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/plugins/indexer/v1/outputs?address=atoi1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vk92ryhu
+2022-01-24 14:40:16 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:40:16 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:40:16 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/2ba33c1df439cdaefbbbf90e8aded5f89fd72c28e771147d1c72455de7b3b7060000
+2022-01-24 14:40:16 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/a4313c1b6f0e0b740d0cff88198b50ec6dda50d78e0207b676e1d395e4a4b2ad0000
+2022-01-24 14:40:16 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/3e9df3a226c5f0f4bc2427b3c96c326b31aa41b5a21c4cdabda93ef321ca6bfe0000
+2022-01-24 14:45:24 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:45:24 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/info
+2022-01-24 14:45:24 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:45:24 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '202 Accepted' for http://localhost:14265/api/plugins/faucet/enqueue
+2022-01-24 14:45:24 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:45:24 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/plugins/indexer/v1/outputs?address=atoi1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vk92ryhu
+2022-01-24 14:45:24 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:45:24 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:45:24 (UTC) reqwest::connect                           [94mDEBUG[0m starting new connection: http://localhost:14265/
+2022-01-24 14:45:24 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/2ba33c1df439cdaefbbbf90e8aded5f89fd72c28e771147d1c72455de7b3b7060000
+2022-01-24 14:45:24 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/a4313c1b6f0e0b740d0cff88198b50ec6dda50d78e0207b676e1d395e4a4b2ad0000
+2022-01-24 14:45:24 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/3e9df3a226c5f0f4bc2427b3c96c326b31aa41b5a21c4cdabda93ef321ca6bfe0000
+2022-01-24 14:45:24 (UTC) reqwest::async_impl::client                [94mDEBUG[0m response '200 OK' for http://localhost:14265/api/v2/outputs/c4f0a66f7948dd11285d90a7a7ae7143b138c5cf43e4468dda4ce75a84eecc360000

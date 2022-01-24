@@ -8,7 +8,7 @@ use iota_client::{
     api::{AddressIndexRecorder as RustAddressIndexRecorder, PreparedTransactionData as RustPreparedTransactionData},
     bee_message::prelude::{
         Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
-        Essence as RustEssence, IndexationPayload as RustIndexationPayload, Input as RustInput, Message as RustMessage,
+        Essence as RustEssence, TaggedPayload as RustTaggedPayload, Input as RustInput, Message as RustMessage,
         MigratedFundsEntry as RustMigratedFundsEntry, MilestonePayloadEssence as RustMilestonePayloadEssence,
         Output as RustOutput, Payload as RustPayload, ReferenceUnlock as RustReferenceUnlock,
         RegularEssence as RustRegularEssence,
@@ -1417,18 +1417,18 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
             builder = builder.add_output(output);
         }
         if let Some(indexation_payload) = &essence.payload {
-            let index = RustIndexationPayload::new(
+            let index = RustTaggedPayload::new(
                 indexation_payload
                     .indexation
                     .as_ref()
-                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {:?}", indexation_payload))[0]
+                    .unwrap_or_else(|| panic!("Invalid TaggedPayload: {:?}", indexation_payload))[0]
                     .index
                     .clone()
                     .as_bytes(),
                 &(indexation_payload
                     .indexation
                     .as_ref()
-                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {:?}", indexation_payload))[0]
+                    .unwrap_or_else(|| panic!("Invalid TaggedPayload: {:?}", indexation_payload))[0]
                     .data)
                     .clone(),
             )
@@ -1487,7 +1487,7 @@ impl TryFrom<Payload> for RustPayload {
 
             Ok(RustPayload::Transaction(Box::new(transaction.finish()?)))
         } else {
-            let indexation = RustIndexationPayload::new(
+            let indexation = RustTaggedPayload::new(
                 (&payload
                     .indexation
                     .as_ref()

@@ -3,8 +3,8 @@
 
 //! Indexer responses
 
-/// Response of GET /api/plugins/indexer/outputs{query parameters: "address", "requiresDustReturn", "sender", "tag"}
-/// Returns the outputs for the provided query parameters.
+/// Response of GET /api/plugins/indexer/v1/outputs
+/// Returns the output_ids for the provided query parameters.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ExtendedOutputsResponse {
     /// The ledger index at which the outputs were collected

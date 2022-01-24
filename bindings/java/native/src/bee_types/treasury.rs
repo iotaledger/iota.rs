@@ -12,7 +12,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::bee_types::{TreasuryInput, TreasuryOutput};
 
-/// Response of GET /api/v1/treasury.
+/// Response of GET /api/v2/treasury.
 /// Returns all information about the treasury.
 #[derive(Clone, Debug, PartialEq, Getters, CopyGetters)]
 pub struct TreasuryResponse {

@@ -14,7 +14,6 @@ async fn addresses() {
         .get_all()
         .await
         .unwrap();
-    println!("{:?}", addresses);
     assert_eq!(
         *addresses.public[0],
         "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string()

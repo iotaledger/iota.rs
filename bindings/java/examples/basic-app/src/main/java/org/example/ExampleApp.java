@@ -274,7 +274,7 @@ public class ExampleApp {
         // Create a client instance
         Client iota = node();
 
-        IndexationPayload indexation_payload = IndexationPayload.fromStrings("Your Index", "Your Data");
+        TaggedPayload indexation_payload = TaggedPayload.fromStrings("Your Index", "Your Data");
 
         Message message = iota.message().finishIndex(indexation_payload);
 

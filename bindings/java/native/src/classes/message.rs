@@ -16,7 +16,7 @@ use iota_client::{
 
 use crate::{
     bee_types::{
-        IndexationPayload, MessageMetadata, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload,
+        TaggedPayload, MessageMetadata, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload,
         UtxoInput,
     },
     full_node_api::Client,
@@ -440,7 +440,7 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
-    pub fn finish_message_index(&self, payload: IndexationPayload) -> Result<Message> {
+    pub fn finish_message_index(&self, payload: TaggedPayload) -> Result<Message> {
         let inner = self.fields.borrow_mut().take().unwrap();
         let payload = Some(Payload::Indexation(Box::new(payload.to_inner())));
         let res = crate::block_on(async {

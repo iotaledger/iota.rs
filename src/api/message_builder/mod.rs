@@ -13,7 +13,7 @@ use bee_message::{
     address::{Address, Ed25519Address},
     input::{Input, UtxoInput},
     output::{ExtendedOutput, Output},
-    payload::{transaction::TransactionId, IndexationPayload, Payload},
+    payload::{transaction::TransactionId, Payload, TaggedDataPayload},
     Message, MessageId,
 };
 #[cfg(not(feature = "wasm"))]
@@ -39,7 +39,7 @@ const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
-    client: &'a Client,
+    client: Client,
     signer: Option<&'a SignerHandle>,
     account_index: Option<u32>,
     initial_address_index: Option<u32>,
@@ -53,7 +53,7 @@ pub struct ClientMessageBuilder<'a> {
 
 impl<'a> ClientMessageBuilder<'a> {
     /// Create message builder
-    pub fn new(client: &'a Client) -> Self {
+    pub fn new(client: Client) -> Self {
         Self {
             client,
             signer: None,
@@ -257,9 +257,9 @@ impl<'a> ClientMessageBuilder<'a> {
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
             // build indexation
-            let index = IndexationPayload::new(index.expect("No indexation tag").to_vec(), data.to_vec())
+            let index = TaggedDataPayload::new(index.expect("No indexation tag").to_vec(), data.to_vec())
                 .map_err(|e| Error::IndexationError(e.to_string()))?;
-            payload = Payload::Indexation(Box::new(index));
+            payload = Payload::TaggedData(Box::new(index));
         }
 
         // building message
@@ -306,7 +306,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 .1
                 .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
-            None => finish_pow(self.client, payload).await?,
+            None => finish_pow(&self.client, payload).await?,
         };
 
         let msg_id = self.client.post_message(&final_message).await?;

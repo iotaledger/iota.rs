@@ -4,7 +4,7 @@
 //! cargo run --example custom_payload --release
 
 use iota_client::{
-    bee_message::payload::{IndexationPayload, Payload},
+    bee_message::payload::{Payload, TaggedPayload},
     Client,
 };
 
@@ -19,7 +19,7 @@ async fn main() {
         .unwrap();
 
     let indexation_payload =
-        IndexationPayload::new("Your Index".as_bytes().to_vec(), "Your Data".as_bytes().to_vec()).unwrap();
+        TaggedPayload::new("Your Index".as_bytes().to_vec(), "Your Data".as_bytes().to_vec()).unwrap();
 
     let message = iota
         .message()

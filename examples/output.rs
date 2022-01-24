@@ -74,11 +74,11 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: http://localhost:14265/api/v1/messages/{}",
+        "Transaction sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
     println!(
-        "Message metadata: http://localhost:14265/api/v1/messages/{}/metadata",
+        "Message metadata: http://localhost:14265/api/v2/messages/{}/metadata",
         message.id()
     );
 

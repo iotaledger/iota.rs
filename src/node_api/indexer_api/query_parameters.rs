@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Query parameters for output requests
+//! Query parameters for output_id requests
 
 use std::{
     collections::HashSet,
@@ -9,9 +9,9 @@ use std::{
     mem,
 };
 
-// https://github.com/gohornet/hornet/blob/bb1271be9f3a638f6acdeb6de74eab64515f27f1/plugins/indexer/routes.go#L54
+// https://github.com/gohornet/hornet/blob/bb1271be9f3a638f6acdeb6de74eab64515f27f1/plugins/indexer/v1/routes.go#L54
 
-/// Query parameters for output requests
+/// Query parameters for output_id requests
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryParameters(pub HashSet<QueryParameter>);
 

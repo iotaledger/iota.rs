@@ -29,6 +29,7 @@ pub struct LedgerSigner {
 
 impl LedgerSigner {
     /// Create a new LedgerSigner SignerHandle
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(simulator: bool) -> SignerHandle {
         let signer_type = if simulator {
             SignerType::LedgerNano

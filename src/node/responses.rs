@@ -3,7 +3,7 @@
 
 //! Indexer responses
 
-/// Response of GET /api/plugins/indexer/outputs{query parameters: "address", "requiresDustReturn", "sender", "tag"}
+/// Response of GET /api/plugins/indexer/v1/outputs{query parameters: "address", "requiresDustReturn", "sender", "tag"}
 /// Returns the outputs for the provided query parameters.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ExtendedOutputsResponse {

@@ -191,20 +191,20 @@ foreign_class!(
         /// GET /health endpoint for the passed node
         fn Client::get_node_health(&self, node: &str) -> Result<bool>;
 
-        /// GET /api/v1/info endpoint
+        /// GET /api/v2/info endpoint
         fn Client::get_info(&self) -> Result<NodeInfoWrapper>; 
         
-        /// GET /api/v1/peers endpoint
+        /// GET /api/v2/peers endpoint
         fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
 
-        /// GET /api/v1/tips endpoint
+        /// GET /api/v2/tips endpoint
         fn Client::get_tips(&self) -> Result<Vec<String>>;
 
-        /// GET /api/v1/outputs/{outputId} endpoint
+        /// GET /api/v2/outputs/{outputId} endpoint
         /// Find an output by its transaction_id and corresponding output_index.
         fn Client::get_output(&self, output_id: String) -> Result<OutputResponse>;
 
-        /// GET /api/plugins/indexer/outputs{query} endpoint
+        /// GET /api/plugins/indexer/v1/outputs{query} endpoint
         fn Client::get_address(&self) -> GetAddressBuilder;
 
         /// Return the balance in iota for the given address; No seed needed to do this
@@ -219,31 +219,31 @@ foreign_class!(
         /// the request amount exceeds individual node limit.
         fn Client::find_outputs(&self, output_ids: Option<Vec<String>>, addresses: Option<Vec<String>>) -> Result<Vec<OutputResponse>>;
         
-        /// GET /api/v1/milestones/{index} endpoint
+        /// GET /api/v2/milestones/{index} endpoint
         /// Get the milestone by the given index.
         fn Client::get_milestone(&self, index: u32) -> Result<MilestoneResponse>;
         
-        /// GET /api/v1/milestones/{index}/utxo-changes endpoint
+        /// GET /api/v2/milestones/{index}/utxo-changes endpoint
         /// Gets the utxo changes by the given milestone index.
         fn Client::get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse>;
 
-        /// GET /api/v1/receipts endpoint
+        /// GET /api/v2/receipts endpoint
         /// Get all receipts.
         fn Client::get_receipts(&self) -> Result<Vec<ReceiptDto>>;
 
-        /// GET /api/v1/receipts/{migratedAt} endpoint
+        /// GET /api/v2/receipts/{migratedAt} endpoint
         /// Get the receipts by the given milestone index.
         fn Client::get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>>;
 
-        /// GET /api/v1/treasury endpoint
+        /// GET /api/v2/treasury endpoint
         /// Get the treasury output.
         fn Client::get_treasury(&self) -> Result<TreasuryResponse>;
         
-        /// GET /api/v1/transactions/{transactionId}/included-message
+        /// GET /api/v2/transactions/{transactionId}/included-message
         /// Returns the included message of the transaction.
         fn Client::get_included_message(&self, transaction_id: TransactionId) -> Result<Message>;
 
-        /// POST /api/v1/messages endpoint
+        /// POST /api/v2/messages endpoint
         fn Client::post_message(&self, msg: Message) -> Result<MessageId>;
 
         /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
@@ -268,7 +268,7 @@ foreign_class!(
         /// A generic send function for easily sending transaction or indexation messages.
         fn Client::message(&self) -> ClientMessageBuilder;
 
-        /// GET /api/v1/messages/{messageId} endpoint
+        /// GET /api/v2/messages/{messageId} endpoint
         fn Client::get_message(&self) -> GetMessageBuilder;
 
         /// Return a list of addresses from the seed regardless of their validity.
@@ -440,7 +440,7 @@ foreign_class!(
 );
 
 foreign_class!(
-    /// Response of GET /api/v1/treasury.
+    /// Response of GET /api/v2/treasury.
     /// Returns all information about the treasury.
     #[derive(PartialEq, camelCaseAliases, Display)]
     class TreasuryResponse {
@@ -776,7 +776,7 @@ foreign_class!(
         /// Consume the builder and return the message made with the specific payload
         fn ClientMessageBuilder::finish_message_milestone(&self, payload: MilestonePayload) -> Result<Message>; alias finishMilestone;
         /// Consume the builder and return the message made with the specific payload
-        fn ClientMessageBuilder::finish_message_index(&self, payload: IndexationPayload) -> Result<Message>; alias finishIndex;
+        fn ClientMessageBuilder::finish_message_index(&self, payload: TaggedPayload) -> Result<Message>; alias finishIndex;
         /// Consume the builder and return the message made with the specific payload
         fn ClientMessageBuilder::finish_message_receipt(&self, payload: ReceiptPayload) -> Result<Message>; alias finishReceipt;
         /// Consume the builder and return the message made with the specific payload
@@ -793,34 +793,34 @@ foreign_class!(
         self_type GetMessageBuilder<'a>;
         private constructor = empty;
         
-        /// GET /api/v1/messages?index={Index} endpoint
+        /// GET /api/v2/messages?index={Index} endpoint
         /// Consume the builder and search for messages matching the index
         fn GetMessageBuilder::index_string(&self, index: &str) -> Result<Vec<MessageId>>;
 
-        /// GET /api/v1/messages?index={Index} endpoint
+        /// GET /api/v2/messages?index={Index} endpoint
         /// Consume the builder and search for messages matching the index
         fn GetMessageBuilder::index_vec(&self, index: Vec<u8>) -> Result<Vec<MessageId>>;
 
-        /// GET /api/v1/messages/{messageID} endpoint
+        /// GET /api/v2/messages/{messageID} endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message object.
         fn GetMessageBuilder::data(&self, message_id: MessageId) -> Result<Message>;
 
-        /// GET /api/v1/messages/{messageID}/metadata endpoint
+        /// GET /api/v2/messages/{messageID}/metadata endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
         fn GetMessageBuilder::metadata(&self, message_id: MessageId) -> Result<MessageMetadata>;
 
-        /// GET /api/v1/messages/{messageID}/raw endpoint
+        /// GET /api/v2/messages/{messageID}/raw endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
         fn GetMessageBuilder::raw(&self, message_id: MessageId) -> Result<String>;
 
-        /// GET /api/v1/messages/{messageID}/children endpoint
+        /// GET /api/v2/messages/{messageID}/children endpoint
         /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
         fn GetMessageBuilder::children(&self, message_id: MessageId) -> Result<Vec<MessageId>>;
     }
 );
 
 foreign_class!(
-    /// Response of GET /api/v1/messages/{message_id}/metadata.
+    /// Response of GET /api/v2/messages/{message_id}/metadata.
     /// Returns the metadata of a message.
     #[derive(camelCaseAliases, Display)]
     class MessageMetadata {
@@ -912,7 +912,7 @@ foreign_class!(
 );
 
 foreign_class!(
-    /// Builder of GET /api/v1/address/{address} endpoint
+    /// Builder of GET /api/v2/address/{address} endpoint
     class GetAddressBuilder {
         self_type GetAddressBuilder<'a>;
         private constructor = empty;
@@ -1173,7 +1173,7 @@ foreign_class!(
         fn MessagePayload::deserialize(serialised_data: &str) -> Result<MessagePayload>;
         /// Get the type of message this contains (used to select the correct getter)
         fn MessagePayload::payload_type(&self) -> MessagePayloadType;
-        fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>;
+        fn MessagePayload::get_as_indexation(&self) -> Option<TaggedPayload>;
         fn MessagePayload::get_as_transaction(&self) -> Option<TransactionPayload>;
         fn MessagePayload::get_as_treasury(&self) -> Option<TreasuryPayload>;
         fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>;
@@ -1186,18 +1186,18 @@ foreign_class!(
 
 foreign_class!(
     #[derive(camelCaseAliases, Display)]
-    class IndexationPayload {
-        self_type IndexationPayload;
+    class TaggedPayload {
+        self_type TaggedPayload;
         private constructor = empty;
-        private fn IndexationPayload::to_string(&self) -> String; alias to_string;
-        /// Creates a new `IndexationPayload`.
-        fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias fromBytes;
-        /// Creates a new `IndexationPayload` from strings
-        fn IndexationPayload::new_from_string(index: &str, data: &str) -> Result<IndexationPayload>; alias fromStrings;
-        /// Returns the index of an `IndexationPayload`.
-        fn IndexationPayload::index(&self) -> &[u8];
-        /// Returns the data of an `IndexationPayload`.
-        fn IndexationPayload::data(&self) -> &[u8];
+        private fn TaggedPayload::to_string(&self) -> String; alias to_string;
+        /// Creates a new `TaggedPayload`.
+        fn TaggedPayload::new(index: &[u8], data: &[u8]) -> Result<TaggedPayload>; alias fromBytes;
+        /// Creates a new `TaggedPayload` from strings
+        fn TaggedPayload::new_from_string(index: &str, data: &str) -> Result<TaggedPayload>; alias fromStrings;
+        /// Returns the index of an `TaggedPayload`.
+        fn TaggedPayload::index(&self) -> &[u8];
+        /// Returns the data of an `TaggedPayload`.
+        fn TaggedPayload::data(&self) -> &[u8];
     }
 );
 

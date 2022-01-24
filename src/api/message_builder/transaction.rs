@@ -15,7 +15,7 @@ use bee_message::{
     output::Output,
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionPayloadBuilder},
-        IndexationPayload, Payload,
+        Payload, TaggedDataPayload,
     },
     unlock_block::UnlockBlocks,
 };
@@ -75,8 +75,8 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     // Add indexation_payload if index set
     if let Some(index) = message_builder.index.clone() {
         let indexation_payload =
-            IndexationPayload::new((&index).to_vec(), message_builder.data.clone().unwrap_or_default())?;
-        essence = essence.with_payload(Payload::Indexation(Box::new(indexation_payload)))
+            TaggedDataPayload::new((&index).to_vec(), message_builder.data.clone().unwrap_or_default())?;
+        essence = essence.with_payload(Payload::TaggedData(Box::new(indexation_payload)))
     }
     let regular_essence = essence.finish()?;
     let essence = TransactionEssence::Regular(regular_essence);

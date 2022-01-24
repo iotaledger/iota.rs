@@ -3,7 +3,7 @@
 
 use iota_client::{
     bee_message::prelude::{
-        Ed25519Signature, Essence, IndexationPayload, Input, MessageId, Output, Payload, ReferenceUnlock,
+        Ed25519Signature, Essence, TaggedPayload, Input, MessageId, Output, Payload, ReferenceUnlock,
         RegularEssence, SignatureUnlock, TransactionPayload, UnlockBlock, UnlockBlocks, UtxoInput,
     },
     bee_rest_api::types::dtos::{MessageDto as BeeMessageDto, OutputDto as BeeOutput},
@@ -123,7 +123,7 @@ pub struct MessageTransactionPayloadDto {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct MessageIndexationPayloadDto {
+pub struct MessageTaggedPayloadDto {
     index: Vec<u8>,
     data: Vec<u8>,
 }
@@ -134,7 +134,7 @@ pub enum MessagePayloadDto {
     /// The transaction payload.
     Transaction(MessageTransactionPayloadDto),
     /// The indexation payload.
-    Indexation(MessageIndexationPayloadDto),
+    Indexation(MessageTaggedPayloadDto),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -163,7 +163,7 @@ impl TryFrom<MessagePayloadDto> for Payload {
                 Ok(Payload::Transaction(Box::new(transaction.finish()?)))
             }
             MessagePayloadDto::Indexation(indexation_payload) => {
-                let indexation = IndexationPayload::new(&indexation_payload.index, &indexation_payload.data)?;
+                let indexation = TaggedPayload::new(&indexation_payload.index, &indexation_payload.data)?;
                 Ok(Payload::Indexation(Box::new(indexation)))
             }
         }

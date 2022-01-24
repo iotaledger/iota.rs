@@ -158,7 +158,7 @@ The [Message] object we build.
 
 ## `get_message()`
 
-(`GET /api/v1/messages`)
+(`GET /api/v2/messages`)
 
 Endpoint collection all about GET messages.
 
@@ -506,7 +506,7 @@ pub struct PeerDto {
 
 ## `get_info()`
 
-(`GET /api/v1/info`)
+(`GET /api/v2/info`)
 
 Returns information about the node.
 

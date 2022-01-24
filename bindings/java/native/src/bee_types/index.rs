@@ -3,30 +3,30 @@
 use crate::Result;
 use anyhow::anyhow;
 
-use iota_client::bee_message::prelude::IndexationPayload as RustIndexationPayload;
+use iota_client::bee_message::prelude::TaggedPayload as RustTaggedPayload;
 
-pub struct IndexationPayload {
-    payload: RustIndexationPayload,
+pub struct TaggedPayload {
+    payload: RustTaggedPayload,
 }
 
-impl IndexationPayload {
-    pub fn to_inner(self) -> RustIndexationPayload {
+impl TaggedPayload {
+    pub fn to_inner(self) -> RustTaggedPayload {
         self.payload
     }
 
-    pub fn new(index: &[u8], data: &[u8]) -> Result<IndexationPayload> {
-        let index = RustIndexationPayload::new(&index, &data);
+    pub fn new(index: &[u8], data: &[u8]) -> Result<TaggedPayload> {
+        let index = RustTaggedPayload::new(&index, &data);
         match index {
             Err(e) => Err(anyhow!(e.to_string())),
-            Ok(i) => Ok(IndexationPayload { payload: i }),
+            Ok(i) => Ok(TaggedPayload { payload: i }),
         }
     }
 
-    pub fn new_from_string(index: &str, data: &str) -> Result<IndexationPayload> {
-        let index = RustIndexationPayload::new(index.as_bytes(), data.as_bytes());
+    pub fn new_from_string(index: &str, data: &str) -> Result<TaggedPayload> {
+        let index = RustTaggedPayload::new(index.as_bytes(), data.as_bytes());
         match index {
             Err(e) => Err(anyhow!(e.to_string())),
-            Ok(i) => Ok(IndexationPayload { payload: i }),
+            Ok(i) => Ok(TaggedPayload { payload: i }),
         }
     }
 
@@ -39,14 +39,14 @@ impl IndexationPayload {
     }
 }
 
-impl core::fmt::Display for IndexationPayload {
+impl core::fmt::Display for TaggedPayload {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "payload={:?}", self.payload)
     }
 }
 
-impl core::fmt::Debug for IndexationPayload {
+impl core::fmt::Debug for TaggedPayload {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "IndexationPayload({})", self)
+        write!(f, "TaggedPayload({})", self)
     }
 }

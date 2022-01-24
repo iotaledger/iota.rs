@@ -11,7 +11,7 @@ export declare interface OutputDto {
 export declare interface TransactionPayloadEssenceDto {
   inputs: InputDto[]
   outputs: OutputDto[]
-  payload?: IndexationPayloadDto
+  payload?: TaggedPayloadDto
 }
 
 export declare interface Ed25519SignatureUnlockBlockDto {
@@ -32,12 +32,12 @@ export declare interface TransactionPayloadDto {
   unlockBlocks: UnlockBlockDto[]
 }
 
-export declare interface IndexationPayloadDto {
+export declare interface TaggedPayloadDto {
   index: string | Uint8Array | number[]
   data?: Uint8Array | number[]
 }
 
-export declare type PayloadDto = TransactionPayloadDto | IndexationPayloadDto
+export declare type PayloadDto = TransactionPayloadDto | TaggedPayloadDto
 
 export declare interface MessageDto {
   parents?: string[]

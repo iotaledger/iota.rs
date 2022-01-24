@@ -83,7 +83,7 @@ impl Client {
         Ok(crate::block_on(async { self.0.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
     }
 
-    /// GET /api/plugins/indexer/outputs{query} endpoint
+    /// GET /api/plugins/indexer/v1/outputs{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder {
         GetAddressBuilder::new(self)
     }
@@ -150,7 +150,7 @@ impl Client {
         Ok(receipts)
     }
 
-    /// GET /api/v1/treasury endpoint
+    /// GET /api/v2/treasury endpoint
     /// Get the treasury output.
     pub fn get_treasury(&self) -> Result<TreasuryResponse> {
         let res = crate::block_on(async { self.0.get_treasury().await });
@@ -224,7 +224,7 @@ impl Client {
         ClientMessageBuilder::new(self)
     }
 
-    /// GET /api/v1/messages/{messageId} endpoint
+    /// GET /api/v2/messages/{messageId} endpoint
     pub fn get_message(&self) -> GetMessageBuilder {
         GetMessageBuilder::new(self)
     }

@@ -342,7 +342,7 @@ impl ClientBuilder {
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
-        let client = Client {
+        let client = InnerClient {
             node_manager: self.node_manager_builder.build(sync),
             #[cfg(not(feature = "wasm"))]
             runtime,
@@ -360,6 +360,6 @@ impl ClientBuilder {
             request_timeout: self.request_timeout,
             api_timeout,
         };
-        Ok(client)
+        Ok(Client::new(client))
     }
 }

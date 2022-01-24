@@ -983,7 +983,7 @@ All fields are optional.
 
 | Field | Type                                                                   | Description  |
 | ----- | ---------------------------------------------------------------------- | ------------ |
-| data  | <code>TransactionPayload \| IndexationPayload \| MilestonePayload \| ReceiptPayload</code> | Payload data |
+| data  | <code>TransactionPayload \| TaggedPayload \| MilestonePayload \| ReceiptPayload</code> | Payload data |
 
 ##### TransactionPayload
 
@@ -1038,7 +1038,7 @@ All fields are optional.
 | type      | <code>number</code>  | Unlock block type identifier                     |
 | reference | <code> number</code> | Represents the index of a previous unlock block. |
 
-##### IndexationPayload
+##### TaggedPayload
 
 | Field | Type                | Description                   |
 | ----- | ------------------- | ----------------------------- |
@@ -1072,7 +1072,7 @@ All fields are optional.
 
 | Field | Type                                                       | Description  |
 | ----- | ---------------------------------------------------------- | ------------ |
-| data  | <code>TransactionPayloadDto \| IndexationPayloadDto</code> | Payload data |
+| data  | <code>TransactionPayloadDto \| TaggedPayloadDto</code> | Payload data |
 
 ##### TransactionPayloadDto
 
@@ -1109,7 +1109,7 @@ All fields are optional.
 | publicKey | <code>number[]</code> | Ed25519 public key |
 | signature | <code>number[]</code> | Ed25519 signature  |
 
-##### IndexationPayloadDto
+##### TaggedPayloadDto
 
 | Field | Type                | Description     |
 | ----- | ------------------- | --------------- |

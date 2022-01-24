@@ -30,18 +30,25 @@ async fn main() -> Result<()> {
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     let address = iota.get_addresses(&signer).with_range(0..1).get_all_raw().await?.public[0];
-    request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/enqueue",
-        &address.to_bech32("atoi"),
-    )
-    .await?;
 
-    let outputs = iota_client::node_api::indexer_api::outputs(
+    println!(
+        "{}",
+        request_funds_from_faucet(
+            "http://localhost:14265/api/plugins/faucet/enqueue",
+            &address.to_bech32("atoi"),
+        )
+        .await?
+    );
+
+    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
         &iota,
         QueryParameters::new(vec![QueryParameter::Address(address.to_bech32("atoi"))]),
     )
     .await?;
-    println!("output ids {:?}", outputs);
+    println!("output ids {:?}", output_ids);
 
+    let outputs = iota_client::node_api::core_api::get_outputs(iota, output_ids).await?;
+
+    println!("outputs {:?}", outputs);
     Ok(())
 }

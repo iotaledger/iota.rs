@@ -936,7 +936,7 @@ All fields are optional.
 
 | Field | Type                                                                                                                                                   | Description  |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
-| data  | `{ type: 'Transaction', data: TransactionPayload }` \| `{ type: 'Indexation', data: IndexationPayload }` \| `{ type: 'Milestone', data: MilestonePayload}` | Payload data |
+| data  | `{ type: 'Transaction', data: TransactionPayload }` \| `{ type: 'Indexation', data: TaggedPayload }` \| `{ type: 'Milestone', data: MilestonePayload}` | Payload data |
 
 ##### TransactionPayload
 
@@ -981,7 +981,7 @@ All fields are optional.
 | public_key | `number[]` | Ed25519 public key |
 | signature  | `number[]` | Ed25519 signature  |
 
-##### IndexationPayload
+##### TaggedPayload
 
 | Field | Type       | Description                   |
 | ----- | ---------- | ----------------------------- |
@@ -1018,7 +1018,7 @@ All fields are optional.
 
 | Field | Type                                            | Description  |
 | ----- | ----------------------------------------------- | ------------ |
-| data  | `TransactionPayloadDto` \| `IndexationPayloadDto` | Payload data |
+| data  | `TransactionPayloadDto` \| `TaggedPayloadDto` | Payload data |
 
 ##### TransactionPayloadDto
 
@@ -1055,7 +1055,7 @@ All fields are optional.
 | publicKey | `number[]` | Ed25519 public key |
 | signature | `number[]` | Ed25519 signature  |
 
-##### IndexationPayloadDto
+##### TaggedPayloadDto
 
 | Field | Type         | Description     |
 | ----- | ------------ | --------------- |

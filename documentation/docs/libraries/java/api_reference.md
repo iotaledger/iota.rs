@@ -255,19 +255,19 @@ GET /health endpoint for a specific node
 
 #### getInfo(): NodeInfoWrapper
 
-GET /api/v1/info endpoint
+GET /api/v2/info endpoint
 
 #### getPeers(): PeerDto[]
 
-GET /api/v1/peers endpoint
+GET /api/v2/peers endpoint
 
 #### getTips(): ClientBuilder
 
-GET /api/v1/tips endpoint
+GET /api/v2/tips endpoint
 
 #### getOutput(output_id): OutputResponse
 
-GET /api/v1/outputs/{outputId} endpoint
+GET /api/v2/outputs/{outputId} endpoint
 Find an output by its transaction_id and corresponding output_index.
 
 | Param | Type       | Description |
@@ -276,7 +276,7 @@ Find an output by its transaction_id and corresponding output_index.
 
 #### getAddress(): GetAddressBuilder
 
-GET /api/plugins/indexer/outputs{query} endpoint
+GET /api/plugins/indexer/v1/outputs{query} endpoint
 Returns a builder ith which to construct the exact needs.
 
 #### getAddressBalance(address): BalanceAddressResponse
@@ -309,7 +309,7 @@ the request amount exceeds individual node limit.
 
 #### getMilestone(index): MilestoneResponse
 
-GET /api/v1/milestones/{index} endpoint
+GET /api/v2/milestones/{index} endpoint
 Get the milestone by the given index.
 
 | Param | Type       | Description |
@@ -318,7 +318,7 @@ Get the milestone by the given index.
 
 #### getMilestoneUtxoChanges(index): MilestoneUtxoChangesResponse
 
-GET /api/v1/milestones/{index}/utxo-changes endpoint
+GET /api/v2/milestones/{index}/utxo-changes endpoint
 Gets the utxo changes by the given milestone index.
 
 | Param | Type       | Description |
@@ -327,12 +327,12 @@ Gets the utxo changes by the given milestone index.
 
 #### getReceipts(): ReceiptDto[]
 
-GET /api/v1/receipts/{migratedAt} endpoint
+GET /api/v2/receipts/{migratedAt} endpoint
 Get the receipts by the given milestone index.
 
 #### getReceiptsMigratedAt(index): MilestoneUtxoChangesResponse
 
-GET /api/v1/receipts/{migratedAt} endpoint
+GET /api/v2/receipts/{migratedAt} endpoint
 Get the receipts by the given milestone index.
 
 | Param | Type       | Description |
@@ -341,12 +341,12 @@ Get the receipts by the given milestone index.
 
 #### getTreasury(): TreasuryResponse[]
 
-GET /api/v1/treasury endpoint
+GET /api/v2/treasury endpoint
 Get the treasury output.
 
 #### getIncludedMessage(transaction_id): Message
 
-GET /api/v1/transactions/{transactionId}/included-message
+GET /api/v2/transactions/{transactionId}/included-message
 Returns the included message of the transaction.
 
 | Param | Type       | Description |
@@ -355,7 +355,7 @@ Returns the included message of the transaction.
 
 #### postMessage(msg): MessageId
 
-POST /api/v1/messages endpoint
+POST /api/v2/messages endpoint
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -411,7 +411,7 @@ A generic send function for easily sending transaction or indexation messages.
 
 #### getMessage(): GetMessageBuilder
 
-GET /api/v1/messages/{messageId} endpoint
+GET /api/v2/messages/{messageId} endpoint
 
 #### getAddresses(seed): GetAddressesBuilder
 
@@ -584,10 +584,10 @@ Consume the builder and return the message made with a MilestonePayload
 
 #### finishIndex(payload): Message
 
-Consume the builder and return the message made with an IndexationPayload
+Consume the builder and return the message made with an TaggedPayload
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
-| payload | `IndexationPayload` | The data |
+| payload | `TaggedPayload` | The data |
 
 #### finishReceipt(payload): Message
 
@@ -613,7 +613,7 @@ Consume the builder and return the message
 
 #### indexString(index): MessageId[]
 
-GET /api/v1/messages?index={Index} endpoint
+GET /api/v2/messages?index={Index} endpoint
 Consume the builder and search for messages matching the index
 
 | Param | Type       | Description |
@@ -622,7 +622,7 @@ Consume the builder and search for messages matching the index
 
 #### indexVec(index): MessageId[]
 
-GET /api/v1/messages?index={Index} endpoint
+GET /api/v2/messages?index={Index} endpoint
 Consume the builder and search for messages matching the index
 
 | Param | Type       | Description |
@@ -631,7 +631,7 @@ Consume the builder and search for messages matching the index
 
 #### data(message_id): Message
 
-GET /api/v1/messages/{messageID} endpoint
+GET /api/v2/messages/{messageID} endpoint
 Consume the builder and find a message by its identifier. This method returns the given message object if it exists.
 
 | Param | Type       | Description |
@@ -640,7 +640,7 @@ Consume the builder and find a message by its identifier. This method returns th
 
 #### metadata(message_id): MessageMetadata
 
-GET /api/v1/messages/{messageID}/metadata endpoint
+GET /api/v2/messages/{messageID}/metadata endpoint
 Consume the builder and find a message by its identifier. This method returns the given message metadata if it exists.
 
 | Param | Type       | Description |
@@ -649,7 +649,7 @@ Consume the builder and find a message by its identifier. This method returns th
 
 #### raw(message_id): String
 
-GET /api/v1/messages/{messageID}/raw endpoint
+GET /api/v2/messages/{messageID}/raw endpoint
 Consume the builder and find a message by its identifier. This method returns the given message raw data if it exists.
 
 | Param | Type       | Description |
@@ -658,7 +658,7 @@ Consume the builder and find a message by its identifier. This method returns th
 
 #### children(message_id): MessageId []
 
-GET /api/v1/messages/{messageID}/children endpoint
+GET /api/v2/messages/{messageID}/children endpoint
 Consume the builder and returns the list of message IDs that reference a message by its identifier if it exists.
 
 | Param | Type       | Description |
@@ -781,7 +781,7 @@ Serializes the message payload into a json string.
 
 Get the type of message this contains (used to select the correct getter). Possible types are TRANSACTION, MILESTONE, INDEXATION, RECEIPT and TREASURY_TRANSACTION.
 
-#### getAsIndexation(): Optional&lt;IndexationPayload&gt;
+#### getAsIndexation(): Optional&lt;TaggedPayload&gt;
 
 Get this Payload as a Indexation payload type
 
@@ -801,11 +801,11 @@ Get this Payload as a MilestonePayload type
 
 Get this Payload as a ReceiptPayload type
 
-### IndexationPayload
+### TaggedPayload
 
 #### fromBytes(index, data): void
 
-Creates a new `IndexationPayload`.
+Creates a new `TaggedPayload`.
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -814,7 +814,7 @@ Creates a new `IndexationPayload`.
 
 #### fromStrings(index, data): void
 
-Creates a new `IndexationPayload` from strings
+Creates a new `TaggedPayload` from strings
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -823,11 +823,11 @@ Creates a new `IndexationPayload` from strings
 
 #### index(): byte []
 
-Returns the index of an `IndexationPayload`.
+Returns the index of an `TaggedPayload`.
 
 #### data(): byte []
 
-Returns the data of an `IndexationPayload`.
+Returns the data of an `TaggedPayload`.
 
 ### TransactionPayload
 

@@ -59,7 +59,7 @@ use std::{
     collections::{HashMap, HashSet},
     convert::TryFrom,
     hash::Hash,
-    ops::Range,
+    ops::{Deref, Range},
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
@@ -196,7 +196,7 @@ impl FromStr for Api {
 
 /// An instance of the client using HORNET or Bee URI
 #[cfg_attr(feature = "wasm", derive(Clone))]
-pub struct Client {
+pub struct InnerClient {
     #[allow(dead_code)]
     #[cfg(not(feature = "wasm"))]
     pub(crate) runtime: Option<Runtime>,
@@ -221,7 +221,7 @@ pub struct Client {
     pub(crate) api_timeout: HashMap<Api, Duration>,
 }
 
-impl std::fmt::Debug for Client {
+impl std::fmt::Debug for InnerClient {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut d = f.debug_struct("Client");
         d.field("node_manager", &self.node_manager);
@@ -231,7 +231,7 @@ impl std::fmt::Debug for Client {
     }
 }
 
-impl Drop for Client {
+impl Drop for InnerClient {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
         #[cfg(not(feature = "wasm"))]
@@ -254,6 +254,26 @@ impl Drop for Client {
             .join()
             .unwrap();
         }
+    }
+}
+
+/// An Arc with the instance of the client using HORNET or Bee URI
+#[derive(Debug, Clone)]
+pub struct Client {
+    inner: Arc<InnerClient>,
+}
+impl Client {
+    /// Create a new client
+    pub fn new(inner_client: InnerClient) -> Self {
+        Self {
+            inner: Arc::new(inner_client),
+        }
+    }
+}
+impl Deref for Client {
+    type Target = InnerClient;
+    fn deref(&self) -> &Self::Target {
+        self.inner.deref()
     }
 }
 
@@ -536,7 +556,7 @@ impl Client {
         }
     }
 
-    /// GET /api/v1/info endpoint
+    /// GET /api/v2/info endpoint
     pub async fn get_node_info(
         url: &str,
         jwt: Option<String>,
@@ -550,7 +570,7 @@ impl Client {
                 .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
         }
 
-        let path = "api/v1/info";
+        let path = "api/v2/info";
         url.set_path(path);
 
         let resp: SuccessBody<NodeInfo> = crate::node_manager::HttpClient::new()
@@ -562,9 +582,9 @@ impl Client {
         Ok(resp.data)
     }
 
-    /// GET /api/v1/info endpoint
+    /// GET /api/v2/info endpoint
     pub async fn get_info(&self) -> Result<NodeInfoWrapper> {
-        let path = "api/v1/info";
+        let path = "api/v2/info";
 
         let resp: NodeInfoWrapper = self
             .node_manager
@@ -574,9 +594,9 @@ impl Client {
         Ok(resp)
     }
 
-    /// GET /api/v1/peers endpoint
+    /// GET /api/v2/peers endpoint
     pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
-        let path = "api/v1/peers";
+        let path = "api/v2/peers";
 
         let resp: SuccessBody<PeersResponse> = self
             .node_manager
@@ -586,9 +606,9 @@ impl Client {
         Ok(resp.data.0)
     }
 
-    /// GET /api/v1/tips endpoint
+    /// GET /api/v2/tips endpoint
     pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
-        let path = "api/v1/tips";
+        let path = "api/v2/tips";
 
         let resp: SuccessBody<TipsResponse> = self
             .node_manager
@@ -604,11 +624,11 @@ impl Client {
         Ok(tips)
     }
 
-    /// POST /api/v1/messages endpoint
+    /// POST /api/v2/messages endpoint
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
-        let path = "api/v1/messages";
+        let path = "api/v2/messages";
         let local_pow = self.get_local_pow().await;
-        println!("{}", serde_json::to_string(&MessageDto::from(message))?);
+        // println!("{}", serde_json::to_string(&MessageDto::from(message))?);
         let timeout = if local_pow {
             self.get_timeout(Api::PostMessage)
         } else {
@@ -689,9 +709,9 @@ impl Client {
         Ok(MessageId::from(message_id_bytes))
     }
 
-    /// POST JSON to /api/v1/messages endpoint
+    /// POST JSON to /api/v2/messages endpoint
     pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
-        let path = "api/v1/messages";
+        let path = "api/v2/messages";
         let local_pow = self.get_local_pow().await;
         let timeout = if local_pow {
             self.get_timeout(Api::PostMessage)
@@ -769,15 +789,15 @@ impl Client {
         Ok(MessageId::from(message_id_bytes))
     }
 
-    /// GET /api/v1/messages/{messageId} endpoint
+    /// GET /api/v2/messages/{messageId} endpoint
     pub fn get_message(&self) -> GetMessageBuilder<'_> {
         GetMessageBuilder::new(self)
     }
 
-    /// GET /api/v1/outputs/{outputId} endpoint
+    /// GET /api/v2/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
     pub async fn get_output(&self, output_id: &UtxoInput) -> Result<OutputResponse> {
-        let path = &format!("api/v1/outputs/{}", output_id.output_id());
+        let path = &format!("api/v2/outputs/{}", output_id.output_id());
 
         let resp: SuccessBody<OutputResponse> = self
             .node_manager
@@ -840,15 +860,15 @@ impl Client {
         Ok(output_metadata)
     }
 
-    /// GET /api/plugins/indexer/outputs{query} endpoint
-    pub fn get_address(&self) -> GetAddressBuilder<'_> {
+    /// GET /api/plugins/indexer/v1/outputs{query} endpoint
+    pub fn get_address(&self) -> GetAddressBuilder {
         GetAddressBuilder::new(self)
     }
 
-    /// GET /api/v1/milestones/{index} endpoint
+    /// GET /api/v2/milestones/{index} endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
-        let path = &format!("api/v1/milestones/{}", index);
+        let path = &format!("api/v2/milestones/{}", index);
 
         let resp: SuccessBody<MilestoneResponseDto> = self
             .node_manager
@@ -865,10 +885,10 @@ impl Client {
         })
     }
 
-    /// GET /api/v1/milestones/{index}/utxo-changes endpoint
+    /// GET /api/v2/milestones/{index}/utxo-changes endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
-        let path = &format!("api/v1/milestones/{}/utxo-changes", index);
+        let path = &format!("api/v2/milestones/{}/utxo-changes", index);
 
         let resp: SuccessBody<MilestoneUTXOChanges> = self
             .node_manager
@@ -878,44 +898,45 @@ impl Client {
         Ok(resp.data)
     }
 
-    /// GET /api/v1/receipts endpoint
+    /// GET /api/v2/receipts endpoint
     /// Get all receipts.
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
-        let path = &"api/v1/receipts";
+        let path = &"api/v2/receipts";
 
         let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
         Ok(resp.data.receipts)
     }
 
-    /// GET /api/v1/receipts/{migratedAt} endpoint
+    /// GET /api/v2/receipts/{migratedAt} endpoint
     /// Get the receipts by the given milestone index.
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
-        let path = &format!("api/v1/receipts/{}", milestone_index);
+        let path = &format!("api/v2/receipts/{}", milestone_index);
 
         let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
         Ok(resp.data.receipts)
     }
 
-    /// GET /api/v1/treasury endpoint
+    /// GET /api/v2/treasury endpoint
     /// Get the treasury output.
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
-        let path = "api/v1/treasury";
+        let path = "api/v2/treasury";
 
         let resp: SuccessBody<TreasuryResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
         Ok(resp.data)
     }
 
-    /// GET /api/v1/transactions/{transactionId}/included-message
+    /// GET /api/v2/transactions/{transactionId}/included-message
     /// Returns the included message of the transaction.
     pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
-        let path = &format!("api/v1/transactions/{}/included-message", transaction_id);
+        let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
 
         let resp: SuccessBody<MessageResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
         Ok(Message::try_from(&resp.data.0)?)
     }
+
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
     pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
@@ -1006,7 +1027,7 @@ impl Client {
 
     /// A generic send function for easily sending transaction or indexation messages.
     pub fn message(&self) -> ClientMessageBuilder<'_> {
-        ClientMessageBuilder::new(self)
+        ClientMessageBuilder::new(self.clone())
     }
 
     /// Return a valid unspent address.

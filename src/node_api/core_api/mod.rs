@@ -1,79 +1,46 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! IOTA node code API
+//! IOTA node core API
 
-// todo
+use crate::{node_api::core_api::routes::get_output, Client, Result};
 
-// https://github.com/gohornet/hornet/blob/stardust-utxo/plugins/restapi/v2/plugin.go
+use bee_message::output::OutputId;
+use bee_rest_api::types::responses::OutputResponse;
 
-// // RouteInfo is the route for getting the node info.
-// // GET returns the node info.
-// RouteInfo = "/info"
+use tokio;
 
-// // RouteTips is the route for getting tips.
-// // GET returns the tips.
-// RouteTips = "/tips"
+pub mod routes;
 
-// // RouteMessageData is the route for getting message data by its messageID.
-// // GET returns message data (json).
-// RouteMessageData = "/messages/:" + restapipkg.ParameterMessageID
+// todo change
+const MAX_PARALLEL_REQUESTS: usize = 5;
 
-// // RouteMessageMetadata is the route for getting message metadata by its messageID.
-// // GET returns message metadata (including info about "promotion/reattachment needed").
-// RouteMessageMetadata = "/messages/:" + restapipkg.ParameterMessageID + "/metadata"
+/// Request outputs by their output id in parallel
+pub async fn get_outputs(client: Client, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
+    let mut outputs = Vec::new();
 
-// // RouteMessageBytes is the route for getting message raw data by it's messageID.
-// // GET returns raw message data (bytes).
-// RouteMessageBytes = "/messages/:" + restapipkg.ParameterMessageID + "/raw"
+    for output_ids_chunk in output_ids
+        .chunks(MAX_PARALLEL_REQUESTS)
+        .map(|x: &[OutputId]| x.to_vec())
+    {
+        let mut tasks = Vec::new();
+        for (_index, output_id) in output_ids_chunk.into_iter().enumerate() {
+            let client_ = client.clone();
 
-// // RouteMessageChildren is the route for getting message IDs of the children of a message, identified by its
-// messageID. // GET returns the message IDs of all children.
-// RouteMessageChildren = "/messages/:" + restapipkg.ParameterMessageID + "/children"
-
-// // RouteMessages is the route for getting message IDs or creating new messages.
-// // POST creates a single new message and returns the new message ID.
-// RouteMessages = "/messages"
-
-// // RouteTransactionsIncludedMessage is the route for getting the message that was included in the ledger for a given
-// transaction ID. // GET returns message data (json).
-// RouteTransactionsIncludedMessage = "/transactions/:" + restapipkg.ParameterTransactionID + "/included-message"
-
-// // RouteMilestone is the route for getting a milestone by it's milestoneIndex.
-// // GET returns the milestone.
-// RouteMilestone = "/milestones/:" + restapipkg.ParameterMilestoneIndex
-
-// // RouteMilestoneUTXOChanges is the route for getting all UTXO changes of a milestone by its milestoneIndex.
-// // GET returns the output IDs of all UTXO changes.
-// RouteMilestoneUTXOChanges = "/milestones/:" + restapipkg.ParameterMilestoneIndex + "/utxo-changes"
-
-// // RouteOutput is the route for getting outputs by their outputID (transactionHash + outputIndex).
-// // GET returns the output.
-// RouteOutput = "/outputs/:" + restapipkg.ParameterOutputID
-
-// // RouteTreasury is the route for getting the current treasury output.
-// RouteTreasury = "/treasury"
-
-// // RouteReceipts is the route for getting all stored receipts.
-// RouteReceipts = "/receipts"
-
-// // RouteReceiptsMigratedAtIndex is the route for getting all receipts for a given migrated at index.
-// RouteReceiptsMigratedAtIndex = "/receipts/:" + restapipkg.ParameterMilestoneIndex
-
-// // RoutePeer is the route for getting peers by their peerID.
-// // GET returns the peer
-// // DELETE deletes the peer.
-// RoutePeer = "/peers/:" + restapipkg.ParameterPeerID
-
-// // RoutePeers is the route for getting all peers of the node.
-// // GET returns a list of all peers.
-// // POST adds a new peer.
-// RoutePeers = "/peers"
-
-// // RouteControlDatabasePrune is the control route to manually prune the database.
-// // POST prunes the database.
-// RouteControlDatabasePrune = "/control/database/prune"
-
-// // RouteControlSnapshotsCreate is the control route to manually create a snapshot files.
-// // POST creates a snapshot (full, delta or both).
-// RouteControlSnapshotsCreate = "/control/snapshots/create"
+            tasks.push(async move {
+                tokio::spawn(async move {
+                    // println!("push {index}");
+                    let output_response = get_output(&client_, &output_id).await?;
+                    // println!("got result {index}");
+                    crate::Result::Ok(output_response)
+                })
+                .await
+            });
+        }
+        for res in futures::future::try_join_all(tasks).await? {
+            let output_response = res?;
+            outputs.push(output_response);
+        }
+    }
+    Ok(outputs)
+}

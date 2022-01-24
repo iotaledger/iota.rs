@@ -46,7 +46,7 @@ export declare interface TransactionPayload {
   unlockBlocks: UnlockBlock[]
 }
 
-export declare interface IndexationPayload {
+export declare interface TaggedPayload {
   type: number // 2
   index: Uint8Array
   data: number[]
@@ -69,7 +69,7 @@ export declare interface MilestonePayload {
   signatures: number[][]
 }
 
-export declare type Payload = TransactionPayload | MilestonePayload | IndexationPayload
+export declare type Payload = TransactionPayload | MilestonePayload | TaggedPayload
 
 export declare interface Message {
   networkId: number

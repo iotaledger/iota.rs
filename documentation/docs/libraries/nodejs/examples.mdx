@@ -233,7 +233,7 @@ IOTA is no longer based on ternary. IOTA 1.5 (Chrysalis) uses binary to encode a
 
 `Payload` represents a layer of concern. Some payloads may change a state of the ledger (ex. `transactions`) and some may provide extra features to some specific applications and business use cases (ex. `indexed data`).
 
-There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `IndexationPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon.
+There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `TaggedPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon.
 
 Needless to say, the IOTA network ensures the outer structure of a message itself is valid and definitely aligned with a network consensus protocol, however the inner structure is very flexible, future-proof, and offers unmatched network extensibility.
 
@@ -242,7 +242,7 @@ Needless to say, the IOTA network ensures the outer structure of a message itsel
 The current IOTA network incorporates the following core payloads:
 * `SignedTransaction`: payload that describes `UTXO` transactions that are the cornerstone of value-based transfers in the IOTA network. Via this payload, `message` can be also cryptographically signed
 * `MilestonePayload`: payload that is emitted by Coordinator
-* `IndexationPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data. The given index can be later used to search the message(s)
+* `TaggedPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data. The given index can be later used to search the message(s)
 
 ### Unspent Transaction Output (UTXO)
 
@@ -428,9 +428,9 @@ Message data:
 * `Client.getMessage().metadata()` provides information on how the given message fits to network structures such as `ledger_inclusion_state`, etc.
 * `Client.getMessage().data()` provides all data that relates to the given message and its payload(s)
 
-### IndexationPayload
+### TaggedPayload
 
-`IndexationPayload` is a payload type that can be used to attach an arbitrary `data` and key `index` to a message. At least `index` should be provided in order to send the given payload. Data part (as `bytes[]`) is optional one:
+`TaggedPayload` is a payload type that can be used to attach an arbitrary `data` and key `index` to a message. At least `index` should be provided in order to send the given payload. Data part (as `bytes[]`) is optional one:
 
 <CodeBlock className="language-javascript">
   {data_message}
@@ -549,7 +549,7 @@ Each `transaction` includes the following set of information:
 * `inputs`: list of valid `outputs` that should be used to fund the given message. Those `outputs` will be spent and once the message is confirmed, those outputs are not valid anymore. Outputs are uniquely referenced via `transaction_id` and inner `index`. At least one output has to be given with enough balance to source all `outputs` of the given message
 * `outputs`: list of IOTA address(es) and related amount(s) that the input `outputs` should be split among. Based on this information, new `UTXO` entities (outputs) are being created
 * `unlock_blocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only the valid seed owner is able to correctly sign the given transaction and proof the ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblockBlocks` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to the existing signature
-* `payload`: each `SignedTransaction`(payload type 0) can include additional payload(s) such as `IndexationPayload` (payload type 1), etc. Meaning, any value-based messages can also contain arbitrary data and its key index. It is also an example how individual payloads can be encapsulated on different levels of concern
+* `payload`: each `SignedTransaction`(payload type 0) can include additional payload(s) such as `TaggedPayload` (payload type 1), etc. Meaning, any value-based messages can also contain arbitrary data and its key index. It is also an example how individual payloads can be encapsulated on different levels of concern
 
 Sending value-based messages is also a very straightforward process via the `MessageSender` helper class.
 

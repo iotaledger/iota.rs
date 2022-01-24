@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use iota_client::bee_message::payload::Payload as RustPayload;
 
 use crate::{
-    bee_types::{IndexationPayload, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload},
+    bee_types::{TaggedPayload, MilestonePayload, ReceiptPayload, TransactionPayload, TreasuryPayload},
     Result,
 };
 
@@ -66,9 +66,9 @@ impl MessagePayload {
         }
     }
 
-    pub fn get_as_indexation(&self) -> Option<IndexationPayload> {
+    pub fn get_as_indexation(&self) -> Option<TaggedPayload> {
         if let RustPayload::Indexation(index) = &self.payload {
-            match IndexationPayload::new(index.index(), index.data()) {
+            match TaggedPayload::new(index.index(), index.data()) {
                 Ok(i) => Some(i),
                 Err(_) => None,
             }

@@ -95,11 +95,11 @@ impl NodeManager {
               Regex::new(r"milestones/[0-9]").expect("regex failed"),
             ].to_vec() => Vec<Regex>
         );
-        if permanode_regexes.iter().any(|re| re.is_match(path)) || (path == "api/v1/messages" && query.is_some()) {
+        if permanode_regexes.iter().any(|re| re.is_match(path)) || (path == "api/v2/messages" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
-                // remove api/v1/ since permanodes can have custom keyspaces
+                // remove api/v2/ since permanodes can have custom keyspaces
                 // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
-                let path = &path["api/v1/".len()..];
+                let path = &path["api/v2/".len()..];
                 for mut permanode in permanodes {
                     permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
                     permanode.url.set_query(query);
@@ -217,7 +217,7 @@ impl NodeManager {
                             match status {
                                 200 => {
                                     // Handle nodeinfo extra because we also want to return the url
-                                    if path == "api/v1/info" {
+                                    if path == "api/v2/info" {
                                         if let Ok(nodeinfo) =
                                             serde_json::from_str::<SuccessBody<InfoResponse>>(&res_text)
                                         {
@@ -287,7 +287,7 @@ impl NodeManager {
             Err(Error::QuorumThresholdError(res.1, self.quorum_size))
         }
     }
-    // Only used for api/v1/messages/{messageID}/raw, that's why we don't need the quorum stuff
+    // Only used for api/v2/messages/{messageID}/raw, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false).await?;

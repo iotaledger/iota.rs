@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Message sent: http://localhost:14265/api/v1/messages/{}", message.id());
+    println!("Message sent: http://localhost:14265/api/v2/messages/{}", message.id());
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
     // todo create second transaction with the actual NFT (BLAKE2b-160 hash of the Output ID that created the NFT)
 

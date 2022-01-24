@@ -70,7 +70,7 @@ impl Client {
     BalanceGetter::new(self.clone(), seed)
   }
 
-  /// GET /api/plugins/indexer/outputs{query} endpoint
+  /// GET /api/plugins/indexer/v1/outputs{query} endpoint
   #[wasm_bindgen(js_name = getAddress)]
   pub fn get_address(&self) -> GetAddressBuilder {
     GetAddressBuilder::new(self.clone())
@@ -198,7 +198,7 @@ impl Client {
     }))
   }
 
-  /// GET /api/v1/outputs/{outputId} endpoint
+  /// GET /api/v2/outputs/{outputId} endpoint
   /// Find an output by its transaction_id and corresponding output_index.
   #[wasm_bindgen(js_name = getOutput)]
   pub fn get_output(&self, output_id: &str) -> Result<Promise, JsValue> {
@@ -381,7 +381,7 @@ impl Client {
     }))
   }
 
-  /// GET /api/v1/milestones/{index} endpoint
+  /// GET /api/v2/milestones/{index} endpoint
   /// Get the milestone by the given index.
   #[wasm_bindgen(js_name = getMilestone)]
   pub fn get_milestone(&self, index: u32) -> Result<Promise, JsValue> {
@@ -395,7 +395,7 @@ impl Client {
     }))
   }
 
-  /// GET /api/v1/milestones/{index}/utxo-changes endpoint
+  /// GET /api/v2/milestones/{index}/utxo-changes endpoint
   /// Get the milestone by the given index.
   #[wasm_bindgen(js_name = getMilestoneUtxoChanges)]
   pub fn get_milestone_utxo_changes(&self, index: u32) -> Result<Promise, JsValue> {
@@ -409,7 +409,7 @@ impl Client {
     }))
   }
 
-  /// GET /api/v1/receipts endpoint
+  /// GET /api/v2/receipts endpoint
   /// Get all receipts.
   #[wasm_bindgen(js_name = getReceipts)]
   pub fn get_receipts(&self) -> Result<Promise, JsValue> {
@@ -423,7 +423,7 @@ impl Client {
     }))
   }
 
-  /// GET /api/v1/receipts/{migratedAt} endpoint
+  /// GET /api/v2/receipts/{migratedAt} endpoint
   /// Get the receipts by the given milestone index.
   #[wasm_bindgen(js_name = getReceiptsMigratedAt)]
   pub fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Promise, JsValue> {
@@ -437,7 +437,7 @@ impl Client {
     }))
   }
 
-  /// GET /api/v1/treasury endpoint
+  /// GET /api/v2/treasury endpoint
   /// Get the treasury output.
   #[wasm_bindgen(js_name = getTreasury)]
   pub fn get_treasury(&self) -> Result<Promise, JsValue> {
@@ -451,7 +451,7 @@ impl Client {
     }))
   }
 
-  /// GET /api/v1/transactions/{transactionId}/included-message
+  /// GET /api/v2/transactions/{transactionId}/included-message
   /// Returns the included message of the transaction.
   #[wasm_bindgen(js_name = getIncludedMessage)]
   pub fn get_included_message(&self, transaction_id: &str) -> Result<Promise, JsValue> {

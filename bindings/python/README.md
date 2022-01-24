@@ -93,7 +93,7 @@ def main():
     message_id = client.message(
         seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['message_id']
     print(f'Token sent with message_id: {message_id}')
-    print(f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id}')
+    print(f'Please check http://127.0.0.1:14265/api/v2/messages/{message_id}')
 
     print(f'get_message_metadata() for message_id {message_id}')
     message_metadata = client.get_message_metadata(message_id)
@@ -107,7 +107,7 @@ def main():
     message_raw = client.get_message_raw(message_id)
     print(f"raw_data = {message_raw.encode('utf-8')}")
     print(
-        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v1/messages/{message_id}/raw")
+        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v2/messages/{message_id}/raw")
     print(', which is not utf-8 format. The utf-8 format here is just for ease of demonstration')
 
     print(f'get_message_children() for message_id {message_id}')
@@ -119,7 +119,7 @@ def main():
         index="Hello", data=[84, 97, 110, 103, 108, 101])
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
-        f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id_indexation}')
+        f'Please check http://127.0.0.1:14265/api/v2/messages/{message_id_indexation}')
 
     # Note that in rust we need to specify the parameter type explicitly, so if the user wants
     # to use the utf-8 string as the data, then the `data_str` field can be used.
@@ -128,7 +128,7 @@ def main():
         index="Hi", data_str="Tangle")
     print(f'Indexation sent with message_id: {message_id_indexation}')
     print(
-        f'Please check http://127.0.0.1:14265/api/v1/messages/{message_id_indexation}')
+        f'Please check http://127.0.0.1:14265/api/v2/messages/{message_id_indexation}')
 
     print(f"get_message_index() for index 'Hello'")
     message_id_indexation_queried = client.get_message_index("Hello")

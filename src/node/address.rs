@@ -52,15 +52,15 @@ impl OutputsOptions {
     }
 }
 
-/// Builder of GET /api/v1/address/{address} endpoint
-pub struct GetAddressBuilder<'a> {
-    client: &'a Client,
+/// Builder of GET /api/v2/address/{address} endpoint
+pub struct GetAddressBuilder {
+    client: Client,
 }
 
-impl<'a> GetAddressBuilder<'a> {
-    /// Create GET /api/v1/address/{address} endpoint builder
-    pub fn new(client: &'a Client) -> Self {
-        Self { client }
+impl GetAddressBuilder {
+    /// Create GET /api/v2/address/{address} endpoint builder
+    pub fn new(client: &Client) -> Self {
+        Self { client: client.clone() }
     }
 
     /// Consume the builder and get the balance of a given Bech32 encoded address.
@@ -96,7 +96,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn outputs(self, options: OutputsOptions) -> Result<Vec<OutputResponse>> {
-        let path = "api/plugins/indexer/outputs";
+        let path = "api/plugins/indexer/v1/outputs";
 
         let outputs_response: ExtendedOutputsResponse = self
             .client
@@ -107,7 +107,6 @@ impl<'a> GetAddressBuilder<'a> {
                 self.client.get_timeout(Api::GetOutput),
             )
             .await?;
-        println!("{:?}", outputs_response);
         // todo pagination
         let output_ids = outputs_response
             .data
@@ -140,7 +139,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
     /// reasons. User should sweep the address to reduce the amount of outputs.
     pub async fn output_ids(self, options: OutputsOptions) -> Result<Box<[OutputId]>> {
-        let path = "api/plugins/indexer/outputs";
+        let path = "api/plugins/indexer/v1/outputs";
 
         let outputs_response: ExtendedOutputsResponse = self
             .client
