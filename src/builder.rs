@@ -13,16 +13,16 @@ use tokio::{runtime::Runtime, sync::broadcast::channel};
 use std::collections::HashSet;
 
 use std::{
-    collections::HashMap,
     sync::{Arc, RwLock},
     time::Duration,
 };
 
 const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
-pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(10);
+pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(15);
 #[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
-/// Interval in seconds when new tips will be requested during PoW
+/// Interval in seconds when new tips will be requested during PoW, so the final message always will be attached to a
+/// new part of the Tangle
 pub const TIPS_INTERVAL: u64 = 15;
 const DEFAULT_MIN_POW: f64 = 4000f64;
 const DEFAULT_BECH32_HRP: &str = "iota";
@@ -61,8 +61,9 @@ pub struct ClientBuilder {
     broker_options: BrokerOptions,
     pub(crate) network_info: NetworkInfo,
     request_timeout: Duration,
-    api_timeout: HashMap<Api, Duration>,
+    remote_pow_timeout: Duration,
     offline: bool,
+    pow_worker_count: Option<usize>,
 }
 
 impl Default for NetworkInfo {
@@ -93,8 +94,9 @@ impl Default for ClientBuilder {
             broker_options: Default::default(),
             network_info: NetworkInfo::default(),
             request_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
-            api_timeout: Default::default(),
+            remote_pow_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
             offline: false,
+            pow_worker_count: None,
         }
     }
 }
@@ -236,6 +238,12 @@ impl ClientBuilder {
         self
     }
 
+    /// Sets the amount of workers that should be used for PoW, default is num_cpus::get().
+    pub fn with_pow_worker_count(mut self, worker_count: usize) -> Self {
+        self.pow_worker_count.replace(worker_count);
+        self
+    }
+
     /// Sets after how many seconds new tips will be requested during PoW
     pub fn with_tips_interval(mut self, tips_interval: u64) -> Self {
         self.network_info.tips_interval = tips_interval;
@@ -248,9 +256,9 @@ impl ClientBuilder {
         self
     }
 
-    /// Sets the request timeout for a specific API usage.
-    pub fn with_api_timeout(mut self, api: Api, timeout: Duration) -> Self {
-        self.api_timeout.insert(api, timeout);
+    /// Sets the request timeout for API usage.
+    pub fn with_remote_pow_timeout(mut self, timeout: Duration) -> Self {
+        self.remote_pow_timeout = timeout;
         self
     }
 
@@ -296,50 +304,6 @@ impl ClientBuilder {
             (None, Arc::new(RwLock::new(nodes)), None, network_info)
         };
 
-        let mut api_timeout = HashMap::new();
-        api_timeout.insert(
-            Api::GetInfo,
-            self.api_timeout.remove(&Api::GetInfo).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::GetPeers,
-            self.api_timeout.remove(&Api::GetPeers).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::GetHealth,
-            self.api_timeout.remove(&Api::GetHealth).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::GetMilestone,
-            self.api_timeout.remove(&Api::GetMilestone).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::GetBalance,
-            self.api_timeout.remove(&Api::GetBalance).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::GetMessage,
-            self.api_timeout.remove(&Api::GetMessage).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::GetTips,
-            self.api_timeout.remove(&Api::GetTips).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::PostMessage,
-            self.api_timeout.remove(&Api::PostMessage).unwrap_or(GET_API_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::PostMessageWithRemotePow,
-            self.api_timeout
-                .remove(&Api::PostMessageWithRemotePow)
-                .unwrap_or(DEFAULT_REMOTE_POW_TIMEOUT),
-        );
-        api_timeout.insert(
-            Api::GetOutput,
-            self.api_timeout.remove(&Api::GetOutput).unwrap_or(GET_API_TIMEOUT),
-        );
-
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
         let client = InnerClient {
@@ -358,7 +322,8 @@ impl ClientBuilder {
             mqtt_event_channel: (Arc::new(mqtt_event_tx), mqtt_event_rx),
             network_info,
             request_timeout: self.request_timeout,
-            api_timeout,
+            remote_pow_timeout: self.remote_pow_timeout,
+            pow_worker_count: self.pow_worker_count,
         };
         Ok(Client::new(client))
     }

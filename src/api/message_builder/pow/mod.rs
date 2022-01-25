@@ -3,7 +3,10 @@
 
 //! PoW functions
 
-use crate::{Client, ClientMiner, Error, Result};
+use crate::{
+    api::miner::{ClientMiner, ClientMinerBuilder},
+    Client, Error, Result,
+};
 
 #[cfg(feature = "wasm")]
 use bee_message::payload::OptionalPayload;
@@ -14,10 +17,13 @@ use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
 use packable::Packable;
 use packable::PackableExt;
 
+pub mod miner;
+
 /// Does PoW with always new tips
 #[cfg(not(feature = "wasm"))]
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let local_pow = client.get_local_pow().await;
+    let pow_worker_count = client.inner.pow_worker_count;
     let min_pow_score = client.get_min_pow_score().await?;
     let tips_interval = client.get_tips_interval().await;
     let network_id = client.get_network_id().await?;
@@ -30,11 +36,14 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         parent_messages.dedup();
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
+            let mut client_miner = ClientMinerBuilder::new()
+                .with_local_pow(local_pow)
+                .with_cancel(cancel_2);
+            if let Some(worker_count) = pow_worker_count {
+                client_miner = client_miner.with_worker_count(worker_count);
+            }
             do_pow(
-                crate::client::ClientMinerBuilder::new()
-                    .with_local_pow(local_pow)
-                    .with_cancel(cancel_2)
-                    .finish(),
+                client_miner.finish(),
                 min_pow_score,
                 network_id,
                 payload_,

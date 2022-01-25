@@ -4,7 +4,10 @@
 #[cfg(not(feature = "wasm"))]
 use crate::api::{do_pow, pow::finish_pow};
 use crate::{
-    api::types::{AddressIndexRecorder, PreparedTransactionData},
+    api::{
+        miner::ClientMinerBuilder,
+        types::{AddressIndexRecorder, PreparedTransactionData},
+    },
     signing::SignerHandle,
     Client, Error, Result,
 };
@@ -302,17 +305,13 @@ impl<'a> ClientMessageBuilder<'a> {
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let network_id = self.client.get_network_id().await?;
-                do_pow(
-                    crate::client::ClientMinerBuilder::new()
-                        .with_local_pow(self.client.get_local_pow().await)
-                        .finish(),
-                    min_pow_score,
-                    network_id,
-                    payload,
-                    parents,
-                )?
-                .1
-                .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
+                let mut client_miner = ClientMinerBuilder::new().with_local_pow(self.client.get_local_pow().await);
+                if let Some(worker_count) = self.client.inner.pow_worker_count {
+                    client_miner = client_miner.with_worker_count(worker_count);
+                }
+                do_pow(client_miner.finish(), min_pow_score, network_id, payload, parents)?
+                    .1
+                    .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
             None => finish_pow(&self.client, payload).await?,
         };

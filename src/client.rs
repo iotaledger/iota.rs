@@ -6,7 +6,10 @@
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerMap};
 
 use crate::{
-    api::*,
+    api::{
+        miner::{ClientMiner, ClientMinerBuilder},
+        *,
+    },
     builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
     error::*,
     node::*,
@@ -26,16 +29,12 @@ use bee_message::{
     payload::{transaction::TransactionId, Payload},
     Message, MessageBuilder, MessageId,
 };
-use bee_pow::providers::{
-    miner::{MinerBuilder, MinerCancel},
-    NonceProvider, NonceProviderBuilder,
-};
+use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{
     body::SuccessBody,
-    dtos::{LedgerInclusionStateDto, MessageDto, PeerDto, ReceiptDto},
+    dtos::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
     responses::{
-        BalanceAddressResponse, InfoResponse as NodeInfo, MessageResponse, MilestoneResponse as MilestoneResponseDto,
-        OutputResponse, PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse,
+        BalanceAddressResponse, InfoResponse as NodeInfo, MilestoneResponse, OutputResponse, TreasuryResponse,
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
@@ -57,16 +56,11 @@ use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
-    convert::TryFrom,
-    hash::Hash,
     ops::{Deref, Range},
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
 };
-
-const RESPONSE_MAX_OUTPUTS: usize = 1000;
-const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)
 #[derive(Debug, Serialize, Deserialize)]
@@ -75,123 +69,6 @@ pub struct NodeInfoWrapper {
     pub nodeinfo: NodeInfo,
     /// The url from the node which returned the nodeinfo
     pub url: String,
-}
-
-#[derive(Debug, Serialize, Clone, Copy)]
-/// Milestone data.
-pub struct MilestoneResponse {
-    /// Milestone index.
-    pub index: u32,
-    /// Milestone message id.
-    #[serde(rename = "messageId")]
-    pub message_id: MessageId,
-    /// Milestone timestamp.
-    pub timestamp: u64,
-}
-
-/// The miner builder.
-#[derive(Default)]
-pub struct ClientMinerBuilder {
-    local_pow: bool,
-    cancel: MinerCancel,
-}
-
-impl ClientMinerBuilder {
-    /// Sets the local PoW config
-    pub fn with_local_pow(mut self, value: bool) -> Self {
-        self.local_pow = value;
-        self
-    }
-    /// Set cancel miner
-    pub fn with_cancel(mut self, cancel: MinerCancel) -> Self {
-        self.cancel = cancel;
-        self
-    }
-}
-
-impl NonceProviderBuilder for ClientMinerBuilder {
-    type Provider = ClientMiner;
-
-    fn new() -> Self {
-        Self::default()
-    }
-
-    fn finish(self) -> ClientMiner {
-        ClientMiner {
-            local_pow: self.local_pow,
-            cancel: self.cancel,
-        }
-    }
-}
-
-/// The miner used for PoW
-pub struct ClientMiner {
-    local_pow: bool,
-    cancel: MinerCancel,
-}
-
-impl NonceProvider for ClientMiner {
-    type Builder = ClientMinerBuilder;
-    type Error = crate::Error;
-
-    fn nonce(&self, bytes: &[u8], target_score: f64) -> std::result::Result<u64, Self::Error> {
-        if self.local_pow {
-            MinerBuilder::new()
-                .with_num_workers(num_cpus::get())
-                .with_cancel(self.cancel.clone())
-                .finish()
-                .nonce(bytes, target_score)
-                .map_err(|e| crate::Error::Pow(e.to_string()))
-        } else {
-            Ok(0)
-        }
-    }
-}
-
-/// Each of the node APIs the client uses.
-#[derive(Clone, Eq, PartialEq, Hash)]
-pub enum Api {
-    /// `get_health` API
-    GetHealth,
-    /// `get_info`API
-    GetInfo,
-    /// `get_peers`API
-    GetPeers,
-    /// `get_tips` API
-    GetTips,
-    /// `post_message` API
-    PostMessage,
-    /// `post_message` API with remote pow
-    PostMessageWithRemotePow,
-    /// `get_output` API
-    GetOutput,
-    /// `get_milestone` API
-    GetMilestone,
-    /// `get_message` API
-    GetMessage,
-    /// `get_balance` API
-    GetBalance,
-}
-
-impl FromStr for Api {
-    type Err = String;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let t = match s {
-            "GetHealth" => Self::GetHealth,
-            "GetInfo" => Self::GetInfo,
-            "GetPeers" => Self::GetPeers,
-            "GetTips" => Self::GetTips,
-            "PostMessage" => Self::PostMessage,
-            "PostMessageWithRemotePow" => Self::PostMessageWithRemotePow,
-            "GetOutput" => Self::GetOutput,
-            "GetMilestone" => Self::GetMilestone,
-            "GetMessage" => Self::GetMessage,
-            "GetBalance" => Self::GetBalance,
-            _ => return Err(format!("unknown api kind `{}`", s)),
-        };
-        Ok(t)
-    }
 }
 
 /// An instance of the client using HORNET or Bee URI
@@ -217,8 +94,10 @@ pub struct InnerClient {
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
     pub(crate) request_timeout: Duration,
-    /// HTTP request timeout for each API call.
-    pub(crate) api_timeout: HashMap<Api, Duration>,
+    /// HTTP request timeout for remote PoW API call.
+    pub(crate) remote_pow_timeout: Duration,
+    /// pow_worker_count for local PoW.
+    pub(crate) pow_worker_count: Option<usize>,
 }
 
 impl std::fmt::Debug for InnerClient {
@@ -260,7 +139,7 @@ impl Drop for InnerClient {
 /// An Arc with the instance of the client using HORNET or Bee URI
 #[derive(Debug, Clone)]
 pub struct Client {
-    inner: Arc<InnerClient>,
+    pub(crate) inner: Arc<InnerClient>,
 }
 impl Client {
     /// Create a new client
@@ -476,7 +355,7 @@ impl Client {
 
         for output_id in available_outputs.into_iter() {
             let utxo_input = UtxoInput::from(output_id);
-            let output_data = self.get_output(&utxo_input).await?;
+            let output_data = self.get_output(utxo_input.output_id()).await?;
             let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_data.output)?;
             extended_outputs.push((utxo_input, amount));
         }
@@ -491,16 +370,14 @@ impl Client {
             .enumerate()
         {
             // Break if we have enough funds and don't create dust for the remainder
-            if total_already_spent == amount || total_already_spent >= amount + DUST_THRESHOLD {
+            if total_already_spent == amount || total_already_spent >= amount {
                 break;
             }
             selected_inputs.push(output_wrapper.0.clone());
             total_already_spent += output_wrapper.1;
         }
 
-        if total_already_spent < amount
-            || (total_already_spent != amount && total_already_spent < amount + DUST_THRESHOLD)
-        {
+        if total_already_spent < amount {
             return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
         }
 
@@ -527,8 +404,11 @@ impl Client {
     // Node API
     //////////////////////////////////////////////////////////////////////
 
-    pub(crate) fn get_timeout(&self, api: Api) -> Duration {
-        *self.api_timeout.get(&api).unwrap_or(&self.request_timeout)
+    pub(crate) fn get_timeout(&self) -> Duration {
+        self.request_timeout
+    }
+    pub(crate) fn get_remote_pow_timeout(&self) -> Duration {
+        self.remote_pow_timeout
     }
 
     /// GET /health endpoint
@@ -556,6 +436,7 @@ impl Client {
         }
     }
 
+    // todo: only used during syncing, can it be replaced with the other node info function?
     /// GET /api/v2/info endpoint
     pub async fn get_node_info(
         url: &str,
@@ -582,211 +463,30 @@ impl Client {
         Ok(resp.data)
     }
 
+    /// Returns the node information together with the url of the used node
     /// GET /api/v2/info endpoint
     pub async fn get_info(&self) -> Result<NodeInfoWrapper> {
-        let path = "api/v2/info";
-
-        let resp: NodeInfoWrapper = self
-            .node_manager
-            .get_request(path, None, self.get_timeout(Api::GetInfo))
-            .await?;
-
-        Ok(resp)
+        crate::node_api::core_api::routes::get_info(self).await
     }
 
     /// GET /api/v2/peers endpoint
     pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
-        let path = "api/v2/peers";
-
-        let resp: SuccessBody<PeersResponse> = self
-            .node_manager
-            .get_request(path, None, self.get_timeout(Api::GetPeers))
-            .await?;
-
-        Ok(resp.data.0)
+        crate::node_api::core_api::routes::get_peers(self).await
     }
 
     /// GET /api/v2/tips endpoint
     pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
-        let path = "api/v2/tips";
-
-        let resp: SuccessBody<TipsResponse> = self
-            .node_manager
-            .get_request(path, None, self.get_timeout(Api::GetTips))
-            .await?;
-
-        let mut tips = Vec::new();
-        for tip in resp.data.tip_message_ids {
-            let mut new_tip = [0u8; 32];
-            hex::decode_to_slice(tip, &mut new_tip)?;
-            tips.push(MessageId::from(new_tip));
-        }
-        Ok(tips)
+        crate::node_api::core_api::routes::get_tips(self).await
     }
 
     /// POST /api/v2/messages endpoint
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
-        let path = "api/v2/messages";
-        let local_pow = self.get_local_pow().await;
-        // println!("{}", serde_json::to_string(&MessageDto::from(message))?);
-        let timeout = if local_pow {
-            self.get_timeout(Api::PostMessage)
-        } else {
-            self.get_timeout(Api::PostMessageWithRemotePow)
-        };
-
-        #[cfg(not(feature = "pow-fallback"))]
-        let resp: SuccessBody<SubmitMessageResponse> = self
-            .node_manager
-            .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
-            .await?;
-
-        #[cfg(feature = "pow-fallback")]
-        // fallback to local PoW if remote PoW fails
-        let resp: SuccessBody<SubmitMessageResponse> = match self
-            .node_manager
-            .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
-            .await
-        {
-            Ok(res) => res,
-            Err(e) => {
-                if let Error::NodeError(e) = e {
-                    // hornet and bee return different error messages
-                    if e == *"No available nodes with remote PoW"
-                        || e.contains("proof of work is not enabled")
-                        || e.contains("`PoW` not enabled")
-                    {
-                        let mut client_network_info =
-                            self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                        // switch to local PoW
-                        client_network_info.local_pow = true;
-                        drop(client_network_info);
-                        #[cfg(not(feature = "wasm"))]
-                        let msg_res = crate::api::finish_pow(self, message.payload().clone()).await;
-                        #[cfg(feature = "wasm")]
-                        let msg_res = {
-                            let min_pow_score = self.get_min_pow_score().await?;
-                            let network_id = self.get_network_id().await?;
-                            crate::api::finish_single_thread_pow(
-                                self,
-                                network_id,
-                                None,
-                                message.payload().cloned(),
-                                min_pow_score,
-                            )
-                            .await
-                        };
-                        let message_with_local_pow = match msg_res {
-                            Ok(msg) => {
-                                // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
-                                msg
-                            }
-                            Err(e) => {
-                                // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
-                                return Err(e);
-                            }
-                        };
-                        self.node_manager
-                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_to_vec(), true)
-                            .await?
-                    } else {
-                        return Err(Error::NodeError(e));
-                    }
-                } else {
-                    return Err(e);
-                }
-            }
-        };
-
-        let mut message_id_bytes = [0u8; 32];
-        hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
-        Ok(MessageId::from(message_id_bytes))
+        crate::node_api::core_api::routes::post_message(self, message).await
     }
 
     /// POST JSON to /api/v2/messages endpoint
     pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
-        let path = "api/v2/messages";
-        let local_pow = self.get_local_pow().await;
-        let timeout = if local_pow {
-            self.get_timeout(Api::PostMessage)
-        } else {
-            self.get_timeout(Api::PostMessageWithRemotePow)
-        };
-        let message_dto = MessageDto::from(message);
-
-        // fallback to local PoW if remote PoW fails
-        let resp: SuccessBody<SubmitMessageResponse> = match self
-            .node_manager
-            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, local_pow)
-            .await
-        {
-            Ok(res) => res,
-            Err(e) => {
-                if let Error::NodeError(e) = e {
-                    // hornet and bee return different error messages
-                    if e == *"No available nodes with remote PoW"
-                        || e.contains("proof of work is not enabled")
-                        || e.contains("`PoW` not enabled")
-                    {
-                        let mut client_network_info =
-                            self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                        // switch to local PoW
-                        client_network_info.local_pow = true;
-                        drop(client_network_info);
-                        #[cfg(not(feature = "wasm"))]
-                        let msg_res = crate::api::finish_pow(self, message.payload().cloned()).await;
-                        #[cfg(feature = "wasm")]
-                        let msg_res = {
-                            let min_pow_score = self.get_min_pow_score().await?;
-                            let network_id = self.get_network_id().await?;
-                            crate::api::finish_single_thread_pow(
-                                self,
-                                network_id,
-                                None,
-                                message.payload().cloned(),
-                                min_pow_score,
-                            )
-                            .await
-                        };
-                        let message_with_local_pow = match msg_res {
-                            Ok(msg) => {
-                                // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
-                                msg
-                            }
-                            Err(e) => {
-                                // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
-                                return Err(e);
-                            }
-                        };
-                        let message_dto = MessageDto::from(&message_with_local_pow);
-
-                        self.node_manager
-                            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, true)
-                            .await?
-                    } else {
-                        return Err(Error::NodeError(e));
-                    }
-                } else {
-                    return Err(e);
-                }
-            }
-        };
-
-        let mut message_id_bytes = [0u8; 32];
-        hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
-        Ok(MessageId::from(message_id_bytes))
+        crate::node_api::core_api::routes::post_message_json(self, message).await
     }
 
     /// GET /api/v2/messages/{messageId} endpoint
@@ -796,15 +496,8 @@ impl Client {
 
     /// GET /api/v2/outputs/{outputId} endpoint
     /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output_id: &UtxoInput) -> Result<OutputResponse> {
-        let path = &format!("api/v2/outputs/{}", output_id.output_id());
-
-        let resp: SuccessBody<OutputResponse> = self
-            .node_manager
-            .get_request(path, None, self.get_timeout(Api::GetOutput))
-            .await?;
-
-        Ok(resp.data)
+    pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
+        crate::node_api::core_api::routes::get_output(self, output_id).await
     }
 
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
@@ -834,27 +527,11 @@ impl Client {
                     output.output_index,
                 )?));
             }
-            // 1000 is the max amount of outputs we get from the node, so if we reach that limit we maybe don't get
-            // all outputs and that's why we additionally only request dust allowance outputs
-            if address_outputs.len() == RESPONSE_MAX_OUTPUTS {
-                let address_dust_allowance_outputs = self
-                    .get_address()
-                    .outputs(OutputsOptions {
-                        bech32_address: Some(address.to_string()),
-                    })
-                    .await?;
-                for output in address_dust_allowance_outputs.iter() {
-                    output_to_query.insert(UtxoInput::from(OutputId::new(
-                        TransactionId::from_str(&output.transaction_id)?,
-                        output.output_index,
-                    )?));
-                }
-            }
         }
 
         // Use `get_output` API to get the `OutputMetadata`.
         for output in output_to_query {
-            let meta_data = self.get_output(&output).await?;
+            let meta_data = self.get_output(output.output_id()).await?;
             output_metadata.push(meta_data);
         }
         Ok(output_metadata)
@@ -868,73 +545,37 @@ impl Client {
     /// GET /api/v2/milestones/{index} endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
-        let path = &format!("api/v2/milestones/{}", index);
-
-        let resp: SuccessBody<MilestoneResponseDto> = self
-            .node_manager
-            .get_request(path, None, self.get_timeout(Api::GetMilestone))
-            .await?;
-
-        let milestone = resp.data;
-        let mut message_id = [0u8; 32];
-        hex::decode_to_slice(milestone.message_id, &mut message_id)?;
-        Ok(MilestoneResponse {
-            index: milestone.milestone_index,
-            message_id: MessageId::new(message_id),
-            timestamp: milestone.timestamp,
-        })
+        crate::node_api::core_api::routes::get_milestone(self, index).await
     }
 
     /// GET /api/v2/milestones/{index}/utxo-changes endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
-        let path = &format!("api/v2/milestones/{}/utxo-changes", index);
-
-        let resp: SuccessBody<MilestoneUTXOChanges> = self
-            .node_manager
-            .get_request(path, None, self.get_timeout(Api::GetMilestone))
-            .await?;
-
-        Ok(resp.data)
+        crate::node_api::core_api::routes::get_milestone_utxo_changes(self, index).await
     }
 
     /// GET /api/v2/receipts endpoint
     /// Get all receipts.
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
-        let path = &"api/v2/receipts";
-
-        let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
-
-        Ok(resp.data.receipts)
+        crate::node_api::core_api::routes::get_receipts(self).await
     }
 
     /// GET /api/v2/receipts/{migratedAt} endpoint
     /// Get the receipts by the given milestone index.
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
-        let path = &format!("api/v2/receipts/{}", milestone_index);
-
-        let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
-
-        Ok(resp.data.receipts)
+        crate::node_api::core_api::routes::get_receipts_migrated_at(self, milestone_index).await
     }
 
     /// GET /api/v2/treasury endpoint
     /// Get the treasury output.
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
-        let path = "api/v2/treasury";
-
-        let resp: SuccessBody<TreasuryResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
-
-        Ok(resp.data)
+        crate::node_api::core_api::routes::get_treasury(self).await
     }
 
     /// GET /api/v2/transactions/{transactionId}/included-message
     /// Returns the included message of the transaction.
     pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
-        let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
-
-        let resp: SuccessBody<MessageResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
-        Ok(Message::try_from(&resp.data.0)?)
+        crate::node_api::core_api::routes::get_included_message(self, transaction_id).await
     }
 
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
@@ -1041,37 +682,37 @@ impl Client {
     }
 
     /// Find all messages by provided message IDs and/or indexation_keys.
-    pub async fn find_messages<I: AsRef<[u8]>>(
-        &self,
-        indexation_keys: &[I],
-        message_ids: &[MessageId],
-    ) -> Result<Vec<Message>> {
-        let mut messages = Vec::new();
+    // pub async fn find_messages<I: AsRef<[u8]>>(
+    //     &self,
+    //     indexation_keys: &[I],
+    //     message_ids: &[MessageId],
+    // ) -> Result<Vec<Message>> {
+    //     let mut messages = Vec::new();
 
-        // Use a `HashSet` to prevent duplicate message_ids.
-        let mut message_ids_to_query = HashSet::<MessageId>::new();
+    //     // Use a `HashSet` to prevent duplicate message_ids.
+    //     let mut message_ids_to_query = HashSet::<MessageId>::new();
 
-        // Collect the `MessageId` in the HashSet.
-        for message_id in message_ids {
-            message_ids_to_query.insert(message_id.to_owned());
-        }
+    //     // Collect the `MessageId` in the HashSet.
+    //     for message_id in message_ids {
+    //         message_ids_to_query.insert(message_id.to_owned());
+    //     }
 
-        // Use `get_message().index()` API to get the message ID first,
-        // then collect the `MessageId` in the HashSet.
-        for index in indexation_keys {
-            let message_ids = self.get_message().index(index).await?;
-            for message_id in message_ids.iter() {
-                message_ids_to_query.insert(message_id.to_owned());
-            }
-        }
+    //     // Use `get_message().index()` API to get the message ID first,
+    //     // then collect the `MessageId` in the HashSet.
+    //     for index in indexation_keys {
+    //         let message_ids = self.get_message().index(index).await?;
+    //         for message_id in message_ids.iter() {
+    //             message_ids_to_query.insert(message_id.to_owned());
+    //         }
+    //     }
 
-        // Use `get_message().data()` API to get the `Message`.
-        for message_id in message_ids_to_query {
-            let message = self.get_message().data(&message_id).await?;
-            messages.push(message);
-        }
-        Ok(messages)
-    }
+    //     // Use `get_message().data()` API to get the `Message`.
+    //     for message_id in message_ids_to_query {
+    //         let message = self.get_message().data(&message_id).await?;
+    //         messages.push(message);
+    //     }
+    //     Ok(messages)
+    // }
 
     /// Return the balance for a provided signer and its wallet chain account index.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero

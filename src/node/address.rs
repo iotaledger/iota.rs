@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{node::ExtendedOutputsResponse, Api, Client, Error, Result};
+use crate::{node::ExtendedOutputsResponse, Client, Error, Result};
 
 use crate::bee_rest_api::types::responses::OutputResponse;
 use bee_message::{input::UtxoInput, output::OutputId, payload::transaction::TransactionId};
@@ -101,11 +101,7 @@ impl GetAddressBuilder {
         let outputs_response: ExtendedOutputsResponse = self
             .client
             .node_manager
-            .get_request(
-                path,
-                options.into_query().as_deref(),
-                self.client.get_timeout(Api::GetOutput),
-            )
+            .get_request(path, options.into_query().as_deref(), self.client.get_timeout())
             .await?;
         // todo pagination
         let output_ids = outputs_response
@@ -130,7 +126,7 @@ impl GetAddressBuilder {
         let mut outputs = Vec::new();
 
         for output_id in output_ids.iter() {
-            let output = self.client.get_output(output_id).await?;
+            let output = self.client.get_output(output_id.output_id()).await?;
             outputs.push(output);
         }
         Ok(outputs)
@@ -144,11 +140,7 @@ impl GetAddressBuilder {
         let outputs_response: ExtendedOutputsResponse = self
             .client
             .node_manager
-            .get_request(
-                path,
-                options.into_query().as_deref(),
-                self.client.get_timeout(Api::GetOutput),
-            )
+            .get_request(path, options.into_query().as_deref(), self.client.get_timeout())
             .await?;
         // todo pagination
         let output_ids = outputs_response

@@ -8,7 +8,7 @@ use crate::{
         query_parameters::{QueryParameter, QueryParameters},
         responses::ExtendedOutputsResponse,
     },
-    Api, Client, Error, Result,
+    Client, Error, Result,
 };
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId};
@@ -36,7 +36,7 @@ pub async fn get_output_ids_with_pagination(
             .get_request(
                 route,
                 query_parameters.into_query_sting().as_deref(),
-                client.get_timeout(Api::GetOutput),
+                client.get_timeout(),
             )
             .await?;
         // convert string response to output ids
@@ -61,8 +61,6 @@ pub async fn get_output_ids_with_pagination(
         all_output_ids.extend(output_ids.into_iter());
         outputs_response.offset
     } {
-        println!("offset: {offset}");
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         query_parameters.replace(QueryParameter::Offset(offset));
     }
 

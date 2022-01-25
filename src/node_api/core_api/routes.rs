@@ -3,17 +3,15 @@
 
 //! IOTA node core API routes
 
-use crate::{client::Api, Client, Error, Result};
+use crate::{builder::GET_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
 
-use crate::builder::GET_API_TIMEOUT;
 use bee_message::{output::OutputId, payload::transaction::TransactionId, Message, MessageId};
 use bee_rest_api::types::{
     body::SuccessBody,
     dtos::{MessageDto, PeerDto, ReceiptDto},
     responses::{
-        InfoResponse, MessageChildrenResponse, MessageMetadataResponse, MessageResponse, MilestoneResponse,
-        OutputResponse, PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse,
-        UtxoChangesResponse,
+        MessageChildrenResponse, MessageMetadataResponse, MessageResponse, MilestoneResponse, OutputResponse,
+        PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
     },
 };
 use packable::PackableExt;
@@ -22,15 +20,15 @@ use packable::PackableExt;
 
 /// Returns general information about the node.
 /// GET /api/v2/info endpoint
-pub async fn get_info(client: &Client) -> Result<InfoResponse> {
+pub async fn get_info(client: &Client) -> Result<NodeInfoWrapper> {
     let path = "api/v2/info";
 
-    let resp: SuccessBody<InfoResponse> = client
+    let resp: NodeInfoWrapper = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetTips))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
-    Ok(resp.data)
+    Ok(resp)
 }
 
 /// Returns non-lazy tips.
@@ -40,7 +38,7 @@ pub async fn get_tips(client: &Client) -> Result<Vec<MessageId>> {
 
     let resp: SuccessBody<TipsResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetTips))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     let mut tips = Vec::new();
@@ -59,7 +57,7 @@ pub async fn data(client: &Client, message_id: &MessageId) -> Result<Message> {
 
     let resp: SuccessBody<MessageResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetMessage))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     Ok(Message::try_from(&resp.data.0)?)
@@ -72,7 +70,7 @@ pub async fn metadata(client: &Client, message_id: &MessageId) -> Result<Message
 
     let resp: SuccessBody<MessageMetadataResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetMessage))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     Ok(resp.data)
@@ -84,7 +82,7 @@ pub async fn raw(client: &Client, message_id: &MessageId) -> Result<String> {
     let path = &format!("api/v2/messages/{}/raw", message_id);
     let resp = client
         .node_manager
-        .get_request_text(path, None, client.get_timeout(Api::GetMessage))
+        .get_request_text(path, None, client.get_timeout())
         .await?;
 
     Ok(resp)
@@ -101,7 +99,7 @@ pub async fn children(client: &Client, message_id: &MessageId) -> Result<Box<[Me
 
     let resp: SuccessBody<MessageChildrenResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetMessage))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     resp.data
@@ -120,11 +118,10 @@ pub async fn children(client: &Client, message_id: &MessageId) -> Result<Box<[Me
 pub async fn post_message(client: &Client, message: &Message) -> Result<MessageId> {
     let path = "api/v2/messages";
     let local_pow = client.get_local_pow().await;
-    // println!("{}", serde_json::to_string(&MessageDto::from(message))?);
     let timeout = if local_pow {
-        client.get_timeout(Api::PostMessage)
+        client.get_timeout()
     } else {
-        client.get_timeout(Api::PostMessageWithRemotePow)
+        client.get_remote_pow_timeout()
     };
 
     #[cfg(not(feature = "pow-fallback"))]
@@ -207,9 +204,9 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
     let path = "api/v2/messages";
     let local_pow = client.get_local_pow().await;
     let timeout = if local_pow {
-        client.get_timeout(Api::PostMessage)
+        client.get_timeout()
     } else {
-        client.get_timeout(Api::PostMessageWithRemotePow)
+        client.get_remote_pow_timeout()
     };
     let message_dto = MessageDto::from(message);
 
@@ -287,7 +284,10 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
 pub async fn get_included_message(client: &Client, transaction_id: &TransactionId) -> Result<Message> {
     let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
 
-    let resp: SuccessBody<MessageResponse> = client.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+    let resp: SuccessBody<MessageResponse> = client
+        .node_manager
+        .get_request(path, None, client.get_timeout())
+        .await?;
     Ok(Message::try_from(&resp.data.0)?)
 }
 
@@ -298,7 +298,7 @@ pub async fn get_milestone(client: &Client, index: u32) -> Result<MilestoneRespo
 
     let resp: SuccessBody<MilestoneResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetMilestone))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     // converted to an object with a MessageId instead of a String
@@ -320,7 +320,7 @@ pub async fn get_milestone_utxo_changes(client: &Client, index: u32) -> Result<U
 
     let resp: SuccessBody<UtxoChangesResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetMilestone))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     Ok(resp.data)
@@ -333,7 +333,7 @@ pub async fn get_output(client: &Client, output_id: &OutputId) -> Result<OutputR
 
     let resp: SuccessBody<OutputResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetOutput))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     Ok(resp.data)
@@ -385,7 +385,7 @@ pub async fn get_peers(client: &Client) -> Result<Vec<PeerDto>> {
 
     let resp: SuccessBody<PeersResponse> = client
         .node_manager
-        .get_request(path, None, client.get_timeout(Api::GetPeers))
+        .get_request(path, None, client.get_timeout())
         .await?;
 
     Ok(resp.data.0)

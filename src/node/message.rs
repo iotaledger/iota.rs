@@ -1,16 +1,9 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{Api, Client, Result};
+use crate::{Client, Result};
 use bee_message::{Message, MessageId};
-use bee_rest_api::types::{
-    body::SuccessBody,
-    responses::{
-        MessageChildrenResponse, MessageMetadataResponse as MessageMetadata, MessageResponse, MessagesFindResponse,
-    },
-};
-
-use std::convert::TryFrom;
+use bee_rest_api::types::responses::MessageMetadataResponse as MessageMetadata;
 
 /// Builder of GET /api/v2/messages/{messageId} endpoint
 pub struct GetMessageBuilder<'a> {
@@ -23,92 +16,27 @@ impl<'a> GetMessageBuilder<'a> {
         Self { client }
     }
 
-    /// GET /api/v2/messages?index={Index} endpoint
-    /// Consume the builder and search for messages matching the index
-    pub async fn index<I: AsRef<[u8]>>(self, index: I) -> Result<Box<[MessageId]>> {
-        let path = "api/v2/messages";
-
-        let resp: SuccessBody<MessagesFindResponse> = self
-            .client
-            .node_manager
-            .get_request(
-                path,
-                Some(&format!("index={}", hex::encode(index))),
-                self.client.get_timeout(Api::GetMessage),
-            )
-            .await?;
-
-        resp.data
-            .message_ids
-            .iter()
-            .map(|s| {
-                let mut message_id = [0u8; 32];
-                hex::decode_to_slice(s, &mut message_id)?;
-                Ok(MessageId::from(message_id))
-            })
-            .collect::<Result<Box<[MessageId]>>>()
-    }
-
     /// GET /api/v2/messages/{messageID} endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
     pub async fn data(self, message_id: &MessageId) -> Result<Message> {
-        let path = &format!("api/v2/messages/{}", message_id);
-
-        let resp: SuccessBody<MessageResponse> = self
-            .client
-            .node_manager
-            .get_request(path, None, self.client.get_timeout(Api::GetMessage))
-            .await?;
-
-        Ok(Message::try_from(&resp.data.0)?)
+        crate::node_api::core_api::routes::data(self.client, message_id).await
     }
 
     /// GET /api/v2/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
     pub async fn metadata(self, message_id: &MessageId) -> Result<MessageMetadata> {
-        let path = &format!("api/v2/messages/{}/metadata", message_id);
-
-        let resp: SuccessBody<MessageMetadata> = self
-            .client
-            .node_manager
-            .get_request(path, None, self.client.get_timeout(Api::GetMessage))
-            .await?;
-
-        Ok(resp.data)
+        crate::node_api::core_api::routes::metadata(self.client, message_id).await
     }
 
     /// GET /api/v2/messages/{messageID}/raw endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
     pub async fn raw(self, message_id: &MessageId) -> Result<String> {
-        let path = &format!("api/v2/messages/{}/raw", message_id);
-        let resp = self
-            .client
-            .node_manager
-            .get_request_text(path, None, self.client.get_timeout(Api::GetMessage))
-            .await?;
-
-        Ok(resp)
+        crate::node_api::core_api::routes::raw(self.client, message_id).await
     }
 
     /// GET /api/v2/messages/{messageID}/children endpoint
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
     pub async fn children(self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
-        let path = &format!("api/v2/messages/{}/children", message_id);
-
-        let resp: SuccessBody<MessageChildrenResponse> = self
-            .client
-            .node_manager
-            .get_request(path, None, self.client.get_timeout(Api::GetMessage))
-            .await?;
-
-        resp.data
-            .children_message_ids
-            .iter()
-            .map(|s| {
-                let mut message_id = [0u8; 32];
-                hex::decode_to_slice(s, &mut message_id)?;
-                Ok(MessageId::from(message_id))
-            })
-            .collect::<Result<Box<[MessageId]>>>()
+        crate::node_api::core_api::routes::children(self.client, message_id).await
     }
 }

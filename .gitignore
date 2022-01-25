@@ -9,3 +9,4 @@ book
 addresses.json
 prepared_transaction.json
 signed_transaction.json
+iota.rs.log

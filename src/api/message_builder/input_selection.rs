@@ -184,7 +184,7 @@ pub(crate) async fn get_custom_inputs(
     let account_index = message_builder.account_index.unwrap_or(0);
     for input in inputs {
         // Only add unspent outputs
-        if let Ok(output) = message_builder.client.get_output(input).await {
+        if let Ok(output) = message_builder.client.get_output(input.output_id()).await {
             if !output.is_spent {
                 let (output_amount, output_address) =
                     ClientMessageBuilder::get_output_amount_and_address(&output.output)?;

@@ -220,13 +220,10 @@ impl super::Signer for LedgerSigner {
                             bee_message::output::Output::Extended(s) => {
                                 // todo verify if that's the correct expected behaviour
                                 for block in s.unlock_conditions() {
-                                    match block {
-                                        bee_message::output::UnlockCondition::Address(e) => {
-                                            if *remainder_address.unwrap() == *e.address() {
-                                                break;
-                                            }
+                                    if let bee_message::output::UnlockCondition::Address(e) = block {
+                                        if *remainder_address.unwrap() == *e.address() {
+                                            break;
                                         }
-                                        _ => {}
                                     }
                                 }
                             }

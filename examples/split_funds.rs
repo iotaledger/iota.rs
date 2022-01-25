@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
     );
 
     // wait so the faucet can send the funds
-    tokio::time::sleep(std::time::Duration::from_secs(20)).await;
+    // tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
     let mut message_builder = iota.message().with_signer(&signer);
     // Insert the output address and amount to spent. The amount cannot be zero.

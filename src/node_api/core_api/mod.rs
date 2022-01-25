@@ -18,7 +18,7 @@ const MAX_PARALLEL_REQUESTS: usize = 5;
 /// Request outputs by their output id in parallel
 pub async fn get_outputs(client: Client, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
     let mut outputs = Vec::new();
-
+    // todo single thread for wasm
     for output_ids_chunk in output_ids
         .chunks(MAX_PARALLEL_REQUESTS)
         .map(|x: &[OutputId]| x.to_vec())
