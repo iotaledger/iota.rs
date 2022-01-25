@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
 
     let address = iota.get_addresses(&signer).with_range(0..1).get_all_raw().await?.public[0];
     request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/enqueue",
+        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
         &address.to_bech32("atoi"),
     )
     .await?;

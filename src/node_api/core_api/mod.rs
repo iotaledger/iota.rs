@@ -29,9 +29,9 @@ pub async fn get_outputs(client: Client, output_ids: Vec<OutputId>) -> Result<Ve
 
             tasks.push(async move {
                 tokio::spawn(async move {
-                    // println!("push {index}");
+                    // println!("push {_index}");
                     let output_response = get_output(&client_, &output_id).await?;
-                    // println!("got result {index}");
+                    // println!("got result {_index}");
                     crate::Result::Ok(output_response)
                 })
                 .await

@@ -218,8 +218,16 @@ impl super::Signer for LedgerSigner {
                     for output in essence.outputs().iter() {
                         match output {
                             bee_message::output::Output::Extended(s) => {
-                                if *remainder_address.unwrap() == *s.address() {
-                                    break;
+                                // todo verify if that's the correct expected behaviour
+                                for block in s.unlock_conditions() {
+                                    match block {
+                                        bee_message::output::UnlockCondition::Address(e) => {
+                                            if *remainder_address.unwrap() == *e.address() {
+                                                break;
+                                            }
+                                        }
+                                        _ => {}
+                                    }
                                 }
                             }
                             _ => {

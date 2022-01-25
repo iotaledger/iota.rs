@@ -61,8 +61,8 @@ pub async fn get_output_ids_with_pagination(
         all_output_ids.extend(output_ids.into_iter());
         outputs_response.offset
     } {
-        // println!("{offset}");
-        // tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        println!("offset: {offset}");
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         query_parameters.replace(QueryParameter::Offset(offset));
     }
 

@@ -18,10 +18,7 @@ use bee_message::{
 };
 #[cfg(not(feature = "wasm"))]
 use bee_pow::providers::NonceProviderBuilder;
-use bee_rest_api::types::{
-    dtos::{AddressDto, OutputDto},
-    responses::OutputResponse,
-};
+use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
 use crypto::keys::slip10::Chain;
 use packable::PackableExt;
 #[cfg(not(feature = "wasm"))]
@@ -211,14 +208,25 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
-            OutputDto::Extended(ref r) => match &r.address {
-                AddressDto::Ed25519(addr) => {
-                    let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-                    Ok((r.amount, output_address))
+            OutputDto::Extended(ref r) => {
+                for block in &r.unlock_conditions {
+                    match block {
+                        bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
+                            return Ok((r.amount, Address::try_from(&e.address)?))
+                        }
+                        _ => todo!(),
+                    }
                 }
-                // todo support other addresses
-                _ => Err(Error::OutputError("Only Ed25519Address is implemented")),
-            },
+                Err(Error::OutputError("Only Ed25519Address is implemented"))
+            }
+            // match &r.address {
+            //     AddressDto::Ed25519(addr) => {
+            //         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
+            //         Ok((r.amount, output_address))
+            //     }
+            //     // todo support other addresses
+            //     _ => Err(Error::OutputError("Only Ed25519Address is implemented")),
+            // },
             // todo add other outputs
             _ => Err(Error::OutputError("Output is not implemented")),
         }

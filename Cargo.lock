@@ -96,18 +96,6 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-common"
 version = "0.6.0"
-dependencies = [
- "autocfg",
- "fern",
- "log",
- "serde",
- "thiserror",
- "time",
-]
-
-[[package]]
-name = "bee-common"
-version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70a0740d9b585483eba7812cd9e429fc6aa0337e624ea3b207545ceee3dc3c4f"
 dependencies = [
@@ -120,10 +108,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "bee-common"
+version = "0.6.0"
+source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
+dependencies = [
+ "autocfg",
+ "fern",
+ "log",
+ "serde",
+ "thiserror",
+ "time",
+]
+
+[[package]]
 name = "bee-ledger"
 version = "0.7.0"
+source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
- "bee-common 0.6.0",
+ "bee-common 0.6.0 (git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863)",
  "bee-message",
  "packable",
  "thiserror",
@@ -132,9 +134,10 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
+source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
  "bech32 0.8.1",
- "bee-common 0.6.0",
+ "bee-common 0.6.0 (git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863)",
  "bee-pow",
  "bee-ternary",
  "bitflags",
@@ -153,6 +156,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
+source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -162,6 +166,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
+source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
  "bee-ledger",
  "bee-message",
