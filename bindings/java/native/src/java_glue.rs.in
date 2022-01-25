@@ -752,9 +752,9 @@ foreign_class!(
         fn ClientMessageBuilder::with_output_hex(&self, address: &str, amount: u64)  -> Result<ClientMessageBuilder>;
 
         /// Set indexation to the builder
-        fn ClientMessageBuilder::with_index_vec(&self, index: Vec<u8>)  -> ClientMessageBuilder;
+        fn ClientMessageBuilder::with_tag_vec(&self, index: Vec<u8>)  -> ClientMessageBuilder;
         /// Set indexation to the builder
-        fn ClientMessageBuilder::with_index_string(&self, index: &str)  -> ClientMessageBuilder;
+        fn ClientMessageBuilder::with_tag_string(&self, index: &str)  -> ClientMessageBuilder;
 
         /// Set data to the builder
         fn ClientMessageBuilder::with_data(&self, data: Vec<u8>)  -> ClientMessageBuilder;

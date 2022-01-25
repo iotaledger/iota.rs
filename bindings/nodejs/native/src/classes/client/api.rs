@@ -143,7 +143,7 @@ impl Task for ClientTask {
                         sender = sender.with_seed(seed);
                     }
                     if let Some(index) = index {
-                        sender = sender.with_index(index);
+                        sender = sender.with_tag(index);
                     }
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());
@@ -194,7 +194,7 @@ impl Task for ClientTask {
                         sender = sender.with_seed(seed);
                     }
                     if let Some(index) = index {
-                        sender = sender.with_index(index);
+                        sender = sender.with_tag(index);
                     }
                     if let Some(data) = data {
                         sender = sender.with_data(data.clone());

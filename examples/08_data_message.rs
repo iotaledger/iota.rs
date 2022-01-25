@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
 
     let message = iota
         .message()
-        .with_index("Hello")
+        .with_tag("Hello")
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
         .await?;

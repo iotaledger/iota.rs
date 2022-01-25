@@ -72,11 +72,11 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     outputs_for_essence.sort_unstable_by_key(|a| a.pack_to_vec());
     essence = essence.with_outputs(outputs_for_essence);
 
-    // Add indexation_payload if index set
-    if let Some(index) = message_builder.index.clone() {
-        let indexation_payload =
+    // Add tagged data payload if tag set
+    if let Some(index) = message_builder.tag.clone() {
+        let tagged_data_payload =
             TaggedDataPayload::new((&index).to_vec(), message_builder.data.clone().unwrap_or_default())?;
-        essence = essence.with_payload(Payload::TaggedData(Box::new(indexation_payload)))
+        essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)))
     }
     let regular_essence = essence.finish()?;
     let essence = TransactionEssence::Regular(regular_essence);

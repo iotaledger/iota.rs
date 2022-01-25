@@ -46,7 +46,7 @@ pub struct ClientMessageBuilder<'a> {
     inputs: Option<Vec<UtxoInput>>,
     input_range: Range<u32>,
     outputs: Vec<Output>,
-    index: Option<Box<[u8]>>,
+    tag: Option<Box<[u8]>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
 }
@@ -62,7 +62,7 @@ impl<'a> ClientMessageBuilder<'a> {
             inputs: None,
             input_range: 0..100,
             outputs: Vec::new(),
-            index: None,
+            tag: None,
             data: None,
             parents: None,
         }
@@ -125,9 +125,9 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok(self)
     }
 
-    /// Set indexation to the builder
-    pub fn with_index<I: AsRef<[u8]>>(mut self, index: I) -> Self {
-        self.index.replace(index.as_ref().into());
+    /// Set tagged_data to the builder
+    pub fn with_tag<I: AsRef<[u8]>>(mut self, tag: I) -> Self {
+        self.tag.replace(tag.as_ref().into());
         self
     }
 
@@ -148,9 +148,9 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Consume the builder and get the API result
     pub async fn finish(self) -> Result<Message> {
-        // Indexation payload requires an indexation tag
-        if self.data.is_some() && self.index.is_none() {
-            return Err(Error::MissingParameter("index"));
+        // tagged_data payload requires an tagged_data tag
+        if self.data.is_some() && self.tag.is_none() {
+            return Err(Error::MissingParameter("tag"));
         }
         if self.inputs.is_some() && self.outputs.is_empty() {
             return Err(Error::MissingParameter("output"));
@@ -163,9 +163,9 @@ impl<'a> ClientMessageBuilder<'a> {
             let prepared_transaction_data = self.prepare_transaction().await?;
             let tx_payload = self.sign_transaction(prepared_transaction_data).await?;
             self.finish_message(Some(tx_payload)).await
-        } else if self.index.is_some() {
-            // Send message with indexation payload
-            self.finish_indexation().await
+        } else if self.tag.is_some() {
+            // Send message with tagged_data payload
+            self.finish_tagged_data().await
         } else {
             // Send message without payload
             self.finish_message(None).await
@@ -260,16 +260,16 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish_indexation(self) -> Result<Message> {
+    pub async fn finish_tagged_data(self) -> Result<Message> {
         let payload: Payload;
         {
-            let index = &self.index.as_ref();
+            let index = &self.tag.as_ref();
             let empty_slice = &vec![];
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
-            // build indexation
-            let index = TaggedDataPayload::new(index.expect("No indexation tag").to_vec(), data.to_vec())
-                .map_err(|e| Error::IndexationError(e.to_string()))?;
+            // build tagged_data
+            let index = TaggedDataPayload::new(index.expect("No tagged_data tag").to_vec(), data.to_vec())
+                .map_err(|e| Error::TaggedDataError(e.to_string()))?;
             payload = Payload::TaggedData(Box::new(index));
         }
 

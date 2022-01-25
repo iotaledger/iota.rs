@@ -5,7 +5,7 @@
 //!
 //! High-level functions are accessible via the [`Client`][client::Client].
 //!
-//! ## Sending a message with an indexation payload
+//! ## Sending a message without a payload
 //!  ```compile_fail
 //! let iota = Client::builder()
 //!    .with_node("http://localhost:14265")?
@@ -14,8 +14,6 @@
 //!
 //! let message = iota
 //!    .message()
-//!    .with_index("Hello")
-//!    .with_data("Tangle".as_bytes().to_vec())
 //!    .finish()
 //!    .await?;
 //!

@@ -10,9 +10,9 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Error type of the iota client crate.
 #[allow(clippy::large_enum_variant)]
 pub enum Error {
-    /// Error when building indexation messages
-    #[error("Error when building indexation message: {0}")]
-    IndexationError(String),
+    /// Error when building tagged_data messages
+    #[error("Error when building tagged_data message: {0}")]
+    TaggedDataError(String),
     /// Error when building transaction messages
     #[error("Error when building transaction message")]
     TransactionError,

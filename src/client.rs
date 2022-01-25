@@ -666,7 +666,7 @@ impl Client {
     // High level API
     //////////////////////////////////////////////////////////////////////
 
-    /// A generic send function for easily sending transaction or indexation messages.
+    /// A generic send function for easily sending transaction or tagged data messages.
     pub fn message(&self) -> ClientMessageBuilder<'_> {
         ClientMessageBuilder::new(self.clone())
     }
@@ -681,38 +681,28 @@ impl Client {
         GetAddressesBuilder::new(signer).with_client(self)
     }
 
-    /// Find all messages by provided message IDs and/or indexation_keys.
-    // pub async fn find_messages<I: AsRef<[u8]>>(
-    //     &self,
-    //     indexation_keys: &[I],
-    //     message_ids: &[MessageId],
-    // ) -> Result<Vec<Message>> {
-    //     let mut messages = Vec::new();
+    /// Find all messages by provided message IDs.
+    pub async fn find_messages<I: AsRef<[u8]>>(
+        &self,
+        message_ids: &[MessageId],
+    ) -> Result<Vec<Message>> {
+        let mut messages = Vec::new();
 
-    //     // Use a `HashSet` to prevent duplicate message_ids.
-    //     let mut message_ids_to_query = HashSet::<MessageId>::new();
+        // Use a `HashSet` to prevent duplicate message_ids.
+        let mut message_ids_to_query = HashSet::<MessageId>::new();
 
-    //     // Collect the `MessageId` in the HashSet.
-    //     for message_id in message_ids {
-    //         message_ids_to_query.insert(message_id.to_owned());
-    //     }
+        // Collect the `MessageId` in the HashSet.
+        for message_id in message_ids {
+            message_ids_to_query.insert(message_id.to_owned());
+        }
 
-    //     // Use `get_message().index()` API to get the message ID first,
-    //     // then collect the `MessageId` in the HashSet.
-    //     for index in indexation_keys {
-    //         let message_ids = self.get_message().index(index).await?;
-    //         for message_id in message_ids.iter() {
-    //             message_ids_to_query.insert(message_id.to_owned());
-    //         }
-    //     }
-
-    //     // Use `get_message().data()` API to get the `Message`.
-    //     for message_id in message_ids_to_query {
-    //         let message = self.get_message().data(&message_id).await?;
-    //         messages.push(message);
-    //     }
-    //     Ok(messages)
-    // }
+        // Use `get_message().data()` API to get the `Message`.
+        for message_id in message_ids_to_query {
+            let message = self.get_message().data(&message_id).await?;
+            messages.push(message);
+        }
+        Ok(messages)
+    }
 
     /// Return the balance for a provided signer and its wallet chain account index.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero

@@ -5,14 +5,14 @@
 
 use iota_client::signing::mnemonic::MnemonicSigner;
 
-use bee_message::{input::UtxoInput, payload::transaction::TransactionId, MessageId};
+use bee_message::{output::OutputId, payload::transaction::TransactionId, MessageId};
 
 use std::str::FromStr;
 
 const DEFAULT_NODE_URL: &str = "http://localhost:14265";
 
 // Sends a full message object to the node with already computed nonce. Serves as a test object.
-async fn setup_indexation_message() -> MessageId {
+async fn setup_tagged_data_message() -> MessageId {
     let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
@@ -22,7 +22,7 @@ async fn setup_indexation_message() -> MessageId {
 
     client
         .message()
-        .with_index("iota.rs")
+        .with_tag("iota.rs")
         .with_data("iota.rs".as_bytes().to_vec())
         .finish()
         .await
@@ -76,7 +76,7 @@ async fn test_get_tips() {
 
 #[tokio::test]
 #[ignore]
-async fn test_post_message_with_indexation() {
+async fn test_post_message_with_tagation() {
     let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
@@ -86,7 +86,7 @@ async fn test_post_message_with_indexation() {
 
     let r = client
         .message()
-        .with_index(b"Hello")
+        .with_tag(b"Hello")
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
         .await
@@ -123,23 +123,23 @@ async fn test_post_message_with_transaction() {
     println!("Message ID: {:?}", message_id);
 }
 
-#[tokio::test]
-#[ignore]
-async fn test_get_message_by_index() {
-    setup_indexation_message().await;
-    let r = iota_client::Client::builder()
-        .with_node(DEFAULT_NODE_URL)
-        .unwrap()
-        .finish()
-        .await
-        .unwrap()
-        .get_message()
-        .index("iota.rs")
-        .await
-        .unwrap();
+// #[tokio::test]
+// #[ignore]
+// async fn test_get_message_by_index() {
+//     setup_tagged_data_message().await;
+//     let r = iota_client::Client::builder()
+//         .with_node(DEFAULT_NODE_URL)
+//         .unwrap()
+//         .finish()
+//         .await
+//         .unwrap()
+//         .get_message()
+//         .index("iota.rs")
+//         .await
+//         .unwrap();
 
-    println!("{:#?}", r);
-}
+//     println!("{:#?}", r);
+// }
 
 #[tokio::test]
 #[ignore]
@@ -150,7 +150,7 @@ async fn test_get_message_data() {
         .finish()
         .await
         .unwrap();
-    let message_id = setup_indexation_message().await;
+    let message_id = setup_tagged_data_message().await;
     let r = client.get_message().data(&message_id).await.unwrap();
     println!("{:#?}", r);
 }
@@ -158,7 +158,7 @@ async fn test_get_message_data() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_metadata() {
-    let message_id = setup_indexation_message().await;
+    let message_id = setup_tagged_data_message().await;
 
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
@@ -177,7 +177,7 @@ async fn test_get_message_metadata() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_raw() {
-    let message_id = setup_indexation_message().await;
+    let message_id = setup_tagged_data_message().await;
     iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
@@ -193,7 +193,7 @@ async fn test_get_message_raw() {
 #[tokio::test]
 #[ignore]
 async fn test_get_message_children() {
-    let message_id = setup_indexation_message().await;
+    let message_id = setup_tagged_data_message().await;
     iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
@@ -255,7 +255,7 @@ async fn test_get_output() {
         .await
         .unwrap()
         .get_output(
-            &UtxoInput::new(
+            &OutputId::new(
                 TransactionId::from_str("3e18e19045d0b44dd2be3c466d6fe419c09342bacdb587f2985f2e607a92e38e").unwrap(),
                 0,
             )

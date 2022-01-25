@@ -262,6 +262,12 @@ impl ClientBuilder {
         self
     }
 
+    /// Enables the default logger which writes debug logs to "iota.rs.log"
+    pub fn with_default_logger(self) -> Result<Self> {
+        crate::init_logger("iota.rs.log", crate::LevelFilter::Debug)?;
+        Ok(self)
+    }
+
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
         // Add default nodes

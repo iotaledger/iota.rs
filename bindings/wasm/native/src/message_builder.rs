@@ -148,7 +148,7 @@ impl MessageBuilder {
     let promise: Promise = future_to_promise(async move {
       let mut sender = client.client.message();
       if let Some(index) = input_data.index {
-        sender = sender.with_index(index);
+        sender = sender.with_tag(index);
       }
       if let Some(data) = input_data.data {
         sender = sender.with_data(data);
@@ -254,7 +254,7 @@ impl MessageBuilder {
     let promise: Promise = future_to_promise(async move {
       let mut sender = client.client.message();
       if let Some(index) = input_data.index {
-        sender = sender.with_index(index);
+        sender = sender.with_tag(index);
       }
       if let Some(data) = input_data.data {
         sender = sender.with_data(data);

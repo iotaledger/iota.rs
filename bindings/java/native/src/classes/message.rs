@@ -307,16 +307,16 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Set indexation to the builder
-    pub fn with_index_vec(&self, index: Vec<u8>) -> Self {
+    pub fn with_tag_vec(&self, index: Vec<u8>) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
-        fields.builder = fields.builder.with_index(index.clone());
+        fields.builder = fields.builder.with_tag(index.clone());
         ClientMessageBuilder::new_with_fields(fields)
     }
 
     /// Set indexation to the builder
-    pub fn with_index_string(&self, index: &str) -> Self {
+    pub fn with_tag_string(&self, index: &str) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
-        fields.builder = fields.builder.with_index(index.to_string().as_bytes());
+        fields.builder = fields.builder.with_tag(index.to_string().as_bytes());
         ClientMessageBuilder::new_with_fields(fields)
     }
 
