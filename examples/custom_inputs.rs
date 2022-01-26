@@ -3,14 +3,12 @@
 
 //! cargo run --example custom_inputs --release
 use iota_client::{
-    bee_message::{input::UtxoInput, output::OutputId},
-    node_api::indexer_api::query_parameters::QueryParameter,
-    signing::mnemonic::MnemonicSigner,
-    Client, Result,
+    bee_message::input::UtxoInput, node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
+    signing::mnemonic::MnemonicSigner, Client, Result,
 };
 extern crate dotenv;
 use dotenv::dotenv;
-use std::{env, str::FromStr};
+use std::env;
 
 /// In this example we will send 1_000_000 tokens to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
 /// This address belongs to the first seed in .env.example
@@ -20,6 +18,7 @@ async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
+        .with_node_sync_disabled()
         .finish()
         .await?;
 
@@ -31,6 +30,12 @@ async fn main() -> Result<()> {
 
     let addresses = iota.get_addresses(&seed).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
+
+    println!(
+        "{}",
+        request_funds_from_faucet("http://localhost:14265/api/plugins/faucet/v1/enqueue", &addresses[0]).await?
+    );
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
         &iota,

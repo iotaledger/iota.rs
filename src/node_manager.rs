@@ -140,6 +140,9 @@ impl NodeManager {
             node.url.set_query(query);
             nodes_with_modified_url.push(node);
         }
+        if nodes_with_modified_url.is_empty() {
+            return Err(crate::Error::SyncedNodePoolEmpty);
+        }
         Ok(nodes_with_modified_url)
     }
 
