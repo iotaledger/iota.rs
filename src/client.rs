@@ -916,7 +916,7 @@ impl Client {
     pub async fn get_output(&self, output_id: &UtxoInput) -> Result<OutputResponse> {
         let path = &format!(
             "api/v1/outputs/{}{}",
-            output_id.output_id().transaction_id().to_string(),
+            output_id.output_id().transaction_id(),
             hex::encode(output_id.output_id().index().to_le_bytes())
         );
 
