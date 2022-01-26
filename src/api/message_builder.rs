@@ -17,11 +17,12 @@ use gloo_timers::future::TimeoutFuture;
 #[cfg(not(feature = "wasm"))]
 use tokio::time::sleep;
 
+#[cfg(not(feature = "wasm"))]
+use std::time::Duration;
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
     str::FromStr,
-    time::Duration,
 };
 
 // https://github.com/GalRogozinski/protocol-rfcs/blob/dust/text/0032-dust-protection/0032-dust-protection.md
