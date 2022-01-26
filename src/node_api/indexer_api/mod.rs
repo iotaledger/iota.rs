@@ -26,8 +26,9 @@ pub mod routes;
 pub async fn get_output_ids_with_pagination(
     client: &Client,
     route: &str,
-    mut query_parameters: QueryParameters,
+    query_parameters: Vec<QueryParameter>,
 ) -> Result<Vec<OutputId>> {
+    let mut query_parameters = QueryParameters::new(query_parameters);
     // do we need to validate the query parameters?
     let mut all_output_ids: Vec<OutputId> = Vec::new();
     while let Some(offset) = {

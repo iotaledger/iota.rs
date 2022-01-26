@@ -4,10 +4,8 @@
 //! cargo run --example indexer --release
 
 use iota_client::{
-    node_api::indexer_api::query_parameters::{QueryParameter, QueryParameters},
-    signing::mnemonic::MnemonicSigner,
-    utils::{request_funds_from_faucet, LevelFilter},
-    Client, Result,
+    node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner,
+    utils::request_funds_from_faucet, Client, Result,
 };
 extern crate dotenv;
 use dotenv::dotenv;
@@ -41,12 +39,12 @@ async fn main() -> Result<()> {
 
     let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
         &iota,
-        QueryParameters::new(vec![QueryParameter::Address(address.to_bech32("atoi"))]),
+        vec![QueryParameter::Address(address.to_bech32("atoi"))],
     )
     .await?;
     println!("output ids {:?}", output_ids);
 
-    let outputs = iota_client::node_api::core_api::get_outputs(iota, output_ids).await?;
+    let outputs = iota_client::node_api::core_api::get_outputs(&iota, output_ids).await?;
 
     println!("outputs {:?}", outputs);
     Ok(())

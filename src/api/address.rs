@@ -86,6 +86,9 @@ impl<'a> GetAddressesBuilder<'a> {
             },
         };
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
+        #[cfg(feature = "wasm")]
+        let mut signer = signer.lock().unwrap();
+        #[cfg(not(feature = "wasm"))]
         let mut signer = signer.lock().await;
         let addresses = signer
             .generate_addresses(
@@ -127,6 +130,9 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Consume the builder and get the vector of public and internal addresses
     pub async fn get_all_raw(self) -> Result<RawAddresses> {
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
+        #[cfg(feature = "wasm")]
+        let mut signer = signer.lock().unwrap();
+        #[cfg(not(feature = "wasm"))]
         let mut signer = signer.lock().await;
         let public_addresses = signer
             .generate_addresses(

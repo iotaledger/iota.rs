@@ -3,11 +3,7 @@
 
 //! cargo run --example 05_get_address_outputs --release
 
-use iota_client::{
-    bee_message::{input::UtxoInput, output::OutputId},
-    Client, Result,
-};
-use std::str::FromStr;
+use iota_client::{node_api::indexer_api::query_parameters::QueryParameter, Client, Result};
 
 /// In this example we will get the outputs of a known address
 
@@ -21,17 +17,15 @@ async fn main() -> Result<()> {
 
     let address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 
-    let address_outputs_response = client
-        .get_address()
-        .outputs_response(address, Default::default())
-        .await
-        .unwrap();
+    let output_ids =
+        iota_client::node_api::indexer_api::routes::output_ids(&client, vec![QueryParameter::Address(address.into())])
+            .await?;
 
-    println!("Address outputs response {:?}", address_outputs_response);
+    println!("Address output_ids {:?}", output_ids);
 
     let mut outputs = Vec::new();
-    for output in &address_outputs_response.output_ids {
-        let output = client.get_output(&UtxoInput::from(OutputId::from_str(output)?)).await?;
+    for output_id in &output_ids {
+        let output = client.get_output(output_id).await?;
         outputs.push(output);
     }
     println!("Outputs: {:?}", outputs);

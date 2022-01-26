@@ -3,7 +3,7 @@
 
 //! IOTA node indexer routes
 use crate::{
-    node_api::indexer_api::{get_output_ids_with_pagination, query_parameters::QueryParameters},
+    node_api::indexer_api::{get_output_ids_with_pagination, query_parameters::QueryParameter},
     Client, Result,
 };
 
@@ -17,7 +17,7 @@ use bee_message::output::{AliasId, NftId, OutputId};
 // 	RouteOutputs = "/outputs"
 
 /// api/plugins/indexer/v1/outputs
-pub async fn output_ids(client: &Client, query_parameters: QueryParameters) -> Result<Vec<OutputId>> {
+pub async fn output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
     let route = "api/plugins/indexer/v1/outputs";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
@@ -29,7 +29,7 @@ pub async fn output_ids(client: &Client, query_parameters: QueryParameters) -> R
 // 	RouteAliases = "/aliases"
 
 /// api/plugins/indexer/v1/aliases
-pub async fn aliases_output_ids(client: &Client, query_parameters: QueryParameters) -> Result<Vec<OutputId>> {
+pub async fn aliases_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
     let route = "api/plugins/indexer/v1/aliases";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
@@ -43,7 +43,7 @@ pub async fn aliases_output_ids(client: &Client, query_parameters: QueryParamete
 pub async fn alias_output_ids(client: &Client, alias_id: AliasId) -> Result<Vec<OutputId>> {
     let route = format!("api/plugins/indexer/v1/aliases:{alias_id}");
 
-    get_output_ids_with_pagination(client, &route, QueryParameters::new(Vec::new())).await
+    get_output_ids_with_pagination(client, &route, Vec::new()).await
 }
 
 // 	// RouteNFT is the route for getting NFT filtered by the given parameters.
@@ -52,7 +52,7 @@ pub async fn alias_output_ids(client: &Client, alias_id: AliasId) -> Result<Vec<
 // 	RouteNFT = "/nft"
 
 /// api/plugins/indexer/v1/nft
-pub async fn nfts_output_ids(client: &Client, query_parameters: QueryParameters) -> Result<Vec<OutputId>> {
+pub async fn nfts_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
     let route = "api/plugins/indexer/v1/nft";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
@@ -66,7 +66,7 @@ pub async fn nfts_output_ids(client: &Client, query_parameters: QueryParameters)
 pub async fn nft_output_ids(client: &Client, nft_id: NftId) -> Result<Vec<OutputId>> {
     let route = format!("api/plugins/indexer/v1/nft:{nft_id}");
 
-    get_output_ids_with_pagination(client, &route, QueryParameters::new(Vec::new())).await
+    get_output_ids_with_pagination(client, &route, Vec::new()).await
 }
 
 // 	// RouteFoundries is the route for getting foundries filtered by the given parameters.
@@ -75,7 +75,7 @@ pub async fn nft_output_ids(client: &Client, nft_id: NftId) -> Result<Vec<Output
 // 	RouteFoundries = "/foundries"
 
 /// api/plugins/indexer/v1/foundries
-pub async fn foundries_output_ids(client: &Client, query_parameters: QueryParameters) -> Result<Vec<OutputId>> {
+pub async fn foundries_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
     let route = "api/plugins/indexer/v1/foundries";
 
     get_output_ids_with_pagination(client, route, query_parameters).await

@@ -103,6 +103,9 @@ pub async fn sign_transaction(
         input_addresses.push(Address::try_from_bech32(&address_index_recorder.bech32_address)?);
     }
     let signer = message_builder.signer.ok_or(Error::MissingParameter("signer"))?;
+    #[cfg(feature = "wasm")]
+    let mut signer = signer.lock().unwrap();
+    #[cfg(not(feature = "wasm"))]
     let mut signer = signer.lock().await;
     let unlock_blocks = signer
         .sign_transaction_essence(

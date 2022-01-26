@@ -4,6 +4,7 @@
 //! cargo run --example custom_inputs --release
 use iota_client::{
     bee_message::{input::UtxoInput, output::OutputId},
+    node_api::indexer_api::query_parameters::QueryParameter,
     signing::mnemonic::MnemonicSigner,
     Client, Result,
 };
@@ -31,16 +32,17 @@ async fn main() -> Result<()> {
     let addresses = iota.get_addresses(&seed).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
 
-    let outputs = iota
-        .get_address()
-        .outputs_response(&addresses[0], Default::default())
-        .await?;
-    println!("{:?}", outputs);
+    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
+        &iota,
+        vec![QueryParameter::Address(addresses[0].clone())],
+    )
+    .await?;
+    println!("{:?}", output_ids);
 
     let message = iota
         .message()
         .with_signer(&seed)
-        .with_input(UtxoInput::from(OutputId::from_str(&outputs.output_ids[0])?))
+        .with_input(UtxoInput::from(output_ids[0]))
         //.with_input_range(20..25)
         .with_output(
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",

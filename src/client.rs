@@ -124,7 +124,9 @@ impl Drop for Client {
 
         #[cfg(not(feature = "wasm"))]
         if let Some(runtime) = self.runtime.take() {
-            Arc::try_unwrap(runtime).unwrap().shutdown_background();
+            if let Ok(runtime) = Arc::try_unwrap(runtime) {
+                runtime.shutdown_background()
+            }
         }
 
         #[cfg(feature = "mqtt")]

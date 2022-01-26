@@ -3,9 +3,9 @@
 
 //! cargo run --example 08_data_message --release
 
-use iota_client::{Client, Result};
+use iota_client::{bee_message::payload::Payload, Client, Result};
 
-/// In this example we will send a message without a payload
+/// In this example we will send a message with a tagged data payload
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,7 +28,14 @@ async fn main() -> Result<()> {
         message.id()
     );
 
-    let fetched_message_ids = iota.get_message().index("Hello").await.unwrap();
-    println!("Messages with Hello index: {:?}", fetched_message_ids);
+    let fetched_msg = iota.get_message().data(&message.id()).await?;
+    println!("{:#?}\n", fetched_msg);
+
+    if let Payload::TaggedData(payload) = fetched_msg.payload().as_ref().unwrap() {
+        println!(
+            "Data: {}",
+            String::from_utf8(payload.data().to_vec()).expect("Found invalid UTF-8")
+        );
+    }
     Ok(())
 }

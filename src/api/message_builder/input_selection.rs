@@ -8,7 +8,7 @@ use crate::{
         types::{AddressIndexRecorder, OutputWrapper},
         ClientMessageBuilder, ADDRESS_GAP_RANGE,
     },
-    node_api::indexer_api::query_parameters::{QueryParameter, QueryParameters},
+    node_api::indexer_api::query_parameters::QueryParameter,
     Error, Result,
 };
 
@@ -58,7 +58,7 @@ pub(crate) async fn get_inputs(
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
             let output_ids = crate::node_api::indexer_api::routes::output_ids(
                 message_builder.client,
-                QueryParameters::new(vec![QueryParameter::Address(str_address.to_string())]),
+                vec![QueryParameter::Address(str_address.to_string())],
             )
             .await?;
 

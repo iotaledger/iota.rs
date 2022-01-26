@@ -127,7 +127,7 @@ pub enum Error {
     /// Output Error
     #[error("Output error: {0}")]
     OutputError(&'static str),
-    // #[cfg(not(feature = "wasm"))]
+    #[cfg(not(feature = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]
     TaskJoinError(#[from] tokio::task::JoinError),

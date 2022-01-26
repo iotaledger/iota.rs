@@ -9,6 +9,9 @@ use bee_message::{
     signature::Signature,
     unlock_block::{UnlockBlock, UnlockBlocks},
 };
+#[cfg(feature = "wasm")]
+use std::sync::Mutex;
+#[cfg(not(feature = "wasm"))]
 use tokio::sync::Mutex;
 
 use std::{

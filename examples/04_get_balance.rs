@@ -28,8 +28,8 @@ async fn main() -> Result<()> {
 
     let address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 
-    let outputs = iota.get_address().outputs_response(address, Default::default()).await?;
+    let balance = iota.get_address().balance(address).await?;
 
-    println!("The outputs of address {:?} are: {:?}", address, outputs);
+    println!("The calance of address {:?} is: {:?}", address, balance);
     Ok(())
 }
