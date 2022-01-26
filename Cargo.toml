@@ -49,13 +49,10 @@ async-trait = {version = "0.1.51", default-features = false }
 rusqlite = { version = "0.24.2", default-features = false, features = ["bundled"], optional = true }
 
 # wasm
-# to enable timeouts for browser and node.js
-# patched version
-wasm-timer = { git = "https://github.com/PhilippGackstatter/wasm-timer", rev = "448c2be0c4feeb6b5df1da265489232dff2f03c1", default-features = false, optional = true }
-# wasm-timer = { version =  "0.2.5", default-features = false, optional = true }
+instant = { version = "0.1.12", default-features = false, optional = true }
+gloo-timers = { git = "https://github.com/rustwasm/gloo", rev = "923e033688b18f03b63aa9c4823c26b4f7ae817c", default-features = false, features = ["futures"], optional = true }
 # single thread pow for wasm
-bee-crypto = { version = "0.2.1-alpha", default-features = false, optional = true }
-bee-ternary = { version = "0.4.2-alpha", default-features = false, optional = true }
+bee-ternary = { version = "0.5.2", default-features = false, optional = true }
 bytes = { version = "1.1.0", default-features = false, optional = true }
 
 [dev-dependencies]
@@ -68,7 +65,7 @@ sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
 storage = ["rusqlite", "once_cell"]
-wasm = ["reqwest", "futures", "wasm-timer", "bee-crypto", "bee-ternary", "bytes"]
+wasm = ["reqwest", "futures", "gloo-timers", "instant", "bee-ternary", "bytes"]
 #fallback to local PoW
 pow-fallback = []
 
