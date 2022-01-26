@@ -6,7 +6,7 @@
 use crate::{
     node_api::indexer_api::{
         query_parameters::{QueryParameter, QueryParameters},
-        responses::ExtendedOutputsResponse,
+        responses::OutputIdsResponse,
     },
     Client, Error, Result,
 };
@@ -32,7 +32,7 @@ pub async fn get_output_ids_with_pagination(
     // do we need to validate the query parameters?
     let mut all_output_ids: Vec<OutputId> = Vec::new();
     while let Some(offset) = {
-        let outputs_response: ExtendedOutputsResponse = client
+        let outputs_response: OutputIdsResponse = client
             .node_manager
             .get_request(
                 route,

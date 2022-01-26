@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{node::OutputsOptions, signing::SignerHandle, Client, Result};
+use crate::{node_api::indexer_api::query_parameters::QueryParameter, signing::SignerHandle, Client, Result};
 
 /// Builder of get_unspent_address API
 pub struct GetUnspentAddressBuilder<'a> {
@@ -50,16 +50,14 @@ impl<'a> GetUnspentAddressBuilder<'a> {
                 .await?;
 
             let mut address = None;
-            for a in addresses {
-                let address_outputs = self
-                    .client
-                    .get_address()
-                    .outputs(OutputsOptions {
-                        bech32_address: Some(a.to_string()),
-                    })
-                    .await?;
-                if address_outputs.is_empty() {
-                    address.replace(a);
+            for addr in addresses {
+                let address_output_ids = crate::node_api::indexer_api::routes::output_ids(
+                    self.client,
+                    vec![QueryParameter::Address(addr.clone())],
+                )
+                .await?;
+                if address_output_ids.is_empty() {
+                    address.replace(addr);
                     break;
                 } else {
                     index += 1;

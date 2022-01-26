@@ -7,12 +7,14 @@ use crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerM
 
 use crate::{
     api::{
+        finish_pow,
         miner::{ClientMiner, ClientMinerBuilder},
-        *,
+        ClientMessageBuilder, GetAddressesBuilder, GetBalanceBuilder, GetUnspentAddressBuilder,
     },
     builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
-    error::*,
+    error::{Error, Result},
     node::*,
+    node_api::indexer_api::query_parameters::QueryParameter,
     node_manager::Node,
     signing::SignerHandle,
     utils::{
@@ -330,20 +332,22 @@ impl Client {
             available_outputs.extend_from_slice(
                 &self
                     .get_address()
-                    .output_ids(OutputsOptions {
-                        bech32_address: Some(address.to_string()),
-                    })
+                    .outputs(vec![QueryParameter::Address(address.to_string())])
                     .await?,
             );
         }
 
         let mut extended_outputs = Vec::new();
 
-        for output_id in available_outputs.into_iter() {
-            let utxo_input = UtxoInput::from(output_id);
-            let output_data = self.get_output(utxo_input.output_id()).await?;
-            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_data.output)?;
-            extended_outputs.push((utxo_input, amount));
+        for output_resp in available_outputs.into_iter() {
+            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_resp.output)?;
+            extended_outputs.push((
+                UtxoInput::new(
+                    TransactionId::from_str(&output_resp.transaction_id)?,
+                    output_resp.output_index,
+                )?,
+                amount,
+            ));
         }
         extended_outputs.sort_by(|l, r| r.1.cmp(&l.1));
 
@@ -489,38 +493,21 @@ impl Client {
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
     pub async fn find_outputs(&self, outputs: &[UtxoInput], addresses: &[String]) -> Result<Vec<OutputResponse>> {
-        let mut output_metadata = Vec::<OutputResponse>::new();
-        // Use a `HashSet` to prevent duplicate output.
-        let mut output_to_query = HashSet::<UtxoInput>::new();
-
-        // Collect the `UtxoInput` in the HashSet.
-        for output in outputs {
-            output_to_query.insert(output.to_owned());
-        }
+        let mut output_metadata =
+            crate::node_api::core_api::get_outputs(self, outputs.iter().map(|output| *output.output_id()).collect())
+                .await?;
 
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
             let address_outputs = self
                 .get_address()
-                .outputs(OutputsOptions {
-                    bech32_address: Some(address.to_string()),
-                })
+                .outputs(vec![QueryParameter::Address(address.to_string())])
                 .await?;
-            for output in address_outputs.iter() {
-                output_to_query.insert(UtxoInput::from(OutputId::new(
-                    TransactionId::from_str(&output.transaction_id)?,
-                    output.output_index,
-                )?));
-            }
+            output_metadata.extend(address_outputs.into_iter());
         }
 
-        // Use `get_output` API to get the `OutputMetadata`.
-        for output in output_to_query {
-            let meta_data = self.get_output(output.output_id()).await?;
-            output_metadata.push(meta_data);
-        }
-        Ok(output_metadata)
+        Ok(output_metadata.to_vec())
     }
 
     /// GET /api/plugins/indexer/v1/outputs{query} endpoint

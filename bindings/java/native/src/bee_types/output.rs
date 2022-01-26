@@ -250,34 +250,6 @@ impl Display for TreasuryOutputDto {
     }
 }
 
-#[derive(Default, Clone)]
-pub struct OutputsOptions {
-    options: RustOutputsOptions,
-}
-
-impl OutputsOptions {
-    pub fn include_spent(&mut self, include_spent: bool) {
-        self.options.include_spent = include_spent;
-    }
-
-    pub fn output_type(&mut self, output_type: Option<OutputKind>) {
-        self.options.output_type = match output_type {
-            Some(kind) => Some(output_kind_to_type(kind)),
-            None => None,
-        };
-    }
-
-    pub fn to_inner(&self) -> RustOutputsOptions {
-        self.options.clone()
-    }
-}
-
-impl Display for OutputsOptions {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "({}, {:?})", self.options.include_spent, self.options.output_type)
-    }
-}
-
 pub struct Output {
     output: RustOutput,
 }

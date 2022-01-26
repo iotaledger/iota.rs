@@ -55,7 +55,7 @@ pub use builder::ClientBuilder;
 pub use client::*;
 pub use crypto::{self, keys::slip10::Seed};
 pub use error::*;
-pub use node::{OutputType, OutputsOptions as AddressOutputsOptions};
+pub use node::OutputType;
 #[cfg(feature = "mqtt")]
 pub use node_api::mqtt::*;
 pub use packable;

@@ -1,7 +1,10 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{api::message_builder::ClientMessageBuilder, node::OutputsOptions, signing::SignerHandle, Client, Result};
+use crate::{
+    api::message_builder::ClientMessageBuilder, node_api::indexer_api::query_parameters::QueryParameter,
+    signing::SignerHandle, Client, Result,
+};
 use bee_message::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::OutputId,
@@ -38,9 +41,7 @@ pub async fn consolidate_funds(
 
             let extended_outputs = client
                 .get_address()
-                .outputs(OutputsOptions {
-                    bech32_address: Some(address.to_string()),
-                })
+                .outputs(vec![QueryParameter::Address(address.to_string())])
                 .await?;
 
             let mut output_with_metadata = Vec::new();
