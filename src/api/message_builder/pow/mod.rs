@@ -3,11 +3,9 @@
 
 //! PoW functions
 
-use crate::{
-    api::miner::{ClientMiner, ClientMinerBuilder},
-    Client, Error, Result,
-};
-
+#[cfg(not(feature = "wasm"))]
+use crate::api::miner::ClientMinerBuilder;
+use crate::{api::miner::ClientMiner, Client, Error, Result};
 #[cfg(feature = "wasm")]
 use bee_message::payload::OptionalPayload;
 use bee_message::{parent::Parents, payload::Payload, Message, MessageBuilder, MessageId};
@@ -23,7 +21,7 @@ pub mod miner;
 #[cfg(not(feature = "wasm"))]
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let local_pow = client.get_local_pow().await;
-    let pow_worker_count = client.inner.pow_worker_count;
+    let pow_worker_count = client.pow_worker_count;
     let min_pow_score = client.get_min_pow_score().await?;
     let tips_interval = client.get_tips_interval().await;
     let network_id = client.get_network_id().await?;

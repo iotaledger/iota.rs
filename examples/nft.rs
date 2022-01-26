@@ -9,7 +9,7 @@ use iota_client::{
         output::{feature_block::IssuerFeatureBlock, FeatureBlock, NftId, NftOutputBuilder, Output},
     },
     signing::mnemonic::MnemonicSigner,
-    utils::{init_logger, request_funds_from_faucet, LevelFilter},
+    utils::{request_funds_from_faucet, LevelFilter},
     Client, Result,
 };
 extern crate dotenv;
@@ -20,7 +20,6 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_logger("iota.rs.log", LevelFilter::Debug)?;
     let iota = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()

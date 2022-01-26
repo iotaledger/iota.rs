@@ -13,7 +13,6 @@ async fn main() -> Result<()> {
     // Create a client instance
     let iota = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
-        .with_default_logger()?
         .finish()
         .await
         .unwrap();

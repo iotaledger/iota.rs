@@ -54,9 +54,11 @@ use tokio::{
 };
 use url::Url;
 
+#[cfg(not(feature = "wasm"))]
+use std::collections::HashMap;
 use std::{
-    collections::{HashMap, HashSet},
-    ops::{Deref, Range},
+    collections::HashSet,
+    ops::Range,
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
@@ -72,11 +74,12 @@ pub struct NodeInfoWrapper {
 }
 
 /// An instance of the client using HORNET or Bee URI
-#[cfg_attr(feature = "wasm", derive(Clone))]
-pub struct InnerClient {
+// #[cfg_attr(feature = "wasm", derive(Clone))]
+#[derive(Clone)]
+pub struct Client {
     #[allow(dead_code)]
     #[cfg(not(feature = "wasm"))]
-    pub(crate) runtime: Option<Runtime>,
+    pub(crate) runtime: Option<Arc<Runtime>>,
     /// Node manager
     pub(crate) node_manager: crate::node_manager::NodeManager,
     /// Flag to stop the node syncing
@@ -96,11 +99,12 @@ pub struct InnerClient {
     pub(crate) request_timeout: Duration,
     /// HTTP request timeout for remote PoW API call.
     pub(crate) remote_pow_timeout: Duration,
+    #[allow(dead_code)] // not used for wasm
     /// pow_worker_count for local PoW.
     pub(crate) pow_worker_count: Option<usize>,
 }
 
-impl std::fmt::Debug for InnerClient {
+impl std::fmt::Debug for Client {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut d = f.debug_struct("Client");
         d.field("node_manager", &self.node_manager);
@@ -110,7 +114,7 @@ impl std::fmt::Debug for InnerClient {
     }
 }
 
-impl Drop for InnerClient {
+impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
         #[cfg(not(feature = "wasm"))]
@@ -120,7 +124,7 @@ impl Drop for InnerClient {
 
         #[cfg(not(feature = "wasm"))]
         if let Some(runtime) = self.runtime.take() {
-            runtime.shutdown_background();
+            Arc::try_unwrap(runtime).unwrap().shutdown_background();
         }
 
         #[cfg(feature = "mqtt")]
@@ -133,26 +137,6 @@ impl Drop for InnerClient {
             .join()
             .unwrap();
         }
-    }
-}
-
-/// An Arc with the instance of the client using HORNET or Bee URI
-#[derive(Debug, Clone)]
-pub struct Client {
-    pub(crate) inner: Arc<InnerClient>,
-}
-impl Client {
-    /// Create a new client
-    pub fn new(inner_client: InnerClient) -> Self {
-        Self {
-            inner: Arc::new(inner_client),
-        }
-    }
-}
-impl Deref for Client {
-    type Target = InnerClient;
-    fn deref(&self) -> &Self::Target {
-        self.inner.deref()
     }
 }
 
@@ -538,7 +522,7 @@ impl Client {
     }
 
     /// GET /api/plugins/indexer/v1/outputs{query} endpoint
-    pub fn get_address(&self) -> GetAddressBuilder {
+    pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }
 
@@ -668,7 +652,7 @@ impl Client {
 
     /// A generic send function for easily sending transaction or tagged data messages.
     pub fn message(&self) -> ClientMessageBuilder<'_> {
-        ClientMessageBuilder::new(self.clone())
+        ClientMessageBuilder::new(self)
     }
 
     /// Return a valid unspent address.
@@ -682,10 +666,7 @@ impl Client {
     }
 
     /// Find all messages by provided message IDs.
-    pub async fn find_messages<I: AsRef<[u8]>>(
-        &self,
-        message_ids: &[MessageId],
-    ) -> Result<Vec<Message>> {
+    pub async fn find_messages<I: AsRef<[u8]>>(&self, message_ids: &[MessageId]) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
         // Use a `HashSet` to prevent duplicate message_ids.

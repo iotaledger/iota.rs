@@ -3,12 +3,7 @@
 
 //! cargo run --example split_funds --release
 
-use iota_client::{
-    request_funds_from_faucet,
-    signing::mnemonic::MnemonicSigner,
-    utils::{init_logger, LevelFilter},
-    Client, Result,
-};
+use iota_client::{request_funds_from_faucet, signing::mnemonic::MnemonicSigner, utils::LevelFilter, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -17,7 +12,6 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_logger("iota.rs.log", LevelFilter::Debug)?;
     let iota = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()

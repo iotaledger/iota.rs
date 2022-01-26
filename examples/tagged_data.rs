@@ -11,7 +11,6 @@ async fn main() -> Result<()> {
     let iota = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
-        .with_default_logger()?
         .finish()
         .await?;
 

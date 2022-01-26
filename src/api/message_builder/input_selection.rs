@@ -57,13 +57,12 @@ pub(crate) async fn get_inputs(
         let mut address_index = gap_index;
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
             let output_ids = crate::node_api::indexer_api::routes::output_ids(
-                &message_builder.client,
+                message_builder.client,
                 QueryParameters::new(vec![QueryParameter::Address(str_address.to_string())]),
             )
             .await?;
 
-            let address_outputs =
-                crate::node_api::core_api::get_outputs(message_builder.client.clone(), output_ids).await?;
+            let address_outputs = crate::node_api::core_api::get_outputs(message_builder.client, output_ids).await?;
 
             // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
             // looking up the addresses belonging to the seed. Note that we don't

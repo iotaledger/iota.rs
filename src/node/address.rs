@@ -53,14 +53,14 @@ impl OutputsOptions {
 }
 
 /// Builder of GET /api/v2/address/{address} endpoint
-pub struct GetAddressBuilder {
-    client: Client,
+pub struct GetAddressBuilder<'a> {
+    client: &'a Client,
 }
 
-impl GetAddressBuilder {
+impl<'a> GetAddressBuilder<'a> {
     /// Create GET /api/v2/address/{address} endpoint builder
-    pub fn new(client: &Client) -> Self {
-        Self { client: client.clone() }
+    pub fn new(client: &'a Client) -> Self {
+        Self { client }
     }
 
     /// Consume the builder and get the balance of a given Bech32 encoded address.

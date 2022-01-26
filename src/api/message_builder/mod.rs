@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[cfg(not(feature = "wasm"))]
-use crate::api::{do_pow, pow::finish_pow};
+use crate::api::{do_pow, miner::ClientMinerBuilder, pow::finish_pow};
 use crate::{
-    api::{
-        miner::ClientMinerBuilder,
-        types::{AddressIndexRecorder, PreparedTransactionData},
-    },
+    api::types::{AddressIndexRecorder, PreparedTransactionData},
     signing::SignerHandle,
     Client, Error, Result,
 };
@@ -23,6 +20,7 @@ use bee_message::{
 use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
 use crypto::keys::slip10::Chain;
+#[cfg(not(feature = "wasm"))]
 use packable::PackableExt;
 #[cfg(not(feature = "wasm"))]
 use tokio::time::sleep;
@@ -39,7 +37,7 @@ const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
-    client: Client,
+    client: &'a Client,
     signer: Option<&'a SignerHandle>,
     account_index: Option<u32>,
     initial_address_index: Option<u32>,
@@ -53,7 +51,7 @@ pub struct ClientMessageBuilder<'a> {
 
 impl<'a> ClientMessageBuilder<'a> {
     /// Create message builder
-    pub fn new(client: Client) -> Self {
+    pub fn new(client: &'a Client) -> Self {
         Self {
             client,
             signer: None,
@@ -306,14 +304,14 @@ impl<'a> ClientMessageBuilder<'a> {
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let network_id = self.client.get_network_id().await?;
                 let mut client_miner = ClientMinerBuilder::new().with_local_pow(self.client.get_local_pow().await);
-                if let Some(worker_count) = self.client.inner.pow_worker_count {
+                if let Some(worker_count) = self.client.pow_worker_count {
                     client_miner = client_miner.with_worker_count(worker_count);
                 }
                 do_pow(client_miner.finish(), min_pow_score, network_id, payload, parents)?
                     .1
                     .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
-            None => finish_pow(&self.client, payload).await?,
+            None => finish_pow(self.client, payload).await?,
         };
 
         let msg_id = self.client.post_message(&final_message).await?;

@@ -270,6 +270,8 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
+        // todo remove
+        crate::init_logger("iota.rs.log", crate::LevelFilter::Debug)?;
         // Add default nodes
         if !self.offline {
             self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
@@ -305,14 +307,14 @@ impl ClientBuilder {
             })
             .join()
             .expect("failed to init node syncing process");
-            (Some(runtime), sync, Some(sync_kill_sender), network_info)
+            (Some(Arc::new(runtime)), sync, Some(sync_kill_sender), network_info)
         } else {
             (None, Arc::new(RwLock::new(nodes)), None, network_info)
         };
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
-        let client = InnerClient {
+        let client = Client {
             node_manager: self.node_manager_builder.build(sync),
             #[cfg(not(feature = "wasm"))]
             runtime,
@@ -331,6 +333,6 @@ impl ClientBuilder {
             remote_pow_timeout: self.remote_pow_timeout,
             pow_worker_count: self.pow_worker_count,
         };
-        Ok(Client::new(client))
+        Ok(client)
     }
 }

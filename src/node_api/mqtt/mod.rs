@@ -21,7 +21,7 @@ use std::{sync::Arc, time::Instant};
 async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     // if the client was disconnected, we clear it so we can start over
     if *client.mqtt_event_receiver().borrow() == MqttEvent::Disconnected {
-        client.inner.mqtt_client = None;
+        client.mqtt_client = None;
     }
     match client.mqtt_client {
         Some(ref mut c) => Ok(c),
