@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! The Client module to connect through HORNET or Bee with API usages
-#[cfg(feature = "mqtt")]
-use crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerMap};
 
 use crate::{
     api::{
-        finish_pow,
         miner::{ClientMiner, ClientMinerBuilder},
         ClientMessageBuilder, GetAddressesBuilder, GetBalanceBuilder, GetUnspentAddressBuilder,
     },
-    builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT},
+    builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT, TIPS_INTERVAL},
     error::{Error, Result},
     node::*,
     node_api::indexer_api::query_parameters::QueryParameter,
@@ -43,27 +40,33 @@ use bee_rest_api::types::{
 use crypto::keys::slip10::Seed;
 use packable::PackableExt;
 
-use crate::builder::TIPS_INTERVAL;
-#[cfg(feature = "mqtt")]
-use rumqttc::AsyncClient as MqttClient;
-#[cfg(feature = "mqtt")]
-use tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender};
-#[cfg(not(feature = "wasm"))]
-use tokio::{
-    runtime::Runtime,
-    sync::broadcast::{Receiver, Sender},
-    time::{sleep, Duration as TokioDuration},
-};
 use url::Url;
 
-#[cfg(not(feature = "wasm"))]
-use std::collections::HashMap;
 use std::{
     collections::HashSet,
     ops::Range,
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
+};
+
+#[cfg(feature = "wasm")]
+use gloo_timers::future::TimeoutFuture;
+#[cfg(not(feature = "wasm"))]
+use {
+    crate::api::finish_pow,
+    std::collections::HashMap,
+    tokio::{
+        runtime::Runtime,
+        sync::broadcast::{Receiver, Sender},
+        time::{sleep, Duration as TokioDuration},
+    },
+};
+#[cfg(feature = "mqtt")]
+use {
+    crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerMap},
+    rumqttc::AsyncClient as MqttClient,
+    tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender},
 };
 
 /// NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)
@@ -722,8 +725,7 @@ impl Client {
         for _ in 0..max_attempts.unwrap_or(40) {
             #[cfg(feature = "wasm")]
             {
-                use wasm_timer::Delay;
-                Delay::new(Duration::from_secs(interval.unwrap_or(5))).await?;
+                TimeoutFuture::new((interval.unwrap_or(5) * 1000).try_into().unwrap()).await;
             }
             #[cfg(not(feature = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;

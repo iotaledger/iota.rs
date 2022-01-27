@@ -2,19 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Client Instance
-#[cfg(feature = "mqtt")]
-use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{client::*, error::*};
-
-#[cfg(not(feature = "wasm"))]
-use tokio::{runtime::Runtime, sync::broadcast::channel};
-
-#[cfg(not(feature = "wasm"))]
-use std::collections::HashSet;
 
 use std::{
     sync::{Arc, RwLock},
     time::Duration,
+};
+
+#[cfg(feature = "mqtt")]
+use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
+
+#[cfg(not(feature = "wasm"))]
+use {
+    std::collections::HashSet,
+    tokio::{runtime::Runtime, sync::broadcast::channel},
 };
 
 const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);

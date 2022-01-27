@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{Client, Result};
+
 use bee_message::{Message, MessageId};
 use bee_rest_api::types::responses::MessageMetadataResponse as MessageMetadata;
 

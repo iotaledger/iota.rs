@@ -9,11 +9,12 @@ use bee_message::{
     signature::Signature,
     unlock_block::{UnlockBlock, UnlockBlocks},
 };
-#[cfg(feature = "wasm")]
-use std::sync::Mutex;
+
 #[cfg(not(feature = "wasm"))]
 use tokio::sync::Mutex;
 
+#[cfg(feature = "wasm")]
+use std::sync::Mutex;
 use std::{
     fmt::{Debug, Formatter, Result},
     ops::{Deref, Range},

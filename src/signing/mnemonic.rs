@@ -5,6 +5,7 @@ use crate::{
     signing::{SignerHandle, SignerType},
     Client, Result,
 };
+
 use bee_message::{
     address::{Address, Ed25519Address},
     payload::transaction::TransactionEssence,

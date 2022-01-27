@@ -3,17 +3,18 @@
 
 //! PoW functions
 
-#[cfg(not(feature = "wasm"))]
-use crate::api::miner::ClientMinerBuilder;
 use crate::{api::miner::ClientMiner, Client, Error, Result};
-#[cfg(feature = "wasm")]
-use bee_message::payload::OptionalPayload;
+
 use bee_message::{parent::Parents, payload::Payload, Message, MessageBuilder, MessageId};
-#[cfg(not(feature = "wasm"))]
-use bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder};
-#[cfg(feature = "wasm")]
-use packable::Packable;
 use packable::PackableExt;
+
+#[cfg(not(feature = "wasm"))]
+use {
+    crate::api::miner::ClientMinerBuilder,
+    bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder},
+};
+#[cfg(feature = "wasm")]
+use {bee_message::payload::OptionalPayload, packable::Packable};
 
 pub mod miner;
 
@@ -177,7 +178,7 @@ pub async fn finish_single_thread_pow(
             buffer[..pow_digest.len()].copy_from(&pow_digest);
             buffers.push(buffer);
         }
-        let mining_start = wasm_timer::Instant::now();
+        let mining_start = instant::Instant::now();
         // counter to reduce amount of mining_start.elapsed() calls
         let mut counter = 0;
         loop {

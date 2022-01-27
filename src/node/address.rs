@@ -3,8 +3,10 @@
 
 use crate::{node_api::indexer_api::query_parameters::QueryParameter, Client, Result};
 
-use crate::bee_rest_api::types::responses::OutputResponse;
-use bee_rest_api::types::{dtos::OutputDto, responses::BalanceAddressResponse};
+use bee_rest_api::types::{
+    dtos::OutputDto,
+    responses::{BalanceAddressResponse, OutputResponse},
+};
 
 /// Output type filter.
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,10 +1,9 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-#[cfg(not(feature = "wasm"))]
-use crate::api::{do_pow, miner::ClientMinerBuilder, pow::finish_pow};
 use crate::{
     api::types::{AddressIndexRecorder, PreparedTransactionData},
+    bee_message::output::ExtendedOutputBuilder,
     signing::SignerHandle,
     Client, Error, Result,
 };
@@ -12,28 +11,34 @@ use crate::{
 use bee_message::{
     address::{Address, Ed25519Address},
     input::{Input, UtxoInput},
-    output::{ExtendedOutput, Output},
+    output::{
+        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        Output,
+    },
     payload::{transaction::TransactionId, Payload, TaggedDataPayload},
     Message, MessageId,
 };
-#[cfg(not(feature = "wasm"))]
-use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
 use crypto::keys::slip10::Chain;
-#[cfg(not(feature = "wasm"))]
-use packable::PackableExt;
-#[cfg(not(feature = "wasm"))]
-use tokio::time::sleep;
 
-use std::{ops::Range, str::FromStr, time::Duration};
+use std::{ops::Range, str::FromStr};
+
+#[cfg(feature = "wasm")]
+use gloo_timers::future::TimeoutFuture;
+#[cfg(not(feature = "wasm"))]
+use {
+    crate::api::{do_pow, miner::ClientMinerBuilder, pow::finish_pow},
+    bee_pow::providers::NonceProviderBuilder,
+    packable::PackableExt,
+    std::time::Duration,
+    tokio::time::sleep,
+};
 
 mod input_selection;
 pub mod pow;
 pub mod transaction;
 use input_selection::{get_custom_inputs, get_inputs};
 use transaction::{prepare_transaction, sign_transaction};
-
-const DUST_THRESHOLD: u64 = 1_000_000;
 
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
@@ -104,7 +109,11 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder
     pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = ExtendedOutput::new(Address::from_str(address)?, amount);
+        let output = ExtendedOutputBuilder::new(amount)
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
+                Address::from_str(address)?,
+            )))
+            .finish()?;
         self.outputs.push(Output::Extended(output));
         Ok(self)
     }
@@ -118,7 +127,11 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = ExtendedOutput::new(address.parse::<Ed25519Address>()?.into(), amount);
+        let output = ExtendedOutputBuilder::new(amount)
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
+                address.parse::<Ed25519Address>()?.into(),
+            )))
+            .finish()?;
         self.outputs.push(Output::Extended(output));
         Ok(self)
     }
@@ -213,7 +226,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 for block in &r.unlock_conditions {
                     match block {
                         bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?))
+                            return Ok((r.amount, Address::try_from(&e.address)?));
                         }
                         _ => todo!(),
                     }
@@ -329,8 +342,7 @@ impl<'a> ClientMessageBuilder<'a> {
                     sleep(Duration::from_millis(time * 50)).await;
                     #[cfg(feature = "wasm")]
                     {
-                        use wasm_timer::Delay;
-                        Delay::new(Duration::from_millis(time * 50)).await?;
+                        TimeoutFuture::new((time * 50).try_into().unwrap()).await;
                     }
                 }
                 self.client.get_message().data(&msg_id).await

@@ -6,10 +6,12 @@ pub mod types;
 pub use types::*;
 
 use crate::{Client, Result};
+
 use bee_message::Message;
 use crypto::utils;
-use log::warn;
 use packable::PackableExt;
+
+use log::warn;
 use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
     Transport,

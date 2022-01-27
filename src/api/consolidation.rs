@@ -5,6 +5,7 @@ use crate::{
     api::message_builder::ClientMessageBuilder, node_api::indexer_api::query_parameters::QueryParameter,
     signing::SignerHandle, Client, Result,
 };
+
 use bee_message::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::OutputId,

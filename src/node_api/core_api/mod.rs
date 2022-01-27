@@ -18,7 +18,7 @@ pub async fn get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<V
     let mut outputs = Vec::new();
     #[cfg(feature = "wasm")]
     for output_id in output_ids {
-        outputs.push(get_output(&client, &output_id).await?);
+        outputs.push(get_output(client, &output_id).await?);
     }
     #[cfg(not(feature = "wasm"))]
     for output_ids_chunk in output_ids

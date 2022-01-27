@@ -4,7 +4,6 @@
 use crate::{
     api::{
         address::search_address,
-        message_builder::DUST_THRESHOLD,
         types::{AddressIndexRecorder, OutputWrapper},
         ClientMessageBuilder, ADDRESS_GAP_RANGE,
     },
@@ -15,7 +14,10 @@ use crate::{
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{ExtendedOutput, Output},
+    output::{
+        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        ExtendedOutputBuilder, Output,
+    },
 };
 use bee_rest_api::types::dtos::OutputDto;
 
@@ -119,16 +121,17 @@ pub(crate) async fn get_inputs(
                         inputs_for_essence.push(address_index_record.input.clone());
                         address_index_recorders.push(address_index_record);
                         // Break if we have enough funds and don't create dust for the remainder
-                        if total_already_spent == total_to_spend
-                            || total_already_spent >= total_to_spend + DUST_THRESHOLD
-                        {
+                        if total_already_spent >= total_to_spend {
                             let remaining_balance = total_already_spent - total_to_spend;
                             // Output possible remaining tokens back to the original address
                             if remaining_balance != 0 {
-                                outputs_for_essence.push(Output::Extended(ExtendedOutput::new(
-                                    Address::try_from_bech32(&output_wrapper.address)?,
-                                    remaining_balance,
-                                )));
+                                outputs_for_essence.push(Output::Extended(
+                                    ExtendedOutputBuilder::new(remaining_balance)
+                                        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
+                                            Address::try_from_bech32(&output_wrapper.address)?,
+                                        )))
+                                        .finish()?,
+                                ));
                             }
                             break 'input_selection;
                         }
@@ -182,54 +185,53 @@ pub(crate) async fn get_custom_inputs(
     let mut total_already_spent = 0;
     let account_index = message_builder.account_index.unwrap_or(0);
     for input in inputs {
+        let output = message_builder.client.get_output(input.output_id()).await?;
         // Only add unspent outputs
-        if let Ok(output) = message_builder.client.get_output(input.output_id()).await {
-            if !output.is_spent {
-                let (output_amount, output_address) =
-                    ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+        if !output.is_spent {
+            let (output_amount, output_address) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
 
-                total_already_spent += output_amount;
-                let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
-                let (address_index, internal) = match message_builder.signer {
-                    Some(signer) => {
-                        search_address(
-                            signer,
-                            &bech32_hrp,
-                            account_index,
-                            message_builder.input_range.clone(),
-                            &output_address,
-                        )
-                        .await?
-                    }
-                    None => (0, false),
-                };
-
-                let address_index_record = ClientMessageBuilder::create_address_index_recorder(
-                    account_index,
-                    address_index,
-                    internal,
-                    &output,
-                    output_address.to_bech32(&bech32_hrp),
-                )?;
-                inputs_for_essence.push(address_index_record.input.clone());
-                address_index_recorders.push(address_index_record);
-                // Output the remaining tokens back to the original address
-                if total_already_spent > total_to_spend {
-                    let remaining_balance = total_already_spent - total_to_spend;
-                    // Keep track of remaining balance, we don't add an output here, because we could have
-                    // multiple inputs from the same address, which would create multiple outputs with the
-                    // same address, which is not allowed
-                    remainder_address_balance = (Some(output_address), remaining_balance);
+            total_already_spent += output_amount;
+            let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
+            let (address_index, internal) = match message_builder.signer {
+                Some(signer) => {
+                    search_address(
+                        signer,
+                        &bech32_hrp,
+                        account_index,
+                        message_builder.input_range.clone(),
+                        &output_address,
+                    )
+                    .await?
                 }
+                None => (0, false),
+            };
+
+            let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                account_index,
+                address_index,
+                internal,
+                &output,
+                output_address.to_bech32(&bech32_hrp),
+            )?;
+            inputs_for_essence.push(address_index_record.input.clone());
+            address_index_recorders.push(address_index_record);
+            // Output the remaining tokens back to the original address
+            if total_already_spent > total_to_spend {
+                let remaining_balance = total_already_spent - total_to_spend;
+                // Keep track of remaining balance, we don't add an output here, because we could have
+                // multiple inputs from the same address, which would create multiple outputs with the
+                // same address, which is not allowed
+                remainder_address_balance = (Some(output_address), remaining_balance);
             }
         }
     }
     // Add output from remaining balance of custom inputs if necessary
     if let Some(address) = remainder_address_balance.0 {
-        outputs_for_essence.push(Output::Extended(ExtendedOutput::new(
-            address,
-            remainder_address_balance.1,
-        )));
+        outputs_for_essence.push(Output::Extended(
+            ExtendedOutputBuilder::new(remainder_address_balance.1)
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .finish()?,
+        ));
     }
 
     if total_already_spent < total_to_spend {

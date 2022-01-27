@@ -96,8 +96,6 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-common"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70a0740d9b585483eba7812cd9e429fc6aa0337e624ea3b207545ceee3dc3c4f"
 dependencies = [
  "autocfg",
  "fern",
@@ -110,7 +108,8 @@ dependencies = [
 [[package]]
 name = "bee-common"
 version = "0.6.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70a0740d9b585483eba7812cd9e429fc6aa0337e624ea3b207545ceee3dc3c4f"
 dependencies = [
  "autocfg",
  "fern",
@@ -123,9 +122,8 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
- "bee-common 0.6.0 (git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863)",
+ "bee-common 0.6.0",
  "bee-message",
  "packable",
  "thiserror",
@@ -134,10 +132,9 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
  "bech32 0.8.1",
- "bee-common 0.6.0 (git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863)",
+ "bee-common 0.6.0",
  "bee-pow",
  "bee-ternary",
  "bitflags",
@@ -156,7 +153,6 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -166,7 +162,6 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
-source = "git+https://github.com/Thoralf-M/bee?rev=c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863#c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -596,6 +591,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "gloo-timers"
+version = "0.2.2"
+source = "git+https://github.com/rustwasm/gloo?rev=923e033688b18f03b63aa9c4823c26b4f7ae817c#923e033688b18f03b63aa9c4823c26b4f7ae817c"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "js-sys",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "h2"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -810,7 +816,9 @@ dependencies = [
  "bytes",
  "dotenv",
  "futures",
+ "gloo-timers",
  "hex",
+ "instant",
  "iota-crypto",
  "iota-ledger",
  "log",
@@ -827,7 +835,6 @@ dependencies = [
  "tokio",
  "ureq",
  "url",
- "wasm-timer",
  "zeroize",
 ]
 
@@ -957,15 +964,6 @@ name = "libc"
 version = "0.2.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8521a1b57e76b1ec69af7599e75e38e7b7fad6610f037db8c79b127201b5d119"
-
-[[package]]
-name = "lock_api"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "712a4d093c9976e24e7dbca41db895dabcbac38eb5f4045393d17a95bdfb1109"
-dependencies = [
- "scopeguard",
-]
 
 [[package]]
 name = "log"
@@ -1128,31 +1126,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "parking_lot"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
-dependencies = [
- "instant",
- "lock_api",
- "parking_lot_core",
-]
-
-[[package]]
-name = "parking_lot_core"
-version = "0.8.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d76e8e1493bcac0d2766c42737f34458f1c8c50c0d23bcb24ea953affb273216"
-dependencies = [
- "cfg-if 1.0.0",
- "instant",
- "libc",
- "redox_syscall",
- "smallvec",
- "winapi",
 ]
 
 [[package]]
@@ -1330,15 +1303,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "redox_syscall"
-version = "0.2.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8383f39639269cde97d255a32bdb68c047337295414940c68bdd30c2e13203ff"
-dependencies = [
- "bitflags",
-]
-
-[[package]]
 name = "regex"
 version = "1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1471,12 +1435,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c9613b5a66ab9ba26415184cfc41156594925a9cf3a2057e57f31ff145f6568"
 
 [[package]]
-name = "scopeguard"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
-
-[[package]]
 name = "sct"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1586,12 +1544,6 @@ name = "slab"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9def91fd1e018fe007022791f865d0ccc9b3a0d5001e01aabb8b40e46000afb5"
-
-[[package]]
-name = "smallvec"
-version = "1.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ecab6c735a6bb4139c0caafd0cc3635748bbb3acf4550e8138122099251f309"
 
 [[package]]
 name = "socket2"
@@ -1991,20 +1943,6 @@ name = "wasm-bindgen-shared"
 version = "0.2.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0237232789cf037d5480773fe568aac745bfe2afbc11a863e97901780a6b47cc"
-
-[[package]]
-name = "wasm-timer"
-version = "0.2.5"
-source = "git+https://github.com/PhilippGackstatter/wasm-timer?rev=448c2be0c4feeb6b5df1da265489232dff2f03c1#448c2be0c4feeb6b5df1da265489232dff2f03c1"
-dependencies = [
- "futures",
- "js-sys",
- "parking_lot",
- "pin-utils",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
 
 [[package]]
 name = "web-sys"

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use bee_message::{address::Address, input::Input};
+
 use serde::{Deserialize, Serialize};
 
 /// The signer types.

@@ -3,27 +3,27 @@
 
 //! The node manager that takes care of sending requests and quroum if enabled
 
-use bee_rest_api::types::{body::SuccessBody, responses::InfoResponse};
-
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
-
 use crate::{
     builder::NetworkInfo,
     error::{Error, Result},
 };
+
+use bee_rest_api::types::{body::SuccessBody, responses::InfoResponse};
+
 use log::warn;
 use regex::Regex;
-use std::sync::RwLock;
-#[cfg(all(feature = "sync", not(feature = "async")))]
-use ureq::{Agent, AgentBuilder};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_json::Value;
 use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::Arc,
+    sync::{Arc, RwLock},
     time::Duration,
 };
+
+#[cfg(all(feature = "sync", not(feature = "async")))]
+use ureq::{Agent, AgentBuilder};
 
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 const DEFAULT_QUORUM_SIZE: usize = 3;
