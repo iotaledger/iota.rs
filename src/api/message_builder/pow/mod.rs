@@ -99,16 +99,14 @@ pub fn do_pow(
 
 // Single threaded PoW for wasm
 #[cfg(feature = "wasm")]
-use bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf};
-#[cfg(feature = "wasm")]
-use crypto::hashes::ternary::{
-    curl_p::{CurlPBatchHasher, BATCH_SIZE},
-    HASH_LENGTH,
+use {
+    bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf},
+    crypto::hashes::ternary::{
+        curl_p::{CurlPBatchHasher, BATCH_SIZE},
+        HASH_LENGTH,
+    },
+    crypto::hashes::{blake2b::Blake2b256, Digest},
 };
-#[cfg(feature = "wasm")]
-// use bytes::Buf;
-#[cfg(feature = "wasm")]
-use crypto::hashes::{blake2b::Blake2b256, Digest};
 
 // Precomputed natural logarithm of 3 for performance reasons.
 // See https://oeis.org/A002391.
@@ -126,7 +124,6 @@ pub async fn finish_single_thread_pow(
     payload: Option<bee_message::payload::Payload>,
     target_score: f64,
 ) -> crate::Result<Message> {
-    // let mut message_bytes: Vec<u8> = bytes.clone().into();
     let mut parent_messages = match parent_messages {
         Some(parents) => parents,
         None => client.get_tips().await?,

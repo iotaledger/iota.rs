@@ -15,14 +15,14 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-# bee-rest-api = { git = "https://github.com/Thoralf-M/bee", rev = "c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863", default-features = false }
-# bee-message = { git = "https://github.com/Thoralf-M/bee", rev = "c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863", default-features = false, features = ["serde1"] }
-# bee-pow = { git = "https://github.com/Thoralf-M/bee", rev = "c1142f3ca9fec0c85ef3c5fb7c6a4e8c30e74863", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "99ca9c598d9774eff906d2e6e643912b6ac7150d", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "99ca9c598d9774eff906d2e6e643912b6ac7150d", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "99ca9c598d9774eff906d2e6e643912b6ac7150d", default-features = false }
+# bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
+# bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
+# bee-pow = { path = "../bee/bee-pow",  default-features = false }
 bee-common = { version = "0.6.0", default-features = false }
 packable = { version = "0.1.0", default-features = false, features = [ "serde", "primitive-types" ] }
-bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
-bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
-bee-pow = { path = "../bee/bee-pow",  default-features = false }
 iota-crypto = { version = "0.9.1", default-features = false, features = ["std", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
 
 async-trait =  { version ="0.1.51", default-features = false }
@@ -55,9 +55,7 @@ iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "8c239b13
 instant = { version = "0.1.12", default-features = false, optional = true }
 gloo-timers = { git = "https://github.com/rustwasm/gloo", rev = "923e033688b18f03b63aa9c4823c26b4f7ae817c", default-features = false, features = ["futures"], optional = true }
 # single thread pow for wasm
-# bee-crypto = { version = "0.3.0", default-features = false, optional = true }
 bee-ternary = { version = "0.5.2", default-features = false, optional = true }
-bytes = { version = "1.1.0", default-features = false, optional = true }
 
 [dev-dependencies]
 dotenv = { version =  "0.15.0", default-features = false }
@@ -68,7 +66,7 @@ default = ["async", "ledger"]
 sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
-wasm = ["reqwest", "futures", "gloo-timers", "instant", "bee-ternary", "bytes"]
+wasm = ["reqwest", "futures", "gloo-timers", "instant", "bee-ternary"]
 #fallback to local PoW
 pow-fallback = []
 ledger = ["iota-ledger"]

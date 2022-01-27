@@ -10,7 +10,7 @@ use bee_message::{
     address::{Address, Ed25519Address},
     payload::transaction::TransactionEssence,
     signature::{Ed25519Signature, Signature},
-    unlock_block::{ReferenceUnlockBlock, SignatureUnlockBlock, UnlockBlock},
+    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, SignatureUnlockBlock, UnlockBlock},
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
@@ -140,7 +140,21 @@ impl crate::signing::Signer for MnemonicSigner {
             // Format to differentiate between public and internal addresses
             let index = format!("{}{}", input.address_index, input.address_internal);
             if let Some(block_index) = signature_indexes.get(&index) {
-                unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
+                match input.output_kind {
+                    // ExtendedOutput::KIND
+                    3 => {
+                        unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
+                    }
+                    // AliasOutput::KIND, FoundryOutput::KIND
+                    4 | 5 => {
+                        unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(*block_index as u16)?));
+                    }
+                    // NftOutput::KIND
+                    6 => {
+                        unlock_blocks.push(UnlockBlock::Nft(NftUnlockBlock::new(*block_index as u16)?));
+                    }
+                    _ => todo!(),
+                }
             } else {
                 // If not, we need to create a signature unlock block
                 let private_key = self.deref().derive(Curve::Ed25519, &chain)?.secret_key();

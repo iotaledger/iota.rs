@@ -99,6 +99,7 @@ pub async fn sign_transaction(
             input: address_index_recorder.input,
             address_index: address_index_recorder.address_index,
             address_internal: address_index_recorder.internal,
+            output_kind: Output::try_from(&address_index_recorder.output.output)?.kind(),
         });
         input_addresses.push(Address::try_from_bech32(&address_index_recorder.bech32_address)?);
     }

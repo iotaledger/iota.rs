@@ -96,18 +96,6 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-common"
 version = "0.6.0"
-dependencies = [
- "autocfg",
- "fern",
- "log",
- "serde",
- "thiserror",
- "time",
-]
-
-[[package]]
-name = "bee-common"
-version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70a0740d9b585483eba7812cd9e429fc6aa0337e624ea3b207545ceee3dc3c4f"
 dependencies = [
@@ -120,10 +108,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "bee-common"
+version = "0.6.0"
+source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
+dependencies = [
+ "autocfg",
+ "fern",
+ "log",
+ "serde",
+ "thiserror",
+ "time",
+]
+
+[[package]]
 name = "bee-ledger"
 version = "0.7.0"
+source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
 dependencies = [
- "bee-common 0.6.0",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d)",
  "bee-message",
  "packable",
  "thiserror",
@@ -132,9 +134,10 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
+source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
 dependencies = [
  "bech32 0.8.1",
- "bee-common 0.6.0",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d)",
  "bee-pow",
  "bee-ternary",
  "bitflags",
@@ -153,6 +156,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
+source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -162,6 +166,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
+source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -235,9 +240,9 @@ checksum = "1d30c751592b77c499e7bce34d99d67c2c11bdc0574e9a488ddade14150a4698"
 
 [[package]]
 name = "bytemuck"
-version = "1.7.2"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72957246c41db82b8ef88a5486143830adeb8227ef9837740bdec67724cf2c5b"
+checksum = "439989e6b8c38d1b6570a384ef1e49c8848128f5a97f3914baef02920842712f"
 
 [[package]]
 name = "byteorder"
@@ -813,7 +818,6 @@ dependencies = [
  "bee-pow",
  "bee-rest-api",
  "bee-ternary",
- "bytes",
  "dotenv",
  "futures",
  "gloo-timers",

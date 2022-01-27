@@ -95,4 +95,6 @@ pub struct TransactionInput {
     pub address_index: u32,
     /// Whether the input address is a change address or a public address.
     pub address_internal: bool,
+    /// Input(output type) https://github.com/iotaledger/bee/blob/b58faa9b74c4195b80bc8846377ee081ec7fd6a1/bee-message/src/output/mod.rs#L88
+    pub output_kind: u8,
 }

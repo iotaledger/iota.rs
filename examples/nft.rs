@@ -6,10 +6,15 @@
 use iota_client::{
     bee_message::{
         address::{Address, AliasAddress},
-        output::{feature_block::IssuerFeatureBlock, FeatureBlock, NftId, NftOutputBuilder, Output},
+        output::{
+            feature_block::IssuerFeatureBlock,
+            unlock_condition::{AddressUnlockCondition, UnlockCondition},
+            FeatureBlock, NftId, NftOutputBuilder, Output, OutputId,
+        },
+        payload::Payload,
     },
     signing::mnemonic::MnemonicSigner,
-    utils::{request_funds_from_faucet, LevelFilter},
+    utils::request_funds_from_faucet,
     Client, Result,
 };
 extern crate dotenv;
@@ -41,7 +46,8 @@ async fn main() -> Result<()> {
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Nft(
         // address of the owner of the NFT
-        NftOutputBuilder::new(address, 1_000_000, NftId::from([0; 20]), vec![1, 2, 3])?
+        NftOutputBuilder::new(1_000_000, NftId::from([0; 20]), vec![1, 2, 3])?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
             // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .finish()?,
@@ -56,7 +62,35 @@ async fn main() -> Result<()> {
 
     println!("Message sent: http://localhost:14265/api/v2/messages/{}", message.id());
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
-    // todo create second transaction with the actual NFT (BLAKE2b-160 hash of the Output ID that created the NFT)
+
+    let tx_id = match message.payload().unwrap() {
+        Payload::Transaction(tx_payload) => tx_payload.id(),
+        _ => panic!("No tx payload"),
+    };
+    let nft_output_id = OutputId::new(tx_id, 1)?;
+    // create second transaction with the actual NFT id (BLAKE2b-160 hash of the Output ID that created the NFT)
+    let mut outputs: Vec<Output> = Vec::new();
+    outputs.push(Output::Nft(
+        // address of the owner of the NFT
+        NftOutputBuilder::new(1_000_000, NftId::from(nft_output_id.hash()), vec![1, 2, 3])?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            // address of the minter of the NFT
+            // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .finish()?,
+    ));
+
+    let message = iota
+        .message()
+        .with_signer(&signer)
+        .with_input(nft_output_id.into())
+        .with_outputs(outputs)?
+        .finish()
+        .await?;
+    println!(
+        "Second message sent: http://localhost:14265/api/v2/messages/{}",
+        message.id()
+    );
+    let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
     Ok(())
 }
