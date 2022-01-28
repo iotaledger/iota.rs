@@ -94,3 +94,11 @@ path = "examples/offline_signing/2_transaction_signing.rs"
 [[example]]
 name = "3_send_message"
 path = "examples/offline_signing/3_send_message.rs"
+
+[[example]]
+name = "nft"
+path = "examples/outputs/nft.rs"
+
+[[example]]
+name = "extended"
+path = "examples/outputs/extended.rs"

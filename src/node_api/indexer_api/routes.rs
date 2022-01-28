@@ -7,7 +7,7 @@ use crate::{
     Client, Result,
 };
 
-use bee_message::output::{AliasId, NftId, OutputId};
+use bee_message::output::{AliasId, FoundryId, NftId, OutputId};
 
 // hornet: https://github.com/gohornet/hornet/blob/stardust-utxo/plugins/indexer/v1/routes.go
 
@@ -85,10 +85,9 @@ pub async fn foundries_output_ids(client: &Client, query_parameters: Vec<QueryPa
 // 	// GET returns the outputIDs or 404 if no record is found.
 // 	RouteFoundryByID = "/foundries/:" + restapi.ParameterFoundryID
 
-// todo enable when FoundryID is implemented
-// /// api/plugins/indexer/v1/foundries/:{FoundryID}
-// pub async fn foundry_output_ids(client: &Client, foundry_id: FoundryID) -> Result<Vec<OutputId>> {
-//     let route = format!("api/plugins/indexer/v1/foundries:{foundry_id}");
+/// api/plugins/indexer/v1/foundries/:{FoundryID}
+pub async fn foundry_output_ids(client: &Client, foundry_id: FoundryId) -> Result<Vec<OutputId>> {
+    let route = format!("api/plugins/indexer/v1/foundries:{foundry_id}");
 
-//     get_output_ids_with_pagination(client, &route, QueryParameters::new(Vec::new())).await
-// }
+    get_output_ids_with_pagination(client, &route, Vec::new()).await
+}
