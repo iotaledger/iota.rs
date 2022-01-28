@@ -15,9 +15,9 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "99ca9c598d9774eff906d2e6e643912b6ac7150d", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", rev = "99ca9c598d9774eff906d2e6e643912b6ac7150d", default-features = false, features = ["serde1"] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "99ca9c598d9774eff906d2e6e643912b6ac7150d", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false }
 # bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
 # bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
 # bee-pow = { path = "../bee/bee-pow",  default-features = false }

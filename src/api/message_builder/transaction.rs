@@ -45,7 +45,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     }
 
     // Inputselection
-    let (mut inputs_for_essence, mut outputs_for_essence, address_index_recorders) = match &message_builder.inputs {
+    let (inputs_for_essence, mut outputs_for_essence, address_index_recorders) = match &message_builder.inputs {
         Some(inputs) => {
             // 127 is the maximum input amount
             if inputs.len() > INPUT_COUNT_MAX.into() {
@@ -63,11 +63,9 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 
     // let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
     let mut essence = RegularTransactionEssence::builder();
-    // todo remove this, because ordering isn't required anymore?
-    // Order inputs and add them to the essence
-    inputs_for_essence.sort_unstable_by_key(|a| a.pack_to_vec());
     essence = essence.with_inputs(inputs_for_essence);
 
+    // todo remove this, because ordering isn't required anymore?
     // Order outputs and add them to the essence
     outputs_for_essence.sort_unstable_by_key(|a| a.pack_to_vec());
     essence = essence.with_outputs(outputs_for_essence);

@@ -7,6 +7,7 @@ use iota_client::{
     bee_message::{
         address::{Address, AliasAddress},
         output::{
+            unlock_condition::{AddressUnlockCondition, UnlockCondition},
             AliasId, AliasOutputBuilder, ExtendedOutputBuilder, FoundryOutputBuilder, NftId, NftOutputBuilder, Output,
             TokenScheme,
         },
@@ -44,7 +45,9 @@ async fn main() -> Result<()> {
 
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(address.clone(), 1_000_000).finish()?,
+        ExtendedOutputBuilder::new(1_000_000)
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .finish()?,
     ));
     // outputs.push(Output::Nft(
     //     NftOutputBuilder::new(address, 1_000_000, NftId::from([0; 20]), vec![1, 2, 3])?.finish()?,

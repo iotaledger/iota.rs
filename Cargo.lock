@@ -3,6 +3,17 @@
 version = 3
 
 [[package]]
+name = "ahash"
+version = "0.7.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
+dependencies = [
+ "getrandom 0.2.3",
+ "once_cell",
+ "version_check",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -110,7 +121,7 @@ dependencies = [
 [[package]]
 name = "bee-common"
 version = "0.6.0"
-source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
+source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
 dependencies = [
  "autocfg",
  "fern",
@@ -123,9 +134,9 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
+source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
 dependencies = [
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d)",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7)",
  "bee-message",
  "packable",
  "thiserror",
@@ -134,16 +145,17 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
+source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
 dependencies = [
  "bech32 0.8.1",
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d)",
+ "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7)",
  "bee-pow",
  "bee-ternary",
  "bitflags",
  "bytemuck",
  "derive_more",
  "digest",
+ "hashbrown 0.12.0",
  "hex",
  "iota-crypto",
  "packable",
@@ -156,7 +168,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
+source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -166,7 +178,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
-source = "git+https://github.com/iotaledger/bee?rev=99ca9c598d9774eff906d2e6e643912b6ac7150d#99ca9c598d9774eff906d2e6e643912b6ac7150d"
+source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -632,6 +644,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
 
 [[package]]
+name = "hashbrown"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c21d40587b92fa6a6c6e3c1bdbf87d75511db5672f9c93175574b3a00df1758"
+dependencies = [
+ "ahash",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -787,7 +808,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc633605454125dec4b66843673f01c7df2b89479b32e0ed634e43a91cff62a5"
 dependencies = [
  "autocfg",
- "hashbrown",
+ "hashbrown 0.11.2",
 ]
 
 [[package]]

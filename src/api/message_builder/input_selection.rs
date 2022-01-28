@@ -20,6 +20,7 @@ use bee_message::{
     },
 };
 use bee_rest_api::types::dtos::OutputDto;
+use packable::PackableExt;
 
 // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
 pub(crate) async fn get_inputs(
@@ -118,7 +119,7 @@ pub(crate) async fn get_inputs(
                             &output_wrapper.output,
                             str_address.to_owned(),
                         )?;
-                        inputs_for_essence.push(address_index_record.input.clone());
+                        // inputs_for_essence.push(address_index_record.input.clone());
                         address_index_recorders.push(address_index_record);
                         // Break if we have enough funds and don't create dust for the remainder
                         if total_already_spent >= total_to_spend {
@@ -168,6 +169,12 @@ pub(crate) async fn get_inputs(
             }
         }
     }
+    // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
+    address_index_recorders
+        .sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
+    for recoder in &address_index_recorders {
+        inputs_for_essence.push(recoder.input.clone());
+    }
 
     Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
 }
@@ -194,14 +201,20 @@ pub(crate) async fn get_custom_inputs(
             let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
             let (address_index, internal) = match message_builder.signer {
                 Some(signer) => {
-                    search_address(
-                        signer,
-                        &bech32_hrp,
-                        account_index,
-                        message_builder.input_range.clone(),
-                        &output_address,
-                    )
-                    .await?
+                    match output_address {
+                        Address::Ed25519(_) => {
+                            search_address(
+                                signer,
+                                &bech32_hrp,
+                                account_index,
+                                message_builder.input_range.clone(),
+                                &output_address,
+                            )
+                            .await?
+                        }
+                        // Alias and NFT addresses can't be generated from a private key
+                        _ => (0, false),
+                    }
                 }
                 None => (0, false),
             };
@@ -213,7 +226,6 @@ pub(crate) async fn get_custom_inputs(
                 &output,
                 output_address.to_bech32(&bech32_hrp),
             )?;
-            inputs_for_essence.push(address_index_record.input.clone());
             address_index_recorders.push(address_index_record);
             // Output the remaining tokens back to the original address
             if total_already_spent > total_to_spend {
@@ -236,6 +248,13 @@ pub(crate) async fn get_custom_inputs(
 
     if total_already_spent < total_to_spend {
         return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
+    }
+
+    // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
+    address_index_recorders
+        .sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
+    for recoder in &address_index_recorders {
+        inputs_for_essence.push(recoder.input.clone());
     }
 
     Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))

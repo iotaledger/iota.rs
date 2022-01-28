@@ -113,16 +113,26 @@ fn verify_signature(
                 Some(UnlockBlock::Signature(unlock_block)) => unlock_block,
                 _ => return Err(crate::Error::MissingUnlockBlock),
             },
-            // todo add alias and nft unlock blocks
-            _ => todo!(),
+            UnlockBlock::Alias(b) => match unlock_blocks.get(b.index().into()) {
+                Some(UnlockBlock::Signature(unlock_block)) => unlock_block,
+                _ => return Err(crate::Error::MissingUnlockBlock),
+            },
+            UnlockBlock::Nft(b) => match unlock_blocks.get(b.index().into()) {
+                Some(UnlockBlock::Signature(unlock_block)) => unlock_block,
+                _ => return Err(crate::Error::MissingUnlockBlock),
+            },
         },
         None => return Err(crate::Error::MissingUnlockBlock),
     };
-    let address = match address {
-        Address::Ed25519(address) => address,
+    match address {
+        Address::Ed25519(address) => {
+            let Signature::Ed25519(ed25519_signature) = signature_unlock_block.signature();
+            address.verify(essence_hash, ed25519_signature)?
+        }
         // todo handle other addresses
-        _ => todo!(),
+        Address::Alias(_address) => {}
+        Address::Nft(_address) => {}
     };
-    let Signature::Ed25519(ed25519_signature) = signature_unlock_block.signature();
-    Ok(address.verify(essence_hash, ed25519_signature)?)
+
+    Ok(())
 }
