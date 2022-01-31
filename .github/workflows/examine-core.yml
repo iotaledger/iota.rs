@@ -56,9 +56,7 @@ jobs:
 
   lint:
     name: Lint
-    # if: ${{ ! github.event.schedule }}
-    # FIXME: Fix clippy warnings. (#782)
-    if: ${{ false }}
+    if: ${{ ! github.event.schedule }}
     runs-on: ubuntu-latest
 
     steps:
