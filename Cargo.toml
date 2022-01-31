@@ -50,7 +50,7 @@ rusqlite = { version = "0.24.2", default-features = false, features = ["bundled"
 
 # wasm
 instant = { version = "0.1.12", default-features = false, optional = true }
-gloo-timers = { git = "https://github.com/rustwasm/gloo", rev = "923e033688b18f03b63aa9c4823c26b4f7ae817c", default-features = false, features = ["futures"], optional = true }
+gloo-timers = { version = "0.2.3", default-features = false, features = ["futures"], optional = true }
 # single thread pow for wasm
 bee-ternary = { version = "0.5.2", default-features = false, optional = true }
 bytes = { version = "1.1.0", default-features = false, optional = true }
