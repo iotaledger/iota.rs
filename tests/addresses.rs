@@ -40,3 +40,26 @@ async fn public_key_to_address() {
         "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string()
     );
 }
+#[tokio::test]
+async fn mnemonic_address_generation() {
+    let iota = Client::builder().with_offline_mode().finish().await.unwrap();
+
+    let mnemnonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
+
+    let mnemonic_seed = Client::mnemonic_to_hex_seed(mnemnonic).unwrap();
+    let seed = Seed::from_bytes(&hex::decode(&mnemonic_seed).unwrap());
+
+    let address = iota
+        .get_addresses(&seed)
+        .with_account_index(0)
+        .with_range(0..1)
+        .with_bech32_hrp("iota".into())
+        .finish()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        address[0],
+        "iota1qpg2xkj66wwgn8p2ggnp7p582gj8g6p79us5hve2tsudzpsr2ap4skprwjg".to_string()
+    );
+}
