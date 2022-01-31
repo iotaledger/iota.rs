@@ -41,7 +41,7 @@ pub async fn aliases_output_ids(client: &Client, query_parameters: Vec<QueryPara
 
 /// api/plugins/indexer/v1/aliases/:{AliasId}
 pub async fn alias_output_ids(client: &Client, alias_id: AliasId) -> Result<Vec<OutputId>> {
-    let route = format!("api/plugins/indexer/v1/aliases:{alias_id}");
+    let route = format!("api/plugins/indexer/v1/aliases/{alias_id}");
 
     get_output_ids_with_pagination(client, &route, Vec::new()).await
 }
@@ -64,7 +64,7 @@ pub async fn nfts_output_ids(client: &Client, query_parameters: Vec<QueryParamet
 
 /// api/plugins/indexer/v1/nft/:{NftId}
 pub async fn nft_output_ids(client: &Client, nft_id: NftId) -> Result<Vec<OutputId>> {
-    let route = format!("api/plugins/indexer/v1/nft:{nft_id}");
+    let route = format!("api/plugins/indexer/v1/nft/{nft_id}");
 
     get_output_ids_with_pagination(client, &route, Vec::new()).await
 }
@@ -87,7 +87,7 @@ pub async fn foundries_output_ids(client: &Client, query_parameters: Vec<QueryPa
 
 /// api/plugins/indexer/v1/foundries/:{FoundryID}
 pub async fn foundry_output_ids(client: &Client, foundry_id: FoundryId) -> Result<Vec<OutputId>> {
-    let route = format!("api/plugins/indexer/v1/foundries:{foundry_id}");
+    let route = format!("api/plugins/indexer/v1/foundries/{foundry_id}");
 
     get_output_ids_with_pagination(client, &route, Vec::new()).await
 }

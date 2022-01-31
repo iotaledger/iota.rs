@@ -11,7 +11,7 @@ pub struct OutputIdsResponse {
     #[serde(rename = "ledgerIndex")]
     pub ledger_index: u32,
     /// The max amount of output ids to be returned
-    pub limit: usize,
+    pub limit: Option<usize>,
     /// Milestone index with output id for the offset
     pub offset: Option<String>,
     /// The max amount of output ids

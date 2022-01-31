@@ -1,4 +1,4 @@
-// Copyright 2021 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example extended --release
@@ -65,8 +65,10 @@ async fn main() -> Result<()> {
     outputs.push(Output::Extended(
         ExtendedOutputBuilder::new(2_000_000)
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::DustDepositReturn(DustDepositReturnUnlockCondition::new(address,
-    1_000_000)?))         .finish()?,
+            .add_unlock_condition(UnlockCondition::DustDepositReturn(
+                DustDepositReturnUnlockCondition::new(address, 1_000_000)?,
+            ))
+            .finish()?,
     ));
     // with dust expiration
     // outputs.push(Output::Extended(

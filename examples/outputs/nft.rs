@@ -1,4 +1,4 @@
-// Copyright 2021 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example nft --release
@@ -12,7 +12,7 @@ use iota_client::{
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
             ExtendedOutputBuilder, FeatureBlock, NftId, NftOutputBuilder, Output, OutputId,
         },
-        payload::Payload,
+        payload::{transaction::TransactionEssence, Payload},
     },
     node_api::indexer_api::query_parameters::QueryParameter,
     request_funds_from_faucet,
@@ -63,17 +63,16 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Message sent: http://localhost:14265/api/v2/messages/{}", message.id());
+    println!(
+        "Transaction with new NFT output sent: http://localhost:14265/api/v2/messages/{}",
+        message.id()
+    );
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
-    let tx_id = match message.payload().unwrap() {
-        Payload::Transaction(tx_payload) => tx_payload.id(),
-        _ => panic!("No tx payload"),
-    };
     //////////////////////////////////
     // create second transaction with the actual NFT id (BLAKE2b-160 hash of the Output ID that created the NFT)
     //////////////////////////////////
-    let nft_output_id = OutputId::new(tx_id, 1)?;
+    let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let nft_id = NftId::from(nft_output_id.hash());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Nft(
@@ -93,7 +92,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Second message sent: http://localhost:14265/api/v2/messages/{}",
+        "Transaction with NFT id set sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
@@ -101,12 +100,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // move funds from an NFT address
     //////////////////////////////////
-    // get new output id
-    let tx_id = match message.payload().unwrap() {
-        Payload::Transaction(tx_payload) => tx_payload.id(),
-        _ => panic!("No tx payload"),
-    };
-    let nft_output_id = OutputId::new(tx_id, 0)?;
+    let nft_output_id = get_nft_output_id(message.payload().unwrap());
 
     let nft_address = NftAddress::new(nft_id);
     let bech32_nft_address = Address::Nft(nft_address).to_bech32("atoi");
@@ -126,7 +120,6 @@ async fn main() -> Result<()> {
         vec![QueryParameter::Address(bech32_nft_address)],
     )
     .await?;
-    println!("Output id for nft address: {:?}", output_ids);
     let output_response = iota.get_output(&output_ids[0]).await?;
     let output = Output::try_from(&output_response.output)?;
 
@@ -144,26 +137,16 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: http://localhost:14265/api/v2/messages/{}",
+        "Transaction with input(extended output) to NFT output sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
 
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
-    let tx_id = match message.payload().unwrap() {
-        Payload::Transaction(tx_payload) => tx_payload.id(),
-        _ => panic!("No tx payload"),
-    };
-    let nft_output_id = OutputId::new(tx_id, 0)?;
-    println!("new output_id: {:?}", nft_output_id);
 
     //////////////////////////////////
     // burn NFT
     //////////////////////////////////
-    let tx_id = match message.payload().unwrap() {
-        Payload::Transaction(tx_payload) => tx_payload.id(),
-        _ => panic!("No tx payload"),
-    };
-    let nft_output_id = OutputId::new(tx_id, 0)?;
+    let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let output_response = iota.get_output(&nft_output_id).await?;
     let output = Output::try_from(&output_response.output)?;
     let mut outputs: Vec<Output> = Vec::new();
@@ -181,9 +164,25 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Second message sent: http://localhost:14265/api/v2/messages/{}",
+        "Burn transaction sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
     Ok(())
+}
+
+// helper function to get the output id for the first NFT output
+fn get_nft_output_id(payload: &Payload) -> OutputId {
+    match payload {
+        Payload::Transaction(tx_payload) => {
+            let TransactionEssence::Regular(regular) = tx_payload.essence();
+            for (index, output) in regular.outputs().iter().enumerate() {
+                if let Output::Nft(_nft_output) = output {
+                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                }
+            }
+            panic!("No nft output in transaction essence")
+        }
+        _ => panic!("No tx payload"),
+    };
 }
