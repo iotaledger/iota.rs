@@ -12,7 +12,7 @@ pub struct OutputIdsResponse {
     pub ledger_index: u32,
     /// The max amount of output ids to be returned
     pub limit: Option<usize>,
-    /// Milestone index with output id for the offset
+    /// Offset <4 bytes timestamp of next OutputId><next OutputId>
     pub offset: Option<String>,
     /// The max amount of output ids
     pub count: usize,

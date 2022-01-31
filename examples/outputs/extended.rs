@@ -49,18 +49,18 @@ async fn main() -> Result<()> {
 
     let mut outputs: Vec<Output> = Vec::new();
     // most simple output
-    // outputs.push(Output::Extended(
-    //     ExtendedOutputBuilder::new(1_000_000)
-    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-    //         .finish()?,
-    // ));
-    // // with metadata feature block
-    // outputs.push(Output::Extended(
-    //     ExtendedOutputBuilder::new(1_000_000)
-    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-    //         .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
-    //         .finish()?,
-    // ));
+    outputs.push(Output::Extended(
+        ExtendedOutputBuilder::new(1_000_000)
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .finish()?,
+    ));
+    // with metadata feature block
+    outputs.push(Output::Extended(
+        ExtendedOutputBuilder::new(1_000_000)
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
+            .finish()?,
+    ));
     // with dust deposit return
     outputs.push(Output::Extended(
         ExtendedOutputBuilder::new(2_000_000)
@@ -71,16 +71,16 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with dust expiration
-    // outputs.push(Output::Extended(
-    //     ExtendedOutputBuilder::new(1_000_000)
-    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-    //         .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
-    //             address,
-    //             MilestoneIndex::new(400),
-    //             0,
-    //         )))
-    //         .finish()?,
-    // ));
+    outputs.push(Output::Extended(
+        ExtendedOutputBuilder::new(1_000_000)
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
+                address,
+                MilestoneIndex::new(400),
+                0,
+            )?))
+            .finish()?,
+    ));
 
     let message = iota
         .message()

@@ -15,9 +15,12 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false, features = ["serde1"] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false }
+bee-rest-api = { git = "https://github.com/rufsam/bee", rev = "22ca52336c9cae433643c532fed4040c44219045", default-features = false }
+bee-message = { git = "https://github.com/rufsam/bee", rev = "22ca52336c9cae433643c532fed4040c44219045", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/rufsam/bee", rev = "22ca52336c9cae433643c532fed4040c44219045", default-features = false }
+# bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false }
+# bee-message = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false, features = ["serde1"] }
+# bee-pow = { git = "https://github.com/iotaledger/bee", rev = "f2bd6567c65978432c6615c24f1217cc2b040dd7", default-features = false }
 # bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
 # bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
 # bee-pow = { path = "../bee/bee-pow",  default-features = false }
@@ -96,9 +99,13 @@ name = "3_send_message"
 path = "examples/offline_signing/3_send_message.rs"
 
 [[example]]
-name = "nft"
-path = "examples/outputs/nft.rs"
+name = "alias"
+path = "examples/outputs/alias.rs"
 
 [[example]]
 name = "extended"
 path = "examples/outputs/extended.rs"
+
+[[example]]
+name = "nft"
+path = "examples/outputs/nft.rs"

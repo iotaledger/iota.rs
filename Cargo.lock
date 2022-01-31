@@ -121,7 +121,7 @@ dependencies = [
 [[package]]
 name = "bee-common"
 version = "0.6.0"
-source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
+source = "git+https://github.com/rufsam/bee?rev=22ca52336c9cae433643c532fed4040c44219045#22ca52336c9cae433643c532fed4040c44219045"
 dependencies = [
  "autocfg",
  "fern",
@@ -134,9 +134,9 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
+source = "git+https://github.com/rufsam/bee?rev=22ca52336c9cae433643c532fed4040c44219045#22ca52336c9cae433643c532fed4040c44219045"
 dependencies = [
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7)",
+ "bee-common 0.6.0 (git+https://github.com/rufsam/bee?rev=22ca52336c9cae433643c532fed4040c44219045)",
  "bee-message",
  "packable",
  "thiserror",
@@ -145,10 +145,10 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
+source = "git+https://github.com/rufsam/bee?rev=22ca52336c9cae433643c532fed4040c44219045#22ca52336c9cae433643c532fed4040c44219045"
 dependencies = [
  "bech32 0.8.1",
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7)",
+ "bee-common 0.6.0 (git+https://github.com/rufsam/bee?rev=22ca52336c9cae433643c532fed4040c44219045)",
  "bee-pow",
  "bee-ternary",
  "bitflags",
@@ -168,7 +168,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
+source = "git+https://github.com/rufsam/bee?rev=22ca52336c9cae433643c532fed4040c44219045#22ca52336c9cae433643c532fed4040c44219045"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -178,7 +178,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.1.7"
-source = "git+https://github.com/iotaledger/bee?rev=f2bd6567c65978432c6615c24f1217cc2b040dd7#f2bd6567c65978432c6615c24f1217cc2b040dd7"
+source = "git+https://github.com/rufsam/bee?rev=22ca52336c9cae433643c532fed4040c44219045#22ca52336c9cae433643c532fed4040c44219045"
 dependencies = [
  "bee-ledger",
  "bee-message",
