@@ -43,6 +43,8 @@ use crypto::{
 use zeroize::Zeroize;
 
 use crate::builder::TIPS_INTERVAL;
+#[cfg(feature = "wasm")]
+use gloo_timers::future::TimeoutFuture;
 #[cfg(feature = "mqtt")]
 use rumqttc::AsyncClient as MqttClient;
 #[cfg(feature = "mqtt")]
@@ -1273,8 +1275,7 @@ impl Client {
         for _ in 0..max_attempts.unwrap_or(40) {
             #[cfg(feature = "wasm")]
             {
-                use wasm_timer::Delay;
-                Delay::new(Duration::from_secs(interval.unwrap_or(5))).await?;
+                TimeoutFuture::new((interval.unwrap_or(5) * 1000).try_into().unwrap()).await;
             }
             #[cfg(not(feature = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;
