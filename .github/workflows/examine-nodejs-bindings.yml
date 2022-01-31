@@ -29,8 +29,7 @@ on:
 jobs:
   test:
     name: Test
-    # if: ${{ ! github.event.schedule }}
-    if: ${{ false }}
+    if: ${{ ! github.event.schedule }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
