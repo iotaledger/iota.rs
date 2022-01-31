@@ -47,14 +47,48 @@ impl QueryParameters {
 /// Query parameter for output requests
 #[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub enum QueryParameter {
-    /// Filter for a certain address, bech32 encoded
+    /// Bech32-encoded address that should be searched for.
     Address(String),
-    /// Filter for a certain issuer
-    Issuer(String),
+    /// Filters outputs based on the presence of dust return unlock condition.
+    HasDustReturnCondition(bool),
+    /// Filter outputs based on the presence of a specific Bech32-encoded return address in the dust deposit return
+    /// unlock condition.
+    DustReturnAddress(String),
+    /// Filters outputs based on the presence of timelock unlock condition.
+    HasTimelockCondition(bool),
+    /// Return outputs that are timelocked before a certain Unix timestamp.
+    TimelockedBefore(u32),
+    /// Return outputs that are timelocked after a certain Unix timestamp.
+    TimelockedAfter(u32),
+    /// Return outputs that are timelocked before a certain milestone index.
+    TimelockedBeforeMilestone(u32),
+    /// Return outputs that are timelocked ater a certain milestone index.
+    TimelockedAfterMilestone(u32),
+    /// Filters outputs based on the presence of expiration unlock condition.
+    HasExpirationCondition(bool),
+    /// Return outputs that expire before a certain Unix timestamp.
+    ExpiresBefore(u32),
+    /// Return outputs that expire after a certain Unix timestamp.
+    ExpiresAfter(u32),
+    /// Return outputs that expire before a certain milestone index.
+    ExpiresBeforeMilestone(u32),
+    /// Return outputs that expire after a certain milestone index.
+    ExpiresAfterMilestone(u32),
+    /// Filter outputs based on the presence of a specific Bech32-encoded return address in the expiration unlock
+    /// condition.
+    ExpirationReturnAddress(String),
     /// Filter for a certain sender
     Sender(String),
     /// Filter for a certain tags
     Tag(String),
+    /// Return outputs that were created before a certain Unix timestamp.
+    CreatedBefore(u32),
+    /// Return outputs that were created after a certain Unix timestamp.
+    CreatedAfter(u32),
+    /// Pass the milestone timestamp + outputID we want to start the results from
+    Offset(String),
+    /// Filter for a certain issuer
+    Issuer(String),
     /// Filter for outputs requiring a dust return
     RequiresDustReturn(bool),
     /// Filter for a certain state controller address
@@ -63,8 +97,6 @@ pub enum QueryParameter {
     Governor(String),
     /// Define the page size for the results
     Limit(usize),
-    /// Pass the milestone index + outputID we want to start the results from
-    Offset(String),
 }
 
 // Custom impl because we only want a single query of each enum variant in the HashSet
@@ -84,14 +116,29 @@ impl QueryParameter {
     fn as_query_string(&self) -> String {
         match self {
             QueryParameter::Address(v) => format!("address={}", v),
-            QueryParameter::Issuer(v) => format!("issuer={}", v),
+            QueryParameter::HasDustReturnCondition(v) => format!("hasDustReturnCondition={}", v),
+            QueryParameter::DustReturnAddress(v) => format!("dustReturnAddress={}", v),
+            QueryParameter::HasTimelockCondition(v) => format!("hasTimelockCondition={}", v),
+            QueryParameter::TimelockedBefore(v) => format!("timelockedBefore={}", v),
+            QueryParameter::TimelockedAfter(v) => format!("timelockedAfter={}", v),
+            QueryParameter::TimelockedBeforeMilestone(v) => format!("timelockedBeforeMilestone={}", v),
+            QueryParameter::TimelockedAfterMilestone(v) => format!("timelockedAfterMilestone={}", v),
+            QueryParameter::HasExpirationCondition(v) => format!("hasExpirationCondition={}", v),
+            QueryParameter::ExpiresBefore(v) => format!("expiresBefore={}", v),
+            QueryParameter::ExpiresAfter(v) => format!("expiresAfter={}", v),
+            QueryParameter::ExpiresBeforeMilestone(v) => format!("expiresBeforeMilestone={}", v),
+            QueryParameter::ExpiresAfterMilestone(v) => format!("expiresAfterMilestone={}", v),
+            QueryParameter::ExpirationReturnAddress(v) => format!("expirationReturnAddress={}", v),
             QueryParameter::Sender(v) => format!("sender={}", v),
             QueryParameter::Tag(v) => format!("tag={}", v),
+            QueryParameter::CreatedBefore(v) => format!("createdBefore={}", v),
+            QueryParameter::CreatedAfter(v) => format!("createdAfter={}", v),
+            QueryParameter::Offset(v) => format!("offset={}", v),
+            QueryParameter::Issuer(v) => format!("issuer={}", v),
             QueryParameter::RequiresDustReturn(v) => format!("requiresDustReturn={}", v),
             QueryParameter::StateController(v) => format!("stateController={}", v),
             QueryParameter::Governor(v) => format!("governor={}", v),
             QueryParameter::Limit(v) => format!("limit={}", v),
-            QueryParameter::Offset(v) => format!("offset={}", v),
         }
     }
 }

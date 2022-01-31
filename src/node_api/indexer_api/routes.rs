@@ -51,9 +51,9 @@ pub async fn alias_output_ids(client: &Client, alias_id: AliasId) -> Result<Vec<
 // "requiresDustReturn", "issuer", "sender", "tag"). 	// Returns an empty list if no results are found.
 // 	RouteNFT = "/nft"
 
-/// api/plugins/indexer/v1/nft
+/// api/plugins/indexer/v1/nfts
 pub async fn nfts_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-    let route = "api/plugins/indexer/v1/nft";
+    let route = "api/plugins/indexer/v1/nfts";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
 }
@@ -62,9 +62,9 @@ pub async fn nfts_output_ids(client: &Client, query_parameters: Vec<QueryParamet
 // 	// GET returns the outputIDs or 404 if no record is found.
 // 	RouteNFTByID = "/nft/:" + restapi.ParameterNFTID
 
-/// api/plugins/indexer/v1/nft/:{NftId}
+/// api/plugins/indexer/v1/nfts/:{NftId}
 pub async fn nft_output_ids(client: &Client, nft_id: NftId) -> Result<Vec<OutputId>> {
-    let route = format!("api/plugins/indexer/v1/nft/{nft_id}");
+    let route = format!("api/plugins/indexer/v1/nfts/{nft_id}");
 
     get_output_ids_with_pagination(client, &route, Vec::new()).await
 }

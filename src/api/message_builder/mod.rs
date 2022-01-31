@@ -233,6 +233,34 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
+            OutputDto::Alias(ref r) => {
+                for block in &r.unlock_conditions {
+                    match block {
+                        bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
+                            return Ok((r.amount, Address::try_from(&e.address)?));
+                        }
+                        bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
+                            return Ok((r.amount, Address::try_from(&e.address)?));
+                        }
+                        _ => todo!(),
+                    }
+                }
+                Err(Error::OutputError("Only Ed25519Address is implemented"))
+            }
+            OutputDto::Foundry(ref r) => {
+                for block in &r.unlock_conditions {
+                    match block {
+                        bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
+                            return Ok((r.amount, Address::try_from(&e.address)?));
+                        }
+                        bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
+                            return Ok((r.amount, Address::try_from(&e.address)?));
+                        }
+                        _ => todo!(),
+                    }
+                }
+                Err(Error::OutputError("Only Ed25519Address is implemented"))
+            }
             OutputDto::Nft(ref r) => {
                 for block in &r.unlock_conditions {
                     match block {
@@ -244,16 +272,6 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
-            // match &r.address {
-            //     AddressDto::Ed25519(addr) => {
-            //         let output_address = Address::from(Ed25519Address::from_str(&addr.address)?);
-            //         Ok((r.amount, output_address))
-            //     }
-            //     // todo support other addresses
-            //     _ => Err(Error::OutputError("Only Ed25519Address is implemented")),
-            // },
-            // todo add other outputs
-            _ => Err(Error::OutputError("Output is not implemented")),
         }
     }
 
