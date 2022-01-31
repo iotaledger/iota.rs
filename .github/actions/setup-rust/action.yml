@@ -1,0 +1,91 @@
+name: Set Up Rust
+description: Install the Rust toolchain, components, and set up the cache.
+inputs:
+  toolchain:
+    description: Type of toolchain to install.
+    type: string
+    required: false
+    default: stable
+  target:
+    description: Target triple of the toolchain.
+    type: string
+    required: false
+    default:
+  components:
+    description: Additional components to install.
+    type: string
+    required: false
+    default:
+  install:
+    description: Additional tool to install via `cargo install`.
+    type: string
+    required: false
+    default:
+  cache:
+    description: Whether to set up cache or not.
+    type: boolean
+    required: false
+    default: false
+  cache-root:
+    description: The root of cargo crate.
+    type: string
+    required: false
+    default: '.'
+  cache-job-id:
+    description: An identifier of the job ensuring caching in parallel.
+    type: string
+    required: false
+    default: ${{ github.workflow }}-${{ github.job }}
+  cache-hash:
+    description: An additional hash of files for cache invalidation.
+    type: string
+    required: false
+    default:
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ inputs.toolchain }}
+        target: ${{ inputs.target }}
+        override: true
+        profile: minimal
+        components: ${{ inputs.components }}
+
+    - name: Set Up Cache for Cargo Home
+      if: ${{ inputs.cache == 'true' }}
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          ~/.cargo/.crates.toml
+        key: ${{ inputs.cache-job-id }}-cargo-home-${{ steps.install.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-${{ inputs.cache-hash }}
+        restore-keys: |
+          ${{ inputs.cache-job-id }}-cargo-home-${{ steps.install.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-
+          ${{ inputs.cache-job-id }}-cargo-home-${{ steps.install.outputs.rustc_hash }}-
+          ${{ inputs.cache-job-id }}-cargo-home-
+
+    - name: Set Up Cache for Cargo Target
+      if: ${{ inputs.cache == 'true' }}
+      uses: actions/cache@v2
+      with:
+        path: |
+          ${{ inputs.cache-root }}/target/
+        key: ${{ inputs.cache-job-id }}-cargo-target-${{ steps.install.outputs.rustc_hash }}-${{ hashFiles(format('{0}/Cargo.lock', inputs.cache-root)) }}-${{ inputs.cache-hash }}
+        restore-keys: |
+          ${{ inputs.cache-job-id }}-cargo-target-${{ steps.install.outputs.rustc_hash }}-${{ hashFiles(format('{0}/Cargo.lock', inputs.cache-root)) }}-
+          ${{ inputs.cache-job-id }}-cargo-target-${{ steps.install.outputs.rustc_hash }}-
+          ${{ inputs.cache-job-id }}-cargo-target-
+
+    - name: Install ${{ inputs.install }}
+      if: ${{ inputs.install != '' }}
+      uses: actions-rs/cargo@v1
+      with:
+        command: install
+        args: ${{ inputs.install }}

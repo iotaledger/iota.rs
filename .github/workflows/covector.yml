@@ -1,0 +1,152 @@
+name: Covector
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - 'specs/**'
+      - 'documentation/**'
+
+jobs:
+  status:
+    name: Status
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Run Covector Status
+        uses: jbolda/covector/packages/action@covector-v0
+        id: covector
+        with:
+          command: status
+
+  version-or-publish:
+    name: Version-or-publish
+    runs-on: ubuntu-latest
+    outputs:
+      change: ${{ steps.covector.outputs.change }}
+      commandRan: ${{ steps.covector.outputs.commandRan }}
+      successfulPublish: ${{ steps.covector.outputs.successfulPublish }}
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Dasel
+        run: brew install dasel
+
+      - name: Configure the Git User to Use
+        run: |
+          git config --global user.name "${{ github.event.pusher.name }}"
+          git config --global user.email "${{ github.event.pusher.email }}"
+
+      # Publish when no change file is present.
+      - id: covector
+        name: Run Covector Version-or-publish
+        uses: jbolda/covector/packages/action@covector-v0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          command: version-or-publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Pull Request with Versions Bumped
+        if: ${{ steps.covector.outputs.commandRan == 'version' }}
+        uses: iotaledger/create-pull-request@v3.4.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release/version-updates
+          title: Apply Version Updates From Current Changes
+          commit-message: apply version updates
+          labels: version updates
+          body: ${{ steps.covector.outputs.change }}
+
+  nodejs-binding-prebuild:
+    name: Build Prebuilt Binaries for Node.js
+    if: ${{ needs.version-or-publish.outputs.successfulPublish == 'true' }}
+    needs: version-or-publish
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Using Ubuntu 18.04 to provide glibc compatibility. (#588)
+        os: [ubuntu-18.04, macos-latest, windows-latest]
+        node: ['12', '14', '16']
+        exclude:
+          # FIXME: fatal error C1083: Cannot open include file: 'node.h': No such file or directory
+          - os: windows-latest
+            node: '16'
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Stable Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: stable
+          cache: false
+
+      - name: Set up Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Run Yarn Install
+        working-directory: bindings/nodejs/
+        run: yarn install
+
+      - name: Build Node.js Prebuilds
+        working-directory: bindings/nodejs/
+        run: yarn prebuild:node
+
+      - name: Upload Prebuilds to GitHub Release
+        working-directory: bindings/nodejs/
+        run: yarn prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --tag-prefix nodejs-binding-v
+
+  electron-binding-prebuild:
+    name: Build Prebuilt Binaries for Electron
+    # if: ${{ needs.version-or-publish.outputs.successfulPublish == 'true' }}
+    # FIXME: Temporary unsupported. (#782)
+    if: ${{ false }}
+    needs: version-or-publish
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Using Ubuntu 18.04 to provide glibc compatibility. (#588)
+        os: [ubuntu-18.04, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Stable Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: stable
+          cache: false
+
+      - name: Set up Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Run Yarn Install
+        working-directory: bindings/nodejs/
+        run: yarn install
+
+      - name: Build Electron Prebuilds
+        working-directory: bindings/nodejs/
+        run: yarn prebuild:electron
+
+      - name: Upload Prebuilds to GitHub Release
+        working-directory: bindings/nodejs/
+        run: yarn prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --tag-prefix nodejs-binding-v
