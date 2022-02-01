@@ -6,11 +6,9 @@
 use iota_client::{
     bee_message::{
         address::{Address, NftAddress},
-        input::UtxoInput,
         output::{
-            feature_block::IssuerFeatureBlock,
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            ExtendedOutputBuilder, FeatureBlock, NftId, NftOutputBuilder, Output, OutputId,
+            ExtendedOutputBuilder, NftId, NftOutputBuilder, Output, OutputId,
         },
         payload::{transaction::TransactionEssence, Payload},
     },

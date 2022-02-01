@@ -4,19 +4,14 @@
 //! cargo run --example output --release
 
 use iota_client::{
-    bee_message::{
-        address::{Address, AliasAddress},
-        output::{
-            unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            AliasId, AliasOutputBuilder, ExtendedOutputBuilder, FoundryOutputBuilder, NftId, NftOutputBuilder, Output,
-            TokenScheme,
-        },
+    bee_message::output::{
+        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        ExtendedOutputBuilder, Output,
     },
     signing::mnemonic::MnemonicSigner,
     utils::request_funds_from_faucet,
     Client, Result,
 };
-use primitive_types::U256;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

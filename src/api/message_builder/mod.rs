@@ -256,6 +256,9 @@ impl<'a> ClientMessageBuilder<'a> {
                         bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
                             return Ok((r.amount, Address::try_from(&e.address)?));
                         }
+                        bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
+                            return Ok((r.amount, Address::try_from(&e.address)?));
+                        }
                         _ => todo!(),
                     }
                 }

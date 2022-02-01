@@ -5,22 +5,19 @@
 
 use iota_client::{
     bee_message::{
-        address::{Address, AliasAddress},
         milestone::MilestoneIndex,
         output::{
             feature_block::MetadataFeatureBlock,
             unlock_condition::{
                 AddressUnlockCondition, DustDepositReturnUnlockCondition, ExpirationUnlockCondition, UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, ExtendedOutputBuilder, FeatureBlock, FoundryOutputBuilder, NftId,
-            NftOutputBuilder, Output, TokenScheme,
+            ExtendedOutputBuilder, FeatureBlock, Output,
         },
     },
     signing::mnemonic::MnemonicSigner,
     utils::request_funds_from_faucet,
     Client, Result,
 };
-use primitive_types::U256;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -63,10 +60,10 @@ async fn main() -> Result<()> {
     ));
     // with dust deposit return
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(2_000_000)
+        ExtendedOutputBuilder::new(176100)
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::DustDepositReturn(
-                DustDepositReturnUnlockCondition::new(address, 1_000_000)?,
+                DustDepositReturnUnlockCondition::new(address, 176000)?,
             ))
             .finish()?,
     ));

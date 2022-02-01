@@ -253,9 +253,38 @@ pub(crate) async fn get_custom_inputs(
     // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
     address_index_recorders
         .sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
+
+    // order inputs by output type, so extended inputs will be first and alias outputs before foundry outputs, so the
+    // unlock blocks can reference them
+    let mut ordered_address_index_recorders = Vec::new();
+    // extended
     for recoder in &address_index_recorders {
+        if let OutputDto::Extended(_) = recoder.output.output {
+            ordered_address_index_recorders.push(recoder.clone());
+        }
+    }
+    // alias
+    for recoder in &address_index_recorders {
+        if let OutputDto::Alias(_) = recoder.output.output {
+            ordered_address_index_recorders.push(recoder.clone());
+        }
+    }
+    // foundry
+    for recoder in &address_index_recorders {
+        if let OutputDto::Foundry(_) = recoder.output.output {
+            ordered_address_index_recorders.push(recoder.clone());
+        }
+    }
+    // nft
+    for recoder in &address_index_recorders {
+        if let OutputDto::Nft(_) = recoder.output.output {
+            ordered_address_index_recorders.push(recoder.clone());
+        }
+    }
+
+    for recoder in &ordered_address_index_recorders {
         inputs_for_essence.push(recoder.input.clone());
     }
 
-    Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
+    Ok((inputs_for_essence, outputs_for_essence, ordered_address_index_recorders))
 }

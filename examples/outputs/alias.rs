@@ -5,19 +5,15 @@
 
 use iota_client::{
     bee_message::{
-        address::{Address, NftAddress},
-        input::UtxoInput,
         output::{
             feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
             unlock_condition::{
-                AddressUnlockCondition, GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition,
-                UnlockCondition,
+                GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition, UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, ExtendedOutputBuilder, FeatureBlock, NftId, Output, OutputId,
+            AliasId, AliasOutputBuilder, FeatureBlock, Output, OutputId,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
-    node_api::indexer_api::query_parameters::QueryParameter,
     request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner,
     Client, Result,

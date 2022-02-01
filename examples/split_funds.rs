@@ -3,7 +3,7 @@
 
 //! cargo run --example split_funds --release
 
-use iota_client::{request_funds_from_faucet, signing::mnemonic::MnemonicSigner, utils::LevelFilter, Client, Result};
+use iota_client::{request_funds_from_faucet, signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;

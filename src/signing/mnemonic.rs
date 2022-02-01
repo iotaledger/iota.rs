@@ -119,12 +119,12 @@ impl crate::signing::Signer for MnemonicSigner {
         _: super::SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<UnlockBlock>> {
         // order inputs https://github.com/luca-moser/protocol-rfcs/blob/signed-tx-payload/text/0000-transaction-payload/0000-transaction-payload.md
-        inputs.sort_by(|a, b| a.input.cmp(&b.input));
+        // inputs.sort_by(|a, b| a.input.cmp(&b.input));
 
         let hashed_essence = essence.hash();
         let mut unlock_blocks = Vec::new();
         let mut signature_indexes = HashMap::<String, usize>::new();
-
+        let mut alias_index: u16 = 0;
         for (current_block_index, input) in inputs.iter().enumerate() {
             // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
             let chain = Chain::from_u32_hardened(vec![
@@ -145,9 +145,16 @@ impl crate::signing::Signer for MnemonicSigner {
                     3 => {
                         unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
                     }
-                    // AliasOutput::KIND, FoundryOutput::KIND
-                    4 | 5 => {
-                        unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(*block_index as u16)?));
+                    // AliasOutput::KIND
+                    4 => {
+                        // todo handle different alias outputs
+                        alias_index = current_block_index as u16;
+                        unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
+                    }
+                    // FoundryOutput::KIND
+                    5 => {
+                        // foundry output is unlocked by alias unlock_blocks
+                        unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(alias_index)?));
                     }
                     // NftOutput::KIND
                     6 => {
@@ -156,6 +163,11 @@ impl crate::signing::Signer for MnemonicSigner {
                     _ => todo!(),
                 }
             } else {
+                // todo handle different alias outputs
+                // set index for alias_index
+                if input.output_kind == 4 {
+                    alias_index = current_block_index as u16;
+                }
                 // If not, we need to create a signature unlock block
                 let private_key = self.deref().derive(Curve::Ed25519, &chain)?.secret_key();
                 let public_key = private_key.public_key().to_bytes();
