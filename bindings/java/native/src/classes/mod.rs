@@ -21,7 +21,7 @@ pub fn consolidate_funds(
     match crate::block_on(async {
         iota_client::api::consolidate_funds(
             client.borrow(),
-            &iota_client::Seed::from_bytes(seed.as_bytes()),
+            &iota_client::Seed::from_bytes(&hex::decode(seed)?),
             account_index,
             address_range_low..address_range_high,
         )

@@ -149,7 +149,7 @@ pub fn search_address(
 ) -> Result<IndexPublicDto> {
     let res = crate::block_on(async {
         search_address_api(
-            &RustSeed::from_bytes(seed.as_bytes()),
+            &RustSeed::from_bytes(&hex::decode(seed)?),
             bech32_hrp,
             account_index,
             range_low..range_high,
@@ -208,7 +208,7 @@ pub struct GetAddressesBuilder<'a> {
 impl<'a> GetAddressesBuilder<'a> {
     pub fn new(seed: &str) -> Self {
         let internal = GetAddressesBuilderInternal {
-            seed: RustSeed::from_bytes(seed.as_bytes()),
+            seed: RustSeed::from_bytes(&hex::decode(seed).unwrap()),
             account_index: 0,
             range: 0..ADDRESS_GAP_RANGE,
             bech32_hrp: None,

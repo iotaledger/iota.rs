@@ -23,7 +23,7 @@ impl<'a> GetBalanceBuilderApi<'a> {
     pub fn new(client: &'a Client, seed: &str) -> Self {
         let internal = GetBalanceBuilderApiInternal {
             client: client,
-            seed: RustSeed::from_bytes(seed.as_bytes()),
+            seed: RustSeed::from_bytes(&hex::decode(seed).unwrap()),
             account_index: 0,
             initial_address_index: 0,
             gap_limit: crate::address::ADDRESS_GAP_RANGE,

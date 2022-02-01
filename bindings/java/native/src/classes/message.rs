@@ -232,7 +232,7 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Sets the seed.
     pub fn with_seed(&self, seed: &str) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
-        fields.seed = Some(RustSeed::from_bytes(seed.as_bytes()));
+        fields.seed = Some(RustSeed::from_bytes(&hex::decode(seed).unwrap()));
         ClientMessageBuilder::new_with_fields(fields)
     }
 
@@ -357,7 +357,7 @@ impl<'a> ClientMessageBuilder<'a> {
         inputs_range_low: usize,
         inputs_range_high: usize,
     ) -> Result<MessagePayload> {
-        let second_seed = Some(RustSeed::from_bytes(seed.as_bytes()));
+        let second_seed = Some(RustSeed::from_bytes(&hex::decode(seed)?));
 
         let mut range = None;
         if inputs_range_low != 0 && inputs_range_low != 0 {
