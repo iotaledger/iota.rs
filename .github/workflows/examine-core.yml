@@ -129,8 +129,6 @@ jobs:
 
   audit:
     name: Perform Security Audit
-    # FIXME: Fix cargo-audit warnings. (#782)
-    if: ${{ false }}
     runs-on: ubuntu-latest
 
     steps:
