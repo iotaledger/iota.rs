@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Client Instance
-use crate::{client::*, error::*};
+use crate::{
+    client::*,
+    constants::{
+        DEFAULT_API_TIMEOUT, DEFAULT_BECH32_HRP, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL,
+    },
+    error::*,
+};
 
 use std::{
     sync::{Arc, RwLock},
@@ -14,19 +20,10 @@ use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 
 #[cfg(not(feature = "wasm"))]
 use {
+    crate::constants::NODE_SYNC_INTERVAL,
     std::collections::HashSet,
     tokio::{runtime::Runtime, sync::broadcast::channel},
 };
-
-const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
-pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(15);
-#[cfg(not(feature = "wasm"))]
-const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
-/// Interval in seconds when new tips will be requested during PoW, so the final message always will be attached to a
-/// new part of the Tangle
-pub const TIPS_INTERVAL: u64 = 15;
-const DEFAULT_MIN_POW: f64 = 4000f64;
-const DEFAULT_BECH32_HRP: &str = "iota";
 
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -61,7 +58,7 @@ pub struct ClientBuilder {
     #[cfg(feature = "mqtt")]
     broker_options: BrokerOptions,
     pub(crate) network_info: NetworkInfo,
-    request_timeout: Duration,
+    api_timeout: Duration,
     remote_pow_timeout: Duration,
     offline: bool,
     pow_worker_count: Option<usize>,
@@ -78,7 +75,7 @@ impl Default for NetworkInfo {
             #[cfg(feature = "wasm")]
             local_pow: false,
             bech32_hrp: DEFAULT_BECH32_HRP.into(),
-            tips_interval: TIPS_INTERVAL,
+            tips_interval: DEFAULT_TIPS_INTERVAL,
         }
     }
 }
@@ -94,8 +91,8 @@ impl Default for ClientBuilder {
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             network_info: NetworkInfo::default(),
-            request_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
-            remote_pow_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
+            api_timeout: DEFAULT_API_TIMEOUT,
+            remote_pow_timeout: DEFAULT_REMOTE_POW_API_TIMEOUT,
             offline: false,
             pow_worker_count: None,
         }
@@ -205,8 +202,8 @@ impl ClientBuilder {
     }
 
     /// Set amount of nodes which should be used for quorum
-    pub fn with_quorum_size(mut self, quorum_size: usize) -> Self {
-        self.node_manager_builder = self.node_manager_builder.with_quorum_size(quorum_size);
+    pub fn with_min_quorum_size(mut self, min_quorum_size: usize) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_min_quorum_size(min_quorum_size);
         self
     }
 
@@ -252,8 +249,8 @@ impl ClientBuilder {
     }
 
     /// Sets the default request timeout.
-    pub fn with_request_timeout(mut self, timeout: Duration) -> Self {
-        self.request_timeout = timeout;
+    pub fn with_api_timeout(mut self, timeout: Duration) -> Self {
+        self.api_timeout = timeout;
         self
     }
 
@@ -330,7 +327,7 @@ impl ClientBuilder {
             #[cfg(feature = "mqtt")]
             mqtt_event_channel: (Arc::new(mqtt_event_tx), mqtt_event_rx),
             network_info,
-            request_timeout: self.request_timeout,
+            api_timeout: self.api_timeout,
             remote_pow_timeout: self.remote_pow_timeout,
             pow_worker_count: self.pow_worker_count,
         };

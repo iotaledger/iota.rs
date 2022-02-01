@@ -251,18 +251,18 @@ impl ClientBuilder {
         ClientBuilder::new_with_builder(new_builder)
     }
 
-    pub fn with_quorum_size(&self, quorum_size: usize) -> ClientBuilder {
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_quorum_size(quorum_size);
+    pub fn with_min_quorum_size(&self, min_quorum_size: usize) -> ClientBuilder {
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_min_quorum_size(min_quorum_size);
         ClientBuilder::new_with_builder(new_builder)
     }
 
-    pub fn with_quorum_threshold(&self, quorum_size: usize) -> ClientBuilder {
+    pub fn with_quorum_threshold(&self, min_quorum_size: usize) -> ClientBuilder {
         let new_builder = self
             .builder
             .borrow_mut()
             .take()
             .unwrap()
-            .with_quorum_threshold(quorum_size);
+            .with_quorum_threshold(min_quorum_size);
         ClientBuilder::new_with_builder(new_builder)
     }
 
@@ -287,8 +287,8 @@ impl ClientBuilder {
         ClientBuilder::new_with_builder(new_builder)
     }
 
-    pub fn with_request_timeout(&mut self, timeout: Duration) -> ClientBuilder {
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_request_timeout(timeout);
+    pub fn with_api_timeout(&mut self, timeout: Duration) -> ClientBuilder {
+        let new_builder = self.builder.borrow_mut().take().unwrap().with_api_timeout(timeout);
         ClientBuilder::new_with_builder(new_builder)
     }
 

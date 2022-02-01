@@ -16,13 +16,13 @@ pub struct ClientBuilderWrapper {
     permanodes: Vec<(String, Option<NodeAuthOptions>)>,
     node_pool_urls: Vec<String>,
     quorum: Option<bool>,
-    quorum_size: Option<usize>,
+    min_quorum_size: Option<usize>,
     quorum_threshold: Option<usize>,
     network: Option<String>,
     broker_options: Option<BrokerOptions>,
     node_sync_interval: Option<NonZeroU64>,
     offline_mode: bool,
-    request_timeout: Option<Duration>,
+    api_timeout: Option<Duration>,
     api_timeout: HashMap<Api, Duration>,
     local_pow: bool,
     tips_interval: u64,
@@ -49,13 +49,13 @@ declare_types! {
                 permanodes: Default::default(),
                 node_pool_urls: Default::default(),
                 quorum: Default::default(),
-                quorum_size: Default::default(),
+                min_quorum_size: Default::default(),
                 quorum_threshold: Default::default(),
                 network: Default::default(),
                 broker_options: Default::default(),
                 node_sync_interval: Default::default(),
                 offline_mode: Default::default(),
-                request_timeout: Default::default(),
+                api_timeout: Default::default(),
                 api_timeout: Default::default(),
                 local_pow: true,
                 tips_interval: 15,
@@ -204,8 +204,8 @@ declare_types! {
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let quorum_size = &mut this.borrow_mut(&guard).quorum_size;
-                quorum_size.replace(size as usize);
+                let min_quorum_size = &mut this.borrow_mut(&guard).min_quorum_size;
+                min_quorum_size.replace(size as usize);
             }
             Ok(cx.this().upcast())
         }
@@ -280,8 +280,8 @@ declare_types! {
             {
                 let mut this = cx.this();
                 let guard = cx.lock();
-                let request_timeout = &mut this.borrow_mut(&guard).request_timeout;
-                request_timeout.replace(Duration::from_millis(timeout));
+                let api_timeout = &mut this.borrow_mut(&guard).api_timeout;
+                api_timeout.replace(Duration::from_millis(timeout));
             }
             Ok(cx.this().upcast())
         }
@@ -386,8 +386,8 @@ declare_types! {
                 if let Some(enabled) = &ref_.quorum {
                     builder = builder.with_quorum(*enabled);
                 }
-                if let Some(size) = &ref_.quorum_size {
-                    builder = builder.with_quorum_size(*size);
+                if let Some(size) = &ref_.min_quorum_size {
+                    builder = builder.with_min_quorum_size(*size);
                 }
                 if let Some(threshold) = &ref_.quorum_threshold {
                     builder = builder.with_quorum_threshold(*threshold);

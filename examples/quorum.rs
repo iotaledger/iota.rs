@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
         .with_node("http://localhost:14265")?
         .with_node("https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe/")?
         .with_quorum(true)
-        .with_quorum_size(3)
+        .with_min_quorum_size(3)
         .with_quorum_threshold(66)
         .finish()
         .await?;

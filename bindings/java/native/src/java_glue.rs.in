@@ -159,7 +159,7 @@ foreign_class!(
         /// Set if quroum should be used or not
         fn ClientBuilder::with_quorum(&self, quorum: bool) -> ClientBuilder;
         /// Set amount of nodes which should be used for quorum
-        fn ClientBuilder::with_quorum_size(&self, quorum_size: usize) -> ClientBuilder;
+        fn ClientBuilder::with_min_quorum_size(&self, min_quorum_size: usize) -> ClientBuilder;
         /// Set quorum_threshold
         fn ClientBuilder::with_quorum_threshold(&self, threshold: usize) -> ClientBuilder;
         
@@ -170,7 +170,7 @@ foreign_class!(
         /// Sets after how many seconds new tips will be requested during PoW
         fn ClientBuilder::with_tips_interval(&mut self, tips: u64) -> ClientBuilder;
         /// Sets the default request timeout in seconds.
-        fn ClientBuilder::with_request_timeout(&mut self, timeout: Duration) -> ClientBuilder;
+        fn ClientBuilder::with_api_timeout(&mut self, timeout: Duration) -> ClientBuilder;
         /// Sets the request timeout in seconds for a specific API usage.
         fn ClientBuilder::with_api_timeout(&mut self, api: Api, timeout: Duration) -> ClientBuilder;
         /// Build the Client instance.

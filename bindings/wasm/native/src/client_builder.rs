@@ -164,8 +164,8 @@ impl ClientBuilder {
 
   /// Set amount of nodes which should be used for quorum
   #[wasm_bindgen(js_name = quorumSize)]
-  pub fn quorum_size(mut self, value: usize) -> Result<ClientBuilder, JsValue> {
-    self.builder = self.builder.with_quorum_size(value);
+  pub fn min_quorum_size(mut self, value: usize) -> Result<ClientBuilder, JsValue> {
+    self.builder = self.builder.with_min_quorum_size(value);
     Ok(self)
   }
 
@@ -201,8 +201,8 @@ impl ClientBuilder {
 
   /// Sets the default request timeout.
   #[wasm_bindgen(js_name = requestTimeout)]
-  pub fn request_timeout(mut self, value: u32) -> Result<ClientBuilder, JsValue> {
-    self.builder = self.builder.with_request_timeout(to_duration(value));
+  pub fn api_timeout(mut self, value: u32) -> Result<ClientBuilder, JsValue> {
+    self.builder = self.builder.with_api_timeout(to_duration(value));
     Ok(self)
   }
 

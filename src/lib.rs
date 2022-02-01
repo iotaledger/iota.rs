@@ -39,9 +39,8 @@ macro_rules! lazy_static {
 pub mod api;
 pub mod builder;
 pub mod client;
+pub mod constants;
 pub mod error;
-// todo: rename and only have high level functions or remove completely
-pub mod node;
 pub mod node_api;
 pub mod node_manager;
 pub mod signing;
@@ -55,7 +54,6 @@ pub use builder::ClientBuilder;
 pub use client::*;
 pub use crypto::{self, keys::slip10::Seed};
 pub use error::*;
-pub use node::OutputType;
 #[cfg(feature = "mqtt")]
 pub use node_api::mqtt::*;
 pub use packable;

@@ -116,11 +116,9 @@ async fn main() -> Result<()> {
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
-    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
-        &iota,
-        vec![QueryParameter::Address(bech32_nft_address)],
-    )
-    .await?;
+    let output_ids = iota
+        .output_ids(vec![QueryParameter::Address(bech32_nft_address)])
+        .await?;
     let output_response = iota.get_output(&output_ids[0]).await?;
     let output = Output::try_from(&output_response.output)?;
 

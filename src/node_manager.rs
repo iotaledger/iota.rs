@@ -1,10 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The node manager that takes care of sending requests and quroum if enabled
+//! The node manager that takes care of sending requests with synced nodes and quorum if enabled
 
 use crate::{
     builder::NetworkInfo,
+    constants::{DEFAULT_API_TIMEOUT, DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
     error::{Error, Result},
 };
 
@@ -24,10 +25,6 @@ use std::{
 
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
-
-const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
-const DEFAULT_QUORUM_SIZE: usize = 3;
-const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 
 /// Node struct
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -50,7 +47,7 @@ pub(crate) struct NodeManager {
     sync_interval: Duration,
     pub(crate) synced_nodes: Arc<RwLock<HashSet<Node>>>,
     quorum: bool,
-    quorum_size: usize,
+    min_quorum_size: usize,
     quorum_threshold: usize,
     pub(crate) http_client: HttpClient,
 }
@@ -66,7 +63,7 @@ impl std::fmt::Debug for NodeManager {
         d.field("sync_interval", &self.sync_interval);
         d.field("synced_nodes", &self.synced_nodes);
         d.field("quorum", &self.quorum);
-        d.field("quorum_size", &self.quorum_size);
+        d.field("min_quorum_size", &self.min_quorum_size);
         d.field("quorum_threshold", &self.quorum_threshold).finish()
     }
 }
@@ -170,8 +167,8 @@ impl NodeManager {
         // submit message with local PoW should use primary pow node
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false).await?;
-        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(path)) && nodes.len() < self.quorum_size {
-            return Err(Error::QuorumPoolSizeError(nodes.len(), self.quorum_size));
+        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(path)) && nodes.len() < self.min_quorum_size {
+            return Err(Error::QuorumPoolSizeError(nodes.len(), self.min_quorum_size));
         }
 
         // Track amount of results for quorum
@@ -188,7 +185,7 @@ impl NodeManager {
                 let mut tasks = Vec::new();
                 let nodes_ = nodes.clone();
                 for (index, node) in nodes_.into_iter().enumerate() {
-                    if index < self.quorum_size {
+                    if index < self.min_quorum_size {
                         let client_ = self.http_client.clone();
                         tasks.push(async move { tokio::spawn(async move { client_.get(node, timeout).await }).await });
                     }
@@ -245,7 +242,7 @@ impl NodeManager {
                                             result_counter += 1;
                                             // Without quorum it's enough if we got one response
                                             if !self.quorum
-                                            || result_counter >= self.quorum_size
+                                            || result_counter >= self.min_quorum_size
                                             || !quorum_regexes.iter().any(|re| re.is_match(path))
                                             // with query we ignore quorum because the nodes can store a different amount of history
                                             || query.is_some()
@@ -280,14 +277,14 @@ impl NodeManager {
 
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
-            || res.1 as f64 >= self.quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
+            || res.1 as f64 >= self.min_quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
             || !quorum_regexes.iter().any(|re| re.is_match(path))
             // with query we ignore quorum because the nodes can store a different amount of history
             || query.is_some()
         {
             Ok(serde_json::from_str(&res.0)?)
         } else {
-            Err(Error::QuorumThresholdError(res.1, self.quorum_size))
+            Err(Error::QuorumThresholdError(res.1, self.min_quorum_size))
         }
     }
     // Only used for api/v2/messages/{messageID}/raw, that's why we don't need the quorum stuff
@@ -395,7 +392,7 @@ pub(crate) struct NodeManagerBuilder {
     sync: bool,
     sync_interval: Duration,
     quorum: bool,
-    quorum_size: usize,
+    min_quorum_size: usize,
     quorum_threshold: usize,
 }
 
@@ -502,7 +499,7 @@ impl NodeManagerBuilder {
                         url: validate_url(Url::parse(pool_url)?)?,
                         jwt: None,
                     },
-                    crate::builder::GET_API_TIMEOUT,
+                    DEFAULT_API_TIMEOUT,
                 )
                 .await?
                 .json()
@@ -522,8 +519,8 @@ impl NodeManagerBuilder {
         self.quorum = quorum;
         self
     }
-    pub(crate) fn with_quorum_size(mut self, quorum_size: usize) -> Self {
-        self.quorum_size = quorum_size;
+    pub(crate) fn with_min_quorum_size(mut self, min_quorum_size: usize) -> Self {
+        self.min_quorum_size = min_quorum_size;
         self
     }
     pub(crate) fn with_quorum_threshold(mut self, threshold: usize) -> Self {
@@ -564,7 +561,7 @@ impl NodeManagerBuilder {
             sync_interval: self.sync_interval,
             synced_nodes,
             quorum: self.quorum,
-            quorum_size: self.quorum_size,
+            min_quorum_size: self.min_quorum_size,
             quorum_threshold: self.quorum_threshold,
             http_client: HttpClient::new(),
         }
@@ -581,7 +578,7 @@ impl Default for NodeManagerBuilder {
             sync: true,
             sync_interval: NODE_SYNC_INTERVAL,
             quorum: false,
-            quorum_size: DEFAULT_QUORUM_SIZE,
+            min_quorum_size: DEFAULT_MIN_QUORUM_SIZE,
             quorum_threshold: DEFAULT_QUORUM_THRESHOLD,
         }
     }

@@ -8,24 +8,6 @@ use bee_rest_api::types::{
     responses::{BalanceAddressResponse, OutputResponse},
 };
 
-/// Output type filter.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum OutputType {
-    /// Signature locked single output.
-    SignatureLockedSingle,
-    /// Dust allowance output.
-    SignatureLockedDustAllowance,
-}
-
-impl From<OutputType> for u16 {
-    fn from(value: OutputType) -> Self {
-        match value {
-            OutputType::SignatureLockedSingle => 0,
-            OutputType::SignatureLockedDustAllowance => 1,
-        }
-    }
-}
-
 /// Builder of GET /api/v2/address/{address} endpoint
 pub struct GetAddressBuilder<'a> {
     client: &'a Client,

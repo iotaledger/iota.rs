@@ -8,10 +8,13 @@ use crate::{
         miner::{ClientMiner, ClientMinerBuilder},
         ClientMessageBuilder, GetAddressesBuilder, GetBalanceBuilder, GetUnspentAddressBuilder,
     },
-    builder::{ClientBuilder, NetworkInfo, GET_API_TIMEOUT, TIPS_INTERVAL},
+    builder::{ClientBuilder, NetworkInfo},
+    constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
     error::{Error, Result},
-    node::*,
-    node_api::indexer_api::query_parameters::QueryParameter,
+    node_api::{
+        high_level::{GetAddressBuilder, GetMessageBuilder},
+        indexer_api::query_parameters::QueryParameter,
+    },
     node_manager::Node,
     signing::SignerHandle,
     utils::{
@@ -23,7 +26,7 @@ use crate::{
 use bee_message::{
     address::Address,
     input::{UtxoInput, INPUT_COUNT_MAX},
-    output::OutputId,
+    output::{AliasId, FoundryId, NftId, OutputId},
     parent::Parents,
     payload::{transaction::TransactionId, Payload},
     Message, MessageBuilder, MessageId,
@@ -101,7 +104,7 @@ pub struct Client {
     pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
     pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
     /// HTTP request timeout.
-    pub(crate) request_timeout: Duration,
+    pub(crate) api_timeout: Duration,
     /// HTTP request timeout for remote PoW API call.
     pub(crate) remote_pow_timeout: Duration,
     #[allow(dead_code)] // not used for wasm
@@ -163,8 +166,12 @@ impl Client {
         network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
-        let node_sync_interval =
-            TokioDuration::from_nanos(node_sync_interval.as_nanos().try_into().unwrap_or(TIPS_INTERVAL));
+        let node_sync_interval = TokioDuration::from_nanos(
+            node_sync_interval
+                .as_nanos()
+                .try_into()
+                .unwrap_or(DEFAULT_TIPS_INTERVAL),
+        );
 
         runtime.spawn(async move {
             loop {
@@ -305,14 +312,21 @@ impl Client {
     pub async fn get_tips_interval(&self) -> u64 {
         self.network_info
             .read()
-            .map_or(TIPS_INTERVAL, |info| info.tips_interval)
+            .map_or(DEFAULT_TIPS_INTERVAL, |info| info.tips_interval)
     }
 
-    /// returns the local pow
+    /// returns if local pow should be used or not
     pub async fn get_local_pow(&self) -> bool {
         self.network_info
             .read()
             .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
+    }
+
+    pub(crate) fn get_timeout(&self) -> Duration {
+        self.api_timeout
+    }
+    pub(crate) fn get_remote_pow_timeout(&self) -> Duration {
+        self.remote_pow_timeout
     }
 
     /// returns the unsynced nodes.
@@ -325,56 +339,6 @@ impl Client {
                 .filter(|node| !synced.contains(node))
                 .collect()
         })
-    }
-
-    /// Function to find inputs from addresses for a provided amount (useful for offline signing)
-    pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
-        // Get outputs from node and select inputs
-        let mut available_outputs = Vec::new();
-        for address in addresses {
-            available_outputs.extend_from_slice(
-                &self
-                    .get_address()
-                    .outputs(vec![QueryParameter::Address(address.to_string())])
-                    .await?,
-            );
-        }
-
-        let mut extended_outputs = Vec::new();
-
-        for output_resp in available_outputs.into_iter() {
-            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_resp.output)?;
-            extended_outputs.push((
-                UtxoInput::new(
-                    TransactionId::from_str(&output_resp.transaction_id)?,
-                    output_resp.output_index,
-                )?,
-                amount,
-            ));
-        }
-        extended_outputs.sort_by(|l, r| r.1.cmp(&l.1));
-
-        let mut total_already_spent = 0;
-        let mut selected_inputs = Vec::new();
-        for (_offset, output_wrapper) in extended_outputs
-            .into_iter()
-            // Max inputs is 127
-            .take(INPUT_COUNT_MAX.into())
-            .enumerate()
-        {
-            // Break if we have enough funds and don't create dust for the remainder
-            if total_already_spent == amount || total_already_spent >= amount {
-                break;
-            }
-            selected_inputs.push(output_wrapper.0.clone());
-            total_already_spent += output_wrapper.1;
-        }
-
-        if total_already_spent < amount {
-            return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
-        }
-
-        Ok(selected_inputs)
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -394,22 +358,15 @@ impl Client {
     }
 
     //////////////////////////////////////////////////////////////////////
-    // Node API
+    // Node core API
     //////////////////////////////////////////////////////////////////////
-
-    pub(crate) fn get_timeout(&self) -> Duration {
-        self.request_timeout
-    }
-    pub(crate) fn get_remote_pow_timeout(&self) -> Duration {
-        self.remote_pow_timeout
-    }
 
     /// GET /health endpoint
     pub async fn get_node_health(url: &str) -> Result<bool> {
         let mut url = Url::parse(url)?;
         url.set_path("health");
         let status = crate::node_manager::HttpClient::new()
-            .get(Node { url, jwt: None }, GET_API_TIMEOUT)
+            .get(Node { url, jwt: None }, DEFAULT_API_TIMEOUT)
             .await?
             .status();
         match status {
@@ -422,7 +379,12 @@ impl Client {
     pub async fn get_health(&self) -> Result<bool> {
         let mut node = self.get_node().await?;
         node.url.set_path("health");
-        let status = self.node_manager.http_client.get(node, GET_API_TIMEOUT).await?.status();
+        let status = self
+            .node_manager
+            .http_client
+            .get(node, DEFAULT_API_TIMEOUT)
+            .await?
+            .status();
         match status {
             200 => Ok(true),
             _ => Ok(false),
@@ -448,7 +410,7 @@ impl Client {
         url.set_path(path);
 
         let resp: SuccessBody<NodeInfo> = crate::node_manager::HttpClient::new()
-            .get(Node { url, jwt }, GET_API_TIMEOUT)
+            .get(Node { url, jwt }, DEFAULT_API_TIMEOUT)
             .await?
             .json()
             .await?;
@@ -493,26 +455,6 @@ impl Client {
         crate::node_api::core_api::routes::get_output(self, output_id).await
     }
 
-    /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
-    /// the request amount exceeds individual node limit.
-    pub async fn find_outputs(&self, outputs: &[UtxoInput], addresses: &[String]) -> Result<Vec<OutputResponse>> {
-        let mut output_metadata =
-            crate::node_api::core_api::get_outputs(self, outputs.iter().map(|output| *output.output_id()).collect())
-                .await?;
-
-        // Use `get_address()` API to get the address outputs first,
-        // then collect the `UtxoInput` in the HashSet.
-        for address in addresses {
-            let address_outputs = self
-                .get_address()
-                .outputs(vec![QueryParameter::Address(address.to_string())])
-                .await?;
-            output_metadata.extend(address_outputs.into_iter());
-        }
-
-        Ok(output_metadata.to_vec())
-    }
-
     /// GET /api/plugins/indexer/v1/outputs{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
@@ -554,93 +496,53 @@ impl Client {
         crate::node_api::core_api::routes::get_included_message(self, transaction_id).await
     }
 
-    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
-    /// confirmed for a while.
-    pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        let metadata = self.get_message().metadata(message_id).await?;
-        if metadata.should_reattach.unwrap_or(false) {
-            self.reattach_unchecked(message_id).await
-        } else {
-            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
-        }
+    //////////////////////////////////////////////////////////////////////
+    // Node indexer API
+    //////////////////////////////////////////////////////////////////////
+
+    /// api/plugins/indexer/v1/outputs
+    pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
+        crate::node_api::indexer_api::routes::output_ids(self, query_parameters).await
     }
 
-    /// Reattach a message without checking if it should be reattached
-    pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        // Get the Message object by the MessageID.
-        let message = self.get_message().data(message_id).await?;
-        let reattach_message = {
-            #[cfg(feature = "wasm")]
-            {
-                let network_id = self.get_network_id().await?;
-                let mut tips = self.get_tips().await?;
-                tips.sort_unstable_by_key(|a| a.pack_to_vec());
-                tips.dedup();
-                let mut message_builder = MessageBuilder::<ClientMiner>::new()
-                    .with_network_id(network_id)
-                    .with_parents(Parents::new(tips)?);
-                if let Some(p) = message.payload().to_owned() {
-                    message_builder = message_builder.with_payload(p.clone())
-                }
-                message_builder.finish().map_err(Error::MessageError)?
-            }
-            #[cfg(not(feature = "wasm"))]
-            {
-                finish_pow(self, message.payload().cloned()).await?
-            }
-        };
-
-        // Post the modified
-        let message_id = self.post_message(&reattach_message).await?;
-        // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_local_pow().await {
-            true => reattach_message,
-            false => self.get_message().data(&message_id).await?,
-        };
-        Ok((message_id, msg))
+    /// api/plugins/indexer/v1/aliases
+    pub async fn aliases_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
+        crate::node_api::indexer_api::routes::aliases_output_ids(self, query_parameters).await
     }
 
-    /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
-    /// method should error out and should not allow unnecessary promotions.
-    pub async fn promote(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        let metadata = self.get_message().metadata(message_id).await?;
-        if metadata.should_promote.unwrap_or(false) {
-            self.promote_unchecked(message_id).await
-        } else {
-            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
-        }
+    /// api/plugins/indexer/v1/aliases/{AliasId}
+    pub async fn alias_output_ids(&self, alias_id: AliasId) -> Result<Vec<OutputId>> {
+        crate::node_api::indexer_api::routes::alias_output_ids(self, alias_id).await
     }
 
-    /// Promote a message without checking if it should be promoted
-    pub async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        // Create a new message (zero value message) for which one tip would be the actual message
-        let mut tips = self.get_tips().await?;
-        let min_pow_score = self.get_min_pow_score().await?;
-        let network_id = self.get_network_id().await?;
-        tips.push(*message_id);
-        // Sort tips/parents
-        tips.sort_unstable_by_key(|a| a.pack_to_vec());
-        tips.dedup();
+    /// api/plugins/indexer/v1/nfts
+    pub async fn nfts_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
+        crate::node_api::indexer_api::routes::nfts_output_ids(self, query_parameters).await
+    }
 
-        let promote_message = MessageBuilder::<ClientMiner>::new()
-            .with_network_id(network_id)
-            .with_parents(Parents::new(tips)?)
-            .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
-            .finish()
-            .map_err(|_| Error::TransactionError)?;
+    /// api/plugins/indexer/v1/nfts/{NftId}
+    pub async fn nft_output_ids(&self, nft_id: NftId) -> Result<Vec<OutputId>> {
+        crate::node_api::indexer_api::routes::nft_output_ids(self, nft_id).await
+    }
 
-        let message_id = self.post_message(&promote_message).await?;
-        // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_local_pow().await {
-            true => promote_message,
-            false => self.get_message().data(&message_id).await?,
-        };
-        Ok((message_id, msg))
+    /// api/plugins/indexer/v1/foundries
+    pub async fn foundries_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
+        crate::node_api::indexer_api::routes::foundries_output_ids(self, query_parameters).await
+    }
+
+    /// api/plugins/indexer/v1/foundries/{FoundryID}
+    pub async fn foundry_output_ids(&self, foundry_id: FoundryId) -> Result<Vec<OutputId>> {
+        crate::node_api::indexer_api::routes::foundry_output_ids(self, foundry_id).await
     }
 
     //////////////////////////////////////////////////////////////////////
     // High level API
     //////////////////////////////////////////////////////////////////////
+
+    /// Get OutputResponse from provided OutputIds (requests are sent in parallel)
+    pub async fn get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
+        crate::node_api::core_api::get_outputs(self, output_ids).await
+    }
 
     /// A generic send function for easily sending transaction or tagged data messages.
     pub fn message(&self) -> ClientMessageBuilder<'_> {
@@ -791,6 +693,160 @@ impl Client {
         address_range: Range<u32>,
     ) -> crate::Result<String> {
         crate::api::consolidate_funds(self, signer, account_index, address_range).await
+    }
+
+    /// Function to find inputs from addresses for a provided amount (useful for offline signing)
+    pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
+        // Get outputs from node and select inputs
+        let mut available_outputs = Vec::new();
+        for address in addresses {
+            available_outputs.extend_from_slice(
+                &self
+                    .get_address()
+                    .outputs(vec![QueryParameter::Address(address.to_string())])
+                    .await?,
+            );
+        }
+
+        let mut extended_outputs = Vec::new();
+
+        for output_resp in available_outputs.into_iter() {
+            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_resp.output)?;
+            extended_outputs.push((
+                UtxoInput::new(
+                    TransactionId::from_str(&output_resp.transaction_id)?,
+                    output_resp.output_index,
+                )?,
+                amount,
+            ));
+        }
+        extended_outputs.sort_by(|l, r| r.1.cmp(&l.1));
+
+        let mut total_already_spent = 0;
+        let mut selected_inputs = Vec::new();
+        for (_offset, output_wrapper) in extended_outputs
+            .into_iter()
+            // Max inputs is 127
+            .take(INPUT_COUNT_MAX.into())
+            .enumerate()
+        {
+            // Break if we have enough funds and don't create dust for the remainder
+            if total_already_spent == amount || total_already_spent >= amount {
+                break;
+            }
+            selected_inputs.push(output_wrapper.0.clone());
+            total_already_spent += output_wrapper.1;
+        }
+
+        if total_already_spent < amount {
+            return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
+        }
+
+        Ok(selected_inputs)
+    }
+
+    /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
+    /// the request amount exceeds individual node limit.
+    pub async fn find_outputs(&self, outputs: &[UtxoInput], addresses: &[String]) -> Result<Vec<OutputResponse>> {
+        let mut output_metadata =
+            crate::node_api::core_api::get_outputs(self, outputs.iter().map(|output| *output.output_id()).collect())
+                .await?;
+
+        // Use `get_address()` API to get the address outputs first,
+        // then collect the `UtxoInput` in the HashSet.
+        for address in addresses {
+            let address_outputs = self
+                .get_address()
+                .outputs(vec![QueryParameter::Address(address.to_string())])
+                .await?;
+            output_metadata.extend(address_outputs.into_iter());
+        }
+
+        Ok(output_metadata.to_vec())
+    }
+
+    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+    /// confirmed for a while.
+    pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        let metadata = self.get_message().metadata(message_id).await?;
+        if metadata.should_reattach.unwrap_or(false) {
+            self.reattach_unchecked(message_id).await
+        } else {
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+        }
+    }
+
+    /// Reattach a message without checking if it should be reattached
+    pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        // Get the Message object by the MessageID.
+        let message = self.get_message().data(message_id).await?;
+        let reattach_message = {
+            #[cfg(feature = "wasm")]
+            {
+                let network_id = self.get_network_id().await?;
+                let mut tips = self.get_tips().await?;
+                tips.sort_unstable_by_key(|a| a.pack_to_vec());
+                tips.dedup();
+                let mut message_builder = MessageBuilder::<ClientMiner>::new()
+                    .with_network_id(network_id)
+                    .with_parents(Parents::new(tips)?);
+                if let Some(p) = message.payload().to_owned() {
+                    message_builder = message_builder.with_payload(p.clone())
+                }
+                message_builder.finish().map_err(Error::MessageError)?
+            }
+            #[cfg(not(feature = "wasm"))]
+            {
+                finish_pow(self, message.payload().cloned()).await?
+            }
+        };
+
+        // Post the modified
+        let message_id = self.post_message(&reattach_message).await?;
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.get_local_pow().await {
+            true => reattach_message,
+            false => self.get_message().data(&message_id).await?,
+        };
+        Ok((message_id, msg))
+    }
+
+    /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+    /// method should error out and should not allow unnecessary promotions.
+    pub async fn promote(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        let metadata = self.get_message().metadata(message_id).await?;
+        if metadata.should_promote.unwrap_or(false) {
+            self.promote_unchecked(message_id).await
+        } else {
+            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+        }
+    }
+
+    /// Promote a message without checking if it should be promoted
+    pub async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+        // Create a new message (zero value message) for which one tip would be the actual message
+        let mut tips = self.get_tips().await?;
+        let min_pow_score = self.get_min_pow_score().await?;
+        let network_id = self.get_network_id().await?;
+        tips.push(*message_id);
+        // Sort tips/parents
+        tips.sort_unstable_by_key(|a| a.pack_to_vec());
+        tips.dedup();
+
+        let promote_message = MessageBuilder::<ClientMiner>::new()
+            .with_network_id(network_id)
+            .with_parents(Parents::new(tips)?)
+            .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
+            .finish()
+            .map_err(|_| Error::TransactionError)?;
+
+        let message_id = self.post_message(&promote_message).await?;
+        // Get message if we use remote PoW, because the node will change parents and nonce
+        let msg = match self.get_local_pow().await {
+            true => promote_message,
+            false => self.get_message().data(&message_id).await?,
+        };
+        Ok((message_id, msg))
     }
 
     //////////////////////////////////////////////////////////////////////

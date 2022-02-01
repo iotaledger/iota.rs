@@ -134,13 +134,13 @@ Set if quorum should be used or not
 | ----- | ---------- | ----------- |
 | quorum | `boolean` | true for quorum on, false for off |
 
-#### withQuorumSize(quorum_size): ClientBuilder
+#### withQuorumSize(min_quorum_size): ClientBuilder
 
 Set amount of nodes which should be used for quorum
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
-| quorum_size | `long` | size of the quorum |
+| min_quorum_size | `long` | size of the quorum |
 
 #### withQuorumThreshold(threshold): ClientBuilder
 

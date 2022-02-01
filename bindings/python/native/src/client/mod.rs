@@ -44,9 +44,9 @@ impl Client {
         offline: Option<bool>,
         node_pool_urls: Option<Vec<String>>,
         quorum: Option<bool>,
-        quorum_size: Option<usize>,
+        min_quorum_size: Option<usize>,
         quorum_threshold: Option<usize>,
-        request_timeout: Option<u64>,
+        api_timeout: Option<u64>,
         api_timeout: Option<HashMap<&str, u64>>,
         local_pow: Option<bool>,
         tips_interval: Option<u64>,
@@ -103,14 +103,14 @@ impl Client {
         if let Some(enabled) = quorum {
             client = client.with_quorum(enabled);
         }
-        if let Some(quorum_size) = quorum_size {
-            client = client.with_quorum_size(quorum_size);
+        if let Some(min_quorum_size) = min_quorum_size {
+            client = client.with_min_quorum_size(min_quorum_size);
         }
         if let Some(quorum_threshold) = quorum_threshold {
             client = client.with_quorum_threshold(quorum_threshold);
         }
-        if let Some(timeout) = request_timeout {
-            client = client.with_request_timeout(Duration::from_millis(timeout));
+        if let Some(timeout) = api_timeout {
+            client = client.with_api_timeout(Duration::from_millis(timeout));
         }
         if let Some(api_timeout) = api_timeout {
             for (api, timeout) in api_timeout {

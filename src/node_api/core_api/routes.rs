@@ -3,7 +3,7 @@
 
 //! IOTA node core API routes
 
-use crate::{builder::GET_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
+use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, Message, MessageId};
 use bee_rest_api::types::{
@@ -344,7 +344,7 @@ pub async fn get_output(client: &Client, output_id: &OutputId) -> Result<OutputR
 pub async fn get_treasury(client: &Client) -> Result<TreasuryResponse> {
     let path = "api/v2/treasury";
 
-    let resp: SuccessBody<TreasuryResponse> = client.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+    let resp: SuccessBody<TreasuryResponse> = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
 
     Ok(resp.data)
 }
@@ -354,7 +354,7 @@ pub async fn get_treasury(client: &Client) -> Result<TreasuryResponse> {
 pub async fn get_receipts(client: &Client) -> Result<Vec<ReceiptDto>> {
     let path = &"api/v2/receipts";
 
-    let resp: SuccessBody<ReceiptsResponse> = client.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+    let resp: SuccessBody<ReceiptsResponse> = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
 
     Ok(resp.data.receipts)
 }
@@ -364,7 +364,7 @@ pub async fn get_receipts(client: &Client) -> Result<Vec<ReceiptDto>> {
 pub async fn get_receipts_migrated_at(client: &Client, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
     let path = &format!("api/v2/receipts/{}", milestone_index);
 
-    let resp: SuccessBody<ReceiptsResponse> = client.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
+    let resp: SuccessBody<ReceiptsResponse> = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
 
     Ok(resp.data.receipts)
 }

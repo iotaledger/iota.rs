@@ -269,7 +269,7 @@ def quorum():
     node_3 = 'https://api.lb-0.h.chrysalis-devnet.iota.cafe'
     try:
         client = iota_client.Client(nodes_name_password=[
-                                    [node_1], [node_2], [node_3]], quorum=True, quorum_size=3, quorum_threshold=66)
+                                    [node_1], [node_2], [node_3]], quorum=True, min_quorum_size=3, quorum_threshold=66)
 
         seed = os.getenv('MY_IOTA_SEED')
 
