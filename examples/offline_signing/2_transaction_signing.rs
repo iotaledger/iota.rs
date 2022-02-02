@@ -41,13 +41,16 @@ async fn main() -> Result<()> {
     let mut tx_inputs = Vec::new();
     let mut input_addresses = Vec::new();
     for address_index_recorder in prepared_transaction_data.address_index_recorders {
+        let address = Address::try_from_bech32(&address_index_recorder.bech32_address)?;
         tx_inputs.push(TransactionInput {
             input: address_index_recorder.input,
             address_index: address_index_recorder.address_index,
             address_internal: address_index_recorder.internal,
             output_kind: Output::try_from(&address_index_recorder.output.output)?.kind(),
+            address,
+            alias_or_nft_address: None,
         });
-        input_addresses.push(Address::try_from_bech32(&address_index_recorder.bech32_address)?);
+        input_addresses.push(address);
     }
 
     // Sign prepared transaction offline
