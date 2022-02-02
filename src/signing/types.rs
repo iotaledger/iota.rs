@@ -68,7 +68,7 @@ pub enum Network {
 }
 
 /// The Ledger device status.
-#[derive(Debug, ::serde::Serialize)]
+#[derive(Debug, Serialize)]
 pub struct LedgerApp {
     /// Opened app name.
     pub(crate) name: String,
@@ -77,7 +77,7 @@ pub struct LedgerApp {
 }
 
 /// The Ledger device status.
-#[derive(Debug, ::serde::Serialize)]
+#[derive(Debug, Serialize)]
 pub struct LedgerStatus {
     /// Ledger is available and ready to be used.
     pub(crate) connected: bool,
@@ -88,6 +88,7 @@ pub struct LedgerStatus {
 }
 
 /// One of the transaction inputs and its address information needed for signing it.
+#[derive(Debug)]
 pub struct TransactionInput {
     /// The input.
     pub input: Input,
@@ -97,4 +98,8 @@ pub struct TransactionInput {
     pub address_internal: bool,
     /// Input(output type) https://github.com/iotaledger/bee/blob/b58faa9b74c4195b80bc8846377ee081ec7fd6a1/bee-message/src/output/mod.rs#L88
     pub output_kind: u8,
+    /// address
+    pub address: Address,
+    /// Alias or Nft address
+    pub alias_or_nft_address: Option<Address>,
 }

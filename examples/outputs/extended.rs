@@ -9,7 +9,8 @@ use iota_client::{
         output::{
             feature_block::MetadataFeatureBlock,
             unlock_condition::{
-                AddressUnlockCondition, DustDepositReturnUnlockCondition, ExpirationUnlockCondition, UnlockCondition,
+                AddressUnlockCondition, DustDepositReturnUnlockCondition, ExpirationUnlockCondition,
+                TimelockUnlockCondition, UnlockCondition,
             },
             ExtendedOutputBuilder, FeatureBlock, Output,
         },
@@ -60,10 +61,10 @@ async fn main() -> Result<()> {
     ));
     // with dust deposit return
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(176100)
+        ExtendedOutputBuilder::new(1176100)
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::DustDepositReturn(
-                DustDepositReturnUnlockCondition::new(address, 176000)?,
+                DustDepositReturnUnlockCondition::new(address, 1176000)?,
             ))
             .finish()?,
     ));
@@ -73,6 +74,16 @@ async fn main() -> Result<()> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
                 address,
+                MilestoneIndex::new(400),
+                0,
+            )?))
+            .finish()?,
+    ));
+    // with timelock
+    outputs.push(Output::Extended(
+        ExtendedOutputBuilder::new(1_000_000)
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
                 MilestoneIndex::new(400),
                 0,
             )?))

@@ -45,7 +45,7 @@ async fn main() -> Result<()> {
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
     //////////////////////////////////
-    // create new alias output
+    // create new nft output
     //////////////////////////////////
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Nft(

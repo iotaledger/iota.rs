@@ -9,8 +9,9 @@ use crate::{
     Error, Result,
 };
 
+use crate::bee_message::output::AliasId;
 use bee_message::{
-    address::Address,
+    address::{Address, AliasAddress, NftAddress},
     input::INPUT_COUNT_MAX,
     output::Output,
     payload::{
@@ -19,10 +20,14 @@ use bee_message::{
     },
     unlock_block::UnlockBlocks,
 };
+use bee_rest_api::types::dtos::OutputDto;
 use packable::PackableExt;
+
+use std::collections::HashSet;
 
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
+    let mut governance_transition: Option<HashSet<AliasId>> = None;
     // Calculate the total tokens to spend
     let mut total_to_spend = 0;
     for output in &message_builder.outputs {
@@ -31,6 +36,22 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
                 total_to_spend += x.amount();
             }
             Output::Alias(x) => {
+                if x.state_index() > 0 {
+                    // Check if the transaction is a governance_transition, by checking if the new index is the same as
+                    // the previous index
+                    let output_ids = message_builder.client.alias_output_ids(*x.alias_id()).await?;
+                    let outputs = message_builder.client.get_outputs(output_ids).await?;
+                    for output in outputs {
+                        if let OutputDto::Alias(output) = output.output {
+                            // A governance transition is identified by an unchanged State Index in next state.
+                            if x.state_index() == output.state_index {
+                                let mut transitions = HashSet::new();
+                                transitions.insert(AliasId::try_from(&output.alias_id)?);
+                                governance_transition.replace(transitions);
+                            }
+                        }
+                    }
+                }
                 total_to_spend += x.amount();
             }
             Output::Foundry(x) => {
@@ -51,7 +72,9 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
             if inputs.len() > INPUT_COUNT_MAX.into() {
                 return Err(Error::ConsolidationRequired(inputs.len()));
             }
-            message_builder.get_custom_inputs(inputs, total_to_spend).await?
+            message_builder
+                .get_custom_inputs(inputs, total_to_spend, governance_transition)
+                .await?
         }
         None => message_builder.get_inputs(total_to_spend).await?,
     };
@@ -93,13 +116,22 @@ pub async fn sign_transaction(
     let mut tx_inputs = Vec::new();
     let mut input_addresses = Vec::new();
     for address_index_recorder in prepared_transaction_data.address_index_recorders {
+        let output = Output::try_from(&address_index_recorder.output.output)?;
+        let alias_or_nft_address: Option<Address> = match &output {
+            Output::Alias(a) => Some(Address::Alias(AliasAddress::new(*a.alias_id()))),
+            Output::Nft(a) => Some(Address::Nft(NftAddress::new(*a.nft_id()))),
+            _ => None,
+        };
+        let address = Address::try_from_bech32(&address_index_recorder.bech32_address)?;
         tx_inputs.push(TransactionInput {
             input: address_index_recorder.input,
             address_index: address_index_recorder.address_index,
             address_internal: address_index_recorder.internal,
-            output_kind: Output::try_from(&address_index_recorder.output.output)?.kind(),
+            output_kind: output.kind(),
+            address,
+            alias_or_nft_address,
         });
-        input_addresses.push(Address::try_from_bech32(&address_index_recorder.bech32_address)?);
+        input_addresses.push(address);
     }
     let signer = message_builder.signer.ok_or(Error::MissingParameter("signer"))?;
     #[cfg(feature = "wasm")]

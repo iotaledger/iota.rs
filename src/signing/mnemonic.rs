@@ -8,6 +8,7 @@ use crate::{
 
 use bee_message::{
     address::{Address, Ed25519Address},
+    output::{AliasOutput, NftOutput},
     payload::transaction::TransactionEssence,
     signature::{Ed25519Signature, Signature},
     unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, SignatureUnlockBlock, UnlockBlock},
@@ -118,13 +119,9 @@ impl crate::signing::Signer for MnemonicSigner {
         inputs: &mut Vec<super::TransactionInput>,
         _: super::SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<UnlockBlock>> {
-        // order inputs https://github.com/luca-moser/protocol-rfcs/blob/signed-tx-payload/text/0000-transaction-payload/0000-transaction-payload.md
-        // inputs.sort_by(|a, b| a.input.cmp(&b.input));
-
         let hashed_essence = essence.hash();
         let mut unlock_blocks = Vec::new();
-        let mut signature_indexes = HashMap::<String, usize>::new();
-        let mut alias_index: u16 = 0;
+        let mut unlock_block_indexes = HashMap::<Address, usize>::new();
         for (current_block_index, input) in inputs.iter().enumerate() {
             // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
             let chain = Chain::from_u32_hardened(vec![
@@ -135,38 +132,36 @@ impl crate::signing::Signer for MnemonicSigner {
                 input.address_internal as u32,
                 input.address_index,
             ]);
+            // When we have an alias or Nft output, we will add them to nft_or_alias_indexes, because they can be
+            // used to unlock outputs
+            if input.output_kind == AliasOutput::KIND || input.output_kind == NftOutput::KIND {
+                // save to unwrap because we only set it for alias and nft outputs
+                unlock_block_indexes.insert(
+                    input.alias_or_nft_address.expect("No alias or nft input"),
+                    current_block_index,
+                );
+                // println!("nft_or_alias_indexes inserted: {:?}", input.alias_or_nft_address.unwrap());
+            }
             // Check if current path is same as previous path
             // If so, add a reference unlock block
             // Format to differentiate between public and internal addresses
-            let index = format!("{}{}", input.address_index, input.address_internal);
-            if let Some(block_index) = signature_indexes.get(&index) {
-                match input.output_kind {
-                    // ExtendedOutput::KIND
-                    3 => {
-                        unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
+            if let Some(block_index) = unlock_block_indexes.get(&input.address) {
+                match input.address {
+                    Address::Alias(_alias) => {
+                        unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(*block_index as u16)?))
                     }
-                    // AliasOutput::KIND
-                    4 => {
-                        // todo handle different alias outputs
-                        alias_index = current_block_index as u16;
-                        unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?));
+                    Address::Ed25519(_ed25519) => {
+                        unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?))
                     }
-                    // FoundryOutput::KIND
-                    5 => {
-                        // foundry output is unlocked by alias unlock_blocks
-                        unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(alias_index)?));
+                    Address::Nft(_nft) => {
+                        unlock_blocks.push(UnlockBlock::Nft(NftUnlockBlock::new(*block_index as u16)?))
                     }
-                    // NftOutput::KIND
-                    6 => {
-                        unlock_blocks.push(UnlockBlock::Nft(NftUnlockBlock::new(*block_index as u16)?));
-                    }
-                    _ => todo!(),
                 }
             } else {
-                // todo handle different alias outputs
-                // set index for alias_index
-                if input.output_kind == 4 {
-                    alias_index = current_block_index as u16;
+                // We can only sign ed25519 addresses and unlock_block_indexes needs to contain the address already at
+                // this point
+                if input.address.kind() != Ed25519Address::KIND {
+                    return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
                 }
                 // If not, we need to create a signature unlock block
                 let private_key = self.deref().derive(Curve::Ed25519, &chain)?.secret_key();
@@ -177,7 +172,8 @@ impl crate::signing::Signer for MnemonicSigner {
                 unlock_blocks.push(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
                     Ed25519Signature::new(public_key, *signature),
                 ))));
-                signature_indexes.insert(index, current_block_index);
+                unlock_block_indexes.insert(input.address, current_block_index);
+                // println!("unlock_block_indexes inserted: {:?}", input.address);
             }
         }
         Ok(unlock_blocks)

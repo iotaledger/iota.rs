@@ -149,6 +149,9 @@ pub enum Error {
     /// Missing unlock block error
     #[error("missing unlock block")]
     MissingUnlockBlock,
+    /// No input with matching ed25519 unlock condition provided
+    #[error("No input with matching ed25519 unlock condition provided")]
+    MissingInputWithEd25519UnlockCondition,
     /// Ledger transport error
     #[cfg(feature = "ledger")]
     #[error("ledger transport error")]

@@ -13,7 +13,7 @@ use bee_message::{
     input::{Input, UtxoInput},
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        Output,
+        AliasId, Output,
     },
     payload::{transaction::TransactionId, Payload, TaggedDataPayload},
     Message, MessageId,
@@ -21,7 +21,7 @@ use bee_message::{
 use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
 use crypto::keys::slip10::Chain;
 
-use std::{ops::Range, str::FromStr};
+use std::{collections::HashSet, ops::Range, str::FromStr};
 
 #[cfg(feature = "wasm")]
 use gloo_timers::future::TimeoutFuture;
@@ -218,8 +218,12 @@ impl<'a> ClientMessageBuilder<'a> {
         })
     }
 
-    /// Get output amount and address from an OutputDto
-    pub fn get_output_amount_and_address(output: &OutputDto) -> Result<(u64, Address)> {
+    /// Get output amount and address from an OutputDto, governance_transition for Alias Outputs so we get the unlock
+    /// condition we're interested in
+    pub fn get_output_amount_and_address(
+        output: &OutputDto,
+        governance_transition: Option<HashSet<AliasId>>,
+    ) -> Result<(u64, Address)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
             OutputDto::Extended(ref r) => {
@@ -234,13 +238,24 @@ impl<'a> ClientMessageBuilder<'a> {
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
             OutputDto::Alias(ref r) => {
+                let alias_id = AliasId::try_from(&r.alias_id)?;
+                let mut is_governance_transition = false;
+                if let Some(governance_transition) = governance_transition {
+                    if governance_transition.contains(&alias_id) {
+                        is_governance_transition = true;
+                    }
+                }
                 for block in &r.unlock_conditions {
                     match block {
                         bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?));
+                            if is_governance_transition {
+                                return Ok((r.amount, Address::try_from(&e.address)?));
+                            }
                         }
                         bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?));
+                            if !is_governance_transition {
+                                return Ok((r.amount, Address::try_from(&e.address)?));
+                            }
                         }
                         _ => todo!(),
                     }
@@ -250,12 +265,12 @@ impl<'a> ClientMessageBuilder<'a> {
             OutputDto::Foundry(ref r) => {
                 for block in &r.unlock_conditions {
                     match block {
-                        bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?));
-                        }
-                        bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?));
-                        }
+                        // bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
+                        //     return Ok((r.amount, Address::try_from(&e.address)?));
+                        // }
+                        // bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
+                        //     return Ok((r.amount, Address::try_from(&e.address)?));
+                        // }
                         bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
                             return Ok((r.amount, Address::try_from(&e.address)?));
                         }
@@ -278,13 +293,15 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
-    // If custom inputs are provided we check if they are unspent, get the balance and search the address for it
+    // If custom inputs are provided we check if they are unspent, get the balance and search the address for it,
+    // governance_transition makes only a difference for alias outputs
     async fn get_custom_inputs(
         &self,
         inputs: &[UtxoInput],
         total_to_spend: u64,
+        governance_transition: Option<HashSet<AliasId>>,
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
-        get_custom_inputs(self, inputs, total_to_spend).await
+        get_custom_inputs(self, inputs, total_to_spend, governance_transition).await
     }
 
     // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust

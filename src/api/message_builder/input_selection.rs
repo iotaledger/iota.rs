@@ -16,11 +16,13 @@ use bee_message::{
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        ExtendedOutputBuilder, Output,
+        AliasId, ExtendedOutputBuilder, Output,
     },
 };
 use bee_rest_api::types::dtos::OutputDto;
 use packable::PackableExt;
+
+use std::collections::HashSet;
 
 // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
 pub(crate) async fn get_inputs(
@@ -86,7 +88,7 @@ pub(crate) async fn get_inputs(
             // outputs than we need
             for output in address_outputs.into_iter() {
                 if !output.is_spent {
-                    let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+                    let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output, None)?;
 
                     let output_wrapper = OutputWrapper {
                         output,
@@ -184,6 +186,7 @@ pub(crate) async fn get_custom_inputs(
     message_builder: &ClientMessageBuilder<'_>,
     inputs: &[UtxoInput],
     total_to_spend: u64,
+    governance_transition: Option<HashSet<AliasId>>,
 ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
     let mut inputs_for_essence = Vec::new();
     let mut outputs_for_essence = Vec::new();
@@ -195,7 +198,8 @@ pub(crate) async fn get_custom_inputs(
         let output = message_builder.client.get_output(input.output_id()).await?;
         // Only add unspent outputs
         if !output.is_spent {
-            let (output_amount, output_address) = ClientMessageBuilder::get_output_amount_and_address(&output.output)?;
+            let (output_amount, output_address) =
+                ClientMessageBuilder::get_output_amount_and_address(&output.output, governance_transition.clone())?;
 
             total_already_spent += output_amount;
             let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
@@ -250,41 +254,15 @@ pub(crate) async fn get_custom_inputs(
         return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
     }
 
-    // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
+    // sort inputs by address type (ed25519 addresses will be first because of the type byte), so ed25519 signature
+    // unlock blocks will be first and can be referenced by alias and nft unlock blocks
     address_index_recorders
         .sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
 
-    // order inputs by output type, so extended inputs will be first and alias outputs before foundry outputs, so the
-    // unlock blocks can reference them
-    let mut ordered_address_index_recorders = Vec::new();
-    // extended
     for recoder in &address_index_recorders {
-        if let OutputDto::Extended(_) = recoder.output.output {
-            ordered_address_index_recorders.push(recoder.clone());
-        }
-    }
-    // alias
-    for recoder in &address_index_recorders {
-        if let OutputDto::Alias(_) = recoder.output.output {
-            ordered_address_index_recorders.push(recoder.clone());
-        }
-    }
-    // foundry
-    for recoder in &address_index_recorders {
-        if let OutputDto::Foundry(_) = recoder.output.output {
-            ordered_address_index_recorders.push(recoder.clone());
-        }
-    }
-    // nft
-    for recoder in &address_index_recorders {
-        if let OutputDto::Nft(_) = recoder.output.output {
-            ordered_address_index_recorders.push(recoder.clone());
-        }
-    }
-
-    for recoder in &ordered_address_index_recorders {
+        // println!("input address: {}", recoder.bech32_address);
         inputs_for_essence.push(recoder.input.clone());
     }
 
-    Ok((inputs_for_essence, outputs_for_essence, ordered_address_index_recorders))
+    Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
 }

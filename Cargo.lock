@@ -14,6 +14,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrayref"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4c527152e37cf757a3f78aae5a06fbeefdb07ccc535c980a3208ee3060dd544"
+
+[[package]]
 name = "arrayvec"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -119,36 +125,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-common"
-version = "0.6.0"
-source = "git+https://github.com/iotaledger/bee?rev=112364bc96eda5d04ea650fb27a7f5bcd204d19b#112364bc96eda5d04ea650fb27a7f5bcd204d19b"
-dependencies = [
- "autocfg",
- "fern",
- "log",
- "serde",
- "thiserror",
- "time",
-]
-
-[[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=112364bc96eda5d04ea650fb27a7f5bcd204d19b#112364bc96eda5d04ea650fb27a7f5bcd204d19b"
 dependencies = [
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=112364bc96eda5d04ea650fb27a7f5bcd204d19b)",
  "bee-message",
  "packable",
  "thiserror",
+ "time-helper",
 ]
 
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=112364bc96eda5d04ea650fb27a7f5bcd204d19b#112364bc96eda5d04ea650fb27a7f5bcd204d19b"
 dependencies = [
  "bech32 0.8.1",
- "bee-common 0.6.0 (git+https://github.com/iotaledger/bee?rev=112364bc96eda5d04ea650fb27a7f5bcd204d19b)",
  "bee-pow",
  "bee-ternary",
  "bitflags",
@@ -158,6 +148,7 @@ dependencies = [
  "hashbrown 0.12.0",
  "hex",
  "iota-crypto",
+ "iterator-sorted",
  "packable",
  "primitive-types",
  "serde",
@@ -168,7 +159,6 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=112364bc96eda5d04ea650fb27a7f5bcd204d19b#112364bc96eda5d04ea650fb27a7f5bcd204d19b"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -177,12 +167,14 @@ dependencies = [
 
 [[package]]
 name = "bee-rest-api"
-version = "0.1.7"
-source = "git+https://github.com/iotaledger/bee?rev=112364bc96eda5d04ea650fb27a7f5bcd204d19b#112364bc96eda5d04ea650fb27a7f5bcd204d19b"
+version = "0.2.0"
 dependencies = [
  "bee-ledger",
  "bee-message",
+ "bee-pow",
  "hex",
+ "multiaddr",
+ "packable",
  "primitive-types",
  "serde",
  "serde_json",
@@ -237,6 +229,12 @@ checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
 dependencies = [
  "generic-array",
 ]
+
+[[package]]
+name = "bs58"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
 
 [[package]]
 name = "bumpalo"
@@ -365,6 +363,12 @@ dependencies = [
  "subtle",
  "zeroize",
 ]
+
+[[package]]
+name = "data-encoding"
+version = "2.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ee2393c4a91429dffb4bedf19f4d6abf27d8a732c8ce4980305d782e5426d57"
 
 [[package]]
 name = "derive_more"
@@ -835,7 +839,7 @@ name = "iota-client"
 version = "1.1.0"
 dependencies = [
  "async-trait",
- "bee-common 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bee-common",
  "bee-message",
  "bee-pow",
  "bee-rest-api",
@@ -907,6 +911,12 @@ name = "ipnet"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68f2d64f2edebec4ce84ad108148e67e1064789bee435edc5b60ad398714a3a9"
+
+[[package]]
+name = "iterator-sorted"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d101775d2bc8f99f4ac18bf29b9ed70c0dd138b9a1e88d7b80179470cbbe8bd2"
 
 [[package]]
 name = "itoa"
@@ -1048,6 +1058,48 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7bd39d24e28e1544d74ff5746e322a477e52353c8ba7adcaa83d2e760752853"
 dependencies = [
  "bytes",
+]
+
+[[package]]
+name = "multiaddr"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48ee4ea82141951ac6379f964f71b20876d43712bea8faf6dd1a375e08a46499"
+dependencies = [
+ "arrayref",
+ "bs58",
+ "byteorder",
+ "data-encoding",
+ "multihash",
+ "percent-encoding",
+ "serde",
+ "static_assertions",
+ "unsigned-varint",
+]
+
+[[package]]
+name = "multihash"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "752a61cd890ff691b4411423d23816d5866dd5621e4d1c5687a53b94b5a979d8"
+dependencies = [
+ "generic-array",
+ "multihash-derive",
+ "unsigned-varint",
+]
+
+[[package]]
+name = "multihash-derive"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "424f6e86263cd5294cbd7f1e95746b95aca0e0d66bff31e5a40d6baa87b4aa99"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "synstructure",
 ]
 
 [[package]]
@@ -1611,6 +1663,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "synstructure"
+version = "0.12.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f36bdaa60a83aca3921b5259d5400cbf5e90fc51931376a9bd4a0eb79aa7210f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "unicode-xid",
+]
+
+[[package]]
 name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1644,6 +1708,15 @@ checksum = "41effe7cfa8af36f439fac33861b66b049edc6f9a32331e2312660529c1c24ad"
 dependencies = [
  "itoa",
  "libc",
+]
+
+[[package]]
+name = "time-helper"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17c30f0091717eeeff0b556d830302d5563de8b72fd49127aa5899a06a369808"
+dependencies = [
+ "time",
 ]
 
 [[package]]
@@ -1827,6 +1900,12 @@ name = "unicode-xid"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ccb82d61f80a663efe1f787a51b16b5a51e3314d6ac365b08639f52387b33f3"
+
+[[package]]
+name = "unsigned-varint"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d86a8dc7f45e4c1b0d30e43038c38f274e77af056aa5f74b93c2cf9eb3c1c836"
 
 [[package]]
 name = "untrusted"

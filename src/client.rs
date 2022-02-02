@@ -711,7 +711,7 @@ impl Client {
         let mut extended_outputs = Vec::new();
 
         for output_resp in available_outputs.into_iter() {
-            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_resp.output)?;
+            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_resp.output, None)?;
             extended_outputs.push((
                 UtxoInput::new(
                     TransactionId::from_str(&output_resp.transaction_id)?,
