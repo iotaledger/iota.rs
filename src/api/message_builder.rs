@@ -340,7 +340,7 @@ impl<'a> ClientMessageBuilder<'a> {
     async fn get_inputs(
         &self,
         total_to_spend: u64,
-        _dust_and_allowance_recorders: &mut Vec<(u64, Address, bool)>,
+        _dust_and_allowance_recorders: &mut [(u64, Address, bool)],
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
         let mut outputs = Vec::new();
         let mut dust_allowance_outputs = Vec::new();

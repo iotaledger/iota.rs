@@ -479,7 +479,7 @@ impl Client {
             return Ok(primary_node.clone());
         }
         let pool = self.node_manager.nodes.clone();
-        Ok(pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)?)
+        pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)
     }
 
     /// Gets the network id of the node we're connecting to.
