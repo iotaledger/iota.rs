@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 
 use std::{
     convert::{From, Into},
@@ -14,6 +14,7 @@ use iota_client::{
 };
 
 use crate::{
+    Result,
     address::*,
     balance::GetBalanceBuilderApi,
     bee_types::*,
@@ -215,7 +216,7 @@ impl Client {
     /// Return the balance for a provided seed and its wallet chain account index.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
     /// balance address.
-    pub fn get_balance(&self, seed: &str) -> GetBalanceBuilderApi {
+    pub fn get_balance(&self, seed: &str) -> Result<GetBalanceBuilderApi> {
         GetBalanceBuilderApi::new(self, seed)
     }
 
@@ -229,8 +230,11 @@ impl Client {
         GetMessageBuilder::new(self)
     }
 
-    pub fn get_addresses(&self, seed: &str) -> GetAddressesBuilder {
-        GetAddressesBuilder::new(seed).with_client(self)
+    pub fn get_addresses(&self, seed: &str) -> Result<GetAddressesBuilder> {
+        match GetAddressesBuilder::from(seed) {
+            Ok(b) => Ok(b.with_client(self)),
+            Err(e) => Err(e),
+        }
     }
 
     pub fn retry_until_included(

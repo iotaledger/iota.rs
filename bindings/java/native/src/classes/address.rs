@@ -125,7 +125,7 @@ impl Address {
     pub fn verify(&self, msg: Vec<u8>, signature: SignatureUnlock) -> Result<()> {
         match self.address.verify(&msg, signature.to_inner_ref()) {
             Ok(()) => Ok(()),
-            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 }
@@ -159,7 +159,7 @@ pub fn search_address(
     });
     match res {
         Ok((index, is_public)) => Ok(IndexPublicDto { index, is_public }),
-        Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        Err(e) => Err(anyhow!(e.to_string())),
     }
 }
 
@@ -206,16 +206,21 @@ pub struct GetAddressesBuilder<'a> {
 }
 
 impl<'a> GetAddressesBuilder<'a> {
-    pub fn new(seed: &str) -> Self {
-        let internal = GetAddressesBuilderInternal {
-            seed: RustSeed::from_bytes(&hex::decode(seed).unwrap()),
-            account_index: 0,
-            range: 0..ADDRESS_GAP_RANGE,
-            bech32_hrp: None,
-            client: None,
-        };
-        Self {
-            fields: Rc::new(RefCell::new(Option::from(internal))),
+    pub fn from(seed: &str) -> Result<Self> {
+        match hex::decode(seed) {
+            Ok(s) => {
+                let internal = GetAddressesBuilderInternal {
+                    seed: RustSeed::from_bytes(&s),
+                    account_index: 0,
+                    range: 0..ADDRESS_GAP_RANGE,
+                    bech32_hrp: None,
+                    client: None,
+                };
+                Ok(Self {
+                    fields: Rc::new(RefCell::new(Option::from(internal))),
+                })
+            },
+            Err(e) => Err(anyhow!(e.to_string()))
         }
     }
 

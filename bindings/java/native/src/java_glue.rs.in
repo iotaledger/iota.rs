@@ -263,7 +263,7 @@ foreign_class!(
         /// Return the balance for a provided seed and its wallet chain account index.
         /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
         /// balance address.
-        fn Client::get_balance(&self, seed: &str) -> GetBalanceBuilderApi;
+        fn Client::get_balance(&self, seed: &str) -> Result<GetBalanceBuilderApi>;
 
         /// A generic send function for easily sending transaction or indexation messages.
         fn Client::message(&self) -> ClientMessageBuilder;
@@ -272,7 +272,7 @@ foreign_class!(
         fn Client::get_message(&self) -> GetMessageBuilder;
 
         /// Return a list of addresses from the seed regardless of their validity.
-        fn Client::get_addresses(&self, seed: &str) -> GetAddressesBuilder;
+        fn Client::get_addresses(&self, seed: &str) -> Result<GetAddressesBuilder>;
 
         /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
         /// milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages. Set to -1 for defaults.
@@ -387,9 +387,9 @@ foreign_class!(
         constructor OutputsOptions::default() -> OutputsOptions;
         private fn OutputsOptions::to_string(&self) -> String; alias to_string;
         /// Whether the query should include spent outputs or not.
-        private fn OutputsOptions::include_spent(&mut self, include_spent: bool);
+        fn OutputsOptions::include_spent(&mut self, include_spent: bool);
         /// The output type filter.
-        private fn OutputsOptions::output_type(&mut self, output_type: Option<OutputKind>);
+        fn OutputsOptions::output_type(&mut self, output_type: Option<OutputKind>);
     }
 );
 
@@ -728,7 +728,7 @@ foreign_class!(
         self_type ClientMessageBuilder<'a>;
         private constructor = empty;
         /// Sets the seed.
-        fn ClientMessageBuilder::with_seed(&self, seed: &str) -> ClientMessageBuilder;
+        fn ClientMessageBuilder::with_seed(&self, seed: &str) -> Result<ClientMessageBuilder>;
 
         /// Sets the account index.
         fn ClientMessageBuilder::with_account_index(&self, account_index: usize) -> ClientMessageBuilder;
@@ -931,7 +931,9 @@ foreign_class!(
     #[derive(camelCaseAliases)]
     class GetAddressesBuilder {
         self_type GetAddressesBuilder<'a>;
-        constructor GetAddressesBuilder::new(seed: &str) -> GetAddressesBuilder<'a>;
+        private constructor = empty;
+        /// Construct a new addressbuilder with a seed. Invalid seeds throw an error
+        fn GetAddressesBuilder::from(seed: &str) -> Result<GetAddressesBuilder<'a>>;
         
         /// Set the account index
         fn GetAddressesBuilder::with_account_index(&self, account_index: usize) -> GetAddressesBuilder;
