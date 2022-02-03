@@ -176,6 +176,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: audit
-          args: --file bindings/java/native/Cargo.lock --deny warnings
+          # NOTE: Workspace
+          args: --file bindings/java/Cargo.lock --deny warnings
 
       # TODO: Check the Java code too
