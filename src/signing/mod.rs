@@ -90,6 +90,7 @@ pub trait Signer {
     ) -> crate::Result<Vec<UnlockBlock>>;
 }
 
+// todo use validation function from bee-ledger if possible
 /// Verify unlock blocks of a transaction
 pub fn verify_unlock_blocks(transaction_payload: &TransactionPayload, inputs: Vec<Address>) -> crate::Result<()> {
     let essence_hash = transaction_payload.essence().hash();

@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     let seed_balance = iota.get_balance(&signer).finish().await?;
     println!("Account balance: {:?}i\n", seed_balance);
 
-    let address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
+    let address = "atoi1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vk92ryhu";
 
     let balance = iota.get_address().balance(address).await?;
 

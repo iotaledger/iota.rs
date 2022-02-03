@@ -129,7 +129,7 @@ pub(crate) async fn get_inputs(
                             // Output possible remaining tokens back to the original address
                             if remaining_balance != 0 {
                                 outputs_for_essence.push(Output::Extended(
-                                    ExtendedOutputBuilder::new(remaining_balance)
+                                    ExtendedOutputBuilder::new(remaining_balance)?
                                         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                                             Address::try_from_bech32(&output_wrapper.address)?,
                                         )))
@@ -244,7 +244,7 @@ pub(crate) async fn get_custom_inputs(
     // Add output from remaining balance of custom inputs if necessary
     if let Some(address) = remainder_address_balance.0 {
         outputs_for_essence.push(Output::Extended(
-            ExtendedOutputBuilder::new(remainder_address_balance.1)
+            ExtendedOutputBuilder::new(remainder_address_balance.1)?
                 .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
                 .finish()?,
         ));

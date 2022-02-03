@@ -109,7 +109,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder
     pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = ExtendedOutputBuilder::new(amount)
+        let output = ExtendedOutputBuilder::new(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 Address::from_str(address)?,
             )))
@@ -127,7 +127,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = ExtendedOutputBuilder::new(amount)
+        let output = ExtendedOutputBuilder::new(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 address.parse::<Ed25519Address>()?.into(),
             )))

@@ -12,7 +12,7 @@ use crate::{
     constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
     error::{Error, Result},
     node_api::{
-        high_level::{GetAddressBuilder, GetMessageBuilder},
+        high_level::{AddressBalance, GetAddressBuilder, GetMessageBuilder},
         indexer_api::query_parameters::QueryParameter,
     },
     node_manager::Node,
@@ -36,7 +36,7 @@ use bee_rest_api::types::{
     body::SuccessBody,
     dtos::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
     responses::{
-        BalanceAddressResponse, InfoResponse as NodeInfo, MilestoneResponse, OutputResponse, TreasuryResponse,
+        InfoResponse as NodeInfo, MilestoneResponse, OutputResponse, TreasuryResponse,
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
@@ -588,7 +588,7 @@ impl Client {
 
     /// Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and
     /// already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<BalanceAddressResponse>> {
+    pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<AddressBalance>> {
         let mut address_balance_pairs = Vec::new();
         for address in addresses {
             let balance_response = self.get_address().balance(address).await?;
