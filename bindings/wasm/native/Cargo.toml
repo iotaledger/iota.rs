@@ -18,7 +18,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 console_error_panic_hook = "0.1.7"
-futures = "0.3.17"
 js-sys = "0.3.55"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = { version = "1.0.68", default-features = false }
