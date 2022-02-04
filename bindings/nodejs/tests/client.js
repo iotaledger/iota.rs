@@ -115,7 +115,7 @@ describe('Client', () => {
   })
 
   it('get address outputs', async () => {
-    const outputs = await client.getAddressOutputs('atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
+    const outputs = await client.getAddressOutputs('atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf')
     assert.strictEqual(Array.isArray(outputs), true)
     assert.strictEqual(outputs.length > 0, true)
     assert.strictEqual(typeof outputs[0], 'string')
@@ -163,7 +163,7 @@ describe('Client', () => {
     const prepared_transaction = await client
       .message()
       .input(inputs[0])
-      .output('atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf', 1000000)
+      .output('atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2', 1000000)
       .prepareTransaction();
     const signed_transaction = await client
       .message()
