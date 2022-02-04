@@ -112,5 +112,9 @@ name = "foundry"
 path = "examples/outputs/foundry.rs"
 
 [[example]]
+name = "native_tokens"
+path = "examples/outputs/native_tokens.rs"
+
+[[example]]
 name = "nft"
 path = "examples/outputs/nft.rs"

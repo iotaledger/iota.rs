@@ -16,21 +16,26 @@ use bee_message::{
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, ExtendedOutputBuilder, Output,
+        AliasId, ExtendedOutputBuilder, NativeToken, Output, TokenId,
     },
 };
 use bee_rest_api::types::dtos::OutputDto;
 use packable::PackableExt;
 
-use std::collections::HashSet;
+use primitive_types::U256;
+
+use std::collections::{hash_map::Entry, HashMap, HashSet};
 
 // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
 pub(crate) async fn get_inputs(
     message_builder: &ClientMessageBuilder<'_>,
-    total_to_spend: u64,
+    required_amount: u64,
+    required_native_tokens: HashMap<TokenId, U256>,
+    // todo: check if it's possible to automatically select alias/foundry/nft inputs if we have them on the outputs (by
+    // their alias/nft id)
 ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+    let mut input_native_tokens: HashMap<TokenId, U256> = HashMap::new();
     let mut outputs = Vec::new();
-    let mut inputs_for_essence = Vec::new();
     let mut outputs_for_essence = Vec::new();
     let mut address_index_recorders = Vec::new();
     let mut total_already_spent = 0;
@@ -86,12 +91,13 @@ pub(crate) async fn get_inputs(
             // We store output responses locally in outputs and after each output we sort
             // them and try to get enough inputs for the transaction, so we don't request more
             // outputs than we need
-            for output in address_outputs.into_iter() {
-                if !output.is_spent {
-                    let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output.output, None)?;
+            for output_response in address_outputs.into_iter() {
+                if !output_response.is_spent {
+                    let output = Output::try_from(&output_response.output)?;
+                    let amount = output.amount();
 
                     let output_wrapper = OutputWrapper {
-                        output,
+                        output: output_response,
                         address_index,
                         internal: *internal,
                         amount,
@@ -109,11 +115,25 @@ pub(crate) async fn get_inputs(
 
                     for (_offset, output_wrapper) in outputs
                         .iter()
-                        // Max inputs is 127
+                        // Max inputs is 128
                         .take(INPUT_COUNT_MAX.into())
                         .enumerate()
                     {
                         total_already_spent += output_wrapper.amount;
+                        let output = Output::try_from(&output_wrapper.output.output)?;
+                        if let Some(output_native_tokens) = output.native_tokens() {
+                            for native_token in output_native_tokens {
+                                match input_native_tokens.entry(*native_token.token_id()) {
+                                    Entry::Vacant(e) => {
+                                        e.insert(*native_token.amount());
+                                    }
+                                    Entry::Occupied(mut e) => {
+                                        *e.get_mut() += *native_token.amount();
+                                    }
+                                }
+                            }
+                        }
+
                         let address_index_record = ClientMessageBuilder::create_address_index_recorder(
                             account_index,
                             output_wrapper.address_index,
@@ -121,27 +141,47 @@ pub(crate) async fn get_inputs(
                             &output_wrapper.output,
                             str_address.to_owned(),
                         )?;
-                        // inputs_for_essence.push(address_index_record.input.clone());
                         address_index_recorders.push(address_index_record);
-                        // Break if we have enough funds and don't create dust for the remainder
-                        if total_already_spent >= total_to_spend {
-                            let remaining_balance = total_already_spent - total_to_spend;
+                        // println!("address_index_recorders : {:?}", address_index_recorders);
+                        // println!("input_native_tokens: {:?}", input_native_tokens);
+                        // println!("required_native_tokens: {:?}", required_native_tokens);
+                        // println!("amount reached: {:?}", native_tokens_amount_reached(&input_native_tokens,
+                        // &required_native_tokens)); Break if we have enough funds and don't
+                        // create dust for the remainder
+                        if total_already_spent >= required_amount
+                            && native_tokens_amount_reached(&input_native_tokens, &required_native_tokens)
+                        {
+                            let remaining_balance = total_already_spent - required_amount;
                             // Output possible remaining tokens back to the original address
                             if remaining_balance != 0 {
-                                outputs_for_essence.push(Output::Extended(
-                                    ExtendedOutputBuilder::new(remaining_balance)?
-                                        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
-                                            Address::try_from_bech32(&output_wrapper.address)?,
-                                        )))
-                                        .finish()?,
-                                ));
+                                let mut remainder_output_builder = ExtendedOutputBuilder::new(remaining_balance)?
+                                    .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
+                                        Address::try_from_bech32(&output_wrapper.address)?,
+                                    )));
+                                if let Some(remainder_native_tokens) =
+                                    get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
+                                {
+                                    for (token_id, amount) in remainder_native_tokens {
+                                        remainder_output_builder = remainder_output_builder
+                                            .add_native_token(NativeToken::new(token_id, amount)?);
+                                    }
+                                }
+                                outputs_for_essence.push(Output::Extended(remainder_output_builder.finish()?));
                             }
-                            break 'input_selection;
+                            // don't break if we have remaining native tokens, but no remaining balance for the dust
+                            // deposit
+                            if get_remainder_native_tokens(&input_native_tokens, &required_native_tokens).is_some() {
+                                if remaining_balance > 0 {
+                                    break 'input_selection;
+                                }
+                            } else {
+                                break 'input_selection;
+                            }
                         }
                     }
                     // We need to cleare all gathered records if we haven't reached the total amount we need in this
                     // iteration.
-                    inputs_for_essence.clear();
+                    input_native_tokens.clear();
                     outputs_for_essence.clear();
                     address_index_recorders.clear();
                     total_already_spent = 0;
@@ -159,25 +199,27 @@ pub(crate) async fn get_inputs(
         if empty_address_count >= (ADDRESS_GAP_RANGE * 2) as u64 {
             let inputs_balance = outputs.iter().fold(0, |acc, output| acc + output.amount);
             let inputs_amount = outputs.len();
-            if inputs_balance >= total_to_spend && inputs_amount > INPUT_COUNT_MAX.into() {
+            if inputs_balance >= required_amount && inputs_amount > INPUT_COUNT_MAX.into() {
                 return Err(Error::ConsolidationRequired(inputs_amount));
-            } else if inputs_balance > total_to_spend {
-                return Err(Error::DustError(format!(
-                    "Transaction would create a dust output with {}i",
-                    inputs_balance - total_to_spend
-                )));
+            } else if inputs_balance > required_amount {
+                // todo check dust protection
+                // return Err(Error::DustError(format!(
+                //     "Transaction would create a dust output with {}i",
+                //     inputs_balance - required_amount
+                // )));
             } else {
-                return Err(Error::NotEnoughBalance(inputs_balance, total_to_spend));
+                return Err(Error::NotEnoughBalance(inputs_balance, required_amount));
             }
         }
     }
     // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
     address_index_recorders
         .sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
+    let mut inputs_for_essence = Vec::new();
     for recoder in &address_index_recorders {
         inputs_for_essence.push(recoder.input.clone());
     }
-
+    // println!("inputs_for_essence {:?}", inputs_for_essence);
     Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
 }
 
@@ -185,9 +227,11 @@ pub(crate) async fn get_inputs(
 pub(crate) async fn get_custom_inputs(
     message_builder: &ClientMessageBuilder<'_>,
     inputs: &[UtxoInput],
-    total_to_spend: u64,
+    required_amount: u64,
+    required_native_tokens: HashMap<TokenId, U256>,
     governance_transition: Option<HashSet<AliasId>>,
 ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+    let mut input_native_tokens: HashMap<TokenId, U256> = HashMap::new();
     let mut inputs_for_essence = Vec::new();
     let mut outputs_for_essence = Vec::new();
     let mut address_index_recorders = Vec::new();
@@ -195,13 +239,29 @@ pub(crate) async fn get_custom_inputs(
     let mut total_already_spent = 0;
     let account_index = message_builder.account_index.unwrap_or(0);
     for input in inputs {
-        let output = message_builder.client.get_output(input.output_id()).await?;
+        let output_response = message_builder.client.get_output(input.output_id()).await?;
         // Only add unspent outputs
-        if !output.is_spent {
-            let (output_amount, output_address) =
-                ClientMessageBuilder::get_output_amount_and_address(&output.output, governance_transition.clone())?;
+        if !output_response.is_spent {
+            let (output_amount, output_address) = ClientMessageBuilder::get_output_amount_and_address(
+                &output_response.output,
+                governance_transition.clone(),
+            )?;
+            let output = Output::try_from(&output_response.output)?;
 
             total_already_spent += output_amount;
+            if let Some(output_native_tokens) = output.native_tokens() {
+                for native_token in output_native_tokens {
+                    match input_native_tokens.entry(*native_token.token_id()) {
+                        Entry::Vacant(e) => {
+                            e.insert(*native_token.amount());
+                        }
+                        Entry::Occupied(mut e) => {
+                            *e.get_mut() += *native_token.amount();
+                        }
+                    }
+                }
+            }
+
             let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
             let (address_index, internal) = match message_builder.signer {
                 Some(signer) => {
@@ -227,13 +287,13 @@ pub(crate) async fn get_custom_inputs(
                 account_index,
                 address_index,
                 internal,
-                &output,
+                &output_response,
                 output_address.to_bech32(&bech32_hrp),
             )?;
             address_index_recorders.push(address_index_record);
             // Output the remaining tokens back to the original address
-            if total_already_spent > total_to_spend {
-                let remaining_balance = total_already_spent - total_to_spend;
+            if total_already_spent > required_amount {
+                let remaining_balance = total_already_spent - required_amount;
                 // Keep track of remaining balance, we don't add an output here, because we could have
                 // multiple inputs from the same address, which would create multiple outputs with the
                 // same address, which is not allowed
@@ -243,15 +303,26 @@ pub(crate) async fn get_custom_inputs(
     }
     // Add output from remaining balance of custom inputs if necessary
     if let Some(address) = remainder_address_balance.0 {
-        outputs_for_essence.push(Output::Extended(
-            ExtendedOutputBuilder::new(remainder_address_balance.1)?
-                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-                .finish()?,
-        ));
+        let mut remainder_output_builder = ExtendedOutputBuilder::new(remainder_address_balance.1)?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
+        if let Some(remainder_native_tokens) =
+            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
+        {
+            for (token_id, amount) in remainder_native_tokens {
+                remainder_output_builder =
+                    remainder_output_builder.add_native_token(NativeToken::new(token_id, amount)?);
+            }
+        }
+        outputs_for_essence.push(Output::Extended(remainder_output_builder.finish()?));
+    } else if get_remainder_native_tokens(&input_native_tokens, &required_native_tokens).is_some() {
+        return Err(Error::NotEnoughBalanceForNativeTokenRemainder);
     }
 
-    if total_already_spent < total_to_spend {
-        return Err(Error::NotEnoughBalance(total_already_spent, total_to_spend));
+    if total_already_spent < required_amount {
+        return Err(Error::NotEnoughBalance(total_already_spent, required_amount));
+    }
+    if !native_tokens_amount_reached(&input_native_tokens, &required_native_tokens) {
+        return Err(Error::NotEnoughNativeTokens);
     }
 
     // sort inputs by address type (ed25519 addresses will be first because of the type byte), so ed25519 signature
@@ -265,4 +336,39 @@ pub(crate) async fn get_custom_inputs(
     }
 
     Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
+}
+
+fn native_tokens_amount_reached(inputs: &HashMap<TokenId, U256>, required: &HashMap<TokenId, U256>) -> bool {
+    for required_native_token in required {
+        match inputs.get(required_native_token.0) {
+            None => return false,
+            Some(amount) => {
+                if amount < required_native_token.1 {
+                    return false;
+                }
+            }
+        }
+    }
+    true
+}
+
+fn get_remainder_native_tokens(
+    inputs: &HashMap<TokenId, U256>,
+    required: &HashMap<TokenId, U256>,
+) -> Option<HashMap<TokenId, U256>> {
+    let mut remaining_native_tokens = HashMap::new();
+    for input_native_token in inputs {
+        if let Some(required_native_token) = required.get(input_native_token.0) {
+            if required_native_token < input_native_token.1 {
+                remaining_native_tokens.insert(*input_native_token.0, input_native_token.1 - required_native_token);
+            }
+        } else {
+            remaining_native_tokens.insert(*input_native_token.0, *input_native_token.1);
+        }
+    }
+    if remaining_native_tokens.is_empty() {
+        None
+    } else {
+        Some(remaining_native_tokens)
+    }
 }

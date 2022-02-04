@@ -23,45 +23,45 @@ use bee_message::{
 use bee_rest_api::types::dtos::OutputDto;
 use packable::PackableExt;
 
-use std::collections::HashSet;
+use std::collections::{hash_map::Entry, HashMap, HashSet};
 
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
     let mut governance_transition: Option<HashSet<AliasId>> = None;
     // Calculate the total tokens to spend
     let mut total_to_spend = 0;
+    let mut native_tokens = HashMap::new();
     for output in &message_builder.outputs {
-        match output {
-            Output::Extended(x) => {
-                total_to_spend += x.amount();
+        total_to_spend += output.amount();
+        if let Some(output_native_tokens) = output.native_tokens() {
+            for native_token in output_native_tokens {
+                match native_tokens.entry(*native_token.token_id()) {
+                    Entry::Vacant(e) => {
+                        e.insert(*native_token.amount());
+                    }
+                    Entry::Occupied(mut e) => {
+                        *e.get_mut() += *native_token.amount();
+                    }
+                }
             }
-            Output::Alias(x) => {
-                if x.state_index() > 0 {
-                    // Check if the transaction is a governance_transition, by checking if the new index is the same as
-                    // the previous index
-                    let output_ids = message_builder.client.alias_output_ids(*x.alias_id()).await?;
-                    let outputs = message_builder.client.get_outputs(output_ids).await?;
-                    for output in outputs {
-                        if let OutputDto::Alias(output) = output.output {
-                            // A governance transition is identified by an unchanged State Index in next state.
-                            if x.state_index() == output.state_index {
-                                let mut transitions = HashSet::new();
-                                transitions.insert(AliasId::try_from(&output.alias_id)?);
-                                governance_transition.replace(transitions);
-                            }
+        }
+        if let Output::Alias(x) = output {
+            if x.state_index() > 0 {
+                // Check if the transaction is a governance_transition, by checking if the new index is the same as
+                // the previous index
+                let output_ids = message_builder.client.alias_output_ids(*x.alias_id()).await?;
+                let outputs = message_builder.client.get_outputs(output_ids).await?;
+                for output in outputs {
+                    if let OutputDto::Alias(output) = output.output {
+                        // A governance transition is identified by an unchanged State Index in next state.
+                        if x.state_index() == output.state_index {
+                            let mut transitions = HashSet::new();
+                            transitions.insert(AliasId::try_from(&output.alias_id)?);
+                            governance_transition.replace(transitions);
                         }
                     }
                 }
-                total_to_spend += x.amount();
             }
-            Output::Foundry(x) => {
-                total_to_spend += x.amount();
-            }
-            Output::Nft(x) => {
-                total_to_spend += x.amount();
-            }
-            // todo: support other output types
-            _ => {}
         }
     }
 
@@ -73,10 +73,10 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
                 return Err(Error::ConsolidationRequired(inputs.len()));
             }
             message_builder
-                .get_custom_inputs(inputs, total_to_spend, governance_transition)
+                .get_custom_inputs(inputs, total_to_spend, native_tokens, governance_transition)
                 .await?
         }
-        None => message_builder.get_inputs(total_to_spend).await?,
+        None => message_builder.get_inputs(total_to_spend, native_tokens).await?,
     };
 
     // Build signed transaction payload

@@ -1,22 +1,23 @@
-// Copyright 2021 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example output --release
+//! cargo run --example native_tokens --release
 
 use iota_client::{
     bee_message::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        ExtendedOutputBuilder, Output,
+        ExtendedOutputBuilder, NativeToken, Output, TokenId,
     },
     signing::mnemonic::MnemonicSigner,
     utils::request_funds_from_faucet,
     Client, Result,
 };
+use primitive_types::U256;
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we will send a transaction
+/// In this example we will send extended outputs with native tokens
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -38,10 +39,16 @@ async fn main() -> Result<()> {
     )
     .await?;
 
+    let token_id: [u8; 38] =
+        hex::decode("08e68f7616cd4948efebc6a77c4f93aed770ac53860100000000000000000000000000000000")?
+            .try_into()
+            .unwrap();
     let mut outputs: Vec<Output> = Vec::new();
+    // most simple output
     outputs.push(Output::Extended(
         ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(50))?)
             .finish()?,
     ));
 
@@ -61,23 +68,5 @@ async fn main() -> Result<()> {
         message.id()
     );
 
-    // conflict reasons from https://github.com/gohornet/hornet/blob/4cd911a5aaed017c31a2093fc27bf4d06182ac67/pkg/model/storage/message_metadata.go#L31
-    // 	// ConflictInputUTXOAlreadySpent the referenced UTXO was already spent.
-    // ConflictInputUTXOAlreadySpent = 1
-
-    // // ConflictInputUTXOAlreadySpentInThisMilestone the referenced UTXO was already spent while confirming this
-    // milestone ConflictInputUTXOAlreadySpentInThisMilestone = 2
-
-    // // ConflictInputUTXONotFound the referenced UTXO cannot be found.
-    // ConflictInputUTXONotFound = 3
-
-    // // ConflictInputOutputSumMismatch the sum of the inputs and output values does not match.
-    // ConflictInputOutputSumMismatch = 4
-
-    // // ConflictInvalidSignature the unlock block signature is invalid.
-    // ConflictInvalidSignature = 5
-
-    // // ConflictSemanticValidationFailed the semantic validation failed.
-    // ConflictSemanticValidationFailed = 255
     Ok(())
 }

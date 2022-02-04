@@ -48,20 +48,20 @@ async fn main() -> Result<()> {
     let mut outputs: Vec<Output> = Vec::new();
     // most simple output
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
     // with metadata feature block
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
             .finish()?,
     ));
     // with dust deposit return
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1176100)
+        ExtendedOutputBuilder::new(1176100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::DustDepositReturn(
                 DustDepositReturnUnlockCondition::new(address, 1176000)?,
@@ -70,7 +70,7 @@ async fn main() -> Result<()> {
     ));
     // with dust expiration
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
                 address,
@@ -81,7 +81,7 @@ async fn main() -> Result<()> {
     ));
     // with timelock
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
                 MilestoneIndex::new(400),

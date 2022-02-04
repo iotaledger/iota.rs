@@ -234,7 +234,7 @@ async fn main() -> Result<()> {
             U256::from(100),
             TokenScheme::Simple,
         )?
-        .add_native_token(NativeToken::new(token_id, U256::from(50)))
+        .add_native_token(NativeToken::new(token_id, U256::from(50))?)
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
         .finish()?,
     ));
@@ -296,9 +296,9 @@ async fn main() -> Result<()> {
     ));
     // with native token
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50)))
+            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
     ));
     outputs.push(Output::Nft(
@@ -308,20 +308,20 @@ async fn main() -> Result<()> {
     ));
     // most simple output
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
     // with metadata feature block
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
             .finish()?,
     ));
     // with dust deposit return
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(176100)
+        ExtendedOutputBuilder::new(176100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::DustDepositReturn(
                 DustDepositReturnUnlockCondition::new(address, 176000)?,
@@ -330,7 +330,7 @@ async fn main() -> Result<()> {
     ));
     // with dust expiration
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
                 address,
@@ -341,7 +341,7 @@ async fn main() -> Result<()> {
     ));
     // with timelock
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
                 MilestoneIndex::new(400),

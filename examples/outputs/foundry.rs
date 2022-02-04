@@ -206,7 +206,7 @@ async fn main() -> Result<()> {
             U256::from(100),
             TokenScheme::Simple,
         )?
-        .add_native_token(NativeToken::new(token_id, U256::from(50)))
+        .add_native_token(NativeToken::new(token_id, U256::from(50))?)
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
         .finish()?,
     ));
@@ -261,9 +261,9 @@ async fn main() -> Result<()> {
     ));
 
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50)))
+            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
     ));
 
@@ -295,9 +295,9 @@ async fn main() -> Result<()> {
     let extended_output_id = get_extended_output_id_with_native_tokens(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)
+        ExtendedOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50)))
+            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
     ));
 

@@ -150,7 +150,7 @@ async fn main() -> Result<()> {
     let output = Output::try_from(&output_response.output)?;
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(output.amount())
+        ExtendedOutputBuilder::new(output.amount())?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));

@@ -13,7 +13,7 @@ use bee_message::{
     input::{Input, UtxoInput},
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, Output,
+        AliasId, Output, TokenId,
     },
     payload::{transaction::TransactionId, Payload, TaggedDataPayload},
     Message, MessageId,
@@ -21,7 +21,13 @@ use bee_message::{
 use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
 use crypto::keys::slip10::Chain;
 
-use std::{collections::HashSet, ops::Range, str::FromStr};
+use primitive_types::U256;
+
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Range,
+    str::FromStr,
+};
 
 #[cfg(feature = "wasm")]
 use gloo_timers::future::TimeoutFuture;
@@ -299,14 +305,19 @@ impl<'a> ClientMessageBuilder<'a> {
         &self,
         inputs: &[UtxoInput],
         total_to_spend: u64,
+        native_tokens: HashMap<TokenId, U256>,
         governance_transition: Option<HashSet<AliasId>>,
     ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
-        get_custom_inputs(self, inputs, total_to_spend, governance_transition).await
+        get_custom_inputs(self, inputs, total_to_spend, native_tokens, governance_transition).await
     }
 
     // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
-    async fn get_inputs(&self, total_to_spend: u64) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
-        get_inputs(self, total_to_spend).await
+    async fn get_inputs(
+        &self,
+        total_to_spend: u64,
+        native_tokens: HashMap<TokenId, U256>,
+    ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+        get_inputs(self, total_to_spend, native_tokens).await
     }
 
     /// Prepare a transaction
