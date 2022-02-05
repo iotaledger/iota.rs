@@ -12,8 +12,8 @@ use iota_client::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition,
                 UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, ExtendedOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken,
-            Output, OutputId, TokenId, TokenScheme,
+            AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken, Output,
+            OutputId, TokenId, TokenScheme,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -260,14 +260,14 @@ async fn main() -> Result<()> {
         .finish()?,
     ));
 
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
     ));
 
-    // get additional input for the new extended output
+    // get additional input for the new basic output
     let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
         &iota,
         vec![QueryParameter::Address(address.to_bech32("atoi"))],
@@ -292,10 +292,10 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // send native token without foundry
     //////////////////////////////////
-    let extended_output_id = get_extended_output_id_with_native_tokens(message.payload().unwrap());
+    let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
@@ -304,7 +304,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(extended_output_id.into())
+        .with_input(basic_output_id.into())
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -349,19 +349,19 @@ fn get_foundry_output_id(payload: &Payload) -> OutputId {
     };
 }
 
-// helper function to get the output id for the first extended output with native tokens
-fn get_extended_output_id_with_native_tokens(payload: &Payload) -> OutputId {
+// helper function to get the output id for the first basic output with native tokens
+fn get_basic_output_id_with_native_tokens(payload: &Payload) -> OutputId {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
-                if let Output::Extended(extended_output) = output {
-                    if !extended_output.native_tokens().is_empty() {
+                if let Output::Basic(basic_output) = output {
+                    if !basic_output.native_tokens().is_empty() {
                         return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
                     }
                 }
             }
-            panic!("No extended output with native tokens in transaction essence")
+            panic!("No basic output with native tokens in transaction essence")
         }
         _ => panic!("No tx payload"),
     };

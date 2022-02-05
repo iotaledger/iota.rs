@@ -708,11 +708,11 @@ impl Client {
             );
         }
 
-        let mut extended_outputs = Vec::new();
+        let mut basic_outputs = Vec::new();
 
         for output_resp in available_outputs.into_iter() {
             let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_resp.output, None)?;
-            extended_outputs.push((
+            basic_outputs.push((
                 UtxoInput::new(
                     TransactionId::from_str(&output_resp.transaction_id)?,
                     output_resp.output_index,
@@ -720,11 +720,11 @@ impl Client {
                 amount,
             ));
         }
-        extended_outputs.sort_by(|l, r| r.1.cmp(&l.1));
+        basic_outputs.sort_by(|l, r| r.1.cmp(&l.1));
 
         let mut total_already_spent = 0;
         let mut selected_inputs = Vec::new();
-        for (_offset, output_wrapper) in extended_outputs
+        for (_offset, output_wrapper) in basic_outputs
             .into_iter()
             // Max inputs is 127
             .take(INPUT_COUNT_MAX.into())

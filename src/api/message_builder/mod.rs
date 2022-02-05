@@ -3,7 +3,7 @@
 
 use crate::{
     api::types::{AddressIndexRecorder, PreparedTransactionData},
-    bee_message::output::ExtendedOutputBuilder,
+    bee_message::output::BasicOutputBuilder,
     signing::SignerHandle,
     Client, Error, Result,
 };
@@ -115,12 +115,12 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder
     pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = ExtendedOutputBuilder::new(amount)?
+        let output = BasicOutputBuilder::new(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 Address::from_str(address)?,
             )))
             .finish()?;
-        self.outputs.push(Output::Extended(output));
+        self.outputs.push(Output::Basic(output));
         Ok(self)
     }
 
@@ -133,12 +133,12 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = ExtendedOutputBuilder::new(amount)?
+        let output = BasicOutputBuilder::new(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 address.parse::<Ed25519Address>()?.into(),
             )))
             .finish()?;
-        self.outputs.push(Output::Extended(output));
+        self.outputs.push(Output::Basic(output));
         Ok(self)
     }
 
@@ -232,7 +232,7 @@ impl<'a> ClientMessageBuilder<'a> {
     ) -> Result<(u64, Address)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
-            OutputDto::Extended(ref r) => {
+            OutputDto::Basic(ref r) => {
                 for block in &r.unlock_conditions {
                     match block {
                         bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {

@@ -217,7 +217,7 @@ impl super::Signer for LedgerSigner {
                     // at this place, so we can rely on their order and don't have to sort it again.
                     for output in essence.outputs().iter() {
                         match output {
-                            bee_message::output::Output::Extended(s) => {
+                            bee_message::output::Output::Basic(s) => {
                                 // todo verify if that's the correct expected behaviour
                                 for block in s.unlock_conditions() {
                                     if let bee_message::output::UnlockCondition::Address(e) = block {

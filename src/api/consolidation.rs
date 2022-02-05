@@ -40,14 +40,14 @@ pub async fn consolidate_funds(
             // add the offset so the index matches the address index also for higher start indexes
             let index = index + offset;
 
-            let extended_outputs = client
+            let basic_outputs = client
                 .get_address()
                 .outputs(vec![QueryParameter::Address(address.to_string())])
                 .await?;
 
             let mut output_with_metadata = Vec::new();
 
-            for output in extended_outputs.iter() {
+            for output in basic_outputs.iter() {
                 let (amount, _output_address) =
                     ClientMessageBuilder::get_output_amount_and_address(&output.output, None)?;
                 output_with_metadata.push((output.clone(), amount));

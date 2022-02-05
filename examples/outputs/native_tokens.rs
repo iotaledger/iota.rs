@@ -6,7 +6,7 @@
 use iota_client::{
     bee_message::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        ExtendedOutputBuilder, NativeToken, Output, TokenId,
+        BasicOutputBuilder, NativeToken, Output, TokenId,
     },
     signing::mnemonic::MnemonicSigner,
     utils::request_funds_from_faucet,
@@ -17,7 +17,7 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we will send extended outputs with native tokens
+/// In this example we will send basic outputs with native tokens
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -45,8 +45,8 @@ async fn main() -> Result<()> {
             .unwrap();
     let mut outputs: Vec<Output> = Vec::new();
     // most simple output
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(50))?)
             .finish()?,

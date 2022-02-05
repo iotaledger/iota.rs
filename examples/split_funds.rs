@@ -8,7 +8,7 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we will send 100 extended outputs to our first address
+/// In this example we will send 100 basic outputs to our first address
 
 #[tokio::main]
 async fn main() -> Result<()> {

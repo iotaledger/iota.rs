@@ -8,7 +8,7 @@ use iota_client::{
         address::{Address, NftAddress},
         output::{
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            ExtendedOutputBuilder, NftId, NftOutputBuilder, Output, OutputId,
+            BasicOutputBuilder, NftId, NftOutputBuilder, Output, OutputId,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -136,7 +136,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with input(extended output) to NFT output sent: http://localhost:14265/api/v2/messages/{}",
+        "Transaction with input(basic output) to NFT output sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
 
@@ -149,8 +149,8 @@ async fn main() -> Result<()> {
     let output_response = iota.get_output(&nft_output_id).await?;
     let output = Output::try_from(&output_response.output)?;
     let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(output.amount())?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(output.amount())?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));

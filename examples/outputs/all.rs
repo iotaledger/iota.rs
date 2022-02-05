@@ -14,7 +14,7 @@ use iota_client::{
                 GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition, TimelockUnlockCondition,
                 UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, ExtendedOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken, NftId,
+            AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken, NftId,
             NftOutputBuilder, Output, OutputId, TokenId, TokenScheme,
         },
         payload::{transaction::TransactionEssence, Payload},
@@ -295,8 +295,8 @@ async fn main() -> Result<()> {
         .finish()?,
     ));
     // with native token
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
@@ -307,21 +307,21 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // most simple output
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
     // with metadata feature block
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
             .finish()?,
     ));
     // with dust deposit return
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(176100)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(176100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::DustDepositReturn(
                 DustDepositReturnUnlockCondition::new(address, 176000)?,
@@ -329,8 +329,8 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with dust expiration
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
                 address,
@@ -340,8 +340,8 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with timelock
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
                 MilestoneIndex::new(400),
@@ -350,7 +350,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    // get additional input for the new extended output
+    // get additional input for the new basic output
     let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
         &iota,
         vec![QueryParameter::Address(address.to_bech32("atoi"))],

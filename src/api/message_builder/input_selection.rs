@@ -16,7 +16,7 @@ use bee_message::{
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, ExtendedOutputBuilder, NativeToken, Output, TokenId,
+        AliasId, BasicOutputBuilder, NativeToken, Output, TokenId,
     },
 };
 use bee_rest_api::types::dtos::OutputDto;
@@ -104,7 +104,7 @@ pub(crate) async fn get_inputs(
                         address: str_address.clone(),
                     };
                     match output_wrapper.output.output {
-                        OutputDto::Extended(_) => outputs.push(output_wrapper),
+                        OutputDto::Basic(_) => outputs.push(output_wrapper),
                         OutputDto::Treasury(_) => {}
                         // todo: add other outputs
                         _ => unimplemented!(),
@@ -154,7 +154,7 @@ pub(crate) async fn get_inputs(
                             let remaining_balance = total_already_spent - required_amount;
                             // Output possible remaining tokens back to the original address
                             if remaining_balance != 0 {
-                                let mut remainder_output_builder = ExtendedOutputBuilder::new(remaining_balance)?
+                                let mut remainder_output_builder = BasicOutputBuilder::new(remaining_balance)?
                                     .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                                         Address::try_from_bech32(&output_wrapper.address)?,
                                     )));
@@ -166,7 +166,7 @@ pub(crate) async fn get_inputs(
                                             .add_native_token(NativeToken::new(token_id, amount)?);
                                     }
                                 }
-                                outputs_for_essence.push(Output::Extended(remainder_output_builder.finish()?));
+                                outputs_for_essence.push(Output::Basic(remainder_output_builder.finish()?));
                             }
                             // don't break if we have remaining native tokens, but no remaining balance for the dust
                             // deposit
@@ -303,7 +303,7 @@ pub(crate) async fn get_custom_inputs(
     }
     // Add output from remaining balance of custom inputs if necessary
     if let Some(address) = remainder_address_balance.0 {
-        let mut remainder_output_builder = ExtendedOutputBuilder::new(remainder_address_balance.1)?
+        let mut remainder_output_builder = BasicOutputBuilder::new(remainder_address_balance.1)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
         if let Some(remainder_native_tokens) =
             get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
@@ -313,7 +313,7 @@ pub(crate) async fn get_custom_inputs(
                     remainder_output_builder.add_native_token(NativeToken::new(token_id, amount)?);
             }
         }
-        outputs_for_essence.push(Output::Extended(remainder_output_builder.finish()?));
+        outputs_for_essence.push(Output::Basic(remainder_output_builder.finish()?));
     } else if get_remainder_native_tokens(&input_native_tokens, &required_native_tokens).is_some() {
         return Err(Error::NotEnoughBalanceForNativeTokenRemainder);
     }

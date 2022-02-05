@@ -6,7 +6,7 @@
 use iota_client::{
     bee_message::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        ExtendedOutputBuilder, Output,
+        BasicOutputBuilder, Output,
     },
     signing::mnemonic::MnemonicSigner,
     utils::request_funds_from_faucet,
@@ -39,8 +39,8 @@ async fn main() -> Result<()> {
     .await?;
 
     let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));

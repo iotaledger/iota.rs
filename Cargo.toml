@@ -104,8 +104,8 @@ name = "alias"
 path = "examples/outputs/alias.rs"
 
 [[example]]
-name = "extended"
-path = "examples/outputs/extended.rs"
+name = "basic"
+path = "examples/outputs/basic.rs"
 
 [[example]]
 name = "foundry"

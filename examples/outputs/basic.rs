@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example extended --release
+//! cargo run --example basic --release
 
 use iota_client::{
     bee_message::{
@@ -12,7 +12,7 @@ use iota_client::{
                 AddressUnlockCondition, DustDepositReturnUnlockCondition, ExpirationUnlockCondition,
                 TimelockUnlockCondition, UnlockCondition,
             },
-            ExtendedOutputBuilder, FeatureBlock, Output,
+            BasicOutputBuilder, FeatureBlock, Output,
         },
     },
     signing::mnemonic::MnemonicSigner,
@@ -23,7 +23,7 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we will send extended outputs with different feature blocks
+/// In this example we will send basic outputs with different feature blocks
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -47,21 +47,21 @@ async fn main() -> Result<()> {
 
     let mut outputs: Vec<Output> = Vec::new();
     // most simple output
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
     // with metadata feature block
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
             .finish()?,
     ));
     // with dust deposit return
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1176100)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1176100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::DustDepositReturn(
                 DustDepositReturnUnlockCondition::new(address, 1176000)?,
@@ -69,8 +69,8 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with dust expiration
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
                 address,
@@ -80,8 +80,8 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with timelock
-    outputs.push(Output::Extended(
-        ExtendedOutputBuilder::new(1_000_000)?
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
                 MilestoneIndex::new(400),
