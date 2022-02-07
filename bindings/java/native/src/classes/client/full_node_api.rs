@@ -337,4 +337,49 @@ impl Client {
     pub fn is_address_valid(address: &str) -> bool {
         iota_client::Client::is_address_valid(address)
     }
+
+    pub fn should_migrate(&self, seed: &str, account_index: usize, address_index: usize, public: bool) -> Result<bool> {
+        match GetBalanceBuilderApi::from_old(self, seed)
+            .with_account_index(account_index)
+            .with_initial_address_index(address_index)
+            .with_gap_limit(1)
+            .finish() {
+            Ok(balance) => {
+                match balance {
+                    0 => Ok(false),
+                    _ => Ok(true),
+                }
+            }
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn migrate(&self, seed: &str, account_index: usize, address_index: usize, public: bool, to_address: &str) -> Result<Message> {
+        if Client::is_address_valid(to_address) == false {
+            return Err(anyhow!("Invalid to address provided"))
+        }
+
+        let addresses: Vec<String> = GetAddressesBuilder::from_old(seed)
+                .with_account_index(account_index)
+                .with_range(address_index, address_index+1)
+                .with_client(self)
+                .finish().unwrap();
+
+        let balance_response = self.get_address_balance(addresses.get(0).unwrap().as_str()).unwrap();
+        // Check if we can Move there due to dust requirement
+        if balance_response.balance < 1_000_000 {
+            let balance_response_out = self.get_address_balance(to_address).unwrap();
+            // Did we already have something there? 
+            if balance_response_out.balance == 0 {
+                return Err(anyhow!("Not enough balance to migrate (Dust req: 1.000.000 iota"))
+            }
+        }
+
+        self.message()
+            .with_seed_old(seed)
+            .with_account_index(account_index)
+            .with_initial_address_index(address_index)
+            .with_output(to_address, balance_response.balance)?
+            .finish()
+    }
 }

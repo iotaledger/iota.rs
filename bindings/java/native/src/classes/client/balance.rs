@@ -20,6 +20,20 @@ pub struct GetBalanceBuilderApi<'a> {
 }
 
 impl<'a> GetBalanceBuilderApi<'a> {
+    pub(crate) fn from_old(client: &'a Client, seed: &str) -> Self {
+        let internal = GetBalanceBuilderApiInternal {
+            client: client,
+            seed: RustSeed::from_bytes(&seed.as_bytes()),
+            account_index: 0,
+            initial_address_index: 0,
+            gap_limit: crate::address::ADDRESS_GAP_RANGE,
+        };
+        Self {
+            fields: Rc::new(RefCell::new(Option::from(internal))),
+        }
+        
+    }
+
     pub fn new(client: &'a Client, seed: &str) -> Result<Self> {
         match hex::decode(seed) {
             Ok(s) => {

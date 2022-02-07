@@ -242,6 +242,12 @@ impl<'a> ClientMessageBuilder<'a> {
         
     }
 
+    pub(crate) fn with_seed_old(&self, seed: &str) -> Self {
+        let mut fields = self.fields.borrow_mut().take().unwrap();
+        fields.seed = Some(RustSeed::from_bytes(&seed.as_bytes()));
+        ClientMessageBuilder::new_with_fields(fields)
+    }
+
     /// Sets the account index.
     pub fn with_account_index(&self, account_index: usize) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();

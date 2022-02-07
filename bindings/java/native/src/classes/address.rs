@@ -54,7 +54,7 @@ impl From<RustAddressDto> for AddressDto {
     }
 }
 
-#[derive(Clone, Getters, CopyGetters, PartialEq)]
+#[derive(Clone, Getters, CopyGetters, PartialEq, Debug)]
 pub struct BalanceAddressResponse {
     #[getset(get_copy = "pub")]
     pub address_type: u8,
@@ -206,6 +206,19 @@ pub struct GetAddressesBuilder<'a> {
 }
 
 impl<'a> GetAddressesBuilder<'a> {
+    pub(crate) fn from_old(seed: &str) -> Self {
+        let internal = GetAddressesBuilderInternal {
+            seed: RustSeed::from_bytes(&seed.as_bytes()),
+            account_index: 0,
+            range: 0..ADDRESS_GAP_RANGE,
+            bech32_hrp: None,
+            client: None,
+        };
+        Self {
+            fields: Rc::new(RefCell::new(Option::from(internal))),
+        }
+    }
+
     pub fn from(seed: &str) -> Result<Self> {
         match hex::decode(seed) {
             Ok(s) => {

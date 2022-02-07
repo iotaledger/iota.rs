@@ -301,6 +301,19 @@ foreign_class!(
 
         /// Returns a valid Address parsed from a String.
         fn Client::parse_bech32_address(address: &str) -> Result<Address>;
+
+        /// Temporarily method to check if your seed is made using hte incorrect generation of the old JAVA seed input
+        fn Client::should_migrate(&self, seed: &str, account_index: usize, address_index: usize, pub_addr: bool) -> Result<bool>;
+
+        /// Temporarily method in order to migrate wrongly generated seeds from JAVA to Rust
+        /// Migrates the balance of the address towards the provided to_address
+        /// And returns the message or an error
+        /// @param seed The seed you used previously
+        /// @param account_index The account index used, is 0 when you didnt use it
+        /// @param address_index The index of the seed you want to migrate
+        /// @param pub_addr If the output is public
+        /// @param to_address The address we send the balance to
+        fn Client::migrate(&self, seed: &str, account_index: usize, address_index: usize, pub_addr: bool, to_address: &str) -> Result<Message>;
     }
 );
 
@@ -934,6 +947,9 @@ foreign_class!(
         private constructor = empty;
         /// Construct a new addressbuilder with a seed. Invalid seeds throw an error
         fn GetAddressesBuilder::from(seed: &str) -> Result<GetAddressesBuilder<'a>>;
+
+        /// DEBUG DO NOT USE
+        fn GetAddressesBuilder::from_old(seed: &str) -> GetAddressesBuilder<'a>;
         
         /// Set the account index
         fn GetAddressesBuilder::with_account_index(&self, account_index: usize) -> GetAddressesBuilder;
