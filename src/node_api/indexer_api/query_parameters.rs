@@ -85,8 +85,8 @@ pub enum QueryParameter {
     CreatedBefore(u32),
     /// Return outputs that were created after a certain Unix timestamp.
     CreatedAfter(u32),
-    /// Pass the milestone timestamp + outputID we want to start the results from
-    Offset(String),
+    /// Pass the cursor(confirmationMS+outputId.pageSize) to start the results from
+    Cursor(String),
     /// Filter for a certain issuer
     Issuer(String),
     /// Filter for outputs requiring a dust return
@@ -96,7 +96,7 @@ pub enum QueryParameter {
     /// Filter for a certain governance controller address
     Governor(String),
     /// Define the page size for the results
-    Limit(usize),
+    PageSize(usize),
 }
 
 // Custom impl because we only want a single query of each enum variant in the HashSet
@@ -133,12 +133,12 @@ impl QueryParameter {
             QueryParameter::Tag(v) => format!("tag={}", v),
             QueryParameter::CreatedBefore(v) => format!("createdBefore={}", v),
             QueryParameter::CreatedAfter(v) => format!("createdAfter={}", v),
-            QueryParameter::Offset(v) => format!("offset={}", v),
+            QueryParameter::Cursor(v) => format!("cursor={}", v),
             QueryParameter::Issuer(v) => format!("issuer={}", v),
             QueryParameter::RequiresDustReturn(v) => format!("requiresDustReturn={}", v),
             QueryParameter::StateController(v) => format!("stateController={}", v),
             QueryParameter::Governor(v) => format!("governor={}", v),
-            QueryParameter::Limit(v) => format!("limit={}", v),
+            QueryParameter::PageSize(v) => format!("pageSize={}", v),
         }
     }
 }

@@ -14,8 +14,8 @@ use iota_client::{
                 GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition, TimelockUnlockCondition,
                 UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken, NftId,
-            NftOutputBuilder, Output, OutputId, TokenId, TokenScheme,
+            AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
+            NativeToken, NftId, NftOutputBuilder, Output, OutputId, TokenId, TokenScheme,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -98,7 +98,7 @@ async fn main() -> Result<()> {
     // alias{nft})
     //////////////////////////////////
     let alias_output_id_1 = get_alias_output_id(message.payload().unwrap());
-    let alias_id = AliasId::from(alias_output_id_1.hash());
+    let alias_id = AliasId::from(&alias_output_id_1);
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
         AliasOutputBuilder::new(2_000_000, alias_id)?
@@ -116,7 +116,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
-    let nft_id = NftId::from(nft_output_id.hash());
+    let nft_id = NftId::from(&nft_output_id);
     outputs.push(Output::Nft(
         NftOutputBuilder::new(1_000_000, nft_id, vec![1, 2, 3])?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
@@ -214,16 +214,18 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     let alias_address = Address::Alias(AliasAddress::from(alias_id));
+    let foundry_id = FoundryId::build(AliasId::from(&alias_output_id_1), [1, 0, 0, 0], TokenScheme::Simple);
     // Foundry ID (address kind 1+ Alias address 20 + Serial Number 4 + Token Scheme Type + 1) || Token Tag +12
-    let token_id_bytes: Vec<u8> = [8u8; 1]
-        .iter()
-        .chain(alias_output_id_1.hash().iter())
-        .chain([1, 0, 0, 0].iter())
-        .chain([0u8; 1].iter())
-        .chain([0u8; 12].iter())
-        .map(|v| *v)
-        .collect();
-    let token_id = TokenId::new(token_id_bytes.try_into().unwrap());
+    // let token_id_bytes: Vec<u8> = [8u8; 1]
+    // .iter()
+    // .chain(alias_output_id_1.hash().iter())
+    // .chain([1, 0, 0, 0].iter())
+    // .chain([0u8; 1].iter())
+    // .chain([0u8; 12].iter())
+    // .map(|v| *v)
+    // .collect();
+    let token_id = TokenId::build(foundry_id, [0u8; 12]);
+    // let token_id = TokenId::new(token_id_bytes.try_into().unwrap());
 
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(

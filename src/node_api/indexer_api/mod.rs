@@ -31,7 +31,7 @@ pub async fn get_output_ids_with_pagination(
     let mut query_parameters = QueryParameters::new(query_parameters);
     // do we need to validate the query parameters?
     let mut all_output_ids: Vec<OutputId> = Vec::new();
-    while let Some(offset) = {
+    while let Some(cursor) = {
         let outputs_response: OutputIdsResponse = client
             .node_manager
             .get_request(
@@ -42,7 +42,7 @@ pub async fn get_output_ids_with_pagination(
             .await?;
         // convert string response to output ids
         let output_ids = outputs_response
-            .data
+            .items
             .iter()
             .map(|s| {
                 if s.len() == OUTPUT_ID_LENGTH {
@@ -60,9 +60,9 @@ pub async fn get_output_ids_with_pagination(
             })
             .collect::<Result<Vec<OutputId>>>()?;
         all_output_ids.extend(output_ids.into_iter());
-        outputs_response.offset
+        outputs_response.cursor
     } {
-        query_parameters.replace(QueryParameter::Offset(offset));
+        query_parameters.replace(QueryParameter::Cursor(cursor));
     }
 
     Ok(all_output_ids)

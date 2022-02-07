@@ -198,7 +198,7 @@ impl<'a> ClientMessageBuilder<'a> {
         bech32_address: String,
     ) -> Result<AddressIndexRecorder> {
         // Note that we need to sign the original address, i.e., `path/index`,
-        // instead of `path/index/_offset` or `path/_offset`.
+        // instead of `path/index/offset` or `path/offset`.
 
         // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
         let chain = Chain::from_u32_hardened(vec![

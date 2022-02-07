@@ -149,7 +149,7 @@ pub(crate) async fn get_inputs(
                         // &required_native_tokens)); Break if we have enough funds and don't
                         // create dust for the remainder
                         if total_already_spent >= required_amount
-                            && native_tokens_amount_reached(&input_native_tokens, &required_native_tokens)
+                            && missing_native_tokens(&input_native_tokens, &required_native_tokens).is_none()
                         {
                             let remaining_balance = total_already_spent - required_amount;
                             // Output possible remaining tokens back to the original address
@@ -208,6 +208,11 @@ pub(crate) async fn get_inputs(
                 //     inputs_balance - required_amount
                 // )));
             } else {
+                if let Some(missing_native_tokens) =
+                    missing_native_tokens(&input_native_tokens, &required_native_tokens)
+                {
+                    return Err(Error::NotEnoughNativeTokens(missing_native_tokens));
+                }
                 return Err(Error::NotEnoughBalance(inputs_balance, required_amount));
             }
         }
@@ -321,8 +326,8 @@ pub(crate) async fn get_custom_inputs(
     if total_already_spent < required_amount {
         return Err(Error::NotEnoughBalance(total_already_spent, required_amount));
     }
-    if !native_tokens_amount_reached(&input_native_tokens, &required_native_tokens) {
-        return Err(Error::NotEnoughNativeTokens);
+    if let Some(missing_native_tokens) = missing_native_tokens(&input_native_tokens, &required_native_tokens) {
+        return Err(Error::NotEnoughNativeTokens(missing_native_tokens));
     }
 
     // sort inputs by address type (ed25519 addresses will be first because of the type byte), so ed25519 signature
@@ -338,37 +343,111 @@ pub(crate) async fn get_custom_inputs(
     Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
 }
 
-fn native_tokens_amount_reached(inputs: &HashMap<TokenId, U256>, required: &HashMap<TokenId, U256>) -> bool {
-    for required_native_token in required {
-        match inputs.get(required_native_token.0) {
-            None => return false,
+fn missing_native_tokens(
+    inputs: &HashMap<TokenId, U256>,
+    required: &HashMap<TokenId, U256>,
+) -> Option<HashMap<TokenId, U256>> {
+    let mut missing_native_tokens = HashMap::new();
+    for (tokend_id, native_token_amount) in required {
+        match inputs.get(tokend_id) {
+            None => {
+                missing_native_tokens.insert(*tokend_id, *native_token_amount);
+            }
             Some(amount) => {
-                if amount < required_native_token.1 {
-                    return false;
+                if amount < native_token_amount {
+                    missing_native_tokens.insert(*tokend_id, native_token_amount - amount);
                 }
             }
         }
     }
-    true
+    if missing_native_tokens.is_empty() {
+        None
+    } else {
+        Some(missing_native_tokens)
+    }
 }
 
 fn get_remainder_native_tokens(
     inputs: &HashMap<TokenId, U256>,
     required: &HashMap<TokenId, U256>,
 ) -> Option<HashMap<TokenId, U256>> {
-    let mut remaining_native_tokens = HashMap::new();
-    for input_native_token in inputs {
-        if let Some(required_native_token) = required.get(input_native_token.0) {
-            if required_native_token < input_native_token.1 {
-                remaining_native_tokens.insert(*input_native_token.0, input_native_token.1 - required_native_token);
-            }
-        } else {
-            remaining_native_tokens.insert(*input_native_token.0, *input_native_token.1);
-        }
-    }
-    if remaining_native_tokens.is_empty() {
-        None
-    } else {
-        Some(remaining_native_tokens)
+    // inputs and required are switched
+    missing_native_tokens(required, inputs)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bee_message::output::TokenId;
+
+    #[test]
+    fn nativ_token() {
+        let token_id_bytes: [u8; 38] =
+            hex::decode("08e68f7616cd4948efebc6a77c4f93aed770ac53860100000000000000000000000000000000")
+                .unwrap()
+                .try_into()
+                .unwrap();
+        let token_id = TokenId::from(token_id_bytes);
+
+        // inputs == required
+        let mut input_native_tokens = HashMap::new();
+        input_native_tokens.insert(token_id, U256::from(50));
+        let mut required_native_tokens = HashMap::new();
+        required_native_tokens.insert(token_id, U256::from(50));
+
+        assert_eq!(
+            None,
+            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
+        );
+
+        // no inputs
+        let input_native_tokens = HashMap::new();
+        let mut required_native_tokens = HashMap::new();
+        required_native_tokens.insert(token_id, U256::from(50));
+
+        assert_eq!(
+            Some(required_native_tokens.clone()),
+            missing_native_tokens(&input_native_tokens, &required_native_tokens)
+        );
+
+        // no inputs used
+        let mut input_native_tokens = HashMap::new();
+        input_native_tokens.insert(token_id, U256::from(50));
+        let required_native_tokens = HashMap::new();
+
+        assert_eq!(
+            Some(input_native_tokens.clone()),
+            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
+        );
+
+        // only a part of the inputs is used
+        let mut input_native_tokens = HashMap::new();
+        input_native_tokens.insert(token_id, U256::from(50));
+        let mut required_native_tokens = HashMap::new();
+        required_native_tokens.insert(token_id, U256::from(20));
+        let mut remainder_native_tokens = HashMap::new();
+        remainder_native_tokens.insert(token_id, U256::from(30));
+
+        assert_eq!(
+            Some(remainder_native_tokens),
+            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
+        );
+
+        // more amount than required
+        let mut input_native_tokens = HashMap::new();
+        input_native_tokens.insert(token_id, U256::from(20));
+        let mut required_native_tokens = HashMap::new();
+        required_native_tokens.insert(token_id, U256::from(50));
+        let mut remainder_native_tokens = HashMap::new();
+        remainder_native_tokens.insert(token_id, U256::from(30));
+
+        assert_eq!(
+            Some(remainder_native_tokens),
+            missing_native_tokens(&input_native_tokens, &required_native_tokens)
+        );
+        assert_eq!(
+            None,
+            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
+        );
     }
 }

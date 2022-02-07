@@ -37,7 +37,7 @@ pub struct SignMessageMetadata<'a> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountAddress {
     /// The address.
-    // todo: should we also use an address wrapper like in wallet.rs?
+    // todo: should we also use an address wrapper like in wallet.rs or the bech32 representation?
     pub address: Address,
     /// The address key index.
     #[serde(rename = "keyIndex")]

@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
     // create second transaction with the actual NFT id (BLAKE2b-160 hash of the Output ID that created the NFT)
     //////////////////////////////////
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
-    let nft_id = NftId::from(nft_output_id.hash());
+    let nft_id = NftId::from(&nft_output_id);
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Nft(
         // address of the owner of the NFT
