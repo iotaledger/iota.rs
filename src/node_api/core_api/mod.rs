@@ -8,10 +8,10 @@ use crate::{node_api::core_api::routes::get_output, Client, Result};
 use bee_message::output::OutputId;
 use bee_rest_api::types::responses::OutputResponse;
 
-pub mod routes;
-
 #[cfg(not(feature = "wasm"))]
-const MAX_PARALLEL_REQUESTS: usize = 100;
+use crate::constants::MAX_PARALLEL_API_REQUESTS;
+
+pub mod routes;
 
 /// Request outputs by their output id in parallel
 pub async fn get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
@@ -22,7 +22,7 @@ pub async fn get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<V
     }
     #[cfg(not(feature = "wasm"))]
     for output_ids_chunk in output_ids
-        .chunks(MAX_PARALLEL_REQUESTS)
+        .chunks(MAX_PARALLEL_API_REQUESTS)
         .map(|x: &[OutputId]| x.to_vec())
     {
         let mut tasks = Vec::new();

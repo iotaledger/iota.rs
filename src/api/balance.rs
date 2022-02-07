@@ -3,6 +3,9 @@
 
 use crate::{signing::SignerHandle, Client, Result};
 
+#[cfg(not(feature = "wasm"))]
+use crate::constants::MAX_PARALLEL_API_REQUESTS;
+
 /// Builder of get_balance API
 pub struct GetBalanceBuilder<'a> {
     client: &'a Client,
@@ -60,7 +63,7 @@ impl<'a> GetBalanceBuilder<'a> {
                 .get_all()
                 .await?;
 
-            // todo parallel requests
+            #[cfg(feature = "wasm")]
             for address in addresses.public.iter().chain(addresses.internal.iter()) {
                 let address_balance = self.client.get_address().balance(address).await?;
                 match address_balance.balance {
@@ -69,6 +72,39 @@ impl<'a> GetBalanceBuilder<'a> {
                         balance += address_balance.balance;
                         // reset
                         found_zero_balance = 0;
+                    }
+                }
+            }
+            #[cfg(not(feature = "wasm"))]
+            for addresses_chunk in addresses
+                .public
+                .into_iter()
+                .chain(addresses.internal.into_iter())
+                .collect::<Vec<String>>()
+                .chunks(MAX_PARALLEL_API_REQUESTS)
+                .map(|x: &[String]| x.to_vec())
+            {
+                let mut tasks = Vec::new();
+                for address in addresses_chunk {
+                    let client_ = self.client.clone();
+
+                    tasks.push(async move {
+                        tokio::spawn(async move {
+                            let address_balance = client_.get_address().balance(&address).await?;
+                            crate::Result::Ok(address_balance)
+                        })
+                        .await
+                    });
+                }
+                for res in futures::future::try_join_all(tasks).await? {
+                    let address_balance = res?;
+                    match address_balance.balance {
+                        0 => found_zero_balance += 1,
+                        _ => {
+                            balance += address_balance.balance;
+                            // reset
+                            found_zero_balance = 0;
+                        }
                     }
                 }
             }

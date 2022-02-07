@@ -17,3 +17,5 @@ pub(crate) const DEFAULT_BECH32_HRP: &str = "iota";
 pub(crate) const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 pub(crate) const DEFAULT_MIN_QUORUM_SIZE: usize = 3;
 pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;
+#[cfg(not(feature = "wasm"))]
+pub(crate) const MAX_PARALLEL_API_REQUESTS: usize = 100;
