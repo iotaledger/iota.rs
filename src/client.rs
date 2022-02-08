@@ -33,7 +33,6 @@ use bee_message::{
 };
 use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{
-    body::SuccessBody,
     dtos::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
     responses::{
         InfoResponse as NodeInfo, MilestoneResponse, OutputResponse, TreasuryResponse,
@@ -233,6 +232,7 @@ impl Client {
             for (info, node_url) in nodes.iter() {
                 if let Ok(mut client_network_info) = network_info.write() {
                     client_network_info.network_id = hash_network(&info.network_id).ok();
+                    // todo update protocol version
                     client_network_info.min_pow_score = info.min_pow_score;
                     client_network_info.bech32_hrp = info.bech32_hrp.clone();
                     if !client_network_info.local_pow {
@@ -259,14 +259,6 @@ impl Client {
         }
         let pool = self.node_manager.nodes.clone();
         Ok(pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)?)
-    }
-
-    /// Gets the network id of the node we're connecting to.
-    pub async fn get_network_id(&self) -> Result<u64> {
-        let network_info = self.get_network_info().await?;
-        network_info
-            .network_id
-            .ok_or(Error::MissingParameter("Missing network id."))
     }
 
     /// Gets the miner to use based on the PoW setting
@@ -296,6 +288,22 @@ impl Client {
             .read()
             .map_or(NetworkInfo::default(), |info| info.clone());
         Ok(res)
+    }
+
+    /// Gets the network id of the node we're connecting to.
+    pub async fn get_network_id(&self) -> Result<u64> {
+        let network_info = self.get_network_info().await?;
+        network_info
+            .network_id
+            .ok_or(Error::MissingParameter("Missing network id."))
+    }
+
+    /// Gets the protocol version of the node we're connecting to.
+    pub async fn get_protocol_version(&self) -> Result<u8> {
+        let network_info = self.get_network_info().await?;
+        network_info
+            .protocol_version
+            .ok_or(Error::MissingParameter("Missing protocol version."))
     }
 
     /// returns the bech32_hrp
@@ -409,13 +417,13 @@ impl Client {
         let path = "api/v2/info";
         url.set_path(path);
 
-        let resp: SuccessBody<NodeInfo> = crate::node_manager::HttpClient::new()
+        let resp: NodeInfo = crate::node_manager::HttpClient::new()
             .get(Node { url, jwt }, DEFAULT_API_TIMEOUT)
             .await?
             .json()
             .await?;
 
-        Ok(resp.data)
+        Ok(resp)
     }
 
     /// Returns the node information together with the url of the used node
@@ -726,7 +734,7 @@ impl Client {
         let mut selected_inputs = Vec::new();
         for (_offset, output_wrapper) in basic_outputs
             .into_iter()
-            // Max inputs is 127
+            // Max inputs is 128
             .take(INPUT_COUNT_MAX.into())
             .enumerate()
         {
@@ -827,14 +835,14 @@ impl Client {
         // Create a new message (zero value message) for which one tip would be the actual message
         let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
-        let network_id = self.get_network_id().await?;
+        let protocol_version = self.get_protocol_version().await?;
         tips.push(*message_id);
         // Sort tips/parents
         tips.sort_unstable_by_key(|a| a.pack_to_vec());
         tips.dedup();
 
         let promote_message = MessageBuilder::<ClientMiner>::new()
-            .with_network_id(network_id)
+            .with_protocol_version(protocol_version)
             .with_parents(Parents::new(tips)?)
             .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
             .finish()

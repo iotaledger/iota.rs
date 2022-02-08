@@ -1,7 +1,9 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_message::{address::Address, input::Input};
+use bee_message::{address::Address};
+use bee_rest_api::types::responses::OutputResponse;
+use crypto::keys::slip10::Chain;
 
 use serde::{Deserialize, Serialize};
 
@@ -87,19 +89,13 @@ pub struct LedgerStatus {
     pub(crate) app: Option<LedgerApp>,
 }
 
-/// One of the transaction inputs and its address information needed for signing it.
-#[derive(Debug)]
-pub struct TransactionInput {
-    /// The input.
-    pub input: Input,
-    /// Input's address index.
-    pub address_index: u32,
-    /// Whether the input address is a change address or a public address.
-    pub address_internal: bool,
-    /// Input(output type) https://github.com/iotaledger/bee/blob/b58faa9b74c4195b80bc8846377ee081ec7fd6a1/bee-message/src/output/mod.rs#L88
-    pub output_kind: u8,
-    /// address
-    pub address: Address,
-    /// Alias or Nft address
-    pub alias_or_nft_address: Option<Address>,
+/// Data for transaction inputs for signing and ordering of unlock blocks
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InputSigningData {
+    /// The output response
+    pub output_response: OutputResponse,
+    /// The chain derived from seed, only for ed25519 addresses
+    pub chain: Option<Chain>,
+    /// The bech32 encoded address
+    pub bech32_address: String,
 }

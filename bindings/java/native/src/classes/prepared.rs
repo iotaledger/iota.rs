@@ -3,7 +3,7 @@
 
 use getset::{CopyGetters, Getters};
 use iota_client::api::{
-    AddressIndexRecorder as RustAddressIndexRecorder, PreparedTransactionData as RustPreparedTransactionData,
+    InputSigningData as RustInputSigningData, PreparedTransactionData as RustPreparedTransactionData,
 };
 use serde::{Deserialize, Serialize};
 
@@ -19,7 +19,7 @@ pub struct PreparedTransactionData {
     /// Transaction essence
     pub essence: Essence,
     /// Required address information for signing
-    pub address_index_recorders: Vec<AddressIndexRecorder>,
+    pub input_signing_data_entrys: Vec<InputSigningData>,
 }
 
 impl PreparedTransactionData {
@@ -36,8 +36,8 @@ impl PreparedTransactionData {
         self.essence.clone()
     }
 
-    pub fn address_index_recorders(&self) -> Vec<AddressIndexRecorder> {
-        self.address_index_recorders.iter().cloned().collect()
+    pub fn input_signing_data_entrys(&self) -> Vec<InputSigningData> {
+        self.input_signing_data_entrys.iter().cloned().collect()
     }
 
     pub fn serialize(&self) -> Result<String> {
@@ -54,8 +54,8 @@ impl core::fmt::Display for PreparedTransactionData {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(
             f,
-            "essence={}, address_index_recorders=({:?})",
-            self.essence, self.address_index_recorders
+            "essence={}, input_signing_data_entrys=({:?})",
+            self.essence, self.input_signing_data_entrys
         )
     }
 }
@@ -70,14 +70,14 @@ impl From<RustPreparedTransactionData> for PreparedTransactionData {
     fn from(prepared: RustPreparedTransactionData) -> Self {
         Self {
             essence: prepared.essence.into(),
-            address_index_recorders: prepared.address_index_recorders.iter().map(|rec| rec.into()).collect(),
+            input_signing_data_entrys: prepared.input_signing_data_entrys.iter().map(|rec| rec.into()).collect(),
         }
     }
 }
 
 /// Structure for sorting of UnlockBlocks
 #[derive(Clone, Getters, CopyGetters, Serialize, Deserialize)]
-pub struct AddressIndexRecorder {
+pub struct InputSigningData {
     #[getset(get_copy = "pub")]
     account_index: usize,
     input: Input,
@@ -91,7 +91,7 @@ pub struct AddressIndexRecorder {
     bech32_address: String,
 }
 
-impl AddressIndexRecorder {
+impl InputSigningData {
     pub fn input(&self) -> Input {
         self.input.clone()
     }
@@ -105,8 +105,8 @@ impl AddressIndexRecorder {
     }
 }
 
-pub(crate) fn addres_into_rust_address_recorder(recorder: AddressIndexRecorder) -> RustAddressIndexRecorder {
-    RustAddressIndexRecorder {
+pub(crate) fn addres_into_rust_address_recorder(recorder: InputSigningData) -> RustInputSigningData {
+    RustInputSigningData {
         account_index: recorder.account_index(),
         input: recorder.input().to_inner_clone(),
         output: recorder.output().to_rust_output(),
@@ -117,7 +117,7 @@ pub(crate) fn addres_into_rust_address_recorder(recorder: AddressIndexRecorder) 
     }
 }
 
-impl core::fmt::Display for AddressIndexRecorder {
+impl core::fmt::Display for InputSigningData {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(
             f,
@@ -127,14 +127,14 @@ impl core::fmt::Display for AddressIndexRecorder {
     }
 }
 
-impl core::fmt::Debug for AddressIndexRecorder {
+impl core::fmt::Debug for InputSigningData {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "AddressIndexRecorder({})", self)
+        write!(f, "InputSigningData({})", self)
     }
 }
 
-impl From<&RustAddressIndexRecorder> for AddressIndexRecorder {
-    fn from(recorder: &RustAddressIndexRecorder) -> Self {
+impl From<&RustInputSigningData> for InputSigningData {
+    fn from(recorder: &RustInputSigningData) -> Self {
         Self {
             account_index: recorder.account_index,
             input: recorder.input.clone().into(),

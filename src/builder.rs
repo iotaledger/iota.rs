@@ -33,6 +33,9 @@ pub struct NetworkInfo {
     /// Network ID
     #[serde(rename = "networkId")]
     pub network_id: Option<u64>,
+    /// Protocol version
+    #[serde(rename = "protocolVersion")]
+    pub protocol_version: Option<u8>,
     /// Bech32 HRP
     #[serde(rename = "bech32HRP")]
     pub bech32_hrp: String,
@@ -69,6 +72,8 @@ impl Default for NetworkInfo {
         Self {
             network: None,
             network_id: None,
+            // todo default None and get from nodeinfo
+            protocol_version: Some(2),
             min_pow_score: DEFAULT_MIN_POW,
             #[cfg(not(feature = "wasm"))]
             local_pow: true,

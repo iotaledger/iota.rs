@@ -35,7 +35,7 @@ pub enum Error {
     NotEnoughBalanceForNativeTokenRemainder,
     /// The wallet account doesn't have enough balance
     #[error(
-        "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 127, consolidate them"
+        "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 128, consolidate them"
     )]
     ConsolidationRequired(usize),
     /// Dust error, for example not enough balance on an address

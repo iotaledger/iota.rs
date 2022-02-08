@@ -1,14 +1,13 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+//! Input selection for transactions
+
 use crate::{
-    api::{
-        address::search_address,
-        types::{AddressIndexRecorder, OutputWrapper},
-        ClientMessageBuilder, ADDRESS_GAP_RANGE,
-    },
+    api::{address::search_address, types::OutputWrapper, ClientMessageBuilder, ADDRESS_GAP_RANGE},
     node_api::indexer_api::query_parameters::QueryParameter,
-    Error, Result,
+    signing::types::InputSigningData,
+    Client, Error, Result,
 };
 
 use bee_message::{
@@ -18,13 +17,135 @@ use bee_message::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
         AliasId, BasicOutputBuilder, NativeToken, Output, TokenId,
     },
+    payload::transaction::TransactionId,
 };
 use bee_rest_api::types::dtos::OutputDto;
 use packable::PackableExt;
 
 use primitive_types::U256;
 
-use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::{
+    collections::{hash_map::Entry, HashMap, HashSet},
+    str::FromStr,
+};
+
+mod native_token_helpers;
+mod output_data;
+mod types;
+use native_token_helpers::{get_remainder_native_tokens, missing_native_tokens};
+use output_data::{get_accumulated_output_data, get_remainder};
+use types::SelectedTransactionData;
+
+/// Select inputs from provided inputs(OutputResponse), validate amounts and create remainder output if necessary
+pub async fn try_select_inputs(
+    client: &Client,
+    mut inputs: Vec<InputSigningData>,
+    mut outputs: Vec<Output>,
+    force_use_all_inputs: bool,
+) -> Result<SelectedTransactionData> {
+    let mut remainder_output = None;
+
+    // Validate and only create a remainder if necessary
+    if force_use_all_inputs {
+        let input_outputs = inputs
+            .iter()
+            .map(|i| Ok(Output::try_from(&i.output_response.output)?))
+            .collect::<Result<Vec<Output>>>()?;
+        remainder_output = get_remainder(client, &input_outputs, &outputs, None).await?;
+        return Ok(SelectedTransactionData {
+            inputs,
+            outputs,
+            remainder_output,
+        });
+    }
+
+    // only use inputs that are necessary for the required outputs
+    let required = get_accumulated_output_data(client, &outputs).await?;
+
+    let mut input_native_tokens: HashMap<TokenId, U256> = HashMap::new();
+    let mut total_already_spent = 0;
+    let mut selected_inputs = Vec::new();
+    let bech32_hrp = client.get_bech32_hrp().await?;
+
+    // 1. get alias or nft inputs (because amount and native tokens of these outputs could be used)
+    for (unlock_address, utxo_chain_input) in required.utxo_chains {
+        let output = Output::try_from(&utxo_chain_input.output)?;
+        total_already_spent += output.amount();
+        if let Some(output_native_tokens) = output.native_tokens() {
+            for native_token in output_native_tokens {
+                match input_native_tokens.entry(*native_token.token_id()) {
+                    Entry::Vacant(e) => {
+                        e.insert(*native_token.amount());
+                    }
+                    Entry::Occupied(mut e) => {
+                        *e.get_mut() += *native_token.amount();
+                    }
+                }
+            }
+        }
+
+        selected_inputs.push(InputSigningData {
+            output_response: utxo_chain_input,
+            chain: None,
+            bech32_address: unlock_address.to_bech32(&bech32_hrp),
+        });
+    }
+    // governance transactions are separated because we have a different unlock address for them
+    // not anymore?
+
+    // 2. get native tokens (because amount of these outputs will also be used)
+    // 3. get amount (additional to possible amount from before)
+
+    // todo first try to select inputs with an exact matching amount
+    // Order input outputs descending, so that as few inputs as necessary are used,
+    // might not be true with native tokens
+    inputs.sort_by(|l, r| {
+        let output_1 = Output::try_from(&l.output_response.output).unwrap();
+        let output_2 = Output::try_from(&r.output_response.output).unwrap();
+        output_1.amount().cmp(&output_2.amount())
+    });
+
+
+    // check for amount and native tokens
+    if total_already_spent >= required.amount{
+        // check for native tokens/ break
+    }
+    for (_offset, input_signing_data) in inputs
+        .iter()
+        // Max inputs is 128
+        .take(INPUT_COUNT_MAX.into())
+        .enumerate()
+    {
+        // todo: check for amount and native tokens
+        let output = Output::try_from(&input_signing_data.output_response.output)?;
+        total_already_spent += output.amount();
+        if let Some(output_native_tokens) = output.native_tokens() {
+            for native_token in output_native_tokens {
+                match input_native_tokens.entry(*native_token.token_id()) {
+                    Entry::Vacant(e) => {
+                        e.insert(*native_token.amount());
+                    }
+                    Entry::Occupied(mut e) => {
+                        *e.get_mut() += *native_token.amount();
+                    }
+                }
+            }
+        }
+
+        selected_inputs.push(input_signing_data.clone());
+    }
+
+    // todo validate amounts, generate remainder
+    // if remainder{
+    //     outputs.push(remainder);
+    //     remainder_output.replace(remainder);
+    // }
+    Ok(SelectedTransactionData {
+        inputs: vec![],
+        outputs,
+        remainder_output,
+    })
+}
 
 // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
 pub(crate) async fn get_inputs(
@@ -33,11 +154,11 @@ pub(crate) async fn get_inputs(
     required_native_tokens: HashMap<TokenId, U256>,
     // todo: check if it's possible to automatically select alias/foundry/nft inputs if we have them on the outputs (by
     // their alias/nft id)
-) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+) -> Result<(Vec<Input>, Vec<Output>, Vec<InputSigningData>)> {
     let mut input_native_tokens: HashMap<TokenId, U256> = HashMap::new();
     let mut outputs = Vec::new();
     let mut outputs_for_essence = Vec::new();
-    let mut address_index_recorders = Vec::new();
+    let mut input_signing_data_entrys = Vec::new();
     let mut total_already_spent = 0;
     let account_index = message_builder.account_index.unwrap_or(0);
     let mut gap_index = message_builder.initial_address_index.unwrap_or(0);
@@ -101,7 +222,7 @@ pub(crate) async fn get_inputs(
                         address_index,
                         internal: *internal,
                         amount,
-                        address: str_address.clone(),
+                        bech32_address: str_address.clone(),
                     };
                     match output_wrapper.output.output {
                         OutputDto::Basic(_) => outputs.push(output_wrapper),
@@ -134,15 +255,15 @@ pub(crate) async fn get_inputs(
                             }
                         }
 
-                        let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+                        let address_index_record = ClientMessageBuilder::create_input_signing_data(
                             account_index,
                             output_wrapper.address_index,
                             output_wrapper.internal,
                             &output_wrapper.output,
                             str_address.to_owned(),
                         )?;
-                        address_index_recorders.push(address_index_record);
-                        // println!("address_index_recorders : {:?}", address_index_recorders);
+                        input_signing_data_entrys.push(address_index_record);
+                        // println!("input_signing_data_entrys : {:?}", input_signing_data_entrys);
                         // println!("input_native_tokens: {:?}", input_native_tokens);
                         // println!("required_native_tokens: {:?}", required_native_tokens);
                         // println!("amount reached: {:?}", native_tokens_amount_reached(&input_native_tokens,
@@ -156,7 +277,7 @@ pub(crate) async fn get_inputs(
                             if remaining_balance != 0 {
                                 let mut remainder_output_builder = BasicOutputBuilder::new(remaining_balance)?
                                     .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
-                                        Address::try_from_bech32(&output_wrapper.address)?,
+                                        Address::try_from_bech32(&output_wrapper.bech32_address)?,
                                     )));
                                 if let Some(remainder_native_tokens) =
                                     get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
@@ -183,7 +304,7 @@ pub(crate) async fn get_inputs(
                     // iteration.
                     input_native_tokens.clear();
                     outputs_for_essence.clear();
-                    address_index_recorders.clear();
+                    input_signing_data_entrys.clear();
                     total_already_spent = 0;
                 }
             }
@@ -218,14 +339,18 @@ pub(crate) async fn get_inputs(
         }
     }
     // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
-    address_index_recorders
+    input_signing_data_entrys
         .sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
     let mut inputs_for_essence = Vec::new();
-    for recoder in &address_index_recorders {
-        inputs_for_essence.push(recoder.input.clone());
+    for recoder in &input_signing_data_entrys {
+        let input = Input::Utxo(UtxoInput::new(
+            TransactionId::from_str(&recoder.output_response.transaction_id)?,
+            recoder.output_response.output_index,
+        )?);
+        inputs_for_essence.push(input);
     }
     // println!("inputs_for_essence {:?}", inputs_for_essence);
-    Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
+    Ok((inputs_for_essence, outputs_for_essence, input_signing_data_entrys))
 }
 
 // If custom inputs are provided we check if they are unspent, get the balance and search the address for it
@@ -235,11 +360,11 @@ pub(crate) async fn get_custom_inputs(
     required_amount: u64,
     required_native_tokens: HashMap<TokenId, U256>,
     governance_transition: Option<HashSet<AliasId>>,
-) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+) -> Result<(Vec<Input>, Vec<Output>, Vec<InputSigningData>)> {
     let mut input_native_tokens: HashMap<TokenId, U256> = HashMap::new();
     let mut inputs_for_essence = Vec::new();
     let mut outputs_for_essence = Vec::new();
-    let mut address_index_recorders = Vec::new();
+    let mut input_signing_data_entrys = Vec::new();
     let mut remainder_address_balance: (Option<Address>, u64) = (None, 0);
     let mut total_already_spent = 0;
     let account_index = message_builder.account_index.unwrap_or(0);
@@ -288,14 +413,14 @@ pub(crate) async fn get_custom_inputs(
                 None => (0, false),
             };
 
-            let address_index_record = ClientMessageBuilder::create_address_index_recorder(
+            let address_index_record = ClientMessageBuilder::create_input_signing_data(
                 account_index,
                 address_index,
                 internal,
                 &output_response,
                 output_address.to_bech32(&bech32_hrp),
             )?;
-            address_index_recorders.push(address_index_record);
+            input_signing_data_entrys.push(address_index_record);
             // Output the remaining tokens back to the original address
             if total_already_spent > required_amount {
                 let remaining_balance = total_already_spent - required_amount;
@@ -332,122 +457,17 @@ pub(crate) async fn get_custom_inputs(
 
     // sort inputs by address type (ed25519 addresses will be first because of the type byte), so ed25519 signature
     // unlock blocks will be first and can be referenced by alias and nft unlock blocks
-    address_index_recorders
+    input_signing_data_entrys
         .sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
 
-    for recoder in &address_index_recorders {
+    for recoder in &input_signing_data_entrys {
         // println!("input address: {}", recoder.bech32_address);
-        inputs_for_essence.push(recoder.input.clone());
+        let input = Input::Utxo(UtxoInput::new(
+            TransactionId::from_str(&recoder.output_response.transaction_id)?,
+            recoder.output_response.output_index,
+        )?);
+        inputs_for_essence.push(input);
     }
 
-    Ok((inputs_for_essence, outputs_for_essence, address_index_recorders))
-}
-
-fn missing_native_tokens(
-    inputs: &HashMap<TokenId, U256>,
-    required: &HashMap<TokenId, U256>,
-) -> Option<HashMap<TokenId, U256>> {
-    let mut missing_native_tokens = HashMap::new();
-    for (tokend_id, native_token_amount) in required {
-        match inputs.get(tokend_id) {
-            None => {
-                missing_native_tokens.insert(*tokend_id, *native_token_amount);
-            }
-            Some(amount) => {
-                if amount < native_token_amount {
-                    missing_native_tokens.insert(*tokend_id, native_token_amount - amount);
-                }
-            }
-        }
-    }
-    if missing_native_tokens.is_empty() {
-        None
-    } else {
-        Some(missing_native_tokens)
-    }
-}
-
-fn get_remainder_native_tokens(
-    inputs: &HashMap<TokenId, U256>,
-    required: &HashMap<TokenId, U256>,
-) -> Option<HashMap<TokenId, U256>> {
-    // inputs and required are switched
-    missing_native_tokens(required, inputs)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use bee_message::output::TokenId;
-
-    #[test]
-    fn nativ_token() {
-        let token_id_bytes: [u8; 38] =
-            hex::decode("08e68f7616cd4948efebc6a77c4f93aed770ac53860100000000000000000000000000000000")
-                .unwrap()
-                .try_into()
-                .unwrap();
-        let token_id = TokenId::from(token_id_bytes);
-
-        // inputs == required
-        let mut input_native_tokens = HashMap::new();
-        input_native_tokens.insert(token_id, U256::from(50));
-        let mut required_native_tokens = HashMap::new();
-        required_native_tokens.insert(token_id, U256::from(50));
-
-        assert_eq!(
-            None,
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
-        );
-
-        // no inputs
-        let input_native_tokens = HashMap::new();
-        let mut required_native_tokens = HashMap::new();
-        required_native_tokens.insert(token_id, U256::from(50));
-
-        assert_eq!(
-            Some(required_native_tokens.clone()),
-            missing_native_tokens(&input_native_tokens, &required_native_tokens)
-        );
-
-        // no inputs used
-        let mut input_native_tokens = HashMap::new();
-        input_native_tokens.insert(token_id, U256::from(50));
-        let required_native_tokens = HashMap::new();
-
-        assert_eq!(
-            Some(input_native_tokens.clone()),
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
-        );
-
-        // only a part of the inputs is used
-        let mut input_native_tokens = HashMap::new();
-        input_native_tokens.insert(token_id, U256::from(50));
-        let mut required_native_tokens = HashMap::new();
-        required_native_tokens.insert(token_id, U256::from(20));
-        let mut remainder_native_tokens = HashMap::new();
-        remainder_native_tokens.insert(token_id, U256::from(30));
-
-        assert_eq!(
-            Some(remainder_native_tokens),
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
-        );
-
-        // more amount than required
-        let mut input_native_tokens = HashMap::new();
-        input_native_tokens.insert(token_id, U256::from(20));
-        let mut required_native_tokens = HashMap::new();
-        required_native_tokens.insert(token_id, U256::from(50));
-        let mut remainder_native_tokens = HashMap::new();
-        remainder_native_tokens.insert(token_id, U256::from(30));
-
-        assert_eq!(
-            Some(remainder_native_tokens),
-            missing_native_tokens(&input_native_tokens, &required_native_tokens)
-        );
-        assert_eq!(
-            None,
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens)
-        );
-    }
+    Ok((inputs_for_essence, outputs_for_essence, input_signing_data_entrys))
 }

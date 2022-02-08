@@ -3,6 +3,8 @@
 
 //! Signing module to allow using different signer types for address generation and transaction essence signing
 
+use crate::signing::types::InputSigningData;
+
 use bee_message::{
     address::Address,
     payload::transaction::{TransactionEssence, TransactionPayload},
@@ -28,7 +30,7 @@ pub mod ledger;
 pub mod mnemonic;
 /// Signing related types
 pub mod types;
-pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetadata, SignerType, TransactionInput};
+pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetadata, SignerType};
 
 /// SignerHandle, possible signers are mnemonic, Stronghold and Ledger
 #[derive(Clone)]
@@ -81,11 +83,8 @@ pub trait Signer {
     /// Signs transaction essence.
     async fn sign_transaction_essence<'a>(
         &mut self,
-        // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        coin_type: u32,
-        account_index: u32,
         essence: &TransactionEssence,
-        inputs: &mut Vec<TransactionInput>,
+        inputs: &mut Vec<InputSigningData>,
         metadata: SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<UnlockBlock>>;
 }

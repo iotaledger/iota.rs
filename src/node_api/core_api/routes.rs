@@ -7,7 +7,6 @@ use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Resu
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, Message, MessageId};
 use bee_rest_api::types::{
-    body::SuccessBody,
     dtos::{MessageDto, PeerDto, ReceiptDto},
     responses::{
         MessageChildrenResponse, MessageMetadataResponse, MessageResponse, MilestoneResponse, OutputResponse,
@@ -36,13 +35,13 @@ pub async fn get_info(client: &Client) -> Result<NodeInfoWrapper> {
 pub async fn get_tips(client: &Client) -> Result<Vec<MessageId>> {
     let path = "api/v2/tips";
 
-    let resp: SuccessBody<TipsResponse> = client
+    let resp: TipsResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
     let mut tips = Vec::new();
-    for tip in resp.data.tip_message_ids {
+    for tip in resp.tip_message_ids {
         let mut new_tip = [0u8; 32];
         hex::decode_to_slice(tip, &mut new_tip)?;
         tips.push(MessageId::from(new_tip));
@@ -55,12 +54,12 @@ pub async fn get_tips(client: &Client) -> Result<Vec<MessageId>> {
 pub async fn data(client: &Client, message_id: &MessageId) -> Result<Message> {
     let path = &format!("api/v2/messages/{}", message_id);
 
-    let resp: SuccessBody<MessageResponse> = client
+    let resp: MessageResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
-    Ok(Message::try_from(&resp.data.0)?)
+    Ok(Message::try_from(&resp.0)?)
 }
 
 /// Returns the metadata of a message.
@@ -68,12 +67,12 @@ pub async fn data(client: &Client, message_id: &MessageId) -> Result<Message> {
 pub async fn metadata(client: &Client, message_id: &MessageId) -> Result<MessageMetadataResponse> {
     let path = &format!("api/v2/messages/{}/metadata", message_id);
 
-    let resp: SuccessBody<MessageMetadataResponse> = client
+    let resp: MessageMetadataResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
-    Ok(resp.data)
+    Ok(resp)
 }
 
 /// Consume the builder and find a message by its MessageId. This method returns the given message raw data.
@@ -97,13 +96,12 @@ pub async fn raw(client: &Client, message_id: &MessageId) -> Result<String> {
 pub async fn children(client: &Client, message_id: &MessageId) -> Result<Box<[MessageId]>> {
     let path = &format!("api/v2/messages/{}/children", message_id);
 
-    let resp: SuccessBody<MessageChildrenResponse> = client
+    let resp: MessageChildrenResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
-    resp.data
-        .children_message_ids
+    resp.children_message_ids
         .iter()
         .map(|s| {
             let mut message_id = [0u8; 32];
@@ -125,14 +123,14 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
     };
 
     #[cfg(not(feature = "pow-fallback"))]
-    let resp: SuccessBody<SubmitMessageResponse> = client
+    let resp: SubmitMessageResponse = client
         .node_manager
         .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
         .await?;
 
     #[cfg(feature = "pow-fallback")]
     // fallback to local PoW if remote PoW fails
-    let resp: SuccessBody<SubmitMessageResponse> = match client
+    let resp: SubmitMessageResponse = match client
         .node_manager
         .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
         .await
@@ -194,7 +192,7 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
     };
 
     let mut message_id_bytes = [0u8; 32];
-    hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
+    hex::decode_to_slice(resp.message_id, &mut message_id_bytes)?;
     Ok(MessageId::from(message_id_bytes))
 }
 
@@ -211,7 +209,7 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
     let message_dto = MessageDto::from(message);
 
     // fallback to local PoW if remote PoW fails
-    let resp: SuccessBody<SubmitMessageResponse> = match client
+    let resp: SubmitMessageResponse = match client
         .node_manager
         .post_request_json(path, timeout, serde_json::to_value(message_dto)?, local_pow)
         .await
@@ -275,7 +273,7 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
     };
 
     let mut message_id_bytes = [0u8; 32];
-    hex::decode_to_slice(resp.data.message_id, &mut message_id_bytes)?;
+    hex::decode_to_slice(resp.message_id, &mut message_id_bytes)?;
     Ok(MessageId::from(message_id_bytes))
 }
 
@@ -284,11 +282,11 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
 pub async fn get_included_message(client: &Client, transaction_id: &TransactionId) -> Result<Message> {
     let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
 
-    let resp: SuccessBody<MessageResponse> = client
+    let resp: MessageResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
-    Ok(Message::try_from(&resp.data.0)?)
+    Ok(Message::try_from(&resp.0)?)
 }
 
 /// Get the milestone by the given milestone index.
@@ -296,13 +294,13 @@ pub async fn get_included_message(client: &Client, transaction_id: &TransactionI
 pub async fn get_milestone(client: &Client, index: u32) -> Result<MilestoneResponse> {
     let path = &format!("api/v2/milestones/{}", index);
 
-    let resp: SuccessBody<MilestoneResponse> = client
+    let resp: MilestoneResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
     // converted to an object with a MessageId instead of a String
-    // let milestone = resp.data;
+    // let milestone = resp;
     // let mut message_id = [0u8; 32];
     // hex::decode_to_slice(milestone.message_id, &mut message_id)?;
     // Ok(MilestoneResponse {
@@ -310,7 +308,7 @@ pub async fn get_milestone(client: &Client, index: u32) -> Result<MilestoneRespo
     //     message_id: MessageId::new(message_id),
     //     timestamp: milestone.timestamp,
     // })
-    Ok(resp.data)
+    Ok(resp)
 }
 
 /// Gets all UTXO changes of a milestone by its milestone index
@@ -318,12 +316,12 @@ pub async fn get_milestone(client: &Client, index: u32) -> Result<MilestoneRespo
 pub async fn get_milestone_utxo_changes(client: &Client, index: u32) -> Result<UtxoChangesResponse> {
     let path = &format!("api/v2/milestones/{}/utxo-changes", index);
 
-    let resp: SuccessBody<UtxoChangesResponse> = client
+    let resp: UtxoChangesResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
-    Ok(resp.data)
+    Ok(resp)
 }
 
 /// Find an output by its OutputId (TransactionId + output_index).
@@ -331,12 +329,12 @@ pub async fn get_milestone_utxo_changes(client: &Client, index: u32) -> Result<U
 pub async fn get_output(client: &Client, output_id: &OutputId) -> Result<OutputResponse> {
     let path = &format!("api/v2/outputs/{}", output_id);
 
-    let resp: SuccessBody<OutputResponse> = client
+    let resp: OutputResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
-    Ok(resp.data)
+    Ok(resp)
 }
 
 /// Get the current treasury output.
@@ -344,9 +342,9 @@ pub async fn get_output(client: &Client, output_id: &OutputId) -> Result<OutputR
 pub async fn get_treasury(client: &Client) -> Result<TreasuryResponse> {
     let path = "api/v2/treasury";
 
-    let resp: SuccessBody<TreasuryResponse> = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
+    let resp: TreasuryResponse = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
 
-    Ok(resp.data)
+    Ok(resp)
 }
 
 /// Get all stored receipts.
@@ -354,9 +352,9 @@ pub async fn get_treasury(client: &Client) -> Result<TreasuryResponse> {
 pub async fn get_receipts(client: &Client) -> Result<Vec<ReceiptDto>> {
     let path = &"api/v2/receipts";
 
-    let resp: SuccessBody<ReceiptsResponse> = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
+    let resp: ReceiptsResponse = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
 
-    Ok(resp.data.receipts)
+    Ok(resp.receipts)
 }
 
 /// Get the receipts by the given milestone index.
@@ -364,9 +362,9 @@ pub async fn get_receipts(client: &Client) -> Result<Vec<ReceiptDto>> {
 pub async fn get_receipts_migrated_at(client: &Client, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
     let path = &format!("api/v2/receipts/{}", milestone_index);
 
-    let resp: SuccessBody<ReceiptsResponse> = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
+    let resp: ReceiptsResponse = client.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
 
-    Ok(resp.data.receipts)
+    Ok(resp.receipts)
 }
 
 // // RoutePeer is the route for getting peers by their peerID.
@@ -383,12 +381,12 @@ pub async fn get_receipts_migrated_at(client: &Client, milestone_index: u32) -> 
 pub async fn get_peers(client: &Client) -> Result<Vec<PeerDto>> {
     let path = "api/v2/peers";
 
-    let resp: SuccessBody<PeersResponse> = client
+    let resp: PeersResponse = client
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
 
-    Ok(resp.data.0)
+    Ok(resp.0)
 }
 
 // // RouteControlDatabasePrune is the control route to manually prune the database.

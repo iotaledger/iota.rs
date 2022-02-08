@@ -119,7 +119,7 @@
                 ],
                 "payload": null
             },
-            "address_index_recorders": [
+            "input_signing_data_entrys": [
                 {
                     "account_index": 0,
                     "input": {

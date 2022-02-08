@@ -5,13 +5,18 @@
 
 use crate::signing::{LedgerStatus, SignerHandle, SignerType};
 
-use bee_message::{address::Address, unlock_block::UnlockBlock};
+use bee_message::{
+    address::Address,
+    input::{Input, UtxoInput},
+    payload::transaction::TransactionId,
+    unlock_block::UnlockBlock,
+};
 use packable::PackableExt;
 
 use iota_ledger::LedgerBIP32Index;
 use tokio::sync::Mutex;
 
-use std::{ops::Range, path::Path};
+use std::{ops::Range, path::Path, str::FromStr};
 
 // ledger status codes https://github.com/iotaledger/ledger-iota-app/blob/53c1f96d15f8b014ba8ba31a85f0401bb4d33e18/src/iota_io.h#L54
 
@@ -143,17 +148,15 @@ impl super::Signer for LedgerSigner {
 
     async fn sign_transaction_essence<'a>(
         &mut self,
-        // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        _coin_type: u32,
-        account_index: u32,
         essence: &bee_message::payload::transaction::TransactionEssence,
-        inputs: &mut Vec<super::TransactionInput>,
+        inputs: &mut Vec<super::InputSigningData>,
         meta: super::SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<bee_message::unlock_block::UnlockBlock>> {
         // lock the mutex
         let _lock = self.mutex.lock().await;
 
-        let bip32_account = account_index | HARDENED;
+        // todo don't use default 0
+        let bip32_account = 0 | HARDENED;
         let ledger = iota_ledger::get_ledger(bip32_account, self.is_simulator)?;
         // let compiled_for = match ledger.is_debug_app() {
         // true => Network::Testnet,
@@ -169,21 +172,28 @@ impl super::Signer for LedgerSigner {
         // on essence finalization, inputs are sorted lexically before they are packed into bytes.
         // we need the correct order of the bip32 indices before we can call PrepareSigning, but
         // because inputs of the essence don't have bip32 indices, we need to sort it on our own too.
-        let mut address_index_recorders: Vec<AddressIndexRecorder> = Vec::new();
-        for input in inputs {
-            address_index_recorders.push(AddressIndexRecorder {
-                input: input.input.clone(),
+        let mut input_signing_data_entrys: Vec<AddressIndexRecorder> = Vec::new();
+        for input_signing_data in inputs {
+            let input = Input::Utxo(UtxoInput::new(
+                TransactionId::from_str(&input_signing_data.output_response.transaction_id)?,
+                input_signing_data.output_response.output_index,
+            )?);
+            // todo validate
+            let address_index = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[3].bs());
+            let address_internal = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[4].bs());
+            input_signing_data_entrys.push(AddressIndexRecorder {
+                input: input,
                 bip32: LedgerBIP32Index {
-                    bip32_index: input.address_index as u32 | HARDENED,
-                    bip32_change: if input.address_internal { 1 } else { 0 } | HARDENED,
+                    bip32_index: address_index | HARDENED,
+                    bip32_change: address_internal | HARDENED,
                 },
             });
         }
-        address_index_recorders.sort_by(|a, b| a.input.cmp(&b.input));
+        // input_signing_data_entrys.sort_by(|a, b| a.input.cmp(&b.input));
 
         // now extract the bip32 indices in the right order
         let mut input_bip32_indices: Vec<LedgerBIP32Index> = Vec::new();
-        for recorder in address_index_recorders {
+        for recorder in input_signing_data_entrys {
             input_bip32_indices.push(recorder.bip32);
         }
 

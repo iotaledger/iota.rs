@@ -5,13 +5,13 @@
 
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
-    signing::{mnemonic::IOTA_COIN_TYPE, verify_unlock_blocks, Network, SignMessageMetadata, TransactionInput},
+    signing::{ verify_unlock_blocks, Network, SignMessageMetadata},
     Error, Result,
 };
 
 use crate::bee_message::output::AliasId;
 use bee_message::{
-    address::{Address, AliasAddress, NftAddress},
+    address::{Address},
     input::INPUT_COUNT_MAX,
     output::Output,
     payload::{
@@ -66,9 +66,9 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     }
 
     // Inputselection
-    let (inputs_for_essence, mut outputs_for_essence, address_index_recorders) = match &message_builder.inputs {
+    let (inputs_for_essence, mut outputs_for_essence, input_signing_data_entrys) = match &message_builder.inputs {
         Some(inputs) => {
-            // 127 is the maximum input amount
+            // 128 is the maximum input amount
             if inputs.len() > INPUT_COUNT_MAX.into() {
                 return Err(Error::ConsolidationRequired(inputs.len()));
             }
@@ -84,8 +84,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
         outputs_for_essence.push(output);
     }
 
-    // let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
-    let mut essence = RegularTransactionEssence::builder();
+    let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
     essence = essence.with_inputs(inputs_for_essence);
 
     // todo remove this, because ordering isn't required anymore?
@@ -104,7 +103,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 
     Ok(PreparedTransactionData {
         essence,
-        address_index_recorders,
+        input_signing_data_entrys,
     })
 }
 
@@ -115,22 +114,22 @@ pub async fn sign_transaction(
 ) -> Result<Payload> {
     let mut tx_inputs = Vec::new();
     let mut input_addresses = Vec::new();
-    for address_index_recorder in prepared_transaction_data.address_index_recorders {
-        let output = Output::try_from(&address_index_recorder.output.output)?;
-        let alias_or_nft_address: Option<Address> = match &output {
-            Output::Alias(a) => Some(Address::Alias(AliasAddress::new(*a.alias_id()))),
-            Output::Nft(a) => Some(Address::Nft(NftAddress::new(*a.nft_id()))),
-            _ => None,
-        };
-        let address = Address::try_from_bech32(&address_index_recorder.bech32_address)?;
-        tx_inputs.push(TransactionInput {
-            input: address_index_recorder.input,
-            address_index: address_index_recorder.address_index,
-            address_internal: address_index_recorder.internal,
-            output_kind: output.kind(),
-            address,
-            alias_or_nft_address,
-        });
+    for input_signing_data in prepared_transaction_data.input_signing_data_entrys {
+        // let output = Output::try_from(&input_signing_data.output_response.output)?;
+        // let alias_or_nft_address: Option<Address> = match &output {
+        //     Output::Alias(a) => Some(Address::Alias(AliasAddress::new(*a.alias_id()))),
+        //     Output::Nft(a) => Some(Address::Nft(NftAddress::new(*a.nft_id()))),
+        //     _ => None,
+        // };
+        let address = Address::try_from_bech32(&input_signing_data.bech32_address)?;
+        // tx_inputs.push(InputSigningData {
+        //     input: input_signing_data.input,
+        //     address_index: input_signing_data.address_index,
+        //     address_internal: input_signing_data.internal,
+        //     output_kind: output.kind(),
+        //     address,
+        //     alias_or_nft_address,
+        // });
         input_addresses.push(address);
     }
     let signer = message_builder.signer.ok_or(Error::MissingParameter("signer"))?;
@@ -140,8 +139,8 @@ pub async fn sign_transaction(
     let mut signer = signer.lock().await;
     let unlock_blocks = signer
         .sign_transaction_essence(
-            IOTA_COIN_TYPE,
-            message_builder.account_index.unwrap_or(0),
+            // IOTA_COIN_TYPE,
+            // message_builder.account_index.unwrap_or(0),
             &prepared_transaction_data.essence,
             &mut tx_inputs,
             // todo set correct data

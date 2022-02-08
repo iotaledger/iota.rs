@@ -1338,7 +1338,7 @@ foreign_class!(
         /// Transaction essence
         fn PreparedTransactionData::essence(&self) -> Essence;
         /// Required address information for signing
-        fn PreparedTransactionData::address_index_recorders(&self) -> Vec<AddressIndexRecorder>;
+        fn PreparedTransactionData::input_signing_data_entrys(&self) -> Vec<InputSigningData>;
 
         /// Serializes the prepared data into a json string
         fn PreparedTransactionData::serialize(&self) -> Result<String>;
@@ -1349,24 +1349,24 @@ foreign_class!(
 foreign_class!(
     #[derive(camelCaseAliases, Display)]
     /// Structure for sorting of UnlockBlocks
-    class AddressIndexRecorder {
-        self_type AddressIndexRecorder;
+    class InputSigningData {
+        self_type InputSigningData;
         private constructor = empty;
-        private fn AddressIndexRecorder::to_string(&self) -> String; alias to_string;
+        private fn InputSigningData::to_string(&self) -> String; alias to_string;
         /// Index of the account
-        fn AddressIndexRecorder::account_index(&self) -> usize;
+        fn InputSigningData::account_index(&self) -> usize;
         /// The input used
-        fn AddressIndexRecorder::input(&self) -> Input;
+        fn InputSigningData::input(&self) -> Input;
         /// The output information
-        fn AddressIndexRecorder::output(&self) -> OutputResponse;
+        fn InputSigningData::output(&self) -> OutputResponse;
         /// index of this address on the seed
-        fn AddressIndexRecorder::address_index(&self) -> usize;
+        fn InputSigningData::address_index(&self) -> usize;
         /// The chain derived from seed
-        fn AddressIndexRecorder::chain(&self) -> Chain;
+        fn InputSigningData::chain(&self) -> Chain;
         /// Whether this is an internal address
-        fn AddressIndexRecorder::internal(&self) -> bool;
+        fn InputSigningData::internal(&self) -> bool;
         /// The address
-        fn AddressIndexRecorder::bech32_address(&self) -> &str;
+        fn InputSigningData::bech32_address(&self) -> &str;
     }
 );
 

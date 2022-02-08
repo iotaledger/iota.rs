@@ -75,9 +75,9 @@ export declare interface AddressBalance {
 
 export declare interface PreparedTransactionData {
   essence: TransactionPayloadEssence
-  address_index_recorders: AddressIndexRecorder[]
+  input_signing_data_entrys: InputSigningData[]
 }
-export declare interface AddressIndexRecorder {
+export declare interface InputSigningData {
   account_index: number,
   input: Input,
   output: OutputResponse,

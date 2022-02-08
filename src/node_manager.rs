@@ -9,7 +9,7 @@ use crate::{
     error::{Error, Result},
 };
 
-use bee_rest_api::types::{body::SuccessBody, responses::InfoResponse};
+use bee_rest_api::types::responses::InfoResponse;
 
 use log::warn;
 use regex::Regex;
@@ -218,11 +218,9 @@ impl NodeManager {
                                 200 => {
                                     // Handle nodeinfo extra because we also want to return the url
                                     if path == "api/v2/info" {
-                                        if let Ok(nodeinfo) =
-                                            serde_json::from_str::<SuccessBody<InfoResponse>>(&res_text)
-                                        {
+                                        if let Ok(nodeinfo) = serde_json::from_str::<InfoResponse>(&res_text) {
                                             let wrapper = crate::client::NodeInfoWrapper {
-                                                nodeinfo: nodeinfo.data,
+                                                nodeinfo,
                                                 url: format!(
                                                     "{}://{}",
                                                     node.url.scheme(),

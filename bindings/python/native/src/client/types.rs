@@ -5,7 +5,7 @@ use crate::client::error::{Error, Result};
 use core::convert::TryFrom;
 use dict_derive::{FromPyObject as DeriveFromPyObject, IntoPyObject as DeriveIntoPyObject};
 use iota_client::{
-    api::{AddressIndexRecorder as RustAddressIndexRecorder, PreparedTransactionData as RustPreparedTransactionData},
+    api::{InputSigningData as RustInputSigningData, PreparedTransactionData as RustPreparedTransactionData},
     bee_message::prelude::{
         Address as RustAddress, Ed25519Address as RustEd25519Address, Ed25519Signature as RustEd25519Signature,
         Essence as RustEssence, TaggedPayload as RustTaggedPayload, Input as RustInput, Message as RustMessage,
@@ -590,12 +590,12 @@ pub struct PreparedTransactionData {
     /// Transaction essence.AddressBalancePair
     pub essence: RegularEssence,
     /// Required address information for signing.
-    pub address_index_recorders: Vec<AddressIndexRecorder>,
+    pub input_signing_data_entrys: Vec<InputSigningData>,
 }
 
 #[derive(Clone, Debug, DeriveFromPyObject, DeriveIntoPyObject)]
 /// Structure for sorting of UnlockBlocks.
-pub struct AddressIndexRecorder {
+pub struct InputSigningData {
     /// The account index.
     account_index: usize,
     /// The input.
@@ -648,8 +648,8 @@ impl TryFrom<UtxoInput> for RustUtxoInput {
     }
 }
 
-impl From<RustAddressIndexRecorder> for AddressIndexRecorder {
-    fn from(recorder: RustAddressIndexRecorder) -> Self {
+impl From<RustInputSigningData> for InputSigningData {
+    fn from(recorder: RustInputSigningData) -> Self {
         Self {
             account_index: recorder.account_index,
             input: if let RustInput::Utxo(input) = recorder.input {
@@ -678,9 +678,9 @@ impl From<RustAddressIndexRecorder> for AddressIndexRecorder {
     }
 }
 
-impl TryFrom<AddressIndexRecorder> for RustAddressIndexRecorder {
+impl TryFrom<InputSigningData> for RustInputSigningData {
     type Error = Error;
-    fn try_from(recorder: AddressIndexRecorder) -> Result<Self> {
+    fn try_from(recorder: InputSigningData) -> Result<Self> {
         Ok(Self {
             account_index: recorder.account_index,
             input: RustUtxoInput::new(
@@ -729,8 +729,8 @@ impl TryFrom<RustPreparedTransactionData> for PreparedTransactionData {
             essence: match data.essence {
                 RustEssence::Regular(e) => e.try_into()?,
             },
-            address_index_recorders: data
-                .address_index_recorders
+            input_signing_data_entrys: data
+                .input_signing_data_entrys
                 .iter()
                 .cloned()
                 .map(|recorder| recorder.into())
@@ -744,14 +744,14 @@ impl TryFrom<PreparedTransactionData> for RustPreparedTransactionData {
     fn try_from(data: PreparedTransactionData) -> Result<Self> {
         Ok(Self {
             essence: RustEssence::Regular(data.essence.clone().try_into()?),
-            address_index_recorders: data
-                .address_index_recorders
+            input_signing_data_entrys: data
+                .input_signing_data_entrys
                 .iter()
                 .map(|recorder| {
                     recorder
                         .clone()
                         .try_into()
-                        .unwrap_or_else(|_| panic!("invalid AddressIndexRecorder {:?}", data))
+                        .unwrap_or_else(|_| panic!("invalid InputSigningData {:?}", data))
                 })
                 .collect(),
         })

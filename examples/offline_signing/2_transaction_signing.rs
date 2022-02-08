@@ -12,7 +12,7 @@ use iota_client::{
     },
     signing::{
         mnemonic::{MnemonicSigner, IOTA_COIN_TYPE},
-        verify_unlock_blocks, Network, SignMessageMetadata, TransactionInput,
+        verify_unlock_blocks, InputSigningData, Network, SignMessageMetadata,
     },
     Result,
 };
@@ -40,13 +40,13 @@ async fn main() -> Result<()> {
 
     let mut tx_inputs = Vec::new();
     let mut input_addresses = Vec::new();
-    for address_index_recorder in prepared_transaction_data.address_index_recorders {
-        let address = Address::try_from_bech32(&address_index_recorder.bech32_address)?;
-        tx_inputs.push(TransactionInput {
-            input: address_index_recorder.input,
-            address_index: address_index_recorder.address_index,
-            address_internal: address_index_recorder.internal,
-            output_kind: Output::try_from(&address_index_recorder.output.output)?.kind(),
+    for input_signing_data in prepared_transaction_data.input_signing_data_entrys {
+        let address = Address::try_from_bech32(&input_signing_data.bech32_address)?;
+        tx_inputs.push(InputSigningData {
+            input: input_signing_data.input,
+            address_index: input_signing_data.address_index,
+            address_internal: input_signing_data.internal,
+            output_kind: Output::try_from(&input_signing_data.output.output)?.kind(),
             address,
             alias_or_nft_address: None,
         });

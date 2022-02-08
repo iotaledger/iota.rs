@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    api::types::{AddressIndexRecorder, PreparedTransactionData},
+    api::types::PreparedTransactionData,
     bee_message::output::BasicOutputBuilder,
-    signing::SignerHandle,
+    signing::{types::InputSigningData, SignerHandle},
     Client, Error, Result,
 };
 
@@ -15,7 +15,7 @@ use bee_message::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
         AliasId, Output, TokenId,
     },
-    payload::{transaction::TransactionId, Payload, TaggedDataPayload},
+    payload::{Payload, TaggedDataPayload},
     Message, MessageId,
 };
 use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
@@ -40,7 +40,7 @@ use {
     tokio::time::sleep,
 };
 
-mod input_selection;
+pub mod input_selection;
 pub mod pow;
 pub mod transaction;
 use input_selection::{get_custom_inputs, get_inputs};
@@ -190,13 +190,13 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     // Used to store the address data for an input so we can later sign it
-    fn create_address_index_recorder(
+    fn create_input_signing_data(
         account_index: u32,
         address_index: u32,
         internal: bool,
         output: &OutputResponse,
         bech32_address: String,
-    ) -> Result<AddressIndexRecorder> {
+    ) -> Result<InputSigningData> {
         // Note that we need to sign the original address, i.e., `path/index`,
         // instead of `path/index/offset` or `path/offset`.
 
@@ -208,18 +208,18 @@ impl<'a> ClientMessageBuilder<'a> {
             internal as u32,
             address_index as u32,
         ]);
-        let input = Input::Utxo(
-            UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
-                .map_err(|_| Error::TransactionError)?,
-        );
+        // let input = Input::Utxo(
+        //     UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
+        //         .map_err(|_| Error::TransactionError)?,
+        // );
 
-        Ok(AddressIndexRecorder {
-            account_index,
-            input,
-            output: output.clone(),
-            address_index,
-            chain,
-            internal,
+        Ok(InputSigningData {
+            // account_index,
+            // input,
+            output_response: output.clone(),
+            // address_index,
+            chain: Some(chain),
+            // internal,
             bech32_address,
         })
     }
@@ -307,7 +307,7 @@ impl<'a> ClientMessageBuilder<'a> {
         total_to_spend: u64,
         native_tokens: HashMap<TokenId, U256>,
         governance_transition: Option<HashSet<AliasId>>,
-    ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+    ) -> Result<(Vec<Input>, Vec<Output>, Vec<InputSigningData>)> {
         get_custom_inputs(self, inputs, total_to_spend, native_tokens, governance_transition).await
     }
 
@@ -316,7 +316,7 @@ impl<'a> ClientMessageBuilder<'a> {
         &self,
         total_to_spend: u64,
         native_tokens: HashMap<TokenId, U256>,
-    ) -> Result<(Vec<Input>, Vec<Output>, Vec<AddressIndexRecorder>)> {
+    ) -> Result<(Vec<Input>, Vec<Output>, Vec<InputSigningData>)> {
         get_inputs(self, total_to_spend, native_tokens).await
     }
 
@@ -375,12 +375,12 @@ impl<'a> ClientMessageBuilder<'a> {
                 parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
-                let network_id = self.client.get_network_id().await?;
+                let protocol_version = self.client.get_protocol_version().await?;
                 let mut client_miner = ClientMinerBuilder::new().with_local_pow(self.client.get_local_pow().await);
                 if let Some(worker_count) = self.client.pow_worker_count {
                     client_miner = client_miner.with_worker_count(worker_count);
                 }
-                do_pow(client_miner.finish(), min_pow_score, network_id, payload, parents)?
+                do_pow(client_miner.finish(), min_pow_score, protocol_version, payload, parents)?
                     .1
                     .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
