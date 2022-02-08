@@ -1,5 +1,7 @@
 package org.example;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
 import org.iota.client.*;
@@ -11,14 +13,7 @@ public class LibraryTest {
         NativeAPI.verifyLink();
     }
 
-    private static final String MAINNET = "https://chrysalis-nodes.iota.cafe:443";
-
-    // Faucet: https://faucet.chrysalis-devnet.iota.cafe/
-    // Explorer: https://explorer.iota.org/devnet
-    private static final String TESTNET = "https://api.lb-0.h.chrysalis-devnet.iota.cafe";
-    private static final String TESTNET_LB = "api.lb-0.h.chrysalis-devnet.iota.cafe";
-
-    private static final String NODE = TESTNET;
+    private static final String NODE = ExampleApp.NODE;
 
     @Test
     public void testNodeInfo() {
@@ -44,7 +39,7 @@ public class LibraryTest {
             String[] addresses = GetAddressesBuilder.from(seed).withClient(node).withRange(0, 1).finish();
             System.out.println(Arrays.toString(addresses));
             
-            long accountIndex, seedIndex = 0;
+            long accountIndex = 0, seedIndex = 0;
             boolean public_address = true;
             if (node.shouldMigrate(seed, accountIndex, seedIndex, public_address)) {
                 System.out.println("Migrating balance...");

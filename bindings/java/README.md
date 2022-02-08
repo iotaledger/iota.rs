@@ -15,8 +15,8 @@ git clone https://github.com/iotaledger/iota.rs
 
 Build the rust library
 ```
-cd iota.rs/bindings/java/native
-cargo build
+cd iota.rs/bindings/java
+cargo build --release
 ```
 
 - Running an example using gradle
