@@ -246,3 +246,13 @@ def test_hex_public_key_to_bech32_address():
         hex_public_key, bech32_hrp)
 
     assert bech32_address == converted_address
+
+
+def test_mnemonic_address_generation():
+    mnemonic = general_tv['MNEMNONIC']
+    mnemonic_address = general_tv['MNEMNONIC_ADDRESS']
+    mnemonic_seed = client.mnemonic_to_hex_seed(mnemonic)
+
+    generated_address, _ = client.get_addresses(
+        seed=mnemonic_seed, account_index=0, input_range_begin=0, input_range_end=1, bech32_hrp="iota")[0]
+    assert mnemonic_address == generated_address
