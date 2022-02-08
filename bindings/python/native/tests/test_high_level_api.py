@@ -7,8 +7,10 @@ import os
 
 # Read the test vector
 tv = dict()
-with open('tests/fixtures/test_vectors.json') as json_file:
+with open('../../../tests/fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
+general_tv = tv['general']
+tv = tv['python']
 
 client = iota_client.Client(nodes_name_password=[[tv['NODE_URL']]])
 message_id_indexation = tv['MESSAGE_ID'][0]
@@ -92,6 +94,7 @@ def test_get_message_id():
         id = client.get_message_id(json_payload)
     except ValueError as e:
         assert "invalid message" in str(e)
+
 
 def test_get_transaction_id():
     transaction_payload = tv['TRANSACTION_PAYLOAD']

@@ -611,5 +611,7 @@
         "receipt": null,
         "treasury_transaction": null
     },
-    "TRANSACTION_PAYLOAD_ID": "dda4d34eb0138eecd58f3a4cade9f35ea593866e69f657910cebc63297e5898c"
+    "TRANSACTION_PAYLOAD_ID": "dda4d34eb0138eecd58f3a4cade9f35ea593866e69f657910cebc63297e5898c",
+    "MNEMNONIC": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
+    "MNEMNONIC_ADDRESS": "iota1qpg2xkj66wwgn8p2ggnp7p582gj8g6p79us5hve2tsudzpsr2ap4skprwjg"
 }
