@@ -31,7 +31,6 @@ impl<'a> GetBalanceBuilderApi<'a> {
         Self {
             fields: Rc::new(RefCell::new(Option::from(internal))),
         }
-        
     }
 
     pub fn new(client: &'a Client, seed: &str) -> Result<Self> {
@@ -47,10 +46,9 @@ impl<'a> GetBalanceBuilderApi<'a> {
                 Ok(Self {
                     fields: Rc::new(RefCell::new(Option::from(internal))),
                 })
-            },
-            Err(e) => Err(anyhow!(e.to_string()))
+            }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
-        
     }
 
     fn new_with_fields(fields: GetBalanceBuilderApiInternal<'a>) -> Self {

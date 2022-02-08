@@ -232,8 +232,8 @@ impl<'a> GetAddressesBuilder<'a> {
                 Ok(Self {
                     fields: Rc::new(RefCell::new(Option::from(internal))),
                 })
-            },
-            Err(e) => Err(anyhow!(e.to_string()))
+            }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 

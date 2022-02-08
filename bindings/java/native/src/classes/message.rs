@@ -236,10 +236,9 @@ impl<'a> ClientMessageBuilder<'a> {
                 let mut fields = self.fields.borrow_mut().take().unwrap();
                 fields.seed = Some(RustSeed::from_bytes(s));
                 Ok(ClientMessageBuilder::new_with_fields(fields))
-            },
-            Err(e) => Err(anyhow!(e.to_string()))
+            }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
-        
     }
 
     pub(crate) fn with_seed_old(&self, seed: &str) -> Self {
