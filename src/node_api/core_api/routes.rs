@@ -207,7 +207,7 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
         client.get_remote_pow_timeout()
     };
     let message_dto = MessageDto::from(message);
-
+    // println!("{}", serde_json::to_string(&message_dto)?);
     // fallback to local PoW if remote PoW fails
     let resp: SubmitMessageResponse = match client
         .node_manager

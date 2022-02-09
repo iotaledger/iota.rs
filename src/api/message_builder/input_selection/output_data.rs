@@ -23,7 +23,7 @@ use primitive_types::U256;
 use std::collections::{hash_map::Entry, HashMap};
 
 // Get a remainder with amount and native tokens if necessary, if no remainder_address is provided it will be selected
-// from the inputs
+// from the inputs, also validates the amounts
 pub(crate) async fn get_remainder(
     client: &Client,
     inputs: &[Output],
@@ -31,15 +31,15 @@ pub(crate) async fn get_remainder(
     remainder_address: Option<Address>,
 ) -> Result<Option<Output>> {
     let mut remainder_output = None;
-    let input_data = get_accumulated_output_data(client, inputs).await?;
-    let output_data = get_accumulated_output_data(client, outputs).await?;
+    let input_data = get_accumulated_output_data(client, inputs, false).await?;
+    let output_data = get_accumulated_output_data(client, outputs, true).await?;
+    // check amount first
     if input_data.amount < output_data.amount {
         return Err(Error::NotEnoughBalance(input_data.amount, output_data.amount));
     }
-    let remainder_amount = output_data.amount - input_data.amount;
+    let remainder_amount = input_data.amount - output_data.amount;
 
     let native_token_remainder = get_remainder_native_tokens(&input_data.native_tokens, &output_data.native_tokens);
-
     // Output possible remaining tokens back to the original address
     if remainder_amount > 0 {
         let remainder_addr = match remainder_address {
@@ -85,7 +85,11 @@ pub(crate) async fn get_remainder(
 }
 
 // gets required amounts and for utxo chains also the required inputs
-pub(crate) async fn get_accumulated_output_data(client: &Client, outputs: &[Output]) -> Result<AccumulatedOutputData> {
+pub(crate) async fn get_accumulated_output_data(
+    client: &Client,
+    outputs: &[Output],
+    get_utxo_chain_inputs: bool,
+) -> Result<AccumulatedOutputData> {
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
     let mut required_native_tokens: HashMap<TokenId, U256> = HashMap::new();
@@ -106,33 +110,55 @@ pub(crate) async fn get_accumulated_output_data(client: &Client, outputs: &[Outp
             }
         }
         // todo verify if that's the right way to do this
-        match output {
-            Output::Alias(alias_output) => {
-                // if the state_index is [0u8; 20] then there can't be a previous output and it can also not be a
-                // governance transition
-                if alias_output.alias_id().as_ref() != [0u8; 20] {
-                    // Check if the transaction is a governance_transition, by checking if the new index is the same as
-                    // the previous index
-                    let output_ids = client.alias_output_ids(*alias_output.alias_id()).await?;
-                    let outputs = client.get_outputs(output_ids).await?;
-                    for output_response in outputs {
-                        if let OutputDto::Alias(output) = &output_response.output {
-                            if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                                for unlock_condition in &alias_output_dto.unlock_conditions {
-                                    // A governance transition is identified by an unchanged State Index in next state.
-                                    if alias_output.state_index() == output.state_index {
-                                        if let UnlockConditionDto::GovernorAddress(governor_unlock_condition_dto) =
-                                            unlock_condition
+        if get_utxo_chain_inputs {
+            match output {
+                Output::Alias(alias_output) => {
+                    // if the state_index is [0u8; 20] then there can't be a previous output and it can also not be a
+                    // governance transition
+                    if alias_output.alias_id().as_ref() != [0u8; 20] {
+                        // Check if the transaction is a governance_transition, by checking if the new index is the same
+                        // as the previous index
+                        let output_ids = client.alias_output_ids(*alias_output.alias_id()).await?;
+                        let outputs = client.get_outputs(output_ids).await?;
+                        for output_response in outputs {
+                            if let OutputDto::Alias(output) = &output_response.output {
+                                if let OutputDto::Alias(alias_output_dto) = &output_response.output {
+                                    for unlock_condition in &alias_output_dto.unlock_conditions {
+                                        // A governance transition is identified by an unchanged State Index in next
+                                        // state.
+                                        if alias_output.state_index() == output.state_index {
+                                            if let UnlockConditionDto::GovernorAddress(governor_unlock_condition_dto) =
+                                                unlock_condition
+                                            {
+                                                let address =
+                                                    Address::try_from(&governor_unlock_condition_dto.address)?;
+                                                utxo_chains.push((address, output_response.clone()));
+                                            }
+                                        } else if let UnlockConditionDto::StateControllerAddress(
+                                            state_controller_unlock_condition_dto,
+                                        ) = unlock_condition
                                         {
-                                            let address = Address::try_from(&governor_unlock_condition_dto.address)?;
+                                            let address =
+                                                Address::try_from(&state_controller_unlock_condition_dto.address)?;
                                             utxo_chains.push((address, output_response.clone()));
                                         }
-                                    } else if let UnlockConditionDto::StateControllerAddress(
-                                        state_controller_unlock_condition_dto,
-                                    ) = unlock_condition
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Output::Nft(nft_output) => {
+                    // If the id is [0u8; 20] then this output creates it and we can't have a previous output
+                    if nft_output.nft_id().as_ref() != [0u8; 20] {
+                        let output_ids = client.nft_output_ids(*nft_output.nft_id()).await?;
+                        let outputs = client.get_outputs(output_ids).await?;
+                        for output_response in outputs {
+                            if let OutputDto::Nft(nft_output_dto) = &output_response.output {
+                                for unlock_condition in &nft_output_dto.unlock_conditions {
+                                    if let UnlockConditionDto::Address(address_unlock_condition_dto) = unlock_condition
                                     {
-                                        let address =
-                                            Address::try_from(&state_controller_unlock_condition_dto.address)?;
+                                        let address = Address::try_from(&address_unlock_condition_dto.address)?;
                                         utxo_chains.push((address, output_response.clone()));
                                     }
                                 }
@@ -140,15 +166,12 @@ pub(crate) async fn get_accumulated_output_data(client: &Client, outputs: &[Outp
                         }
                     }
                 }
-            }
-            Output::Nft(nft_output) => {
-                // If the id is [0u8; 20] then this output creates it and we can't have a previous output
-                if nft_output.nft_id().as_ref() != [0u8; 20] {
-                    let output_ids = client.nft_output_ids(*nft_output.nft_id()).await?;
+                Output::Foundry(foundry_output) => {
+                    let output_ids = client.foundry_output_ids(foundry_output.id()).await?;
                     let outputs = client.get_outputs(output_ids).await?;
                     for output_response in outputs {
-                        if let OutputDto::Nft(nft_output_dto) = &output_response.output {
-                            for unlock_condition in &nft_output_dto.unlock_conditions {
+                        if let OutputDto::Foundry(foundry_output) = &output_response.output {
+                            for unlock_condition in &foundry_output.unlock_conditions {
                                 if let UnlockConditionDto::Address(address_unlock_condition_dto) = unlock_condition {
                                     let address = Address::try_from(&address_unlock_condition_dto.address)?;
                                     utxo_chains.push((address, output_response.clone()));
@@ -157,22 +180,8 @@ pub(crate) async fn get_accumulated_output_data(client: &Client, outputs: &[Outp
                         }
                     }
                 }
+                _ => {}
             }
-            Output::Foundry(foundry_output) => {
-                let output_ids = client.foundry_output_ids(foundry_output.id()).await?;
-                let outputs = client.get_outputs(output_ids).await?;
-                for output_response in outputs {
-                    if let OutputDto::Foundry(foundry_output) = &output_response.output {
-                        for unlock_condition in &foundry_output.unlock_conditions {
-                            if let UnlockConditionDto::Address(address_unlock_condition_dto) = unlock_condition {
-                                let address = Address::try_from(&address_unlock_condition_dto.address)?;
-                                utxo_chains.push((address, output_response.clone()));
-                            }
-                        }
-                    }
-                }
-            }
-            _ => {}
         }
     }
     Ok(AccumulatedOutputData {

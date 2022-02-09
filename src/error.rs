@@ -25,22 +25,18 @@ pub enum Error {
     /// The wallet account doesn't have enough balance
     #[error("The wallet account doesn't have enough balance. It only has {0}, required is {1}")]
     NotEnoughBalance(u64, u64),
-    // todo get missing amounts and token ids
     /// The wallet account doesn't have enough native tokens
     #[error("The wallet account doesn't have enough native tokens, missing: {0:?}")]
     NotEnoughNativeTokens(HashMap<TokenId, U256>),
-    // todo get missing amounts and token ids
+    // todo get missing amount (storage deposit for an output with this amount of native tokens)
     /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
     #[error("The wallet account doesn't have enough balance for an output with the remaining native tokens.")]
     NotEnoughBalanceForNativeTokenRemainder,
-    /// The wallet account doesn't have enough balance
+    /// The wallet account has enough funds, but splitted on too many outputs
     #[error(
         "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 128, consolidate them"
     )]
     ConsolidationRequired(usize),
-    /// Dust error, for example not enough balance on an address
-    #[error("Dust error: {0}")]
-    DustError(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(&'static str),
@@ -50,9 +46,6 @@ pub enum Error {
     /// No node available in the synced node pool
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
-    /// Error on Url type conversion
-    #[error("Failed to parse node_pool_urls")]
-    NodePoolUrlsError,
     /// Error on reaching quorum
     #[error("Failed to reach quorum {0} {1}")]
     QuorumThresholdError(usize, usize),
@@ -62,9 +55,6 @@ pub enum Error {
     /// Error on API request
     #[error("Node error: {0}")]
     NodeError(String),
-    /// Error on RwLock read
-    #[error("Failed to read node RwLock")]
-    NodeReadError,
     /// Hex string convert error
     #[error("{0}")]
     FromHexError(#[from] hex::FromHexError),
@@ -108,12 +98,6 @@ pub enum Error {
     /// Crypto.rs error
     #[error("{0}")]
     CryptoError(#[from] crypto::Error),
-    /// Crypto.rs mnemonic error
-    #[error("{0}")]
-    MnemonicError(String),
-    /// Invalid amount of parents
-    #[error("Invalid amount of parents: {0}, length must be in 1..=8")]
-    InvalidParentsAmount(usize),
     /// ureq error
     #[cfg(feature = "sync")]
     #[error("{0}")]

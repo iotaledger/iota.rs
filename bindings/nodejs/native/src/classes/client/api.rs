@@ -158,7 +158,7 @@ impl Task for ClientTask {
                         sender = sender.with_initial_address_index(*initial_address_index);
                     }
                     for input in inputs {
-                        sender = sender.with_input(input.clone());
+                        sender = sender.with_input(input.clone())?;
                     }
                     if let Some(input_range) = input_range {
                         sender = sender.with_input_range(input_range.clone());
@@ -209,7 +209,7 @@ impl Task for ClientTask {
                         sender = sender.with_initial_address_index(*initial_address_index);
                     }
                     for input in inputs {
-                        sender = sender.with_input(input.clone());
+                        sender = sender.with_input(input.clone())?;
                     }
                     if let Some(input_range) = input_range {
                         sender = sender.with_input_range(input_range.clone());

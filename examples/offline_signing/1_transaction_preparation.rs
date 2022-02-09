@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
     // Prepare transaction
     let mut transaction_builder = iota_online.message();
     for input in inputs {
-        transaction_builder = transaction_builder.with_input(input);
+        transaction_builder = transaction_builder.with_input(input)?;
     }
     let prepared_transaction_data = transaction_builder
         .with_output(address, amount)?

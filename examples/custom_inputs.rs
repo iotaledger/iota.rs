@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&seed)
-        .with_input(UtxoInput::from(output_ids[0]))
+        .with_input(UtxoInput::from(output_ids[0]))?
         //.with_input_range(20..25)
         .with_output(
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",

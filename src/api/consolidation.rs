@@ -73,7 +73,7 @@ pub async fn consolidate_funds(
                     message_builder = message_builder.with_input(UtxoInput::from(OutputId::new(
                         TransactionId::from_str(&input.transaction_id)?,
                         input.output_index,
-                    )?));
+                    )?))?;
                     total_amount += amount;
                 }
 

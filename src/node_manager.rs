@@ -120,10 +120,7 @@ impl NodeManager {
         let nodes = if self.sync {
             #[cfg(not(feature = "wasm"))]
             {
-                self.synced_nodes
-                    .read()
-                    .map_err(|_| crate::Error::NodeReadError)?
-                    .clone()
+                self.synced_nodes.read().map_err(|_| crate::Error::PoisonError)?.clone()
             }
             #[cfg(feature = "wasm")]
             {

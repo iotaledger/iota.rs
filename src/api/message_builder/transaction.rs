@@ -12,39 +12,22 @@ use crate::{
 use crate::bee_message::output::AliasId;
 use bee_message::{
     address::Address,
-    input::INPUT_COUNT_MAX,
+    input::{Input, UtxoInput},
     output::Output,
     payload::{
-        transaction::{RegularTransactionEssence, TransactionEssence, TransactionPayloadBuilder},
+        transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayloadBuilder},
         Payload, TaggedDataPayload,
     },
     unlock_block::UnlockBlocks,
 };
 use bee_rest_api::types::dtos::OutputDto;
-use packable::PackableExt;
 
-use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::{collections::HashSet, str::FromStr};
 
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
     let mut governance_transition: Option<HashSet<AliasId>> = None;
-    // Calculate the total tokens to spend
-    let mut total_to_spend = 0;
-    let mut native_tokens = HashMap::new();
     for output in &message_builder.outputs {
-        total_to_spend += output.amount();
-        if let Some(output_native_tokens) = output.native_tokens() {
-            for native_token in output_native_tokens {
-                match native_tokens.entry(*native_token.token_id()) {
-                    Entry::Vacant(e) => {
-                        e.insert(*native_token.amount());
-                    }
-                    Entry::Occupied(mut e) => {
-                        *e.get_mut() += *native_token.amount();
-                    }
-                }
-            }
-        }
         if let Output::Alias(x) = output {
             if x.state_index() > 0 {
                 // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -66,31 +49,28 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     }
 
     // Inputselection
-    let (inputs_for_essence, mut outputs_for_essence, input_signing_data_entrys) = match &message_builder.inputs {
-        Some(inputs) => {
-            // 128 is the maximum input amount
-            if inputs.len() > INPUT_COUNT_MAX.into() {
-                return Err(Error::ConsolidationRequired(inputs.len()));
-            }
-            message_builder
-                .get_custom_inputs(inputs, total_to_spend, native_tokens, governance_transition)
-                .await?
-        }
-        None => message_builder.get_inputs(total_to_spend, native_tokens).await?,
+    let selected_transaction_data = if message_builder.inputs.is_some() {
+        message_builder.get_custom_inputs(governance_transition).await?
+    } else {
+        message_builder.get_inputs().await?
     };
 
-    // Build signed transaction payload
-    for output in message_builder.outputs.clone() {
-        outputs_for_essence.push(output);
-    }
+    // Build transaction payload
+    let mut essence = RegularTransactionEssence::builder();
+    // let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
+    let inputs = selected_transaction_data
+        .inputs
+        .iter()
+        .map(|i| {
+            Ok(Input::Utxo(UtxoInput::new(
+                TransactionId::from_str(&i.output_response.transaction_id)?,
+                i.output_response.output_index,
+            )?))
+        })
+        .collect::<Result<Vec<Input>>>()?;
+    essence = essence.with_inputs(inputs);
 
-    let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
-    essence = essence.with_inputs(inputs_for_essence);
-
-    // todo remove this, because ordering isn't required anymore?
-    // Order outputs and add them to the essence
-    outputs_for_essence.sort_unstable_by_key(|a| a.pack_to_vec());
-    essence = essence.with_outputs(outputs_for_essence);
+    essence = essence.with_outputs(selected_transaction_data.outputs);
 
     // Add tagged data payload if tag set
     if let Some(index) = message_builder.tag.clone() {
@@ -103,7 +83,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 
     Ok(PreparedTransactionData {
         essence,
-        input_signing_data_entrys,
+        input_signing_data_entrys: selected_transaction_data.inputs,
     })
 }
 
@@ -114,21 +94,7 @@ pub async fn sign_transaction(
 ) -> Result<Payload> {
     let mut input_addresses = Vec::new();
     for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
-        // let output = Output::try_from(&input_signing_data.output_response.output)?;
-        // let alias_or_nft_address: Option<Address> = match &output {
-        //     Output::Alias(a) => Some(Address::Alias(AliasAddress::new(*a.alias_id()))),
-        //     Output::Nft(a) => Some(Address::Nft(NftAddress::new(*a.nft_id()))),
-        //     _ => None,
-        // };
         let address = Address::try_from_bech32(&input_signing_data.bech32_address)?;
-        // tx_inputs.push(InputSigningData {
-        //     input: input_signing_data.input,
-        //     address_index: input_signing_data.address_index,
-        //     address_internal: input_signing_data.internal,
-        //     output_kind: output.kind(),
-        //     address,
-        //     alias_or_nft_address,
-        // });
         input_addresses.push(address);
     }
     let signer = message_builder.signer.ok_or(Error::MissingParameter("signer"))?;

@@ -163,7 +163,7 @@ impl MessageBuilder {
         sender = sender.with_initial_address_index(initial_address_index);
       }
       for input in input_data.inputs {
-        sender = sender.with_input(input.clone());
+        sender = sender.with_input(input.clone())?;
       }
       if let Some(input_range) = input_data.input_range {
         sender = sender.with_input_range(input_range);
@@ -269,7 +269,7 @@ impl MessageBuilder {
         sender = sender.with_initial_address_index(initial_address_index);
       }
       for input in input_data.inputs {
-        sender = sender.with_input(input.clone());
+        sender = sender.with_input(input.clone())?;
       }
       if let Some(input_range) = input_data.input_range {
         sender = sender.with_input_range(input_range);

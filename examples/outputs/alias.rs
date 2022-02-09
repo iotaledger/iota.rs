@@ -103,7 +103,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(alias_output_id.into())
+        .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    api::types::PreparedTransactionData,
+    api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
     bee_message::output::BasicOutputBuilder,
     signing::{mnemonic::IOTA_COIN_TYPE, types::InputSigningData, SignerHandle},
     Client, Error, Result,
@@ -10,24 +10,19 @@ use crate::{
 
 use bee_message::{
     address::{Address, Ed25519Address},
-    input::{Input, UtxoInput},
+    input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, Output, TokenId,
+        AliasId, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Message, MessageId,
 };
 use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
 use crypto::keys::slip10::Chain;
+use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
 
-use primitive_types::U256;
-
-use std::{
-    collections::{HashMap, HashSet},
-    ops::Range,
-    str::FromStr,
-};
+use std::{collections::HashSet, ops::Range, str::FromStr};
 
 #[cfg(feature = "wasm")]
 use gloo_timers::future::TimeoutFuture;
@@ -96,15 +91,19 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Set a custom input(transaction output)
-    pub fn with_input(mut self, input: UtxoInput) -> Self {
+    pub fn with_input(mut self, input: UtxoInput) -> Result<Self> {
         self.inputs = match self.inputs {
             Some(mut inputs) => {
                 inputs.push(input);
+                // 128 is the maximum input amount
+                if inputs.len() > INPUT_COUNT_MAX.into() {
+                    return Err(Error::ConsolidationRequired(inputs.len()));
+                }
                 Some(inputs)
             }
             None => Some(vec![input]),
         };
-        self
+        Ok(self)
     }
 
     /// Set a custom range in which to search for addresses for custom provided inputs. Default: 0..100
@@ -121,13 +120,22 @@ impl<'a> ClientMessageBuilder<'a> {
             )))
             .finish()?;
         self.outputs.push(Output::Basic(output));
+        if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
+            return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
+                TryIntoBoundedU16Error::Truncated(self.outputs.len()),
+            )));
+        }
         Ok(self)
     }
 
     /// Set outputs to the builder
     pub fn with_outputs(mut self, outputs: Vec<Output>) -> Result<Self> {
-        // todo validate length
         self.outputs.extend(outputs);
+        if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
+            return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
+                TryIntoBoundedU16Error::Truncated(self.outputs.len()),
+            )));
+        }
         Ok(self)
     }
 
@@ -139,6 +147,11 @@ impl<'a> ClientMessageBuilder<'a> {
             )))
             .finish()?;
         self.outputs.push(Output::Basic(output));
+        if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
+            return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
+                TryIntoBoundedU16Error::Truncated(self.outputs.len()),
+            )));
+        }
         Ok(self)
     }
 
@@ -157,7 +170,9 @@ impl<'a> ClientMessageBuilder<'a> {
     /// Set 1-8 custom parent message ids
     pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
         if !(1..=8).contains(&parent_ids.len()) {
-            return Err(Error::InvalidParentsAmount(parent_ids.len()));
+            return Err(crate::Error::MessageError(bee_message::Error::InvalidParentCount(
+                TryIntoBoundedU8Error::Truncated(parent_ids.len()),
+            )));
         }
         self.parents.replace(parent_ids);
         Ok(self)
@@ -303,21 +318,14 @@ impl<'a> ClientMessageBuilder<'a> {
     // governance_transition makes only a difference for alias outputs
     async fn get_custom_inputs(
         &self,
-        inputs: &[UtxoInput],
-        total_to_spend: u64,
-        native_tokens: HashMap<TokenId, U256>,
         governance_transition: Option<HashSet<AliasId>>,
-    ) -> Result<(Vec<Input>, Vec<Output>, Vec<InputSigningData>)> {
-        get_custom_inputs(self, inputs, total_to_spend, native_tokens, governance_transition).await
+    ) -> Result<SelectedTransactionData> {
+        get_custom_inputs(self, governance_transition).await
     }
 
     // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
-    async fn get_inputs(
-        &self,
-        total_to_spend: u64,
-        native_tokens: HashMap<TokenId, U256>,
-    ) -> Result<(Vec<Input>, Vec<Output>, Vec<InputSigningData>)> {
-        get_inputs(self, total_to_spend, native_tokens).await
+    async fn get_inputs(&self) -> Result<SelectedTransactionData> {
+        get_inputs(self).await
     }
 
     /// Prepare a transaction
@@ -376,18 +384,20 @@ impl<'a> ClientMessageBuilder<'a> {
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
                 let protocol_version = self.client.get_protocol_version().await?;
+                let network_id = self.client.get_network_id().await?;
                 let mut client_miner = ClientMinerBuilder::new().with_local_pow(self.client.get_local_pow().await);
                 if let Some(worker_count) = self.client.pow_worker_count {
                     client_miner = client_miner.with_worker_count(worker_count);
                 }
-                do_pow(client_miner.finish(), min_pow_score, protocol_version, payload, parents)?
+                do_pow(client_miner.finish(), min_pow_score, network_id, payload, parents)?
+                    // do_pow(client_miner.finish(), min_pow_score, protocol_version, payload, parents)?
                     .1
                     .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }
             None => finish_pow(self.client, payload).await?,
         };
 
-        let msg_id = self.client.post_message(&final_message).await?;
+        let msg_id = self.client.post_message_json(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
         match self.client.get_local_pow().await {
             true => Ok(final_message),

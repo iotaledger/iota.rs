@@ -88,7 +88,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(nft_output_id.into())
+        .with_input(nft_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -125,8 +125,8 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(nft_output_id.into())
-        .with_input(output_ids[0].into())
+        .with_input(nft_output_id.into())?
+        .with_input(output_ids[0].into())?
         .with_outputs(vec![Output::Nft(
             NftOutputBuilder::new(1_000_000 + output.amount(), nft_id, vec![1, 2, 3])?
                 .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
@@ -158,7 +158,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(nft_output_id.into())
+        .with_input(nft_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;

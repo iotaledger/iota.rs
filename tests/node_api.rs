@@ -296,7 +296,7 @@ async fn test_get_milestone() {
     // after some time
     let nodeinfo = client.get_info().await.unwrap();
     let r = client
-        .get_milestone(nodeinfo.nodeinfo.latest_milestone_index)
+        .get_milestone(nodeinfo.nodeinfo.status.latest_milestone_index)
         .await
         .unwrap();
 

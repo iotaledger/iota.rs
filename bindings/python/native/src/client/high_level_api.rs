@@ -60,7 +60,7 @@ impl Client {
         }
         if let Some(inputs) = inputs {
             for input in inputs {
-                send_builder = send_builder.with_input(input.try_into()?);
+                send_builder = send_builder.with_input(input.try_into()?)?;
             }
         }
 
@@ -114,7 +114,7 @@ impl Client {
             prepare_transaction_builder = prepare_transaction_builder.with_input(RustUtxoInput::new(
                 RustTransactionId::new(input.transaction_id.try_into().unwrap()),
                 input.index,
-            )?);
+            )?)?;
         }
         for output in outputs {
             prepare_transaction_builder =

@@ -107,7 +107,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(alias_output_id_1.into())
+        .with_input(alias_output_id_1.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -154,7 +154,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(alias_output_id.into())
+        .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -213,8 +213,8 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(alias_output_id.into())
-        .with_input(foundry_output_id.into())
+        .with_input(alias_output_id.into())?
+        .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -277,9 +277,9 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(output_ids[0].into())
-        .with_input(alias_output_id.into())
-        .with_input(foundry_output_id.into())
+        .with_input(output_ids[0].into())?
+        .with_input(alias_output_id.into())?
+        .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -304,7 +304,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(basic_output_id.into())
+        .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;

@@ -1,6 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+//! Types used during transaction creation
 use crate::api::message_builder::input_selection::InputSigningData;
 
 use bee_message::{
@@ -14,6 +15,7 @@ use primitive_types::U256;
 use std::collections::HashMap;
 
 /// Transaction data with selected inputs, input data for signing and outputs, with remainder output if required
+#[derive(Debug, Clone)]
 pub struct SelectedTransactionData {
     /// Selected inputs with data for signing
     pub inputs: Vec<InputSigningData>,
@@ -24,6 +26,7 @@ pub struct SelectedTransactionData {
 }
 
 /// Required things from the to be created outputs
+#[derive(Debug, Clone)]
 pub(crate) struct AccumulatedOutputData {
     pub(crate) amount: u64,
     pub(crate) native_tokens: HashMap<TokenId, U256>,

@@ -71,7 +71,7 @@ pub fn generate_mnemonic() -> Result<String> {
     let mut entropy = [0u8; 32];
     utils::rand::fill(&mut entropy)?;
     let mnemonic = wordlist::encode(&entropy, &crypto::keys::bip39::wordlist::ENGLISH)
-        .map_err(|e| crate::Error::MnemonicError(format!("{:?}", e)))?;
+        .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
     entropy.zeroize();
     Ok(mnemonic)
 }
