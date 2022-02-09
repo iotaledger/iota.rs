@@ -5,13 +5,13 @@
 
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
-    signing::{ verify_unlock_blocks, Network, SignMessageMetadata},
+    signing::{verify_unlock_blocks, Network, SignMessageMetadata},
     Error, Result,
 };
 
 use crate::bee_message::output::AliasId;
 use bee_message::{
-    address::{Address},
+    address::Address,
     input::INPUT_COUNT_MAX,
     output::Output,
     payload::{

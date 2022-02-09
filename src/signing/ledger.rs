@@ -155,8 +155,9 @@ impl super::Signer for LedgerSigner {
         // lock the mutex
         let _lock = self.mutex.lock().await;
 
-        // todo don't use default 0
-        let bip32_account = 0 | HARDENED;
+        // todo don't use default 0, use account index from InputSigningData
+        let account_index = 0;
+        let bip32_account = account_index | HARDENED;
         let ledger = iota_ledger::get_ledger(bip32_account, self.is_simulator)?;
         // let compiled_for = match ledger.is_debug_app() {
         // true => Network::Testnet,
@@ -182,7 +183,7 @@ impl super::Signer for LedgerSigner {
             let address_index = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[3].bs());
             let address_internal = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[4].bs());
             input_signing_data_entrys.push(AddressIndexRecorder {
-                input: input,
+                input,
                 bip32: LedgerBIP32Index {
                     bip32_index: address_index | HARDENED,
                     bip32_change: address_internal | HARDENED,

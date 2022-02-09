@@ -105,9 +105,8 @@ pub async fn try_select_inputs(
         output_1.amount().cmp(&output_2.amount())
     });
 
-
     // check for amount and native tokens
-    if total_already_spent >= required.amount{
+    if total_already_spent >= required.amount {
         // check for native tokens/ break
     }
     for (_offset, input_signing_data) in inputs

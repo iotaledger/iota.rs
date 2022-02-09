@@ -26,8 +26,8 @@ use std::collections::{hash_map::Entry, HashMap};
 // from the inputs
 pub(crate) async fn get_remainder(
     client: &Client,
-    inputs: &Vec<Output>,
-    outputs: &Vec<Output>,
+    inputs: &[Output],
+    outputs: &[Output],
     remainder_address: Option<Address>,
 ) -> Result<Option<Output>> {
     let mut remainder_output = None;
@@ -85,10 +85,7 @@ pub(crate) async fn get_remainder(
 }
 
 // gets required amounts and for utxo chains also the required inputs
-pub(crate) async fn get_accumulated_output_data(
-    client: &Client,
-    outputs: &Vec<Output>,
-) -> Result<AccumulatedOutputData> {
+pub(crate) async fn get_accumulated_output_data(client: &Client, outputs: &[Output]) -> Result<AccumulatedOutputData> {
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
     let mut required_native_tokens: HashMap<TokenId, U256> = HashMap::new();
@@ -113,7 +110,7 @@ pub(crate) async fn get_accumulated_output_data(
             Output::Alias(alias_output) => {
                 // if the state_index is [0u8; 20] then there can't be a previous output and it can also not be a
                 // governance transition
-                if alias_output.alias_id().as_ref() != &[0u8; 20] {
+                if alias_output.alias_id().as_ref() != [0u8; 20] {
                     // Check if the transaction is a governance_transition, by checking if the new index is the same as
                     // the previous index
                     let output_ids = client.alias_output_ids(*alias_output.alias_id()).await?;
@@ -130,15 +127,13 @@ pub(crate) async fn get_accumulated_output_data(
                                             let address = Address::try_from(&governor_unlock_condition_dto.address)?;
                                             utxo_chains.push((address, output_response.clone()));
                                         }
-                                    } else {
-                                        if let UnlockConditionDto::StateControllerAddress(
-                                            state_controller_unlock_condition_dto,
-                                        ) = unlock_condition
-                                        {
-                                            let address =
-                                                Address::try_from(&state_controller_unlock_condition_dto.address)?;
-                                            utxo_chains.push((address, output_response.clone()));
-                                        }
+                                    } else if let UnlockConditionDto::StateControllerAddress(
+                                        state_controller_unlock_condition_dto,
+                                    ) = unlock_condition
+                                    {
+                                        let address =
+                                            Address::try_from(&state_controller_unlock_condition_dto.address)?;
+                                        utxo_chains.push((address, output_response.clone()));
                                     }
                                 }
                             }
@@ -148,7 +143,7 @@ pub(crate) async fn get_accumulated_output_data(
             }
             Output::Nft(nft_output) => {
                 // If the id is [0u8; 20] then this output creates it and we can't have a previous output
-                if nft_output.nft_id().as_ref() != &[0u8; 20] {
+                if nft_output.nft_id().as_ref() != [0u8; 20] {
                     let output_ids = client.nft_output_ids(*nft_output.nft_id()).await?;
                     let outputs = client.get_outputs(output_ids).await?;
                     for output_response in outputs {

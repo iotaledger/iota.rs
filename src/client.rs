@@ -198,8 +198,8 @@ impl Client {
         for node in nodes {
             // Put the healthy node url into the network_nodes
             if let Ok(info) = Client::get_node_info(&node.url.to_string(), None, None).await {
-                if info.is_healthy {
-                    match network_nodes.get_mut(&info.network_id) {
+                if info.status.is_healthy {
+                    match network_nodes.get_mut(&info.protocol.network_name) {
                         Some(network_id_entry) => {
                             network_id_entry.push((info, node.clone()));
                         }
@@ -208,12 +208,13 @@ impl Client {
                             .map_or(NetworkInfo::default().network, |info| info.network.clone())
                         {
                             Some(id) => {
-                                if info.network_id.contains(id) {
-                                    network_nodes.insert(info.network_id.clone(), vec![(info, node.clone())]);
+                                if info.protocol.network_name.contains(id) {
+                                    network_nodes
+                                        .insert(info.protocol.network_name.clone(), vec![(info, node.clone())]);
                                 }
                             }
                             None => {
-                                network_nodes.insert(info.network_id.clone(), vec![(info, node.clone())]);
+                                network_nodes.insert(info.protocol.network_name.clone(), vec![(info, node.clone())]);
                             }
                         },
                     }
@@ -231,10 +232,10 @@ impl Client {
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             for (info, node_url) in nodes.iter() {
                 if let Ok(mut client_network_info) = network_info.write() {
-                    client_network_info.network_id = hash_network(&info.network_id).ok();
+                    client_network_info.network_id = hash_network(&info.protocol.network_name).ok();
                     // todo update protocol version
-                    client_network_info.min_pow_score = info.min_pow_score;
-                    client_network_info.bech32_hrp = info.bech32_hrp.clone();
+                    client_network_info.min_pow_score = info.protocol.min_pow_score;
+                    client_network_info.bech32_hrp = info.protocol.bech32_hrp.clone();
                     if !client_network_info.local_pow {
                         if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
@@ -275,12 +276,12 @@ impl Client {
 
         if not_synced {
             let info = self.get_info().await?.nodeinfo;
-            let network_id = hash_network(&info.network_id).ok();
+            let network_id = hash_network(&info.protocol.network_name).ok();
             {
                 let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
                 client_network_info.network_id = network_id;
-                client_network_info.min_pow_score = info.min_pow_score;
-                client_network_info.bech32_hrp = info.bech32_hrp;
+                client_network_info.min_pow_score = info.protocol.min_pow_score;
+                client_network_info.bech32_hrp = info.protocol.bech32_hrp;
             }
         }
         let res = self
