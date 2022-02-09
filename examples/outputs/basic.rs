@@ -53,42 +53,42 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with metadata feature block
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
-            .finish()?,
-    ));
-    // with dust deposit return
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1176100)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::DustDepositReturn(
-                DustDepositReturnUnlockCondition::new(address, 1176000)?,
-            ))
-            .finish()?,
-    ));
-    // with dust expiration
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
-                address,
-                MilestoneIndex::new(400),
-                0,
-            )?))
-            .finish()?,
-    ));
-    // with timelock
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
-                MilestoneIndex::new(400),
-                0,
-            )?))
-            .finish()?,
-    ));
+    // outputs.push(Output::Basic(
+    //     BasicOutputBuilder::new(1_000_000)?
+    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+    //         .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
+    //         .finish()?,
+    // ));
+    // // with dust deposit return
+    // outputs.push(Output::Basic(
+    //     BasicOutputBuilder::new(1176100)?
+    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+    //         .add_unlock_condition(UnlockCondition::DustDepositReturn(
+    //             DustDepositReturnUnlockCondition::new(address, 1176000)?,
+    //         ))
+    //         .finish()?,
+    // ));
+    // // with dust expiration
+    // outputs.push(Output::Basic(
+    //     BasicOutputBuilder::new(1_000_000)?
+    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+    //         .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
+    //             address,
+    //             MilestoneIndex::new(400),
+    //             0,
+    //         )?))
+    //         .finish()?,
+    // ));
+    // // with timelock
+    // outputs.push(Output::Basic(
+    //     BasicOutputBuilder::new(1_000_000)?
+    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+    //         .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
+    //             MilestoneIndex::new(400),
+    //             0,
+    //         )?))
+    //         .finish()?,
+    // ));
 
     let message = iota
         .message()

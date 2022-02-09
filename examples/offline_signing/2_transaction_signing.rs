@@ -6,14 +6,10 @@ use iota_client::{
     api::PreparedTransactionData,
     bee_message::{
         address::Address,
-        output::Output,
         payload::{transaction::TransactionPayloadBuilder, Payload},
         unlock_block::UnlockBlocks,
     },
-    signing::{
-        mnemonic::{MnemonicSigner, IOTA_COIN_TYPE},
-        verify_unlock_blocks, InputSigningData, Network, SignMessageMetadata,
-    },
+    signing::{mnemonic::MnemonicSigner, verify_unlock_blocks, Network, SignMessageMetadata},
     Result,
 };
 extern crate dotenv;
@@ -36,20 +32,11 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let prepared_transaction_data = read_prepared_transactiondata_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
+    let mut prepared_transaction_data = read_prepared_transactiondata_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
-    let mut tx_inputs = Vec::new();
     let mut input_addresses = Vec::new();
-    for input_signing_data in prepared_transaction_data.input_signing_data_entrys {
+    for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
         let address = Address::try_from_bech32(&input_signing_data.bech32_address)?;
-        tx_inputs.push(InputSigningData {
-            input: input_signing_data.input,
-            address_index: input_signing_data.address_index,
-            address_internal: input_signing_data.internal,
-            output_kind: Output::try_from(&input_signing_data.output.output)?.kind(),
-            address,
-            alias_or_nft_address: None,
-        });
         input_addresses.push(address);
     }
 
@@ -57,10 +44,8 @@ async fn main() -> Result<()> {
     let mut signer = signer.lock().await;
     let unlock_blocks = signer
         .sign_transaction_essence(
-            IOTA_COIN_TYPE,
-            0,
             &prepared_transaction_data.essence,
-            &mut tx_inputs,
+            &mut prepared_transaction_data.input_signing_data_entrys,
             // todo set correct data
             SignMessageMetadata {
                 remainder_value: 0,

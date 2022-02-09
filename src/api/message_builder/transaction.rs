@@ -110,11 +110,10 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 /// Sign the transaction
 pub async fn sign_transaction(
     message_builder: &ClientMessageBuilder<'_>,
-    prepared_transaction_data: PreparedTransactionData,
+    mut prepared_transaction_data: PreparedTransactionData,
 ) -> Result<Payload> {
-    let mut tx_inputs = Vec::new();
     let mut input_addresses = Vec::new();
-    for input_signing_data in prepared_transaction_data.input_signing_data_entrys {
+    for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
         // let output = Output::try_from(&input_signing_data.output_response.output)?;
         // let alias_or_nft_address: Option<Address> = match &output {
         //     Output::Alias(a) => Some(Address::Alias(AliasAddress::new(*a.alias_id()))),
@@ -142,7 +141,7 @@ pub async fn sign_transaction(
             // IOTA_COIN_TYPE,
             // message_builder.account_index.unwrap_or(0),
             &prepared_transaction_data.essence,
-            &mut tx_inputs,
+            &mut prepared_transaction_data.input_signing_data_entrys,
             // todo set correct data
             SignMessageMetadata {
                 remainder_value: 0,

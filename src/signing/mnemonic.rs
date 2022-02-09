@@ -179,7 +179,7 @@ impl crate::signing::Signer for MnemonicSigner {
                     Ed25519Signature::new(public_key, *signature),
                 ))));
                 unlock_block_indexes.insert(input_address, current_block_index);
-                // println!("unlock_block_indexes inserted: {:?}", input.address);
+                // println!("unlock_block_indexes inserted: {:?}", input_address);
             }
         }
         Ok(unlock_blocks)

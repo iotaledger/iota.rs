@@ -4,7 +4,7 @@
 use crate::{
     api::types::PreparedTransactionData,
     bee_message::output::BasicOutputBuilder,
-    signing::{types::InputSigningData, SignerHandle},
+    signing::{mnemonic::IOTA_COIN_TYPE, types::InputSigningData, SignerHandle},
     Client, Error, Result,
 };
 
@@ -203,7 +203,7 @@ impl<'a> ClientMessageBuilder<'a> {
         // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
         let chain = Chain::from_u32_hardened(vec![
             44,
-            4218,
+            IOTA_COIN_TYPE,
             account_index as u32,
             internal as u32,
             address_index as u32,
