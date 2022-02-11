@@ -302,7 +302,11 @@ foreign_class!(
         /// Returns a valid Address parsed from a String.
         fn Client::parse_bech32_address(address: &str) -> Result<Address>;
 
-        /// Temporarily method to check if your seed is made using hte incorrect generation of the old JAVA seed input
+        /// Temporarily method to check if your seed is made using the incorrect generation of the old JAVA seed input
+        /// @param seed The seed you used previously
+        /// @param account_index The account index used, is 0 when you didnt use it
+        /// @param address_index The address index you want to migrate
+        /// @param pub_addr If it's a public or internal address
         fn Client::should_migrate(&self, seed: &str, account_index: usize, address_index: usize, pub_addr: bool) -> Result<bool>;
 
         /// Temporarily method in order to migrate wrongly generated seeds from JAVA to Rust
@@ -310,8 +314,8 @@ foreign_class!(
         /// And returns the message or an error
         /// @param seed The seed you used previously
         /// @param account_index The account index used, is 0 when you didnt use it
-        /// @param address_index The index of the seed you want to migrate
-        /// @param pub_addr If the output is public
+        /// @param address_index The address index you want to migrate
+        /// @param pub_addr If it's a public or internal address
         /// @param to_address The address we send the balance to
         fn Client::migrate(&self, seed: &str, account_index: usize, address_index: usize, pub_addr: bool, to_address: &str) -> Result<Message>;
     }
