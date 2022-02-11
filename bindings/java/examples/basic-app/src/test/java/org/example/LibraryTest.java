@@ -43,13 +43,13 @@ public class LibraryTest {
             // Try to migrate the first 50 public addresses
             long maxAddressIndex= 50;
             long accountIndex = 0;
-            boolean public_address = true;
+            boolean internal_address = true;
 
             for (long addressIndex = 0; addressIndex < maxAddressIndex; addressIndex++) {
-                if (node.shouldMigrate(seed, accountIndex, addressIndex, public_address)) {
+                if (node.shouldMigrate(seed, accountIndex, addressIndex, internal_address)) {
                     System.out.println("Migrating balance...");
                     String address_to_migrate_to = addresses[0];
-                    Message message = node.migrate(seed, accountIndex, addressIndex, public_address, address_to_migrate_to);
+                    Message message = node.migrate(seed, accountIndex, addressIndex, internal_address, address_to_migrate_to);
                     System.out.println("Message: " + message);
                 } else {
                     System.out.println("Did not need to migrate address index: "+ addressIndex);

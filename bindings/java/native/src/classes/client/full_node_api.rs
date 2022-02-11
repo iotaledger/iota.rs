@@ -343,7 +343,7 @@ impl Client {
         seed: &str,
         account_index: usize,
         address_index: usize,
-        public: bool,
+        internal_address: bool,
     ) -> Result<BalanceAddressResponse> {
         let addresses: Vec<AddressStringPublicWrapper> = GetAddressesBuilder::from_old(seed)
             .with_account_index(account_index)
@@ -352,12 +352,12 @@ impl Client {
             .get_all()
             .unwrap();
 
-        let address = addresses.into_iter().find(|w| w.public() == public).unwrap();
+        let address = addresses.into_iter().find(|w| w.public() == internal_address).unwrap();
         Ok(self.get_address_balance(&address.address()).unwrap())
     }
 
-    pub fn should_migrate(&self, seed: &str, account_index: usize, address_index: usize, public: bool) -> Result<bool> {
-        match self.get_balance_old(seed, account_index, address_index, public) {
+    pub fn should_migrate(&self, seed: &str, account_index: usize, address_index: usize, internal_address: bool) -> Result<bool> {
+        match self.get_balance_old(seed, account_index, address_index, internal_address) {
             Ok(balance) => match balance.balance() {
                 0 => Ok(false),
                 _ => Ok(true),
@@ -371,14 +371,14 @@ impl Client {
         seed: &str,
         account_index: usize,
         address_index: usize,
-        public: bool,
+        internal_address: bool,
         to_address: &str,
     ) -> Result<Message> {
         if Client::is_address_valid(to_address) == false {
             return Err(anyhow!("Invalid to address provided"));
         }
         let balance_wrap = self
-            .get_balance_old(seed, account_index, address_index, public)
+            .get_balance_old(seed, account_index, address_index, internal_address)
             .unwrap();
         let inputs = self
             .find_inputs(vec![balance_wrap.address().to_string()], balance_wrap.balance())
