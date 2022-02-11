@@ -338,7 +338,13 @@ impl Client {
         iota_client::Client::is_address_valid(address)
     }
 
-    fn get_balance_old(&self, seed: &str, account_index: usize, address_index: usize, public: bool) -> Result<BalanceAddressResponse> {
+    fn get_balance_old(
+        &self,
+        seed: &str,
+        account_index: usize,
+        address_index: usize,
+        public: bool,
+    ) -> Result<BalanceAddressResponse> {
         let addresses: Vec<AddressStringPublicWrapper> = GetAddressesBuilder::from_old(seed)
             .with_account_index(account_index)
             .with_range(address_index, address_index + 1)
@@ -351,8 +357,7 @@ impl Client {
     }
 
     pub fn should_migrate(&self, seed: &str, account_index: usize, address_index: usize, public: bool) -> Result<bool> {
-        match self.get_balance_old(seed, account_index, address_index, public)
-        {
+        match self.get_balance_old(seed, account_index, address_index, public) {
             Ok(balance) => match balance.balance() {
                 0 => Ok(false),
                 _ => Ok(true),
@@ -372,8 +377,12 @@ impl Client {
         if Client::is_address_valid(to_address) == false {
             return Err(anyhow!("Invalid to address provided"));
         }
-        let balance_wrap = self.get_balance_old(seed, account_index, address_index, public).unwrap();
-        let inputs = self.find_inputs(vec![balance_wrap.address().to_string()], balance_wrap.balance()).unwrap();
+        let balance_wrap = self
+            .get_balance_old(seed, account_index, address_index, public)
+            .unwrap();
+        let inputs = self
+            .find_inputs(vec![balance_wrap.address().to_string()], balance_wrap.balance())
+            .unwrap();
 
         self.message()
             .with_seed_old(seed)
