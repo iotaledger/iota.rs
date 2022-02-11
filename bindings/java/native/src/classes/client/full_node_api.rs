@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 
 use std::{
     convert::{From, Into},
@@ -20,6 +20,7 @@ use crate::{
     client_builder::ClientBuilder,
     message::{ClientMessageBuilder, GetMessageBuilder, Message, MessageWrap},
     mqtt::MqttManager,
+    Result,
 };
 
 impl From<ClientRust> for Client {
@@ -215,7 +216,7 @@ impl Client {
     /// Return the balance for a provided seed and its wallet chain account index.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
     /// balance address.
-    pub fn get_balance(&self, seed: &str) -> GetBalanceBuilderApi {
+    pub fn get_balance(&self, seed: &str) -> Result<GetBalanceBuilderApi> {
         GetBalanceBuilderApi::new(self, seed)
     }
 
@@ -229,8 +230,11 @@ impl Client {
         GetMessageBuilder::new(self)
     }
 
-    pub fn get_addresses(&self, seed: &str) -> GetAddressesBuilder {
-        GetAddressesBuilder::new(seed).with_client(self)
+    pub fn get_addresses(&self, seed: &str) -> Result<GetAddressesBuilder> {
+        match GetAddressesBuilder::from(seed) {
+            Ok(b) => Ok(b.with_client(self)),
+            Err(e) => Err(e),
+        }
     }
 
     pub fn retry_until_included(
@@ -332,5 +336,65 @@ impl Client {
     /// Checks if a str is a valid bech32 encoded address.
     pub fn is_address_valid(address: &str) -> bool {
         iota_client::Client::is_address_valid(address)
+    }
+
+    fn get_balance_old(
+        &self,
+        seed: &str,
+        account_index: usize,
+        address_index: usize,
+        internal_address: bool,
+    ) -> Result<BalanceAddressResponse> {
+        let addresses: Vec<AddressStringPublicWrapper> = GetAddressesBuilder::from_old(seed)
+            .with_account_index(account_index)
+            .with_range(address_index, address_index + 1)
+            .with_client(self)
+            .get_all()
+            .unwrap();
+
+        let address = addresses.into_iter().find(|w| w.public() == internal_address).unwrap();
+        Ok(self.get_address_balance(&address.address()).unwrap())
+    }
+
+    pub fn should_migrate(
+        &self,
+        seed: &str,
+        account_index: usize,
+        address_index: usize,
+        internal_address: bool,
+    ) -> Result<bool> {
+        match self.get_balance_old(seed, account_index, address_index, internal_address) {
+            Ok(balance) => match balance.balance() {
+                0 => Ok(false),
+                _ => Ok(true),
+            },
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn migrate(
+        &self,
+        seed: &str,
+        account_index: usize,
+        address_index: usize,
+        internal_address: bool,
+        to_address: &str,
+    ) -> Result<Message> {
+        if Client::is_address_valid(to_address) == false {
+            return Err(anyhow!("Invalid to address provided"));
+        }
+        let balance_wrap = self
+            .get_balance_old(seed, account_index, address_index, internal_address)
+            .unwrap();
+        let inputs = self
+            .find_inputs(vec![balance_wrap.address().to_string()], balance_wrap.balance())
+            .unwrap();
+
+        self.message()
+            .with_seed_old(seed)
+            .with_account_index(account_index)
+            .with_input(inputs.into_iter().next().unwrap())
+            .with_output(to_address, balance_wrap.balance())?
+            .finish()
     }
 }
