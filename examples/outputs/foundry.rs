@@ -59,8 +59,8 @@ async fn main() -> Result<()> {
             .with_state_index(0)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -94,8 +94,8 @@ async fn main() -> Result<()> {
             .with_state_index(1)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -127,8 +127,8 @@ async fn main() -> Result<()> {
             .with_state_index(2)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -175,8 +175,8 @@ async fn main() -> Result<()> {
             .with_state_index(3)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -235,8 +235,8 @@ async fn main() -> Result<()> {
             .with_state_index(4)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))

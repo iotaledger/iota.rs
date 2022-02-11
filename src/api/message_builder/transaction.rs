@@ -21,6 +21,8 @@ use bee_message::{
     unlock_block::UnlockBlocks,
 };
 use bee_rest_api::types::dtos::OutputDto;
+use crypto::hashes::{blake2b::Blake2b256, Digest};
+use packable::PackableExt;
 
 use std::{collections::HashSet, str::FromStr};
 
@@ -56,8 +58,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     };
 
     // Build transaction payload
-    let mut essence = RegularTransactionEssence::builder();
-    // let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
+    let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
     let inputs = selected_transaction_data
         .inputs
         .iter()
@@ -69,6 +70,17 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
         })
         .collect::<Result<Vec<Input>>>()?;
     essence = essence.with_inputs(inputs);
+
+    let input_outputs = selected_transaction_data
+        .inputs
+        .iter()
+        .map(|i| Ok(Output::try_from(&i.output_response.output)?.pack_to_vec()))
+        .collect::<Result<Vec<Vec<u8>>>>()?;
+    let input_outputs = input_outputs.into_iter().flatten().collect::<Vec<u8>>();
+    let inputs_commitment = Blake2b256::digest(&input_outputs)
+        .try_into()
+        .map_err(|_e| crate::Error::Blake2b256Error("Hashing outputs for inputs_commitment failed."))?;
+    essence = essence.with_inputs_commitment(inputs_commitment);
 
     essence = essence.with_outputs(selected_transaction_data.outputs);
 

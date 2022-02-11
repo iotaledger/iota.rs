@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
         &address.to_bech32("atoi"),
     )
     .await?;
-    tokio::time::sleep(std::time::Duration::from_secs(20)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     //////////////////////////////////
     // create new alias output
@@ -54,8 +54,8 @@ async fn main() -> Result<()> {
             .with_state_index(0)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))

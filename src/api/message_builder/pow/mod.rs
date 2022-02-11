@@ -26,7 +26,6 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     let min_pow_score = client.get_min_pow_score().await?;
     let tips_interval = client.get_tips_interval().await;
     let protocol_version = client.get_protocol_version().await?;
-    let network_id = client.get_network_id().await?;
     loop {
         let cancel = MinerCancel::new();
         let cancel_2 = cancel.clone();
@@ -45,8 +44,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
             do_pow(
                 client_miner.finish(),
                 min_pow_score,
-                network_id,
-                // protocol_version,
+                protocol_version,
                 payload_,
                 parent_messages,
             )
@@ -82,13 +80,11 @@ fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Message>
 pub fn do_pow(
     client_miner: ClientMiner,
     min_pow_score: f64,
-    network_id: u64,
-    // protocol_version: u8,
+    protocol_version: u8,
     payload: Option<Payload>,
     parent_messages: Vec<MessageId>,
 ) -> Result<(u64, Option<Message>)> {
-    let mut message = MessageBuilder::<ClientMiner>::new().with_network_id(network_id);
-    // .with_protocol_version(protocol_version);
+    let mut message = MessageBuilder::<ClientMiner>::new().with_protocol_version(protocol_version);
     if let Some(p) = payload {
         message = message.with_payload(p);
     }

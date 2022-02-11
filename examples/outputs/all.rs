@@ -61,8 +61,8 @@ async fn main() -> Result<()> {
             .with_state_index(0)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
     ));
     outputs.push(Output::Nft(
         // address of the owner of the NFT
-        NftOutputBuilder::new(1_000_000, NftId::from([0; 20]), vec![1, 2, 3])?
+        NftOutputBuilder::new(1_000_000, NftId::from([0; 20]))?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
             // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
@@ -105,8 +105,8 @@ async fn main() -> Result<()> {
             .with_state_index(1)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -118,7 +118,7 @@ async fn main() -> Result<()> {
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let nft_id = NftId::from(&nft_output_id);
     outputs.push(Output::Nft(
-        NftOutputBuilder::new(1_000_000, nft_id, vec![1, 2, 3])?
+        NftOutputBuilder::new(1_000_000, nft_id)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
@@ -148,8 +148,8 @@ async fn main() -> Result<()> {
             .with_state_index(2)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -172,7 +172,7 @@ async fn main() -> Result<()> {
         .finish()?,
     ));
     outputs.push(Output::Nft(
-        NftOutputBuilder::new(1_000_000, nft_id, vec![1, 2, 3])?
+        NftOutputBuilder::new(1_000_000, nft_id)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
@@ -203,8 +203,8 @@ async fn main() -> Result<()> {
             .with_state_index(3)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -232,7 +232,7 @@ async fn main() -> Result<()> {
         .finish()?,
     ));
     outputs.push(Output::Nft(
-        NftOutputBuilder::new(1_000_000, nft_id, vec![1, 2, 3])?
+        NftOutputBuilder::new(1_000_000, nft_id)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
@@ -263,8 +263,8 @@ async fn main() -> Result<()> {
             .with_state_index(4)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -295,7 +295,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     outputs.push(Output::Nft(
-        NftOutputBuilder::new(1_000_000, nft_id, vec![1, 2, 3])?
+        NftOutputBuilder::new(1_000_000, nft_id)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
