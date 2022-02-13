@@ -25,6 +25,9 @@ pub enum Error {
     /// The wallet account doesn't have enough balance
     #[error("The wallet account doesn't have enough balance. It only has {0}, required is {1}")]
     NotEnoughBalance(u64, u64),
+    /// The wallet account doesn't have any inputs found
+    #[error("No inputs found")]
+    NoInputs,
     /// The wallet account doesn't have enough native tokens
     #[error("The wallet account doesn't have enough native tokens, missing: {0:?}")]
     NotEnoughNativeTokens(HashMap<TokenId, U256>),

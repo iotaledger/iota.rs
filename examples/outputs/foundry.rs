@@ -9,13 +9,14 @@ use iota_client::{
         output::{
             feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
             unlock_condition::{
-                AddressUnlockCondition, GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition,
-                UnlockCondition,
+                AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
+                StateControllerAddressUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken, Output,
             OutputId, TokenId, TokenScheme,
         },
         payload::{transaction::TransactionEssence, Payload},
+        Message,
     },
     node_api::indexer_api::query_parameters::QueryParameter,
     request_funds_from_faucet,
@@ -25,6 +26,7 @@ use iota_client::{
 use primitive_types::U256;
 extern crate dotenv;
 use dotenv::dotenv;
+use iota_client::packable::PackableExt;
 use std::env;
 
 /// In this example we will create an foundry output
@@ -40,14 +42,17 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
-    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
+    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC3").unwrap())?;
 
     let address = iota.get_addresses(&signer).with_range(0..1).get_all_raw().await?.public[0];
-    request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-        &address.to_bech32("atoi"),
-    )
-    .await?;
+    println!(
+        "{}",
+        request_funds_from_faucet(
+            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+            &address.to_bech32("atoi"),
+        )
+        .await?
+    );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
     //////////////////////////////////
@@ -107,7 +112,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(alias_output_id_1.into())?
+        // .with_input(alias_output_id_1.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -137,7 +142,6 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-    let alias_address = Address::Alias(AliasAddress::from(alias_id));
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
             1_000_000,
@@ -147,14 +151,16 @@ async fn main() -> Result<()> {
             U256::from(100),
             TokenScheme::Simple,
         )?
-        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
         .finish()?,
     ));
 
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(alias_output_id.into())?
+        // .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -207,14 +213,16 @@ async fn main() -> Result<()> {
             TokenScheme::Simple,
         )?
         .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
         .finish()?,
     ));
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(alias_output_id.into())?
-        .with_input(foundry_output_id.into())?
+        // .with_input(alias_output_id.into())?
+        // .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -256,7 +264,9 @@ async fn main() -> Result<()> {
             U256::from(100),
             TokenScheme::Simple,
         )?
-        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
         .finish()?,
     ));
 
@@ -277,9 +287,9 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(output_ids[0].into())?
-        .with_input(alias_output_id.into())?
-        .with_input(foundry_output_id.into())?
+        // .with_input(output_ids[0].into())?
+        // .with_input(alias_output_id.into())?
+        // .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -304,7 +314,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(basic_output_id.into())?
+        // .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;

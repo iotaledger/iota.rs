@@ -29,16 +29,21 @@ pub(crate) async fn get_remainder(
     inputs: &[Output],
     outputs: &[Output],
     remainder_address: Option<Address>,
+    // todo: check if this can be removed
+    get_utxo_chain_inputs: bool,
 ) -> Result<Option<Output>> {
+    // println!("get_remainder: get_utxo_chain_inputs: {}", get_utxo_chain_inputs);
     let mut remainder_output = None;
     let input_data = get_accumulated_output_data(client, inputs, false).await?;
-    let output_data = get_accumulated_output_data(client, outputs, true).await?;
+    let output_data = get_accumulated_output_data(client, outputs, get_utxo_chain_inputs).await?;
     // check amount first
     if input_data.amount < output_data.amount {
         return Err(Error::NotEnoughBalance(input_data.amount, output_data.amount));
     }
     let remainder_amount = input_data.amount - output_data.amount;
 
+    // println!("get_remainder_native_tokens inputs: {:?}", input_native_tokens);
+    // println!("get_remainder_native_tokens outputs: {:?}", output_data.native_tokens);
     let native_token_remainder = get_remainder_native_tokens(&input_data.native_tokens, &output_data.native_tokens);
     // Output possible remaining tokens back to the original address
     if remainder_amount > 0 {
@@ -90,6 +95,10 @@ pub(crate) async fn get_accumulated_output_data(
     outputs: &[Output],
     get_utxo_chain_inputs: bool,
 ) -> Result<AccumulatedOutputData> {
+    // println!(
+    //     "get_accumulated_output_data get_accumulated_output_data: {}",
+    //     get_utxo_chain_inputs
+    // );
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
     let mut required_native_tokens: HashMap<TokenId, U256> = HashMap::new();
@@ -167,14 +176,20 @@ pub(crate) async fn get_accumulated_output_data(
                     }
                 }
                 Output::Foundry(foundry_output) => {
-                    let output_ids = client.foundry_output_ids(foundry_output.id()).await?;
-                    let outputs = client.get_outputs(output_ids).await?;
-                    for output_response in outputs {
-                        if let OutputDto::Foundry(foundry_output) = &output_response.output {
-                            for unlock_condition in &foundry_output.unlock_conditions {
-                                if let UnlockConditionDto::Address(address_unlock_condition_dto) = unlock_condition {
-                                    let address = Address::try_from(&address_unlock_condition_dto.address)?;
-                                    utxo_chains.push((address, output_response.clone()));
+                    // if it's the first foundry output, then we can't have it as input
+                    if let Ok(output_ids) = client.foundry_output_ids(foundry_output.id()).await {
+                        let outputs = client.get_outputs(output_ids).await?;
+                        for output_response in outputs {
+                            if let OutputDto::Foundry(foundry_output) = &output_response.output {
+                                for unlock_condition in &foundry_output.unlock_conditions {
+                                    if let UnlockConditionDto::ImmutableAliasAddress(
+                                        immutable_alias_address_unlock_condition_dto,
+                                    ) = unlock_condition
+                                    {
+                                        let address =
+                                            Address::try_from(&immutable_alias_address_unlock_condition_dto.address)?;
+                                        utxo_chains.push((address, output_response.clone()));
+                                    }
                                 }
                             }
                         }

@@ -15,6 +15,8 @@ use bee_rest_api::types::{
 };
 use packable::PackableExt;
 
+use std::str::FromStr;
+
 // https://github.com/gohornet/hornet/blob/stardust-utxo/plugins/restapi/v2/plugin.go
 
 /// Returns general information about the node.
@@ -191,9 +193,7 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
         }
     };
 
-    let mut message_id_bytes = [0u8; 32];
-    hex::decode_to_slice(resp.message_id, &mut message_id_bytes)?;
-    Ok(MessageId::from(message_id_bytes))
+    Ok(MessageId::from_str(&resp.message_id)?)
 }
 
 /// Returns the MessageId of the submitted message.
@@ -207,6 +207,7 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
         client.get_remote_pow_timeout()
     };
     let message_dto = MessageDto::from(message);
+    // println!("{}", hex::encode(message.pack_to_vec()));
     // println!("{}", serde_json::to_string(&message_dto)?);
     // fallback to local PoW if remote PoW fails
     let resp: SubmitMessageResponse = match client
@@ -271,10 +272,7 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
             }
         }
     };
-
-    let mut message_id_bytes = [0u8; 32];
-    hex::decode_to_slice(resp.message_id, &mut message_id_bytes)?;
-    Ok(MessageId::from(message_id_bytes))
+    Ok(MessageId::from_str(&resp.message_id)?)
 }
 
 /// Returns the message that was included in the ledger for a given TransactionId

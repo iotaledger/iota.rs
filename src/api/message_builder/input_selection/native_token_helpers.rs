@@ -11,14 +11,14 @@ pub(crate) fn missing_native_tokens(
     required: &HashMap<TokenId, U256>,
 ) -> Option<HashMap<TokenId, U256>> {
     let mut missing_native_tokens = HashMap::new();
-    for (tokend_id, native_token_amount) in required {
+    for (tokend_id, required_native_token_amount) in required {
         match inputs.get(tokend_id) {
             None => {
-                missing_native_tokens.insert(*tokend_id, *native_token_amount);
+                missing_native_tokens.insert(*tokend_id, *required_native_token_amount);
             }
             Some(amount) => {
-                if amount < native_token_amount {
-                    missing_native_tokens.insert(*tokend_id, native_token_amount - amount);
+                if amount < required_native_token_amount {
+                    missing_native_tokens.insert(*tokend_id, required_native_token_amount - amount);
                 }
             }
         }

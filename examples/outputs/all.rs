@@ -11,8 +11,8 @@ use iota_client::{
             feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
             unlock_condition::{
                 AddressUnlockCondition, DustDepositReturnUnlockCondition, ExpirationUnlockCondition,
-                GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition, TimelockUnlockCondition,
-                UnlockCondition,
+                GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
+                StateControllerAddressUnlockCondition, TimelockUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
             NativeToken, NftId, NftOutputBuilder, Output, OutputId, TokenId, TokenScheme,
@@ -36,6 +36,7 @@ async fn main() -> Result<()> {
     let iota = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
+        // .with_local_pow(false)
         .finish()
         .await?;
 
@@ -50,7 +51,7 @@ async fn main() -> Result<()> {
         &address.to_bech32("atoi"),
     )
     .await?;
-    tokio::time::sleep(std::time::Duration::from_secs(20)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
 
     //////////////////////////////////
     // create new alias and nft output
@@ -158,7 +159,6 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-    let alias_address = Address::Alias(AliasAddress::from(alias_id));
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
             1_000_000,
@@ -168,7 +168,9 @@ async fn main() -> Result<()> {
             U256::from(100),
             TokenScheme::Simple,
         )?
-        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
         .finish()?,
     ));
     outputs.push(Output::Nft(
@@ -213,7 +215,7 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-    let alias_address = Address::Alias(AliasAddress::from(alias_id));
+
     let foundry_id = FoundryId::build(AliasId::from(&alias_output_id_1), 1, TokenScheme::Simple);
 
     let token_id = TokenId::build(foundry_id, [0u8; 12]);
@@ -228,7 +230,9 @@ async fn main() -> Result<()> {
             TokenScheme::Simple,
         )?
         .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
         .finish()?,
     ));
     outputs.push(Output::Nft(
@@ -273,7 +277,6 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-    let alias_address = Address::Alias(AliasAddress::from(alias_id));
 
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
@@ -284,7 +287,9 @@ async fn main() -> Result<()> {
             U256::from(100),
             TokenScheme::Simple,
         )?
-        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(alias_address)))
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
         .finish()?,
     ));
     // with native token

@@ -73,7 +73,7 @@ impl Default for NetworkInfo {
             network: None,
             network_id: None,
             // todo default None and get from nodeinfo
-            protocol_version: Some(0),
+            protocol_version: Some(2),
             min_pow_score: DEFAULT_MIN_POW,
             #[cfg(not(feature = "wasm"))]
             local_pow: true,

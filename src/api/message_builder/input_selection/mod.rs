@@ -7,7 +7,7 @@ use crate::{
     api::{address::search_address, ClientMessageBuilder, ADDRESS_GAP_RANGE},
     node_api::indexer_api::query_parameters::QueryParameter,
     signing::types::InputSigningData,
-    Client, Error, Result,
+    Error, Result,
 };
 
 use bee_message::{
@@ -30,13 +30,16 @@ use types::SelectedTransactionData;
 
 /// Select inputs from provided inputs(OutputResponse), validate amounts and create remainder output if necessary
 pub async fn try_select_inputs(
-    client: &Client,
+    message_builder: &ClientMessageBuilder<'_>,
     mut inputs: Vec<InputSigningData>,
     mut outputs: Vec<Output>,
     force_use_all_inputs: bool,
     remainder_address: Option<Address>,
     get_utxo_chain_inputs: bool,
 ) -> Result<SelectedTransactionData> {
+    inputs.dedup();
+    // println!("try_select_inputs get_utxo_chain_inputs: {}", get_utxo_chain_inputs);
+    let client = message_builder.client;
     let input_outputs = inputs
         .iter()
         .map(|i| Ok(Output::try_from(&i.output_response.output)?))
@@ -45,9 +48,16 @@ pub async fn try_select_inputs(
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
         if inputs.len() as u16 > INPUT_COUNT_MAX {
-            return Err(Error::ConsolidationRequired(inputs.len().into()));
+            return Err(Error::ConsolidationRequired(inputs.len()));
         }
-        let remainder_output = get_remainder(client, &input_outputs, &outputs, remainder_address).await?;
+        let remainder_output = get_remainder(
+            client,
+            &input_outputs,
+            &outputs,
+            remainder_address,
+            get_utxo_chain_inputs,
+        )
+        .await?;
         return Ok(SelectedTransactionData {
             inputs,
             outputs,
@@ -59,12 +69,40 @@ pub async fn try_select_inputs(
     // gets inputs for the utxo chains
 
     let required = get_accumulated_output_data(client, &outputs, get_utxo_chain_inputs).await?;
+    // println!("required: {:?}", required);
+    // check if foundry minted new native tokens
     let mut selected_input_native_tokens: HashMap<TokenId, U256> = HashMap::new();
+    for output in &outputs {
+        if let Output::Foundry(output_foundry) = output {
+            for input in &inputs {
+                let output = Output::try_from(&input.output_response.output)?;
+                if let Output::Foundry(input_foundry) = output {
+                    if output_foundry.id() == input_foundry.id()
+                        && output_foundry.circulating_supply() > input_foundry.circulating_supply()
+                    {
+                        let token_id = TokenId::build(output_foundry.id(), *output_foundry.token_tag());
+                        let minted_native_token_amount =
+                            output_foundry.circulating_supply() - input_foundry.circulating_supply();
+                        match selected_input_native_tokens.entry(token_id) {
+                            Entry::Vacant(e) => {
+                                e.insert(minted_native_token_amount);
+                            }
+                            Entry::Occupied(mut e) => {
+                                *e.get_mut() += minted_native_token_amount;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     let mut selected_input_amount = 0;
     let mut selected_inputs = Vec::new();
     let bech32_hrp = client.get_bech32_hrp().await?;
 
     // 1. get alias or nft inputs (because amount and native tokens of these outputs could be used)
+    // filter required.utxo_chains by output id from already existing inputs
     for (unlock_address, utxo_chain_input) in required.utxo_chains {
         // only add outputs that aren't already in the inputs
         if !inputs.iter().any(|e| {
@@ -73,6 +111,28 @@ pub async fn try_select_inputs(
         }) {
             let output = Output::try_from(&utxo_chain_input.output)?;
             selected_input_amount += output.amount();
+            if let Output::Foundry(input_foundry) = &output {
+                // get matching output
+                for output in &outputs {
+                    if let Output::Foundry(output_foundry) = output {
+                        if output_foundry.id() == input_foundry.id()
+                            && output_foundry.circulating_supply() > input_foundry.circulating_supply()
+                        {
+                            let token_id = TokenId::build(output_foundry.id(), *output_foundry.token_tag());
+                            let minted_native_token_amount =
+                                output_foundry.circulating_supply() - input_foundry.circulating_supply();
+                            match selected_input_native_tokens.entry(token_id) {
+                                Entry::Vacant(e) => {
+                                    e.insert(minted_native_token_amount);
+                                }
+                                Entry::Occupied(mut e) => {
+                                    *e.get_mut() += minted_native_token_amount;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if let Some(output_native_tokens) = output.native_tokens() {
                 for native_token in output_native_tokens {
                     match selected_input_native_tokens.entry(*native_token.token_id()) {
@@ -86,11 +146,34 @@ pub async fn try_select_inputs(
                 }
             }
 
-            selected_inputs.push(InputSigningData {
-                output_response: utxo_chain_input,
-                chain: None,
-                bech32_address: unlock_address.to_bech32(&bech32_hrp),
-            });
+            let (address_index, internal) = match message_builder.signer {
+                Some(signer) => {
+                    match unlock_address {
+                        Address::Ed25519(_) => {
+                            search_address(
+                                signer,
+                                &bech32_hrp,
+                                message_builder.account_index.unwrap_or(0),
+                                message_builder.input_range.clone(),
+                                &unlock_address,
+                            )
+                            .await?
+                        }
+                        // Alias and NFT addresses can't be generated from a private key
+                        _ => (0, false),
+                    }
+                }
+                None => (0, false),
+            };
+            let input_signing_data = ClientMessageBuilder::create_input_signing_data(
+                message_builder.account_index.unwrap_or(0),
+                address_index,
+                internal,
+                &utxo_chain_input,
+                unlock_address.to_bech32(&bech32_hrp),
+            )?;
+
+            selected_inputs.push(input_signing_data);
         }
     }
 
@@ -123,15 +206,9 @@ pub async fn try_select_inputs(
             }
         }
     }
-    // check if we got all native tokens
-    let selected_input_outputs = selected_inputs
-        .iter()
-        .map(|i| Ok(Output::try_from(&i.output_response.output)?))
-        .collect::<Result<Vec<Output>>>()?;
-    let input_native_tokens = get_accumulated_output_data(client, &selected_input_outputs, false)
-        .await?
-        .native_tokens;
-    if let Some(native_token) = missing_native_tokens(&input_native_tokens, &required.native_tokens) {
+    // check if we got all required native tokens
+    // println!("selected_input_native_tokens: {:?}", selected_input_native_tokens);
+    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required.native_tokens) {
         return Err(Error::NotEnoughNativeTokens(native_token));
     }
     let current_selected_input_len = selected_inputs.len() as u16;
@@ -149,28 +226,61 @@ pub async fn try_select_inputs(
         output_1.amount().cmp(&output_2.amount())
     });
 
+    // first try to select outputs without native tokens
     for input_signing_data in inputs
         .iter()
         // Max inputs is 128
         .take((INPUT_COUNT_MAX - current_selected_input_len).into())
     {
+        // todo: check if this is necessary or if we can just check by output types (foundry, alias, nft should be
+        // selected before because of chains)
         if selected_input_amount < required.amount {
-            let output = Output::try_from(&input_signing_data.output_response.output)?;
-            selected_input_amount += output.amount();
-            if let Some(output_native_tokens) = output.native_tokens() {
-                for native_token in output_native_tokens {
-                    match selected_input_native_tokens.entry(*native_token.token_id()) {
-                        Entry::Vacant(e) => {
-                            e.insert(*native_token.amount());
-                        }
-                        Entry::Occupied(mut e) => {
-                            *e.get_mut() += *native_token.amount();
-                        }
+            // only add outputs that aren't already in the inputs
+            if !selected_inputs.iter().any(|e| {
+                e.output_response.transaction_id == input_signing_data.output_response.transaction_id
+                    && e.output_response.output_index == input_signing_data.output_response.output_index
+            }) {
+                let output = Output::try_from(&input_signing_data.output_response.output)?;
+                if let Some(output_native_tokens) = output.native_tokens() {
+                    if output_native_tokens.is_empty() {
+                        selected_input_amount += output.amount();
+                        selected_inputs.push(input_signing_data.clone());
                     }
                 }
             }
-
-            selected_inputs.push(input_signing_data.clone());
+        }
+    }
+    // later also try outputs with native tokens
+    // todo: handle remainder amount for native tokens
+    for input_signing_data in inputs
+        .iter()
+        // Max inputs is 128
+        .take((INPUT_COUNT_MAX - current_selected_input_len).into())
+    {
+        // todo: check if this is necessary or if we can just check by output types (foundry, alias, nft should be
+        // selected before because of chains)
+        if selected_input_amount < required.amount {
+            // only add outputs that aren't already in the inputs
+            if !selected_inputs.iter().any(|e| {
+                e.output_response.transaction_id == input_signing_data.output_response.transaction_id
+                    && e.output_response.output_index == input_signing_data.output_response.output_index
+            }) {
+                let output = Output::try_from(&input_signing_data.output_response.output)?;
+                selected_input_amount += output.amount();
+                if let Some(output_native_tokens) = output.native_tokens() {
+                    for native_token in output_native_tokens {
+                        match selected_input_native_tokens.entry(*native_token.token_id()) {
+                            Entry::Vacant(e) => {
+                                e.insert(*native_token.amount());
+                            }
+                            Entry::Occupied(mut e) => {
+                                *e.get_mut() += *native_token.amount();
+                            }
+                        }
+                    }
+                }
+                selected_inputs.push(input_signing_data.clone());
+            }
         }
     }
 
@@ -180,7 +290,15 @@ pub async fn try_select_inputs(
         .map(|i| Ok(Output::try_from(&i.output_response.output)?))
         .collect::<Result<Vec<Output>>>()?;
     // get_remainder also checks for amounts and returns an error if we don't have enough
-    let remainder_output = get_remainder(client, &selected_input_outputs, &outputs, remainder_address).await?;
+    // println!("selected_input_outputs {:?}", selected_input_outputs);
+    let remainder_output = get_remainder(
+        client,
+        &selected_input_outputs,
+        &outputs,
+        remainder_address,
+        get_utxo_chain_inputs,
+    )
+    .await?;
     if let Some(remainder_output) = &remainder_output {
         outputs.push(remainder_output.clone());
     }
@@ -199,6 +317,9 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
     let account_index = message_builder.account_index.unwrap_or(0);
     let mut gap_index = message_builder.initial_address_index.unwrap_or(0);
     let mut empty_address_count: u64 = 0;
+    let mut available_inputs = Vec::new();
+    let mut cached_error = None;
+
     let selected_transaction_data = 'input_selection: loop {
         // Get the addresses in the BIP path/index ~ path/index+20
         let addresses = message_builder
@@ -244,10 +365,8 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
                 // Reset counter if there is an output
                 empty_address_count = 0;
 
-                // todo handle error and continue searching
-                let mut address_inputs = Vec::new();
                 for output_response in address_outputs {
-                    address_inputs.push(ClientMessageBuilder::create_input_signing_data(
+                    available_inputs.push(ClientMessageBuilder::create_input_signing_data(
                         account_index,
                         address_index,
                         *internal,
@@ -256,8 +375,8 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
                     )?);
                 }
                 let selected_transaction_data = match try_select_inputs(
-                    message_builder.client,
-                    address_inputs,
+                    message_builder,
+                    available_inputs.clone(),
                     message_builder.outputs.clone(),
                     false,
                     // todo allow custom remainder address
@@ -268,10 +387,22 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
                 {
                     Ok(r) => r,
                     // for these errors just try again in the next round with more addresses
-                    Err(crate::Error::NotEnoughBalance(_, _)) => continue,
-                    Err(crate::Error::NotEnoughNativeTokens(_)) => continue,
-                    Err(crate::Error::NotEnoughBalanceForNativeTokenRemainder) => continue,
-                    Err(crate::Error::ConsolidationRequired(_)) => continue,
+                    Err(crate::Error::NotEnoughBalance(a, b)) => {
+                        cached_error.replace(crate::Error::NotEnoughBalance(a, b));
+                        continue;
+                    }
+                    Err(crate::Error::NotEnoughNativeTokens(a)) => {
+                        cached_error.replace(crate::Error::NotEnoughNativeTokens(a));
+                        continue;
+                    }
+                    Err(crate::Error::NotEnoughBalanceForNativeTokenRemainder) => {
+                        cached_error.replace(crate::Error::NotEnoughBalanceForNativeTokenRemainder);
+                        continue;
+                    }
+                    Err(crate::Error::ConsolidationRequired(v)) => {
+                        cached_error.replace(crate::Error::ConsolidationRequired(v));
+                        continue;
+                    }
                     Err(e) => return Err(e),
                 };
 
@@ -287,8 +418,8 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
         gap_index += ADDRESS_GAP_RANGE;
         // The gap limit is 20 and use reference 40 here because there's public and internal addresses
         if empty_address_count >= (ADDRESS_GAP_RANGE * 2) as u64 {
-            // todo get correct balance or return from try_select_inputs()
-            return Err(Error::NotEnoughBalance(0, 0));
+            // returned last cached error
+            return Err(cached_error.unwrap_or(Error::NoInputs));
         }
     };
 
@@ -332,21 +463,21 @@ pub(crate) async fn get_custom_inputs(
                 }
                 None => (0, false),
             };
-            let address_index_record = ClientMessageBuilder::create_input_signing_data(
+            let input_signing_data = ClientMessageBuilder::create_input_signing_data(
                 account_index,
                 address_index,
                 internal,
                 &output_response,
                 output_address.to_bech32(&bech32_hrp),
             )?;
-            input_signing_data_entrys.push(address_index_record);
+            input_signing_data_entrys.push(input_signing_data);
         }
     }
-
     let selected_transaction_data = try_select_inputs(
-        message_builder.client,
+        message_builder,
         input_signing_data_entrys,
         message_builder.outputs.clone(),
+        // todo expose or change to true
         false,
         // todo allow custom remainder address
         None,

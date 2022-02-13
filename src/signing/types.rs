@@ -99,3 +99,10 @@ pub struct InputSigningData {
     /// The bech32 encoded address
     pub bech32_address: String,
 }
+
+impl PartialEq for InputSigningData {
+    fn eq(&self, other: &Self) -> bool {
+        self.output_response.transaction_id == other.output_response.transaction_id
+            && self.output_response.output_index == other.output_response.output_index
+    }
+}

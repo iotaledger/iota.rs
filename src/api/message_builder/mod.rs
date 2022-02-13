@@ -292,7 +292,10 @@ impl<'a> ClientMessageBuilder<'a> {
                         // bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
                         //     return Ok((r.amount, Address::try_from(&e.address)?));
                         // }
-                        bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
+                        // bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
+                        //     return Ok((r.amount, Address::try_from(&e.address)?));
+                        // }
+                        bee_rest_api::types::dtos::UnlockConditionDto::ImmutableAliasAddress(e) => {
                             return Ok((r.amount, Address::try_from(&e.address)?));
                         }
                         _ => todo!(),
@@ -395,7 +398,7 @@ impl<'a> ClientMessageBuilder<'a> {
             None => finish_pow(self.client, payload).await?,
         };
 
-        let msg_id = self.client.post_message_json(&final_message).await?;
+        let msg_id = self.client.post_message(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
         match self.client.get_local_pow().await {
             true => Ok(final_message),
