@@ -23,6 +23,7 @@ async fn addresses() {
         "atoi1qprxpfvaz2peggq6f8k9cj8zfsxuw69e4nszjyv5kuf8yt70t2847shpjak".to_string()
     );
 }
+
 #[tokio::test]
 async fn public_key_to_address() {
     let iota = Client::builder().with_offline_mode().finish().await.unwrap();
@@ -36,5 +37,24 @@ async fn public_key_to_address() {
     assert_eq!(
         public_key_address,
         "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string()
+    );
+}
+
+#[tokio::test]
+async fn mnemonic_address_generation() {
+    let mnemnonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
+    let signer = MnemonicSigner::new(mnemnonic).unwrap();
+
+    let addresses = GetAddressesBuilder::new(&signer)
+        .with_bech32_hrp("iota".into())
+        .with_account_index(0)
+        .with_range(0..1)
+        .finish()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        addresses[0],
+        "iota1qpg2xkj66wwgn8p2ggnp7p582gj8g6p79us5hve2tsudzpsr2ap4skprwjg".to_string()
     );
 }
