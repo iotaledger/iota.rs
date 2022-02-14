@@ -29,12 +29,12 @@ on:
 jobs:
   test:
     name: Test
-    # if: ${{ ! github.event.schedule }}
-    # FIXME: Fix obsolete assertions. (#782)
-    if: ${{ false }}
+    if: ${{ ! github.event.schedule }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      # XXX: Run in serial, as otherwise the tests can crate double spends and fail.
+      max-parallel: 1
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         node: ['12', '14', '16']
