@@ -3,7 +3,7 @@
 
 //! cargo run --example search_address --release
 
-use iota_client::{api::search_address, signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{api::search_address, constants::IOTA_COIN_TYPE, signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::{convert::TryInto, env};
@@ -38,6 +38,7 @@ async fn main() -> Result<()> {
     let res = search_address(
         &signer,
         &iota.get_bech32_hrp().await.unwrap(),
+        IOTA_COIN_TYPE,
         0,
         0..10,
         &addresses[0].clone().try_into().unwrap(),

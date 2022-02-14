@@ -3,7 +3,8 @@
 
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
-    signing::{mnemonic::IOTA_COIN_TYPE, GenerateAddressMetadata, Network, SignerHandle},
+    constants::IOTA_COIN_TYPE,
+    signing::{GenerateAddressMetadata, Network, SignerHandle},
     Client, Error, Result,
 };
 
@@ -15,6 +16,7 @@ use std::ops::Range;
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
     signer: Option<&'a SignerHandle>,
+    coin_type: u32,
     account_index: u32,
     range: Range<u32>,
     bech32_hrp: Option<String>,
@@ -26,6 +28,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
         Self {
             client: None,
             signer: None,
+            coin_type: IOTA_COIN_TYPE,
             account_index: 0,
             range: 0..super::ADDRESS_GAP_RANGE,
             bech32_hrp: None,
@@ -49,6 +52,12 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Provide a client to get the bech32_hrp from the node
     pub fn with_client(mut self, client: &'a Client) -> Self {
         self.client.replace(client);
+        self
+    }
+
+    /// Set the coin type
+    pub fn with_coin_type(mut self, coin_type: u32) -> Self {
+        self.coin_type = coin_type;
         self
     }
 
@@ -92,7 +101,7 @@ impl<'a> GetAddressesBuilder<'a> {
         let mut signer = signer.lock().await;
         let addresses = signer
             .generate_addresses(
-                IOTA_COIN_TYPE,
+                self.coin_type,
                 self.account_index,
                 self.range,
                 false,
@@ -136,7 +145,7 @@ impl<'a> GetAddressesBuilder<'a> {
         let mut signer = signer.lock().await;
         let public_addresses = signer
             .generate_addresses(
-                IOTA_COIN_TYPE,
+                self.coin_type,
                 self.account_index,
                 self.range.clone(),
                 false,
@@ -146,7 +155,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
         let internal_addresses = signer
             .generate_addresses(
-                IOTA_COIN_TYPE,
+                self.coin_type,
                 self.account_index,
                 self.range,
                 true,
@@ -165,11 +174,13 @@ impl<'a> GetAddressesBuilder<'a> {
 pub async fn search_address(
     signer: &SignerHandle,
     bech32_hrp: &str,
+    coin_type: u32,
     account_index: u32,
     range: Range<u32>,
     address: &Address,
 ) -> Result<(u32, bool)> {
     let addresses = GetAddressesBuilder::new(signer)
+        .with_coin_type(coin_type)
         .with_account_index(account_index)
         .with_range(range.clone())
         .get_all_raw()

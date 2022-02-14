@@ -24,9 +24,6 @@ use std::{
     path::Path,
 };
 
-/// IOTA coin type https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-pub const IOTA_COIN_TYPE: u32 = 4218;
-
 fn generate_addresses(
     seed: &Seed,
     coin_type: u32,
@@ -190,8 +187,10 @@ impl crate::signing::Signer for MnemonicSigner {
 mod tests {
     #[tokio::test]
     async fn address() {
-        use super::IOTA_COIN_TYPE;
-        use crate::signing::{GenerateAddressMetadata, Network};
+        use crate::{
+            constants::IOTA_COIN_TYPE,
+            signing::{GenerateAddressMetadata, Network},
+        };
 
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
         let mnemonic_signer = super::MnemonicSigner::new(mnemonic).unwrap();
@@ -220,8 +219,10 @@ mod tests {
 
     #[tokio::test]
     async fn seed_address() {
-        use super::IOTA_COIN_TYPE;
-        use crate::signing::{GenerateAddressMetadata, Network};
+        use crate::{
+            constants::IOTA_COIN_TYPE,
+            signing::{GenerateAddressMetadata, Network},
+        };
 
         let seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
         let mnemonic_signer = super::MnemonicSigner::new_from_seed(seed).unwrap();

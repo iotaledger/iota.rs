@@ -1,11 +1,15 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_message::address::Address;
+use crate::Result;
+
+use bee_message::{address::Address, output::OutputId, payload::transaction::TransactionId};
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 
 use serde::{Deserialize, Serialize};
+
+use std::str::FromStr;
 
 /// The signer types.
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
@@ -96,8 +100,19 @@ pub struct InputSigningData {
     pub output_response: OutputResponse,
     /// The chain derived from seed, only for ed25519 addresses
     pub chain: Option<Chain>,
-    /// The bech32 encoded address
+    /// The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
+    /// conditions, because we otherwise don't know which one we need
     pub bech32_address: String,
+}
+
+impl InputSigningData {
+    /// Return the [OutputId]
+    pub fn output_id(&self) -> Result<OutputId> {
+        Ok(OutputId::new(
+            TransactionId::from_str(&self.output_response.transaction_id)?,
+            self.output_response.output_index,
+        )?)
+    }
 }
 
 impl PartialEq for InputSigningData {

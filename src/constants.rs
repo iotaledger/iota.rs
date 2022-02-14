@@ -19,3 +19,6 @@ pub(crate) const DEFAULT_MIN_QUORUM_SIZE: usize = 3;
 pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 #[cfg(not(feature = "wasm"))]
 pub(crate) const MAX_PARALLEL_API_REQUESTS: usize = 100;
+
+/// IOTA coin type https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+pub const IOTA_COIN_TYPE: u32 = 4218;

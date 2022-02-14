@@ -4,7 +4,8 @@
 use crate::{
     api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
     bee_message::output::BasicOutputBuilder,
-    signing::{mnemonic::IOTA_COIN_TYPE, types::InputSigningData, SignerHandle},
+    constants::IOTA_COIN_TYPE,
+    signing::{types::InputSigningData, SignerHandle},
     Client, Error, Result,
 };
 
@@ -45,8 +46,9 @@ use transaction::{prepare_transaction, sign_transaction};
 pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
     signer: Option<&'a SignerHandle>,
-    account_index: Option<u32>,
-    initial_address_index: Option<u32>,
+    coin_type: u32,
+    account_index: u32,
+    initial_address_index: u32,
     inputs: Option<Vec<UtxoInput>>,
     input_range: Range<u32>,
     outputs: Vec<Output>,
@@ -61,8 +63,9 @@ impl<'a> ClientMessageBuilder<'a> {
         Self {
             client,
             signer: None,
-            account_index: None,
-            initial_address_index: None,
+            coin_type: IOTA_COIN_TYPE,
+            account_index: 0,
+            initial_address_index: 0,
             inputs: None,
             input_range: 0..100,
             outputs: Vec::new(),
@@ -78,15 +81,21 @@ impl<'a> ClientMessageBuilder<'a> {
         self
     }
 
+    /// Sets the coin type.
+    pub fn with_coin_type(mut self, coin_type: u32) -> Self {
+        self.coin_type = coin_type;
+        self
+    }
+
     /// Sets the account index.
     pub fn with_account_index(mut self, account_index: u32) -> Self {
-        self.account_index.replace(account_index);
+        self.account_index = account_index;
         self
     }
 
     /// Sets the index of the address to start looking for balance.
     pub fn with_initial_address_index(mut self, initial_address_index: u32) -> Self {
-        self.initial_address_index.replace(initial_address_index);
+        self.initial_address_index = initial_address_index;
         self
     }
 
@@ -206,6 +215,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     // Used to store the address data for an input so we can later sign it
     fn create_input_signing_data(
+        coin_type: u32,
         account_index: u32,
         address_index: u32,
         internal: bool,
@@ -216,13 +226,7 @@ impl<'a> ClientMessageBuilder<'a> {
         // instead of `path/index/offset` or `path/offset`.
 
         // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        let chain = Chain::from_u32_hardened(vec![
-            44,
-            IOTA_COIN_TYPE,
-            account_index as u32,
-            internal as u32,
-            address_index as u32,
-        ]);
+        let chain = Chain::from_u32_hardened(vec![44, coin_type, account_index, internal as u32, address_index]);
         // let input = Input::Utxo(
         //     UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
         //         .map_err(|_| Error::TransactionError)?,
