@@ -367,23 +367,23 @@ impl Task for ClientTask {
                     serde_json::to_string(&message)?
                 }
                 Api::GetMessagesByIndexation(index) => {
-                    let messages = client.get_message().index(index).await?;
+                    let messages = client.get_message_index(index).await?;
                     serde_json::to_string(&messages)?
                 }
                 Api::GetMessage(id) => {
-                    let message = client.get_message().data(id).await?;
+                    let message = client.get_message_data(id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id(),
                         message: BeeMessageDto::from(&message),
                     })?
                 }
                 Api::GetMessageMetadata(id) => {
-                    let metadata = client.get_message().metadata(id).await?;
+                    let metadata = client.get_message_metadata(id).await?;
                     serde_json::to_string(&metadata)?
                 }
-                Api::GetRawMessage(id) => client.get_message().raw(id).await?,
+                Api::GetRawMessage(id) => client.get_message_raw(id).await?,
                 Api::GetMessageChildren(id) => {
-                    let messages = client.get_message().children(id).await?;
+                    let messages = client.get_message_children(id).await?;
                     serde_json::to_string(&messages)?
                 }
                 Api::GetOutput(id) => {

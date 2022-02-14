@@ -28,7 +28,7 @@ async fn main() {
 
     let _ = iota.retry_until_included(&message_id, None, None).await.unwrap();
 
-    let metadata = iota.get_message().metadata(&message_id).await.unwrap();
+    let metadata = iota.get_message_metadata(&message_id).await.unwrap();
     match metadata.referenced_by_milestone_index {
         Some(ms_index) => {
             let ms = iota.get_milestone(ms_index).await.unwrap();

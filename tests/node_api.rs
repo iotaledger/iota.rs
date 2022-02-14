@@ -151,7 +151,7 @@ async fn test_get_message_data() {
         .await
         .unwrap();
     let message_id = setup_tagged_data_message().await;
-    let r = client.get_message().data(&message_id).await.unwrap();
+    let r = client.get_message_data(&message_id).await.unwrap();
     println!("{:#?}", r);
 }
 

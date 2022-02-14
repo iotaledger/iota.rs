@@ -246,7 +246,7 @@ impl Client {
     /// Returns:
     ///     message_indices ([str]): The returned list of message indices.
     fn get_message_index(&self, index: &str) -> Result<Vec<String>> {
-        let indices = crate::block_on(async { self.client.get_message().index(index).await })?;
+        let indices = crate::block_on(async { self.client.get_message_index(index).await })?;
         Ok(indices.iter().map(|index| hex::encode(index.as_ref())).collect())
     }
     /// Find all messages by provided message IDs.

@@ -12,7 +12,7 @@ use crate::{
     constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
     error::{Error, Result},
     node_api::{
-        high_level::{AddressBalance, GetAddressBuilder, GetMessageBuilder},
+        high_level::{AddressBalance, GetAddressBuilder},
         indexer_api::query_parameters::QueryParameter,
     },
     node_manager::Node,
@@ -35,7 +35,7 @@ use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{
     dtos::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
     responses::{
-        InfoResponse as NodeInfo, MilestoneResponse, OutputResponse, TreasuryResponse,
+        InfoResponse as NodeInfo, MessageMetadataResponse, MilestoneResponse, OutputResponse, TreasuryResponse,
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
@@ -453,9 +453,28 @@ impl Client {
         crate::node_api::core_api::routes::post_message_json(self, message).await
     }
 
-    /// GET /api/v2/messages/{messageId} endpoint
-    pub fn get_message(&self) -> GetMessageBuilder<'_> {
-        GetMessageBuilder::new(self)
+    /// GET /api/v2/messages/{messageID} endpoint
+    /// Consume the builder and find a message by its identifer. This method returns the given message object.
+    pub async fn get_message_data(&self, message_id: &MessageId) -> Result<Message> {
+        crate::node_api::core_api::routes::data(self, message_id).await
+    }
+
+    /// GET /api/v2/messages/{messageID}/metadata endpoint
+    /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
+    pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
+        crate::node_api::core_api::routes::metadata(self, message_id).await
+    }
+
+    /// GET /api/v2/messages/{messageID}/raw endpoint
+    /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
+    pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
+        crate::node_api::core_api::routes::raw(self, message_id).await
+    }
+
+    /// GET /api/v2/messages/{messageID}/children endpoint
+    /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
+    pub async fn get_message_children(&self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
+        crate::node_api::core_api::routes::children(self, message_id).await
     }
 
     /// GET /api/v2/outputs/{outputId} endpoint
@@ -575,9 +594,9 @@ impl Client {
             message_ids_to_query.insert(message_id.to_owned());
         }
 
-        // Use `get_message().data()` API to get the `Message`.
+        // Use `get_message_data()` API to get the `Message`.
         for message_id in message_ids_to_query {
-            let message = self.get_message().data(&message_id).await?;
+            let message = self.get_message_data(&message_id).await?;
             messages.push(message);
         }
         Ok(messages)
@@ -605,7 +624,7 @@ impl Client {
     /// retried only if they are valid and haven't been confirmed for a while.
     pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the metadata to check if it needs to promote or reattach
-        let message_metadata = self.get_message().metadata(message_id).await?;
+        let message_metadata = self.get_message_metadata(message_id).await?;
         if message_metadata.should_promote.unwrap_or(false) {
             self.promote_unchecked(message_id).await
         } else if message_metadata.should_reattach.unwrap_or(false) {
@@ -639,14 +658,14 @@ impl Client {
             let message_ids_len = message_ids.len();
             let mut conflicting = false;
             for (index, msg_id) in message_ids.clone().iter().enumerate() {
-                let message_metadata = self.get_message().metadata(msg_id).await?;
+                let message_metadata = self.get_message_metadata(msg_id).await?;
                 if let Some(inclusion_state) = message_metadata.ledger_inclusion_state {
                     match inclusion_state {
                         LedgerInclusionStateDto::Included | LedgerInclusionStateDto::NoTransaction => {
                             // if original message, request it so we can return it on first position
                             if message_id == msg_id {
                                 let mut included_and_reattached_messages =
-                                    vec![(*message_id, self.get_message().data(message_id).await?)];
+                                    vec![(*message_id, self.get_message_data(message_id).await?)];
                                 included_and_reattached_messages.extend(messages_with_id);
                                 return Ok(included_and_reattached_messages);
                             } else {
@@ -676,7 +695,7 @@ impl Client {
             // After we checked all our reattached messages, check if the transaction got reattached in another message
             // and confirmed
             if conflicting {
-                let message = self.get_message().data(message_id).await?;
+                let message = self.get_message_data(message_id).await?;
                 if let Some(Payload::Transaction(transaction_payload)) = message.payload() {
                     let included_message = self.get_included_message(&transaction_payload.id()).await?;
                     let mut included_and_reattached_messages = vec![(included_message.id(), included_message)];
@@ -772,7 +791,7 @@ impl Client {
     /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
     /// confirmed for a while.
     pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        let metadata = self.get_message().metadata(message_id).await?;
+        let metadata = self.get_message_metadata(message_id).await?;
         if metadata.should_reattach.unwrap_or(false) {
             self.reattach_unchecked(message_id).await
         } else {
@@ -783,7 +802,7 @@ impl Client {
     /// Reattach a message without checking if it should be reattached
     pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
-        let message = self.get_message().data(message_id).await?;
+        let message = self.get_message_data(message_id).await?;
         let reattach_message = {
             #[cfg(feature = "wasm")]
             {
@@ -810,7 +829,7 @@ impl Client {
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => reattach_message,
-            false => self.get_message().data(&message_id).await?,
+            false => self.get_message_data(&message_id).await?,
         };
         Ok((message_id, msg))
     }
@@ -818,7 +837,7 @@ impl Client {
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
     /// method should error out and should not allow unnecessary promotions.
     pub async fn promote(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        let metadata = self.get_message().metadata(message_id).await?;
+        let metadata = self.get_message_metadata(message_id).await?;
         if metadata.should_promote.unwrap_or(false) {
             self.promote_unchecked(message_id).await
         } else {
@@ -848,7 +867,7 @@ impl Client {
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => promote_message,
-            false => self.get_message().data(&message_id).await?,
+            false => self.get_message_data(&message_id).await?,
         };
         Ok((message_id, msg))
     }

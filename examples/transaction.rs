@@ -99,7 +99,7 @@ async fn main() -> Result<()> {
     println!("Last transaction sent: {}{}", EXPLORER_URL, message.id());
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
-    let message_metadata = iota.get_message().metadata(&message.id()).await;
+    let message_metadata = iota.get_message_metadata(&message.id()).await;
     println!("Ledger Inclusion State: {:?}", message_metadata?.ledger_inclusion_state);
 
     Ok(())

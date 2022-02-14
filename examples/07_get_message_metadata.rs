@@ -17,7 +17,7 @@ async fn main() -> Result<()> {
 
     let message = iota.message().finish().await?;
 
-    let metadata = iota.get_message().metadata(&message.id()).await?;
+    let metadata = iota.get_message_metadata(&message.id()).await?;
     println!("Message metadata: {:?}", metadata);
     Ok(())
 }

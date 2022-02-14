@@ -46,12 +46,15 @@ async fn main() -> Result<()> {
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     let address = iota.get_addresses(&signer).with_range(0..1).get_all_raw().await?.public[0];
-    request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-        &address.to_bech32("atoi"),
-    )
-    .await?;
-    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+    println!(
+        "{}",
+        request_funds_from_faucet(
+            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+            &address.to_bech32("atoi"),
+        )
+        .await?
+    );
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     //////////////////////////////////
     // create new alias and nft output
@@ -318,15 +321,15 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with dust deposit return
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new(176100)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::DustDepositReturn(
-                DustDepositReturnUnlockCondition::new(address, 176000)?,
-            ))
-            .finish()?,
-    ));
-    // with dust expiration
+    // outputs.push(Output::Basic(
+    //     BasicOutputBuilder::new(176100)?
+    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+    //         .add_unlock_condition(UnlockCondition::DustDepositReturn(
+    //             DustDepositReturnUnlockCondition::new(address, 176000)?,
+    //         ))
+    //         .finish()?,
+    // ));
+    // with expiration
     outputs.push(Output::Basic(
         BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
