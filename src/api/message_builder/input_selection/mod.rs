@@ -361,41 +361,43 @@ pub(crate) async fn get_custom_inputs(
         for input in inputs {
             let output_response = message_builder.client.get_output(input.output_id()).await?;
 
-            let (_output_amount, output_address) = ClientMessageBuilder::get_output_amount_and_address(
-                &output_response.output,
-                governance_transition.clone(),
-            )?;
+            if !output_response.is_spent {
+                let (_output_amount, output_address) = ClientMessageBuilder::get_output_amount_and_address(
+                    &output_response.output,
+                    governance_transition.clone(),
+                )?;
 
-            let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
-            let (address_index, internal) = match message_builder.signer {
-                Some(signer) => {
-                    match output_address {
-                        Address::Ed25519(_) => {
-                            search_address(
-                                signer,
-                                &bech32_hrp,
-                                message_builder.coin_type,
-                                message_builder.account_index,
-                                message_builder.input_range.clone(),
-                                &output_address,
-                            )
-                            .await?
+                let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
+                let (address_index, internal) = match message_builder.signer {
+                    Some(signer) => {
+                        match output_address {
+                            Address::Ed25519(_) => {
+                                search_address(
+                                    signer,
+                                    &bech32_hrp,
+                                    message_builder.coin_type,
+                                    message_builder.account_index,
+                                    message_builder.input_range.clone(),
+                                    &output_address,
+                                )
+                                .await?
+                            }
+                            // Alias and NFT addresses can't be generated from a private key
+                            _ => (0, false),
                         }
-                        // Alias and NFT addresses can't be generated from a private key
-                        _ => (0, false),
                     }
-                }
-                None => (0, false),
-            };
-            let input_signing_data = ClientMessageBuilder::create_input_signing_data(
-                message_builder.coin_type,
-                message_builder.account_index,
-                address_index,
-                internal,
-                &output_response,
-                output_address.to_bech32(&bech32_hrp),
-            )?;
-            input_signing_data_entrys.push(input_signing_data);
+                    None => (0, false),
+                };
+                let input_signing_data = ClientMessageBuilder::create_input_signing_data(
+                    message_builder.coin_type,
+                    message_builder.account_index,
+                    address_index,
+                    internal,
+                    &output_response,
+                    output_address.to_bech32(&bech32_hrp),
+                )?;
+                input_signing_data_entrys.push(input_signing_data);
+            }
         }
     }
     let selected_transaction_data = try_select_inputs(

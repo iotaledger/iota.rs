@@ -6,7 +6,7 @@
 use crate::{
     api::{
         miner::{ClientMiner, ClientMinerBuilder},
-        ClientMessageBuilder, GetAddressesBuilder, GetBalanceBuilder, GetUnspentAddressBuilder,
+        ClientMessageBuilder, GetAddressesBuilder, GetBalanceBuilder,
     },
     builder::{ClientBuilder, NetworkInfo},
     constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
@@ -556,11 +556,6 @@ impl Client {
     /// A generic send function for easily sending transaction or tagged data messages.
     pub fn message(&self) -> ClientMessageBuilder<'_> {
         ClientMessageBuilder::new(self)
-    }
-
-    /// Return a valid unspent address.
-    pub fn get_unspent_address<'a>(&'a self, signer: &'a SignerHandle) -> GetUnspentAddressBuilder<'a> {
-        GetUnspentAddressBuilder::new(self, signer)
     }
 
     /// Return a list of addresses from the signer regardless of their validity.
