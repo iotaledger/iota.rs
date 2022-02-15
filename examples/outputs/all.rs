@@ -5,7 +5,7 @@
 
 use iota_client::{
     bee_message::{
-        address::{Address, AliasAddress},
+        address::AliasAddress,
         milestone::MilestoneIndex,
         output::{
             feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
@@ -280,7 +280,6 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
             1_000_000,
@@ -295,6 +294,11 @@ async fn main() -> Result<()> {
         ))
         .finish()?,
     ));
+    outputs.push(Output::Nft(
+        NftOutputBuilder::new(1_000_000, nft_id)?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .finish()?,
+    ));
     // with native token
     outputs.push(Output::Basic(
         BasicOutputBuilder::new(1_000_000)?
@@ -302,12 +306,7 @@ async fn main() -> Result<()> {
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
     ));
-    outputs.push(Output::Nft(
-        NftOutputBuilder::new(1_000_000, nft_id)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
-    // most simple output
+    // with most simple output
     outputs.push(Output::Basic(
         BasicOutputBuilder::new(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
@@ -321,14 +320,14 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
     // with dust deposit return
-    // outputs.push(Output::Basic(
-    //     BasicOutputBuilder::new(176100)?
-    //         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-    //         .add_unlock_condition(UnlockCondition::DustDepositReturn(
-    //             DustDepositReturnUnlockCondition::new(address, 176000)?,
-    //         ))
-    //         .finish()?,
-    // ));
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new(234100)?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_unlock_condition(UnlockCondition::DustDepositReturn(
+                DustDepositReturnUnlockCondition::new(address, 234000)?,
+            ))
+            .finish()?,
+    ));
     // with expiration
     outputs.push(Output::Basic(
         BasicOutputBuilder::new(1_000_000)?

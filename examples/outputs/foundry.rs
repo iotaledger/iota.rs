@@ -5,7 +5,7 @@
 
 use iota_client::{
     bee_message::{
-        address::{Address, AliasAddress},
+        address::AliasAddress,
         output::{
             feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
             unlock_condition::{
@@ -16,7 +16,6 @@ use iota_client::{
             OutputId, TokenId, TokenScheme,
         },
         payload::{transaction::TransactionEssence, Payload},
-        Message,
     },
     node_api::indexer_api::query_parameters::QueryParameter,
     request_funds_from_faucet,
@@ -26,7 +25,7 @@ use iota_client::{
 use primitive_types::U256;
 extern crate dotenv;
 use dotenv::dotenv;
-use iota_client::packable::PackableExt;
+
 use std::env;
 
 /// In this example we will create an foundry output
@@ -112,7 +111,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        // .with_input(alias_output_id_1.into())?
+        .with_input(alias_output_id_1.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -160,7 +159,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        // .with_input(alias_output_id.into())?
+        .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -191,7 +190,6 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-    let alias_address = Address::Alias(AliasAddress::from(alias_id));
     // Foundry ID (address kind 1+ Alias address 20 + Serial Number 4 + Token Scheme Type + 1) || Token Tag +12
     let token_id_bytes: Vec<u8> = [8u8; 1]
         .iter()
@@ -221,8 +219,8 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        // .with_input(alias_output_id.into())?
-        // .with_input(foundry_output_id.into())?
+        .with_input(alias_output_id.into())?
+        .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -253,7 +251,6 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-    let alias_address = Address::Alias(AliasAddress::from(alias_id));
 
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
@@ -287,9 +284,9 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        // .with_input(output_ids[0].into())?
-        // .with_input(alias_output_id.into())?
-        // .with_input(foundry_output_id.into())?
+        .with_input(output_ids[0].into())?
+        .with_input(alias_output_id.into())?
+        .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -314,7 +311,7 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        // .with_input(basic_output_id.into())?
+        .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
