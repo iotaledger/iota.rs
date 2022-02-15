@@ -3,7 +3,9 @@
 
 use crate::{
     api::{
-        input_selection::{get_minted_native_tokens, get_remainder_native_tokens, types::AccumulatedOutputAmounts},
+        input_selection::{
+            get_minted_and_burned_native_tokens, get_remainder_native_tokens, types::AccumulatedOutputAmounts,
+        },
         message_builder::ClientMessageBuilder,
         search_address,
     },
@@ -39,7 +41,7 @@ pub(crate) async fn get_remainder(
     let input_data = get_accumulated_output_amounts(inputs).await?;
     let output_data = get_accumulated_output_amounts(outputs).await?;
     // Get minted native tokens
-    let minted_native_tokens = get_minted_native_tokens(inputs, outputs)?;
+    let (minted_native_tokens, burned_native_tokens) = get_minted_and_burned_native_tokens(inputs, outputs)?;
 
     // check amount first
     if input_data.amount < output_data.amount {
@@ -49,6 +51,7 @@ pub(crate) async fn get_remainder(
 
     // println!("get_remainder_native_tokens inputs: {:?}", input_native_tokens);
     // println!("get_remainder_native_tokens outputs: {:?}", output_data.native_tokens);
+    // add minted tokens
     let mut input_native_tokens = input_data.native_tokens;
     for (token_id, minted_native_token_amount) in minted_native_tokens {
         match input_native_tokens.entry(token_id) {
@@ -60,7 +63,22 @@ pub(crate) async fn get_remainder(
             }
         }
     }
-    let native_token_remainder = get_remainder_native_tokens(&input_native_tokens, &output_data.native_tokens);
+
+    // add burned tokens
+    let mut output_native_tokens: HashMap<TokenId, U256> = output_data.native_tokens;
+    // add burned native tokens as outputs, because we need to have this amount in the inputs
+    for (tokend_id, burned_amount) in burned_native_tokens {
+        match output_native_tokens.entry(tokend_id) {
+            Entry::Vacant(e) => {
+                e.insert(burned_amount);
+            }
+            Entry::Occupied(mut e) => {
+                *e.get_mut() += burned_amount;
+            }
+        }
+    }
+
+    let native_token_remainder = get_remainder_native_tokens(&input_native_tokens, &output_native_tokens);
     // Output possible remaining tokens back to the original address
     if remainder_amount > 0 {
         let remainder_addr = match remainder_address {

@@ -15,9 +15,9 @@ categories = ["cryptography::cryptocurrencies"]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/Thoralf-M/bee", rev = "67859f0290214dc110c0bad22a71bb8b9012a4e7", default-features = false }
-bee-message = { git = "https://github.com/Thoralf-M/bee", rev = "67859f0290214dc110c0bad22a71bb8b9012a4e7", default-features = false, features = ["serde1"] }
-bee-pow = { git = "https://github.com/Thoralf-M/bee", rev = "67859f0290214dc110c0bad22a71bb8b9012a4e7", default-features = false }
+bee-rest-api = { git = "https://github.com/Thoralf-M/bee", rev = "ad2a0044ae2b95f1332735dedeaaddb51b6f4653", default-features = false }
+bee-message = { git = "https://github.com/Thoralf-M/bee", rev = "ad2a0044ae2b95f1332735dedeaaddb51b6f4653", default-features = false, features = ["serde1"] }
+bee-pow = { git = "https://github.com/Thoralf-M/bee", rev = "ad2a0044ae2b95f1332735dedeaaddb51b6f4653", default-features = false }
 # bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
 # bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
 # bee-pow = { path = "../bee/bee-pow",  default-features = false }

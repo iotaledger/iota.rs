@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let address = iota.get_addresses(&signer).with_range(0..1).get_all_raw().await?.public[0];
+    let address = iota.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
         request_funds_from_faucet(

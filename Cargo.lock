@@ -127,7 +127,7 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=67859f0290214dc110c0bad22a71bb8b9012a4e7#67859f0290214dc110c0bad22a71bb8b9012a4e7"
+source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
 dependencies = [
  "bee-message",
  "packable",
@@ -138,7 +138,7 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=67859f0290214dc110c0bad22a71bb8b9012a4e7#67859f0290214dc110c0bad22a71bb8b9012a4e7"
+source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
 dependencies = [
  "bech32 0.8.1",
  "bee-pow",
@@ -161,7 +161,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=67859f0290214dc110c0bad22a71bb8b9012a4e7#67859f0290214dc110c0bad22a71bb8b9012a4e7"
+source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -171,7 +171,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=67859f0290214dc110c0bad22a71bb8b9012a4e7#67859f0290214dc110c0bad22a71bb8b9012a4e7"
+source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
 dependencies = [
  "bee-ledger",
  "bee-message",

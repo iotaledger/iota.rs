@@ -166,8 +166,7 @@ async fn test_get_message_metadata() {
         .finish()
         .await
         .unwrap()
-        .get_message()
-        .metadata(&message_id)
+        .get_message_metadata(&message_id)
         .await
         .unwrap();
 
@@ -184,8 +183,7 @@ async fn test_get_message_raw() {
         .finish()
         .await
         .unwrap()
-        .get_message()
-        .raw(&message_id)
+        .get_message_raw(&message_id)
         .await
         .unwrap();
 }
@@ -200,8 +198,7 @@ async fn test_get_message_children() {
         .finish()
         .await
         .unwrap()
-        .get_message()
-        .children(&message_id)
+        .get_message_children(&message_id)
         .await
         .unwrap();
 }

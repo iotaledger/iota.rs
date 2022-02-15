@@ -114,6 +114,23 @@ impl<'a> GetAddressesBuilder<'a> {
 
         Ok(addresses)
     }
+    /// Consume the builder and get a vector of public addresses
+    pub async fn get_raw(self) -> Result<Vec<Address>> {
+        let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
+        #[cfg(feature = "wasm")]
+        let mut signer = signer.lock().unwrap();
+        #[cfg(not(feature = "wasm"))]
+        let mut signer = signer.lock().await;
+        signer
+            .generate_addresses(
+                self.coin_type,
+                self.account_index,
+                self.range,
+                false,
+                self.metadata.clone(),
+            )
+            .await
+    }
 
     /// Consume the builder and get the vector of public and internal addresses bech32 encoded
     pub async fn get_all(self) -> Result<Bech32Addresses> {
