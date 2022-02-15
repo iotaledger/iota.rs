@@ -37,7 +37,7 @@ impl<'a> GetBalanceBuilderApi<'a> {
         match hex::decode(seed) {
             Ok(s) => {
                 let internal = GetBalanceBuilderApiInternal {
-                    client: client,
+                    client,
                     seed: RustSeed::from_bytes(&s),
                     account_index: 0,
                     initial_address_index: 0,

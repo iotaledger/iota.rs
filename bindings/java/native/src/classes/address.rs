@@ -209,7 +209,7 @@ pub struct GetAddressesBuilder<'a> {
 impl<'a> GetAddressesBuilder<'a> {
     pub(crate) fn from_old(seed: &str) -> Self {
         let internal = GetAddressesBuilderInternal {
-            seed: RustSeed::from_bytes(&seed.as_bytes()),
+            seed: RustSeed::from_bytes(seed.as_bytes()),
             account_index: 0,
             range: 0..ADDRESS_GAP_RANGE,
             bech32_hrp: None,

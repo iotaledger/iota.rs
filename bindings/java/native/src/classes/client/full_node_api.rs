@@ -358,7 +358,7 @@ impl Client {
             .unwrap();
 
         let address = addresses.into_iter().find(|w| w.public() == internal_address).unwrap();
-        Ok(self.get_address_balance(&address.address()).unwrap())
+        Ok(self.get_address_balance(address.address()).unwrap())
     }
 
     pub fn should_migrate(
@@ -385,7 +385,7 @@ impl Client {
         internal_address: bool,
         to_address: &str,
     ) -> Result<Message> {
-        if Client::is_address_valid(to_address) == false {
+        if !Client::is_address_valid(to_address) {
             return Err(anyhow!("Invalid to address provided"));
         }
         let balance_wrap = self
