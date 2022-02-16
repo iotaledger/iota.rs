@@ -170,7 +170,68 @@ async fn main() -> Result<()> {
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
-    // create native token
+    // mint 70 native token
+    //////////////////////////////////
+    let alias_output_id = get_alias_output_id(message.payload().unwrap());
+    let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
+    let mut outputs: Vec<Output> = Vec::new();
+    outputs.push(Output::Alias(
+        AliasOutputBuilder::new(1_000_000, alias_id)?
+            .with_state_index(3)
+            .with_foundry_counter(1)
+            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
+            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(address),
+            ))
+            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                address,
+            )))
+            .finish()?,
+    ));
+    // Foundry ID (address kind 1+ Alias address 20 + Serial Number 4 + Token Scheme Type + 1) || Token Tag +12
+    let token_id_bytes: Vec<u8> = [8u8; 1]
+        .iter()
+        .chain(alias_output_id_1.hash().iter())
+        .chain([1, 0, 0, 0].iter())
+        .chain([0u8; 1].iter())
+        .chain([0u8; 12].iter())
+        .map(|v| *v)
+        .collect();
+    let token_id = TokenId::new(token_id_bytes.try_into().unwrap());
+
+    outputs.push(Output::Foundry(
+        FoundryOutputBuilder::new(
+            1_000_000,
+            1,
+            [0u8; 12],
+            U256::from(70),
+            U256::from(100),
+            TokenScheme::Simple,
+        )?
+        .add_native_token(NativeToken::new(token_id, U256::from(70))?)
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
+        .finish()?,
+    ));
+    let message = iota
+        .message()
+        .with_signer(&signer)
+        .with_input(alias_output_id.into())?
+        .with_input(foundry_output_id.into())?
+        .with_outputs(outputs)?
+        .finish()
+        .await?;
+    println!(
+        "Transaction with minted native tokens sent: http://localhost:14265/api/v2/messages/{}",
+        message.id()
+    );
+    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+
+    //////////////////////////////////
+    // burn 20 native token
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(message.payload().unwrap());
     let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
@@ -225,7 +286,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with minted native tokens sent: http://localhost:14265/api/v2/messages/{}",
+        "Transaction with native tokens burnt sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
