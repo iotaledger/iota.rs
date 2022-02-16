@@ -12,6 +12,7 @@ use iota_client::{
 
 use getset::{CopyGetters, Getters};
 use std::{
+    borrow::Borrow,
     cell::RefCell,
     convert::From,
     fmt::{Display, Formatter},
@@ -115,7 +116,7 @@ impl Address {
         }
     }
     pub fn to_inner_clone(&self) -> RustAddress {
-        self.address.clone()
+        self.address
     }
 
     pub fn to_bech32(&self, hrp: &str) -> String {
@@ -169,7 +170,7 @@ pub struct GetAddressBuilder<'a> {
 
 impl<'a> GetAddressBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
-        Self { client: client }
+        Self { client }
     }
 
     pub fn balance(&self, address: &str) -> Result<BalanceAddressResponse> {
@@ -208,7 +209,7 @@ pub struct GetAddressesBuilder<'a> {
 impl<'a> GetAddressesBuilder<'a> {
     pub(crate) fn from_old(seed: &str) -> Self {
         let internal = GetAddressesBuilderInternal {
-            seed: RustSeed::from_bytes(&seed.as_bytes()),
+            seed: RustSeed::from_bytes(seed.as_bytes()),
             account_index: 0,
             range: 0..ADDRESS_GAP_RANGE,
             bech32_hrp: None,

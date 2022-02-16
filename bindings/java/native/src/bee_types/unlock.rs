@@ -74,10 +74,7 @@ impl UnlockBlocks {
     }
 
     pub fn get(&self, index: usize) -> Option<UnlockBlock> {
-        match self.0.get(index) {
-            None => None,
-            Some(u) => Some(UnlockBlock(u.clone())),
-        }
+        self.0.get(index).map(|u| UnlockBlock(u.clone()))
     }
 
     pub fn to_inner(&self) -> RustUnlockBlocks {

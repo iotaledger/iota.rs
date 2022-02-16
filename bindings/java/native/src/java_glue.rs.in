@@ -23,7 +23,7 @@ use iota_client::{
             milestone::MilestoneId,
             transaction::TransactionId,
         },
-        MessageId, 
+        MessageId,
     },
     bee_rest_api::types::dtos::LedgerInclusionStateDto,
 };
@@ -155,14 +155,14 @@ foreign_class!(
         /// Disables the node syncing process.
         /// Every node will be considered healthy and ready to use.
         fn ClientBuilder::with_node_sync_disabled(&mut self) -> ClientBuilder;
-        
+
         /// Set if quroum should be used or not
         fn ClientBuilder::with_quorum(&self, quorum: bool) -> ClientBuilder;
         /// Set amount of nodes which should be used for quorum
         fn ClientBuilder::with_quorum_size(&self, quorum_size: usize) -> ClientBuilder;
         /// Set quorum_threshold
         fn ClientBuilder::with_quorum_threshold(&self, threshold: usize) -> ClientBuilder;
-        
+
         /// Sets the MQTT broker options.
         fn ClientBuilder::with_mqtt_broker_options(&mut self, options: BrokerOptions) -> ClientBuilder;
         /// Sets whether the PoW should be done locally or remotely.
@@ -184,7 +184,7 @@ foreign_class!(
         self_type Client;
         private constructor = empty;
         fn Client::builder() -> ClientBuilder; alias Builder;
-        
+
         /// GET /health endpoint
         fn Client::get_health(&self) -> Result<bool>;
 
@@ -192,8 +192,8 @@ foreign_class!(
         fn Client::get_node_health(&self, node: &str) -> Result<bool>;
 
         /// GET /api/v1/info endpoint
-        fn Client::get_info(&self) -> Result<NodeInfoWrapper>; 
-        
+        fn Client::get_info(&self) -> Result<NodeInfoWrapper>;
+
         /// GET /api/v1/peers endpoint
         fn Client::get_peers(&self) -> Result<Vec<PeerDto>>;
 
@@ -218,11 +218,11 @@ foreign_class!(
         /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
         /// the request amount exceeds individual node limit.
         fn Client::find_outputs(&self, output_ids: Option<Vec<String>>, addresses: Option<Vec<String>>) -> Result<Vec<OutputResponse>>;
-        
+
         /// GET /api/v1/milestones/{index} endpoint
         /// Get the milestone by the given index.
         fn Client::get_milestone(&self, index: u32) -> Result<MilestoneResponse>;
-        
+
         /// GET /api/v1/milestones/{index}/utxo-changes endpoint
         /// Gets the utxo changes by the given milestone index.
         fn Client::get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse>;
@@ -238,7 +238,7 @@ foreign_class!(
         /// GET /api/v1/treasury endpoint
         /// Get the treasury output.
         fn Client::get_treasury(&self) -> Result<TreasuryResponse>;
-        
+
         /// GET /api/v1/transactions/{transactionId}/included-message
         /// Returns the included message of the transaction.
         fn Client::get_included_message(&self, transaction_id: TransactionId) -> Result<Message>;
@@ -249,14 +249,14 @@ foreign_class!(
         /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
         /// confirmed for a while.
         fn Client::reattach(&self, message_id: MessageId) -> Result<MessageWrap>;
-        
+
         /// Reattach a message without checking if it should be reattached
         fn Client::reattach_unchecked(&self, message_id: MessageId) -> Result<MessageWrap>;
-        
+
         /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
         /// method should error out and should not allow unnecessary promotions.
         fn Client::promote(&self, message_id: MessageId) -> Result<MessageWrap>;
-        
+
         /// Promote a message without checking if it should be promoted
         fn Client::promote_unchecked(&self, message_id: MessageId) -> Result<MessageWrap>;
 
@@ -786,7 +786,7 @@ foreign_class!(
             seed: &str, inputs_range_low: usize, inputs_range_high: usize) -> Result<MessagePayload>;
 
         /// Consume the builder and return the message made with the specific payload
-        fn ClientMessageBuilder::finish_message(&self, payload: MessagePayload) -> Result<Message>; alias finish; 
+        fn ClientMessageBuilder::finish_message(&self, payload: MessagePayload) -> Result<Message>; alias finish;
 
         /// Consume the builder and return the message made with the specific payload
         fn ClientMessageBuilder::finish_message_transaction(&self, payload: TransactionPayload) -> Result<Message>; alias finishTransaction;
@@ -809,7 +809,7 @@ foreign_class!(
     class GetMessageBuilder {
         self_type GetMessageBuilder<'a>;
         private constructor = empty;
-        
+
         /// GET /api/v1/messages?index={Index} endpoint
         /// Consume the builder and search for messages matching the index
         fn GetMessageBuilder::index_string(&self, index: &str) -> Result<Vec<MessageId>>;
@@ -912,17 +912,17 @@ foreign_class!(
     class GetBalanceBuilderApi {
         self_type GetBalanceBuilderApi<'a>;
         private constructor = empty;
-        
+
         /// Sets the account index.
         fn GetBalanceBuilderApi::with_account_index(&self, account_index: usize) -> GetBalanceBuilderApi;
 
         /// Sets the index of the address to start looking for balance.
         fn GetBalanceBuilderApi::with_initial_address_index(&self, initial_address_index: usize) -> GetBalanceBuilderApi;
-        
+
         /// Sets the gap limit to specify how many addresses will be checked each round.
         /// If gap_limit amount of addresses in a row have no balance the function will return.
         fn GetBalanceBuilderApi::with_gap_limit(&self, gap_limit: usize) -> GetBalanceBuilderApi;
-        
+
         /// Consume the builder and get the API result
         fn GetBalanceBuilderApi::finish(&self) -> Result<u64>;
     }
@@ -954,19 +954,19 @@ foreign_class!(
 
         /// DEBUG DO NOT USE
         fn GetAddressesBuilder::from_old(seed: &str) -> GetAddressesBuilder<'a>;
-        
+
         /// Set the account index
         fn GetAddressesBuilder::with_account_index(&self, account_index: usize) -> GetAddressesBuilder;
-        
+
         /// Set range to the builder
         fn GetAddressesBuilder::with_range(&self, start: usize, end: usize) -> GetAddressesBuilder;
-        
+
         /// Set bech32 human readable part (hrp)
         fn GetAddressesBuilder::with_bech32_hrp(&self, bech32_hrp: String) -> GetAddressesBuilder;
-        
+
         /// Set client to the builder
         fn GetAddressesBuilder::with_client(&self, client: &Client) -> GetAddressesBuilder;
-        
+
         /// Consume the builder and get a vector of public addresses bech32 encoded
         fn GetAddressesBuilder::finish(&self) -> Result<Vec<String>>;
 
@@ -1039,7 +1039,7 @@ foreign_class!(
     class MqttManager {
         self_type MqttManager<'a>;
         private constructor = empty;
-        
+
         /// Add a new topic to the list.
         fn MqttManager::with_topic(&mut self, topic: Topic) -> MqttTopicManager;
 
@@ -1065,24 +1065,24 @@ foreign_class!(
     class MqttTopicManager {
         self_type MqttTopicManager<'a>;
         private constructor = empty;
-        
+
         /// Add a new topic to the list.
-        fn MqttTopicManager::with_topic(&self, topic: Topic) -> MqttTopicManager;
+        fn MqttTopicManager::with_topic(&mut self, topic: Topic) -> MqttTopicManager;
 
         /// Add a collection of topics to the list.
-        fn MqttTopicManager::with_topics(&self, topics: Vec<Topic>) -> MqttTopicManager;
+        fn MqttTopicManager::with_topics(&mut self, topics: Vec<Topic>) -> MqttTopicManager;
 
         /// Unsubscribe from the given topics.
         /// If no topics were provided, the function will unsubscribe from every subscribed topic.
-        fn MqttTopicManager::unsubscribe(&self) -> Result<()>;
+        fn MqttTopicManager::unsubscribe(&mut self) -> Result<()>;
 
         // Subscribe to the given topics with the callback.
-        //fn MqttTopicManager::subscribe(&self, cb: Box<dyn MqttListener + Send + 'static>) -> Result<()>;
+        //fn MqttTopicManager::subscribe(&mut self, cb: Box<dyn MqttListener + Send + 'static>) -> Result<()>;
     }
 );
 
 //////////////// Util
-/// 
+///
 foreign_class!(
     #[derive(camelCaseAliases)]
     class Util {
@@ -1168,7 +1168,7 @@ foreign_class!(
         private fn SecretKey::to_string(&self) -> String; alias to_string;
         fn SecretKey::generate() -> Result<SecretKey>;
         fn SecretKey::from_bytes(bs: Vec<u8>) -> SecretKey;
-        
+
         fn SecretKey::public_key(&self) -> PublicKey;
         fn SecretKey::to_bytes(&self) -> Vec<u8>;
         fn SecretKey::sign(&self, msg: Vec<u8>) -> Signature;
@@ -1191,7 +1191,7 @@ foreign_class!(
         private constructor = empty;
         private fn MessagePayload::to_string(&self) -> String; alias to_string;
 
-        /// Turns a serialized message payload string back into its class 
+        /// Turns a serialized message payload string back into its class
         fn MessagePayload::deserialize(serialised_data: &str) -> Result<MessagePayload>;
         /// Get the type of message this contains (used to select the correct getter)
         fn MessagePayload::payload_type(&self) -> MessagePayloadType;
@@ -1200,7 +1200,7 @@ foreign_class!(
         fn MessagePayload::get_as_treasury(&self) -> Option<TreasuryPayload>;
         fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>;
         fn MessagePayload::get_as_receipt(&self) -> Option<ReceiptPayload>;
-        
+
         /// Serializes the message payload into a json string
         fn MessagePayload::serialize(&self) -> Result<String>;
     }
@@ -1354,7 +1354,7 @@ foreign_class!(
         private constructor = empty;
         private fn PreparedTransactionData::to_string(&self) -> String; alias to_string;
 
-        /// Turns a serialized preparedTransactionData string back into its class 
+        /// Turns a serialized preparedTransactionData string back into its class
         fn PreparedTransactionData::deserialize(serialised_data: &str) -> Result<PreparedTransactionData>;
 
         /// Transaction essence
@@ -1458,7 +1458,7 @@ foreign_class!(
         self_type SignatureUnlock;
         constructor SignatureUnlock::from(public_key: Vec<u8>, signature: Vec<u8>) -> SignatureUnlock;
         private fn SignatureUnlock::to_string(&self) -> String; alias to_string;
-        
+
     }
 );
 
@@ -1469,7 +1469,7 @@ foreign_class!(
         private constructor = empty;
         private fn UnlockBlock::to_string(&self) -> String; alias to_string;
         fn UnlockBlock::kind(&self) -> UnlockBlockKind;
-        
+
         fn UnlockBlock::get_as_reference(&self) -> Option<ReferenceUnlock>;
         fn UnlockBlock::get_as_signature(&self) -> Option<SignatureUnlock>;
     }

@@ -112,7 +112,7 @@ impl TreasuryInput {
     }
 
     pub fn to_inner_clone(&self) -> RustTreasuryInput {
-        self.0.clone()
+        self.0
     }
 }
 

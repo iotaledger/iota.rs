@@ -11,6 +11,8 @@ pub mod message;
 pub mod prepared;
 pub mod slip10;
 
+use std::borrow::Borrow;
+
 pub fn consolidate_funds(
     client: crate::full_node_api::Client,
     seed: &str,

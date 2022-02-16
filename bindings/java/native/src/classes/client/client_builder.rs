@@ -10,6 +10,12 @@ pub struct BrokerOptions {
     builder: Rc<RefCell<Option<RustBrokerOptions>>>,
 }
 
+impl Default for BrokerOptions {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BrokerOptions {
     pub fn new() -> Self {
         Self {
@@ -91,7 +97,7 @@ impl ClientBuilder {
         let nodes_arr: Vec<&str> = nodes
             .iter()
             .map(|s| {
-                let st: &str = &s;
+                let st: &str = s;
                 st
             })
             .collect();
@@ -112,14 +118,8 @@ impl ClientBuilder {
         username: Option<&str>,
         password: Option<&str>,
     ) -> ClientBuilder {
-        let jwt_opt = match jwt {
-            Some(j) => Some(j.to_string()),
-            None => None,
-        };
-        let auth_opt = match username {
-            Some(user) => Some((user, password.unwrap())),
-            None => None,
-        };
+        let jwt_opt = jwt.map(|j| j.to_string());
+        let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
             .builder
             .borrow_mut()
@@ -137,14 +137,8 @@ impl ClientBuilder {
         username: Option<&str>,
         password: Option<&str>,
     ) -> ClientBuilder {
-        let jwt_opt = match jwt {
-            Some(j) => Some(j.to_string()),
-            None => None,
-        };
-        let auth_opt = match username {
-            Some(user) => Some((user, password.unwrap())),
-            None => None,
-        };
+        let jwt_opt = jwt.map(|j| j.to_string());
+        let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
             .builder
             .borrow_mut()
@@ -162,14 +156,8 @@ impl ClientBuilder {
         username: Option<&str>,
         password: Option<&str>,
     ) -> ClientBuilder {
-        let jwt_opt = match jwt {
-            Some(j) => Some(j.to_string()),
-            None => None,
-        };
-        let auth_opt = match username {
-            Some(user) => Some((user, password.unwrap())),
-            None => None,
-        };
+        let jwt_opt = jwt.map(|j| j.to_string());
+        let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
             .builder
             .borrow_mut()
@@ -187,14 +175,8 @@ impl ClientBuilder {
         username: Option<&str>,
         password: Option<&str>,
     ) -> ClientBuilder {
-        let jwt_opt = match jwt {
-            Some(j) => Some(j.to_string()),
-            None => None,
-        };
-        let auth_opt = match username {
-            Some(user) => Some((user, password.unwrap())),
-            None => None,
-        };
+        let jwt_opt = jwt.map(|j| j.to_string());
+        let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
             .builder
             .borrow_mut()
