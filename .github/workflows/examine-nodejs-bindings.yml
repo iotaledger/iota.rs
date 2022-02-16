@@ -73,6 +73,12 @@ jobs:
         run: npm config set msvs_version 2017
 
       # This step is required for node-gyp to work on Windows with Node.js 16.
+      - name: Set up the environment for compiling C/C++ code
+        if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
+        working-directory: bindings/nodejs/
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # This step is required for node-gyp to work on Windows with Node.js 16.
       - name: Set up windows-build-tools
         if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
         working-directory: bindings/nodejs/
