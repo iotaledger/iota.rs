@@ -37,7 +37,7 @@ jobs:
       max-parallel: 1
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['14', '16']
+        node: ['12', '14', '16']
 
     steps:
       - name: Checkout the Source Code
