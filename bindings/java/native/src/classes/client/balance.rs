@@ -20,6 +20,7 @@ pub struct GetBalanceBuilderApi<'a> {
 }
 
 impl<'a> GetBalanceBuilderApi<'a> {
+    #[allow(dead_code)]
     pub(crate) fn from_old(client: &'a Client, seed: &str) -> Self {
         let internal = GetBalanceBuilderApiInternal {
             client,
