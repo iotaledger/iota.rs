@@ -36,8 +36,10 @@ jobs:
       # XXX: Run in serial, as otherwise the tests can crate double spends and fail.
       max-parallel: 1
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['12', '14', '16']
+        os: [windows-latest]
+        # os: [windows-latest, macos-latest, ubuntu-latest]
+        node: ['16']
+        # node: ['12', '14', '16']
 
     steps:
       - name: Checkout the Source Code
@@ -65,11 +67,10 @@ jobs:
         uses: ./.github/actions/setup-clang
 
       # This step is required for node-gyp to work on Windows with Node.js 16.
-      - name: Set Up Python 3.9
+      - name: Set npm config to msvs_version 2017
         if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
+        working-directory: bindings/nodejs/
+        run: npm config set msvs_version 2017
 
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
