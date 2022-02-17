@@ -74,8 +74,6 @@ jobs:
 
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
-        # This step is required for node-gyp to work on Windows with Node.js 16.
-        uses: nicledomaS/cmake_build_action@v1.4
         run: yarn install
 
       - name: Run Cargo Test
