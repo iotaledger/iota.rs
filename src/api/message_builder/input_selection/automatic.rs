@@ -10,12 +10,14 @@ use crate::{
         message_builder::input_selection::{output_data::get_utxo_chains_inputs, types::SelectedTransactionData},
         ClientMessageBuilder, ADDRESS_GAP_RANGE,
     },
+    constants::HD_WALLET_TYPE,
     node_api::indexer_api::query_parameters::QueryParameter,
     signing::types::InputSigningData,
     Error, Result,
 };
 
 use bee_message::{address::Address, output::feature_block::FeatureBlock};
+use crypto::keys::slip10::Chain;
 
 /// Searches inputs for provided outputs, by requesting the outputs from the account addresses
 /// Forwards to [try_select_inputs()]
@@ -77,14 +79,17 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
                 empty_address_count = 0;
 
                 for output_response in address_outputs {
-                    available_inputs.push(ClientMessageBuilder::create_input_signing_data(
-                        message_builder.coin_type,
-                        account_index,
-                        address_index,
-                        *internal,
-                        &output_response,
-                        str_address.to_owned(),
-                    )?);
+                    available_inputs.push(InputSigningData {
+                        output_response: output_response.clone(),
+                        chain: Some(Chain::from_u32_hardened(vec![
+                            HD_WALLET_TYPE,
+                            message_builder.coin_type,
+                            account_index,
+                            *internal as u32,
+                            address_index,
+                        ])),
+                        bech32_address: str_address.to_owned(),
+                    });
                 }
                 let selected_transaction_data = match try_select_inputs(
                     available_inputs.clone(),
@@ -187,14 +192,17 @@ async fn get_inputs_for_sender_and_issuer(
             let address_outputs = crate::node_api::core_api::get_outputs(message_builder.client, output_ids).await?;
             match address_outputs.first() {
                 Some(output_response) => {
-                    required_ed25519_inputs.push(ClientMessageBuilder::create_input_signing_data(
-                        message_builder.coin_type,
-                        message_builder.account_index,
-                        address_index,
-                        internal,
-                        output_response,
-                        Address::Ed25519(*address).to_bech32(&bech32_hrp),
-                    )?);
+                    required_ed25519_inputs.push(InputSigningData {
+                        output_response: output_response.clone(),
+                        chain: Some(Chain::from_u32_hardened(vec![
+                            HD_WALLET_TYPE,
+                            message_builder.coin_type,
+                            message_builder.account_index,
+                            internal as u32,
+                            address_index,
+                        ])),
+                        bech32_address: Address::Ed25519(*address).to_bech32(&bech32_hrp),
+                    });
                     // we want to include all outputs, because another output might be better balance wise,
                     // but will not unlock the address we need
                     force_use_all_inputs = true;

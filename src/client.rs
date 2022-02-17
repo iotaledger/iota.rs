@@ -806,12 +806,12 @@ impl Client {
         let reattach_message = {
             #[cfg(feature = "wasm")]
             {
-                let network_id = self.get_network_id().await?;
+                let protocol_version = self.get_protocol_version().await?;
                 let mut tips = self.get_tips().await?;
                 tips.sort_unstable_by_key(|a| a.pack_to_vec());
                 tips.dedup();
                 let mut message_builder = MessageBuilder::<ClientMiner>::new()
-                    .with_network_id(network_id)
+                    .with_protocol_version(protocol_version)
                     .with_parents(Parents::new(tips)?);
                 if let Some(p) = message.payload().to_owned() {
                     message_builder = message_builder.with_payload(p.clone())

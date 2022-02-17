@@ -22,3 +22,5 @@ pub(crate) const MAX_PARALLEL_API_REQUESTS: usize = 100;
 
 /// IOTA coin type https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 pub const IOTA_COIN_TYPE: u32 = 4218;
+/// BIP-0044 defines a logical hierarchy for deterministic wallets
+pub const HD_WALLET_TYPE: u32 = 44;

@@ -3,7 +3,7 @@
 
 // These are E2E test samples, so they are ignored by default.
 
-use iota_client::signing::mnemonic::MnemonicSigner;
+use iota_client::{node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner};
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, MessageId};
 
@@ -16,6 +16,7 @@ async fn setup_tagged_data_message() -> MessageId {
     let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
@@ -65,6 +66,7 @@ async fn test_get_tips() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -80,6 +82,7 @@ async fn test_post_message_with_tagation() {
     let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
@@ -101,6 +104,7 @@ async fn test_post_message_with_transaction() {
     let iota = iota_client::Client::builder() // Crate a client instance builder
         .with_node(DEFAULT_NODE_URL) // Insert the node here
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
@@ -123,30 +127,13 @@ async fn test_post_message_with_transaction() {
     println!("Message ID: {:?}", message_id);
 }
 
-// #[tokio::test]
-// #[ignore]
-// async fn test_get_message_by_index() {
-//     setup_tagged_data_message().await;
-//     let r = iota_client::Client::builder()
-//         .with_node(DEFAULT_NODE_URL)
-//         .unwrap()
-//         .finish()
-//         .await
-//         .unwrap()
-//         .get_message()
-//         .index("iota.rs")
-//         .await
-//         .unwrap();
-
-//     println!("{:#?}", r);
-// }
-
 #[tokio::test]
 #[ignore]
 async fn test_get_message_data() {
     let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
@@ -163,6 +150,7 @@ async fn test_get_message_metadata() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -180,6 +168,7 @@ async fn test_get_message_raw() {
     iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -195,6 +184,7 @@ async fn test_get_message_children() {
     iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -209,6 +199,7 @@ async fn test_get_address_balance() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -220,27 +211,25 @@ async fn test_get_address_balance() {
     println!("{:#?}", r);
 }
 
-// todo fix
-// #[tokio::test]
-// #[ignore]
-// async fn test_get_address_outputs() {
-//     let r = iota_client::Client::builder()
-//         .with_node(DEFAULT_NODE_URL)
-//         .unwrap()
-//         .finish()
-//         .await
-//         .unwrap()
-//         .get_address()
-// .outputs(
-//     "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
-//     Default::default(), /* Insert the address to
-//                          * search for */
-// )
-//         .await
-//         .unwrap();
+#[tokio::test]
+#[ignore]
+async fn test_get_address_outputs() {
+    let r = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .with_node_sync_disabled()
+        .finish()
+        .await
+        .unwrap()
+        .get_address()
+        .outputs(vec![QueryParameter::Address(
+            "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),
+        )])
+        .await
+        .unwrap();
 
-//     println!("{:#?}", r);
-// }
+    println!("{:#?}", r);
+}
 
 #[tokio::test]
 #[ignore]
@@ -248,6 +237,7 @@ async fn test_get_output() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -270,6 +260,7 @@ async fn test_get_peers() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -286,6 +277,7 @@ async fn test_get_milestone() {
     let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
@@ -306,6 +298,7 @@ async fn test_get_milestone_utxo_changes() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -322,6 +315,7 @@ async fn test_get_receipts() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -338,6 +332,7 @@ async fn get_receipts_migrated_at() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -354,6 +349,7 @@ async fn test_get_treasury() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()
@@ -370,6 +366,7 @@ async fn test_get_included_message() {
     let r = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
+        .with_node_sync_disabled()
         .finish()
         .await
         .unwrap()

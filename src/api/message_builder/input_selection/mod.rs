@@ -60,7 +60,6 @@ pub async fn try_select_inputs(
     // else: only select inputs that are necessary for the provided outputs
 
     let required = get_accumulated_output_amounts(&outputs).await?;
-    // println!("required: {:?}", required);
 
     // check if a foundry minted native tokens
     let (minted_native_tokens, burned_native_tokens) = get_minted_and_burned_native_tokens(&input_outputs, &outputs)?;
@@ -230,7 +229,6 @@ pub async fn try_select_inputs(
         .map(|i| Ok(Output::try_from(&i.output_response.output)?))
         .collect::<Result<Vec<Output>>>()?;
     // get_remainder also checks for amounts and returns an error if we don't have enough
-    // println!("selected_input_outputs {:?}", selected_input_outputs);
     let remainder_output = get_remainder(&selected_input_outputs, &outputs, remainder_address).await?;
     if let Some(remainder_output) = &remainder_output {
         outputs.push(remainder_output.clone());

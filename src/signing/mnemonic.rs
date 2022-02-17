@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    constants::HD_WALLET_TYPE,
     signing::{SignerHandle, SignerType},
     Client, Result,
 };
@@ -33,8 +34,13 @@ fn generate_addresses(
 ) -> crate::Result<Vec<Address>> {
     let mut addresses = Vec::new();
     for address_index in address_indexes {
-        // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        let chain = Chain::from_u32_hardened(vec![44, coin_type, account_index, internal as u32, address_index]);
+        let chain = Chain::from_u32_hardened(vec![
+            HD_WALLET_TYPE,
+            coin_type,
+            account_index,
+            internal as u32,
+            address_index,
+        ]);
         let public_key = seed
             .derive(Curve::Ed25519, &chain)?
             .secret_key()
@@ -117,34 +123,21 @@ impl crate::signing::Signer for MnemonicSigner {
         let mut unlock_blocks = Vec::new();
         let mut unlock_block_indexes = HashMap::<Address, usize>::new();
         for (current_block_index, input) in inputs.iter().enumerate() {
-            // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-            // let chain = Chain::from_u32_hardened(vec![
-            //     // https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#purpose
-            //     44,
-            //     coin_type,
-            //     account_index,
-            //     input.address_internal as u32,
-            //     input.address_index,
-            // ]);
             // When we have an alias or Nft output, we will add them to nft_or_alias_indexes, because they can be
             // used to unlock outputs
-
             let output = Output::try_from(&input.output_response.output)?;
             let alias_or_nft_address: Option<Address> = match &output {
                 Output::Alias(a) => Some(Address::Alias(AliasAddress::new(*a.alias_id()))),
                 Output::Nft(a) => Some(Address::Nft(NftAddress::new(*a.nft_id()))),
                 _ => None,
             };
-
             if let Some(address) = alias_or_nft_address {
                 unlock_block_indexes.insert(address, current_block_index);
-                // println!("nft_or_alias_indexes inserted: {:?}", input.alias_or_nft_address.unwrap());
             }
 
             let input_address = Address::try_from_bech32(&input.bech32_address)?;
-            // Check if current path is same as previous path
+            // Check if current address is the same as a previous one
             // If so, add a reference unlock block
-            // Format to differentiate between public and internal addresses
             if let Some(block_index) = unlock_block_indexes.get(&input_address) {
                 match input_address {
                     Address::Alias(_alias) => {
@@ -158,12 +151,13 @@ impl crate::signing::Signer for MnemonicSigner {
                     }
                 }
             } else {
-                // We can only sign ed25519 addresses and unlock_block_indexes needs to contain the address already at
-                // this point
+                // We can only sign ed25519 addresses and unlock_block_indexes needs to contain the alias or nft address
+                // already at this point, because the reference index needs to be lower than the current
+                // block index
                 if input_address.kind() != Ed25519Address::KIND {
                     return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
                 }
-                // If not, we need to create a signature unlock block
+                // Create a signature unlock block
                 let private_key = self
                     .deref()
                     .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
@@ -176,7 +170,6 @@ impl crate::signing::Signer for MnemonicSigner {
                     Ed25519Signature::new(public_key, *signature),
                 ))));
                 unlock_block_indexes.insert(input_address, current_block_index);
-                // println!("unlock_block_indexes inserted: {:?}", input_address);
             }
         }
         Ok(unlock_blocks)

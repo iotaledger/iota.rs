@@ -26,8 +26,4 @@ pub struct SelectedTransactionData {
 pub(crate) struct AccumulatedOutputAmounts {
     pub(crate) amount: u64,
     pub(crate) native_tokens: HashMap<TokenId, U256>,
-    // unlock address with the output responses of the required input
-    // pub(crate) utxo_chains: Vec<(Address, OutputResponse)>,
-    // unlock_address with the output responses of the required input
-    // pub(crate) chains_with_governance_transition: Vec<(Address, OutputResponse)>,
 }

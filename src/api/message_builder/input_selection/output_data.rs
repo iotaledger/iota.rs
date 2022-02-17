@@ -9,6 +9,7 @@ use crate::{
         message_builder::ClientMessageBuilder,
         search_address,
     },
+    constants::HD_WALLET_TYPE,
     signing::types::InputSigningData,
     Error, Result,
 };
@@ -24,6 +25,7 @@ use bee_rest_api::types::{
     dtos::{OutputDto, UnlockConditionDto},
     responses::OutputResponse,
 };
+use crypto::keys::slip10::Chain;
 
 use primitive_types::U256;
 
@@ -36,7 +38,6 @@ pub(crate) async fn get_remainder(
     outputs: &[Output],
     remainder_address: Option<Address>,
 ) -> Result<Option<Output>> {
-    // println!("get_remainder: get_utxo_chain_inputs: {}", get_utxo_chain_inputs);
     let mut remainder_output = None;
     let input_data = get_accumulated_output_amounts(inputs).await?;
     let output_data = get_accumulated_output_amounts(outputs).await?;
@@ -49,8 +50,6 @@ pub(crate) async fn get_remainder(
     }
     let remainder_amount = input_data.amount - output_data.amount;
 
-    // println!("get_remainder_native_tokens inputs: {:?}", input_native_tokens);
-    // println!("get_remainder_native_tokens outputs: {:?}", output_data.native_tokens);
     // add minted tokens
     let mut input_native_tokens = input_data.native_tokens;
     for (token_id, minted_native_token_amount) in minted_native_tokens {
@@ -257,15 +256,18 @@ pub(crate) async fn get_utxo_chains_inputs(
             }
             None => (0, false),
         };
-        let input_signing_data = ClientMessageBuilder::create_input_signing_data(
-            message_builder.coin_type,
-            message_builder.account_index,
-            address_index,
-            internal,
-            &output_response,
-            unlock_address.to_bech32(&bech32_hrp),
-        )?;
-        utxo_chain_inputs.push(input_signing_data);
+
+        utxo_chain_inputs.push(InputSigningData {
+            output_response: output_response.clone(),
+            chain: Some(Chain::from_u32_hardened(vec![
+                HD_WALLET_TYPE,
+                message_builder.coin_type,
+                message_builder.account_index,
+                internal as u32,
+                address_index,
+            ])),
+            bech32_address: unlock_address.to_bech32(&bech32_hrp),
+        });
     }
 
     Ok(utxo_chain_inputs)

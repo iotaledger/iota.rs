@@ -8,10 +8,13 @@ use crate::{
         address::search_address, input_selection::try_select_inputs,
         message_builder::input_selection::types::SelectedTransactionData, ClientMessageBuilder,
     },
+    constants::HD_WALLET_TYPE,
+    signing::types::InputSigningData,
     Result,
 };
 
 use bee_message::{address::Address, output::AliasId};
+use crypto::keys::slip10::Chain;
 
 use std::collections::HashSet;
 
@@ -56,15 +59,17 @@ pub(crate) async fn get_custom_inputs(
                     }
                     None => (0, false),
                 };
-                let input_signing_data = ClientMessageBuilder::create_input_signing_data(
-                    message_builder.coin_type,
-                    message_builder.account_index,
-                    address_index,
-                    internal,
-                    &output_response,
-                    output_address.to_bech32(&bech32_hrp),
-                )?;
-                input_signing_data_entrys.push(input_signing_data);
+                input_signing_data_entrys.push(InputSigningData {
+                    output_response: output_response.clone(),
+                    chain: Some(Chain::from_u32_hardened(vec![
+                        HD_WALLET_TYPE,
+                        message_builder.coin_type,
+                        message_builder.account_index,
+                        internal as u32,
+                        address_index,
+                    ])),
+                    bech32_address: output_address.to_bech32(&bech32_hrp),
+                });
             }
         }
     }

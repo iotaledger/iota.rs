@@ -5,7 +5,7 @@ use crate::{
     api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
     bee_message::output::BasicOutputBuilder,
     constants::IOTA_COIN_TYPE,
-    signing::{types::InputSigningData, SignerHandle},
+    signing::SignerHandle,
     Client, Error, Result,
 };
 
@@ -19,8 +19,7 @@ use bee_message::{
     payload::{Payload, TaggedDataPayload},
     Message, MessageId,
 };
-use bee_rest_api::types::{dtos::OutputDto, responses::OutputResponse};
-use crypto::keys::slip10::Chain;
+use bee_rest_api::types::dtos::OutputDto;
 use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
 
 use std::{collections::HashSet, ops::Range, str::FromStr};
@@ -213,36 +212,6 @@ impl<'a> ClientMessageBuilder<'a> {
         }
     }
 
-    // Used to store the address data for an input so we can later sign it
-    fn create_input_signing_data(
-        coin_type: u32,
-        account_index: u32,
-        address_index: u32,
-        internal: bool,
-        output: &OutputResponse,
-        bech32_address: String,
-    ) -> Result<InputSigningData> {
-        // Note that we need to sign the original address, i.e., `path/index`,
-        // instead of `path/index/offset` or `path/offset`.
-
-        // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        let chain = Chain::from_u32_hardened(vec![44, coin_type, account_index, internal as u32, address_index]);
-        // let input = Input::Utxo(
-        //     UtxoInput::new(TransactionId::from_str(&output.transaction_id)?, output.output_index)
-        //         .map_err(|_| Error::TransactionError)?,
-        // );
-
-        Ok(InputSigningData {
-            // account_index,
-            // input,
-            output_response: output.clone(),
-            // address_index,
-            chain: Some(chain),
-            // internal,
-            bech32_address,
-        })
-    }
-
     /// Get output amount and address from an OutputDto, governance_transition for Alias Outputs so we get the unlock
     /// condition we're interested in
     pub fn get_output_amount_and_address(
@@ -290,15 +259,6 @@ impl<'a> ClientMessageBuilder<'a> {
             OutputDto::Foundry(ref r) => {
                 for block in &r.unlock_conditions {
                     match block {
-                        // bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
-                        //     return Ok((r.amount, Address::try_from(&e.address)?));
-                        // }
-                        // bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
-                        //     return Ok((r.amount, Address::try_from(&e.address)?));
-                        // }
-                        // bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
-                        //     return Ok((r.amount, Address::try_from(&e.address)?));
-                        // }
                         bee_rest_api::types::dtos::UnlockConditionDto::ImmutableAliasAddress(e) => {
                             return Ok((r.amount, Address::try_from(&e.address)?));
                         }

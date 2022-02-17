@@ -89,10 +89,6 @@ pub async fn raw(client: &Client, message_id: &MessageId) -> Result<String> {
     Ok(resp)
 }
 
-// // RouteMessageChildren is the route for getting message IDs of the children of a message, identified by its
-// messageID. // GET returns the message IDs of all children.
-// RouteMessageChildren = "/messages/:" + restapipkg.ParameterMessageID + "/children"
-
 /// GET /api/v2/messages/{messageID}/children endpoint
 /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
 pub async fn children(client: &Client, message_id: &MessageId) -> Result<Box<[MessageId]>> {

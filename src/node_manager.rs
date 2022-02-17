@@ -525,10 +525,7 @@ impl NodeManagerBuilder {
     pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
         // todo update with new node pool
         // let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
-        let default_testnet_nodes = vec![
-            "https://api.lb-0.h.chrysalis-devnet.iota.cafe/",
-            "https://api.lb-1.h.chrysalis-devnet.iota.cafe/",
-        ];
+        let default_testnet_nodes = vec![];
         if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {
                 Some(ref network) => match network.to_lowercase().as_str() {
