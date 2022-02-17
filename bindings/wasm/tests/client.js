@@ -165,7 +165,7 @@ async function test() {
       const prepared_transaction = await client
         .message()
         .input(inputs[0])
-        .output('atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2', BigInt(1000000))
+        .dustAllowanceOutput('atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2', BigInt(1000000))
         .prepareTransaction();
       const signed_transaction = await client
         .message()
