@@ -33,7 +33,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      # XXX: Run in serial, as otherwise the tests can crate double spends and fail.
+      # XXX: Run in serial, as otherwise the tests can create double spends and fail.
       max-parallel: 1
       matrix:
         os: [windows-latest]
@@ -74,8 +74,8 @@ jobs:
 
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
-      # This step is required for node-gyp to work on Windows with Node.js 16.
-        uses: ilammy/msvc-dev-cmd@v1
+        # This step is required for node-gyp to work on Windows with Node.js 16.
+        uses: nicledomaS/cmake_build_action@v1.4
         run: yarn install
 
       - name: Run Cargo Test
