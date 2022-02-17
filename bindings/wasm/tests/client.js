@@ -161,7 +161,7 @@ async function test() {
         .accountIndex(0)
         .range(0, 5)
         .get();
-      let inputs;
+      let inputs = [];
       try {
         inputs = await client.findInputs(addresses, BigInt(1000000));
       } catch (e) { console.log };
