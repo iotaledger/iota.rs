@@ -67,14 +67,20 @@ jobs:
         uses: ./.github/actions/setup-clang
 
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
-        if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
+        if: ${{ startsWith(matrix.os, 'windows') && matrix.node == 16 }}
         run: |
           choco install visualstudio2017-workload-vctools
 
-      # This step is required for node-gyp to work on Windows with Node.js 16.
-      # - name: Set up the environment for compiling C/C++ code
-        # if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
-        # uses: ilammy/msvc-dev-cmd@v1
+      - name: yarn global add node-gyp
+        if: ${{ startsWith(matrix.os, 'windows') && matrix.node == 16 }}
+        working-directory: bindings/nodejs/
+        run: yarn global add node-gyp
+
+      - name: yarn config set msvs_version 2017
+        if: ${{ startsWith(matrix.os, 'windows') && matrix.node == 16 }}
+        working-directory: bindings/nodejs/
+        run: npm config set msvs_version 2017
+        run: yarn config set msvs_version 2017
 
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
