@@ -157,7 +157,7 @@ describe('Client', () => {
     const addresses = await client.getAddresses(seed)
       .bech32Hrp("atoi")
       .accountIndex(0)
-      .range(0, 5)
+      .range(0, 2)
       .get();
     let inputs;
     try {
@@ -168,7 +168,7 @@ describe('Client', () => {
       const prepared_transaction = await client
         .message()
         .input(inputs[0])
-        .dustAllowanceOutput('atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2', 1000000)
+        .output('atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2', 1000000)
         .prepareTransaction();
       const signed_transaction = await client
         .message()
