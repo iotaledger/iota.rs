@@ -41,7 +41,7 @@ jobs:
         exclude:
           # Remove once neon is updated
           - os: windows-latest
-            node-version: '16'
+            node: '16'
 
     steps:
       - name: Checkout the Source Code
