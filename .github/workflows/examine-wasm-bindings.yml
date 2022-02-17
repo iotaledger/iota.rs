@@ -33,11 +33,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      # XXX: Run in serial, as otherwise the tests can crate double spends and fail.
+      # XXX: Run in serial, as otherwise the tests can create double spends and fail.
       max-parallel: 1
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['12', '14', '16']
+        node: ['14', '16']
 
     steps:
       - name: Checkout the Source Code
@@ -59,13 +59,8 @@ jobs:
           cache: yarn
           cache-dependency-path: bindings/wasm/yarn.lock
 
-      # This step is required for bindgen to work on Windows.
-      - name: Set Up Clang/LLVM (Windows)
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        uses: ./.github/actions/setup-clang
-
       - name: Run Yarn Install
-        working-directory: bindings/nodejs/
+        working-directory: bindings/wasm/
         run: yarn install
 
       - name: Run Cargo Test
@@ -75,7 +70,7 @@ jobs:
           args: --manifest-path bindings/wasm/native/Cargo.toml --all-features --release
 
       - name: Run Yarn Test
-        working-directory: bindings/nodejs/
+        working-directory: bindings/wasm/
         run: yarn test
 
   lint:
