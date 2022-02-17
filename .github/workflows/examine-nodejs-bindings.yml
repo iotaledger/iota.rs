@@ -71,6 +71,11 @@ jobs:
         run: |
           choco install visualstudio2017-workload-vctools
 
+      - name: choco install cmake --pre 
+        if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
+        run: |
+          choco install cmake --pre 
+
       - name: yarn global add node-gyp
         if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
         working-directory: bindings/nodejs/
