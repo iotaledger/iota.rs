@@ -78,12 +78,6 @@ jobs:
         working-directory: bindings/nodejs/
         uses: ilammy/msvc-dev-cmd@v1
 
-      # This step is required for node-gyp to work on Windows with Node.js 16.
-      - name: Set up windows-build-tools
-        if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
-        working-directory: bindings/nodejs/
-        run: npm install --global windows-build-tools
-
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
         run: yarn install
