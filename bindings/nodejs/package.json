@@ -14,9 +14,9 @@
     "prebuild-install": "^6.1.2"
   },
   "scripts": {
-    "install": "prebuild-install --tag-prefix nodejs-binding-v || yarn run rebuild",
+    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
     "build:neon": "neon build --release && node scripts/move-lib.js",
-    "rebuild": "yarn run build:neon && node scripts/strip.js",
+    "rebuild": "npm run build:neon && node scripts/strip.js",
     "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
     "prebuild:electron": "node scripts/electron-prebuild.js",
     "build:docs": "./node_modules/.bin/jsdoc lib/index.js",
