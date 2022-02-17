@@ -36,10 +36,12 @@ jobs:
       # XXX: Run in serial, as otherwise the tests can create double spends and fail.
       max-parallel: 1
       matrix:
-        os: [windows-latest]
-        # os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['16']
-        # node: ['12', '14', '16']
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        node: ['12', '14', '16']
+        exclude:
+          # Remove once neon is updated
+          - os: windows-latest
+            node-version: '16'
 
     steps:
       - name: Checkout the Source Code
@@ -65,27 +67,6 @@ jobs:
       - name: Set Up Clang/LLVM (Windows)
         if: ${{ startsWith(matrix.os, 'windows') }}
         uses: ./.github/actions/setup-clang
-
-      - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
-        if: ${{ startsWith(matrix.os, 'windows') && matrix.node == 16 }}
-        run: |
-          choco install visualstudio2017-workload-vctools
-
-      - name: choco install cmake --pre 
-        if: ${{ startsWith(matrix.os, 'windows') && matrix.node == 16 }}
-        run: |
-          choco install cmake --pre 
-
-      - name: yarn global add node-gyp
-        if: ${{ startsWith(matrix.os, 'windows') && matrix.node == 16 }}
-        working-directory: bindings/nodejs/
-        run: yarn global add node-gyp
-
-      - name: yarn config set msvs_version 2017
-       if: ${{ startsWith(matrix.os, 'windows') && matrix.node == 16 }}
-        working-directory: bindings/nodejs/
-        run: npm config set msvs_version 2017
-        run: yarn config set msvs_version 2017
 
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
