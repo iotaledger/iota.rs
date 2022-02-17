@@ -67,10 +67,10 @@ jobs:
         uses: ./.github/actions/setup-clang
 
       # This step is required for node-gyp to work on Windows with Node.js 16.
-      - name: Set npm install -g windows-build-tools
+      - name: yarn global add windows-build-tools
         if: ${{ startsWith(matrix.os, 'windows') }} && ${{ matrix.node == 16 }}
         working-directory: bindings/nodejs/
-        run: npm install -g windows-build-tools
+        run: yarn global add windows-build-tools
 
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
