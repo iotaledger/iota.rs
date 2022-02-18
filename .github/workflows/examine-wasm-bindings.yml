@@ -33,8 +33,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      # XXX: Run in serial, as otherwise the tests can create double spends and fail.
-      max-parallel: 1
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         node: ['14', '16']
