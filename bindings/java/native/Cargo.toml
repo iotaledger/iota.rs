@@ -17,7 +17,7 @@ name = "iota_client"
 crate-type = ["cdylib"]
 
 [dependencies]
-iota-client = { path = "../../..", features = ["mqtt", "pow-fallback"] }
+iota-client = { path = "../../..", features = ["mqtt"] }
 
 # Java gen
 jni = "0.19.0"
