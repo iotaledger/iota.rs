@@ -28,6 +28,23 @@ pub enum SignerType {
     Mnemonic,
 }
 
+/// Dto for the signer types with required data.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SignerTypeDto {
+    /// Stronghold signer with storage path.
+    #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
+    Stronghold(String),
+    /// Ledger Device
+    #[cfg(feature = "ledger")]
+    LedgerNano,
+    /// Ledger Speculos Simulator
+    #[cfg(feature = "ledger")]
+    LedgerNanoSimulator,
+    /// Mnemonic
+    Mnemonic(String),
+}
+
 /// Metadata provided to [sign_message](trait.Signer.html#method.sign_message).
 pub struct SignMessageMetadata<'a> {
     /// The transfer's remainder value.

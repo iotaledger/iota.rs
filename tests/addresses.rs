@@ -42,8 +42,8 @@ async fn public_key_to_address() {
 
 #[tokio::test]
 async fn mnemonic_address_generation() {
-    let mnemnonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
-    let signer = MnemonicSigner::new(mnemnonic).unwrap();
+    let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
+    let signer = MnemonicSigner::new(mnemonic).unwrap();
 
     let addresses = GetAddressesBuilder::new(&signer)
         .with_bech32_hrp("iota".into())
