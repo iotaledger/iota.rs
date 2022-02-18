@@ -33,9 +33,9 @@ regex = { version = "1.5.4", default-features = false, features = ["std", "unico
 zeroize = { version = "1.4.1", default-features = false }
 
 # sync
-ureq = { version = "2.2.0", default-features = false, features = ["tls", "json"], optional = true }
+ureq = { version = "2.2.0", default-features = false, features = ["json"], optional = true }
 # async
-reqwest = { version = "0.11.6", default-features = false, features = ["json", "rustls-tls", "blocking"], optional = true }
+reqwest = { version = "0.11.6", default-features = false, features = ["json", "blocking"], optional = true }
 futures = { version = "0.3.17", default-features = false, features = ["thread-pool"], optional = true }
 
 # MQTT
@@ -60,7 +60,7 @@ dotenv = { version =  "0.15.0", default-features = false }
 ureq = { version = "2.2.0", default-features = false, features = ["tls", "json"] }
 
 [features]
-default = ["async"]
+default = ["async", "tls"]
 sync = ["ureq", "tokio", "futures"]
 async = ["reqwest", "futures", "tokio"]
 mqtt = ["rumqttc", "once_cell", "futures"]
@@ -68,6 +68,7 @@ storage = ["rusqlite", "once_cell"]
 wasm = ["reqwest", "futures", "gloo-timers", "instant", "bee-ternary", "bytes"]
 #fallback to local PoW
 pow-fallback = []
+tls = ["reqwest/rustls-tls", "ureq/tls"]
 
 [[example]]
 name = "10_mqtt"
