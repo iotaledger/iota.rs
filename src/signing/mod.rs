@@ -3,8 +3,9 @@
 
 //! Signing module to allow using different signer types for address generation and transaction essence signing
 
+#[cfg(feature = "ledger")]
+use crate::signing::ledger::LedgerSigner;
 use crate::signing::{
-    ledger::LedgerSigner,
     mnemonic::MnemonicSigner,
     types::{InputSigningData, SignerTypeDto},
 };
