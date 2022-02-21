@@ -12,7 +12,7 @@ keywords:
 # Overview
 
 The iota.rs library is designed to simplify how you connect and interact
-with[nodes](https://wiki.iota.org/chrysalis-docs/node_software) in the IOTA network. You can use it to generate
+with [nodes](https://wiki.iota.org/chrysalis-docs/node_software) in the IOTA network. You can use it to generate
 addresses, send messages, sign and send transactions, and more.
 
 Beyond establishing the initial connection to a node, iota.rs has no state. Operations use only the data you pass during
