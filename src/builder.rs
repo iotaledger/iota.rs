@@ -8,7 +8,10 @@ use crate::{
         DEFAULT_API_TIMEOUT, DEFAULT_BECH32_HRP, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL,
     },
     error::*,
-    node_manager::node::NodeAuth,
+    node_manager::{
+        builder::validate_url,
+        node::{Node, NodeAuth},
+    },
 };
 
 use log::LevelFilter;
@@ -76,6 +79,7 @@ fn default_tips_interval() -> u64 {
 
 /// Builder to construct client instance with sensible default values
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ClientBuilder {
     #[serde(flatten, rename = "nodeManagerBuilder")]
     node_manager_builder: crate::node_manager::builder::NodeManagerBuilder,
@@ -142,7 +146,31 @@ impl ClientBuilder {
     /// Set the fields from a client JSON config
     pub fn from_json(mut self, client_config: &str) -> Result<Self> {
         self = serde_json::from_str(client_config)?;
+        // validate URLs
+        if let Some(node_dto) = &self.node_manager_builder.primary_node {
+            let node: Node = node_dto.into();
+            validate_url(node.url)?;
+        }
+        if let Some(node_dto) = &self.node_manager_builder.primary_pow_node {
+            let node: Node = node_dto.into();
+            validate_url(node.url)?;
+        }
+        for node_dto in &self.node_manager_builder.nodes {
+            let node: Node = node_dto.into();
+            validate_url(node.url)?;
+        }
+        if let Some(permanodes) = &self.node_manager_builder.permanodes {
+            for node_dto in permanodes {
+                let node: Node = node_dto.into();
+                validate_url(node.url)?;
+            }
+        }
         Ok(self)
+    }
+
+    /// Export the client builder as JSON string
+    pub fn to_json(&self) -> Result<String> {
+        Ok(serde_json::to_string(&self)?)
     }
 
     /// Adds an IOTA node by its URL.

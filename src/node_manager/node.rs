@@ -53,6 +53,15 @@ impl From<NodeDto> for Node {
     }
 }
 
+impl From<&NodeDto> for Node {
+    fn from(node: &NodeDto) -> Self {
+        match node {
+            NodeDto::Url(url) => url.clone().into(),
+            NodeDto::Node(node) => node.clone(),
+        }
+    }
+}
+
 /// JSON struct for NodeDetail from the node_pool_urls
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct NodeDetail {

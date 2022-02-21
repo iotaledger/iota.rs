@@ -28,7 +28,7 @@ pub(crate) struct NodeManagerBuilder {
     #[serde(rename = "primaryNode")]
     pub(crate) primary_node: Option<NodeDto>,
     #[serde(rename = "primaryPoWNode")]
-    primary_pow_node: Option<NodeDto>,
+    pub(crate) primary_pow_node: Option<NodeDto>,
     #[serde(default)]
     pub(crate) nodes: HashSet<NodeDto>,
     pub(crate) permanodes: Option<HashSet<NodeDto>>,
