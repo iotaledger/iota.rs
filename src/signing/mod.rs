@@ -3,7 +3,11 @@
 
 //! Signing module to allow using different signer types for address generation and transaction essence signing
 
-use crate::signing::types::InputSigningData;
+use crate::signing::{
+    ledger::LedgerSigner,
+    mnemonic::MnemonicSigner,
+    types::{InputSigningData, SignerTypeDto},
+};
 
 use bee_message::{
     address::Address,
@@ -53,6 +57,23 @@ impl SignerHandle {
             signer_type,
             signer: Arc::new(Mutex::new(signer)),
         }
+    }
+    /// Create a new SignerHandle from a serialized SignerTypeDto
+    #[allow(clippy::should_implement_trait)]
+    pub fn from_str(data: &str) -> crate::Result<Self> {
+        let signer_type: SignerTypeDto = serde_json::from_str(data)?;
+
+        Ok(match signer_type {
+            #[cfg(feature = "stronghold")]
+            Stronghold(String) => {
+                todo!()
+            }
+            #[cfg(feature = "ledger")]
+            SignerTypeDto::LedgerNano => LedgerSigner::new(false),
+            #[cfg(feature = "ledger")]
+            SignerTypeDto::LedgerNanoSimulator => LedgerSigner::new(true),
+            SignerTypeDto::Mnemonic(mnemonic) => MnemonicSigner::new(&mnemonic)?,
+        })
     }
 }
 
