@@ -29,15 +29,13 @@ on:
 jobs:
   test:
     name: Test
-    # if: ${{ ! github.event.schedule }}
-    # FIXME: Fix obsolete assertions. (#782)
-    if: ${{ false }}
+    if: ${{ ! github.event.schedule }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['12', '14', '16']
+        node: ['14', '16']
 
     steps:
       - name: Checkout the Source Code
@@ -59,13 +57,8 @@ jobs:
           cache: yarn
           cache-dependency-path: bindings/wasm/yarn.lock
 
-      # This step is required for bindgen to work on Windows.
-      - name: Set Up Clang/LLVM (Windows)
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        uses: ./.github/actions/setup-clang
-
       - name: Run Yarn Install
-        working-directory: bindings/nodejs/
+        working-directory: bindings/wasm/
         run: yarn install
 
       - name: Run Cargo Test
@@ -75,7 +68,7 @@ jobs:
           args: --manifest-path bindings/wasm/native/Cargo.toml --all-features --release
 
       - name: Run Yarn Test
-        working-directory: bindings/nodejs/
+        working-directory: bindings/wasm/
         run: yarn test
 
   lint:
