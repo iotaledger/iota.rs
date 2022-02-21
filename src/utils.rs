@@ -13,7 +13,7 @@ use crypto::{
     utils,
 };
 
-pub use log::LevelFilter;
+use log::LevelFilter;
 use zeroize::Zeroize;
 
 use std::collections::HashMap;
