@@ -8,21 +8,38 @@ keywords:
 - npm
 - yarn
 - security
+- how to
 ---
-# Getting Started with Node.js
+# Getting Started With Node.js
 
-## Installation
+## Requirements
 
-- Using NPM:
-```
-$ npm i @iota/client
-```
-- Using yarn:
-```
-$ yarn add @iota/client
+Before you can get started with the Node.js binding for the iota.rs client library, please make sure that you have 
+installed [Node](https://nodejs.org/en/), 
+[Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) and [NPM](https://www.npmjs.com/) 
+or [Yarn](https://yarnpkg.com/).
+
+## Installing the Library
+
+### NPM
+
+If you are using NPM, you can install the binding in your project by running the following command:
+
+```bash
+npm i @iota/client
 ```
 
-## Example
+### Yarn
+
+If you are using Yarn, you can install the binding in your project by running the following command:
+
+```bash
+yarn add @iota/client
+```
+
+## Using the Library
+
+The following example shows you how to include the library and connect to a devnet node. 
 
 ```javascript
 const { ClientBuilder } = require('@iota/client')
