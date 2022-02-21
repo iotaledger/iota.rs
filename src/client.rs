@@ -15,7 +15,7 @@ use crate::{
         high_level::{AddressBalance, GetAddressBuilder},
         indexer_api::query_parameters::QueryParameter,
     },
-    node_manager::Node,
+    node_manager::node::{Node, NodeAuth},
     signing::SignerHandle,
     utils::{
         bech32_to_hex, generate_mnemonic, hash_network, hex_public_key_to_bech32_address, hex_to_bech32,
@@ -197,7 +197,7 @@ impl Client {
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
         for node in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Client::get_node_info(&node.url.to_string(), None, None).await {
+            if let Ok(info) = Client::get_node_info(&node.url.to_string(), None).await {
                 if info.status.is_healthy {
                     match network_nodes.get_mut(&info.protocol.network_name) {
                         Some(network_id_entry) => {
@@ -374,8 +374,15 @@ impl Client {
     pub async fn get_node_health(url: &str) -> Result<bool> {
         let mut url = Url::parse(url)?;
         url.set_path("health");
-        let status = crate::node_manager::HttpClient::new()
-            .get(Node { url, jwt: None }, DEFAULT_API_TIMEOUT)
+        let status = crate::node_manager::http_client::HttpClient::new()
+            .get(
+                Node {
+                    url,
+                    auth: None,
+                    disabled: false,
+                },
+                DEFAULT_API_TIMEOUT,
+            )
             .await?
             .status();
         match status {
@@ -402,24 +409,28 @@ impl Client {
 
     // todo: only used during syncing, can it be replaced with the other node info function?
     /// GET /api/v2/info endpoint
-    pub async fn get_node_info(
-        url: &str,
-        jwt: Option<String>,
-        auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<NodeInfo> {
-        let mut url = crate::node_manager::validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = auth_name_pwd {
-            url.set_username(name)
-                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-            url.set_password(Some(password))
-                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+    pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {
+        let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
+        if let Some(auth) = &auth {
+            if let Some((name, password)) = &auth.basic_auth_name_pwd {
+                url.set_username(name)
+                    .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+                url.set_password(Some(password))
+                    .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+            }
         }
-
         let path = "api/v2/info";
         url.set_path(path);
 
-        let resp: NodeInfo = crate::node_manager::HttpClient::new()
-            .get(Node { url, jwt }, DEFAULT_API_TIMEOUT)
+        let resp: NodeInfo = crate::node_manager::http_client::HttpClient::new()
+            .get(
+                Node {
+                    url,
+                    auth,
+                    disabled: false,
+                },
+                DEFAULT_API_TIMEOUT,
+            )
             .await?
             .json()
             .await?;

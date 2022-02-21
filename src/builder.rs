@@ -8,6 +8,7 @@ use crate::{
         DEFAULT_API_TIMEOUT, DEFAULT_BECH32_HRP, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL,
     },
     error::*,
+    node_manager::node::NodeAuth,
 };
 
 use log::LevelFilter;
@@ -22,7 +23,6 @@ use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 
 #[cfg(not(feature = "wasm"))]
 use {
-    crate::constants::NODE_SYNC_INTERVAL,
     std::collections::HashSet,
     tokio::{runtime::Runtime, sync::broadcast::channel},
 };
@@ -39,34 +39,67 @@ pub struct NetworkInfo {
     #[serde(rename = "protocolVersion")]
     pub protocol_version: Option<u8>,
     /// Bech32 HRP
-    #[serde(rename = "bech32HRP")]
+    #[serde(rename = "bech32HRP", default = "default_bech32_hrp")]
     pub bech32_hrp: String,
     /// Mininum proof of work score
-    #[serde(rename = "minPoWScore")]
+    #[serde(rename = "minPoWScore", default = "default_min_pow_score")]
     pub min_pow_score: f64,
     /// Local proof of work
-    #[serde(rename = "localPow")]
+    #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
     /// Tips request interval during PoW in seconds
-    #[serde(rename = "tipsInterval")]
+    #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
 }
 
+fn default_bech32_hrp() -> String {
+    DEFAULT_BECH32_HRP.into()
+}
+fn default_min_pow_score() -> f64 {
+    4000.0
+}
+
+fn default_local_pow() -> bool {
+    #[cfg(not(feature = "wasm"))]
+    {
+        true
+    }
+    #[cfg(feature = "wasm")]
+    {
+        false
+    }
+}
+
+fn default_tips_interval() -> u64 {
+    DEFAULT_TIPS_INTERVAL
+}
+
 /// Builder to construct client instance with sensible default values
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ClientBuilder {
-    node_manager_builder: crate::node_manager::NodeManagerBuilder,
-    #[cfg(not(feature = "wasm"))]
-    node_sync_interval: Duration,
-    #[cfg(not(feature = "wasm"))]
-    node_sync_enabled: bool,
+    #[serde(flatten, rename = "nodeManagerBuilder")]
+    node_manager_builder: crate::node_manager::builder::NodeManagerBuilder,
     #[cfg(feature = "mqtt")]
+    #[serde(flatten, rename = "brokerOptions")]
     broker_options: BrokerOptions,
+    #[serde(flatten, rename = "networkInfo", default)]
     pub(crate) network_info: NetworkInfo,
+    #[serde(rename = "apiTimeout", default = "default_api_timeout")]
     api_timeout: Duration,
+    #[serde(rename = "remotePowTimeout", default = "default_remote_pow_timeout")]
     remote_pow_timeout: Duration,
+    #[serde(default)]
     offline: bool,
+    #[serde(rename = "powWorkerCount", default)]
     pow_worker_count: Option<usize>,
+}
+
+fn default_api_timeout() -> Duration {
+    DEFAULT_API_TIMEOUT
+}
+
+fn default_remote_pow_timeout() -> Duration {
+    DEFAULT_REMOTE_POW_API_TIMEOUT
 }
 
 impl Default for NetworkInfo {
@@ -77,10 +110,7 @@ impl Default for NetworkInfo {
             // todo default None and get from nodeinfo
             protocol_version: Some(2),
             min_pow_score: DEFAULT_MIN_POW,
-            #[cfg(not(feature = "wasm"))]
-            local_pow: true,
-            #[cfg(feature = "wasm")]
-            local_pow: false,
+            local_pow: default_local_pow(),
             bech32_hrp: DEFAULT_BECH32_HRP.into(),
             tips_interval: DEFAULT_TIPS_INTERVAL,
         }
@@ -91,10 +121,6 @@ impl Default for ClientBuilder {
     fn default() -> Self {
         Self {
             node_manager_builder: crate::node_manager::NodeManager::builder(),
-            #[cfg(not(feature = "wasm"))]
-            node_sync_interval: NODE_SYNC_INTERVAL,
-            #[cfg(not(feature = "wasm"))]
-            node_sync_enabled: true,
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             network_info: NetworkInfo::default(),
@@ -112,6 +138,13 @@ impl ClientBuilder {
         Default::default()
     }
 
+    #[allow(unused_assignments)]
+    /// Set the fields from a client JSON config
+    pub fn from_json(mut self, client_config: &str) -> Result<Self> {
+        self = serde_json::from_str(client_config)?;
+        Ok(self)
+    }
+
     /// Adds an IOTA node by its URL.
     pub fn with_node(mut self, url: &str) -> Result<Self> {
         self.node_manager_builder = self.node_manager_builder.with_node(url)?;
@@ -119,55 +152,27 @@ impl ClientBuilder {
     }
 
     /// Adds an IOTA node by its URL to be used as primary node, with optional jwt and or basic authentication
-    pub fn with_primary_node(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        self.node_manager_builder = self
-            .node_manager_builder
-            .with_primary_node(url, jwt, basic_auth_name_pwd)?;
+    pub fn with_primary_node(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_primary_node(url, auth)?;
         Ok(self)
     }
 
     /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
     /// authentication
-    pub fn with_primary_pow_node(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        self.node_manager_builder = self
-            .node_manager_builder
-            .with_primary_pow_node(url, jwt, basic_auth_name_pwd)?;
+    pub fn with_primary_pow_node(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_primary_pow_node(url, auth)?;
         Ok(self)
     }
 
     /// Adds a permanode by its URL, with optional jwt and or basic authentication
-    pub fn with_permanode(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        self.node_manager_builder = self
-            .node_manager_builder
-            .with_permanode(url, jwt, basic_auth_name_pwd)?;
+    pub fn with_permanode(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_permanode(url, auth)?;
         Ok(self)
     }
 
     /// Adds an IOTA node by its URL with optional jwt and or basic authentication
-    pub fn with_node_auth(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        self.node_manager_builder = self
-            .node_manager_builder
-            .with_node_auth(url, jwt, basic_auth_name_pwd)?;
+    pub fn with_node_auth(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
+        self.node_manager_builder = self.node_manager_builder.with_node_auth(url, auth)?;
         Ok(self)
     }
 
@@ -290,13 +295,16 @@ impl ClientBuilder {
             }
         }
         let network_info = Arc::new(RwLock::new(self.network_info));
-        let nodes = self.node_manager_builder.nodes.clone();
-        #[cfg(not(feature = "wasm"))]
-        let node_sync_interval = self.node_sync_interval;
+        let nodes = self
+            .node_manager_builder
+            .nodes
+            .iter()
+            .map(|node| node.clone().into())
+            .collect();
         #[cfg(feature = "wasm")]
         let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
         #[cfg(not(feature = "wasm"))]
-        let (runtime, sync, sync_kill_sender, network_info) = if self.node_sync_enabled {
+        let (runtime, sync, sync_kill_sender, network_info) = if self.node_manager_builder.node_sync_enabled {
             let sync = Arc::new(RwLock::new(HashSet::new()));
             let sync_ = sync.clone();
             let network_info_ = network_info.clone();
@@ -308,7 +316,7 @@ impl ClientBuilder {
                     &runtime,
                     sync_,
                     nodes,
-                    node_sync_interval,
+                    self.node_manager_builder.node_sync_interval,
                     network_info_,
                     sync_kill_receiver,
                 );
