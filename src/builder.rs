@@ -10,6 +10,8 @@ use crate::{
     error::*,
 };
 
+use log::LevelFilter;
+
 use std::{
     sync::{Arc, RwLock},
     time::Duration,
@@ -267,14 +269,18 @@ impl ClientBuilder {
 
     /// Enables the default logger which writes debug logs to "iota.rs.log"
     pub fn with_default_logger(self) -> Result<Self> {
-        crate::init_logger("iota.rs.log", crate::LevelFilter::Debug)?;
+        crate::init_logger("iota.rs.log", LevelFilter::Debug)?;
+        Ok(self)
+    }
+
+    /// Write logs to a file
+    pub fn with_logger(self, filename: &str, level: LevelFilter) -> Result<Self> {
+        crate::init_logger(filename, level)?;
         Ok(self)
     }
 
     /// Build the Client instance.
     pub async fn finish(mut self) -> Result<Client> {
-        // todo remove
-        crate::init_logger("iota.rs.log", crate::LevelFilter::Debug)?;
         // Add default nodes
         if !self.offline {
             self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
