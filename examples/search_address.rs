@@ -6,7 +6,7 @@
 use iota_client::{api::search_address, constants::IOTA_COIN_TYPE, signing::mnemonic::MnemonicSigner, Client, Result};
 extern crate dotenv;
 use dotenv::dotenv;
-use std::{convert::TryInto, env};
+use std::env;
 
 /// In this example we will try to find the index and address type of an address
 
@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
         .get_addresses(&signer)
         .with_account_index(0)
         .with_range(9..10)
-        .finish()
+        .get_raw()
         .await
         .unwrap();
 
@@ -41,7 +41,7 @@ async fn main() -> Result<()> {
         IOTA_COIN_TYPE,
         0,
         0..10,
-        &addresses[0].clone().try_into().unwrap(),
+        &addresses[0],
     )
     .await
     .unwrap();

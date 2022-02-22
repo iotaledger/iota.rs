@@ -9,7 +9,7 @@ use iota_client::{
         output::{
             feature_block::MetadataFeatureBlock,
             unlock_condition::{
-                AddressUnlockCondition, DustDepositReturnUnlockCondition, ExpirationUnlockCondition,
+                AddressUnlockCondition, StorageDepositReturnUnlockCondition, ExpirationUnlockCondition,
                 TimelockUnlockCondition, UnlockCondition,
             },
             BasicOutputBuilder, FeatureBlock, Output,
@@ -66,8 +66,8 @@ async fn main() -> Result<()> {
     outputs.push(Output::Basic(
         BasicOutputBuilder::new(234100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::DustDepositReturn(
-                DustDepositReturnUnlockCondition::new(address, 234000)?,
+            .add_unlock_condition(UnlockCondition::StorageDepositReturn(
+                StorageDepositReturnUnlockCondition::new(address, 234000)?,
             ))
             .finish()?,
     ));

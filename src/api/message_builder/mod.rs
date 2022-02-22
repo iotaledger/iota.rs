@@ -22,7 +22,7 @@ use bee_message::{
 use bee_rest_api::types::dtos::OutputDto;
 use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
 
-use std::{collections::HashSet, ops::Range, str::FromStr};
+use std::{collections::HashSet, ops::Range};
 
 #[cfg(feature = "wasm")]
 use gloo_timers::future::TimeoutFuture;
@@ -124,7 +124,7 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
         let output = BasicOutputBuilder::new(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
-                Address::from_str(address)?,
+                Address::try_from_bech32(address)?,
             )))
             .finish()?;
         self.outputs.push(Output::Basic(output));

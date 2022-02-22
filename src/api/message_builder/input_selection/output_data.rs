@@ -88,7 +88,7 @@ pub(crate) async fn get_remainder(
                 let mut address = None;
                 for input in inputs {
                     if let Output::Basic(basic_output) = input {
-                        for unlock_condition in basic_output.unlock_conditions() {
+                        for unlock_condition in basic_output.unlock_conditions().iter() {
                             if let UnlockCondition::Address(address_unlock_condition) = unlock_condition {
                                 address.replace(address_unlock_condition.address());
                                 break;
@@ -130,7 +130,7 @@ pub(crate) async fn get_accumulated_output_amounts(outputs: &[Output]) -> Result
     for output in outputs {
         required_amount += output.amount();
         if let Some(output_native_tokens) = output.native_tokens() {
-            for native_token in output_native_tokens {
+            for native_token in output_native_tokens.iter() {
                 match required_native_tokens.entry(*native_token.token_id()) {
                     Entry::Vacant(e) => {
                         e.insert(*native_token.amount());
