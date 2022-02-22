@@ -4,18 +4,15 @@
 //! The node manager that takes care of sending requests with synced nodes and quorum if enabled
 
 use crate::{
-    builder::NetworkInfo,
-    constants::{DEFAULT_API_TIMEOUT, DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
     error::{Error, Result},
+    node_manager::builder::NodeManagerBuilder,
 };
 
 use bee_rest_api::types::responses::InfoResponse;
 
 use log::warn;
 use regex::Regex;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use url::Url;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -23,17 +20,14 @@ use std::{
     time::Duration,
 };
 
+pub mod builder;
+pub(crate) mod http_client;
+use http_client::HttpClient;
+pub(crate) mod node;
+use node::Node;
+
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
-
-/// Node struct
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct Node {
-    /// node url
-    pub url: Url,
-    /// node jwt
-    pub jwt: Option<String>,
-}
 
 // Nodemanger, takes care of selecting node(s) for requests until a result is returned or if quorum
 // is enabled it will send the requests for some endpoints to multiple nodes and compares the results
@@ -43,8 +37,8 @@ pub(crate) struct NodeManager {
     primary_pow_node: Option<Node>,
     pub(crate) nodes: HashSet<Node>,
     permanodes: Option<HashSet<Node>>,
-    pub(crate) sync: bool,
-    sync_interval: Duration,
+    pub(crate) node_sync_enabled: bool,
+    node_sync_interval: Duration,
     pub(crate) synced_nodes: Arc<RwLock<HashSet<Node>>>,
     quorum: bool,
     min_quorum_size: usize,
@@ -59,8 +53,8 @@ impl std::fmt::Debug for NodeManager {
         d.field("primary_pow_node", &self.primary_pow_node);
         d.field("nodes", &self.nodes);
         d.field("permanodes", &self.permanodes);
-        d.field("sync", &self.sync);
-        d.field("sync_interval", &self.sync_interval);
+        d.field("node_sync_enabled", &self.node_sync_enabled);
+        d.field("node_sync_interval", &self.node_sync_interval);
         d.field("synced_nodes", &self.synced_nodes);
         d.field("quorum", &self.quorum);
         d.field("min_quorum_size", &self.min_quorum_size);
@@ -117,7 +111,7 @@ impl NodeManager {
             primary_node.url.set_query(query);
             nodes_with_modified_url.push(primary_node);
         }
-        let nodes = if self.sync {
+        let nodes = if self.node_sync_enabled {
             #[cfg(not(feature = "wasm"))]
             {
                 self.synced_nodes.read().map_err(|_| crate::Error::PoisonError)?.clone()
@@ -134,6 +128,8 @@ impl NodeManager {
             node.url.set_query(query);
             nodes_with_modified_url.push(node);
         }
+        // remove disabled nodes
+        nodes_with_modified_url.retain(|n| !n.disabled);
         if nodes_with_modified_url.is_empty() {
             return Err(crate::Error::SyncedNodePoolEmpty);
         }
@@ -376,372 +372,4 @@ impl NodeManager {
         }
         Err(error.unwrap_or_else(|| Error::NodeError("Couldn't get a result from any node".into())))
     }
-}
-
-#[derive(Clone)]
-pub(crate) struct NodeManagerBuilder {
-    pub(crate) primary_node: Option<Node>,
-    primary_pow_node: Option<Node>,
-    pub(crate) nodes: HashSet<Node>,
-    pub(crate) permanodes: Option<HashSet<Node>>,
-    sync: bool,
-    sync_interval: Duration,
-    quorum: bool,
-    min_quorum_size: usize,
-    quorum_threshold: usize,
-}
-
-impl NodeManagerBuilder {
-    pub(crate) fn new() -> Self {
-        Default::default()
-    }
-    pub(crate) fn with_node(mut self, url: &str) -> Result<Self> {
-        let url = validate_url(Url::parse(url)?)?;
-        self.nodes.insert(Node { url, jwt: None });
-        Ok(self)
-    }
-    pub(crate) fn with_primary_node(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        let mut url = validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = basic_auth_name_pwd {
-            url.set_username(name)
-                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-            url.set_password(Some(password))
-                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
-        }
-        self.primary_node.replace(Node { url, jwt });
-        Ok(self)
-    }
-    pub(crate) fn with_primary_pow_node(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        let mut url = validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = basic_auth_name_pwd {
-            url.set_username(name)
-                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-            url.set_password(Some(password))
-                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
-        }
-        self.primary_pow_node.replace(Node { url, jwt });
-        Ok(self)
-    }
-    pub(crate) fn with_permanode(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        let mut url = validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = basic_auth_name_pwd {
-            url.set_username(name)
-                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-            url.set_password(Some(password))
-                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
-        }
-        match self.permanodes {
-            Some(ref mut permanodes) => {
-                permanodes.insert(Node { url, jwt });
-            }
-            None => {
-                let mut permanodes = HashSet::new();
-                permanodes.insert(Node { url, jwt });
-                self.permanodes.replace(permanodes);
-            }
-        }
-        Ok(self)
-    }
-    pub(crate) fn with_node_sync_disabled(mut self) -> Self {
-        self.sync = false;
-        self
-    }
-    pub(crate) fn with_node_auth(
-        mut self,
-        url: &str,
-        jwt: Option<String>,
-        basic_auth_name_pwd: Option<(&str, &str)>,
-    ) -> Result<Self> {
-        let mut url = validate_url(Url::parse(url)?)?;
-        if let Some((name, password)) = basic_auth_name_pwd {
-            url.set_username(name)
-                .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-            url.set_password(Some(password))
-                .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
-        }
-        self.nodes.insert(Node { url, jwt });
-        Ok(self)
-    }
-    pub(crate) fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
-        for url in urls {
-            let url = validate_url(Url::parse(url)?)?;
-            self.nodes.insert(Node { url, jwt: None });
-        }
-        Ok(self)
-    }
-    /// Get node list from the node_pool_urls
-    pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
-        for pool_url in node_pool_urls {
-            let http_client = crate::node_manager::HttpClient::new();
-            let nodes_details: Vec<NodeDetail> = http_client
-                .get(
-                    Node {
-                        url: validate_url(Url::parse(pool_url)?)?,
-                        jwt: None,
-                    },
-                    DEFAULT_API_TIMEOUT,
-                )
-                .await?
-                .json()
-                .await?;
-            for node_detail in nodes_details {
-                let url = validate_url(Url::parse(&node_detail.node)?)?;
-                self.nodes.insert(Node { url, jwt: None });
-            }
-        }
-        Ok(self)
-    }
-    pub(crate) fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
-        self.sync_interval = node_sync_interval;
-        self
-    }
-    pub(crate) fn with_quorum(mut self, quorum: bool) -> Self {
-        self.quorum = quorum;
-        self
-    }
-    pub(crate) fn with_min_quorum_size(mut self, min_quorum_size: usize) -> Self {
-        self.min_quorum_size = min_quorum_size;
-        self
-    }
-    pub(crate) fn with_quorum_threshold(mut self, threshold: usize) -> Self {
-        self.quorum_threshold = threshold;
-        self
-    }
-    pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
-        // todo update with new node pool
-        // let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
-        let default_testnet_nodes = vec![];
-        if self.nodes.is_empty() && self.primary_node.is_none() {
-            match network_info.network {
-                Some(ref network) => match network.to_lowercase().as_str() {
-                    "testnet" | "devnet" | "test" | "dev" => {
-                        self = self.with_nodes(&default_testnet_nodes[..])?;
-                        // self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
-                    }
-                    _ => return Err(Error::SyncedNodePoolEmpty),
-                },
-                _ => {
-                    self = self.with_nodes(&default_testnet_nodes[..])?;
-                    // self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
-                }
-            }
-        }
-        Ok(self)
-    }
-    pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
-        NodeManager {
-            primary_node: self.primary_node,
-            primary_pow_node: self.primary_pow_node,
-            nodes: self.nodes,
-            permanodes: self.permanodes,
-            sync: self.sync,
-            sync_interval: self.sync_interval,
-            synced_nodes,
-            quorum: self.quorum,
-            min_quorum_size: self.min_quorum_size,
-            quorum_threshold: self.quorum_threshold,
-            http_client: HttpClient::new(),
-        }
-    }
-}
-
-impl Default for NodeManagerBuilder {
-    fn default() -> Self {
-        Self {
-            primary_node: None,
-            primary_pow_node: None,
-            nodes: HashSet::new(),
-            permanodes: None,
-            sync: true,
-            sync_interval: NODE_SYNC_INTERVAL,
-            quorum: false,
-            min_quorum_size: DEFAULT_MIN_QUORUM_SIZE,
-            quorum_threshold: DEFAULT_QUORUM_THRESHOLD,
-        }
-    }
-}
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-pub(crate) struct Response(ureq::Response);
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-impl From<ureq::Response> for Response {
-    fn from(response: ureq::Response) -> Self {
-        Self(response)
-    }
-}
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-impl Response {
-    pub(crate) fn status(&self) -> u16 {
-        self.0.status()
-    }
-
-    pub(crate) async fn json<T: DeserializeOwned>(self) -> Result<T> {
-        self.0.into_json().map_err(Into::into)
-    }
-
-    pub(crate) async fn text(self) -> Result<String> {
-        self.0.into_string().map_err(Into::into)
-    }
-}
-
-#[cfg(any(feature = "async", feature = "wasm"))]
-pub(crate) struct Response(reqwest::Response);
-
-#[cfg(any(feature = "async", feature = "wasm"))]
-impl Response {
-    pub(crate) fn status(&self) -> u16 {
-        self.0.status().as_u16()
-    }
-
-    pub(crate) async fn json<T: DeserializeOwned>(self) -> Result<T> {
-        self.0.json().await.map_err(Into::into)
-    }
-
-    pub(crate) async fn text(self) -> Result<String> {
-        self.0.text().await.map_err(Into::into)
-    }
-}
-
-#[cfg(any(feature = "async", feature = "wasm"))]
-#[derive(Clone)]
-pub(crate) struct HttpClient {
-    client: reqwest::Client,
-}
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-#[derive(Clone)]
-pub(crate) struct HttpClient;
-
-#[cfg(any(feature = "async", feature = "wasm"))]
-impl HttpClient {
-    pub(crate) fn new() -> Self {
-        Self {
-            client: reqwest::Client::new(),
-        }
-    }
-
-    async fn parse_response(response: reqwest::Response) -> Result<Response> {
-        let status = response.status();
-        if status.is_success() {
-            Ok(Response(response))
-        } else {
-            Err(Error::ResponseError(status.as_u16(), response.text().await?))
-        }
-    }
-
-    pub(crate) async fn get(&self, node: Node, _timeout: Duration) -> Result<Response> {
-        let mut request_builder = self.client.get(node.url);
-        if let Some(jwt) = node.jwt {
-            request_builder = request_builder.bearer_auth(jwt);
-        }
-        #[cfg(not(feature = "wasm"))]
-        {
-            request_builder = request_builder.timeout(_timeout);
-        }
-        let resp = request_builder.send().await?;
-        Self::parse_response(resp).await
-    }
-
-    pub(crate) async fn post_bytes(&self, node: Node, _timeout: Duration, body: &[u8]) -> Result<Response> {
-        let mut request_builder = self.client.post(node.url);
-        if let Some(jwt) = node.jwt {
-            request_builder = request_builder.bearer_auth(jwt);
-        }
-        #[cfg(not(feature = "wasm"))]
-        {
-            request_builder = request_builder.timeout(_timeout);
-        }
-        request_builder = request_builder.header("Content-Type", "application/octet-stream");
-        Self::parse_response(request_builder.body(body.to_vec()).send().await?).await
-    }
-
-    pub(crate) async fn post_json(&self, node: Node, _timeout: Duration, json: Value) -> Result<Response> {
-        let mut request_builder = self.client.post(node.url);
-        if let Some(jwt) = node.jwt {
-            request_builder = request_builder.bearer_auth(jwt);
-        }
-        #[cfg(not(feature = "wasm"))]
-        {
-            request_builder = request_builder.timeout(_timeout);
-        }
-        Self::parse_response(request_builder.json(&json).send().await?).await
-    }
-}
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-impl HttpClient {
-    pub(crate) fn new() -> Self {
-        Self {}
-    }
-
-    pub(crate) fn clone(&self) -> Self {
-        Self {}
-    }
-
-    pub(crate) async fn get(&self, node: Node, timeout: Duration) -> Result<Response> {
-        let mut request_builder = Self::get_ureq_agent(timeout).get(node.url.as_str());
-        if let Some(jwt) = node.jwt {
-            request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
-        }
-        Ok(request_builder.call()?.into())
-    }
-
-    pub(crate) async fn post_bytes(&self, node: Node, timeout: Duration, body: &[u8]) -> Result<Response> {
-        let mut request_builder = Self::get_ureq_agent(timeout).post(node.url.as_str());
-        if let Some(jwt) = node.jwt {
-            request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
-        }
-        request_builder = request_builder.set("Content-Type", "application/octet-stream");
-        Ok(request_builder.send_bytes(body)?.into())
-    }
-
-    pub(crate) async fn post_json(&self, node: Node, timeout: Duration, json: Value) -> Result<Response> {
-        let mut request_builder = Self::get_ureq_agent(timeout).post(node.url.as_str());
-        if let Some(jwt) = node.jwt {
-            request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
-        }
-        Ok(request_builder.send_json(json)?.into())
-    }
-
-    fn get_ureq_agent(timeout: Duration) -> Agent {
-        AgentBuilder::new().timeout_read(timeout).timeout_write(timeout).build()
-    }
-}
-
-/// Validates if the url starts with http or https
-pub fn validate_url(url: Url) -> Result<Url> {
-    if url.scheme() != "http" && url.scheme() != "https" {
-        return Err(Error::UrlValidationError(format!("Invalid scheme: {}", url.scheme())));
-    }
-    Ok(url)
-}
-
-/// JSON struct for NodeDetail from the node_pool_urls
-#[derive(Debug, Serialize, Deserialize)]
-pub struct NodeDetail {
-    /// Iota node url
-    pub node: String,
-    /// Network id
-    pub network_id: String,
-    /// Implementation name
-    pub implementation: String,
-    /// Enabled PoW
-    pub pow: bool,
 }

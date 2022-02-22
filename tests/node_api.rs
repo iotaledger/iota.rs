@@ -47,7 +47,7 @@ async fn test_with_node_pool_urls() {
 #[tokio::test]
 #[ignore]
 async fn test_get_info() {
-    let r = iota_client::Client::get_node_info(DEFAULT_NODE_URL, None, None)
+    let r = iota_client::Client::get_node_info(DEFAULT_NODE_URL, None)
         .await
         .unwrap();
     println!("{:#?}", r);
