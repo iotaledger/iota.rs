@@ -127,7 +127,7 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
+source = "git+https://github.com/iotaledger/bee?rev=6d916175eea71ed82ba3f6ebc3d99c4e87385925#6d916175eea71ed82ba3f6ebc3d99c4e87385925"
 dependencies = [
  "bee-message",
  "packable",
@@ -138,7 +138,7 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
+source = "git+https://github.com/iotaledger/bee?rev=6d916175eea71ed82ba3f6ebc3d99c4e87385925#6d916175eea71ed82ba3f6ebc3d99c4e87385925"
 dependencies = [
  "bech32 0.8.1",
  "bee-pow",
@@ -161,7 +161,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
+source = "git+https://github.com/iotaledger/bee?rev=6d916175eea71ed82ba3f6ebc3d99c4e87385925#6d916175eea71ed82ba3f6ebc3d99c4e87385925"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -171,7 +171,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.0"
-source = "git+https://github.com/Thoralf-M/bee?rev=ad2a0044ae2b95f1332735dedeaaddb51b6f4653#ad2a0044ae2b95f1332735dedeaaddb51b6f4653"
+source = "git+https://github.com/iotaledger/bee?rev=6d916175eea71ed82ba3f6ebc3d99c4e87385925#6d916175eea71ed82ba3f6ebc3d99c4e87385925"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -1161,9 +1161,9 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "packable"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29522071fe808d841ac9bc79b0d72bbd29858de120a4445bfd174e0a003e2c94"
+checksum = "20cec85c48c3327e1255919f61f5d132a7e54408f3ed39e1801414c456786d6e"
 dependencies = [
  "autocfg",
  "packable-derive",
@@ -1173,9 +1173,9 @@ dependencies = [
 
 [[package]]
 name = "packable-derive"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb6a7f91e382a77e264e9767ff7d6d4d3cec8a4d536eeddd21df8897abb76010"
+checksum = "f5a8ea15d7e52c248d0f90fd5d420bcfe08b0ad15ff2b9a1b4b1b9eb81a15c63"
 dependencies = [
  "proc-macro-crate",
  "proc-macro-error",

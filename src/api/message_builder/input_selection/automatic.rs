@@ -153,14 +153,14 @@ async fn get_inputs_for_sender_and_issuer(
     let mut required_ed25519_addresses = Vec::new();
     for output in &message_builder.outputs {
         if let Some(features_blocks) = output.feature_blocks() {
-            for feature_block in features_blocks {
+            for feature_block in features_blocks.iter() {
                 if let FeatureBlock::Sender(sender_feature_block) = feature_block {
                     required_ed25519_addresses.push(sender_feature_block.address());
                 }
             }
         }
         if let Some(features_blocks) = output.immutable_feature_blocks() {
-            for feature_block in features_blocks {
+            for feature_block in features_blocks.iter() {
                 if let FeatureBlock::Issuer(issuer_feature_block) = feature_block {
                     required_ed25519_addresses.push(issuer_feature_block.address());
                 }

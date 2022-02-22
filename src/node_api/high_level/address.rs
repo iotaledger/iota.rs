@@ -50,7 +50,7 @@ impl<'a> GetAddressBuilder<'a> {
         for output_response in outputs_responses.iter() {
             let output = Output::try_from(&output_response.output)?;
             if let Some(native_tokens) = output.native_tokens() {
-                for native_token in native_tokens {
+                for native_token in native_tokens.iter() {
                     match native_tokens_map.entry(*native_token.token_id()) {
                         Entry::Vacant(e) => {
                             e.insert(*native_token.amount());

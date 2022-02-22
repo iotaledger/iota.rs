@@ -87,7 +87,7 @@ pub async fn try_select_inputs(
             Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => {
                 selected_input_amount += output.amount();
                 if let Some(output_native_tokens) = output.native_tokens() {
-                    for native_token in output_native_tokens {
+                    for native_token in output_native_tokens.iter() {
                         match selected_input_native_tokens.entry(*native_token.token_id()) {
                             Entry::Vacant(e) => {
                                 e.insert(*native_token.amount());
@@ -114,7 +114,7 @@ pub async fn try_select_inputs(
             }) {
                 let output = Output::try_from(&input_signing_data.output_response.output)?;
                 if let Some(output_native_tokens) = output.native_tokens() {
-                    for native_token in output_native_tokens {
+                    for native_token in output_native_tokens.iter() {
                         // only check required tokens
                         if let Some(required_native_token_amount) = required_native_tokens.get(native_token.token_id())
                         {
@@ -207,7 +207,7 @@ pub async fn try_select_inputs(
                 let output = Output::try_from(&input_signing_data.output_response.output)?;
                 selected_input_amount += output.amount();
                 if let Some(output_native_tokens) = output.native_tokens() {
-                    for native_token in output_native_tokens {
+                    for native_token in output_native_tokens.iter() {
                         match selected_input_native_tokens.entry(*native_token.token_id()) {
                             Entry::Vacant(e) => {
                                 e.insert(*native_token.amount());
