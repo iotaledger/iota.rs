@@ -8,6 +8,7 @@ keywords:
 - seed
 - generate
 - message
+- how to
 ---
 import CodeBlock from '@theme/CodeBlock';
 import get_info from '!!raw-loader!./../../../../examples/01_get_info.rs';
@@ -21,64 +22,115 @@ import data_message from '!!raw-loader!./../../../../examples/08_data_message.rs
 import transaction from '!!raw-loader!./../../../../examples/09_transaction.rs';
 import mqtt from '!!raw-loader!./../../../../examples/10_mqtt.rs';
 
+:::note
 
-It's possible to send transactions with iota.rs, but we strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [wallet docs](https://wiki.iota.org/wallet.rs/welcome).
+Though it is possible to send transactions with iota.rs, we strongly recommend that you use official
+[`wallet.rs`](https://wiki.iota.org/wallet.rs/welcome) library together with the
+[`stronghold.rs`](https://wiki.iota.org/stronghold.rs/welcome) enclave for value-based transfers. This combination
+incorporates the best security practices while dealing with seeds, related addresses and `UTXO`.
+
+:::
+
+## Installing the Library
+
+### Requirements
+
+You can find all the requirements for using the iota.rs library in the
+[Getting Started](getting_started.md#requirements) section.
+
+### Clone the Repository
+
+To install the library, you will first need to clone the repository by running the following command:
 
 ```bash
 git clone https://github.com/iotaledger/iota.rs
 ```
 
+### Create Your Configuration File
+
+Once you have [cloned the repository](#clone-the-repository), you should change directory into the projects by running:
+
 ```bash
 cd iota.rs
 ```
 
-Rename the `.env.example` file to `.env`.
+Once you are in the project directory you should make a copy of the
+[.env.example file](https://github.com/iotaledger/iota.rs/blob/dev/.env.example) and rename it as `.env`. You can do
+that with your file manager or IDE of choice, or by running the following command:
 
-Run the examples like:
+```bash
+cp .env.example .env
+```
+
+## Running Examples
+
+Once you have [cloned the repository](#clone-the-repository), and
+[created your configuration file](#create-your-configuration-file) you are ready to run examples.  You can use the
+following command to so replacing `01_get_info` for your example of choice from the
+[examples](https://github.com/iotaledger/iota.rs/tree/dev/examples) directory.
 
 ```bash
 cargo run --example 01_get_info --release
 ```
 
+## Get Node Information
 
 <CodeBlock className="language-rust">
-  {get_info}
+    {get_info}
 </CodeBlock>
+
+## Generate a Seed
 
 <CodeBlock className="language-rust">
-  {generate_seed}
+    {generate_seed}
 </CodeBlock>
 
-<CodeBlock className="language-rust">
-  {generate_addresses}
+## Generate an Address
+
+<CodeBlock className="language-bash">
+    {generate_addresses}
 </CodeBlock>
 
-<CodeBlock className="language-rust">
-  {get_balance}
+## Get a Balance
+
+<CodeBlock className="language-bash">
+    {get_balance}
 </CodeBlock>
 
-<CodeBlock className="languag-rust">
-  {get_address_outputs}
+## Get Address Outputs
+
+<CodeBlock className="languag-bash">
+    {get_address_outputs}
 </CodeBlock>
 
-<CodeBlock className="language-rust">
-  {simple_message}
+## Send a Message With a Payload
+
+<CodeBlock className="language-bash">
+    {simple_message}
 </CodeBlock>
 
-<CodeBlock className="language-rust">
-  {get_message_metadata}
+## Send a Message Without a Payload
+
+<CodeBlock className="language-bash">
+    {data_message}
 </CodeBlock>
 
-<CodeBlock className="language-rust">
-  {data_message}
+## Send a Message and Get the Message's Metadata
+
+<CodeBlock className="language-bash">
+    {get_message_metadata}
 </CodeBlock>
 
-<CodeBlock className="language-rust">
-  {transaction}
+## Send a Transaction
+
+<CodeBlock className="language-bash">
+    {transaction}
 </CodeBlock>
 
-<CodeBlock className="language-rust">
-  {mqtt}
+## Connect to a MQTT Broker
+
+<CodeBlock className="language-bash">
+    {mqtt}
 </CodeBlock>
 
-You can find more advanced examples in the [examples](https://github.com/iotaledger/iota.rs/tree/dev/examples) folder.
+You can find more advanced examples in the [examples](https://github.com/iotaledger/iota.rs/tree/dev/examples) directory.
