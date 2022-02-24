@@ -654,6 +654,7 @@ impl Client {
         interval: Option<u64>,
         max_attempts: Option<u64>,
     ) -> Result<Vec<(MessageId, Message)>> {
+        log::debug!("[retry_until_included]");
         // Attachments of the Message to check inclusion state
         let mut message_ids = vec![*message_id];
         // Reattached Messages that get returned
