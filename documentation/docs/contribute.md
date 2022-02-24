@@ -12,7 +12,7 @@ keywords:
 ---
 # Contribute to the Project
 
-**Thank you for thinking about contributing to the project! You can contribute in the following ways:**
+**Thank you for considering a contribution to this project. You can help it in the following ways:**
 
 ## Join the IOTA Libraries Initiative
 
