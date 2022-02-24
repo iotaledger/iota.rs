@@ -22,11 +22,11 @@ languages: [Rust](./libraries/rust/getting_started.md), [Node.js](./libraries/no
 This wiki assumes that you already know the basics of your programming language of choice. Companies and communities
 behind each language provide their documentation for beginners you can use as reference:
 
-* [Java](https://www.java.com/)
-* [JavaScript](https://www.w3schools.com/js/)
-* [Node.js](https://nodejs.org/en/docs/guides/)
-* [Python](https://www.python.org/about/gettingstarted/)
-* [Rust](https://www.rust-lang.org/learn/get-started)
+* [Java](https://www.java.com/).
+* [JavaScript](https://www.w3schools.com/js/).
+* [Node.js](https://nodejs.org/en/docs/guides/).
+* [Python](https://www.python.org/about/gettingstarted/).
+* [Rust](https://www.rust-lang.org/learn/get-started).
 
 If you have little experience coding, you could start with any of those first or refer to these guides as you read
 through our iota.rs documentation. If you have never programmed in your life, MIT has published an

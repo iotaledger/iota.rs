@@ -16,7 +16,7 @@ keywords:
 
 Before you can get started with the Node.js binding for the iota.rs client library, please make sure that you have 
 installed [Node](https://nodejs.org/en/), 
-[Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) and [NPM](https://www.npmjs.com/) 
+[Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html), and [NPM](https://www.npmjs.com/) 
 or [Yarn](https://yarnpkg.com/).
 
 ## Installing the Library

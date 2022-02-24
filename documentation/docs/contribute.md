@@ -19,9 +19,9 @@ keywords:
 The [IOTA Libraries Initiative](https://github.com/iota-community/X-Team_IOTA_Libraries) is a collaborative effort to
 help improve the developer experience. This includes:
 
-- Quality assurance and review
-- Documentation
-- Code samples
+- Quality assurance and review.
+- Documentation.
+- Code samples.
 
 If you would like to get involved, join
 the [#experience channel](https://discord.com/channels/397872799483428865/701857063923351582)
@@ -29,11 +29,11 @@ on [Discord](https://discord.iota.org).
 
 ## Contribute to the Project’s GitHub Repository
 
-All the code is open source and hosted on [GitHub](https://github.com/iotaledger/iota.rs) where you can:
+All of the code is open source and hosted on [GitHub](https://github.com/iotaledger/iota.rs) where you can:
 
-- [Report a bug](https://github.com/iotaledger/iota.rs/issues/new?assignees=&labels=c-bug&template=bug_report.md&title=)
-- [Suggest a new feature](https://github.com/iotaledger/iota.rs/issues/new?assignees=&labels=&template=feature_request.md)
-- [Contribute to the documentation](#contribute-to-the-documentation)
+- [Report a bug](https://github.com/iotaledger/iota.rs/issues/new?assignees=&labels=c-bug&template=bug_report.md&title=).
+- [Suggest a new feature](https://github.com/iotaledger/iota.rs/issues/new?assignees=&labels=&template=feature_request.md).
+- [Contribute to the documentation](#contribute-to-the-documentation).
 
 ## Contribute to the Documentation
 
