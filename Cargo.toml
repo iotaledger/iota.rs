@@ -30,7 +30,7 @@ thiserror = { version = "1.0.29", default-features = false }
 num_cpus = { version = "1.13.0", default-features = false }
 log = { version = "0.4.14", default-features = false }
 regex = { version = "1.5.4", default-features = false, features = ["std", "unicode-perl"] }
-zeroize = { version = "1.4.1", default-features = false }
+zeroize = { version = "1.5.3", default-features = false }
 
 # sync
 ureq = { version = "2.2.0", default-features = false, features = ["json"], optional = true }
