@@ -5,6 +5,8 @@
 
 #[cfg(feature = "ledger")]
 use crate::signing::ledger::LedgerSigner;
+#[cfg(feature = "stronghold")]
+use crate::signing::stronghold::StrongholdSigner;
 use crate::signing::{
     mnemonic::MnemonicSigner,
     types::{InputSigningData, SignerTypeDto},
@@ -33,6 +35,9 @@ use std::{
 pub mod ledger;
 /// Module for signing with a mnemonic or seed
 pub mod mnemonic;
+/// Module for signing with a Stronghold vault
+#[cfg(feature = "stronghold")]
+pub mod stronghold;
 /// Signing related types
 pub mod types;
 pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetadata, SignerType};
@@ -66,8 +71,8 @@ impl SignerHandle {
 
         Ok(match signer_type {
             #[cfg(feature = "stronghold")]
-            Stronghold(String) => {
-                todo!()
+            SignerTypeDto::Stronghold(client_path) => {
+                StrongholdSigner::try_new_signer_handle(client_path.as_bytes(), Path::new("?"))?
             }
             #[cfg(feature = "ledger")]
             SignerTypeDto::LedgerNano => LedgerSigner::new(false),

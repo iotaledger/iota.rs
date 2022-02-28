@@ -51,6 +51,12 @@ once_cell = { version = "1.8.0", default-features = false, features = ["std"], o
 # ledger hardware wallets
 iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "8c239b13b80e169aaa19cde9cd825e8444be0973", default-features = false, optional = true }
 
+# stronghold signer integration
+iota_stronghold = { version = "0.4.1", default-features = false, optional = true }
+riker = { version = "0.4.2", default-features = false, optional = true }
+# for stronghold
+crypto05 = { package = "iota-crypto", version = "0.5.1", default-features = false, features = ["slip10"], optional = true }
+
 # wasm
 instant = { version = "0.1.12", default-features = false, optional = true }
 gloo-timers = { version = "0.2.3", default-features = false, features = ["futures"], optional = true }
@@ -69,6 +75,7 @@ mqtt = ["rumqttc", "once_cell", "futures"]
 wasm = ["reqwest", "futures", "gloo-timers", "instant", "bee-ternary"]
 ledger = ["iota-ledger"]
 tls = ["reqwest/rustls-tls", "ureq/tls"]
+stronghold = ["iota_stronghold", "riker", "crypto05"]
 
 [[example]]
 name = "10_mqtt"
