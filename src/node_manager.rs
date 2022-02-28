@@ -86,8 +86,8 @@ impl NodeManager {
               Regex::new(r"messages/([A-Fa-f0-9]{64})/children").expect("regex failed"),
               Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
               // BIP-173 compliant bech32 address
-              Regex::new("addresses/[\x22-\x7E]{1,30}1[A-Za-z0-9]").expect("regex failed"),
-              Regex::new("addresses/[\x22-\x7E]{1,30}1[A-Za-z0-9]+/outputs").expect("regex failed"),
+              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]").expect("regex failed"),
+              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/outputs").expect("regex failed"),
               // ED25519 address hex
               Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
               Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
@@ -155,8 +155,8 @@ impl NodeManager {
               Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
               Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
               // BIP-173 compliant bech32 address
-              Regex::new("addresses/[\x22-\x7E]{1,30}1[A-Za-z0-9]").expect("regex failed"),
-              Regex::new("addresses/[\x22-\x7E]{1,30}1[A-Za-z0-9]+/outputs").expect("regex failed"),
+              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]").expect("regex failed"),
+              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/outputs").expect("regex failed"),
               // ED25519 address hex
               Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
               Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
