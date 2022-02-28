@@ -28,6 +28,7 @@ use std::{collections::HashSet, str::FromStr};
 
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
+    log::debug!("[prepare_transaction]");
     let mut governance_transition: Option<HashSet<AliasId>> = None;
     for output in &message_builder.outputs {
         if let Output::Alias(x) = output {
@@ -104,6 +105,7 @@ pub async fn sign_transaction(
     message_builder: &ClientMessageBuilder<'_>,
     mut prepared_transaction_data: PreparedTransactionData,
 ) -> Result<Payload> {
+    log::debug!("[sign_transaction]");
     let mut input_addresses = Vec::new();
     for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
         let address = Address::try_from_bech32(&input_signing_data.bech32_address)?;

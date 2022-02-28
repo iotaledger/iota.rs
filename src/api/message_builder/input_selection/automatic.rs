@@ -19,19 +19,34 @@ use crate::{
 use bee_message::{address::Address, output::feature_block::FeatureBlock};
 use crypto::keys::slip10::Chain;
 
-/// Searches inputs for provided outputs, by requesting the outputs from the account addresses
-/// Forwards to [try_select_inputs()]
+/// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
+/// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
 pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Result<SelectedTransactionData> {
+    log::debug!("[get_inputs]");
     let account_index = message_builder.account_index;
     let mut gap_index = message_builder.initial_address_index;
     let mut empty_address_count: u64 = 0;
     let mut cached_error = None;
 
-    // first get inputs for utxo chains
+    // First get inputs for utxo chains (alias, foundry, nft outputs)
     let mut available_inputs = get_utxo_chains_inputs(message_builder, &message_builder.outputs).await?;
     let (force_use_all_inputs, required_ed25519_inputs) = get_inputs_for_sender_and_issuer(message_builder).await?;
     available_inputs.extend(required_ed25519_inputs.into_iter());
 
+    // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses
+    if let Ok(selected_transaction_data) = try_select_inputs(
+        available_inputs.clone(),
+        message_builder.outputs.clone(),
+        force_use_all_inputs,
+        // todo allow custom remainder address
+        None,
+    )
+    .await
+    {
+        return Ok(selected_transaction_data);
+    };
+
+    log::debug!("[get_inputs from addresses]");
     // then select inputs with outputs from addresses
     let selected_transaction_data = 'input_selection: loop {
         // Get the addresses in the BIP path/index ~ path/index+20
@@ -144,6 +159,7 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
 async fn get_inputs_for_sender_and_issuer(
     message_builder: &ClientMessageBuilder<'_>,
 ) -> Result<(bool, Vec<InputSigningData>)> {
+    log::debug!("[get_inputs_for_sender_and_issuer]");
     let mut force_use_all_inputs = false;
     let mut required_ed25519_inputs = Vec::new();
     let bech32_hrp = message_builder.client.get_bech32_hrp().await?;

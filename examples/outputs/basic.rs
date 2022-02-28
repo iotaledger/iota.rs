@@ -9,7 +9,7 @@ use iota_client::{
         output::{
             feature_block::MetadataFeatureBlock,
             unlock_condition::{
-                AddressUnlockCondition, StorageDepositReturnUnlockCondition, ExpirationUnlockCondition,
+                AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition,
                 TimelockUnlockCondition, UnlockCondition,
             },
             BasicOutputBuilder, FeatureBlock, Output,

@@ -26,6 +26,7 @@ pub(crate) async fn get_custom_inputs(
     message_builder: &ClientMessageBuilder<'_>,
     governance_transition: Option<HashSet<AliasId>>,
 ) -> Result<SelectedTransactionData> {
+    log::debug!("[get_custom_inputs]");
     let mut input_signing_data_entrys = Vec::new();
 
     if let Some(inputs) = &message_builder.inputs {

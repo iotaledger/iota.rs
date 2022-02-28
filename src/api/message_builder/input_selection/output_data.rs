@@ -38,6 +38,7 @@ pub(crate) async fn get_remainder(
     outputs: &[Output],
     remainder_address: Option<Address>,
 ) -> Result<Option<Output>> {
+    log::debug!("[get_remainder]");
     let mut remainder_output = None;
     let input_data = get_accumulated_output_amounts(inputs).await?;
     let output_data = get_accumulated_output_amounts(outputs).await?;
@@ -153,6 +154,7 @@ pub(crate) async fn get_utxo_chains_inputs(
     message_builder: &ClientMessageBuilder<'_>,
     outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
+    log::debug!("[get_utxo_chains_inputs]");
     let client = message_builder.client;
     let bech32_hrp = client.get_bech32_hrp().await?;
     let mut utxo_chains: Vec<(Address, OutputResponse)> = Vec::new();

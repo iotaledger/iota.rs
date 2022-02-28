@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example all --release
+//! cargo run --example all_automatic_input_selection --release
 
 use iota_client::{
     bee_message::{
@@ -19,7 +19,6 @@ use iota_client::{
         },
         payload::{transaction::TransactionEssence, Payload},
     },
-    node_api::indexer_api::query_parameters::QueryParameter,
     request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner,
     Client, Result,
@@ -131,8 +130,6 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(nft_output_id.into())?
-        .with_input(alias_output_id_1.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -145,8 +142,6 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create foundry output
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(message.payload().unwrap());
-    let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
         AliasOutputBuilder::new(1_000_000, alias_id)?
@@ -186,8 +181,6 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(nft_output_id.into())?
-        .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -200,9 +193,6 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create native token
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(message.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
-    let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
         AliasOutputBuilder::new(1_000_000, alias_id)?
@@ -247,9 +237,6 @@ async fn main() -> Result<()> {
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(nft_output_id.into())?
-        .with_input(alias_output_id.into())?
-        .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -262,9 +249,6 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create all outputs
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(message.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
-    let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
         AliasOutputBuilder::new(1_000_000, alias_id)?
@@ -351,20 +335,9 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    // get additional input for the new basic output
-    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
-        &iota,
-        vec![QueryParameter::Address(address.to_bech32("atoi"))],
-    )
-    .await?;
-
     let message = iota
         .message()
         .with_signer(&signer)
-        .with_input(output_ids[0].into())?
-        .with_input(nft_output_id.into())?
-        .with_input(alias_output_id.into())?
-        .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
@@ -388,22 +361,6 @@ fn get_alias_output_id(payload: &Payload) -> OutputId {
                 }
             }
             panic!("No alias output in transaction essence")
-        }
-        _ => panic!("No tx payload"),
-    };
-}
-
-// helper function to get the output id for the first foundry output
-fn get_foundry_output_id(payload: &Payload) -> OutputId {
-    match payload {
-        Payload::Transaction(tx_payload) => {
-            let TransactionEssence::Regular(regular) = tx_payload.essence();
-            for (index, output) in regular.outputs().iter().enumerate() {
-                if let Output::Foundry(_foundry_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
-                }
-            }
-            panic!("No foundry output in transaction essence")
         }
         _ => panic!("No tx payload"),
     };
