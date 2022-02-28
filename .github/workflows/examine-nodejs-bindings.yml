@@ -70,7 +70,7 @@ jobs:
         run: npm config set msvs_version 2022
 
       - name: Install latest node-gyp
-        working-directory: CC:\hostedtoolcache\windows\node\14.19.0\x64\node_modules\npm\node_modules\@npmcli\run-script
+        working-directory: C:\hostedtoolcache\windows\node\14.19.0\x64\node_modules\npm\node_modules\@npmcli\run-script
         run: npm install node-gyp@latest
 
       - name: Run Yarn Install
