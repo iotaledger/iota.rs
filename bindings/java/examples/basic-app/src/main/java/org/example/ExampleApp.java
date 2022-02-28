@@ -10,6 +10,15 @@ import org.iota.client.local.*;
 
 public class ExampleApp {
 
+    private static final String MAINNET = "https://chrysalis-nodes.iota.cafe:443";
+
+    // Faucet: https://faucet.chrysalis-devnet.iota.cafe/
+    // Explorer: https://explorer.iota.org/devnet
+    private static final String TESTNET = "https://api.lb-0.h.chrysalis-devnet.iota.cafe";
+    private static final String TESTNET_LB = "api.lb-0.h.chrysalis-devnet.iota.cafe";
+
+    protected static final String NODE = TESTNET;
+
     static {
         NativeAPI.verifyLink();
     }
@@ -65,8 +74,8 @@ public class ExampleApp {
         try {
             Client iota = node();
 
-            String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
-            String[] addresses = new GetAddressesBuilder(seed).withClient(iota).withRange(0, 10).finish();
+            String seed = RustHex.encode("NONSECURE_USE_OF_DEVELOPMENT_SEED_1");
+            String[] addresses = GetAddressesBuilder.from(seed).withClient(iota).withRange(0, 10).finish();
             System.out.println(Arrays.toString(addresses));
         } catch (ClientException e) {
             System.out.println("Error: " + e.getMessage());

@@ -1,6 +1,6 @@
 {
   "name": "@iota/client",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Node.js binding to the client library",
   "main": "lib/index.js",
   "repository": {

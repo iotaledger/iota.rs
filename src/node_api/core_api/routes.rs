@@ -120,13 +120,6 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
         client.get_remote_pow_timeout()
     };
 
-    #[cfg(not(feature = "pow-fallback"))]
-    let resp: SubmitMessageResponse = client
-        .node_manager
-        .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
-        .await?;
-
-    #[cfg(feature = "pow-fallback")]
     // fallback to local PoW if remote PoW fails
     let resp: SubmitMessageResponse = match client
         .node_manager
@@ -136,17 +129,23 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
         Ok(res) => res,
         Err(e) => {
             if let Error::NodeError(e) = e {
+                let fallback_to_local_pow = client.get_fallback_to_local_pow().await;
                 // hornet and bee return different error messages
-                if e == *"No available nodes with remote PoW"
+                if (e == *"No available nodes with remote PoW"
                     || e.contains("proof of work is not enabled")
-                    || e.contains("`PoW` not enabled")
+                    || e.contains("`PoW` not enabled"))
+                    && fallback_to_local_pow
                 {
-                    let mut client_network_info = client.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                    // switch to local PoW
-                    client_network_info.local_pow = true;
-                    drop(client_network_info);
+                    // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not
+                    // implemented for `std::sync::RwLockWriteGuard<'_, NetworkInfo>`
+                    {
+                        let mut client_network_info =
+                            client.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                        // switch to local PoW
+                        client_network_info.local_pow = true;
+                    }
                     #[cfg(not(feature = "wasm"))]
-                    let msg_res = crate::api::finish_pow(client: &Client, message.payload().clone()).await;
+                    let msg_res = crate::api::finish_pow(client, message.payload().cloned()).await;
                     #[cfg(feature = "wasm")]
                     let msg_res = {
                         let min_pow_score = client.get_min_pow_score().await?;
@@ -155,7 +154,7 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
                             client,
                             network_id,
                             None,
-                            message.payload().cloned(),
+                            message.payload().clone(),
                             min_pow_score,
                         )
                         .await
@@ -214,15 +213,21 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
         Ok(res) => res,
         Err(e) => {
             if let Error::NodeError(e) = e {
+                let fallback_to_local_pow = client.get_fallback_to_local_pow().await;
                 // hornet and bee return different error messages
-                if e == *"No available nodes with remote PoW"
+                if (e == *"No available nodes with remote PoW"
                     || e.contains("proof of work is not enabled")
-                    || e.contains("`PoW` not enabled")
+                    || e.contains("`PoW` not enabled"))
+                    && fallback_to_local_pow
                 {
-                    let mut client_network_info = client.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                    // switch to local PoW
-                    client_network_info.local_pow = true;
-                    drop(client_network_info);
+                    // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not
+                    // implemented for `std::sync::RwLockWriteGuard<'_, NetworkInfo>`
+                    {
+                        let mut client_network_info =
+                            client.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                        // switch to local PoW
+                        client_network_info.local_pow = true;
+                    }
                     #[cfg(not(feature = "wasm"))]
                     let msg_res = crate::api::finish_pow(client, message.payload().cloned()).await;
                     #[cfg(feature = "wasm")]

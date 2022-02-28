@@ -12,6 +12,7 @@ use iota_client::{
 
 use getset::{CopyGetters, Getters};
 use std::{
+    borrow::Borrow,
     cell::RefCell,
     convert::From,
     fmt::{Display, Formatter},
@@ -54,7 +55,7 @@ impl From<RustAddressDto> for AddressDto {
     }
 }
 
-#[derive(Clone, Getters, CopyGetters, PartialEq)]
+#[derive(Clone, Getters, CopyGetters, PartialEq, Debug)]
 pub struct BalanceAddressResponse {
     #[getset(get_copy = "pub")]
     pub address_type: u8,
@@ -115,7 +116,7 @@ impl Address {
         }
     }
     pub fn to_inner_clone(&self) -> RustAddress {
-        self.address.clone()
+        self.address
     }
 
     pub fn to_bech32(&self, hrp: &str) -> String {
@@ -125,7 +126,7 @@ impl Address {
     pub fn verify(&self, msg: Vec<u8>, signature: SignatureUnlock) -> Result<()> {
         match self.address.verify(&msg, signature.to_inner_ref()) {
             Ok(()) => Ok(()),
-            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 }
@@ -149,7 +150,7 @@ pub fn search_address(
 ) -> Result<IndexPublicDto> {
     let res = crate::block_on(async {
         search_address_api(
-            &RustSeed::from_bytes(seed.as_bytes()),
+            &RustSeed::from_bytes(&hex::decode(seed)?),
             bech32_hrp,
             account_index,
             range_low..range_high,
@@ -159,7 +160,7 @@ pub fn search_address(
     });
     match res {
         Ok((index, is_public)) => Ok(IndexPublicDto { index, is_public }),
-        Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        Err(e) => Err(anyhow!(e.to_string())),
     }
 }
 
@@ -169,7 +170,7 @@ pub struct GetAddressBuilder<'a> {
 
 impl<'a> GetAddressBuilder<'a> {
     pub fn new(client: &'a Client) -> Self {
-        Self { client: client }
+        Self { client }
     }
 
     pub fn balance(&self, address: &str) -> Result<BalanceAddressResponse> {
@@ -206,7 +207,7 @@ pub struct GetAddressesBuilder<'a> {
 }
 
 impl<'a> GetAddressesBuilder<'a> {
-    pub fn new(seed: &str) -> Self {
+    pub(crate) fn from_old(seed: &str) -> Self {
         let internal = GetAddressesBuilderInternal {
             seed: RustSeed::from_bytes(seed.as_bytes()),
             account_index: 0,
@@ -216,6 +217,24 @@ impl<'a> GetAddressesBuilder<'a> {
         };
         Self {
             fields: Rc::new(RefCell::new(Option::from(internal))),
+        }
+    }
+
+    pub fn from(seed: &str) -> Result<Self> {
+        match hex::decode(seed) {
+            Ok(s) => {
+                let internal = GetAddressesBuilderInternal {
+                    seed: RustSeed::from_bytes(&s),
+                    account_index: 0,
+                    range: 0..ADDRESS_GAP_RANGE,
+                    bech32_hrp: None,
+                    client: None,
+                };
+                Ok(Self {
+                    fields: Rc::new(RefCell::new(Option::from(internal))),
+                })
+            }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 

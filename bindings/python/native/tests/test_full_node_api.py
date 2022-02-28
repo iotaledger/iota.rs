@@ -31,7 +31,7 @@ def test_get_peers():
         assert isinstance(peers, list)
     except ValueError as e:
         # Else the error must be access forbidden
-        assert "Forbidden" in str(e)
+        assert "status code 400" in str(e)
 
 
 def test_get_tips():

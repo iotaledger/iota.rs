@@ -24,7 +24,7 @@ pub struct PreparedTransactionData {
 
 impl PreparedTransactionData {
     pub fn deserialize(serialised_data: &str) -> Result<PreparedTransactionData> {
-        let res = serde_json::from_str(&serialised_data);
+        let res = serde_json::from_str(serialised_data);
 
         match res {
             Ok(s) => Ok(s),

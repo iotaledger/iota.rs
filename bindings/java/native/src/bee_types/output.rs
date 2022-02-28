@@ -60,11 +60,7 @@ impl Display for OutputResponse {
         write!(
             f,
             "(message_id={}, transaction_id={}, output_index={}, is_spent={}, output=({}))",
-            self.message_id,
-            self.transaction_id,
-            self.output_index,
-            self.is_spent,
-            self.output.to_string()
+            self.message_id, self.transaction_id, self.output_index, self.is_spent, self.output
         )
     }
 }
@@ -303,7 +299,7 @@ impl SignatureLockedSingleOutput {
         self.0.amount()
     }
     pub fn address(&self) -> Address {
-        self.0.address().clone().into()
+        (*self.0.address()).into()
     }
 
     pub fn to_inner_clone(&self) -> RustSignatureLockedSingleOutput {
@@ -349,7 +345,7 @@ impl SignatureLockedDustAllowanceOutput {
     }
 
     pub fn address(&self) -> Address {
-        self.0.address().clone().into()
+        (*self.0.address()).into()
     }
     pub fn to_inner_clone(&self) -> RustSignatureLockedDustAllowanceOutput {
         self.0.clone()

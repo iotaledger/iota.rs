@@ -259,7 +259,7 @@ impl Client {
             return Ok(primary_node.clone());
         }
         let pool = self.node_manager.nodes.clone();
-        Ok(pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)?)
+        pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)
     }
 
     /// Gets the miner to use based on the PoW setting
@@ -336,6 +336,15 @@ impl Client {
     }
     pub(crate) fn get_remote_pow_timeout(&self) -> Duration {
         self.remote_pow_timeout
+    }
+
+    /// returns the fallback_to_local_pow
+    pub async fn get_fallback_to_local_pow(&self) -> bool {
+        self.network_info
+            .read()
+            .map_or(NetworkInfo::default().fallback_to_local_pow, |info| {
+                info.fallback_to_local_pow
+            })
     }
 
     /// returns the unsynced nodes.

@@ -1481,7 +1481,7 @@ impl TryFrom<Payload> for RustPayload {
 
             let unlock_blocks = transaction_payload[0].unlock_blocks.clone();
             let unlock_blocks: Result<Vec<RustUnlockBlock>> =
-                unlock_blocks.to_vec().into_iter().map(|u| u.try_into()).collect();
+                unlock_blocks.iter().cloned().map(|u| u.try_into()).collect();
 
             transaction = transaction.with_unlock_blocks(RustUnlockBlocks::new(unlock_blocks?)?);
 
@@ -1493,8 +1493,7 @@ impl TryFrom<Payload> for RustPayload {
                     .as_ref()
                     .unwrap_or_else(|| panic!("Invalid Payload: {:?}", payload))[0]
                     .index
-                    .clone())
-                    .to_owned()
+                    .clone()
                     .as_bytes(),
                 &payload
                     .indexation

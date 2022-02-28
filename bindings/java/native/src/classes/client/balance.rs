@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use iota_client::{api::GetBalanceBuilder as RustGetBalanceBuilderApi, Seed as RustSeed};
 
-use std::{cell::RefCell, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 
 use crate::{full_node_api::Client, Result};
 use anyhow::anyhow;
@@ -20,9 +20,10 @@ pub struct GetBalanceBuilderApi<'a> {
 }
 
 impl<'a> GetBalanceBuilderApi<'a> {
-    pub fn new(client: &'a Client, seed: &str) -> Self {
+    #[allow(dead_code)]
+    pub(crate) fn from_old(client: &'a Client, seed: &str) -> Self {
         let internal = GetBalanceBuilderApiInternal {
-            client: client,
+            client,
             seed: RustSeed::from_bytes(seed.as_bytes()),
             account_index: 0,
             initial_address_index: 0,
@@ -30,6 +31,24 @@ impl<'a> GetBalanceBuilderApi<'a> {
         };
         Self {
             fields: Rc::new(RefCell::new(Option::from(internal))),
+        }
+    }
+
+    pub fn new(client: &'a Client, seed: &str) -> Result<Self> {
+        match hex::decode(seed) {
+            Ok(s) => {
+                let internal = GetBalanceBuilderApiInternal {
+                    client,
+                    seed: RustSeed::from_bytes(&s),
+                    account_index: 0,
+                    initial_address_index: 0,
+                    gap_limit: crate::address::ADDRESS_GAP_RANGE,
+                };
+                Ok(Self {
+                    fields: Rc::new(RefCell::new(Option::from(internal))),
+                })
+            }
+            Err(e) => Err(anyhow!(e.to_string())),
         }
     }
 

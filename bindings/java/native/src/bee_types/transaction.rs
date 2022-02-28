@@ -56,11 +56,11 @@ impl TransactionPayload {
     }
 
     pub fn unlock_blocks(&self) -> Vec<UnlockBlock> {
-        self.unlock_blocks.iter().cloned().collect()
+        self.unlock_blocks.to_vec()
     }
 
     pub fn id(&self) -> TransactionId {
-        self.id.clone()
+        self.id
     }
 }
 
@@ -117,10 +117,7 @@ impl RegularEssence {
     }
     // Gets the transaction chained payload.
     pub fn payload(&self) -> Option<MessagePayload> {
-        match self.0.payload() {
-            Some(payload) => Some(payload.clone().into()),
-            None => None,
-        }
+        self.0.payload().as_ref().map(|payload| payload.clone().into())
     }
 }
 
@@ -131,6 +128,12 @@ impl Display for RegularEssence {
 }
 
 pub struct TransactionPayloadBuilder(Rc<RefCell<Option<RustTransactionPayloadBuilder>>>);
+
+impl Default for TransactionPayloadBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl TransactionPayloadBuilder {
     /// Creates a new `TransactionPayloadBuilder`.

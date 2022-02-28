@@ -50,6 +50,9 @@ pub struct NetworkInfo {
     /// Local proof of work
     #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
+    /// Fallback to local proof of work if the node doesn't support remote PoW
+    #[serde(rename = "fallbackToLocalPow")]
+    pub fallback_to_local_pow: bool,
     /// Tips request interval during PoW in seconds
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
@@ -115,6 +118,7 @@ impl Default for NetworkInfo {
             protocol_version: Some(2),
             min_pow_score: DEFAULT_MIN_POW,
             local_pow: default_local_pow(),
+            fallback_to_local_pow: true,
             bech32_hrp: DEFAULT_BECH32_HRP.into(),
             tips_interval: DEFAULT_TIPS_INTERVAL,
         }
@@ -279,6 +283,12 @@ impl ClientBuilder {
     /// Sets the amount of workers that should be used for PoW, default is num_cpus::get().
     pub fn with_pow_worker_count(mut self, worker_count: usize) -> Self {
         self.pow_worker_count.replace(worker_count);
+        self
+    }
+
+    /// Sets whether the PoW should be done locally in case a node doesn't support remote PoW.
+    pub fn with_fallback_to_local_pow(mut self, fallback_to_local_pow: bool) -> Self {
+        self.network_info.fallback_to_local_pow = fallback_to_local_pow;
         self
     }
 

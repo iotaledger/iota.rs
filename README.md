@@ -28,7 +28,7 @@ Add `iota-client` as a dependency in `Cargo.toml`:
 
 ```toml
 [dependencies]
-iota-client = "1.1.0"
+iota-client = "1.1.1"
 ```
 
 Or, for the latest changes:
@@ -82,7 +82,7 @@ Bindings to other programming languages are available under the folder [bindings
 
 ## Joining the discussion
 
-If you want to get involved in the community, need help with setting up, have any issues or just want to discuss IOTA with other people, feel free to join our [Discord](https://discord.iota.org/) in the #clients-dev and #clients-discussion channels.
+If you want to get involved in the community, need help with setting up, have any issues or just want to discuss IOTA with other people, feel free to join our [Discord](https://discord.iota.org/) in the #client-libraries and #client-discussion channels.
 
 ## License
 

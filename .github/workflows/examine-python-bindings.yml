@@ -1,0 +1,179 @@
+name: Examine the Python Bindings
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/examine-python-bindings.yml'
+      - '.github/actions/**'
+      - 'bindings/python/**'
+      # Watch the Rust core too
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/examine-python-bindings.yml'
+      - '.github/actions/**'
+      - 'bindings/python/**'
+      # Watch the Rust core too
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    if: ${{ ! github.event.schedule }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        # python: ['3.9', '3.10']
+        # FIXME: Make tests work on newer Python versions. (#782)
+        python: ['3.8', '3.9']
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          cache: true
+          cache-root: bindings/python/native/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.python }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+
+      - name: Set Up Python ${{ matrix.python }} and Pip Cache
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: bindings/python/native/requirements-dev.txt
+
+      # This step is required for bindgen to work on Windows.
+      - name: Set Up Clang/LLVM (Windows)
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        uses: ./.github/actions/setup-clang
+
+      - name: Install Dependencies for Python Binding Tests
+        run: |
+          python3 -m pip install --upgrade setuptools pip wheel
+          python3 -m pip install tox-gh-actions
+
+      # Tox will run cargo test.
+      - name: Run Tox
+        working-directory: bindings/python/native/
+        run: tox
+
+  lint:
+    name: Lint
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Clippy
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: clippy
+          cache: true
+          cache-root: bindings/python/native/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+
+      - name: Run Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path bindings/python/native/Cargo.toml --all-features --all-targets -- --deny warnings
+          name: Clippy Results for the Python Bindings
+
+      # TODO: Lint the Python code too
+
+  check-unused-deps:
+    name: Check Unused Dependencies
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Install Cargo-udeps with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          cache: true
+          install: cargo-udeps
+          cache-root: bindings/python/native/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+
+      - name: Run Cargo Udeps
+        uses: actions-rs/cargo@v1
+        with:
+          command: udeps
+          args: --manifest-path bindings/python/native/Cargo.toml --all-targets
+
+      # TODO: Check requirements.txt too
+
+  check-format:
+    name: Check Format
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Nightly Rustfmt
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: rustfmt
+          cache: false
+
+      - name: Run Cargo Fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path bindings/python/native/Cargo.toml --all -- --check
+
+      # TODO: Check the Python code too
+
+  audit:
+    name: Perform Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v2
+
+      - name: Install Cargo-audit with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          install: cargo-audit
+          cache: true
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+
+      - name: Run Cargo Audit
+        uses: actions-rs/cargo@v1
+        with:
+          command: audit
+          args: --file bindings/python/native/Cargo.lock --deny warnings
+
+      # TODO: Check the Python code too

@@ -17,7 +17,8 @@ describe('Client', () => {
     assert.strictEqual(typeof info, 'object')
     assert.strictEqual(info.localPow, true)
     assert.strictEqual(info.bech32HRP, 'atoi')
-    assert.strictEqual(info.minPoWScore, 4000)
+    // 4000 in mainnet, 2000 in devnet
+    assert.strictEqual(info.minPoWScore, 2000)
   })
 
   it('gets tips', async () => {
@@ -50,30 +51,6 @@ describe('Client', () => {
       .data(new TextEncoder().encode('MESSAGE'))
       .submit()
     assertMessageWrapper(messageWrapper)
-  })
-
-  it('sends a value transaction and checks output balance', async () => {
-    const depositAddress = 'atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf'
-    const message = await client
-      .message()
-      .seed(seed)
-      .accountIndex(0)
-      .output(depositAddress, 1000000)
-      .submit()
-    assertMessageWrapper(message)
-
-    while (true) {
-      const metadata = await client.getMessage().metadata(message.messageId)
-      if (metadata.ledgerInclusionState) {
-        assert.strictEqual(metadata.ledgerInclusionState, 'included')
-        break
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 2000))
-      }
-    }
-
-    const addressBalanceObject = await client.getAddressBalance(depositAddress)
-    assert.strictEqual(addressBalanceObject.balance >= 1000000, true)
   })
 
   it('gets an unspent address', async () => {
@@ -114,7 +91,7 @@ describe('Client', () => {
   })
 
   it('get address outputs', async () => {
-    const outputs = await client.getAddressOutputs('atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
+    const outputs = await client.getAddressOutputs('atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf')
     assert.strictEqual(Array.isArray(outputs), true)
     assert.strictEqual(outputs.length > 0, true)
     assert.strictEqual(typeof outputs[0], 'string')
@@ -151,29 +128,61 @@ describe('Client', () => {
     assert.strictEqual(info.nodeinfo.name, 'HORNET')
   })
 
-  it('offline transaction', async () => {
-    const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
-    const addresses = await client.getAddresses(seed)
-      .bech32Hrp("atoi")
-      .accountIndex(0)
-      .range(0, 5)
-      .get();
-    let inputs = await client.findInputs(addresses, 1000000);
-    const prepared_transaction = await client
-      .message()
-      .input(inputs[0])
-      .output('atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf', 1000000)
-      .prepareTransaction();
-    const signed_transaction = await client
-      .message()
-      .signTransaction(prepared_transaction, seed);
-    const message = await client
-      .message()
-      .finishMessage(signed_transaction);
-  })
 
   it('public key to address', async () => {
     const address = await client.hexPublicKeyToBech32Address("2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a")
     assert.strictEqual(address, 'atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r')
   })
+
+  // transaction tests disabled for workflows, because they fail if we don't have funds
+  // it('sends a value transaction and checks output balance', async () => {
+  //   const depositAddress = 'atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf'
+  //   const message = await client
+  //     .message()
+  //     .seed(seed)
+  //     .accountIndex(0)
+  //     .output(depositAddress, 1000000)
+  //     .submit()
+  //   assertMessageWrapper(message)
+
+  //   while (true) {
+  //     const metadata = await client.getMessage().metadata(message.messageId)
+  //     if (metadata.ledgerInclusionState) {
+  //       assert.strictEqual(metadata.ledgerInclusionState, 'included')
+  //       break
+  //     } else {
+  //       await new Promise(resolve => setTimeout(resolve, 2000))
+  //     }
+  //   }
+
+  //   const addressBalanceObject = await client.getAddressBalance(depositAddress)
+  //   assert.strictEqual(addressBalanceObject.balance >= 1000000, true)
+  // })
+
+  // it('offline transaction', async () => {
+  //   const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
+  //   const addresses = await client.getAddresses(seed)
+  //     .bech32Hrp("atoi")
+  //     .accountIndex(0)
+  //     .range(0, 2)
+  //     .get();
+  //   let inputs;
+  //   try {
+  //     inputs = await client.findInputs(addresses, 1000000)
+  //   } catch (e) { console.log };
+  //   // only try to send a transaction if we have inputs
+  //   if (inputs.length > 0) {
+  //     const prepared_transaction = await client
+  //       .message()
+  //       .input(inputs[0])
+  //       .output('atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2', 1000000)
+  //       .prepareTransaction();
+  //     const signed_transaction = await client
+  //       .message()
+  //       .signTransaction(prepared_transaction, seed);
+  //     const message = await client
+  //       .message()
+  //       .finishMessage(signed_transaction);
+  //   }
+  // })
 })

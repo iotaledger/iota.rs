@@ -63,7 +63,7 @@ impl TreasuryPayload {
 
     pub fn input(&self) -> TreasuryInput {
         if let RustInput::Treasury(payload) = self.0.input() {
-            return payload.clone().into();
+            return (*payload).into();
         }
         unreachable!()
     }
