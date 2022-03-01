@@ -8,7 +8,7 @@ use crate::{signing::types::InputSigningData, Error, Result};
 use bee_message::{
     address::Address,
     input::INPUT_COUNT_MAX,
-    output::{Output, TokenId},
+    output::{ByteCostConfig, Output, TokenId},
 };
 use packable::PackableExt;
 
@@ -34,6 +34,7 @@ pub async fn try_select_inputs(
     mut outputs: Vec<Output>,
     force_use_all_inputs: bool,
     remainder_address: Option<Address>,
+    byte_cost_config: ByteCostConfig,
 ) -> Result<SelectedTransactionData> {
     inputs.dedup();
     if inputs.len() as u16 > INPUT_COUNT_MAX {

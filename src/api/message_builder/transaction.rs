@@ -29,8 +29,16 @@ use std::{collections::HashSet, str::FromStr};
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
     log::debug!("[prepare_transaction]");
+    let node_info = message_builder.client.get_info().await?;
+    let byte_cost_config = ByteCostConfigBuilder::new()
+        .byte_cost(node_info)
+        .key_factor(node_info)
+        .data_factor(node_info)
+        .finish();
     let mut governance_transition: Option<HashSet<AliasId>> = None;
     for output in &message_builder.outputs {
+        // Check if the outputs have enough amount to cover the storage deposit
+        output.has_enough_storage_deposit()?;
         if let Output::Alias(x) = output {
             if x.state_index() > 0 {
                 // Check if the transaction is a governance_transition, by checking if the new index is the same as
