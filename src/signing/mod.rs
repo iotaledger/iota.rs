@@ -71,8 +71,10 @@ impl SignerHandle {
 
         Ok(match signer_type {
             #[cfg(feature = "stronghold")]
-            // todo get path and password from a serialized struct
-            SignerTypeDto::Stronghold(password) => StrongholdSigner::try_new_signer_handle(password, Path::new("?"))?,
+            SignerTypeDto::Stronghold(stronghold_dto) => StrongholdSigner::try_new_signer_handle(
+                stronghold_dto.password,
+                Path::new(&stronghold_dto.snapshot_path),
+            )?,
             #[cfg(feature = "ledger")]
             SignerTypeDto::LedgerNano => LedgerSigner::new(false),
             #[cfg(feature = "ledger")]

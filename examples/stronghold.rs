@@ -20,12 +20,13 @@ async fn main() -> Result<()> {
         .await?;
 
     let storage_path = Path::new("test.stronghold");
-    let stronghold_signer = StrongholdSigner::try_new_signer_handle("oven hub code trade forum coffee sight subject cluster olympic eager detail antenna system crawl achieve rural toddler clutch kick intact thunder roast safe", &storage_path).unwrap();
+    let stronghold_signer =
+        StrongholdSigner::try_new_signer_handle("some_hopefully_secure_password", &storage_path).unwrap();
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
     let mnemonic = env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap();
-
+    // The mnemonic only needs to be stored the first time
     stronghold_signer
         .lock()
         .await

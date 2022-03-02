@@ -80,6 +80,7 @@ impl Signer for StrongholdSigner {
 
     async fn store_mnemonic(&mut self, _storage_path: &Path, mnemonic: String) -> Result<()> {
         // todo add mnemonic validation and trim()
+        // todo check if a mnemonic is already stored, return an error if that's the case so it doesn't get overwritten
 
         // Stronghold arguments.
         let output = Location::Generic {

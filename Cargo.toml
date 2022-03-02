@@ -86,6 +86,10 @@ name = "ledger"
 required-features = ["ledger"]
 
 [[example]]
+name = "stronghold"
+required-features = ["stronghold"]
+
+[[example]]
 name = "0_address_generation"
 path = "examples/offline_signing/0_address_generation.rs"
 
