@@ -7,6 +7,7 @@ use super::{
     GenerateAddressMetadata, InputSigningData, LedgerStatus, SignMessageMetadata, Signer, SignerHandle, SignerType,
 };
 use crate::Result;
+
 use async_trait::async_trait;
 use bee_message::{
     address::{Address, Ed25519Address},
@@ -19,12 +20,14 @@ use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput, Stronghold};
 use log::warn;
 use riker::system::ActorSystem;
+use tokio::sync::Mutex;
+use zeroize::Zeroize;
+
 use std::{
     ops::Range,
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::Mutex;
 
 /// Stronghold vault path to secrets.
 ///
@@ -41,20 +44,25 @@ const SEED_RECORD_PATH: &[u8] = b"iota-wallet-seed";
 /// The value has been hard-coded historically.
 const DERIVE_OUTPUT_RECORD_PATH: &[u8] = b"iota-wallet-derived";
 
-/// The key data to encrypt and decrypt a Stronghold vault.
+/// The location in Stronghold where the wallet data is stored.
 ///
 /// The value has been hard-coded historically.
-const KEY_DATA: &[u8; 32] = b"iota-wallet-records\0\0\0\0\0\0\0\0\0\0\0\0\0";
+const KEY_DATA: &[u8; 19] = b"iota-wallet-records";
 
 /// Filename to the Stronghold vault.
 ///
 /// The value has been hard-coded historically.
 const STRONGHOLD_FILENAME: &str = "wallet.stronghold";
 
+/// The client path for the seed.
+///
+/// The value has been hard-coded historically.
+static PRIVATE_DATA_CLIENT_PATH: &[u8] = b"iota_seed";
+
 /// Stronghold as a [Signer].
 pub struct StrongholdSigner {
     stronghold: Stronghold,
-    client_path: Vec<u8>,
+    password: Vec<u8>,
     snapshot_path: PathBuf,
     snapshot_loaded: bool,
 }
@@ -71,6 +79,8 @@ impl Signer for StrongholdSigner {
     }
 
     async fn store_mnemonic(&mut self, _storage_path: &Path, mnemonic: String) -> Result<()> {
+        // todo add mnemonic validation and trim()
+
         // Stronghold arguments.
         let output = Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -83,7 +93,7 @@ impl Signer for StrongholdSigner {
 
         // Persist Stronghold to the disk.
         self.write_all_to_snapshot(
-            KEY_DATA.to_vec(),
+            self.password.to_vec(),
             Some(STRONGHOLD_FILENAME.to_string()),
             Some(self.snapshot_path.clone()),
         )
@@ -213,21 +223,22 @@ impl Signer for StrongholdSigner {
 
 impl StrongholdSigner {
     /// Create a `[StrongholdSigner]`.
-    pub fn try_new(client_path: &[u8], snapshot_path: &Path) -> Result<StrongholdSigner> {
+    pub fn try_new<P: Into<String>>(password: P, snapshot_path: &Path) -> Result<StrongholdSigner> {
+        let password = stronghold_password(password);
         let actor = ActorSystem::new()?;
         let options = Vec::new();
 
         Ok(Self {
-            stronghold: Stronghold::init_stronghold_system(actor, client_path.to_vec(), options),
-            client_path: client_path.to_vec(),
+            stronghold: Stronghold::init_stronghold_system(actor, PRIVATE_DATA_CLIENT_PATH.to_vec(), options),
+            password: password.to_vec(),
             snapshot_path: snapshot_path.to_path_buf(),
             snapshot_loaded: false,
         })
     }
 
     /// Create a `[SignerHandle]` wrapping a `[StrongholdSigner]`.
-    pub fn try_new_signer_handle(client_path: &[u8], snapshot_path: &Path) -> Result<SignerHandle> {
-        let signer = Self::try_new(client_path, snapshot_path)?;
+    pub fn try_new_signer_handle<P: Into<String>>(password: P, snapshot_path: &Path) -> Result<SignerHandle> {
+        let signer = Self::try_new(password, snapshot_path)?;
 
         Ok(SignerHandle {
             signer: Arc::new(Mutex::new(Box::new(signer))),
@@ -244,9 +255,9 @@ impl StrongholdSigner {
         match self
             .stronghold
             .read_snapshot(
-                self.client_path.clone(),
+                PRIVATE_DATA_CLIENT_PATH.to_vec(),
                 None,
-                &KEY_DATA.to_vec(),
+                &self.password.clone(),
                 Some(STRONGHOLD_FILENAME.to_string()),
                 Some(self.snapshot_path.clone()),
             )
@@ -450,6 +461,17 @@ impl StrongholdSigner {
 
         Ok(unlock_block)
     }
+}
+
+/// hash a password to the password that will actually be used to access stronghold
+fn stronghold_password<P: Into<String>>(password: P) -> Vec<u8> {
+    let mut password = password.into();
+    let mut dk = [0; 64];
+    // safe to unwrap because rounds > 0
+    crypto::keys::pbkdf::PBKDF2_HMAC_SHA512(password.as_bytes(), b"wallet.rs", 100, &mut dk).unwrap();
+    password.zeroize();
+    let password: [u8; 32] = dk[0..32][..].try_into().unwrap();
+    password.to_vec()
 }
 
 #[cfg(test)]
