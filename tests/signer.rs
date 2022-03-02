@@ -30,7 +30,7 @@ async fn mnemonic_signer_dto() -> Result<()> {
 
 #[cfg(feature = "stronghold")]
 #[tokio::test]
-async fn mnemonic_signer_dto() -> Result<()> {
+async fn stronghold_signer_dto() -> Result<()> {
     let stronghold_dto_str =
         r#"{ "Stronghold": { "password": "some_hopefully_secure_password", "snapshotPath": "test.stronghold" } }"#;
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast".to_string();
@@ -47,7 +47,7 @@ async fn mnemonic_signer_dto() -> Result<()> {
         .await
         .unwrap();
 
-    let addresses = GetAddressesBuilder::new(&signer)
+    let addresses = GetAddressesBuilder::new(&stronghold_signer)
         .with_bech32_hrp("iota".into())
         .with_account_index(0)
         .with_range(0..1)

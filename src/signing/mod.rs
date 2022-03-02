@@ -72,7 +72,7 @@ impl SignerHandle {
         Ok(match signer_type {
             #[cfg(feature = "stronghold")]
             SignerTypeDto::Stronghold(stronghold_dto) => StrongholdSigner::try_new_signer_handle(
-                stronghold_dto.password,
+                &stronghold_dto.password,
                 Path::new(&stronghold_dto.snapshot_path),
             )?,
             #[cfg(feature = "ledger")]

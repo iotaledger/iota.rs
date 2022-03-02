@@ -44,11 +44,6 @@ const SEED_RECORD_PATH: &[u8] = b"iota-wallet-seed";
 /// The value has been hard-coded historically.
 const DERIVE_OUTPUT_RECORD_PATH: &[u8] = b"iota-wallet-derived";
 
-/// The location in Stronghold where the wallet data is stored.
-///
-/// The value has been hard-coded historically.
-const KEY_DATA: &[u8; 19] = b"iota-wallet-records";
-
 /// Filename to the Stronghold vault.
 ///
 /// The value has been hard-coded historically.
@@ -57,13 +52,27 @@ const STRONGHOLD_FILENAME: &str = "wallet.stronghold";
 /// The client path for the seed.
 ///
 /// The value has been hard-coded historically.
-static PRIVATE_DATA_CLIENT_PATH: &[u8] = b"iota_seed";
+const PRIVATE_DATA_CLIENT_PATH: &[u8] = b"iota_seed";
+
+/// Hash a password, deriving a key, for accessing Stronghold.
+fn derive_key_from_password(password: &str) -> Vec<u8> {
+    let mut buffer = [0u8; 64];
+
+    // Safe to unwrap because rounds > 0.
+    crypto::keys::pbkdf::PBKDF2_HMAC_SHA512(password.as_bytes(), b"wallet.rs", 100, &mut buffer).unwrap();
+
+    buffer.into_iter().take(32).collect()
+}
 
 /// Stronghold as a [Signer].
+#[derive(Zeroize)]
 pub struct StrongholdSigner {
+    #[zeroize(skip)]
     stronghold: Stronghold,
-    password: Vec<u8>,
+    key_data: Vec<u8>,
+    #[zeroize(skip)]
     snapshot_path: PathBuf,
+    #[zeroize(skip)]
     snapshot_loaded: bool,
 }
 
@@ -79,9 +88,6 @@ impl Signer for StrongholdSigner {
     }
 
     async fn store_mnemonic(&mut self, _storage_path: &Path, mnemonic: String) -> Result<()> {
-        // todo add mnemonic validation and trim()
-        // todo check if a mnemonic is already stored, return an error if that's the case so it doesn't get overwritten
-
         // Stronghold arguments.
         let output = Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -89,12 +95,21 @@ impl Signer for StrongholdSigner {
         };
         let hint = RecordHint::new("wallet.rs-seed").unwrap();
 
+        // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
+        let trimmed_mnemonic = mnemonic.trim().to_string();
+
+        // If the snapshot has already been loaded, then we need to check if the same mnemonic has
+        // been stored in Stronghold or not to prevent overwriting it.
+        if self.snapshot_loaded && self.stronghold.record_exists(output.clone()).await {
+            return Err(crate::Error::StrongholdMnemonicAlreadyStored);
+        }
+
         // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
-        self.bip39_recover(mnemonic, None, output, hint).await?;
+        self.bip39_recover(trimmed_mnemonic, None, output, hint).await?;
 
         // Persist Stronghold to the disk.
         self.write_all_to_snapshot(
-            self.password.to_vec(),
+            self.key_data.clone(),
             Some(STRONGHOLD_FILENAME.to_string()),
             Some(self.snapshot_path.clone()),
         )
@@ -224,21 +239,21 @@ impl Signer for StrongholdSigner {
 
 impl StrongholdSigner {
     /// Create a `[StrongholdSigner]`.
-    pub fn try_new<P: Into<String>>(password: P, snapshot_path: &Path) -> Result<StrongholdSigner> {
-        let password = stronghold_password(password);
+    pub fn try_new(password: &str, snapshot_path: &Path) -> Result<StrongholdSigner> {
+        let key_data = derive_key_from_password(password);
         let actor = ActorSystem::new()?;
         let options = Vec::new();
 
         Ok(Self {
             stronghold: Stronghold::init_stronghold_system(actor, PRIVATE_DATA_CLIENT_PATH.to_vec(), options),
-            password: password.to_vec(),
+            key_data,
             snapshot_path: snapshot_path.to_path_buf(),
             snapshot_loaded: false,
         })
     }
 
     /// Create a `[SignerHandle]` wrapping a `[StrongholdSigner]`.
-    pub fn try_new_signer_handle<P: Into<String>>(password: P, snapshot_path: &Path) -> Result<SignerHandle> {
+    pub fn try_new_signer_handle(password: &str, snapshot_path: &Path) -> Result<SignerHandle> {
         let signer = Self::try_new(password, snapshot_path)?;
 
         Ok(SignerHandle {
@@ -258,7 +273,7 @@ impl StrongholdSigner {
             .read_snapshot(
                 PRIVATE_DATA_CLIENT_PATH.to_vec(),
                 None,
-                &self.password.clone(),
+                &self.key_data,
                 Some(STRONGHOLD_FILENAME.to_string()),
                 Some(self.snapshot_path.clone()),
             )
@@ -464,17 +479,6 @@ impl StrongholdSigner {
     }
 }
 
-/// hash a password to the password that will actually be used to access stronghold
-fn stronghold_password<P: Into<String>>(password: P) -> Vec<u8> {
-    let mut password = password.into();
-    let mut dk = [0; 64];
-    // safe to unwrap because rounds > 0
-    crypto::keys::pbkdf::PBKDF2_HMAC_SHA512(password.as_bytes(), b"wallet.rs", 100, &mut dk).unwrap();
-    password.zeroize();
-    let password: [u8; 32] = dk[0..32][..].try_into().unwrap();
-    password.to_vec()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -488,7 +492,7 @@ mod tests {
 
         let storage_path = Path::new("test.stronghold");
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
-        let signer = StrongholdSigner::try_new_signer_handle(b"", &storage_path).unwrap();
+        let signer = StrongholdSigner::try_new_signer_handle("", &storage_path).unwrap();
 
         signer
             .lock()
