@@ -299,7 +299,7 @@ impl StrongholdSigner {
             // Generic Stronghold procedure failure.
             ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
             // Unexpected result type, which should never happen!
-            err @ _ => {
+            err => {
                 warn!(
                     "StrongholdSigner::bip39_recover(): unexpected result from Stronghold: {:?}",
                     err
@@ -350,7 +350,7 @@ impl StrongholdSigner {
             // Generic Stronghold procedure failure.
             ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
             // Unexpected result type, which should never happen!
-            err @ _ => {
+            err => {
                 warn!(
                     "StrongholdSigner::slip10_derive(): unexpected result from Stronghold: {:?}",
                     err
@@ -376,7 +376,7 @@ impl StrongholdSigner {
             // Generic Stronghold procedure failure.
             ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
             // Unexpected result type, which should never happen!
-            err @ _ => {
+            err => {
                 warn!(
                     "StrongholdSigner::ed25519_public_key(): unexpected result from Stronghold: {:?}",
                     err
@@ -404,7 +404,7 @@ impl StrongholdSigner {
             // Generic Stronghold procedure failure.
             ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
             // Unexpected result type, which should never happen!
-            err @ _ => {
+            err => {
                 warn!(
                     "StrongholdSigner::ed25519_sign(): unexpected result from Stronghold: {:?}",
                     err
