@@ -7,7 +7,6 @@ use super::{
     GenerateAddressMetadata, InputSigningData, LedgerStatus, SignMessageMetadata, Signer, SignerHandle, SignerType,
 };
 use crate::Result;
-
 use async_trait::async_trait;
 use bee_message::{
     address::{Address, Ed25519Address},
@@ -20,14 +19,13 @@ use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput, Stronghold};
 use log::warn;
 use riker::system::ActorSystem;
-use tokio::sync::Mutex;
-use zeroize::Zeroize;
-
 use std::{
     ops::Range,
     path::{Path, PathBuf},
     sync::Arc,
 };
+use tokio::sync::Mutex;
+use zeroize::Zeroize;
 
 /// Stronghold vault path to secrets.
 ///
