@@ -10,10 +10,34 @@ target
 .settings
 .classpath
 bin/
+.cxx/
 
-# Ignore generated java code
+# Ignore generated java source code
 native/src/main/java/org/iota/client/*
 
+# Ignore generated java compiled code
+native/bin/*
 
-# the local/native java code we made custom
+# the local/native java code we made custom, unignore
 !native/src/main/java/org/iota/client/local/
+
+# Ignore generated binaries
+examples/android-app/src/main/libs/
+
+# Android apps
+*.apk
+# Android keychains for signing
+*.jks
+.cxx/
+
+# Android studio
+local.properties
+.idea
+
+# Others
+*.iml
+*.so
+*.dll
+.DS_Store
+/captures
+.externalNativeBuild

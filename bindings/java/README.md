@@ -13,25 +13,50 @@ Clone project
 git clone https://github.com/iotaledger/iota.rs
 ```
 
-Build the rust library
+Build the rust library (This generates the java source code and JNI library file)
 ```
 cd iota.rs/bindings/java
 cargo build --release
 ```
 
-- Running an example using gradle
+Source code will be generated under `iota.rs/bindings/java/native/src/main/java/org/iota/client`
+
+Binaries can be found at `iota.rs/bindings/java/target/release`
+
+Once this step succeeds we need to generate the jar file containing the newly generated Java source files.
+### Gradle
+
+Make `gradlew` executable (`chmod +x gradlew`) if needed, then run
 ```
 cd iota.rs/bindings/java
-./gradlew examples:basic-app:test --info
+./gradlew jar
 ```
 
-Make sure to make gradlew executable (`chmod +x gradlew`)
+### Maven
+```
+cd iota.rs/bindings/java
+mvn install
+```
 
-- Running an example using maven
+The jar will be found at `iota.rs/bindings/java/native/build/libs/native.jar`
+
+## Running the Java example
+
+### Gradle
 ```
-cd iota.rs/bindings/java/examples/basic-app
-mvn test
+./gradlew examples:java-app:test --info
 ```
+
+### Maven
+```
+mvn exec:exec
+```
+
+## Running the Android example
+The Android app needs further compilation instructions.
+
+Specific instructions in `iota.rs/bindings/java/examples/android-app/README.md`
+
 
 ## Example for an external project
 Project skeleton can be found [here](https://github.com/kwek20/iota-rs-java).

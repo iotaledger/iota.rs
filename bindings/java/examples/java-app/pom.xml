@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <properties>
+    <mainClass>org.iota.client.example.ExampleApp</mainClass>
+    <libPath>${maven.multiModuleProjectDirectory}/target/release</libPath>
+  </properties>
+
+  <parent>
+      <groupId>org.iota.client</groupId>
+      <artifactId>native-parent</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <name>iota.rs java example</name>
+  <artifactId>java-example</artifactId>
+  <packaging>jar</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.iota.client</groupId>
+      <artifactId>native</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <executable>java</executable>
+          <arguments>
+              <argument>-Djava.library.path=${libPath}</argument>
+              <argument>-classpath</argument>
+              <classpath />
+              <argument>${mainClass}</argument>
+          </arguments>
+          <skip>false</skip>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>${mainClass}</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <workingDirectory>target</workingDirectory>
+          <argLine>-Djava.library.path=${maven.multiModuleProjectDirectory}/native/target/release</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
