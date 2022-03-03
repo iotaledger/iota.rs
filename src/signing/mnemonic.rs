@@ -126,7 +126,7 @@ impl crate::signing::Signer for MnemonicSigner {
 
         for (current_block_index, input) in inputs.iter().enumerate() {
             // Get the address that is required to unlock the input
-            let input_address = Address::try_from_bech32(&input.bech32_address)?;
+            let (_bech32_hrp, input_address) = Address::try_from_bech32(&input.bech32_address)?;
 
             // Check if we already added an [UnlockBlock] for this address
             match unlock_block_indexes.get(&input_address) {

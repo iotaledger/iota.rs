@@ -14,6 +14,8 @@ use crate::{
     },
 };
 
+use bee_rest_api::types::responses::RentStructureResponse;
+
 use log::LevelFilter;
 
 use std::{
@@ -31,7 +33,7 @@ use {
 };
 
 /// Struct containing network and PoW related information
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct NetworkInfo {
     /// Network
     pub network: Option<String>,
@@ -56,6 +58,9 @@ pub struct NetworkInfo {
     /// Tips request interval during PoW in seconds
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
+    /// Rent structure of the protocol
+    #[serde(rename = "rentStructure", default = "default_rent_structure")]
+    pub rent_structure: RentStructureResponse,
 }
 
 fn default_bech32_hrp() -> String {
@@ -63,6 +68,13 @@ fn default_bech32_hrp() -> String {
 }
 fn default_min_pow_score() -> f64 {
     4000.0
+}
+fn default_rent_structure() -> RentStructureResponse {
+    RentStructureResponse {
+        v_byte_cost: 500,
+        v_byte_factor_data: 1,
+        v_byte_factor_key: 10,
+    }
 }
 
 fn default_local_pow() -> bool {
@@ -121,6 +133,7 @@ impl Default for NetworkInfo {
             fallback_to_local_pow: true,
             bech32_hrp: DEFAULT_BECH32_HRP.into(),
             tips_interval: DEFAULT_TIPS_INTERVAL,
+            rent_structure: default_rent_structure(),
         }
     }
 }

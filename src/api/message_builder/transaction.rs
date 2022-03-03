@@ -13,7 +13,7 @@ use crate::bee_message::output::AliasId;
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
-    output::Output,
+    output::{ByteCostConfigBuilder, Output},
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayloadBuilder},
         Payload, TaggedDataPayload,
@@ -29,16 +29,29 @@ use std::{collections::HashSet, str::FromStr};
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
     log::debug!("[prepare_transaction]");
-    let node_info = message_builder.client.get_info().await?;
+    // To be enabled when https://github.com/iotaledger/iota.rs/issues/830 gets implemented also for the difficulty
+    // #[cfg(feature = "wasm")]
+    // // With wasm we don't have the background syncing of nodes which updates the NetworkInfo in an interval, so we
+    // need // to get the data every time we send a function, because the data could otherwise be outdated (the
+    // values could be // changed via milestones later)
+    // let rent_structure = message_builder
+    //     .client
+    //     .get_info()
+    //     .await?
+    //     .nodeinfo
+    //     .protocol
+    //     .rent_structure;
+    // #[cfg(not(feature = "wasm"))]
+    let rent_structure = message_builder.client.get_rent_structure().await?;
     let byte_cost_config = ByteCostConfigBuilder::new()
-        .byte_cost(node_info)
-        .key_factor(node_info)
-        .data_factor(node_info)
+        .byte_cost(rent_structure.v_byte_cost)
+        .key_factor(rent_structure.v_byte_factor_key)
+        .data_factor(rent_structure.v_byte_factor_data)
         .finish();
     let mut governance_transition: Option<HashSet<AliasId>> = None;
     for output in &message_builder.outputs {
         // Check if the outputs have enough amount to cover the storage deposit
-        output.has_enough_storage_deposit()?;
+        output.check_sufficient_storage_deposit(&byte_cost_config)?;
         if let Output::Alias(x) = output {
             if x.state_index() > 0 {
                 // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -61,9 +74,11 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 
     // Inputselection
     let selected_transaction_data = if message_builder.inputs.is_some() {
-        message_builder.get_custom_inputs(governance_transition).await?
+        message_builder
+            .get_custom_inputs(governance_transition, &byte_cost_config)
+            .await?
     } else {
-        message_builder.get_inputs().await?
+        message_builder.get_inputs(&byte_cost_config).await?
     };
 
     // Build transaction payload
@@ -116,7 +131,7 @@ pub async fn sign_transaction(
     log::debug!("[sign_transaction]");
     let mut input_addresses = Vec::new();
     for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
-        let address = Address::try_from_bech32(&input_signing_data.bech32_address)?;
+        let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
         input_addresses.push(address);
     }
     let signer = message_builder.signer.ok_or(Error::MissingParameter("signer"))?;

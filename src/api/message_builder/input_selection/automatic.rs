@@ -16,12 +16,18 @@ use crate::{
     Error, Result,
 };
 
-use bee_message::{address::Address, output::feature_block::FeatureBlock};
+use bee_message::{
+    address::Address,
+    output::{feature_block::FeatureBlock, ByteCostConfig},
+};
 use crypto::keys::slip10::Chain;
 
 /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
 /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
-pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Result<SelectedTransactionData> {
+pub(crate) async fn get_inputs(
+    message_builder: &ClientMessageBuilder<'_>,
+    byte_cost_config: &ByteCostConfig,
+) -> Result<SelectedTransactionData> {
     log::debug!("[get_inputs]");
     let account_index = message_builder.account_index;
     let mut gap_index = message_builder.initial_address_index;
@@ -40,6 +46,7 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
         force_use_all_inputs,
         // todo allow custom remainder address
         None,
+        &byte_cost_config,
     )
     .await
     {
@@ -112,6 +119,7 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
                     force_use_all_inputs,
                     // todo allow custom remainder address
                     None,
+                    &byte_cost_config,
                 )
                 .await
                 {

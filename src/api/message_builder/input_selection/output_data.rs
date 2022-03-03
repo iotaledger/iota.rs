@@ -37,7 +37,7 @@ pub(crate) async fn get_remainder(
     inputs: &[Output],
     outputs: &[Output],
     remainder_address: Option<Address>,
-    byte_cost_config: ByteCostConfig,
+    byte_cost_config: &ByteCostConfig,
 ) -> Result<Option<Output>> {
     log::debug!("[get_remainder]");
     let mut remainder_output = None;
@@ -122,7 +122,7 @@ pub(crate) async fn get_remainder(
     }
 
     // Check if output has enough amount to cover the storage deposit
-    remainder_output.has_enough_storage_deposit(byte_cost_config)?;
+    remainder_output.check_sufficient_storage_deposit(byte_cost_config)?;
 
     Ok(remainder_output)
 }
