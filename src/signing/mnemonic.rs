@@ -119,27 +119,19 @@ impl crate::signing::Signer for MnemonicSigner {
         inputs: &mut Vec<super::InputSigningData>,
         _: super::SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<UnlockBlock>> {
+        // The hashed_essence gets signed
         let hashed_essence = essence.hash();
         let mut unlock_blocks = Vec::new();
         let mut unlock_block_indexes = HashMap::<Address, usize>::new();
-        for (current_block_index, input) in inputs.iter().enumerate() {
-            // When we have an alias or Nft output, we will add them to nft_or_alias_indexes, because they can be
-            // used to unlock outputs
-            let output = Output::try_from(&input.output_response.output)?;
-            let alias_or_nft_address: Option<Address> = match &output {
-                Output::Alias(a) => Some(Address::Alias(AliasAddress::new(*a.alias_id()))),
-                Output::Nft(a) => Some(Address::Nft(NftAddress::new(*a.nft_id()))),
-                _ => None,
-            };
-            if let Some(address) = alias_or_nft_address {
-                unlock_block_indexes.insert(address, current_block_index);
-            }
 
+        for (current_block_index, input) in inputs.iter().enumerate() {
+            // Get the address that is required to unlock the input
             let input_address = Address::try_from_bech32(&input.bech32_address)?;
-            // Check if current address is the same as a previous one
-            // If so, add a reference unlock block
-            if let Some(block_index) = unlock_block_indexes.get(&input_address) {
-                match input_address {
+
+            // Check if we already added an [UnlockBlock] for this address
+            match unlock_block_indexes.get(&input_address) {
+                // If we already have an [UnlockBlock] for this address, add a [UnlockBlock] based on the address type
+                Some(block_index) => match input_address {
                     Address::Alias(_alias) => {
                         unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(*block_index as u16)?))
                     }
@@ -149,28 +141,48 @@ impl crate::signing::Signer for MnemonicSigner {
                     Address::Nft(_nft) => {
                         unlock_blocks.push(UnlockBlock::Nft(NftUnlockBlock::new(*block_index as u16)?))
                     }
+                },
+                None => {
+                    // We can only sign ed25519 addresses and unlock_block_indexes needs to contain the alias or nft
+                    // address already at this point, because the reference index needs to be lower
+                    // than the current block index
+                    if input_address.kind() != Ed25519Address::KIND {
+                        return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
+                    }
+
+                    // Get the private and public key for this Ed25519 address
+                    let private_key = self
+                        .deref()
+                        .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
+                        .secret_key();
+                    let public_key = private_key.public_key().to_bytes();
+
+                    // The signature unlock block needs to sign the hash of the entire transaction essence of the
+                    // transaction payload
+                    let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
+                    unlock_blocks.push(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
+                        Ed25519Signature::new(public_key, *signature),
+                    ))));
+
+                    // Add the ed25519 address to the unlock_block_indexes, so it gets referenced if further inputs have
+                    // the same address in their unlock condition
+                    unlock_block_indexes.insert(input_address, current_block_index);
                 }
-            } else {
-                // We can only sign ed25519 addresses and unlock_block_indexes needs to contain the alias or nft address
-                // already at this point, because the reference index needs to be lower than the current
-                // block index
-                if input_address.kind() != Ed25519Address::KIND {
-                    return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
-                }
-                // Create a signature unlock block
-                let private_key = self
-                    .deref()
-                    .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
-                    .secret_key();
-                let public_key = private_key.public_key().to_bytes();
-                // The signature unlock block needs to sign the hash of the entire transaction essence of the
-                // transaction payload
-                let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
-                unlock_blocks.push(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
-                    Ed25519Signature::new(public_key, *signature),
-                ))));
-                unlock_block_indexes.insert(input_address, current_block_index);
             }
+
+            // When we have an alias or Nft output, we will add their alias or nft address to unlock_block_indexes,
+            // because they can be used to unlock outputs via [UnlockBlock::Alias] or [UnlockBlock::Nft],
+            // that have the corresponding alias or nft address in their unlock condition
+            let output = Output::try_from(&input.output_response.output)?;
+            match &output {
+                Output::Alias(a) => {
+                    unlock_block_indexes.insert(Address::Alias(AliasAddress::new(*a.alias_id())), current_block_index)
+                }
+                Output::Nft(a) => {
+                    unlock_block_indexes.insert(Address::Nft(NftAddress::new(*a.nft_id())), current_block_index)
+                }
+                _ => None,
+            };
         }
         Ok(unlock_blocks)
     }
