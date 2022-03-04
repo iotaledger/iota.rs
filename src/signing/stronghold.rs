@@ -96,6 +96,10 @@ impl Signer for StrongholdSigner {
         // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
         let trimmed_mnemonic = mnemonic.trim().to_string();
 
+        // Check if the mnemonic is valid.
+        crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+
         // Try to load the snapshot to see if we're creating a new Stronghold vault or not.
         //
         // XXX: The current design of [Error] doesn't allow us to see if it's really a "file does
@@ -103,8 +107,8 @@ impl Signer for StrongholdSigner {
         // like this, as if so then later operations would throw errors too.
         self.lazy_load_snapshot().await.unwrap_or(());
 
-        // If the snapshot has successfully been loaded, then we need to check if the same mnemonic
-        // has been stored in Stronghold or not to prevent overwriting it.
+        // If the snapshot has successfully been loaded, then we need to check if there has been a
+        // mnemonic stored in Stronghold or not to prevent overwriting it.
         if self.snapshot_loaded && self.stronghold.record_exists(output.clone()).await {
             return Err(crate::Error::StrongholdMnemonicAlreadyStored);
         }
