@@ -9,7 +9,7 @@ use super::{
 use crate::Result;
 use async_trait::async_trait;
 use bee_message::{
-    address::{Address, Ed25519Address},
+    address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
     payload::transaction::TransactionEssence,
     signature::{Ed25519Signature, Signature},
@@ -20,6 +20,7 @@ use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage
 use log::warn;
 use riker::system::ActorSystem;
 use std::{
+    collections::HashMap,
     ops::Range,
     path::{Path, PathBuf},
     sync::Arc,
@@ -199,53 +200,58 @@ impl Signer for StrongholdSigner {
         // Load the Stronghold snapshot if it hasn't been loaded yet.
         self.lazy_load_snapshot().await?;
 
-        // Unlock blocks, along with its belonging address.
-        let mut addr_ulblk_vec: Vec<(Address, UnlockBlock)> = Vec::new();
+        // Unlock blocks to return.
+        let mut unlock_blocks = Vec::new();
 
-        for input in inputs {
-            let output = Output::try_from(&input.output_response.output)?;
+        // A map containing block indexes along with their addresses that can be referenced.
+        let mut unlock_block_indexes = HashMap::new();
+
+        // Hashed essence to be signed.
+        let hashed_essence = essence.hash();
+
+        for (index, input) in inputs.iter().enumerate() {
             let address = Address::try_from_bech32(&input.bech32_address)?;
+            let output = Output::try_from(&input.output_response.output)?;
 
-            // Look for a previous SignatureUnlockBlock with the same address. If there is any, we
-            // don't sign it again, but refer to it, depending on the type of output.
-            let prev_sig_ulblk = addr_ulblk_vec
-                .iter()
-                .enumerate()
-                .find(|(_, (addr, ulblk))| ulblk.kind() == SignatureUnlockBlock::KIND && *addr == address);
+            // Look for a previous unlock block with the same address; they can be used to unlock outputs.
+            let unlock_block = if let Some(prev_index) = unlock_block_indexes.get(&address) {
+                // If there is any, we don't sign it again, but refer to it, depending on the type of address.
+                match address {
+                    Address::Ed25519(_) => UnlockBlock::Reference(ReferenceUnlockBlock::new(*prev_index as u16)?),
+                    Address::Alias(_) => UnlockBlock::Alias(AliasUnlockBlock::new(*prev_index as u16)?),
+                    Address::Nft(_) => UnlockBlock::Nft(NftUnlockBlock::new(*prev_index as u16)?),
+                }
+            } else {
+                // Otherwise, we create a new [SignatureUnlockBlock], but note that only an [Ed25519Address] can carry
+                // with a [SignatureUnlockBlock]. Other types of output must have a supporting [SignatureUnlockBlock].
+                match address {
+                    Address::Ed25519(_) => {
+                        // Add this block to `unlock_block_indexes` for future reference.
+                        unlock_block_indexes.insert(address, index);
 
-            let unlock_block = match output {
-                Output::Basic(_) | Output::Foundry(_) | Output::Treasury(_) => {
-                    // If there is any SignatureUnlockBlock, refer to it using a
-                    // ReferenceUnlockBlock. Otherwise, sign and create a new SignatureUnlockBlock.
-                    if let Some((prev_index, _)) = prev_sig_ulblk {
-                        UnlockBlock::Reference(ReferenceUnlockBlock::new(prev_index as u16)?)
-                    } else {
-                        self.signature_unlock(input, essence).await?
+                        self.signature_unlock(input, &hashed_essence).await?
                     }
-                }
-                Output::Alias(_) => {
-                    // There should be a supporting SignatureUnlockBlock; otherwise it doesn't work.
-                    if let Some((prev_index, _)) = prev_sig_ulblk {
-                        UnlockBlock::Alias(AliasUnlockBlock::new(prev_index as u16)?)
-                    } else {
-                        return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
-                    }
-                }
-                Output::Nft(_) => {
-                    // There should be a supporting SignatureUnlockBlock; otherwise it doesn't work.
-                    if let Some((prev_index, _)) = prev_sig_ulblk {
-                        UnlockBlock::Nft(NftUnlockBlock::new(prev_index as u16)?)
-                    } else {
-                        return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
-                    }
+                    _ => return Err(crate::Error::MissingInputWithEd25519UnlockCondition),
                 }
             };
 
-            addr_ulblk_vec.push((address, unlock_block));
-        }
+            unlock_blocks.push(unlock_block);
 
-        // Collect only [UnlockBlock]s from the map
-        let unlock_blocks: Vec<_> = addr_ulblk_vec.into_iter().map(|(_, ulblk)| ulblk).collect();
+            // When we have an Alias or NFT output, we will add their Alias or NFT address to `unlock_block_indexes`,
+            // because they can be used to unlock outputs via [UnlockBlock::Alias] or [UnlockBlock::Nft] that have the
+            // corresponding Alias or NFT address in their unlock condition.
+            match output {
+                Output::Alias(alias_output) => {
+                    let alias_output_address = Address::Alias(AliasAddress::new(*alias_output.alias_id()));
+                    unlock_block_indexes.insert(alias_output_address, index);
+                }
+                Output::Nft(nft_output) => {
+                    let nft_output_address = Address::Nft(NftAddress::new(*nft_output.nft_id()));
+                    unlock_block_indexes.insert(nft_output_address, index);
+                }
+                _ => (),
+            };
+        }
 
         Ok(unlock_blocks)
     }
@@ -444,7 +450,7 @@ impl StrongholdSigner {
     }
 
     /// Sign on `essence`, unlock `input` by returning a [UnlockBlock].
-    async fn signature_unlock(&self, input: &InputSigningData, essence: &TransactionEssence) -> Result<UnlockBlock> {
+    async fn signature_unlock(&self, input: &InputSigningData, essence_hash: &[u8]) -> Result<UnlockBlock> {
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -455,9 +461,6 @@ impl StrongholdSigner {
             record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
         };
         let hint = RecordHint::new(RECORD_HINT).unwrap();
-
-        // Hashed essence to be signed.
-        let hashed_essence = essence.hash();
 
         // Stronghold asks for an older version of [Chain], so we have to perform a conversion here.
         let chain = {
@@ -482,7 +485,7 @@ impl StrongholdSigner {
         let public_key = self.ed25519_public_key(derive_location.clone()).await?;
 
         // Sign the message with the derived SLIP-10 private key in the vault.
-        let signature = self.ed25519_sign(derive_location.clone(), &hashed_essence).await?;
+        let signature = self.ed25519_sign(derive_location.clone(), essence_hash).await?;
 
         // Convert the raw bytes into [UnlockBlock].
         let unlock_block = UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
