@@ -37,6 +37,11 @@ const SECRET_VAULT_PATH: &[u8] = b"iota-wallet-secret";
 /// The value has been hard-coded historically.
 const SEED_RECORD_PATH: &[u8] = b"iota-wallet-seed";
 
+/// Stronghold record hint.
+///
+/// The value has been hard-coded historically.
+const RECORD_HINT: &str = "wallet.rs-derive";
+
 /// Stronghold record path to a derived SLIP-10 private key.
 ///
 /// The value has been hard-coded historically.
@@ -150,7 +155,7 @@ impl Signer for StrongholdSigner {
             vault_path: SECRET_VAULT_PATH.to_vec(),
             record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
         };
-        let hint = RecordHint::new("wallet.rs-derive").unwrap();
+        let hint = RecordHint::new(RECORD_HINT).unwrap();
 
         // Addresses to return.
         let mut addresses = Vec::new();
@@ -449,7 +454,7 @@ impl StrongholdSigner {
             vault_path: SECRET_VAULT_PATH.to_vec(),
             record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
         };
-        let hint = RecordHint::new("wallet.rs-derive").unwrap();
+        let hint = RecordHint::new(RECORD_HINT).unwrap();
 
         // Hashed essence to be signed.
         let hashed_essence = essence.hash();
