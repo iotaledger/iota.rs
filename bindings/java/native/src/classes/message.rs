@@ -163,7 +163,7 @@ impl MessageBuilder {
             .borrow_mut()
             .take()
             .unwrap()
-            .with_parents(Parents::new(parents)?);
+            .with_parents(Parents::new(parents).map_err(|e|anyhow::anyhow!(e.to_string()))?);
         Ok(MessageBuilder::new_with_builder(new_builder))
     }
 
@@ -365,7 +365,7 @@ impl<'a> ClientMessageBuilder<'a> {
         inputs_range_low: usize,
         inputs_range_high: usize,
     ) -> Result<MessagePayload> {
-        let second_seed = Some(RustSeed::from_bytes(&hex::decode(seed)?));
+        let second_seed = Some(RustSeed::from_bytes(&hex::decode(seed).map_err(|e|anyhow::anyhow!(e.to_string()))?));
 
         let mut range = None;
         if inputs_range_low != 0 {
