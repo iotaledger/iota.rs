@@ -15,7 +15,7 @@ pub enum InputKind {
     Treasury = 1,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, PartialEq)]
 pub struct Input(RustInput);
 
 impl Input {
@@ -26,19 +26,19 @@ impl Input {
         }
     }
 
-    pub fn get_as_utxo(&self) -> Option<UtxoInput> {
+    pub fn as_utxo(&self) -> Result<UtxoInput> {
         if let RustInput::Utxo(payload) = &self.0 {
-            Some(payload.clone().into())
+            Ok(payload.clone().into())
         } else {
-            None
+            Err(anyhow::anyhow!("Input is not of type Utxo"))
         }
     }
 
-    pub fn get_as_treasury(&self) -> Option<TreasuryInput> {
+    pub fn as_treasury(&self) -> Result<TreasuryInput> {
         if let RustInput::Treasury(payload) = self.0 {
-            Some(payload.into())
+            Ok(payload.clone().into())
         } else {
-            None
+            Err(anyhow::anyhow!("Input is not of type Treasury"))
         }
     }
 
@@ -59,6 +59,7 @@ impl Display for Input {
     }
 }
 
+#[derive(Clone, Serialize, Deserialize, PartialEq)]
 pub struct UtxoInput(RustUtxoInput);
 
 impl UtxoInput {
@@ -70,8 +71,8 @@ impl UtxoInput {
     }
 
     /// Returns the `TransactionId` of an `OutputId`.
-    pub fn transaction_id(&self) -> Vec<u8> {
-        self.0.output_id().transaction_id().as_ref().to_vec()
+    pub fn transaction_id(&self) -> TransactionId {
+        self.0.output_id().transaction_id().clone()
     }
 
     /// Returns the index of an `OutputId`.
@@ -100,6 +101,7 @@ impl From<RustUtxoInput> for UtxoInput {
     }
 }
 
+#[derive(Clone, Serialize, Deserialize, PartialEq)]
 pub struct TreasuryInput(RustTreasuryInput);
 
 impl TreasuryInput {

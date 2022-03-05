@@ -28,9 +28,15 @@ use iota_client::{
 
 #[derive(Getters, CopyGetters, Debug)]
 pub struct ReceiptDto {
-    pub receipt: ReceiptPayloadDto,
+    receipt: ReceiptPayloadDto,
     #[getset(get_copy = "pub")]
     pub milestone_index: u32,
+}
+
+impl ReceiptDto {
+    pub fn receipt(&self) -> ReceiptPayloadDto {
+        self.receipt.clone()
+    }
 }
 
 impl From<RustReceiptDto> for ReceiptDto {
@@ -48,7 +54,7 @@ impl Display for ReceiptDto {
     }
 }
 
-#[derive(Getters, CopyGetters, Debug)]
+#[derive(Getters, CopyGetters, Debug, Clone)]
 pub struct ReceiptPayloadDto {
     #[getset(get_copy = "pub")]
     pub kind: u32,
@@ -167,7 +173,7 @@ impl ReceiptPayload {
 
     pub fn transaction(&self) -> TreasuryPayload {
         let p: MessagePayload = self.payload.transaction().clone().into();
-        p.get_as_treasury().unwrap()
+        p.as_treasury().unwrap()
     }
 
     pub fn amount(&self) -> u64 {

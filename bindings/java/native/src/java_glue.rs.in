@@ -17,7 +17,7 @@ use crate::{
     mqtt::*,
 };
 use iota_client::{
-    TopicEvent, MqttEvent, node::Topic,
+    TopicEvent, MqttEvent, node::Topic, 
     Api, bee_message::{
         payload::{
             milestone::MilestoneId,
@@ -112,66 +112,110 @@ foreign_enum!(
 );
 
 foreign_class!(
+    /// The MQTT broker options.
     #[derive(camelCaseAliases)]
     class BrokerOptions {
         self_type BrokerOptions;
         constructor BrokerOptions::new() -> BrokerOptions;
+        /// Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not.
+        /// @param disconnect
         fn BrokerOptions::automatic_disconnect(&self, disconnect: bool) -> BrokerOptions;
+        /// timeout of the mqtt broker.
+        /// @param timeout The timeout in seconds
         fn BrokerOptions::timeout(&self, timeout: Duration) -> BrokerOptions;
-        fn BrokerOptions::max_reconnection_attempts(&self, max_reconnection_attempts: usize) -> BrokerOptions;
+        /// Defines if websockets should be used (true) or TCP (false)
+        /// @param use_ws If we use web sockets or not
         fn BrokerOptions::use_ws(&self, use_ws: bool) -> BrokerOptions;
+        /// Defines the port to be used for the MQTT connection
+        /// @param port The port we use to conenct
         fn BrokerOptions::port(&self, port: u16) -> BrokerOptions;
+        /// Defines the maximum reconnection attempts before it returns an error
+        /// @param max_reconnection_attempts The maximum attempts
+        fn BrokerOptions::max_reconnection_attempts(&self, max_reconnection_attempts: usize) -> BrokerOptions;
     }
 );
 
 foreign_class!(
+    /// The options builder for a client connected to multiple nodes.
     #[derive(camelCaseAliases)]
     class ClientBuilder {
         self_type ClientBuilder;
+        /// Create a new instance of the Client 
         constructor ClientBuilder::new() -> ClientBuilder;
         /// Adds an IOTA node by its URL.
+        /// @param node The node URL
         fn ClientBuilder::with_node(&mut self, node: &str) -> ClientBuilder;
         /// Adds a list of IOTA nodes by their URLs.
+        /// @param nodes The list of node URLs
         fn ClientBuilder::with_nodes(&mut self, nodes: Vec<String>) -> ClientBuilder;
         /// Adds an IOTA node by its URL with optional jwt and or basic authentication
+        /// @param node The node URL
+        /// @param jwt The JWT, can be `null`
+        /// @param username The username, can be `null`
+        /// @param password The password, can be `null`. Only checked if username is not `null`
         fn ClientBuilder::with_node_auth(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
         /// Adds an IOTA node by its URL to be used as primary node, with optional jwt and or basic authentication
+        /// @param node The node URL
+        /// @param jwt The JWT, can be `null`
+        /// @param username The username, can be `null`
+        /// @param password The password, can be `null`. Only checked if username is not `null`
         fn ClientBuilder::with_primary_node(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
         /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
         /// authentication
+        /// @param node The node URL
+        /// @param jwt The JWT, can be `null`
+        /// @param username The username, can be `null`
+        /// @param password The password, can be `null`. Only checked if username is not `null`
         fn ClientBuilder::with_primary_pow_node(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
         /// Adds an IOTA permanode by its URL, with optional jwt and or basic authentication
+        /// @param node The node URL
+        /// @param jwt The JWT, can be `null`
+        /// @param username The username, can be `null`
+        /// @param password The password, can be `null`. Only checked if username is not `null`
         fn ClientBuilder::with_permanode(&mut self, node: &str, jwt: Option<&str>, username: Option<&str>, password: Option<&str>) -> ClientBuilder;
         /// Get node list from the node_pool_urls
+        /// @param nodes node_pool_urls list of node URLs for the node pool
         fn ClientBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder;
         /// Allows creating the client without nodes for offline address generation or signing
         fn ClientBuilder::with_offline_mode(&mut self) -> ClientBuilder;
-        /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
-        /// Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are
-        /// provided.
+        /// Client connected to the default Network pool unless specifiedqa.
+        ///
+        /// ```
+        /// import org.iota.client.ClientBuilder;
+        /// Client clientOptions = new ClientBuilder().with_network("testnet2").build();
+        /// ```
+        /// @param network The network we connect to
         fn ClientBuilder::with_network(&mut self, network: String) -> ClientBuilder;
         /// Set the node sync interval
+        /// @param node_sync_interval The interval in seconds
         fn ClientBuilder::with_node_sync_interval(&mut self, node_sync_interval: Duration) -> ClientBuilder;
         /// Disables the node syncing process.
         /// Every node will be considered healthy and ready to use.
         fn ClientBuilder::with_node_sync_disabled(&mut self) -> ClientBuilder;
-
-        /// Set if quroum should be used or not
+        /// Set if quorum should be used or not
+        /// @param quorum `true` if we use a quorum
         fn ClientBuilder::with_quorum(&self, quorum: bool) -> ClientBuilder;
         /// Set amount of nodes which should be used for quorum
+        /// @param quorum_size The amount of nodes
         fn ClientBuilder::with_quorum_size(&self, quorum_size: usize) -> ClientBuilder;
-        /// Set quorum_threshold
+        /// Set quorum threshold
+        /// @param threshold The percentage of nodes that need to agree (0-100)
         fn ClientBuilder::with_quorum_threshold(&self, threshold: usize) -> ClientBuilder;
-
         /// Sets the MQTT broker options.
+        /// @param options the MQTT options
         fn ClientBuilder::with_mqtt_broker_options(&mut self, options: BrokerOptions) -> ClientBuilder;
         /// Sets whether the PoW should be done locally or remotely.
+        /// @param local Enables or disables local PoW
         fn ClientBuilder::with_local_pow(&mut self, local: bool) -> ClientBuilder;
         /// Sets after how many seconds new tips will be requested during PoW
+        /// @param tips delay in seconds
         fn ClientBuilder::with_tips_interval(&mut self, tips: u64) -> ClientBuilder;
         /// Sets the default request timeout in seconds.
+        /// @param timeout The request timeout in seconds
         fn ClientBuilder::with_request_timeout(&mut self, timeout: Duration) -> ClientBuilder;
         /// Sets the request timeout in seconds for a specific API usage.
+        /// @param api The API we set the timeout for
+        /// @param timeout The request timeout in seconds
         fn ClientBuilder::with_api_timeout(&mut self, api: Api, timeout: Duration) -> ClientBuilder;
         /// Build the Client instance.
         fn ClientBuilder::finish(&mut self) -> Result<Client>;
@@ -179,17 +223,33 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// The iota.rs client instance
     #[derive(camelCaseAliases)]
     class Client {
         self_type Client;
         private constructor = empty;
+        /// Creates a new instance of the CLient builder
         fn Client::builder() -> ClientBuilder; alias Builder;
 
         /// GET /health endpoint
         fn Client::get_health(&self) -> Result<bool>;
 
         /// GET /health endpoint for the passed node
+        /// @param node the node url which you want to query speicifically for, in the case of multiple nodes in a pool
         fn Client::get_node_health(&self, node: &str) -> Result<bool>;
+
+        // Get a node candidate from the synced node pool.
+        fn Client::get_node(&self) -> Result<Node>;
+
+        /// Gets the network id of the node we're connecting to.
+        fn Client::get_network_id(&self) -> Result<u64>;
+
+        /// Gets the miner to use based on the PoW setting
+        fn Client::get_pow_provider(&self) -> ClientMiner;
+
+        /// Gets the network related information such as network_id and min_pow_score
+        /// and if it's the default one, sync it first.
+        fn Client::get_network_info(&self) -> Result<NetworkInfo>;
 
         /// GET /api/v1/info endpoint
         fn Client::get_info(&self) -> Result<NodeInfoWrapper>;
@@ -202,29 +262,37 @@ foreign_class!(
 
         /// GET /api/v1/outputs/{outputId} endpoint
         /// Find an output by its transaction_id and corresponding output_index.
+        /// @param output_id The id of the output
         fn Client::get_output(&self, output_id: String) -> Result<OutputResponse>;
 
         /// GET /api/v1/addresses/{address} endpoint
+        /// Creates a new instance of the AddressBuilder
         fn Client::get_address(&self) -> GetAddressBuilder;
 
         /// Return the balance in iota for the given address; No seed needed to do this
         /// since we are only checking and already know the address.
+        /// @param address The address we want to get the balance for
         fn Client::get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse>;
 
         // Return the balance in iota for the given addresses; No seed needed to do this
         /// since we are only checking and already know the addresses.
+        /// @param address The addresses we want to get the balance for
         fn Client::get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>>;
 
         /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
         /// the request amount exceeds individual node limit.
+        /// @param output_ids The optional output ids to check for
+        /// @param addresses The optional list of addresses to check for
         fn Client::find_outputs(&self, output_ids: Option<Vec<String>>, addresses: Option<Vec<String>>) -> Result<Vec<OutputResponse>>;
 
         /// GET /api/v1/milestones/{index} endpoint
         /// Get the milestone by the given index.
+        /// @param index the milestone index
         fn Client::get_milestone(&self, index: u32) -> Result<MilestoneResponse>;
 
         /// GET /api/v1/milestones/{index}/utxo-changes endpoint
         /// Gets the utxo changes by the given milestone index.
+        /// @param index the milestone index
         fn Client::get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse>;
 
         /// GET /api/v1/receipts endpoint
@@ -233,6 +301,7 @@ foreign_class!(
 
         /// GET /api/v1/receipts/{migratedAt} endpoint
         /// Get the receipts by the given milestone index.
+        /// @param index the milestone index
         fn Client::get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>>;
 
         /// GET /api/v1/treasury endpoint
@@ -241,28 +310,35 @@ foreign_class!(
 
         /// GET /api/v1/transactions/{transactionId}/included-message
         /// Returns the included message of the transaction.
+        /// @param transaction_id the transaction id
         fn Client::get_included_message(&self, transaction_id: TransactionId) -> Result<Message>;
 
         /// POST /api/v1/messages endpoint
+        /// @param msg The message to post. Use `Client.message()` to create one.
         fn Client::post_message(&self, msg: Message) -> Result<MessageId>;
 
         /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
         /// confirmed for a while.
+        /// @param message_id The id of the Message to reattach
         fn Client::reattach(&self, message_id: MessageId) -> Result<MessageWrap>;
 
         /// Reattach a message without checking if it should be reattached
+        /// @param message_id The id of the Message to reattach
         fn Client::reattach_unchecked(&self, message_id: MessageId) -> Result<MessageWrap>;
 
         /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
         /// method should error out and should not allow unnecessary promotions.
+        /// @param message_id The id of the Message to promote
         fn Client::promote(&self, message_id: MessageId) -> Result<MessageWrap>;
 
         /// Promote a message without checking if it should be promoted
+        /// @param message_id The id of the Message to promote
         fn Client::promote_unchecked(&self, message_id: MessageId) -> Result<MessageWrap>;
 
         /// Return the balance for a provided seed and its wallet chain account index.
         /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
         /// balance address.
+        /// @param seed the seed which contains the addressses you want to check balance for
         fn Client::get_balance(&self, seed: &str) -> Result<GetBalanceBuilderApi>;
 
         /// A generic send function for easily sending transaction or indexation messages.
@@ -272,10 +348,15 @@ foreign_class!(
         fn Client::get_message(&self) -> GetMessageBuilder;
 
         /// Return a list of addresses from the seed regardless of their validity.
+        /// @param the ssed that will create the addresses
         fn Client::get_addresses(&self, seed: &str) -> Result<GetAddressesBuilder>;
 
         /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
         /// milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages. Set to -1 for defaults.
+        /// 
+        /// @param message_id The id of the Message to include
+        /// @param interval The interval in seconds to try
+        /// @param max_attempts The maximum attempts for retrying
         fn Client::retry_until_included(&self, message_id: MessageId,
             interval: usize,
             max_attempts: usize) -> Result<Vec<MessageWrap>>;
@@ -287,19 +368,27 @@ foreign_class!(
         fn Client::generate_mnemonic() -> Result<String>;
 
         /// Returns a hex encoded seed for a mnemonic.
+        /// @param mnemonic The mmnemonic to turn into a seed
         fn Client::mnemonic_to_hex_seed(mnemonic: &str) -> Result<String>;
 
         /// Function to find inputs from addresses for a provided amount (useful for offline signing)
+        /// @param addresses The addresses to obtain balance from
+        /// @param amount the amount we need to find
         fn Client::find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>>;
 
-        /// Transforms bech32 to hex
+        /// Returns a parsed hex String from bech32.
+        /// @param bech32 The address Bech32 string
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
         /// Transforms hex to bech32
+        /// @param hex The address Bech32 string
+        /// @param bech32_hrp The Bech32 hrp string 
         fn Client::hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
         /// Checks if a str is a valid bech32 encoded address.
+        /// @param address The addresss string to check
         fn Client::is_address_valid(address: &str) -> bool;
 
         /// Returns a valid Address parsed from a String.
+        /// @param address The addresss string to parse
         fn Client::parse_bech32_address(address: &str) -> Result<Address>;
 
         /// Temporarily method to check if your seed is made using the incorrect generation of the old JAVA seed input
@@ -322,69 +411,130 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// Client miner, used as 
+    class ClientMiner {
+        self_type ClientMiner;
+        private constructor = empty;
+    }
+);
+
+foreign_class!(
+    /// Node struct
+    #[derive(PartialEq, camelCaseAliases, Display)]
+    class Node {
+        self_type Node;
+        private constructor = empty;
+        private fn Node::to_string(&self) -> String; alias to_string;
+        private fn Node::eq(&self, o: &Node) -> bool; alias rustEq;
+        /// node url
+        fn Node::url(&self) -> String;
+        /// node jwt
+        fn Node::jwt(&self) -> Option<String>;
+    }
+);
+
+foreign_class!(
+    class NetworkInfo {
+        self_type NetworkInfo;
+        private constructor = empty;
+    }
+);
+
+foreign_class!(
+    /// Wrapper for node information
     #[derive(PartialEq, camelCaseAliases, Display)]
     class NodeInfoWrapper {
         self_type NodeInfoWrapper;
         private constructor = empty;
         private fn NodeInfoWrapper::to_string(&self) -> String; alias to_string;
         private fn NodeInfoWrapper::eq(&self, o: &NodeInfoWrapper) -> bool; alias rustEq;
+        /// Get the URL from which this info is derived
         fn NodeInfoWrapper::url(&self) -> &str;
+        /// Get the information
         fn NodeInfoWrapper::nodeinfo(&self) -> InfoResponse; alias nodeInfo;
     }
 );
 
 foreign_class!(
+    /// Response of GET /api/v1/info.
+    /// Returns general information about the node.
     #[derive(PartialEq, camelCaseAliases, Display)]
     class InfoResponse {
         self_type InfoResponse;
         private constructor = empty;
         private fn InfoResponse::to_string(&self) -> String; alias to_string;
         private fn InfoResponse::eq(&self, o: &InfoResponse) -> bool; alias rustEq;
+        /// The name of the node
         fn InfoResponse::name(&self) -> &str;
+        /// The node software version
         fn InfoResponse::version(&self) -> &str;
+        /// The network id the node is connected to
         fn InfoResponse::network_id(&self) -> &str;
+        /// The bech32 HRP which is accepted by this node
         fn InfoResponse::bech32_hrp(&self) -> &str;
+        /// The messages per second this node is receiving
         fn InfoResponse::messages_per_second(&self) -> f64;
+        /// The referenced messages per second this node is receiving
         fn InfoResponse::referenced_messages_per_second(&self) -> f64;
+        /// The reference rate
         fn InfoResponse::referenced_rate(&self) -> f64;
+        /// The timestamp of the latest received milestone
         fn InfoResponse::latest_milestone_timestamp(&self) -> u64;
+        /// The minimum required PoW for a message to be accepted
         fn InfoResponse::min_pow_score(&self) -> f64;
+        /// The index of the latest seen milestone
         fn InfoResponse::latest_milestone_index(&self) -> u32;
+        /// The index of the latest confirmed milestone
         fn InfoResponse::confirmed_milestone_index(&self) -> u32;
+        /// The milestone index this node is pruning from
         fn InfoResponse::pruning_index(&self) -> u32;
+        /// List of features running on this node
         fn InfoResponse::features(&self) -> Vec<String>;
     }
 );
 
 foreign_class!(
+    /// Response of an address balance request
     #[derive(PartialEq, camelCaseAliases, Display)]
     class BalanceAddressResponse {
         self_type BalanceAddressResponse;
         private constructor = empty;
         private fn BalanceAddressResponse::to_string(&self) -> String; alias to_string;
         private fn BalanceAddressResponse::eq(&self, o: &BalanceAddressResponse) -> bool; alias rustEq;
+        /// The type of address
         fn BalanceAddressResponse::address_type(&self) -> u8;
+        /// The address
         fn BalanceAddressResponse::address(&self) -> &str;
+        /// The balance of this address
         fn BalanceAddressResponse::balance(&self) -> u64;
+        /// Wether or not this address allows dust
         fn BalanceAddressResponse::dust_allowed(&self) -> bool;
     }
 );
 
 foreign_class!(
+    /// Response of GET /api/v1/outputs/{output_id}.
+    /// Returns all information about a specific output.
     #[derive(camelCaseAliases, Display)]
     class OutputResponse {
         self_type OutputResponse;
         private constructor = empty;
         private fn OutputResponse::to_string(&self) -> String; alias to_string;
+        /// The message id this output is related to
         fn OutputResponse::message_id(&self) -> &str;
+        /// The transaction id this output is related to
         fn OutputResponse::transaction_id(&self) -> &str;
+        /// The output index
         fn OutputResponse::output_index(&self) -> u16;
+        /// `true` if this output was spent. Otherwise `false`
         fn OutputResponse::is_spent(&self) -> bool;
+        /// Get the output object which can be turned into its specific output type
         fn OutputResponse::output(&self) -> OutputDto;
     }
 );
 
 foreign_class!(
+    /// Wrapper for different output types
     #[derive(camelCaseAliases, Display)]
     class OutputDto {
         self_type OutputDto;
@@ -401,6 +551,7 @@ foreign_class!(
     #[derive(camelCaseAliases, Display)]
     class OutputsOptions {
         self_type OutputsOptions;
+        /// Creates a new instance of output options with default values
         constructor OutputsOptions::default() -> OutputsOptions;
         private fn OutputsOptions::to_string(&self) -> String; alias to_string;
         /// Whether the query should include spent outputs or not.
@@ -411,23 +562,34 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases, Display)]
+    /// Represents an input referencing an output.
+    #[derive(camelCaseAliases, PartialEq, Display)]
     class UtxoInput {
         self_type UtxoInput;
         private constructor = empty;
         private fn UtxoInput::to_string(&self) -> String; alias to_string;
+        private fn UtxoInput::eq(&self, o: &UtxoInput) -> bool; alias rustEq;
+        /// Create a new `UtxoInput`
+        /// @param id The ouput Id
+        /// @param index The output Index
         fn UtxoInput::from(id: TransactionId, index: u16) -> Result<UtxoInput>;
-        fn UtxoInput::transaction_id(&self) -> Vec<u8>;
+        /// Returns the `TransactionId` of the Output.
+        fn UtxoInput::transaction_id(&self) -> TransactionId;
+        /// Returns the index of the Output.
         fn UtxoInput::index(&self) -> u16;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases, Display)]
+    /// `TreasuryInput` is an input which references a milestone which generated a `TreasuryOutput`.
+    #[derive(camelCaseAliases, PartialEq, Display)]
     class TreasuryInput {
         self_type TreasuryInput;
-        constructor TreasuryInput::new(milestone: MilestoneId) -> TreasuryInput;
+        /// Create a new TreasuryInput
+        /// @param id The MilestoneId which Generated a `TreasuryOutput`
+        constructor TreasuryInput::new(id: MilestoneId) -> TreasuryInput;
         private fn TreasuryInput::to_string(&self) -> String; alias to_string;
+        private fn TreasuryInput::eq(&self, o: &TreasuryInput) -> bool; alias rustEq;
         /// Returns the milestones id of a `TreasuryInput`.
         fn TreasuryInput::milestone_id(&self) -> MilestoneId;
     }
@@ -439,6 +601,9 @@ foreign_class!(
         self_type ReceiptDto;
         private constructor = empty;
         private fn ReceiptDto::to_string(&self) -> String; alias to_string;
+        /// Get the receipt payload
+        fn ReceiptDto::receipt(&self) -> ReceiptPayloadDto;
+        /// Get the milestone index this receipt is related to
         fn ReceiptDto::milestone_index(&self) -> u32;
     }
 );
@@ -449,9 +614,13 @@ foreign_class!(
         self_type ReceiptPayloadDto;
         private constructor = empty;
         private fn ReceiptPayloadDto::to_string(&self) -> String; alias to_string;
+        /// The type of receipt
         fn ReceiptPayloadDto::kind(&self) -> u32;
+        /// The milestone index at which the funds of a `ReceiptPayload` were migrated
         fn ReceiptPayloadDto::migrated_at(&self) -> u32;
+        /// The funds which are migrated
         fn ReceiptPayloadDto::funds(&self) -> Vec<MigratedFundsEntryDto>;
+        /// Whether a `ReceiptPayload` is the final one for a given migrated at index.
         fn ReceiptPayloadDto::last(&self) -> bool;
     }
 );
@@ -465,7 +634,9 @@ foreign_class!(
         private constructor = empty;
         private fn TreasuryResponse::to_string(&self) -> String; alias to_string;
         private fn TreasuryResponse::eq(&self, o: &TreasuryResponse) -> bool; alias rustEq;
+        /// The amount in the treasury
         fn TreasuryResponse::amount(&self) -> u64;
+        /// The milestone ID this reponse relates to
         fn TreasuryResponse::milestone_id(&self) -> &str;
     }
 );
@@ -537,6 +708,9 @@ foreign_class!(
         self_type TreasuryOutputDto;
         private constructor = empty;
         private fn TreasuryOutputDto::to_string(&self) -> String; alias to_string;
+        /// The type of Treasury DTO
+        fn TreasuryOutputDto::kind(&self) -> u8;
+        /// The amount in the treasury
         fn TreasuryOutputDto::amount(&self) -> u64;
     }
 );
@@ -549,6 +723,8 @@ foreign_class!(
         private constructor = empty;
         private fn SignatureLockedSingleOutput::to_string(&self) -> String; alias to_string;
         /// Creates a new `SignatureLockedSingleOutput`.
+        /// @param address The address to set
+        /// @param amount The amount to set
         fn SignatureLockedSingleOutput::from(address: Address, amount: u64) -> Result<SignatureLockedSingleOutput>;
         /// Returns the amount of a `SignatureLockedSingleOutput`.
         fn SignatureLockedSingleOutput::amount(&self) -> u64;
@@ -566,6 +742,8 @@ foreign_class!(
         private constructor = empty;
         private fn SignatureLockedDustAllowanceOutput::to_string(&self) -> String; alias to_string;
         /// Creates a new `SignatureLockedDustAllowanceOutput`.
+        /// @param address The address to set
+        /// @param amount The amount to set
         fn SignatureLockedDustAllowanceOutput::from(address: Address, amount: u64) -> Result<SignatureLockedDustAllowanceOutput>;
         /// Returns the amount of a `SignatureLockedDustAllowanceOutput`.
         fn SignatureLockedDustAllowanceOutput::amount(&self) -> u64;
@@ -575,11 +753,14 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// Trasury output.
     #[derive(camelCaseAliases, Display)]
     class TreasuryOutput {
         self_type TreasuryOutput;
         private constructor = empty;
         private fn TreasuryOutput::to_string(&self) -> String; alias to_string;
+        /// Creates a new TreasuryOutput with the amount supplied
+        /// @param amount The amount to set
         fn TreasuryOutput::from(amount: u64) -> Result<TreasuryOutput>;
         /// Returns the amount of a `TreasuryOutput`.
         fn TreasuryOutput::amount(&self) -> u64;
@@ -587,125 +768,166 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     /// Describes a peer.
     class PeerDto {
         self_type PeerDto;
         private constructor = empty;
+        private fn PeerDto::to_string(&self) -> String; alias to_string;
+        /// The id of the peer
         fn PeerDto::id(&self) -> &str;
+        /// multi addresses
         fn PeerDto::multi_addresses(&self) -> Vec<String>;
+        /// The alias of the peer
         fn PeerDto::alias(&self) -> Option<String>;
+        /// The type of peer
         fn PeerDto::relation(&self) -> Relation;
+        /// `true` if this peer is connected
         fn PeerDto::connected(&self) -> bool;
+        /// The gossip information of this peer
         fn PeerDto::gossip(&self) -> Option<GossipDto>;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class GossipDto {
         self_type GossipDto;
         private constructor = empty;
+        private fn GossipDto::to_string(&self) -> String; alias to_string;
+        /// The hearthbeat information
         fn GossipDto::heartbeat(&self) -> HeartbeatDto;
+        /// The metrics information
         fn GossipDto::metrics(&self) -> MetricsDto;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class HeartbeatDto {
     self_type HeartbeatDto;
         private constructor = empty;
+        private fn HeartbeatDto::to_string(&self) -> String; alias to_string;
+        /// The solid milestone index
         fn HeartbeatDto::solid_milestone_index(&self) -> u32;
+        /// The pruend milestone index
         fn HeartbeatDto::pruned_milestone_index(&self) -> u32;
+        /// The latest milestone index
         fn HeartbeatDto::latest_milestone_index(&self) -> u32;
+        /// The amount of connected neighbors
         fn HeartbeatDto::connected_neighbors(&self) -> u8;
+        /// The amount of synced neighbors
         fn HeartbeatDto::synced_neighbors(&self) -> u8;
     }
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases)]
+    #[derive(camelCaseAliases, Display)]
     class MetricsDto {
         self_type MetricsDto;
         private constructor = empty;
+        private fn MetricsDto::to_string(&self) -> String; alias to_string;
+        /// The amount of new messages received
         fn MetricsDto::new_messages(&self) -> u64;
+        /// The amount of received messages
         fn MetricsDto::received_messages(&self) -> u64;
+        /// The amount of received known messages
         fn MetricsDto::known_messages(&self) -> u64;
+        /// The amount of received requested messages
         fn MetricsDto::received_message_requests(&self) -> u64;
+        /// The amount of received requested milestones
         fn MetricsDto::received_milestone_requests(&self) -> u64;
+        /// The amount of received heartbeats
         fn MetricsDto::received_heartbeats(&self) -> u64;
+        /// The amount of sent messages
         fn MetricsDto::sent_messages(&self) -> u64;
+        /// The amount of sent messages requests
         fn MetricsDto::sent_message_requests(&self) -> u64;
+        /// The amount of sent milestone requests
         fn MetricsDto::sent_milestone_requests(&self) -> u64;
+        /// The amount of sent heartbeats
         fn MetricsDto::sent_heartbeats(&self) -> u64;
+        /// The amount of dropped packets
         fn MetricsDto::dropped_packets(&self) -> u64;
     }
 );
 
 foreign_class!(
+    #[derive(camelCaseAliases, Display)]
     class MigratedFundsEntryDto {
         self_type MigratedFundsEntryDto;
         private constructor = empty;
+        private fn MigratedFundsEntryDto::to_string(&self) -> String; alias to_string;
+        /// The tail transaction hash
         fn MigratedFundsEntryDto::tail_transaction_hash(&self) -> &str;
+        /// The address this was deposited to
         fn MigratedFundsEntryDto::address(&self) -> AddressDto;
+        /// The amount that was deposited
         fn MigratedFundsEntryDto::deposit(&self) -> u64;
     }
 );
 
-
-/////////////// Message
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, PartialEq)]
     class MessageWrap {
         self_type MessageWrap;
         private constructor = empty;
         private fn MessageWrap::to_string(&self) -> String; alias to_string;
+        private fn MessageWrap::eq(&self, o: &MessageWrap) -> bool; alias rustEq;
+        /// The ID of this message
         fn MessageWrap::message_id(&self) -> MessageId;
+        /// The message
         fn MessageWrap::message(&self) -> Message;
     }
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, PartialEq)]
     class MessageId {
         self_type MessageId;
         constructor MessageId::null() -> MessageId;
         private fn MessageId::to_string(&self) -> String; alias to_string;
-        fn MessageId::fromString(str_rep: &str) -> MessageId {
-            MessageId::from_str(str_rep).unwrap()
+        private fn MessageId::eq(&self, o: &MessageId) -> bool; alias rustEq;
+        /// Create a MessageId from string
+        fn MessageId::fromString(str_rep: &str) -> Result<MessageId> {
+            MessageId::from_str(str_rep).map_err(|e| anyhow::anyhow!(e.to_string()))
         }
     }
 );
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, PartialEq)]
     class TransactionId {
         self_type TransactionId;
         private constructor = empty;
         private fn TransactionId::to_string(&self) -> String; alias to_string;
-        fn TransactionId::fromString(str_rep: &str) -> TransactionId {
-            TransactionId::from_str(str_rep).unwrap()
+        private fn TransactionId::eq(&self, o: &TransactionId) -> bool; alias rustEq;
+        /// Create a TransactionId from string
+        fn TransactionId::fromString(str_rep: &str) -> Result<TransactionId> {
+            TransactionId::from_str(str_rep).map_err(|e| anyhow::anyhow!(e.to_string()))
         }
     }
 );
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, PartialEq)]
     class MilestoneId {
         self_type MilestoneId;
         private constructor = empty;
+        /// Create a MilestoneId from string
         private fn MilestoneId::to_string(&self) -> String; alias to_string;
-        fn MilestoneId::fromString(str_rep: &str) -> MilestoneId {
-            MilestoneId::from_str(str_rep).unwrap()
+        private fn MilestoneId::eq(&self, o: &MilestoneId) -> bool; alias rustEq;
+        fn MilestoneId::fromString(str_rep: &str) -> Result<MilestoneId> {
+            MilestoneId::from_str(str_rep).map_err(|e| anyhow::anyhow!(e.to_string()))
         }
     }
 );
 foreign_class!(
     /// Represent the object that nodes gossip around the network.
-    #[derive(Display, camelCaseAliases)]
+    #[derive(Display, PartialEq, camelCaseAliases)]
     class Message {
         self_type Message;
         private constructor = empty;
         private fn Message::to_string(&self) -> String; alias to_string;
+        private fn Message::eq(&self, o: &Message) -> bool; alias rustEq;
         /// Creates a new `MessageBuilder` to construct an instance of a `Message`.
         fn Message::builder() -> MessageBuilder;
         /// Returns the network id of a `Message`.
@@ -729,12 +951,19 @@ foreign_class!(
         /// Creates a new `MessageBuilder`.
         constructor MessageBuilder::new() -> MessageBuilder;
         /// Adds a network id to a `MessageBuilder`.
+        /// @param network_id The network id
         fn MessageBuilder::network_id(&self, network_id: u64) -> MessageBuilder;
         /// Adds parents to a `MessageBuilder`.
+        /// @param parents A list of parents to set
         fn MessageBuilder::parents(&self, parents: Vec<MessageId>) -> Result<MessageBuilder>;
         /// Adds a payload to a `MessageBuilder`.
+        /// @param payload the MessagePayload to set
         fn MessageBuilder::payload(&self, payload: MessagePayload) -> MessageBuilder;
-        //fn MessageBuilder::nonce_provider(&self) -> MessageBuilder;
+        /// Sets a provider for the nonce. Can currently only be obtained from Client.getPowProvider
+        /// @param provider Sets the nonce provider
+        /// @param target_score Target score for the nonce, Recommended: 4000
+        fn MessageBuilder::nonce_provider(&self, provider: ClientMiner, target_score: f64) -> MessageBuilder;
+        /// Finish the MessageBuilder
         fn MessageBuilder::finish(&self) -> Result<Message>;
     }
 );
@@ -745,58 +974,84 @@ foreign_class!(
         self_type ClientMessageBuilder<'a>;
         private constructor = empty;
         /// Sets the seed.
+        /// @param seed The seed to use
         fn ClientMessageBuilder::with_seed(&self, seed: &str) -> Result<ClientMessageBuilder>;
 
         /// Sets the account index.
+        /// @param account_index The index to set
         fn ClientMessageBuilder::with_account_index(&self, account_index: usize) -> ClientMessageBuilder;
 
         /// Sets the index of the address to start looking for balance.
+        /// @param initial_address_index The initial index to start address search from
         fn ClientMessageBuilder::with_initial_address_index(&self, initial_address_index: usize) -> ClientMessageBuilder;
 
         /// Set a custom input(transaction output)
+        /// @param input The custom input
         fn ClientMessageBuilder::with_input(&self, input: UtxoInput) -> ClientMessageBuilder;
 
         /// Set a custom range in which to search for addresses for custom inputs. Default: 0..100
+        /// @param low Low end of input range (0)
+        /// @param high Upper end of input range (100) 
         fn ClientMessageBuilder::with_input_range(&self, low: usize, high: usize) -> ClientMessageBuilder;
 
-        /// Set a transfer to the builder
+        /// Insert the output address and amount to spent. The amount cannot be zero.
+        /// @param address The address we send to
+        /// @param amount The amount to send (> 0)
         fn ClientMessageBuilder::with_output(&self, address: &str, amount: u64) -> Result<ClientMessageBuilder>;
 
         /// Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+        /// @param address The Bech32 encoded address we send to
+        /// @param amount The amount to send (> 0)
         fn ClientMessageBuilder::with_dust_allowance_output(&self, address: &str, amount: u64)  -> Result<ClientMessageBuilder>;
 
         /// Set a transfer to the builder, address needs to be hex encoded
+        /// @param address The hex encoded address we send to
+        /// @param amount The amount to send (> 0)
         fn ClientMessageBuilder::with_output_hex(&self, address: &str, amount: u64)  -> Result<ClientMessageBuilder>;
 
         /// Set indexation to the builder
+        /// @param index The index to use
         fn ClientMessageBuilder::with_index_vec(&self, index: Vec<u8>)  -> ClientMessageBuilder;
         /// Set indexation to the builder
+        /// @param index The index to use
         fn ClientMessageBuilder::with_index_string(&self, index: &str)  -> ClientMessageBuilder;
 
         /// Set data to the builder
+        /// @param data The data to use
         fn ClientMessageBuilder::with_data(&self, data: Vec<u8>)  -> ClientMessageBuilder;
         /// Set data to the builder
+        /// @param data The data to use
         fn ClientMessageBuilder::with_data_string(&self, data: &str)  -> ClientMessageBuilder;
 
-        /// Prepare a transaction
+        /// Prepare a transaction. Used as parameter for `signTransaction`
         fn ClientMessageBuilder::prepare_transaction(&self)  -> Result<PreparedTransactionData>;
 
         /// Sign the transaction. inputsRangeLow and high to 0 for not using an input range
+        /// @param prepared_transaction_data The completely prepared transaction
+        /// @param seed The seed used to prepare the transaction
+        /// @param inputs_range_low Lower input used for getting adresses (default: 0)
+        /// @param inputs_range_high Upper input used for getting adresses (default: 100)
         fn ClientMessageBuilder::sign_transaction(&self, prepared_transaction_data: PreparedTransactionData,
             seed: &str, inputs_range_low: usize, inputs_range_high: usize) -> Result<MessagePayload>;
 
         /// Consume the builder and return the message made with the specific payload
+        /// @param payload A prepared and signed MessagePayload
         fn ClientMessageBuilder::finish_message(&self, payload: MessagePayload) -> Result<Message>; alias finish;
 
         /// Consume the builder and return the message made with the specific payload
+        /// @param payload A prepared and signed TransactionPayload
         fn ClientMessageBuilder::finish_message_transaction(&self, payload: TransactionPayload) -> Result<Message>; alias finishTransaction;
         /// Consume the builder and return the message made with the specific payload
+        /// @param payload A prepared and signed MilestonePayload
         fn ClientMessageBuilder::finish_message_milestone(&self, payload: MilestonePayload) -> Result<Message>; alias finishMilestone;
         /// Consume the builder and return the message made with the specific payload
+        /// @param payload A prepared and signed IndexationPayload
         fn ClientMessageBuilder::finish_message_index(&self, payload: IndexationPayload) -> Result<Message>; alias finishIndex;
         /// Consume the builder and return the message made with the specific payload
+        /// @param payload A prepared and signed ReceiptPayload
         fn ClientMessageBuilder::finish_message_receipt(&self, payload: ReceiptPayload) -> Result<Message>; alias finishReceipt;
         /// Consume the builder and return the message made with the specific payload
+        /// @param payload A prepared and signed TreasuryPayload
         fn ClientMessageBuilder::finish_message_treasury(&self, payload: TreasuryPayload) -> Result<Message>; alias finishTreasury;
 
         /// Consume the builder and return the message
@@ -812,26 +1067,32 @@ foreign_class!(
 
         /// GET /api/v1/messages?index={Index} endpoint
         /// Consume the builder and search for messages matching the index
+        /// @param index the index string
         fn GetMessageBuilder::index_string(&self, index: &str) -> Result<Vec<MessageId>>;
 
         /// GET /api/v1/messages?index={Index} endpoint
         /// Consume the builder and search for messages matching the index
+        /// @param index the index in bytes
         fn GetMessageBuilder::index_vec(&self, index: Vec<u8>) -> Result<Vec<MessageId>>;
 
         /// GET /api/v1/messages/{messageID} endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message object.
+        /// @param message_id The id of the message to find
         fn GetMessageBuilder::data(&self, message_id: MessageId) -> Result<Message>;
 
         /// GET /api/v1/messages/{messageID}/metadata endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
+        /// @param message_id The id of the message to find
         fn GetMessageBuilder::metadata(&self, message_id: MessageId) -> Result<MessageMetadata>;
 
         /// GET /api/v1/messages/{messageID}/raw endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
+        /// @param message_id The id of the message to find
         fn GetMessageBuilder::raw(&self, message_id: MessageId) -> Result<String>;
 
         /// GET /api/v1/messages/{messageID}/children endpoint
         /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
+        /// @param message_id The id of the message to find
         fn GetMessageBuilder::children(&self, message_id: MessageId) -> Result<Vec<MessageId>>;
     }
 );
@@ -839,19 +1100,29 @@ foreign_class!(
 foreign_class!(
     /// Response of GET /api/v1/messages/{message_id}/metadata.
     /// Returns the metadata of a message.
-    #[derive(camelCaseAliases, Display)]
+    #[derive(camelCaseAliases, Display, PartialEq)]
     class MessageMetadata {
         self_type MessageMetadata;
         private constructor = empty;
         private fn MessageMetadata::to_string(&self) -> String; alias to_string;
+        private fn MessageMetadata::eq(&self, o: &MessageMetadata) -> bool; alias rustEq;
+        /// The message id of this message
         fn MessageMetadata::message_id(&self) -> &str;
+        /// The ids of the parents of this message
         fn MessageMetadata::parent_message_ids(&self) -> Vec<String>;
+        /// IF this message is solid
         fn MessageMetadata::is_solid(&self) -> bool;
+        /// The optional milestone index if this message is referenced
         fn MessageMetadata::referenced_by_milestone_index(&self) -> Option<u32>;
+        /// The optional milestone index this was included in
         fn MessageMetadata::milestone_index(&self) -> Option<u32>;
+        /// The ledger state
         fn MessageMetadata::ledger_inclusion_state(&self) -> Option<LedgerInclusionStateDto>;
+        /// The optional reason of conflict
         fn MessageMetadata::conflict_reason(&self) -> Option<u8>;
+        /// Optional; if the message needs to be promoted
         fn MessageMetadata::should_promote(&self) -> Option<bool>;
+        /// Optional; if the message needs to be reattached
         fn MessageMetadata::should_reattach(&self) -> Option<bool>;
     }
 );
@@ -859,50 +1130,58 @@ foreign_class!(
 /////////////// Address
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, Display, PartialEq)]
     class Address {
         self_type Address;
         private constructor = empty;
         private fn Address::to_string(&self) -> String; alias to_string;
+        private fn Address::eq(&self, o: &Address) -> bool; alias rustEq;
         /// Tries to create an `Address` from a Bech32 encoded string.
         fn Address::try_from_bech32(addr: &str) -> Result<Address>;
         // Encodes this address to a Bech32 string with the hrp (human readable part) argument as prefix.
         fn Address::to_bech32(&self, hrp: &str) -> String;
-        // Verifies a [`SignatureUnlock`] for a message against the [`Address`].
+        // Verifies a `SignatureUnlock` for a message against the `Address`.
         fn Address::verify(&self, msg: Vec<u8>, signature: SignatureUnlock) -> Result<()>;
     }
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, PartialEq)]
     class AddressStringPublicWrapper {
         self_type AddressStringPublicWrapper;
         private constructor = empty;
-        private fn AddressStringPublicWrapper::eq(&self, o: &AddressStringPublicWrapper) -> bool; alias rustEq;
         private fn AddressStringPublicWrapper::to_string(&self) -> String; alias to_string;
+        private fn AddressStringPublicWrapper::eq(&self, o: &AddressStringPublicWrapper) -> bool; alias rustEq;
+        /// If this is a publci address
         fn AddressStringPublicWrapper::public(&self) -> bool; alias isPublic;
+        /// The address itself
         fn AddressStringPublicWrapper::address(&self) -> &str;
     }
 );
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, PartialEq)]
     class AddressPublicWrapper {
         self_type AddressPublicWrapper;
         private constructor = empty;
-        private fn AddressPublicWrapper::eq(&self, o: &AddressPublicWrapper) -> bool; alias rustEq;
         private fn AddressPublicWrapper::to_string(&self) -> String; alias to_string;
+        private fn AddressPublicWrapper::eq(&self, o: &AddressPublicWrapper) -> bool; alias rustEq;
+        /// If this is a public address
         fn AddressPublicWrapper::public(&self) -> bool; alias isPublic;
+        /// The address itself
         fn AddressPublicWrapper::address(&self) -> Address;
     }
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(Display, PartialEq)]
     class AddressDto {
         self_type AddressDto;
         private constructor = empty;
         private fn AddressDto::to_string(&self) -> String; alias to_string;
+        private fn AddressDto::eq(&self, o: &AddressDto) -> bool; alias rustEq;
+        /// The kind of address
         fn AddressDto::kind(&self) -> u8;
+        /// The address itself
         fn AddressDto::address(&self) -> &str;
     }
 );
@@ -914,13 +1193,16 @@ foreign_class!(
         private constructor = empty;
 
         /// Sets the account index.
+        /// @param account_index The account index to use (Default: 0)
         fn GetBalanceBuilderApi::with_account_index(&self, account_index: usize) -> GetBalanceBuilderApi;
 
         /// Sets the index of the address to start looking for balance.
+        /// @param initial_address_index The starting index to use for searching addresses (Default: 0)
         fn GetBalanceBuilderApi::with_initial_address_index(&self, initial_address_index: usize) -> GetBalanceBuilderApi;
 
         /// Sets the gap limit to specify how many addresses will be checked each round.
         /// If gap_limit amount of addresses in a row have no balance the function will return.
+        /// @param gap_limit The gap limit (Default: 20)
         fn GetBalanceBuilderApi::with_gap_limit(&self, gap_limit: usize) -> GetBalanceBuilderApi;
 
         /// Consume the builder and get the API result
@@ -936,10 +1218,13 @@ foreign_class!(
         /// Consume the builder and get the balance of a given Bech32 encoded address.
         /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
         /// reasons. User should sweep the address to reduce the amount of outputs.
+        /// @param address The address to get the balance for
         fn GetAddressBuilder::balance(&self, address: &str) -> Result<BalanceAddressResponse>;
         /// Consume the builder and get all outputs that use a given address.
         /// If count equals maxResults, then there might be more outputs available but those were skipped for performance
         /// reasons. User should sweep the address to reduce the amount of outputs.
+        /// @param address The address to get the balance for
+        /// @param options The options for finding outputs
         fn GetAddressBuilder::outputs(&self, address: &str, options: OutputsOptions) -> Result<Vec<UtxoInput>>;
     }
 );
@@ -1143,7 +1428,9 @@ foreign_class!(
         self_type Signature;
         private constructor = empty;
         private fn Signature::to_string(&self) -> String; alias to_string;
+        /// Turn the signature into bytes
         fn Signature::to_bytes(&self) -> Vec<u8>;
+        /// Turns bytes into a signature
         fn Signature::from_bytes(bs: Vec<u8>) -> Signature;
     }
 );
@@ -1154,9 +1441,15 @@ foreign_class!(
         self_type PublicKey;
         private constructor = empty;
         private fn PublicKey::to_string(&self) -> String; alias to_string;
-        fn PublicKey::verify(&self, sig: Signature, msg: Vec<u8>) -> bool;
+        /// Verify the signature and bytes against this public key
+        /// @param sig The signature to verify
+        /// @param bytes The bytes to verify
+        fn PublicKey::verify(&self, sig: Signature, bytes: Vec<u8>) -> bool;
+        /// Turns ths public key into bytes
         fn PublicKey::to_bytes(&self) -> Vec<u8>;
-        fn PublicKey::try_from_bytes(bs: Vec<u8>) -> Result<PublicKey>;
+        /// Attempt to create a public key from the provided bytes
+        /// @param bytes The bytes to create the key from
+        fn PublicKey::try_from_bytes(bytes: Vec<u8>) -> Result<PublicKey>;
     }
 );
 
@@ -1166,16 +1459,23 @@ foreign_class!(
         self_type SecretKey;
         private constructor = empty;
         private fn SecretKey::to_string(&self) -> String; alias to_string;
+        /// Generate a new secret key
         fn SecretKey::generate() -> Result<SecretKey>;
-        fn SecretKey::from_bytes(bs: Vec<u8>) -> SecretKey;
-
+        /// Create a new secret key from the bytes
+        /// @param bytes The bytes to create the key from
+        fn SecretKey::from_bytes(bytes: Vec<u8>) -> SecretKey;
+        /// Derive a public key from the secret key
         fn SecretKey::public_key(&self) -> PublicKey;
+        /// Turn this Secret key into bytes
         fn SecretKey::to_bytes(&self) -> Vec<u8>;
-        fn SecretKey::sign(&self, msg: Vec<u8>) -> Signature;
+        /// Sign the bytes using this key
+        /// @param bytes the Bytes to sign
+        fn SecretKey::sign(&self, bytes: Vec<u8>) -> Signature;
     }
 );
 
 foreign_class!(
+    /// slip10 chain
     #[derive(camelCaseAliases)]
     class Chain {
         self_type Chain;
@@ -1185,22 +1485,21 @@ foreign_class!(
 
 // Bee types wrapping
 foreign_class!(
+    /// Message payload wrapper
     #[derive(camelCaseAliases, Display)]
     class MessagePayload {
         self_type MessagePayload;
         private constructor = empty;
         private fn MessagePayload::to_string(&self) -> String; alias to_string;
-
-        /// Turns a serialized message payload string back into its class
+        /// Turns a serialized message payload string back into its class 
         fn MessagePayload::deserialize(serialised_data: &str) -> Result<MessagePayload>;
         /// Get the type of message this contains (used to select the correct getter)
         fn MessagePayload::payload_type(&self) -> MessagePayloadType;
-        fn MessagePayload::get_as_indexation(&self) -> Option<IndexationPayload>;
-        fn MessagePayload::get_as_transaction(&self) -> Option<TransactionPayload>;
-        fn MessagePayload::get_as_treasury(&self) -> Option<TreasuryPayload>;
-        fn MessagePayload::get_as_milestone(&self) -> Option<MilestonePayload>;
-        fn MessagePayload::get_as_receipt(&self) -> Option<ReceiptPayload>;
-
+        fn MessagePayload::as_indexation(&self) -> Result<IndexationPayload>;
+        fn MessagePayload::as_milestone(&self) -> Result<MilestonePayload>;
+        fn MessagePayload::as_transaction(&self) -> Result<TransactionPayload>;
+        fn MessagePayload::as_receipt(&self) -> Result<ReceiptPayload>;
+        fn MessagePayload::as_treasury(&self) -> Result<TreasuryPayload>;
         /// Serializes the message payload into a json string
         fn MessagePayload::serialize(&self) -> Result<String>;
     }
@@ -1213,8 +1512,12 @@ foreign_class!(
         private constructor = empty;
         private fn IndexationPayload::to_string(&self) -> String; alias to_string;
         /// Creates a new `IndexationPayload`.
+        /// @param index The index
+        /// @param data The data linked ot this index
         fn IndexationPayload::new(index: &[u8], data: &[u8]) -> Result<IndexationPayload>; alias fromBytes;
         /// Creates a new `IndexationPayload` from strings
+        /// @param index The index
+        /// @param data The data linked ot this index
         fn IndexationPayload::new_from_string(index: &str, data: &str) -> Result<IndexationPayload>; alias fromStrings;
         /// Returns the index of an `IndexationPayload`.
         fn IndexationPayload::index(&self) -> &[u8];
@@ -1235,6 +1538,8 @@ foreign_class!(
         /// Returns the signatures of a `MilestonePayload`.
         fn MilestonePayload::signatures(&self) -> Vec<MilestoneSignature>;
         /// Semantically validate a `MilestonePayload`.
+        /// @param applicable_public_keys The public keys to use to validate
+        /// @param min_threshold THe minimum threshold for this to succeed (0...100)
         fn MilestonePayload::validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize) -> Result<()>;
         /// Computes the identifier of a `MilestonePayload`.
         fn MilestonePayload::id(&self) -> String;
@@ -1247,6 +1552,7 @@ foreign_class!(
         self_type MilestoneSignature;
         private constructor = empty;
         private fn MilestoneSignature::to_string(&self) -> String; alias to_string;
+        /// Gets the signature of the milestone
         fn MilestoneSignature::get_signature(&self) -> Vec<u8>;
     }
 );
@@ -1304,9 +1610,11 @@ foreign_class!(
     class MigratedFundsEntry {
         self_type MigratedFundsEntry;
         private constructor = empty;
-        /// Creates a new `MigratedFundsEntry`.
-        fn MigratedFundsEntry::from(hash: String, output: SignatureLockedSingleOutput) -> Result<MigratedFundsEntry>;
         private fn MigratedFundsEntry::to_string(&self) -> String; alias to_string;
+        /// Creates a new `MigratedFundsEntry`.
+        /// @param hash The hash from the transaction used to receive the funds
+        /// @param output the output related to this transaction
+        fn MigratedFundsEntry::from(hash: String, output: SignatureLockedSingleOutput) -> Result<MigratedFundsEntry>;
         /// Returns the tail transaction hash of a `MigratedFundsEntry`.
         fn MigratedFundsEntry::tail_transaction_hash(&self) -> String;
         /// Returns the output of a `MigratedFundsEntry`.
@@ -1347,14 +1655,15 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(camelCaseAliases, Display)]
     /// Helper struct for offline signing
+    #[derive(camelCaseAliases, Display)]
     class PreparedTransactionData {
         self_type PreparedTransactionData;
         private constructor = empty;
         private fn PreparedTransactionData::to_string(&self) -> String; alias to_string;
 
         /// Turns a serialized preparedTransactionData string back into its class
+        /// @param serialised_data The serialised transaction data
         fn PreparedTransactionData::deserialize(serialised_data: &str) -> Result<PreparedTransactionData>;
 
         /// Transaction essence
@@ -1364,7 +1673,6 @@ foreign_class!(
 
         /// Serializes the prepared data into a json string
         fn PreparedTransactionData::serialize(&self) -> Result<String>;
-
     }
 );
 
@@ -1403,7 +1711,7 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, Display)]
     class RegularEssence {
         self_type RegularEssence;
         private constructor = empty;
@@ -1416,13 +1724,17 @@ foreign_class!(
         fn RegularEssence::payload(&self) -> Option<MessagePayload>;
     }
 );
+
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, PartialEq, Display)]
     class Input {
         self_type Input;
         private constructor = empty;
         private fn Input::to_string(&self) -> String; alias to_string;
+        private fn Input::eq(&self, o: &Input) -> bool; alias rustEq;
         fn Input::kind(&self) -> InputKind;
+        fn Input::as_utxo(&self) -> Result<UtxoInput>;
+        fn Input::as_treasury(&self) -> Result<TreasuryInput>;
     }
 );
 
@@ -1440,29 +1752,6 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(Display)]
-    class ReferenceUnlock {
-        self_type ReferenceUnlock;
-        private constructor = empty;
-        private fn ReferenceUnlock::to_string(&self) -> String; alias to_string;
-        /// Creates a new `ReferenceUnlock`.
-        fn ReferenceUnlock::from(index: u16) -> Result<ReferenceUnlock>;
-        /// Return the index of a `ReferenceUnlock`.
-        fn ReferenceUnlock::index(&self) -> u16;
-    }
-);
-
-foreign_class!(
-    #[derive(Display)]
-    class SignatureUnlock {
-        self_type SignatureUnlock;
-        constructor SignatureUnlock::from(public_key: Vec<u8>, signature: Vec<u8>) -> SignatureUnlock;
-        private fn SignatureUnlock::to_string(&self) -> String; alias to_string;
-
-    }
-);
-
-foreign_class!(
     #[derive(camelCaseAliases, Display)]
     class UnlockBlock {
         self_type UnlockBlock;
@@ -1470,13 +1759,39 @@ foreign_class!(
         private fn UnlockBlock::to_string(&self) -> String; alias to_string;
         fn UnlockBlock::kind(&self) -> UnlockBlockKind;
 
-        fn UnlockBlock::get_as_reference(&self) -> Option<ReferenceUnlock>;
-        fn UnlockBlock::get_as_signature(&self) -> Option<SignatureUnlock>;
+        fn UnlockBlock::as_reference(&self) -> Result<ReferenceUnlock>;
+        fn UnlockBlock::as_signature(&self) -> Result<SignatureUnlock>;
     }
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, Display)]
+    class ReferenceUnlock {
+        self_type ReferenceUnlock;
+        private constructor = empty;
+        private fn ReferenceUnlock::to_string(&self) -> String; alias to_string;
+        /// Creates a new `ReferenceUnlock`.
+        /// @param index The unlock block index we use for signature
+        fn ReferenceUnlock::from(index: u16) -> Result<ReferenceUnlock>;
+        /// Return the index of a `ReferenceUnlock`.
+        fn ReferenceUnlock::index(&self) -> u16;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
+    class SignatureUnlock {
+        self_type SignatureUnlock;
+        /// Create a new Signature inlock block
+        /// @param public_key The public ket used for this signature block
+        /// @param signature The signature created for this unlock block
+        constructor SignatureUnlock::from(public_key: Vec<u8>, signature: Vec<u8>) -> SignatureUnlock;
+        private fn SignatureUnlock::to_string(&self) -> String; alias to_string;
+    }
+);
+
+foreign_class!(
+    #[derive(camelCaseAliases, Display)]
     class UnlockBlocks {
         self_type UnlockBlocks;
         private constructor = empty;
@@ -1489,7 +1804,7 @@ foreign_class!(
 );
 
 foreign_class!(
-    #[derive(Display)]
+    #[derive(camelCaseAliases, Display)]
     class TreasuryPayload {
         self_type TreasuryPayload;
         constructor TreasuryPayload::new(input: TreasuryInput, output: TreasuryOutput) -> TreasuryPayload;

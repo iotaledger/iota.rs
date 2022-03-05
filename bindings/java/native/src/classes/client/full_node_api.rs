@@ -10,6 +10,7 @@ use std::{
 };
 
 use iota_client::{
+    node_manager::Node as RustNode,
     bee_message::{input::UtxoInput as RustUtxoInput, payload::transaction::TransactionId, MessageId},
     client::Client as ClientRust,
 };
@@ -18,7 +19,7 @@ use crate::{
     address::*,
     balance::GetBalanceBuilderApi,
     bee_types::*,
-    client_builder::ClientBuilder,
+    client_builder::{ClientBuilder, NetworkInfo},
     message::{ClientMessageBuilder, GetMessageBuilder, Message, MessageWrap},
     mqtt::MqttManager,
     Result,
@@ -62,6 +63,22 @@ impl Client {
 
     pub fn get_info(&self) -> Result<NodeInfoWrapper> {
         Ok(crate::block_on(async { self.0.get_info().await }).map_err(|e|anyhow::anyhow!(e.to_string()))?.into())
+    }
+
+    pub fn get_node(&self) -> Result<Node> {
+        Ok(crate::block_on(async { self.0.get_node().await }).map_err(|e|anyhow::anyhow!(e.to_string()))?.into())
+    }
+
+    pub fn get_network_id(&self) -> Result<u64> {
+        Ok(crate::block_on(async { self.0.get_network_id().await }).map_err(|e|anyhow::anyhow!(e.to_string()))?)
+    }
+
+    pub fn get_pow_provider(&self) -> ClientMiner {
+        crate::block_on(async { self.0.get_pow_provider().await }).into()
+    }
+
+    pub fn get_network_info(&self) -> Result<NetworkInfo> {
+        Ok(crate::block_on(async { self.0.get_network_info().await }).map_err(|e|anyhow::anyhow!(e.to_string()))?.into())
     }
 
     pub fn get_tips(&self) -> Result<Vec<String>> {
@@ -401,5 +418,30 @@ impl Client {
             .with_input(inputs.into_iter().next().unwrap())
             .with_output(to_address, balance_wrap.balance())?
             .finish()
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Node(RustNode);
+
+impl Node {
+    pub fn url(&self) -> String {
+        self.0.url.to_string()
+    }
+
+    pub fn jwt(&self) -> Option<String> {
+        self.0.jwt.clone()
+    }
+}
+
+impl From<RustNode> for Node {
+    fn from(node: RustNode) -> Self {
+        Self(node)
+    }
+}
+
+impl core::fmt::Display for Node {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }

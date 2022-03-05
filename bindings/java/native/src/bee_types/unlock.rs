@@ -36,18 +36,18 @@ impl UnlockBlock {
         self.0.clone()
     }
 
-    pub fn get_as_signature(&self) -> Option<SignatureUnlock> {
+    pub fn as_signature(&self) -> Result<SignatureUnlock> {
         if let RustUnlockBlock::Signature(unlock) = &self.0 {
-            Some((unlock.clone()).into())
+            Ok((unlock.clone()).into())
         } else {
-            None
+            Err(anyhow::anyhow!("UnlockBlock is not of type Signature"))
         }
     }
-    pub fn get_as_reference(&self) -> Option<ReferenceUnlock> {
+    pub fn as_reference(&self) -> Result<ReferenceUnlock> {
         if let RustUnlockBlock::Reference(unlock) = &self.0 {
-            Some((unlock.clone()).into())
+            Ok((unlock.clone()).into())
         } else {
-            None
+            Err(anyhow::anyhow!("UnlockBlock is not of type Reference"))
         }
     }
 }

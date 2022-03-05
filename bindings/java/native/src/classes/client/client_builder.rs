@@ -1,7 +1,7 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{client::BrokerOptions as RustBrokerOptions, Api, ClientBuilder as RustClientBuilder};
+use iota_client::{client::BrokerOptions as RustBrokerOptions, Api, ClientBuilder as RustClientBuilder, builder::NetworkInfo as RustNetworkInfo};
 use std::{cell::RefCell, convert::TryFrom, rc::Rc, time::Duration};
 
 use crate::{full_node_api::Client, Result};
@@ -283,5 +283,46 @@ impl ClientBuilder {
         let client = crate::block_on(async move { self.builder.borrow_mut().take().unwrap().finish().await.unwrap() });
 
         Ok(Client::try_from(client).unwrap())
+    }
+}
+
+/// Struct containing network and PoW related information
+#[derive(Clone, Debug, PartialEq)]
+pub struct NetworkInfo(RustNetworkInfo);
+
+impl NetworkInfo {
+    /*
+    /// Network
+    pub network: Option<String>,
+    /// Network ID
+    #[serde(rename = "networkId")]
+    pub network_id: Option<u64>,
+    /// Bech32 HRP
+    #[serde(rename = "bech32HRP")]
+    pub bech32_hrp: String,
+    /// Mininum proof of work score
+    #[serde(rename = "minPoWScore")]
+    pub min_pow_score: f64,
+    /// Local proof of work
+    #[serde(rename = "localPow")]
+    pub local_pow: bool,
+    /// Fallback to local proof of work if the node doesn't support remote PoW
+    #[serde(rename = "fallbackToLocalPow")]
+    pub fallback_to_local_pow: bool,
+    /// Tips request interval during PoW in seconds
+    #[serde(rename = "tipsInterval")]
+    pub tips_interval: u64,
+    */
+}
+
+impl core::fmt::Display for NetworkInfo {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl From<RustNetworkInfo> for NetworkInfo {
+    fn from(miner: RustNetworkInfo) -> Self {
+        Self(miner)
     }
 }

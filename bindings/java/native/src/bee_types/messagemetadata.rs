@@ -6,7 +6,7 @@ use iota_client::bee_rest_api::types::{
     dtos::LedgerInclusionStateDto, responses::MessageMetadataResponse as RustMessageMetadata,
 };
 
-#[derive(Clone, Getters, CopyGetters)]
+#[derive(Clone, Getters, CopyGetters, PartialEq)]
 pub struct MessageMetadata {
     #[getset(get = "pub")]
     pub message_id: String,
