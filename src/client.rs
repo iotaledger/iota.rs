@@ -1198,7 +1198,7 @@ impl Client {
         Ok(messages)
     }
 
-    /// Return the balance for a provided seed and its wallet chain account index.
+    /// Return the balance for a provided seed
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
     /// balance address.
     pub fn get_balance<'a>(&'a self, seed: &'a Seed) -> GetBalanceBuilder<'a> {

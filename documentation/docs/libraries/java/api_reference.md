@@ -397,7 +397,7 @@ Promote a message without checking if it should be promoted
 
 #### getBalance(seed): GetBalanceBuilderApi
 
-Return the balance for a provided seed and its wallet chain account index.
+Return the balance for a provided seed.
 Addresses with balance must be consecutive, so this method will return once it encounters a zero
 balance address.
 

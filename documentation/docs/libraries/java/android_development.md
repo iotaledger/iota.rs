@@ -10,9 +10,9 @@ keywords:
 ---
 # Android development
 
-Android development requires a more specific environment setup. In this tutorial we will guide you through the various ways to build an APK with `wallet.rs` capabilities.
+Android development requires a more specific environment setup. In this tutorial we will guide you through the various ways to build an APK with `iota.rs` capabilities.
 
-Thie first part of this tutorial shows you how to install the required tools and building an apk. Scroll [down](#Using%20pre-generated%20binaries) for a guide using the precompiled binaries found on our release page [here](https://github.com/iotaledger/wallet.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`.
+Thie first part of this tutorial shows you how to install the required tools and building an apk. Scroll [down](#Using%20pre-generated%20binaries) for a guide using the precompiled binaries found on our release page [here](https://github.com/iotaledger/iota.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`.
 
 :::info
 Since Android development mainly uses Gradle, we will use that for this tutorial
@@ -60,7 +60,7 @@ rustup target add \
 ### 1.1 Compiling a binary
 In order to generate the Java source files; we need to run cargo manually once. 
 
-This step will require you to run `cargo build --release --target=$TARGET` in `wallet.rs/bindings/java`.
+This step will require you to run `cargo build --release --target=$TARGET` in `iota.rs/bindings/java`.
 
 Replace `$TARGET` with one of the enabled targets inside `archTriplets`.
 
@@ -69,9 +69,9 @@ This step is actually intentionally more complicated, as you can just compile us
 :::
 
 ### 1.2 Creating the jar
-Afterwards, you need to run `./gradlew jar` in `wallet.rs/bindings/java` in order to generate the jar file.
+Afterwards, you need to run `./gradlew jar` in `iota.rs/bindings/java` in order to generate the jar file.
 
-The jar will be found at `wallet.rs/bindings/java/native/build/libs/native.jar`
+The jar will be found at `iota.rs/bindings/java/native/build/libs/native.jar`
 
 ## 2. Build the app
 
@@ -91,7 +91,7 @@ Afterwards you need to comment out all `archTriplets` in `build.gradle` in order
 
 ### 2.1 Android studio
 
-Load the project under the `wallet.rs/bindings/java` folder in Android studio.
+Load the project under the `iota.rs/bindings/java` folder in Android studio.
 
 Make sure you have an NDK and SDK: `file->Project Structure->SDK Location`. If the NDK location is marked grey, edit the `local.properties` like so: (This must be the location of `$ANDROID_NDK_HOME`, which still needs to be on your path)
 ```
@@ -139,7 +139,7 @@ ar = "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-a
 ```
 
 #### Generating the binaries
-Then for each of the enabled targets inside your `build.gradle` `archTriplets` do the following steps inside  `wallet.rs/bindings/java` 
+Then for each of the enabled targets inside your `build.gradle` `archTriplets` do the following steps inside  `iota.rs/bindings/java` 
 
 1. `BINDGEN_EXTRA_CLANG_ARGS="--target=$TARGET" cargo build --release --target=$TARGET` 
 
@@ -159,7 +159,7 @@ For each target you enable in `build.gradle` `archTriplets` do the following:
 
 Assemble your app with gradle using:
 ```
-cd wallet.rs/bindings/java
+cd iota.rs/bindings/java
 ./gradlew aR
 ```
 
@@ -183,7 +183,7 @@ For example:
 
 ## Using pre-generated binaries
 
-It is very likely you dont want or need to compile by yourself. That is why we provide precompiled binaries found on our release page [here](https://github.com/iotaledger/wallet.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`. 
+It is very likely you dont want or need to compile by yourself. That is why we provide precompiled binaries found on our release page [here](https://github.com/iotaledger/iota.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`. 
 
 Install the files attached to the release so that you achieve the following directory structure: (extract the `jniLibs.zip` into `root_app/src/main/`)
 
@@ -194,16 +194,16 @@ root_app/src/main/
   jniLibs/
     arm64-v8a/
       libc++_shared.so
-      libiota_wallet_java.so
+      libiota_client_java.so
     armeabi-v7a/
       libc++_shared.so
-      libiota_wallet_java.so
+      libiota_client_java.so
     x86/
       libc++_shared.so
-      libiota_wallet_java.so
+      libiota_client_java.so
     x86_64/
       libc++_shared.so
-      libiota_wallet_java.so
+      libiota_client_java.so
 ```
 
 ### Android studio 
@@ -213,5 +213,5 @@ Then using Android Studio, add the native.jar to your project by right clicking 
 Add the jar to your `build.gradle` dependencies section using; for example: `implementation files('src\\main\\libs\\native.jar')`
 
 :::info
-When trying to build the `android-app` example in the repository with precompiled binaries, comment out all the `archTriplets` inside `wallet.rs/bindings/java/examples/android-app/build.gradle`. (Otherwise you will try to regenerate the `.so` files)
+When trying to build the `android-app` example in the repository with precompiled binaries, comment out all the `archTriplets` inside `iota.rs/bindings/java/examples/android-app/build.gradle`. (Otherwise you will try to regenerate the `.so` files)
 :::

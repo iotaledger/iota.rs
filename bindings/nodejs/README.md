@@ -277,7 +277,7 @@ Finds all messages associated with the given indexation keys and message ids.
 
 #### getBalance(seed: string): BalanceGetter
 
-Get balance on a given seed and its wallet account index.
+Get balance on a given seed
 
 | Param | Type                | Description                    |
 | ----- | ------------------- | ------------------------------ |

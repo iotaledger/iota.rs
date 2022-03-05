@@ -259,10 +259,7 @@ impl Client {
     }
 
     // HIGH LEVEL API
-
-    /// Return the balance for a provided seed and its wallet chain account index.
-    /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
-    /// balance address.
+    
     pub fn get_balance(&self, seed: &str) -> Result<GetBalanceBuilderApi> {
         GetBalanceBuilderApi::new(self, seed)
     }

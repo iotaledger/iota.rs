@@ -3,7 +3,6 @@ description: Official IOTA Client Library which can be used to easily integrate 
 image: /img/logo/iota_mark_light.png
 keywords:
 - requirements
-- wallet
 - software
 - library
 - rust

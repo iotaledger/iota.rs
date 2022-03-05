@@ -10,12 +10,12 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.nio.file.Path;
 
-import org.iota.wallet.*;
-import org.iota.wallet.local.*;
+import org.iota.client.*;
+import org.iota.client.local.*;
 
 public final class MyApplication extends Application {
     private static MyApplication sSelf;
-    private static final String TAG = "Wallet.rs";
+    private static final String TAG = "Client.rs";
 
     private Account account;
 
@@ -24,8 +24,6 @@ public final class MyApplication extends Application {
         sSelf = this;
 
         NativeAPI.verifyLink();
-
-        File folder = context.getExternalFilesDir(null);
 
         // Beware: All builder patterns return NEW instances on each method call.
         // Mutating the old builder after a builder call will not result in a change on
@@ -39,28 +37,15 @@ public final class MyApplication extends Application {
         //
         // Explanation: builder.withStorage returns a new builder instance, and .finish
         // is called on the old one
-        AccountManagerBuilder builder = AccountManager.Builder().withStorage(folder.getPath(), null);
+        Client iota = Client.Builder().withNode(nodeUrl) // Insert your node URL here
+            // .withNodeAuth("https://somechrysalisiotanode.com", "jwt_or_null",
+            // "name_or_null", "password_or_null") //
+            // Optional authentication
+            .withLocalPow(true)
+            .finish();
 
-        AccountManager manager = builder.finish();
-        manager.setStrongholdPassword("YepThisISSecure");
-
-        // Generate your own for peristance:
-        // String mnemonic = manager.generateMnemonic();
-
-        // null means "generate one for me"
-        manager.storeMnemonic(AccountSignerType.STRONGHOLD, null);
-
-        BrokerOptions mqtt = new BrokerOptions();
-
-        ClientOptions clientOptions = new ClientOptionsBuilder()
-                .withNode("https://chrysalis-nodes.iota.cafe:443")
-                .withMqttBrokerOptions(mqtt)
-                .build();
-
-        this.account = manager
-                .createAccount(clientOptions)
-                .signerType(AccountSignerType.STRONGHOLD)
-                .alias("alias1")
-                .initialise();
+        NodeInfoWrapper info = iota.getInfo();
+        System.out.println("Node url: " + info.url());
+        System.out.println("Node Info: " + info.nodeInfo());
     }
 }
