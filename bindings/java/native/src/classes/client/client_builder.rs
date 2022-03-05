@@ -1,7 +1,10 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{client::BrokerOptions as RustBrokerOptions, Api, ClientBuilder as RustClientBuilder, builder::NetworkInfo as RustNetworkInfo};
+use iota_client::{
+    builder::NetworkInfo as RustNetworkInfo, client::BrokerOptions as RustBrokerOptions, Api,
+    ClientBuilder as RustClientBuilder,
+};
 use std::{cell::RefCell, convert::TryFrom, rc::Rc, time::Duration};
 
 use crate::{full_node_api::Client, Result};
@@ -291,28 +294,26 @@ impl ClientBuilder {
 pub struct NetworkInfo(RustNetworkInfo);
 
 impl NetworkInfo {
-    /*
-    /// Network
-    pub network: Option<String>,
-    /// Network ID
-    #[serde(rename = "networkId")]
-    pub network_id: Option<u64>,
-    /// Bech32 HRP
-    #[serde(rename = "bech32HRP")]
-    pub bech32_hrp: String,
-    /// Mininum proof of work score
-    #[serde(rename = "minPoWScore")]
-    pub min_pow_score: f64,
-    /// Local proof of work
-    #[serde(rename = "localPow")]
-    pub local_pow: bool,
-    /// Fallback to local proof of work if the node doesn't support remote PoW
-    #[serde(rename = "fallbackToLocalPow")]
-    pub fallback_to_local_pow: bool,
-    /// Tips request interval during PoW in seconds
-    #[serde(rename = "tipsInterval")]
-    pub tips_interval: u64,
-    */
+    // Network
+    // pub network: Option<String>,
+    // Network ID
+    // #[serde(rename = "networkId")]
+    // pub network_id: Option<u64>,
+    // Bech32 HRP
+    // #[serde(rename = "bech32HRP")]
+    // pub bech32_hrp: String,
+    // Mininum proof of work score
+    // #[serde(rename = "minPoWScore")]
+    // pub min_pow_score: f64,
+    // Local proof of work
+    // #[serde(rename = "localPow")]
+    // pub local_pow: bool,
+    // Fallback to local proof of work if the node doesn't support remote PoW
+    // #[serde(rename = "fallbackToLocalPow")]
+    // pub fallback_to_local_pow: bool,
+    // Tips request interval during PoW in seconds
+    // #[serde(rename = "tipsInterval")]
+    // pub tips_interval: u64,
 }
 
 impl core::fmt::Display for NetworkInfo {

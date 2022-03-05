@@ -11,8 +11,7 @@ use iota_client::{
         prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents},
     },
     node::GetMessageBuilder as RustGetMessageBuilder,
-    ClientMiner as RustClientMiner,
-    Seed as RustSeed,
+    ClientMiner as RustClientMiner, Seed as RustSeed,
 };
 
 use crate::{
@@ -22,7 +21,7 @@ use crate::{
     },
     full_node_api::Client,
     prepared::{addres_into_rust_address_recorder, PreparedTransactionData},
-    ClientMiner, MessagePayload, Result, 
+    ClientMiner, MessagePayload, Result,
 };
 
 #[derive(Clone, PartialEq)]
@@ -135,7 +134,9 @@ pub struct MessageBuilder {
 impl Default for MessageBuilder {
     fn default() -> Self {
         Self {
-            builder: Rc::new(RefCell::new(Option::from(RustMessageBuilder::<RustClientMiner>::default()))),
+            builder: Rc::new(RefCell::new(Option::from(
+                RustMessageBuilder::<RustClientMiner>::default(),
+            ))),
         }
     }
 }
@@ -164,7 +165,7 @@ impl MessageBuilder {
             .borrow_mut()
             .take()
             .unwrap()
-            .with_parents(Parents::new(parents).map_err(|e|anyhow::anyhow!(e.to_string()))?);
+            .with_parents(Parents::new(parents).map_err(|e| anyhow::anyhow!(e.to_string()))?);
         Ok(MessageBuilder::new_with_builder(new_builder))
     }
 
@@ -180,7 +181,7 @@ impl MessageBuilder {
     }
 
     /// Adds a nonce provider to a `MessageBuilder`.
-     pub fn nonce_provider(&self, provider: ClientMiner, target_score: f64) -> Self {
+    pub fn nonce_provider(&self, provider: ClientMiner, target_score: f64) -> Self {
         let new_builder = self
             .builder
             .borrow_mut()
@@ -365,7 +366,9 @@ impl<'a> ClientMessageBuilder<'a> {
         inputs_range_low: usize,
         inputs_range_high: usize,
     ) -> Result<MessagePayload> {
-        let second_seed = Some(RustSeed::from_bytes(&hex::decode(seed).map_err(|e|anyhow::anyhow!(e.to_string()))?));
+        let second_seed = Some(RustSeed::from_bytes(
+            &hex::decode(seed).map_err(|e| anyhow::anyhow!(e.to_string()))?,
+        ));
 
         let mut range = None;
         if inputs_range_low != 0 {

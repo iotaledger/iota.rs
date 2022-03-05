@@ -15,11 +15,7 @@ pub struct GossipDto {
 
 impl core::fmt::Display for GossipDto {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(
-            f,
-            "heartbeat={}, metrics={}",
-            self.heartbeat, self.metrics
-        )
+        write!(f, "heartbeat={}, metrics={}", self.heartbeat, self.metrics)
     }
 }
 
