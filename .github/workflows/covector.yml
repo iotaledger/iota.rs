@@ -76,12 +76,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Using Ubuntu 18.04 to provide glibc compatibility. (#588)
-        os: [ubuntu-18.04, macos-latest, windows-latest]
+        # XXX: The GitHub hosted Windows 2022 image comes with Visual Studio 2022, but node-gyp
+        # (which is used by neon-sys) sadly fails to recognize it. As a mitigation, we still run the
+        # tests on Windows 2019, until we can figure out a way to fix the problem.
+        # NOTE: Using Ubuntu 18.04 to provide glibc compatibility. (#588)
+        os: [ubuntu-18.04, macos-latest, windows-2019]
         node: ['12', '14', '16']
         exclude:
           # FIXME: fatal error C1083: Cannot open include file: 'node.h': No such file or directory
-          - os: windows-latest
+          - os: windows-2019
             node: '16'
 
     steps:
@@ -121,8 +124,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Using Ubuntu 18.04 to provide glibc compatibility. (#588)
-        os: [ubuntu-18.04, macos-latest, windows-latest]
+        # XXX: The GitHub hosted Windows 2022 image comes with Visual Studio 2022, but node-gyp
+        # (which is used by neon-sys) sadly fails to recognize it. As a mitigation, we still run the
+        # tests on Windows 2019, until we can figure out a way to fix the problem.
+        # NOTE: Using Ubuntu 18.04 to provide glibc compatibility. (#588)
+        os: [ubuntu-18.04, macos-latest, windows-2019]
 
     steps:
       - name: Checkout the Source Code
