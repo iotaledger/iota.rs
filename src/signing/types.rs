@@ -31,10 +31,10 @@ pub enum SignerType {
 /// Dto for the signer types with required data.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SignerTypeDto {
-    /// Stronghold signer with storage path.
+    /// Stronghold
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
-    Stronghold(String),
+    Stronghold(StrongholdDto),
     /// Ledger Device
     #[cfg(feature = "ledger")]
     LedgerNano,
@@ -43,6 +43,17 @@ pub enum SignerTypeDto {
     LedgerNanoSimulator,
     /// Mnemonic
     Mnemonic(String),
+}
+
+/// Stronghold Dto to allow the creation of a Stronghold signer from bindings
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg(feature = "stronghold")]
+pub struct StrongholdDto {
+    /// The Stronghold password
+    pub password: String,
+    /// The path for the Stronghold file
+    #[serde(rename = "snapshotPath")]
+    pub snapshot_path: String,
 }
 
 /// Metadata provided to [sign_message](trait.Signer.html#method.sign_message).

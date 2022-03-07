@@ -181,6 +181,18 @@ pub enum Error {
     #[cfg(feature = "ledger")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
+    /// Riker system error during Stronghold initialization
+    #[cfg(feature = "stronghold")]
+    #[error("Stronghold reported a system error: {0}")]
+    StrongholdActorSystemError(#[from] riker::system::SystemError),
+    /// Procedure execution error from Stronghold
+    #[cfg(feature = "stronghold")]
+    #[error("Stronghold reported a procedure error: {0}")]
+    StrongholdProcedureError(String),
+    /// A same mnemonic has been already stored into a Stronghold vault
+    #[cfg(feature = "stronghold")]
+    #[error("the mnemonic has already been stored in the Stronghold vault")]
+    StrongholdMnemonicAlreadyStored,
 }
 
 // map most errors to a single error but there are some errors that
