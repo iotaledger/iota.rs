@@ -344,7 +344,7 @@ impl StrongholdSigner {
         }
     }
 
-    /// Persist Stronghold to the disk by writing "all" into a "snapshot."
+    /// Persist Stronghold to the disk by writing "all" into a "snapshot".
     async fn write_all_to_snapshot(
         &mut self,
         keydata: Vec<u8>,
