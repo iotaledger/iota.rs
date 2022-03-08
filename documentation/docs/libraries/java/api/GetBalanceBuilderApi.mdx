@@ -1,0 +1,30 @@
+
+
+### withAccountIndex(account_index): [GetBalanceBuilderApi](#getbalancebuilderapi)
+
+Sets the account index.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| account_index | long |  The account index to use (Default: 0) |
+
+### withInitialAddressIndex(initial_address_index): [GetBalanceBuilderApi](#getbalancebuilderapi)
+
+Sets the index of the address to start looking for balance.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| initial_address_index | long |  The starting index to use for searching addresses (Default: 0) |
+
+### withGapLimit(gap_limit): [GetBalanceBuilderApi](#getbalancebuilderapi)
+
+Sets the gap limit to specify how many addresses will be checked each round.
+ If gap_limit amount of addresses in a row have no balance the function will return.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| gap_limit | long |  The gap limit (Default: 20) |
+
+### finish(): long
+
+Consume the builder and get the API result

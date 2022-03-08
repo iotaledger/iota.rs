@@ -1,0 +1,25 @@
+Represent the object that nodes gossip around the network.
+
+### builder(): [MessageBuilder](#messagebuilder)
+
+Creates a new `MessageBuilder` to construct an instance of a `Message`.
+
+### networkId(): long
+
+Returns the network id of a `Message`.
+
+### id(): [MessageId](#messageid)
+
+Computes the identifier of the message.
+
+### nonce(): long
+
+Returns the nonce of a `Message`.
+
+### parents(): [MessageId[]](#messageid)
+
+Returns the parents of a `Message`.
+
+### payload(): Optional&lt;[MessagePayload](#messagepayload)&gt;
+
+Returns the optional payload of a `Message`.

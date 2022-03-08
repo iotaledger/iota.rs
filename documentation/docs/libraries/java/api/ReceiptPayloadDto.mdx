@@ -1,0 +1,17 @@
+
+
+### kind(): long
+
+The type of receipt
+
+### migratedAt(): long
+
+The milestone index at which the funds of a `ReceiptPayload` were migrated
+
+### funds(): [MigratedFundsEntryDto[]](#migratedfundsentrydto)
+
+The funds which are migrated
+
+### last(): boolean
+
+Whether a `ReceiptPayload` is the final one for a given migrated at index.

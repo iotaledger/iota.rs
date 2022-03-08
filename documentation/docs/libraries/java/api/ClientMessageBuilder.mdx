@@ -1,0 +1,168 @@
+
+
+### withSeed(seed): [ClientMessageBuilder](#clientmessagebuilder)
+
+Sets the seed.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |  The seed to use |
+
+### withAccountIndex(account_index): [ClientMessageBuilder](#clientmessagebuilder)
+
+Sets the account index.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| account_index | long |  The index to set |
+
+### withInitialAddressIndex(initial_address_index): [ClientMessageBuilder](#clientmessagebuilder)
+
+Sets the index of the address to start looking for balance.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| initial_address_index | long |  The initial index to start address search from |
+
+### withInput(input): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set a custom input(transaction output)
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| input | [UtxoInput](#utxoinput) |  The custom input |
+
+### withInputRange(low, high): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set a custom range in which to search for addresses for custom inputs. Default: 0..100
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| low | long |  Low end of input range (0) |
+| high | long |  Upper end of input range (100) |
+
+### withOutput(address, amount): [ClientMessageBuilder](#clientmessagebuilder)
+
+Insert the output address and amount to spent. The amount cannot be zero.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The address we send to |
+| amount | long |  The amount to send (> 0) |
+
+### withDustAllowanceOutput(address, amount): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set a dust allowance transfer to the builder, address needs to be Bech32 encoded
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The Bech32 encoded address we send to |
+| amount | long |  The amount to send (> 0) |
+
+### withOutputHex(address, amount): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set a transfer to the builder, address needs to be hex encoded
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The hex encoded address we send to |
+| amount | long |  The amount to send (> 0) |
+
+### withIndexVec(index): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set indexation to the builder
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| index | byte[] |  The index to use |
+
+### withIndexString(index): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set indexation to the builder
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| index | String |  The index to use |
+
+### withData(data): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set data to the builder
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| data | byte[] |  The data to use |
+
+### withDataString(data): [ClientMessageBuilder](#clientmessagebuilder)
+
+Set data to the builder
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| data | String |  The data to use |
+
+### prepareTransaction(): [PreparedTransactionData](#preparedtransactiondata)
+
+Prepare a transaction. Used as parameter for `signTransaction`
+
+### signTransaction(prepared_transaction_data, seed, inputs_range_low, inputs_range_high): [MessagePayload](#messagepayload)
+
+Sign the transaction. inputsRangeLow and high to 0 for not using an input range
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| prepared_transaction_data | [PreparedTransactionData](#preparedtransactiondata) |  The completely prepared transaction |
+| seed | String |  The seed used to prepare the transaction |
+| inputs_range_low | long |  Lower input used for getting adresses (default: 0) |
+| inputs_range_high | long |  Upper input used for getting adresses (default: 100) |
+
+### finish(payload): [Message](#message)
+
+Consume the builder and return the message made with the specific payload
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| payload | [MessagePayload](#messagepayload) |  A prepared and signed MessagePayload |
+
+### finishTransaction(payload): [Message](#message)
+
+Consume the builder and return the message made with the specific payload
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| payload | [TransactionPayload](#transactionpayload) |  A prepared and signed TransactionPayload |
+
+### finishMilestone(payload): [Message](#message)
+
+Consume the builder and return the message made with the specific payload
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| payload | [MilestonePayload](#milestonepayload) |  A prepared and signed MilestonePayload |
+
+### finishIndex(payload): [Message](#message)
+
+Consume the builder and return the message made with the specific payload
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| payload | [IndexationPayload](#indexationpayload) |  A prepared and signed IndexationPayload |
+
+### finishReceipt(payload): [Message](#message)
+
+Consume the builder and return the message made with the specific payload
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| payload | [ReceiptPayload](#receiptpayload) |  A prepared and signed ReceiptPayload |
+
+### finishTreasury(payload): [Message](#message)
+
+Consume the builder and return the message made with the specific payload
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| payload | [TreasuryPayload](#treasurypayload) |  A prepared and signed TreasuryPayload |
+
+### finish(): [Message](#message)
+
+Consume the builder and return the message

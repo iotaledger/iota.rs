@@ -1,0 +1,38 @@
+Response of GET /api/v1/messages/{message_id}/metadata.
+ Returns the metadata of a message.
+
+### messageId(): String
+
+The message id of this message
+
+### parentMessageIds(): String[]
+
+The ids of the parents of this message
+
+### isSolid(): boolean
+
+IF this message is solid
+
+### referencedByMilestoneIndex(): long
+
+The optional milestone index if this message is referenced
+
+### milestoneIndex(): long
+
+The optional milestone index this was included in
+
+### ledgerInclusionState(): Optional&lt;[LedgerInclusionStateDto](#ledgerinclusionstatedto)&gt;
+
+The ledger state
+
+### conflictReason(): int
+
+The optional reason of conflict
+
+### shouldPromote(): Optional&lt;Boolean&gt;
+
+Optional; if the message needs to be promoted
+
+### shouldReattach(): Optional&lt;Boolean&gt;
+
+Optional; if the message needs to be reattached

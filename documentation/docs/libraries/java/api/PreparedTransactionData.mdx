@@ -1,0 +1,21 @@
+Helper struct for offline signing
+
+### deserialize(serialised_data): [PreparedTransactionData](#preparedtransactiondata)
+
+Turns a serialized preparedTransactionData string back into its class
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| serialised_data | String |  The serialised transaction data |
+
+### essence(): [Essence](#essence)
+
+Transaction essence
+
+### addressIndexRecorders(): [AddressIndexRecorder[]](#addressindexrecorder)
+
+Required address information for signing
+
+### serialize(): String
+
+Serializes the prepared data into a json string

@@ -1,0 +1,26 @@
+
+
+### withTopic(topic): [MqttTopicManager](#mqtttopicmanager)
+
+Add a new topic to the list.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| topic | [Topic](#topic) |   |
+
+### withTopics(topics): [MqttTopicManager](#mqtttopicmanager)
+
+Add a collection of topics to the list.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| topics | [Topic[]](#topic) |   |
+
+### unsubscribe(): void
+
+Unsubscribes from all subscriptions.
+
+### disconnect(): void
+
+Disconnects the broker.
+ This will clear the stored topic handlers and close the MQTT connection.

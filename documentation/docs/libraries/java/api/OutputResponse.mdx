@@ -1,0 +1,22 @@
+Response of GET /api/v1/outputs/{output_id}.
+ Returns all information about a specific output.
+
+### messageId(): String
+
+The message id this output is related to
+
+### transactionId(): String
+
+The transaction id this output is related to
+
+### outputIndex(): int
+
+The output index
+
+### isSpent(): boolean
+
+`true` if this output was spent. Otherwise `false`
+
+### output(): [OutputDto](#outputdto)
+
+Get the output object which can be turned into its specific output type

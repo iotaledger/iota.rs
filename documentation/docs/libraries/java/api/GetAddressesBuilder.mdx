@@ -1,0 +1,62 @@
+
+
+### from(seed): [GetAddressesBuilder](#getaddressesbuilder)
+
+Construct a new addressbuilder with a seed. Invalid seeds throw an error
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |   |
+
+### fromOld(seed): [GetAddressesBuilder](#getaddressesbuilder)
+
+DEBUG DO NOT USE
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |   |
+
+### withAccountIndex(account_index): [GetAddressesBuilder](#getaddressesbuilder)
+
+Set the account index
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| account_index | long |   |
+
+### withRange(start, end): [GetAddressesBuilder](#getaddressesbuilder)
+
+Set range to the builder
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| start | long |   |
+| end | long |   |
+
+### withBech32Hrp(bech32_hrp): [GetAddressesBuilder](#getaddressesbuilder)
+
+Set bech32 human readable part (hrp)
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| bech32_hrp | String |   |
+
+### withClient(client): [GetAddressesBuilder](#getaddressesbuilder)
+
+Set client to the builder
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| client | [Client](#client) |   |
+
+### finish(): String[]
+
+Consume the builder and get a vector of public addresses bech32 encoded
+
+### getAll(): [AddressStringPublicWrapper[]](#addressstringpublicwrapper)
+
+
+
+### getAllRaw(): [AddressPublicWrapper[]](#addresspublicwrapper)
+
+Consume the builder and get the vector of public and internal addresses

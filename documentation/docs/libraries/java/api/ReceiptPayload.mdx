@@ -1,0 +1,32 @@
+
+
+### from(migrated_at, last, funds, transaction): [ReceiptPayload](#receiptpayload)
+
+Creates a new `ReceiptPayload`.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| migrated_at | long |   |
+| last | boolean |   |
+| funds | [MigratedFundsEntry[]](#migratedfundsentry) |   |
+| transaction | [MessagePayload](#messagepayload) |   |
+
+### migratedAt(): long
+
+Returns the milestone index at which the funds of a `ReceiptPayload` were migrated at in the legacy network.
+
+### last(): boolean
+
+Returns whether a `ReceiptPayload` is the final one for a given migrated at index.
+
+### funds(): [MigratedFundsEntry[]](#migratedfundsentry)
+
+The funds which were migrated with a `ReceiptPayload`.
+
+### transaction(): [TreasuryPayload](#treasurypayload)
+
+The `TreasuryTransaction` used to fund the funds of a `ReceiptPayload`.
+
+### amount(): long
+
+Returns the sum of all `MigratedFundsEntry` items within a `ReceiptPayload`.
