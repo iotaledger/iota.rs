@@ -17,13 +17,15 @@ public final class MyApplication extends Application {
     private static MyApplication sSelf;
     private static final String TAG = "Client.rs";
 
-    private Account account;
-
     public MyApplication(Context context) {
         super();
         sSelf = this;
 
+        // Run this to initiate the bindings link
         NativeAPI.verifyLink();
+
+        BrokerOptions mqtt = new BrokerOptions();
+        String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
 
         // Beware: All builder patterns return NEW instances on each method call.
         // Mutating the old builder after a builder call will not result in a change on
@@ -39,9 +41,10 @@ public final class MyApplication extends Application {
         // is called on the old one
         Client iota = Client.Builder().withNode(nodeUrl) // Insert your node URL here
             // .withNodeAuth("https://somechrysalisiotanode.com", "jwt_or_null",
-            // "name_or_null", "password_or_null") //
-            // Optional authentication
+            // "name_or_null", "password_or_null")
             .withLocalPow(true)
+            // Optional MQTT
+            .withMqttBrokerOptions(mqtt)
             .finish();
 
         NodeInfoWrapper info = iota.getInfo();
