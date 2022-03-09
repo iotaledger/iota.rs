@@ -6,7 +6,7 @@
 use bee_message::output::TokenId;
 
 use primitive_types::U256;
-
+use serde::ser::{SerializeStruct, Serializer};
 use std::collections::HashMap;
 
 /// Type alias of `Result` in iota-client
@@ -215,6 +215,89 @@ impl From<iota_ledger::api::errors::APIError> for Error {
             iota_ledger::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
             iota_ledger::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
             _ => Error::LedgerMiscError,
+        }
+    }
+}
+
+impl serde::Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        fn serialize_variant<S: Serializer>(
+            error: &Error,
+            serializer: S,
+            variant_name: &str,
+        ) -> std::result::Result<S::Ok, S::Error> {
+            let mut state = serializer.serialize_struct("Error", 2)?;
+            state.serialize_field("type", variant_name)?;
+            state.serialize_field("error", &error.to_string())?;
+            state.end()
+        }
+
+        match self {
+            Self::TaggedDataError(_) => serialize_variant(self, serializer, "TaggedDataError"),
+            Self::TransactionError => serialize_variant(self, serializer, "TransactionError"),
+            Self::NotEnoughBalance(..) => serialize_variant(self, serializer, "NotEnoughBalance"),
+            Self::NoInputs => serialize_variant(self, serializer, "NoInputs"),
+            Self::NotEnoughNativeTokens(_) => serialize_variant(self, serializer, "NotEnoughNativeTokens"),
+            Self::NotEnoughBalanceForNativeTokenRemainder => serialize_variant(self, serializer, "NotEnoughBalanceForNativeTokenRemainder"),
+            Self::ConsolidationRequired(_) => serialize_variant(self, serializer, "ConsolidationRequired"),
+            Self::MissingParameter(_) => serialize_variant(self, serializer, "MissingParameter"),
+            Self::InvalidParameter(_) => serialize_variant(self, serializer, "InvalidParameter"),
+            Self::SyncedNodePoolEmpty => serialize_variant(self, serializer, "SyncedNodePoolEmpty"),
+            Self::QuorumThresholdError(_, _) => serialize_variant(self, serializer, "QuorumThresholdError"),
+            Self::QuorumPoolSizeError(_, _) => serialize_variant(self, serializer, "QuorumPoolSizeError"),
+            Self::NodeError(_) => serialize_variant(self, serializer, "NodeError"),
+            Self::FromHexError(_) => serialize_variant(self, serializer, "FromHexError"),
+            Self::CommonError(_) => serialize_variant(self, serializer, "CommonError"),
+            Self::MessageError(_) => serialize_variant(self, serializer, "MessageError"),
+            Self::BeeRestApiError(_) => serialize_variant(self, serializer, "BeeRestApiError"),
+            Self::NoNeedPromoteOrReattach(_) => serialize_variant(self, serializer, "NoNeedPromoteOrReattach"),
+            Self::TangleInclusionError(_) => serialize_variant(self, serializer, "TangleInclusionError"),
+            #[cfg(feature = "mqtt")]
+            Self::MqttClientError(_) => serialize_variant(self, serializer, "MqttClientError"),
+            Self::InvalidMqttTopic(_) => serialize_variant(self, serializer, "InvalidMqttTopic"),
+            Self::MqttConnectionNotFound => serialize_variant(self, serializer, "MqttConnectionNotFound"),
+            Self::IoError(_) => serialize_variant(self, serializer, "IoError"),
+            Self::Json(_) => serialize_variant(self, serializer, "Json"),
+            Self::Pow(_) => serialize_variant(self, serializer, "Pow"),
+            Self::InputAddressNotFound(_, _) => serialize_variant(self, serializer, "InputAddressNotFound"),
+            Self::CryptoError(_) => serialize_variant(self, serializer, "CryptoError"),
+            #[cfg(feature = "sync")]
+            Self::UreqError(_) => serialize_variant(self, serializer, "UreqError"),
+            #[cfg(any(feature = "async", feature = "wasm"))]
+            Self::ResponseError(_, _, _) => serialize_variant(self, serializer, "ResponseError"),
+            #[cfg(any(feature = "async", feature = "wasm"))]
+            Self::ReqwestError(_) => serialize_variant(self, serializer, "ReqwestError"),
+            Self::UrlError(_) => serialize_variant(self, serializer, "UrlError"),
+            Self::UrlValidationError(_) => serialize_variant(self, serializer, "UrlValidationError"),
+            Self::UrlAuthError(_) => serialize_variant(self, serializer, "UrlAuthError"),
+            Self::Blake2b256Error(_) => serialize_variant(self, serializer, "Blake2b256Error"),
+            Self::OutputError(_) => serialize_variant(self, serializer, "OutputError"),
+            #[cfg(not(feature = "wasm"))]
+            Self::TaskJoinError(_) => serialize_variant(self, serializer, "TaskJoinError"),
+            Self::InvalidMnemonic(_) => serialize_variant(self, serializer, "InvalidMnemonic"),
+            Self::PowError(_) => serialize_variant(self, serializer, "PowError"),
+            Self::PackableError => serialize_variant(self, serializer, "PackableError"),
+            Self::ApiError => serialize_variant(self, serializer, "ApiError"),
+            Self::PoisonError => serialize_variant(self, serializer, "PoisonError"),
+            Self::MissingUnlockBlock => serialize_variant(self, serializer, "MissingUnlockBlock"),
+            Self::MissingInputWithEd25519UnlockCondition => serialize_variant(self, serializer, "MissingInputWithEd25519UnlockCondition"),
+            #[cfg(feature = "ledger")]
+            Self::LedgerMiscError => serialize_variant(self, serializer, "LedgerMiscError"),
+            #[cfg(feature = "ledger")]
+            Self::LedgerDongleLocked => serialize_variant(self, serializer, "LedgerDongleLocked"),
+            #[cfg(feature = "ledger")]
+            Self::LedgerDeniedByUser => serialize_variant(self, serializer, "LedgerDeniedByUser"),
+            #[cfg(feature = "ledger")]
+            Self::LedgerDeviceNotFound => serialize_variant(self, serializer, "LedgerDeviceNotFound"),
+            #[cfg(feature = "ledger")]
+            Self::LedgerEssenceTooLarge => serialize_variant(self, serializer, "LedgerEssenceTooLarge"),
+            #[cfg(feature = "ledger")]
+            Self::LedgerNetMismatch => serialize_variant(self, serializer, "LedgerNetMismatch"),
+            #[cfg(feature = "ledger")]
+            Self::LedgerMnemonicMismatch => serialize_variant(self, serializer, "LedgerMnemonicMismatch"),
         }
     }
 }

@@ -63,6 +63,9 @@ gloo-timers = { version = "0.2.3", default-features = false, features = ["future
 # single thread pow for wasm
 bee-ternary = { version = "0.5.2", default-features = false, optional = true }
 
+# message_interface
+backtrace = { version = "0.3.62", default-features = false, features = ["std"], optional = true }
+
 [dev-dependencies]
 dotenv = { version =  "0.15.0", default-features = false }
 ureq = { version = "2.2.0", default-features = false, features = ["tls", "json"] }
@@ -76,6 +79,7 @@ wasm = ["reqwest", "futures", "gloo-timers", "instant", "bee-ternary"]
 ledger = ["iota-ledger"]
 tls = ["reqwest/rustls-tls", "ureq/tls"]
 stronghold = ["iota_stronghold", "riker", "crypto05"]
+message_interface = ["backtrace"]
 
 [[example]]
 name = "10_mqtt"

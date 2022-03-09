@@ -45,6 +45,8 @@ pub mod node_api;
 pub mod node_manager;
 pub mod signing;
 pub mod utils;
+#[cfg(feature = "message_interface")]
+pub mod message_interface;
 
 pub use bee_common as common;
 pub use bee_message;
@@ -59,6 +61,7 @@ pub use node_api::mqtt::*;
 pub use packable;
 pub use url::Url;
 pub use utils::*;
+
 
 #[cfg(feature = "mqtt")]
 mod async_runtime {
