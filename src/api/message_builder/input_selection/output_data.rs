@@ -113,16 +113,16 @@ pub(crate) async fn get_remainder(
                     remainder_output_builder.add_native_token(NativeToken::new(token_id, amount)?);
             }
         }
-        remainder_output.replace(Output::Basic(remainder_output_builder.finish()?));
+        let remainder = Output::Basic(remainder_output_builder.finish()?);
+        // Check if output has enough amount to cover the storage deposit
+        remainder.verify_storage_deposit(byte_cost_config)?;
+        remainder_output.replace(remainder);
     } else {
         // if we have remaining native tokens, but no amount left, then we can't create this transaction
         if native_token_remainder.is_some() {
             return Err(Error::NotEnoughBalanceForNativeTokenRemainder);
         }
     }
-
-    // Check if output has enough amount to cover the storage deposit
-    remainder_output.check_sufficient_storage_deposit(byte_cost_config)?;
 
     Ok(remainder_output)
 }

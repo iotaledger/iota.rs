@@ -84,7 +84,7 @@ pub(crate) async fn get_custom_inputs(
         true,
         // todo allow custom remainder address
         None,
-        &byte_cost_config,
+        byte_cost_config,
     )
     .await?;
     Ok(selected_transaction_data)

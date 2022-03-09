@@ -15,7 +15,7 @@ use bee_message::{
     input::{Input, UtxoInput},
     output::{ByteCostConfigBuilder, Output},
     payload::{
-        transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayloadBuilder},
+        transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayload},
         Payload, TaggedDataPayload,
     },
     unlock_block::UnlockBlocks,
@@ -51,7 +51,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     let mut governance_transition: Option<HashSet<AliasId>> = None;
     for output in &message_builder.outputs {
         // Check if the outputs have enough amount to cover the storage deposit
-        output.check_sufficient_storage_deposit(&byte_cost_config)?;
+        output.verify_storage_deposit(&byte_cost_config)?;
         if let Output::Alias(x) = output {
             if x.state_index() > 0 {
                 // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -82,7 +82,18 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     };
 
     // Build transaction payload
-    let mut essence = RegularTransactionEssence::builder(message_builder.client.get_network_id().await?);
+    let input_outputs = selected_transaction_data
+        .inputs
+        .iter()
+        .map(|i| Ok(Output::try_from(&i.output_response.output)?.pack_to_vec()))
+        .collect::<Result<Vec<Vec<u8>>>>()?;
+    let input_outputs = input_outputs.into_iter().flatten().collect::<Vec<u8>>();
+    let inputs_commitment = Blake2b256::digest(&input_outputs)
+        .try_into()
+        .map_err(|_e| crate::Error::Blake2b256Error("Hashing outputs for inputs_commitment failed."))?;
+
+    let mut essence =
+        RegularTransactionEssence::builder(message_builder.client.get_network_id().await?, inputs_commitment);
     let inputs = selected_transaction_data
         .inputs
         .iter()
@@ -94,17 +105,6 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
         })
         .collect::<Result<Vec<Input>>>()?;
     essence = essence.with_inputs(inputs);
-
-    let input_outputs = selected_transaction_data
-        .inputs
-        .iter()
-        .map(|i| Ok(Output::try_from(&i.output_response.output)?.pack_to_vec()))
-        .collect::<Result<Vec<Vec<u8>>>>()?;
-    let input_outputs = input_outputs.into_iter().flatten().collect::<Vec<u8>>();
-    let inputs_commitment = Blake2b256::digest(&input_outputs)
-        .try_into()
-        .map_err(|_e| crate::Error::Blake2b256Error("Hashing outputs for inputs_commitment failed."))?;
-    essence = essence.with_inputs_commitment(inputs_commitment);
 
     essence = essence.with_outputs(selected_transaction_data.outputs);
 
@@ -157,11 +157,7 @@ pub async fn sign_transaction(
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let tx_payload = TransactionPayloadBuilder::new()
-        .with_essence(prepared_transaction_data.essence)
-        .with_unlock_blocks(unlock_blocks)
-        .finish()
-        .map_err(|_| Error::TransactionError)?;
+    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence, unlock_blocks)?;
 
     // validate the signatures in the unlock blocks so we don't send invalid transactions
     verify_unlock_blocks(&tx_payload, input_addresses)?;

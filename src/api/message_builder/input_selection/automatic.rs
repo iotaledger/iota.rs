@@ -46,7 +46,7 @@ pub(crate) async fn get_inputs(
         force_use_all_inputs,
         // todo allow custom remainder address
         None,
-        &byte_cost_config,
+        byte_cost_config,
     )
     .await
     {
@@ -119,7 +119,7 @@ pub(crate) async fn get_inputs(
                     force_use_all_inputs,
                     // todo allow custom remainder address
                     None,
-                    &byte_cost_config,
+                    byte_cost_config,
                 )
                 .await
                 {

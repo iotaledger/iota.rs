@@ -884,9 +884,8 @@ impl Client {
         tips.sort_unstable_by_key(|a| a.pack_to_vec());
         tips.dedup();
 
-        let promote_message = MessageBuilder::<ClientMiner>::new()
+        let promote_message = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?)
             .with_protocol_version(protocol_version)
-            .with_parents(Parents::new(tips)?)
             .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;
