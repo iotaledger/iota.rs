@@ -576,6 +576,8 @@ impl Client {
 
     /// Returns a hex encoded seed for a mnemonic.
     pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
+        // trim because empty spaces could create a different seed https://github.com/iotaledger/crypto.rs/issues/125
+        let mnemonic = mnemonic.trim();
         // first we check if the mnemonic is valid to give meaningful errors
         crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
             .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;

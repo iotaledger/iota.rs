@@ -34,11 +34,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        # XXX: The GitHub hosted Windows 2022 image comes with Visual Studio 2022, but node-gyp
+        # (which is used by neon-sys) sadly fails to recognize it. As a mitigation, we still run the
+        # tests on Windows 2019, until we can figure out a way to fix the problem.
+        os: [windows-2019, macos-latest, ubuntu-latest]
         node: ['12', '14', '16']
         exclude:
           # Remove once neon is updated
-          - os: windows-latest
+          - os: windows-2019
             node: '16'
 
     steps:
