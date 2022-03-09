@@ -24,7 +24,7 @@ use bee_pow::providers::{
 };
 use bee_rest_api::types::{
     body::SuccessBody,
-    dtos::{LedgerInclusionStateDto, MessageDto, PeerDto, ReceiptDto},
+    dtos::{EssenceDto, InputDto, LedgerInclusionStateDto, MessageDto, PayloadDto, PeerDto, ReceiptDto},
     responses::{
         BalanceAddressResponse, InfoResponse as NodeInfo, MessageResponse, MilestoneResponse as MilestoneResponseDto,
         OutputResponse, PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse,
@@ -986,6 +986,54 @@ impl Client {
             output_metadata.push(meta_data);
         }
         Ok(output_metadata)
+    }
+
+    /// Retrieves the inputs for a transaction given its ID.
+    pub async fn get_inputs(&self, transaction_id: &TransactionId) -> Result<Vec<OutputResponse>> {
+        let path = &format!(
+            "api/v1/transactions/{}/included-message",
+            transaction_id,
+        );
+
+        // get transaction from transaction ID
+        let resp: SuccessBody<MessageResponse> = self
+            .node_manager
+            .get_request(path, None, self.get_timeout(Api::GetMessage))
+            .await?;
+
+        let mut inputs: Vec<UtxoInput> = Vec::new();
+        if let Some(payload) = resp.data.0.payload {
+            match payload {
+                PayloadDto::Transaction(transaction_payload) => {
+                    match transaction_payload.essence {
+                        EssenceDto::Regular(regular_essence) => {
+                            for input in regular_essence.inputs {
+                                match input {
+                                    InputDto::Utxo(utxo_input) => {
+                                        let input_transaction_id = TransactionId::from_str(utxo_input.transaction_id.as_str()).unwrap();
+                                        inputs.push(UtxoInput::new(input_transaction_id, utxo_input.transaction_output_index).unwrap());
+                                    },
+                                    _ => {
+                                        // don't have UTXO input (either treasury or invalid?)
+                                    },
+                                }
+                            }
+                        },
+                    }
+                },
+                _ => {
+                    // don't have transaction payload DTO (is this reachable?)
+                },
+            }
+        }
+
+        let mut output_responses: Vec<OutputResponse> = Vec::new();
+        for input in inputs {
+            let output_response = self.get_output(&input).await?;
+            output_responses.push(output_response);
+        }
+
+        Ok(output_responses)
     }
 
     /// GET /api/v1/addresses/{address} endpoint
