@@ -333,7 +333,7 @@ impl Client {
             .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
     }
 
-    /// returns if local pow should be used or not
+    /// returns the rent structure for the UTXO ledger
     pub async fn get_rent_structure(&self) -> Result<RentStructureResponse> {
         Ok(self.get_network_info().await?.rent_structure)
     }
