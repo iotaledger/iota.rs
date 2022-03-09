@@ -235,8 +235,8 @@ public class ExampleApp {
         List<UtxoInput> initial_outputs = new ArrayList<>();
         Optional<MessagePayload> payload = message.payload();
         if (payload.isPresent() && payload.get().payloadType().equals(MessagePayloadType.TRANSACTION)) {
-            TransactionPayload tx = payload.get().getAsTransaction().get();
-            RegularEssence essence = tx.essence().getAsRegular().get();
+            TransactionPayload tx = payload.get().asTransaction();
+            RegularEssence essence = tx.essence().asRegular();
             Output[] outputs = essence.outputs();
             for (int index = 0; index < outputs.length; index++) {
                 Output output = outputs[index];

@@ -11,7 +11,7 @@
     non_snake_case,
     deref_nullptr,
     clippy::unreadable_literal,
-    clippy::const_static_lifetime
+    clippy::redundant_static_lifetimes
 )]
 
 include!(concat!(env!("OUT_DIR"), "/jni_c_headers.rs"));

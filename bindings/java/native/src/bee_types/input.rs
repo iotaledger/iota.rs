@@ -36,7 +36,7 @@ impl Input {
 
     pub fn as_treasury(&self) -> Result<TreasuryInput> {
         if let RustInput::Treasury(payload) = self.0 {
-            Ok(payload.clone().into())
+            Ok(payload.into())
         } else {
             Err(anyhow::anyhow!("Input is not of type Treasury"))
         }
@@ -72,7 +72,7 @@ impl UtxoInput {
 
     /// Returns the `TransactionId` of an `OutputId`.
     pub fn transaction_id(&self) -> TransactionId {
-        self.0.output_id().transaction_id().clone()
+        *self.0.output_id().transaction_id()
     }
 
     /// Returns the index of an `OutputId`.

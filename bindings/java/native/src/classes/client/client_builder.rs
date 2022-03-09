@@ -91,12 +91,19 @@ impl ClientBuilder {
         }
     }
 
-    pub fn with_node(&mut self, node: &str) -> ClientBuilder {
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_node(node).unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+    pub fn with_node(&mut self, node: &str) -> Result<ClientBuilder> {
+        let new_builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_node(node)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
+            .unwrap();
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
-    pub fn with_nodes(&mut self, nodes: Vec<String>) -> ClientBuilder {
+    pub fn with_nodes(&mut self, nodes: Vec<String>) -> Result<ClientBuilder> {
         let nodes_arr: Vec<&str> = nodes
             .iter()
             .map(|s| {
@@ -110,8 +117,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_nodes(nodes_arr.as_slice())
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_node_auth(
@@ -120,7 +128,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -129,8 +137,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_node_auth(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_primary_node(
@@ -139,7 +148,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -148,8 +157,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_primary_node(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_primary_pow_node(
@@ -158,7 +168,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -167,8 +177,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_node_auth(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_permanode(
@@ -177,7 +188,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -186,8 +197,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_permanode(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     /// Allows creating the client without nodes for offline address generation or signing
@@ -197,18 +209,19 @@ impl ClientBuilder {
         ClientBuilder::new_with_builder(new_builder)
     }
 
-    pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder {
+    pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> Result<ClientBuilder> {
         let new_builder = crate::block_on(async move {
             self.builder
-                .borrow_mut()
+                .clone()
                 .take()
                 .unwrap()
                 .with_node_pool_urls(&node_pool_urls)
                 .await
+                .map_err(|e| anyhow::anyhow!(e.to_string()))
                 .unwrap()
         });
 
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_network(&mut self, network: String) -> ClientBuilder {
@@ -283,9 +296,9 @@ impl ClientBuilder {
     }
 
     pub fn finish(&mut self) -> Result<Client> {
-        let client = crate::block_on(async move { self.builder.borrow_mut().take().unwrap().finish().await.unwrap() });
+        let client = crate::block_on(async move { self.builder.clone().take().unwrap().finish().await.unwrap() });
 
-        Ok(Client::try_from(client).unwrap())
+        Client::try_from(client).map_err(|e| anyhow::anyhow!(e.to_string()))
     }
 }
 

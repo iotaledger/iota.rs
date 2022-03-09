@@ -52,14 +52,12 @@ impl Client {
     }
 
     pub fn get_health(&self) -> Result<bool> {
-        Ok(crate::block_on(async { self.0.get_health().await }).map_err(|e| anyhow::anyhow!(e.to_string()))?)
+        crate::block_on(async { self.0.get_health().await }).map_err(|e| anyhow::anyhow!(e.to_string()))
     }
 
     pub fn get_node_health(&self, node: &str) -> Result<bool> {
-        Ok(
-            crate::block_on(async { iota_client::Client::get_node_health(node).await })
-                .map_err(|e| anyhow::anyhow!(e.to_string()))?,
-        )
+        crate::block_on(async { iota_client::Client::get_node_health(node).await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
     }
 
     pub fn get_info(&self) -> Result<NodeInfoWrapper> {
@@ -75,7 +73,7 @@ impl Client {
     }
 
     pub fn get_network_id(&self) -> Result<u64> {
-        Ok(crate::block_on(async { self.0.get_network_id().await }).map_err(|e| anyhow::anyhow!(e.to_string()))?)
+        crate::block_on(async { self.0.get_network_id().await }).map_err(|e| anyhow::anyhow!(e.to_string()))
     }
 
     pub fn get_pow_provider(&self) -> ClientMiner {
