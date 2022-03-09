@@ -68,14 +68,14 @@ fn main() {
 fn gen_bindings(include_dirs: Vec<PathBuf>, target: &str) {
     let include_headers: Vec<_> = INCLUDE_SYS_H
         .iter()
-        .map(|h| search_file_in_directory(&include_dirs, h).expect(format!("Could not find header {}", h).as_ref()))
+        .map(|h| search_file_in_directory(&include_dirs, h).unwrap_or_else(|_| panic!("Could not find header {}", h)))
         .collect();
 
     let src_dir = Path::new(RUST_SRC_DIR);
     let out_dir = env::var("OUT_DIR").unwrap();
 
     gen_binding(
-        &target,
+        target,
         &include_dirs,
         &include_headers,
         &Path::new(&out_dir).join(JNI_HEADERS_FILE),
@@ -92,9 +92,9 @@ fn gen_bindings(include_dirs: Vec<PathBuf>, target: &str) {
         println!("Found SWIG specification: {}", entry.path().display());
         let swigf = entry.path().strip_prefix("src").unwrap();
 
-        flapigen_expand(&target, &src_dir, &swigf, Path::new(&out_dir));
+        flapigen_expand(target, src_dir, swigf, Path::new(&out_dir));
 
-        write_include_file(&src_dir, swigf).expect("Failed to write include file.");
+        write_include_file(src_dir, swigf).expect("Failed to write include file.");
     }
 
     // Hook up cargo reruns
@@ -216,7 +216,7 @@ fn flapigen_expand(target: &str, source_dir: &Path, file: &Path, out_dir: &Path)
         Path::new("src")
             .join("main")
             .join("java")
-            .join(PACKAGE_ID.replace(".", "/")),
+            .join(PACKAGE_ID.replace('.', "/")),
         PACKAGE_ID.to_string(),
     )
     .use_reachability_fence(if have_java_9 {
@@ -238,7 +238,7 @@ fn flapigen_expand(target: &str, source_dir: &Path, file: &Path, out_dir: &Path)
         .register_class_attribute_callback("Display", attributes::class_to_string);
 
     let out_file = out_dir.join(
-        Path::new(file.parent().unwrap_or(Path::new(".")))
+        Path::new(file.parent().unwrap_or_else(|| Path::new(".")))
             .join(file.file_stem().expect("Got invalid file (no filename)")),
     );
 
@@ -246,7 +246,7 @@ fn flapigen_expand(target: &str, source_dir: &Path, file: &Path, out_dir: &Path)
 }
 
 fn write_include_file(source_dir: &Path, swig_file: &Path) -> std::io::Result<()> {
-    let rs_rel_file = Path::new(swig_file.parent().unwrap_or(Path::new(".")))
+    let rs_rel_file = Path::new(swig_file.parent().unwrap_or_else(|| Path::new(".")))
         .join(swig_file.file_stem().expect("Got invalid file (no filename)"));
     let rs_path = source_dir.join(&rs_rel_file);
 
@@ -265,5 +265,5 @@ include!(concat!(env!("OUT_DIR"), "/{}"));"#,
         .as_bytes(),
     )?;
 
-    return Ok(());
+    Ok(())
 }

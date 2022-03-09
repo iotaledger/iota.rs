@@ -259,7 +259,7 @@ impl Client {
     }
 
     // HIGH LEVEL API
-    
+
     pub fn get_balance(&self, seed: &str) -> Result<GetBalanceBuilderApi> {
         GetBalanceBuilderApi::new(self, seed)
     }
