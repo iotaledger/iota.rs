@@ -3,24 +3,19 @@
 
 //! Implementation of [Signer] with Stronghold as the backend.
 
-use super::{
-    GenerateAddressMetadata, InputSigningData, LedgerStatus, SignMessageMetadata, Signer, SignerHandle, SignerType,
-};
+use super::{GenerateAddressMetadata, InputSigningData, LedgerStatus, Signer, SignerHandle, SignerType};
 use crate::Result;
 use async_trait::async_trait;
 use bee_message::{
-    address::{Address, AliasAddress, Ed25519Address, NftAddress},
-    output::Output,
-    payload::transaction::TransactionEssence,
+    address::{Address, Ed25519Address},
     signature::{Ed25519Signature, Signature},
-    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, SignatureUnlockBlock, UnlockBlock},
+    unlock_block::{SignatureUnlockBlock, UnlockBlock},
 };
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput, Stronghold};
 use log::warn;
 use riker::system::ActorSystem;
 use std::{
-    collections::HashMap,
     ops::Range,
     path::{Path, PathBuf},
     sync::Arc,
@@ -191,69 +186,49 @@ impl Signer for StrongholdSigner {
         Ok(addresses)
     }
 
-    async fn sign_transaction_essence<'a>(
-        &mut self,
-        essence: &TransactionEssence,
-        inputs: &mut Vec<InputSigningData>,
-        _metadata: SignMessageMetadata<'a>,
-    ) -> Result<Vec<UnlockBlock>> {
-        // Load the Stronghold snapshot if it hasn't been loaded yet.
-        self.lazy_load_snapshot().await?;
+    async fn signature_unlock(&mut self, input: &InputSigningData, essence_hash: &[u8; 32]) -> Result<UnlockBlock> {
+        // Stronghold arguments.
+        let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
+            vault_path: SECRET_VAULT_PATH.to_vec(),
+            record_path: SEED_RECORD_PATH.to_vec(),
+        });
+        let derive_location = Location::Generic {
+            vault_path: SECRET_VAULT_PATH.to_vec(),
+            record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
+        };
+        let hint = RecordHint::new(RECORD_HINT).unwrap();
 
-        // Unlock blocks to return.
-        let mut unlock_blocks = Vec::new();
+        // Stronghold asks for an older version of [Chain], so we have to perform a conversion here.
+        let chain = {
+            let raw: Vec<u32> = input
+                .chain
+                .as_ref()
+                .unwrap()
+                .segments()
+                .iter()
+                // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
+                .map(|seg| u32::from_be_bytes(seg.bs()))
+                .collect();
 
-        // A map containing block indexes along with their addresses that can be referenced.
-        let mut unlock_block_indexes = HashMap::new();
+            crypto05::keys::slip10::Chain::from_u32_hardened(raw)
+        };
 
-        // Hashed essence to be signed.
-        let hashed_essence = essence.hash();
+        // Derive a SLIP-10 private key in the vault.
+        self.slip10_derive(chain, seed_location.clone(), derive_location.clone(), hint)
+            .await?;
 
-        for (index, input) in inputs.iter().enumerate() {
-            let address = Address::try_from_bech32(&input.bech32_address)?;
-            let output = Output::try_from(&input.output_response.output)?;
+        // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
+        let public_key = self.ed25519_public_key(derive_location.clone()).await?;
 
-            // Look for a previous unlock block with the same address; they can be used to unlock outputs.
-            let unlock_block = if let Some(prev_index) = unlock_block_indexes.get(&address) {
-                // If there is any, we don't sign it again, but refer to it, depending on the type of address.
-                match address {
-                    Address::Ed25519(_) => UnlockBlock::Reference(ReferenceUnlockBlock::new(*prev_index as u16)?),
-                    Address::Alias(_) => UnlockBlock::Alias(AliasUnlockBlock::new(*prev_index as u16)?),
-                    Address::Nft(_) => UnlockBlock::Nft(NftUnlockBlock::new(*prev_index as u16)?),
-                }
-            } else {
-                // Otherwise, we create a new [SignatureUnlockBlock], but note that only an [Ed25519Address] can carry
-                // with a [SignatureUnlockBlock]. Other types of output must have a supporting [SignatureUnlockBlock].
-                match address {
-                    Address::Ed25519(_) => {
-                        // Add this block to `unlock_block_indexes` for future reference.
-                        unlock_block_indexes.insert(address, index);
+        // Sign the message with the derived SLIP-10 private key in the vault.
+        let signature = self.ed25519_sign(derive_location.clone(), essence_hash).await?;
 
-                        self.signature_unlock(input, &hashed_essence).await?
-                    }
-                    _ => return Err(crate::Error::MissingInputWithEd25519UnlockCondition),
-                }
-            };
+        // Convert the raw bytes into [UnlockBlock].
+        let unlock_block = UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
+            Ed25519Signature::new(public_key, signature),
+        )));
 
-            unlock_blocks.push(unlock_block);
-
-            // When we have an Alias or NFT output, we will add their Alias or NFT address to `unlock_block_indexes`,
-            // because they can be used to unlock outputs via [UnlockBlock::Alias] or [UnlockBlock::Nft] that have the
-            // corresponding Alias or NFT address in their unlock condition.
-            match output {
-                Output::Alias(alias_output) => {
-                    let alias_output_address = Address::Alias(AliasAddress::new(*alias_output.alias_id()));
-                    unlock_block_indexes.insert(alias_output_address, index);
-                }
-                Output::Nft(nft_output) => {
-                    let nft_output_address = Address::Nft(NftAddress::new(*nft_output.nft_id()));
-                    unlock_block_indexes.insert(nft_output_address, index);
-                }
-                _ => (),
-            };
-        }
-
-        Ok(unlock_blocks)
+        Ok(unlock_block)
     }
 }
 
@@ -447,52 +422,6 @@ impl StrongholdSigner {
                 Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
             }
         }
-    }
-
-    /// Sign on `essence`, unlock `input` by returning a [UnlockBlock].
-    async fn signature_unlock(&self, input: &InputSigningData, essence_hash: &[u8]) -> Result<UnlockBlock> {
-        // Stronghold arguments.
-        let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: SEED_RECORD_PATH.to_vec(),
-        });
-        let derive_location = Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
-        };
-        let hint = RecordHint::new(RECORD_HINT).unwrap();
-
-        // Stronghold asks for an older version of [Chain], so we have to perform a conversion here.
-        let chain = {
-            let raw: Vec<u32> = input
-                .chain
-                .as_ref()
-                .unwrap()
-                .segments()
-                .iter()
-                // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
-                .map(|seg| u32::from_be_bytes(seg.bs()))
-                .collect();
-
-            crypto05::keys::slip10::Chain::from_u32_hardened(raw)
-        };
-
-        // Derive a SLIP-10 private key in the vault.
-        self.slip10_derive(chain, seed_location.clone(), derive_location.clone(), hint)
-            .await?;
-
-        // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
-        let public_key = self.ed25519_public_key(derive_location.clone()).await?;
-
-        // Sign the message with the derived SLIP-10 private key in the vault.
-        let signature = self.ed25519_sign(derive_location.clone(), essence_hash).await?;
-
-        // Convert the raw bytes into [UnlockBlock].
-        let unlock_block = UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
-            Ed25519Signature::new(public_key, signature),
-        )));
-
-        Ok(unlock_block)
     }
 }
 

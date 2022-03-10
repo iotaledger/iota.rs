@@ -6,24 +6,21 @@ use crate::{
     signing::{SignerHandle, SignerType},
     Client, Result,
 };
-
 use bee_message::{
-    address::{Address, AliasAddress, Ed25519Address, NftAddress},
-    output::Output,
-    payload::transaction::TransactionEssence,
+    address::{Address, Ed25519Address},
     signature::{Ed25519Signature, Signature},
-    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, SignatureUnlockBlock, UnlockBlock},
+    unlock_block::{SignatureUnlockBlock, UnlockBlock},
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::slip10::{Chain, Curve, Seed},
 };
-
 use std::{
-    collections::HashMap,
     ops::{Deref, Range},
     path::Path,
 };
+
+use super::types::InputSigningData;
 
 fn generate_addresses(
     seed: &Seed,
@@ -113,78 +110,25 @@ impl crate::signing::Signer for MnemonicSigner {
         generate_addresses(self.deref(), coin_type, account_index, address_indexes, internal)
     }
 
-    async fn sign_transaction_essence<'a>(
+    async fn signature_unlock(
         &mut self,
-        essence: &TransactionEssence,
-        inputs: &mut Vec<super::InputSigningData>,
-        _: super::SignMessageMetadata<'a>,
-    ) -> crate::Result<Vec<UnlockBlock>> {
-        // The hashed_essence gets signed
-        let hashed_essence = essence.hash();
-        let mut unlock_blocks = Vec::new();
-        let mut unlock_block_indexes = HashMap::<Address, usize>::new();
+        input: &InputSigningData,
+        essence_hash: &[u8; 32],
+    ) -> crate::Result<UnlockBlock> {
+        // Get the private and public key for this Ed25519 address
+        let private_key = self
+            .deref()
+            .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
+            .secret_key();
+        let public_key = private_key.public_key().to_bytes();
 
-        for (current_block_index, input) in inputs.iter().enumerate() {
-            // Get the address that is required to unlock the input
-            let (_bech32_hrp, input_address) = Address::try_from_bech32(&input.bech32_address)?;
+        // The signature unlock block needs to sign the hash of the entire transaction essence of the
+        // transaction payload
+        let signature = private_key.sign(essence_hash).to_bytes();
 
-            // Check if we already added an [UnlockBlock] for this address
-            match unlock_block_indexes.get(&input_address) {
-                // If we already have an [UnlockBlock] for this address, add a [UnlockBlock] based on the address type
-                Some(block_index) => match input_address {
-                    Address::Alias(_alias) => {
-                        unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(*block_index as u16)?))
-                    }
-                    Address::Ed25519(_ed25519) => {
-                        unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?))
-                    }
-                    Address::Nft(_nft) => {
-                        unlock_blocks.push(UnlockBlock::Nft(NftUnlockBlock::new(*block_index as u16)?))
-                    }
-                },
-                None => {
-                    // We can only sign ed25519 addresses and unlock_block_indexes needs to contain the alias or nft
-                    // address already at this point, because the reference index needs to be lower
-                    // than the current block index
-                    if input_address.kind() != Ed25519Address::KIND {
-                        return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
-                    }
-
-                    // Get the private and public key for this Ed25519 address
-                    let private_key = self
-                        .deref()
-                        .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
-                        .secret_key();
-                    let public_key = private_key.public_key().to_bytes();
-
-                    // The signature unlock block needs to sign the hash of the entire transaction essence of the
-                    // transaction payload
-                    let signature = Box::new(private_key.sign(&hashed_essence).to_bytes());
-                    unlock_blocks.push(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
-                        Ed25519Signature::new(public_key, *signature),
-                    ))));
-
-                    // Add the ed25519 address to the unlock_block_indexes, so it gets referenced if further inputs have
-                    // the same address in their unlock condition
-                    unlock_block_indexes.insert(input_address, current_block_index);
-                }
-            }
-
-            // When we have an alias or Nft output, we will add their alias or nft address to unlock_block_indexes,
-            // because they can be used to unlock outputs via [UnlockBlock::Alias] or [UnlockBlock::Nft],
-            // that have the corresponding alias or nft address in their unlock condition
-            let output = Output::try_from(&input.output_response.output)?;
-            match &output {
-                Output::Alias(a) => {
-                    unlock_block_indexes.insert(Address::Alias(AliasAddress::new(*a.alias_id())), current_block_index)
-                }
-                Output::Nft(a) => {
-                    unlock_block_indexes.insert(Address::Nft(NftAddress::new(*a.nft_id())), current_block_index)
-                }
-                _ => None,
-            };
-        }
-        Ok(unlock_blocks)
+        Ok(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
+            Ed25519Signature::new(public_key, signature),
+        ))))
     }
 }
 
