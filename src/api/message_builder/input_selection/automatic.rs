@@ -124,7 +124,8 @@ pub(crate) async fn get_inputs(
                 .await
                 {
                     Ok(r) => r,
-                    // for these errors just try again in the next round with more addresses
+                    // for these errors ,just try again in the next round with more addresses which might have more
+                    // outputs
                     Err(crate::Error::NotEnoughBalance(a, b)) => {
                         cached_error.replace(crate::Error::NotEnoughBalance(a, b));
                         continue;
@@ -133,14 +134,24 @@ pub(crate) async fn get_inputs(
                         cached_error.replace(crate::Error::NotEnoughNativeTokens(a));
                         continue;
                     }
-                    Err(crate::Error::NotEnoughBalanceForNativeTokenRemainder) => {
-                        cached_error.replace(crate::Error::NotEnoughBalanceForNativeTokenRemainder);
+                    // Native tokens left, but no balance for the storage deposit for a remainder
+                    Err(crate::Error::NoBalanceForNativeTokenRemainder) => {
+                        cached_error.replace(crate::Error::NoBalanceForNativeTokenRemainder);
                         continue;
                     }
+                    // Currently too many inputs, by scanning for more inputs, we might find some with more amount
                     Err(crate::Error::ConsolidationRequired(v)) => {
                         cached_error.replace(crate::Error::ConsolidationRequired(v));
                         continue;
                     }
+                    // Not enough balance for a remainder
+                    Err(crate::Error::MessageError(message_error)) => match message_error {
+                        bee_message::Error::InvalidStorageDepositAmount(v) => {
+                            cached_error.replace(bee_message::Error::InvalidStorageDepositAmount(v).into());
+                            continue;
+                        }
+                        _ => return Err(message_error.into()),
+                    },
                     Err(e) => return Err(e),
                 };
 

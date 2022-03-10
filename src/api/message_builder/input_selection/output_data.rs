@@ -120,7 +120,7 @@ pub(crate) async fn get_remainder(
     } else {
         // if we have remaining native tokens, but no amount left, then we can't create this transaction
         if native_token_remainder.is_some() {
-            return Err(Error::NotEnoughBalanceForNativeTokenRemainder);
+            return Err(Error::NoBalanceForNativeTokenRemainder);
         }
     }
 
