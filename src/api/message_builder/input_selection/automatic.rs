@@ -16,12 +16,18 @@ use crate::{
     Error, Result,
 };
 
-use bee_message::{address::Address, output::feature_block::FeatureBlock};
+use bee_message::{
+    address::Address,
+    output::{feature_block::FeatureBlock, ByteCostConfig},
+};
 use crypto::keys::slip10::Chain;
 
 /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
 /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
-pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Result<SelectedTransactionData> {
+pub(crate) async fn get_inputs(
+    message_builder: &ClientMessageBuilder<'_>,
+    byte_cost_config: &ByteCostConfig,
+) -> Result<SelectedTransactionData> {
     log::debug!("[get_inputs]");
     let account_index = message_builder.account_index;
     let mut gap_index = message_builder.initial_address_index;
@@ -40,6 +46,7 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
         force_use_all_inputs,
         // todo allow custom remainder address
         None,
+        byte_cost_config,
     )
     .await
     {
@@ -112,11 +119,13 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
                     force_use_all_inputs,
                     // todo allow custom remainder address
                     None,
+                    byte_cost_config,
                 )
                 .await
                 {
                     Ok(r) => r,
-                    // for these errors just try again in the next round with more addresses
+                    // for these errors ,just try again in the next round with more addresses which might have more
+                    // outputs
                     Err(crate::Error::NotEnoughBalance(a, b)) => {
                         cached_error.replace(crate::Error::NotEnoughBalance(a, b));
                         continue;
@@ -125,14 +134,24 @@ pub(crate) async fn get_inputs(message_builder: &ClientMessageBuilder<'_>) -> Re
                         cached_error.replace(crate::Error::NotEnoughNativeTokens(a));
                         continue;
                     }
-                    Err(crate::Error::NotEnoughBalanceForNativeTokenRemainder) => {
-                        cached_error.replace(crate::Error::NotEnoughBalanceForNativeTokenRemainder);
+                    // Native tokens left, but no balance for the storage deposit for a remainder
+                    Err(crate::Error::NoBalanceForNativeTokenRemainder) => {
+                        cached_error.replace(crate::Error::NoBalanceForNativeTokenRemainder);
                         continue;
                     }
+                    // Currently too many inputs, by scanning for more inputs, we might find some with more amount
                     Err(crate::Error::ConsolidationRequired(v)) => {
                         cached_error.replace(crate::Error::ConsolidationRequired(v));
                         continue;
                     }
+                    // Not enough balance for a remainder
+                    Err(crate::Error::MessageError(message_error)) => match message_error {
+                        bee_message::Error::InvalidStorageDepositAmount(v) => {
+                            cached_error.replace(bee_message::Error::InvalidStorageDepositAmount(v).into());
+                            continue;
+                        }
+                        _ => return Err(message_error.into()),
+                    },
                     Err(e) => return Err(e),
                 };
 

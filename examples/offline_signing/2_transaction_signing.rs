@@ -6,7 +6,7 @@ use iota_client::{
     api::PreparedTransactionData,
     bee_message::{
         address::Address,
-        payload::{transaction::TransactionPayloadBuilder, Payload},
+        payload::{transaction::TransactionPayload, Payload},
         unlock_block::UnlockBlocks,
     },
     signing::{mnemonic::MnemonicSigner, verify_unlock_blocks, Network, SignMessageMetadata},
@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
 
     let mut input_addresses = Vec::new();
     for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
-        let address = Address::try_from_bech32(&input_signing_data.bech32_address)?;
+        let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
         input_addresses.push(address);
     }
 
@@ -55,10 +55,7 @@ async fn main() -> Result<()> {
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let signed_transaction = TransactionPayloadBuilder::new()
-        .with_essence(prepared_transaction_data.essence)
-        .with_unlock_blocks(unlock_blocks)
-        .finish()?;
+    let signed_transaction = TransactionPayload::new(prepared_transaction_data.essence, unlock_blocks)?;
 
     verify_unlock_blocks(&signed_transaction, input_addresses)?;
 

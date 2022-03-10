@@ -15,7 +15,7 @@ use iota_client::{
                 StorageDepositReturnUnlockCondition, TimelockUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
-            NativeToken, NftId, NftOutputBuilder, Output, OutputId, TokenId, TokenScheme,
+            NativeToken, NftId, NftOutputBuilder, Output, OutputId, TokenId, TokenScheme, TokenTag,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -162,7 +162,7 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new(
             1_000_000,
             1,
-            [0u8; 12],
+            TokenTag::new([0u8; 12]),
             U256::from(0),
             U256::from(100),
             TokenScheme::Simple,
@@ -212,13 +212,13 @@ async fn main() -> Result<()> {
 
     let foundry_id = FoundryId::build(AliasId::from(&alias_output_id_1), 1, TokenScheme::Simple);
 
-    let token_id = TokenId::build(foundry_id, [0u8; 12]);
+    let token_id = TokenId::build(foundry_id, TokenTag::new([0u8; 12]));
 
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
             1_000_000,
             1,
-            [0u8; 12],
+            TokenTag::new([0u8; 12]),
             U256::from(50),
             U256::from(100),
             TokenScheme::Simple,
@@ -269,7 +269,7 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new(
             1_000_000,
             1,
-            [0u8; 12],
+            TokenTag::new([0u8; 12]),
             U256::from(50),
             U256::from(100),
             TokenScheme::Simple,

@@ -13,7 +13,7 @@ use iota_client::{
                 StateControllerAddressUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken, Output,
-            OutputId, TokenId, TokenScheme,
+            OutputId, TokenId, TokenScheme, TokenTag,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -145,7 +145,7 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new(
             1_000_000,
             1,
-            [0u8; 12],
+            TokenTag::new([0u8; 12]),
             U256::from(0),
             U256::from(100),
             TokenScheme::Simple,
@@ -196,7 +196,7 @@ async fn main() -> Result<()> {
         .chain(alias_output_id_1.hash().iter())
         .chain([1, 0, 0, 0].iter())
         .chain([0u8; 1].iter())
-        .chain([0u8; 12].iter())
+        .chain(TokenTag::new([0u8; 12]).iter())
         .map(|v| *v)
         .collect();
     let token_id = TokenId::new(token_id_bytes.try_into().unwrap());
@@ -205,7 +205,7 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new(
             1_000_000,
             1,
-            [0u8; 12],
+            TokenTag::new([0u8; 12]),
             U256::from(70),
             U256::from(100),
             TokenScheme::Simple,
@@ -257,7 +257,7 @@ async fn main() -> Result<()> {
         .chain(alias_output_id_1.hash().iter())
         .chain([1, 0, 0, 0].iter())
         .chain([0u8; 1].iter())
-        .chain([0u8; 12].iter())
+        .chain(TokenTag::new([0u8; 12]).iter())
         .map(|v| *v)
         .collect();
     let token_id = TokenId::new(token_id_bytes.try_into().unwrap());
@@ -266,7 +266,7 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new(
             1_000_000,
             1,
-            [0u8; 12],
+            TokenTag::new([0u8; 12]),
             U256::from(50),
             U256::from(100),
             TokenScheme::Simple,
@@ -317,7 +317,7 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new(
             1_000_000,
             1,
-            [0u8; 12],
+            TokenTag::new([0u8; 12]),
             U256::from(50),
             U256::from(100),
             TokenScheme::Simple,

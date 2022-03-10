@@ -18,7 +18,7 @@ use bee_message::{
     address::Address,
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        BasicOutputBuilder, NativeToken, Output, TokenId,
+        BasicOutputBuilder, ByteCostConfig, NativeToken, Output, TokenId,
     },
 };
 use bee_rest_api::types::{
@@ -37,6 +37,7 @@ pub(crate) async fn get_remainder(
     inputs: &[Output],
     outputs: &[Output],
     remainder_address: Option<Address>,
+    byte_cost_config: &ByteCostConfig,
 ) -> Result<Option<Output>> {
     log::debug!("[get_remainder]");
     let mut remainder_output = None;
@@ -112,11 +113,14 @@ pub(crate) async fn get_remainder(
                     remainder_output_builder.add_native_token(NativeToken::new(token_id, amount)?);
             }
         }
-        remainder_output.replace(Output::Basic(remainder_output_builder.finish()?));
+        let remainder = Output::Basic(remainder_output_builder.finish()?);
+        // Check if output has enough amount to cover the storage deposit
+        remainder.verify_storage_deposit(byte_cost_config)?;
+        remainder_output.replace(remainder);
     } else {
         // if we have remaining native tokens, but no amount left, then we can't create this transaction
         if native_token_remainder.is_some() {
-            return Err(Error::NotEnoughBalanceForNativeTokenRemainder);
+            return Err(Error::NoBalanceForNativeTokenRemainder);
         }
     }
 

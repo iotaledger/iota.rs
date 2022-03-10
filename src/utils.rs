@@ -29,7 +29,7 @@ pub fn hash_network(network_id_string: &str) -> Result<u64> {
 
 /// Transforms bech32 to hex
 pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
-    let address = Address::try_from_bech32(bech32)?;
+    let (_bech32_hrp, address) = Address::try_from_bech32(bech32)?;
     let hex_string = match address {
         Address::Ed25519(ed) => ed.to_string(),
         Address::Alias(alias) => alias.to_string(),
@@ -58,7 +58,7 @@ pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> crate::R
 
 /// Returns a valid Address parsed from a String.
 pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
-    Ok(Address::try_from_bech32(address)?)
+    Ok(Address::try_from_bech32(address)?.1)
 }
 
 /// Checks if a String is a valid bech32 encoded address.

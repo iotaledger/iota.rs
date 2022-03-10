@@ -23,6 +23,7 @@ use crate::{
     },
 };
 
+use crate::bee_rest_api::types::responses::RentStructureResponse;
 use bee_message::{
     address::Address,
     input::{UtxoInput, INPUT_COUNT_MAX},
@@ -236,6 +237,7 @@ impl Client {
                     // todo update protocol version
                     client_network_info.min_pow_score = info.protocol.min_pow_score;
                     client_network_info.bech32_hrp = info.protocol.bech32_hrp.clone();
+                    client_network_info.rent_structure = info.protocol.rent_structure.clone();
                     if !client_network_info.local_pow {
                         if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
@@ -329,6 +331,11 @@ impl Client {
         self.network_info
             .read()
             .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
+    }
+
+    /// returns the rent structure for the UTXO ledger
+    pub async fn get_rent_structure(&self) -> Result<RentStructureResponse> {
+        Ok(self.get_network_info().await?.rent_structure)
     }
 
     pub(crate) fn get_timeout(&self) -> Duration {
@@ -877,9 +884,8 @@ impl Client {
         tips.sort_unstable_by_key(|a| a.pack_to_vec());
         tips.dedup();
 
-        let promote_message = MessageBuilder::<ClientMiner>::new()
+        let promote_message = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?)
             .with_protocol_version(protocol_version)
-            .with_parents(Parents::new(tips)?)
             .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;

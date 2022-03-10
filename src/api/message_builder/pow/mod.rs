@@ -84,12 +84,12 @@ pub fn do_pow(
     payload: Option<Payload>,
     parent_messages: Vec<MessageId>,
 ) -> Result<(u64, Option<Message>)> {
-    let mut message = MessageBuilder::<ClientMiner>::new().with_protocol_version(protocol_version);
+    let mut message =
+        MessageBuilder::<ClientMiner>::new(Parents::new(parent_messages)?).with_protocol_version(protocol_version);
     if let Some(p) = payload {
         message = message.with_payload(p);
     }
     let message = message
-        .with_parents(Parents::new(parent_messages)?)
         .with_nonce_provider(client_miner, min_pow_score)
         .finish()
         .map_err(Error::MessageError)?;

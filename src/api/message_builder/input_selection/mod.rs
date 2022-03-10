@@ -8,7 +8,7 @@ use crate::{signing::types::InputSigningData, Error, Result};
 use bee_message::{
     address::Address,
     input::INPUT_COUNT_MAX,
-    output::{Output, TokenId},
+    output::{ByteCostConfig, Output, TokenId},
 };
 use packable::PackableExt;
 
@@ -34,6 +34,7 @@ pub async fn try_select_inputs(
     mut outputs: Vec<Output>,
     force_use_all_inputs: bool,
     remainder_address: Option<Address>,
+    byte_cost_config: &ByteCostConfig,
 ) -> Result<SelectedTransactionData> {
     inputs.dedup();
     if inputs.len() as u16 > INPUT_COUNT_MAX {
@@ -47,7 +48,7 @@ pub async fn try_select_inputs(
 
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
-        let remainder_output = get_remainder(&input_outputs, &outputs, remainder_address).await?;
+        let remainder_output = get_remainder(&input_outputs, &outputs, remainder_address, byte_cost_config).await?;
         if let Some(remainder_output) = &remainder_output {
             outputs.push(remainder_output.clone());
         }
@@ -229,13 +230,14 @@ pub async fn try_select_inputs(
         .map(|i| Ok(Output::try_from(&i.output_response.output)?))
         .collect::<Result<Vec<Output>>>()?;
     // get_remainder also checks for amounts and returns an error if we don't have enough
-    let remainder_output = get_remainder(&selected_input_outputs, &outputs, remainder_address).await?;
+    let remainder_output =
+        get_remainder(&selected_input_outputs, &outputs, remainder_address, byte_cost_config).await?;
     if let Some(remainder_output) = &remainder_output {
         outputs.push(remainder_output.clone());
     }
 
     // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
-    selected_inputs.sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().pack_to_vec());
+    selected_inputs.sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().1.pack_to_vec());
     Ok(SelectedTransactionData {
         inputs: selected_inputs,
         outputs,

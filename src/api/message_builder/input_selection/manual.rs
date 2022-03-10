@@ -13,7 +13,10 @@ use crate::{
     Result,
 };
 
-use bee_message::{address::Address, output::AliasId};
+use bee_message::{
+    address::Address,
+    output::{AliasId, ByteCostConfig},
+};
 use crypto::keys::slip10::Chain;
 
 use std::collections::HashSet;
@@ -25,6 +28,7 @@ use std::collections::HashSet;
 pub(crate) async fn get_custom_inputs(
     message_builder: &ClientMessageBuilder<'_>,
     governance_transition: Option<HashSet<AliasId>>,
+    byte_cost_config: &ByteCostConfig,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[get_custom_inputs]");
     let mut input_signing_data_entrys = Vec::new();
@@ -80,6 +84,7 @@ pub(crate) async fn get_custom_inputs(
         true,
         // todo allow custom remainder address
         None,
+        byte_cost_config,
     )
     .await?;
     Ok(selected_transaction_data)

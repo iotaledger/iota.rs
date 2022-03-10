@@ -34,7 +34,7 @@ pub enum Error {
     // todo get missing amount (storage deposit for an output with this amount of native tokens)
     /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
     #[error("The wallet account doesn't have enough balance for an output with the remaining native tokens.")]
-    NotEnoughBalanceForNativeTokenRemainder,
+    NoBalanceForNativeTokenRemainder,
     /// The wallet account has enough funds, but splitted on too many outputs
     #[error(
         "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 128, consolidate them"

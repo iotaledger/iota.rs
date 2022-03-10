@@ -14,7 +14,7 @@ use bee_message::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, Output, OUTPUT_COUNT_RANGE,
+        AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Message, MessageId,
@@ -124,7 +124,7 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
         let output = BasicOutputBuilder::new(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
-                Address::try_from_bech32(address)?,
+                Address::try_from_bech32(address)?.1,
             )))
             .finish()?;
         self.outputs.push(Output::Basic(output));
@@ -286,13 +286,14 @@ impl<'a> ClientMessageBuilder<'a> {
     async fn get_custom_inputs(
         &self,
         governance_transition: Option<HashSet<AliasId>>,
+        byte_cost_config: &ByteCostConfig,
     ) -> Result<SelectedTransactionData> {
-        get_custom_inputs(self, governance_transition).await
+        get_custom_inputs(self, governance_transition, byte_cost_config).await
     }
 
     // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
-    async fn get_inputs(&self) -> Result<SelectedTransactionData> {
-        get_inputs(self).await
+    async fn get_inputs(&self, byte_cost_config: &ByteCostConfig) -> Result<SelectedTransactionData> {
+        get_inputs(self, byte_cost_config).await
     }
 
     /// Prepare a transaction
