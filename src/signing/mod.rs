@@ -97,9 +97,23 @@ impl Deref for SignerHandle {
 #[async_trait::async_trait]
 pub trait Signer: Send + Sync {
     /// Get the ledger status.
-    async fn get_ledger_status(&self, is_simulator: bool) -> LedgerStatus;
+    ///
+    /// This is only meaningful for the Ledger hardware; other signers don't implement this.
+    async fn get_ledger_status(&self, _: bool) -> LedgerStatus {
+        LedgerStatus {
+            app: None,
+            connected: false,
+            locked: false,
+        }
+    }
+
     /// Initialises a mnemonic.
-    async fn store_mnemonic(&mut self, storage_path: &Path, mnemonic: String) -> crate::Result<()>;
+    ///
+    /// This is only meaningful for the Stronghold signer; other signers don't implement this.
+    async fn store_mnemonic(&mut self, _: &Path, _: String) -> crate::Result<()> {
+        Ok(())
+    }
+
     /// Generates an address.
     async fn generate_addresses(
         &mut self,
@@ -110,6 +124,7 @@ pub trait Signer: Send + Sync {
         internal: bool,
         metadata: GenerateAddressMetadata,
     ) -> crate::Result<Vec<Address>>;
+
     /// Sign on `essence`, unlock `input` by returning an [UnlockBlock].
     async fn signature_unlock<'a>(
         &mut self,
@@ -117,7 +132,12 @@ pub trait Signer: Send + Sync {
         essence_hash: &[u8; 32],
         metadata: &SignMessageMetadata<'a>,
     ) -> crate::Result<UnlockBlock>;
+
     /// Signs transaction essence.
+    ///
+    /// Signers usually don't implement this, as the default implementation has taken care of the placement of blocks
+    /// (e.g. references between them). [Signer::signature_unlock()] will be invoked every time a necessary signing
+    /// action needs to be performed.
     async fn sign_transaction_essence<'a>(
         &mut self,
         essence: &TransactionEssence,

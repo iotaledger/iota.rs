@@ -16,10 +16,7 @@ use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::slip10::{Chain, Curve, Seed},
 };
-use std::{
-    ops::{Deref, Range},
-    path::Path,
-};
+use std::ops::{Deref, Range};
 
 fn generate_addresses(
     seed: &Seed,
@@ -83,20 +80,6 @@ impl MnemonicSigner {
 
 #[async_trait::async_trait]
 impl crate::signing::Signer for MnemonicSigner {
-    async fn get_ledger_status(&self, _is_simulator: bool) -> crate::signing::LedgerStatus {
-        // dummy status, function is only required in the trait because we need it for the LedgerSigner
-        crate::signing::LedgerStatus {
-            connected: false,
-            locked: false,
-            app: None,
-        }
-    }
-
-    // This function only makes sense for the Stronghold Signer
-    async fn store_mnemonic(&mut self, _storage_path: &Path, _mnemonic: String) -> crate::Result<()> {
-        Ok(())
-    }
-
     async fn generate_addresses(
         &mut self,
         // https://github.com/satoshilabs/slips/blob/master/slip-0044.md

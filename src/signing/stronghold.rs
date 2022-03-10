@@ -3,9 +3,7 @@
 
 //! Implementation of [Signer] with Stronghold as the backend.
 
-use super::{
-    GenerateAddressMetadata, InputSigningData, LedgerStatus, SignMessageMetadata, Signer, SignerHandle, SignerType,
-};
+use super::{GenerateAddressMetadata, InputSigningData, SignMessageMetadata, Signer, SignerHandle, SignerType};
 use crate::Result;
 use async_trait::async_trait;
 use bee_message::{
@@ -79,15 +77,6 @@ pub struct StrongholdSigner {
 
 #[async_trait]
 impl Signer for StrongholdSigner {
-    async fn get_ledger_status(&self, _is_simulator: bool) -> LedgerStatus {
-        // Do nothing - this function is only useful for [LedgerSigner].
-        LedgerStatus {
-            connected: false,
-            locked: false,
-            app: None,
-        }
-    }
-
     async fn store_mnemonic(&mut self, _storage_path: &Path, mnemonic: String) -> Result<()> {
         // Stronghold arguments.
         let output = Location::Generic {
