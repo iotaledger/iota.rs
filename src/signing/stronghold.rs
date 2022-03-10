@@ -3,7 +3,9 @@
 
 //! Implementation of [Signer] with Stronghold as the backend.
 
-use super::{GenerateAddressMetadata, InputSigningData, LedgerStatus, Signer, SignerHandle, SignerType};
+use super::{
+    GenerateAddressMetadata, InputSigningData, LedgerStatus, SignMessageMetadata, Signer, SignerHandle, SignerType,
+};
 use crate::Result;
 use async_trait::async_trait;
 use bee_message::{
@@ -186,7 +188,12 @@ impl Signer for StrongholdSigner {
         Ok(addresses)
     }
 
-    async fn signature_unlock(&mut self, input: &InputSigningData, essence_hash: &[u8; 32]) -> Result<UnlockBlock> {
+    async fn signature_unlock<'a>(
+        &mut self,
+        input: &InputSigningData,
+        essence_hash: &[u8; 32],
+        _: &SignMessageMetadata<'a>,
+    ) -> Result<UnlockBlock> {
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),

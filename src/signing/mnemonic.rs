@@ -1,6 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use super::{types::InputSigningData, SignMessageMetadata};
 use crate::{
     constants::HD_WALLET_TYPE,
     signing::{SignerHandle, SignerType},
@@ -19,8 +20,6 @@ use std::{
     ops::{Deref, Range},
     path::Path,
 };
-
-use super::types::InputSigningData;
 
 fn generate_addresses(
     seed: &Seed,
@@ -110,10 +109,11 @@ impl crate::signing::Signer for MnemonicSigner {
         generate_addresses(self.deref(), coin_type, account_index, address_indexes, internal)
     }
 
-    async fn signature_unlock(
+    async fn signature_unlock<'a>(
         &mut self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
+        _: &SignMessageMetadata<'a>,
     ) -> crate::Result<UnlockBlock> {
         // Get the private and public key for this Ed25519 address
         let private_key = self

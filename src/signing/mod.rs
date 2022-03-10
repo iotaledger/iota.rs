@@ -111,17 +111,18 @@ pub trait Signer: Send + Sync {
         metadata: GenerateAddressMetadata,
     ) -> crate::Result<Vec<Address>>;
     /// Sign on `essence`, unlock `input` by returning an [UnlockBlock].
-    async fn signature_unlock(
+    async fn signature_unlock<'a>(
         &mut self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
+        metadata: &SignMessageMetadata<'a>,
     ) -> crate::Result<UnlockBlock>;
     /// Signs transaction essence.
     async fn sign_transaction_essence<'a>(
         &mut self,
         essence: &TransactionEssence,
         inputs: &mut Vec<InputSigningData>,
-        _: SignMessageMetadata<'a>,
+        metadata: SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<UnlockBlock>> {
         // The hashed_essence gets signed
         let hashed_essence = essence.hash();
@@ -154,7 +155,7 @@ pub trait Signer: Send + Sync {
                         return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
                     }
 
-                    let unlock_block = self.signature_unlock(input, &hashed_essence).await?;
+                    let unlock_block = self.signature_unlock(input, &hashed_essence, &metadata).await?;
                     unlock_blocks.push(unlock_block);
 
                     // Add the ed25519 address to the unlock_block_indexes, so it gets referenced if further inputs have
