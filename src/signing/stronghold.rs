@@ -194,6 +194,9 @@ impl Signer for StrongholdSigner {
         essence_hash: &[u8; 32],
         _: &SignMessageMetadata<'a>,
     ) -> Result<UnlockBlock> {
+        // Load the Stronghold snapshot if it hasn't been loaded yet.
+        self.lazy_load_snapshot().await?;
+
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
