@@ -63,13 +63,14 @@ jobs:
       - name: Set Up Clang/LLVM (Windows)
         if: ${{ startsWith(matrix.os, 'windows') }}
         uses: ./.github/actions/setup-clang
+
       # Build is needed for the bindings to find the .so files
       - name: Run Cargo build
-        working-directory: bindings/java/
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release
+          args: --manifest-path bindings/java/native/Cargo.toml --all-features --release
+
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
         with:
