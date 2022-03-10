@@ -241,8 +241,8 @@ impl serde::Serialize for Error {
             Self::NotEnoughBalance(..) => serialize_variant(self, serializer, "NotEnoughBalance"),
             Self::NoInputs => serialize_variant(self, serializer, "NoInputs"),
             Self::NotEnoughNativeTokens(_) => serialize_variant(self, serializer, "NotEnoughNativeTokens"),
-            Self::NotEnoughBalanceForNativeTokenRemainder => {
-                serialize_variant(self, serializer, "NotEnoughBalanceForNativeTokenRemainder")
+            Self::NoBalanceForNativeTokenRemainder => {
+                serialize_variant(self, serializer, "NoBalanceForNativeTokenRemainder")
             }
             Self::ConsolidationRequired(_) => serialize_variant(self, serializer, "ConsolidationRequired"),
             Self::MissingParameter(_) => serialize_variant(self, serializer, "MissingParameter"),
@@ -288,6 +288,7 @@ impl serde::Serialize for Error {
             Self::MissingInputWithEd25519UnlockCondition => {
                 serialize_variant(self, serializer, "MissingInputWithEd25519UnlockCondition")
             }
+            Self::NoMnemonicWasStored => serialize_variant(self, serializer, "NoMnemonicWasStored"),
             #[cfg(feature = "ledger")]
             Self::LedgerMiscError => serialize_variant(self, serializer, "LedgerMiscError"),
             #[cfg(feature = "ledger")]

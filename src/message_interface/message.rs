@@ -7,14 +7,14 @@ use tokio::sync::mpsc::UnboundedSender;
 
 /// The message type.
 #[derive(Debug, Clone)]
-pub struct Message {
+pub struct Message<'a> {
     pub(crate) message_type: MessageType,
-    pub(crate) response_tx: UnboundedSender<Response>,
+    pub(crate) response_tx: UnboundedSender<Response<'a>>,
 }
 
-impl Message {
+impl<'a> Message<'a> {
     /// Creates a new instance of a Message.
-    pub fn new(message_type: MessageType, response_tx: UnboundedSender<Response>) -> Self {
+    pub fn new(message_type: MessageType, response_tx: UnboundedSender<Response<'a>>) -> Self {
         Self {
             message_type,
             response_tx,
@@ -32,7 +32,7 @@ impl Message {
     }
 
     /// The response sender.
-    pub fn response_tx(&self) -> &UnboundedSender<Response> {
+    pub fn response_tx(&self) -> &UnboundedSender<Response<'a>> {
         &self.response_tx
     }
 }

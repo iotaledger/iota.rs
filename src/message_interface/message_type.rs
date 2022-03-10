@@ -9,10 +9,7 @@ use serde::{ser::Serializer, Deserialize, Serialize};
 #[serde(tag = "cmd", content = "payload")]
 pub enum MessageType {
     /// Consume a client method.
-    CallClientMethod {
-        /// The client method to call.
-        method: ClientMethod,
-    },
+    CallClientMethod(ClientMethod),
 }
 
 impl Serialize for MessageType {

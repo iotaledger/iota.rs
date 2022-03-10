@@ -15,6 +15,18 @@ pub struct GetBalanceBuilder<'a> {
     gap_limit: u32,
 }
 
+/// GetBalanceBuilder options
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetBalanceBuilderOptions {
+    /// Account index
+    pub account_index: Option<u32>,
+    /// Initial address index
+    pub initial_address_index: Option<u32>,
+    /// Gap limit
+    pub gap_limit: Option<u32>,
+}
+
 impl<'a> GetBalanceBuilder<'a> {
     /// Create get_balance builder
     pub fn new(client: &'a Client, signer: &'a SignerHandle) -> Self {
@@ -43,6 +55,24 @@ impl<'a> GetBalanceBuilder<'a> {
     /// If gap_limit amount of addresses in a row have no balance the function will return.
     pub fn with_gap_limit(mut self, gap_limit: u32) -> Self {
         self.gap_limit = gap_limit;
+        self
+    }
+
+    /// Set multiple options from builder options type
+    /// Useful for bindings
+    pub fn set_options(mut self, options: GetBalanceBuilderOptions) -> Self {
+        if let Some(account_index) = options.account_index {
+            self = self.with_account_index(account_index);
+        }
+
+        if let Some(initial_address_index) = options.initial_address_index {
+            self = self.with_initial_address_index(initial_address_index);
+        }
+
+        if let Some(gap_limit) = options.gap_limit {
+            self = self.with_gap_limit(gap_limit);
+        }
+
         self
     }
 
