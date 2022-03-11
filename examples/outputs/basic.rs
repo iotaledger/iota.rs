@@ -62,7 +62,7 @@ async fn main() -> Result<()> {
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
             .finish()?,
     ));
-    // with dust deposit return
+    // with storage deposit return
     outputs.push(Output::Basic(
         BasicOutputBuilder::new(234100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))

@@ -89,8 +89,6 @@ pub enum QueryParameter {
     Cursor(String),
     /// Filter for a certain issuer
     Issuer(String),
-    /// Filter for outputs requiring a dust return
-    RequiresDustReturn(bool),
     /// Filter for a certain state controller address
     StateController(String),
     /// Filter for a certain governance controller address
@@ -135,7 +133,6 @@ impl QueryParameter {
             QueryParameter::CreatedAfter(v) => format!("createdAfter={}", v),
             QueryParameter::Cursor(v) => format!("cursor={}", v),
             QueryParameter::Issuer(v) => format!("issuer={}", v),
-            QueryParameter::RequiresDustReturn(v) => format!("requiresDustReturn={}", v),
             QueryParameter::StateController(v) => format!("stateController={}", v),
             QueryParameter::Governor(v) => format!("governor={}", v),
             QueryParameter::PageSize(v) => format!("pageSize={}", v),

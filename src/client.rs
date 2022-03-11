@@ -752,7 +752,8 @@ impl Client {
         crate::api::consolidate_funds(self, signer, account_index, address_range).await
     }
 
-    /// Function to find inputs from addresses for a provided amount (useful for offline signing), ignoring outputs with additional unlock conditions
+    /// Function to find inputs from addresses for a provided amount (useful for offline signing), ignoring outputs with
+    /// additional unlock conditions
     pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
         // Get outputs from node and select inputs
         let mut available_outputs = Vec::new();
@@ -760,10 +761,12 @@ impl Client {
             available_outputs.extend_from_slice(
                 &self
                     .get_address()
-                    .outputs(vec![QueryParameter::Address(address.to_string()),
-                    QueryParameter::HasExpirationCondition(false),
-                    QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageDepositReturnCondition(false),])
+                    .outputs(vec![
+                        QueryParameter::Address(address.to_string()),
+                        QueryParameter::HasExpirationCondition(false),
+                        QueryParameter::HasTimelockCondition(false),
+                        QueryParameter::HasStorageDepositReturnCondition(false),
+                    ])
                     .await?,
             );
         }
