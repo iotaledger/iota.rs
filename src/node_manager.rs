@@ -655,7 +655,7 @@ impl HttpClient {
     }
 
     pub(crate) async fn get(&self, node: Node, _timeout: Duration) -> Result<Response> {
-        let syc_start_time = std::time::Instant::now();
+        let start_time = std::time::Instant::now();
         let mut request_builder = self.client.get(node.url.clone());
         if let Some(jwt) = node.jwt {
             request_builder = request_builder.bearer_auth(jwt);
@@ -668,7 +668,7 @@ impl HttpClient {
         let response = Self::parse_response(resp).await;
         log::debug!(
             "GET request took {:?} ms for {}",
-            syc_start_time.elapsed().as_millis(),
+            start_time.elapsed().as_millis(),
             node.url
         );
         response

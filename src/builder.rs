@@ -17,7 +17,7 @@ use std::{
 };
 
 const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
-pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(10);
+pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(15);
 #[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 /// Interval in seconds when new tips will be requested during PoW
@@ -94,7 +94,7 @@ impl Default for ClientBuilder {
             #[cfg(feature = "mqtt")]
             broker_options: Default::default(),
             network_info: NetworkInfo::default(),
-            request_timeout: DEFAULT_REMOTE_POW_TIMEOUT,
+            request_timeout: GET_API_TIMEOUT,
             api_timeout: Default::default(),
             offline: false,
         }
@@ -307,35 +307,43 @@ impl ClientBuilder {
         let mut api_timeout = HashMap::new();
         api_timeout.insert(
             Api::GetInfo,
-            self.api_timeout.remove(&Api::GetInfo).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout.remove(&Api::GetInfo).unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::GetPeers,
-            self.api_timeout.remove(&Api::GetPeers).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout.remove(&Api::GetPeers).unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::GetHealth,
-            self.api_timeout.remove(&Api::GetHealth).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout.remove(&Api::GetHealth).unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::GetMilestone,
-            self.api_timeout.remove(&Api::GetMilestone).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout
+                .remove(&Api::GetMilestone)
+                .unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::GetBalance,
-            self.api_timeout.remove(&Api::GetBalance).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout
+                .remove(&Api::GetBalance)
+                .unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::GetMessage,
-            self.api_timeout.remove(&Api::GetMessage).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout
+                .remove(&Api::GetMessage)
+                .unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::GetTips,
-            self.api_timeout.remove(&Api::GetTips).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout.remove(&Api::GetTips).unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::PostMessage,
-            self.api_timeout.remove(&Api::PostMessage).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout
+                .remove(&Api::PostMessage)
+                .unwrap_or(self.request_timeout),
         );
         api_timeout.insert(
             Api::PostMessageWithRemotePow,
@@ -345,7 +353,7 @@ impl ClientBuilder {
         );
         api_timeout.insert(
             Api::GetOutput,
-            self.api_timeout.remove(&Api::GetOutput).unwrap_or(GET_API_TIMEOUT),
+            self.api_timeout.remove(&Api::GetOutput).unwrap_or(self.request_timeout),
         );
 
         #[cfg(feature = "mqtt")]
