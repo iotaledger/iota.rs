@@ -44,3 +44,41 @@ pub async fn get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<V
     }
     Ok(outputs)
 }
+
+/// Request outputs by their output id in parallel, ignores failed requests
+/// Useful to get data about spent outputs, that might not be pruned yet
+pub async fn try_get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
+    let mut outputs = Vec::new();
+    #[cfg(feature = "wasm")]
+    for output_id in output_ids {
+        if let Ok(output_response) = get_output(&client_, &output_id).await {
+            outputs.push(output_response);
+        }
+    }
+    #[cfg(not(feature = "wasm"))]
+    for output_ids_chunk in output_ids
+        .chunks(MAX_PARALLEL_API_REQUESTS)
+        .map(|x: &[OutputId]| x.to_vec())
+    {
+        let mut tasks = Vec::new();
+        for output_id in output_ids_chunk {
+            let client_ = client.clone();
+
+            tasks.push(async move {
+                tokio::spawn(async move {
+                    // Ignore possible errors
+                    if let Ok(output_response) = get_output(&client_, &output_id).await {
+                        Some(output_response)
+                    } else {
+                        None
+                    }
+                })
+                .await
+            });
+        }
+        for output_response in (futures::future::try_join_all(tasks).await?).into_iter().flatten() {
+            outputs.push(output_response);
+        }
+    }
+    Ok(outputs)
+}
