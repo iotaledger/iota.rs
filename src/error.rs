@@ -153,6 +153,9 @@ pub enum Error {
     /// No input with matching ed25519 unlock condition provided
     #[error("No input with matching ed25519 unlock condition provided")]
     MissingInputWithEd25519UnlockCondition,
+    /// No mnemonic was stored, specially for the default impl of [crate::signing::Signer::store_mnemonic()].
+    #[error("No mnemonic was stored! Please implement store_mnemonic() :)")]
+    NoMnemonicWasStored,
     /// Ledger transport error
     #[cfg(feature = "ledger")]
     #[error("ledger transport error")]

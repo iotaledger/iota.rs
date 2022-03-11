@@ -111,7 +111,7 @@ pub trait Signer: Send + Sync {
     ///
     /// This is only meaningful for the Stronghold signer; other signers don't implement this.
     async fn store_mnemonic(&mut self, _: &Path, _: String) -> crate::Result<()> {
-        Ok(())
+        Err(crate::Error::NoMnemonicWasStored)
     }
 
     /// Generates an address.
