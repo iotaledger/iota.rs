@@ -67,7 +67,7 @@ fn default_bech32_hrp() -> String {
     DEFAULT_BECH32_HRP.into()
 }
 fn default_min_pow_score() -> f64 {
-    4000.0
+    DEFAULT_MIN_POW
 }
 fn default_rent_structure() -> RentStructureResponse {
     RentStructureResponse {

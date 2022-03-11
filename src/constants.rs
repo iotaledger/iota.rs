@@ -7,7 +7,7 @@ use std::time::Duration;
 
 /// Default timeout for all API requests apart from post_message with remote PoW
 pub(crate) const DEFAULT_API_TIMEOUT: Duration = Duration::from_secs(15);
-pub(crate) const DEFAULT_REMOTE_POW_API_TIMEOUT: Duration = Duration::from_secs(50);
+pub(crate) const DEFAULT_REMOTE_POW_API_TIMEOUT: Duration = Duration::from_secs(100);
 /// Interval in seconds when new tips will be requested during PoW, so the final message always will be attached to a
 /// new part of the Tangle
 pub(crate) const DEFAULT_TIPS_INTERVAL: u64 = 15;
