@@ -306,7 +306,7 @@ impl NetworkInfo {
     }
     // Network ID
     pub fn network_id(&self) -> u64 {
-        self.0.network_id.clone().unwrap_or(0)
+        self.0.network_id.unwrap_or(0)
     }
     // Bech32 HRP
     pub fn bech32_hrp(&self) -> String {
@@ -314,19 +314,19 @@ impl NetworkInfo {
     }
     // Mininum proof of work score
     pub fn min_pow_score(&self) -> f64 {
-        self.0.min_pow_score.clone()
+        self.0.min_pow_score
     }
     // Local proof of work
     pub fn local_pow(&self) -> bool {
-        self.0.local_pow.clone()
+        self.0.local_pow
     }
     // Fallback to local proof of work if the node doesn't support remote PoW
     pub fn fallback_to_local_pow(&self) -> bool {
-        self.0.fallback_to_local_pow.clone()
+        self.0.fallback_to_local_pow
     }
     // Tips request interval during PoW in seconds
     pub fn tips_interval(&self) -> u64 {
-        self.0.tips_interval.clone()
+        self.0.tips_interval
     }
 }
 
