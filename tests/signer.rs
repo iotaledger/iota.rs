@@ -35,7 +35,7 @@ async fn stronghold_signer_dto() -> Result<()> {
         r#"{ "Stronghold": { "password": "some_hopefully_secure_password", "snapshotPath": "test.stronghold" } }"#;
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast".to_string();
 
-    let signer_type_dto: SignerTypeDto = serde_json::from_str(&stronghold_dto_str)?;
+    let signer_type_dto: SignerTypeDto = serde_json::from_str(stronghold_dto_str)?;
     let stronghold_signer = SignerHandle::from_str(&serde_json::to_string(&signer_type_dto)?)?;
 
     let storage_path = std::path::Path::new("test.stronghold");
@@ -43,7 +43,7 @@ async fn stronghold_signer_dto() -> Result<()> {
     stronghold_signer
         .lock()
         .await
-        .store_mnemonic(&storage_path, mnemonic.clone())
+        .store_mnemonic(storage_path, mnemonic.clone())
         .await
         .unwrap();
 
@@ -64,7 +64,7 @@ async fn stronghold_signer_dto() -> Result<()> {
     assert!(stronghold_signer
         .lock()
         .await
-        .store_mnemonic(&storage_path, mnemonic)
+        .store_mnemonic(storage_path, mnemonic)
         .await
         .is_err());
 

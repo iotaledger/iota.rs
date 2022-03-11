@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
 
     let storage_path = Path::new("test.stronghold");
     let stronghold_signer =
-        StrongholdSigner::try_new_signer_handle("some_hopefully_secure_password", &storage_path).unwrap();
+        StrongholdSigner::try_new_signer_handle("some_hopefully_secure_password", storage_path).unwrap();
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
     stronghold_signer
         .lock()
         .await
-        .store_mnemonic(&storage_path, mnemonic)
+        .store_mnemonic(storage_path, mnemonic)
         .await
         .unwrap();
 
