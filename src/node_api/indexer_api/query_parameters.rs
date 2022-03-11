@@ -49,11 +49,11 @@ impl QueryParameters {
 pub enum QueryParameter {
     /// Bech32-encoded address that should be searched for.
     Address(String),
-    /// Filters outputs based on the presence of dust return unlock condition.
-    HasDustReturnCondition(bool),
-    /// Filter outputs based on the presence of a specific Bech32-encoded return address in the dust deposit return
+    /// Filters outputs based on the presence of storage deposit return unlockcondition.
+    HasStorageDepositReturnCondition(bool),
+    /// Filter outputs based on the presence of a specific Bech32-encoded return address in the storage deposit return
     /// unlock condition.
-    DustReturnAddress(String),
+    StorageDepositReturnAddress(String),
     /// Filters outputs based on the presence of timelock unlock condition.
     HasTimelockCondition(bool),
     /// Return outputs that are timelocked before a certain Unix timestamp.
@@ -89,8 +89,6 @@ pub enum QueryParameter {
     Cursor(String),
     /// Filter for a certain issuer
     Issuer(String),
-    /// Filter for outputs requiring a dust return
-    RequiresDustReturn(bool),
     /// Filter for a certain state controller address
     StateController(String),
     /// Filter for a certain governance controller address
@@ -116,8 +114,8 @@ impl QueryParameter {
     fn as_query_string(&self) -> String {
         match self {
             QueryParameter::Address(v) => format!("address={}", v),
-            QueryParameter::HasDustReturnCondition(v) => format!("hasDustReturnCondition={}", v),
-            QueryParameter::DustReturnAddress(v) => format!("dustReturnAddress={}", v),
+            QueryParameter::HasStorageDepositReturnCondition(v) => format!("hasStorageDepositReturnCondition={}", v),
+            QueryParameter::StorageDepositReturnAddress(v) => format!("storageReturnAddress={}", v),
             QueryParameter::HasTimelockCondition(v) => format!("hasTimelockCondition={}", v),
             QueryParameter::TimelockedBefore(v) => format!("timelockedBefore={}", v),
             QueryParameter::TimelockedAfter(v) => format!("timelockedAfter={}", v),
@@ -135,7 +133,6 @@ impl QueryParameter {
             QueryParameter::CreatedAfter(v) => format!("createdAfter={}", v),
             QueryParameter::Cursor(v) => format!("cursor={}", v),
             QueryParameter::Issuer(v) => format!("issuer={}", v),
-            QueryParameter::RequiresDustReturn(v) => format!("requiresDustReturn={}", v),
             QueryParameter::StateController(v) => format!("stateController={}", v),
             QueryParameter::Governor(v) => format!("governor={}", v),
             QueryParameter::PageSize(v) => format!("pageSize={}", v),

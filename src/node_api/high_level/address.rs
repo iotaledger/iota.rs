@@ -34,11 +34,17 @@ impl<'a> GetAddressBuilder<'a> {
         Self { client }
     }
 
-    /// Consume the builder and get the IOTA and native tokens balance of a given Bech32 encoded address.
+    /// Consume the builder and get the IOTA and native tokens balance of a given Bech32 encoded address, ignoring
+    /// outputs with additional unlock conditions.
     pub async fn balance(self, address: &str) -> Result<AddressBalance> {
         let output_ids = crate::node_api::indexer_api::routes::output_ids(
             self.client,
-            vec![QueryParameter::Address(address.to_string())],
+            vec![
+                QueryParameter::Address(address.to_string()),
+                QueryParameter::HasExpirationCondition(false),
+                QueryParameter::HasTimelockCondition(false),
+                QueryParameter::HasStorageDepositReturnCondition(false),
+            ],
         )
         .await?;
 

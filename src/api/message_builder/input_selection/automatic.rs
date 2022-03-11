@@ -81,7 +81,12 @@ pub(crate) async fn get_inputs(
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
             let output_ids = crate::node_api::indexer_api::routes::output_ids(
                 message_builder.client,
-                vec![QueryParameter::Address(str_address.to_string())],
+                vec![
+                    QueryParameter::Address(str_address.to_string()),
+                    QueryParameter::HasExpirationCondition(false),
+                    QueryParameter::HasTimelockCondition(false),
+                    QueryParameter::HasStorageDepositReturnCondition(false),
+                ],
             )
             .await?;
 
@@ -218,9 +223,12 @@ async fn get_inputs_for_sender_and_issuer(
 
             let output_ids = crate::node_api::indexer_api::routes::output_ids(
                 message_builder.client,
-                vec![QueryParameter::Address(
-                    Address::Ed25519(*address).to_bech32(&bech32_hrp),
-                )],
+                vec![
+                    QueryParameter::Address(Address::Ed25519(*address).to_bech32(&bech32_hrp)),
+                    QueryParameter::HasExpirationCondition(false),
+                    QueryParameter::HasTimelockCondition(false),
+                    QueryParameter::HasStorageDepositReturnCondition(false),
+                ],
             )
             .await?;
 
