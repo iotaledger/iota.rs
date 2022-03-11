@@ -599,6 +599,12 @@ impl Client {
         crate::node_api::core_api::get_outputs(self, output_ids).await
     }
 
+    /// Try to get OutputResponse from provided OutputIds (requests are sent in parallel and errors are ignored, can be
+    /// useful for spent outputs)
+    pub async fn try_get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
+        crate::node_api::core_api::try_get_outputs(self, output_ids).await
+    }
+
     /// A generic send function for easily sending transaction or tagged data messages.
     pub fn message(&self) -> ClientMessageBuilder<'_> {
         ClientMessageBuilder::new(self)
