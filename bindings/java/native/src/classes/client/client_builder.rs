@@ -195,15 +195,9 @@ impl ClientBuilder {
     }
 
     pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder {
-        let new_builder = crate::block_on(async move {
-            self.builder
-                .borrow_mut()
-                .take()
-                .unwrap()
-                .with_node_pool_urls(&node_pool_urls)
-                .await
-                .unwrap()
-        });
+        let old_builder = self.builder.borrow_mut().take().unwrap();
+        let new_builder =
+            crate::block_on(async move { old_builder.with_node_pool_urls(&node_pool_urls).await.unwrap() });
 
         ClientBuilder::new_with_builder(new_builder)
     }
@@ -280,7 +274,8 @@ impl ClientBuilder {
     }
 
     pub fn finish(&mut self) -> Result<Client> {
-        let client = crate::block_on(async move { self.builder.borrow_mut().take().unwrap().finish().await.unwrap() });
+        let builder = self.builder.borrow_mut().take().unwrap();
+        let client = crate::block_on(async move { builder.finish().await.unwrap() });
 
         Ok(Client::try_from(client).unwrap())
     }
