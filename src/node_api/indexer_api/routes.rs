@@ -13,7 +13,7 @@ use bee_message::output::{AliasId, FoundryId, NftId, OutputId};
 
 /// Get outputs filtered by the given parameters.
 /// GET with query parameter returns all outputIDs that fit these filter criteria.
-/// Query parameters: "address", "hasDustReturnCondition", "dustReturnAddress", "hasExpirationCondition",
+/// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress", "hasExpirationCondition",
 ///                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone", "expiresAfterMilestone",
 ///                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
 ///                 "timelockedAfterMilestone", "sender", "tag", "createdBefore", "createdAfter"
@@ -45,7 +45,7 @@ pub async fn alias_output_ids(client: &Client, alias_id: AliasId) -> Result<Vec<
 }
 
 /// Get NFT filtered by the given parameters.
-/// Query parameters: "address", "hasDustReturnCondition", "dustReturnAddress", "hasExpirationCondition",
+/// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress", "hasExpirationCondition",
 ///                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone", "expiresAfterMilestone",
 ///                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
 ///                 "timelockedAfterMilestone", "issuer", "sender", "tag", "createdBefore", "createdAfter"

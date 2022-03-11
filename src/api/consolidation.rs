@@ -42,7 +42,12 @@ pub async fn consolidate_funds(
 
             let basic_outputs = client
                 .get_address()
-                .outputs(vec![QueryParameter::Address(address.to_string())])
+                .outputs(vec![
+                    QueryParameter::Address(address.to_string()),
+                    QueryParameter::HasExpirationCondition(false),
+                    QueryParameter::HasTimelockCondition(false),
+                    QueryParameter::HasStorageDepositReturnCondition(false),
+                ])
                 .await?;
 
             let mut output_with_metadata = Vec::new();
