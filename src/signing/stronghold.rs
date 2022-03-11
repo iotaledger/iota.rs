@@ -434,12 +434,12 @@ mod tests {
 
         let storage_path = Path::new("test.stronghold");
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
-        let signer = StrongholdSigner::try_new_signer_handle("", &storage_path).unwrap();
+        let signer = StrongholdSigner::try_new_signer_handle("", storage_path).unwrap();
 
         signer
             .lock()
             .await
-            .store_mnemonic(&storage_path, mnemonic.to_string())
+            .store_mnemonic(storage_path, mnemonic.to_string())
             .await
             .unwrap();
 
