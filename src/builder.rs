@@ -16,7 +16,7 @@ use std::{
     time::Duration,
 };
 
-const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(50);
+const DEFAULT_REMOTE_POW_TIMEOUT: Duration = Duration::from_secs(100);
 pub(crate) const GET_API_TIMEOUT: Duration = Duration::from_secs(15);
 #[cfg(not(feature = "wasm"))]
 const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
