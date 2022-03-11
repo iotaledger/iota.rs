@@ -308,25 +308,33 @@ pub struct NetworkInfo(RustNetworkInfo);
 
 impl NetworkInfo {
     // Network
-    // pub network: Option<String>,
+    pub fn network(&self) -> Option<String> {
+        self.0.network.clone()
+    }
     // Network ID
-    // #[serde(rename = "networkId")]
-    // pub network_id: Option<u64>,
+    pub fn network_id(&self) -> u64 {
+        self.0.network_id.clone().unwrap_or(0)
+    }
     // Bech32 HRP
-    // #[serde(rename = "bech32HRP")]
-    // pub bech32_hrp: String,
+    pub fn bech32_hrp(&self) -> String {
+        self.0.bech32_hrp.clone()
+    }
     // Mininum proof of work score
-    // #[serde(rename = "minPoWScore")]
-    // pub min_pow_score: f64,
+    pub fn min_pow_score(&self) -> f64 {
+        self.0.min_pow_score.clone()
+    }
     // Local proof of work
-    // #[serde(rename = "localPow")]
-    // pub local_pow: bool,
+    pub fn local_pow(&self) -> bool {
+        self.0.local_pow.clone()
+    }
     // Fallback to local proof of work if the node doesn't support remote PoW
-    // #[serde(rename = "fallbackToLocalPow")]
-    // pub fallback_to_local_pow: bool,
+    pub fn fallback_to_local_pow(&self) -> bool {
+        self.0.fallback_to_local_pow.clone()
+    }
     // Tips request interval during PoW in seconds
-    // #[serde(rename = "tipsInterval")]
-    // pub tips_interval: u64,
+    pub fn tips_interval(&self) -> u64 {
+        self.0.tips_interval.clone()
+    }
 }
 
 impl core::fmt::Display for NetworkInfo {

@@ -178,11 +178,11 @@ foreign_class!(
         fn ClientBuilder::with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> Result<ClientBuilder>;
         /// Allows creating the client without nodes for offline address generation or signing
         fn ClientBuilder::with_offline_mode(&mut self) -> ClientBuilder;
-        /// Client connected to the default Network pool unless specifiedqa.
+        /// Client connected to the default Network node pool unless other nodes are provided.
         ///
         /// ```
         /// import org.iota.client.ClientBuilder;
-        /// Client clientOptions = new ClientBuilder().with_network("testnet2").build();
+        /// Client clientOptions = new ClientBuilder().with_network("devnet").build();
         /// ```
         /// @param network The network we connect to
         fn ClientBuilder::with_network(&mut self, network: String) -> ClientBuilder;
@@ -434,9 +434,28 @@ foreign_class!(
 );
 
 foreign_class!(
+    /// Struct containing network and PoW related information
+    #[derive(PartialEq, camelCaseAliases, Display)]
     class NetworkInfo {
         self_type NetworkInfo;
         private constructor = empty;
+        
+        private fn NetworkInfo::to_string(&self) -> String; alias to_string;
+        private fn NetworkInfo::eq(&self, o: &NetworkInfo) -> bool; alias rustEq;
+        // Network
+        fn NetworkInfo::network(&self) -> Option<String>;
+        // Network ID, 0 if it is not available
+        fn NetworkInfo::network_id(&self) -> u64;
+        // Bech32 HRP
+        fn NetworkInfo::bech32_hrp(&self) -> String;
+        // Mininum proof of work score
+        fn NetworkInfo::min_pow_score(&self) -> f64;
+        // Local proof of work
+        fn NetworkInfo::local_pow(&self) -> bool;
+        // Fallback to local proof of work if the node doesn't support remote PoW
+        fn NetworkInfo::fallback_to_local_pow(&self) -> bool;
+        // Tips request interval during PoW in seconds
+        fn NetworkInfo::tips_interval(&self) -> u64;
     }
 );
 
