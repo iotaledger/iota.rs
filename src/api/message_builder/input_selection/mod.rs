@@ -6,15 +6,21 @@
 use crate::{signing::types::InputSigningData, Error, Result};
 
 use bee_message::{
-    address::Address,
+    address::{Address, Ed25519Address},
     input::INPUT_COUNT_MAX,
-    output::{ByteCostConfig, Output, TokenId},
+    output::{
+        AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeToken, Output, TokenId,
+        UnlockCondition,
+    },
 };
 use packable::PackableExt;
 
 use primitive_types::U256;
 
-use std::collections::{hash_map::Entry, HashMap};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    str::FromStr,
+};
 
 mod automatic;
 pub(crate) use automatic::get_inputs;
@@ -161,7 +167,32 @@ pub async fn try_select_inputs(
     {
         // todo: check if this is necessary or if we can just check by output types (foundry, alias, nft should be
         // selected before because of chains)
-        if selected_input_amount < required.amount {
+
+        let more_remainder_amount_required = {
+            if selected_input_amount > required.amount {
+                let current_remainder_amount = selected_input_amount - required.amount;
+                let native_token_remainder =
+                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens);
+                // If no remainder address is provided, an Ed25519Address from the inputs will  be used
+                let remainder_address = remainder_address.unwrap_or({
+                    // todo: find a better way to do this, this address is only used for the storage deposit calculation
+                    Address::from(Ed25519Address::from_str(
+                        "52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649",
+                    )?)
+                });
+                let required_deposit =
+                    minimum_storage_deposit(byte_cost_config, &remainder_address, &native_token_remainder)?;
+                if required_deposit > current_remainder_amount {
+                    required_deposit - current_remainder_amount
+                } else {
+                    0
+                }
+            } else {
+                0
+            }
+        };
+
+        if selected_input_amount < required.amount || more_remainder_amount_required > 0 {
             // only add outputs that aren't already in the inputs
             if !selected_inputs.iter().any(|e| {
                 e.output_response.transaction_id == input_signing_data.output_response.transaction_id
@@ -199,7 +230,31 @@ pub async fn try_select_inputs(
     {
         // todo: check if this is necessary or if we can just check by output types (foundry, alias, nft should be
         // selected before because of chains)
-        if selected_input_amount < required.amount {
+        let more_remainder_amount_required = {
+            if selected_input_amount > required.amount {
+                let current_remainder_amount = selected_input_amount - required.amount;
+                let native_token_remainder =
+                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens);
+                // If no remainder address is provided, an Ed25519Address from the inputs will  be used
+                let remainder_address = remainder_address.unwrap_or({
+                    // todo: find a better way to do this, this address is only used for the storage deposit calculation
+                    Address::from(Ed25519Address::from_str(
+                        "52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649",
+                    )?)
+                });
+                let required_deposit =
+                    minimum_storage_deposit(byte_cost_config, &remainder_address, &native_token_remainder)?;
+                if required_deposit > current_remainder_amount {
+                    required_deposit - current_remainder_amount
+                } else {
+                    0
+                }
+            } else {
+                0
+            }
+        };
+
+        if selected_input_amount < required.amount || more_remainder_amount_required > 0 {
             // only add outputs that aren't already in the inputs
             if !selected_inputs.iter().any(|e| {
                 e.output_response.transaction_id == input_signing_data.output_response.transaction_id
@@ -243,4 +298,27 @@ pub async fn try_select_inputs(
         outputs,
         remainder_output,
     })
+}
+
+/// Computes the minimum amount that an output needs to have, when native tokens are sent with [AddressUnlockCondition].
+fn minimum_storage_deposit(
+    config: &ByteCostConfig,
+    address: &Address,
+    native_tokens: &Option<HashMap<TokenId, U256>>,
+) -> Result<u64> {
+    let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
+    // Safety: This can never fail because the amount will always be within the valid range. Also, the actual value is
+    // not important, we are only interested in the storage requirements of the type.
+    // todo: use `OutputAmount::MIN` when public, see https://github.com/iotaledger/bee/issues/1238
+    let mut basic_output_builder = BasicOutputBuilder::new(1_000_000_000)?;
+    if let Some(native_tokens) = native_tokens {
+        basic_output_builder = basic_output_builder.with_native_tokens(
+            native_tokens
+                .iter()
+                .map(|(id, amount)| NativeToken::new(*id, *amount).map_err(crate::Error::MessageError))
+                .collect::<Result<Vec<NativeToken>>>()?,
+        );
+    }
+    let basic_output = basic_output_builder.add_unlock_condition(address_condition).finish()?;
+    Ok(Output::Basic(basic_output).byte_cost(config))
 }
