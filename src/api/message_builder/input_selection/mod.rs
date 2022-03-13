@@ -301,7 +301,7 @@ pub async fn try_select_inputs(
 }
 
 /// Computes the minimum amount that an output needs to have, when native tokens are sent with [AddressUnlockCondition].
-fn minimum_storage_deposit(
+pub fn minimum_storage_deposit(
     config: &ByteCostConfig,
     address: &Address,
     native_tokens: &Option<HashMap<TokenId, U256>>,
