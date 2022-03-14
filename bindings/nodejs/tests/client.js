@@ -194,13 +194,13 @@ describe('Client', () => {
 
     const seed = client.mnemonicToHexSeed(mnemonic)
 
-    const generatedAddress = await client.getAddresses(seed)
+    const generatedAddresses = await client.getAddresses(seed)
       .accountIndex(0)
       .bech32Hrp('iota')
       .range(0, 1)
       .get()
 
 
-    assert.strictEqual(address, generatedAddress)
+    assert.strictEqual(address, generatedAddresses[0])
   })
 })
