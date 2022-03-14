@@ -1,6 +1,7 @@
 const { ClientBuilder } = require('../node/client_wasm')
 const { assertAddress, assertMessageId, assertMessageWrapper } = require('./assertions')
 const assert = require('assert')
+const TestVectors = require('../../../tests/fixtures/test_vectors.json')
 
 const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 
@@ -221,6 +222,7 @@ async function test() {
     })
 
   })
+
   // transaction tests disabled for workflows, because they fail if we don't have funds
   // it('sends a value transaction and checks output balance', async () => {
   //   const depositAddress = 'atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf'
@@ -272,5 +274,21 @@ async function test() {
   //       .finishMessage(signed_transaction);
   //   }
   // })
+
+  it.only('mnemonic to address conversion', async () => {
+    const mnemonic = TestVectors['general']['MNEMNONIC'];
+    const address = TestVectors['general']['MNEMNONIC_ADDRESS'];
+
+    const seed = await client.mnemonicToHexSeed(mnemonic)
+
+    const generatedAddresses = await client.getAddresses(seed)
+      .accountIndex(0)
+      .bech32Hrp('iota')
+      .range(0, 1)
+      .get()
+
+
+    assert.strictEqual(address, generatedAddresses[0])
+  })
 }
 test()
