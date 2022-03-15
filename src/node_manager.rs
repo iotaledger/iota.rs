@@ -655,6 +655,9 @@ impl HttpClient {
     }
 
     pub(crate) async fn get(&self, node: Node, _timeout: Duration) -> Result<Response> {
+        #[cfg(feature = "wasm")]
+        let start_time = instant::Instant::now();
+        #[cfg(not(feature = "wasm"))]
         let start_time = std::time::Instant::now();
         let mut request_builder = self.client.get(node.url.clone());
         if let Some(jwt) = node.jwt {
