@@ -14,6 +14,17 @@ This library allows you to do the following:
 * Generate addresses
 * Interact with an IOTA node
 
+## Branching structure for development
+
+This library follows the following branching strategy:
+
+|Branch|Description|
+|------|-----------|
+|`production`|The latest release for the IOTA networks (`mainnet`, `devnet`, `comnet`).|
+|`develop`|The ongoing development for future releases of these networks. With every release, the `develop` branch will be merged into `production`.|
+|`staging`|The latest release for the Shimmer networks (`testnet`).|
+| other | Branches with codenames like `stardust` reflect current projects. Similar to `develop`, they will find their way into `staging` once they are ready.| 
+
 ## Using the library
 
 We recommend you to first update the Rust compiler to the latest stable version:
