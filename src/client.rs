@@ -616,7 +616,7 @@ impl Client {
     }
 
     /// Find all messages by provided message IDs.
-    pub async fn find_messages<I: AsRef<[u8]>>(&self, message_ids: &[MessageId]) -> Result<Vec<Message>> {
+    pub async fn find_messages(&self, message_ids: &[MessageId]) -> Result<Vec<Message>> {
         let mut messages = Vec::new();
 
         // Use a `HashSet` to prevent duplicate message_ids.
