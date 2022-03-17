@@ -95,12 +95,15 @@ pub(crate) fn get_minted_and_burned_native_tokens(
             // tokens
             if initial_creation {
                 let token_id = TokenId::build(output_foundry.id(), *output_foundry.token_tag());
-                match minted_native_tokens.entry(token_id) {
-                    Entry::Vacant(e) => {
-                        e.insert(*output_foundry.circulating_supply());
-                    }
-                    Entry::Occupied(mut e) => {
-                        *e.get_mut() += *output_foundry.circulating_supply();
+                let circulating_supply = output_foundry.circulating_supply();
+                if *circulating_supply != U256::from(0) {
+                    match minted_native_tokens.entry(token_id) {
+                        Entry::Vacant(e) => {
+                            e.insert(*circulating_supply);
+                        }
+                        Entry::Occupied(mut e) => {
+                            *e.get_mut() += *circulating_supply;
+                        }
                     }
                 }
             }
