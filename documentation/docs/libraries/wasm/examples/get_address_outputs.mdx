@@ -1,0 +1,40 @@
+---
+title: Examples
+description: Official IOTA Client Library Software Node.js examples.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- account
+- address
+- nodejs
+- message
+- output
+---
+import CodeBlock from '@theme/CodeBlock';
+import a_get_address_outputs from '!!raw-loader!../../../../../bindings/nodejs/examples/05a_get_address_outputs.js';
+
+:::warning
+It is not recommended to store passwords/seeds on host's environment variables or in the source code in a production
+setup. Please make sure you follow our [backup and security](https://wiki.iota.org/chrysalis-docs/guides/backup_security)
+recommendations for production use.
+:::
+
+
+#### Client.getAddressOutputs(str)
+
+This [`Client.getAddressOutputs(str)`](api_reference#getaddressoutputsaddress-options-promisestring) expects an address in
+Bech32 format and returns a `str[]` of `output_ids`.
+
+<CodeBlock className="language-javascript">
+  {a_get_address_outputs}
+</CodeBlock>
+
+**Output example**:
+
+```json
+[
+  '0f2d5d2651f8061a9f5417d0658009f32b2e3f77f9706b0be3b4b3f466171f360000',
+  '7614ba900a90b130707766a660a454942ac7cc4adea3fb9ad0cdca90114417c20000',
+  '768c20c15a290e02a43b83263a98501b9d7eb0b57da40a9247289c672de63ea60000'
+]
+```

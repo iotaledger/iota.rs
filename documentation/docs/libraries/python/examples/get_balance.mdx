@@ -1,0 +1,51 @@
+---
+title: Check a Balance
+description: Official IOTA Client Library Software Node.py examples.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- account
+- address
+- python
+- message
+- output
+---
+import CodeBlock from '@theme/CodeBlock';
+import get_balance from '!!raw-loader!../../../../../bindings/python/examples/04_get_balance.py';
+
+:::note
+
+You can use the [faucet service](https://faucet.chrysalis-devnet.iota.cafe/)  to send test tokens to any Chrysalis
+[devnet](https://wiki.iota.org/chrysalis-docs/devnet) address.
+
+:::
+
+There are three common API calls you can use to get a balance:
+
+* `Client.get_address_balance(address: str)`: It expects a single address in Bech32 format and returns `dict` with a balance for the address.
+* `Client.get_address_balances(list[str])`: A convenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all given addresses
+* `Client.get_balance(seed, account_index (optional), initial_address_index(optional), gap_limit(optional))`: A convenient function that combines `Client.get_addresses()` and `Client.get_address_balances()` api calls. It returns a combined balance for the provided `seed` and optional chaining calls `.accountIndex(index)`, `.initialAddressIndex(index)` and `.gapLimit(amount)`
+
+<CodeBlock className="language-javascript">
+  {get_balance}
+</CodeBlock>
+
+Example of output:
+
+```json
+{
+   "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
+   "balance":10000000,
+   "dustAllowed":false
+}
+Account balance: 0
+```
+
+* `dustAllowed` indicates whether the given address is allowed to accept a dust due to
+[dust protection mechanism](https://wiki.iota.org/chrysalis-docs/faq#what-is-dust-protection-and-how-does-it-work).
+
+`Client.get_balance(seed)` performs several tasks under the hood. It starts by generating addresses for the provided
+`seed` and `.account_index` from `.initial_address_index`, and checks for a balance of each of the generated
+addresses. Since it does not know how many addresses are used in fact, there is a condition set by the
+`.gap_limit` argument to know when to stop searching. If the `gap_limit` amount of addresses in a row have no
+balance, the function returns results and stops searching.

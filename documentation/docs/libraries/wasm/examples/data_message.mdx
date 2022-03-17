@@ -1,0 +1,56 @@
+---
+title: Send a Data Message
+description: An IndexationPayload is a payload type that can be used to attach arbitrary data and a key index to a message.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- key index
+- data message
+- arbitrary data
+- client
+- payloads
+- wasm
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import data_message from '!!raw-loader!./../../../../../bindings/nodejs/examples/08_data_message.js';
+
+An [`IndexationPayload`](../../../key_concepts/messages_payloads_and_transactions.md#core-payloads) is a payload type that can be used to attach arbitrary `data`
+and a key `index` to a message. To send a payload, you should  at least provide the `index`. The data part
+(as `bytes[]`) is optional.
+
+<CodeBlock className="language-javascript">
+    {data_message}
+</CodeBlock>
+
+**Output example**:
+
+```json
+{
+   "message": {
+      "networkId":"14379272398717627559",
+      "parentMessageIds": [
+         "1a383abbe5f6a6b0899d718975c3119643aa784a68d04075f4e986fd7a0c0e4b",
+         "6098f889e31911833df7b7839e8b222d701ab496f7dfa1a719087edf4fa7ae52",
+         "a98b47db4e8254eccc738c968bd35b08a5491e56d6c1a18af298c42bbd8c3a46",
+         "da6796c0842c08de832c7948fffedc0d5adce372e50a108f26a128dba6096d31"
+      ],
+      "payload": {
+         "type":2,
+         "index":"494f54412e52532042494e44494e47202d204e4f44452e4a53",
+         "data":"736f6d65207574662062617365642064617461"
+      },
+      "nonce":"13835058055282176519"
+   },
+   "messageId":"10f59c101cec669b0a0ba163bc777184c7f63455f5e771d42f910a1ba2ad20ff"
+}
+```
+
+* You can find the message using its `messageId` in the
+[Tangle explorer](https://explorer.iota.org/devnet/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
+* There are three prepared payloads(`transaction`, `milestone` and `indexation`). However, at the time, the `indexation` payload
+is the only one in use.
+* `data` contains arbitrary data encoded in bytes.
+* Please note there is no IOTA address involved while sending data messages. Data messages are referenced using their
+`messageId` or `index` key.
+* IOTA addresses are part of the `UTXO` data structure that is sent using the [`SignedTransaction`](transaction) payload.

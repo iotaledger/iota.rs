@@ -10,153 +10,186 @@
  */
 
 module.exports = {
-  docs: [{
-    type: 'doc',
-    id: 'welcome',
-  },
-  {
-    type: 'doc',
-    id: 'overview',
-  },
-  {
-    type: 'doc',
-    id: 'getting_started',
-  },
-  {
-    type: 'category',
-    label: 'Libraries',
-    collapsed: false,
-    items: [{
-      type: 'doc',
-      id: 'libraries/overview',
-      label: 'Overview',
+    docs: [{
+        type: 'doc',
+        id: 'welcome',
     },
-    {
-      type: 'category',
-      label: 'Rust',
-      items: [
         {
-          type: 'doc',
-          id: 'libraries/rust/getting_started',
-          label: 'Getting Started',
+            type: 'doc',
+            id: 'overview',
         },
         {
-          type: 'doc',
-          id: 'libraries/rust/examples',
-          label: 'Examples'
+            type: 'doc',
+            id: 'getting_started',
         },
         {
-          type: 'doc',
-          id: 'libraries/rust/api_reference',
-          label: 'API Reference'
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Node.js',
-      items: [
-        {
-          type: 'doc',
-          id: 'libraries/nodejs/getting_started',
-          label: 'Getting Started'
+            type: 'category',
+            label: 'Key Concepts',
+            items:
+                [
+                    'key_concepts/address_key_space',
+                    'key_concepts/messages_payloads_and_transactions']
         },
         {
-          type: 'doc',
-          id: 'libraries/nodejs/examples',
-          label: 'Examples'
+            type: 'category',
+            label: 'Libraries',
+            collapsed: false,
+            items: [{
+                type: 'doc',
+                id: 'libraries/overview',
+                label: 'Overview',
+            },
+                {
+                    type: 'category',
+                    label: 'Rust',
+                    items: [
+                        {
+                            type: 'doc',
+                            id: 'libraries/rust/getting_started',
+                            label: 'Getting Started',
+                        },
+                        {
+                            type: 'doc',
+                            id: 'libraries/rust/examples',
+                            label: 'Examples'
+                        },
+                        {
+                            type: 'doc',
+                            id: 'libraries/rust/api_reference',
+                            label: 'API Reference'
+                        },
+                    ]
+                },
+                {
+                    type: 'category',
+                    label: 'Node.js',
+                    items: [
+                        {
+                            type: 'doc',
+                            id: 'libraries/nodejs/getting_started',
+                            label: 'Getting Started'
+                        },
+                        {
+                            type: 'category',
+                            label: 'Examples',
+                            items: [
+                                'libraries/nodejs/examples/get_info',
+                                'libraries/nodejs/examples/generate_seed',
+                                'libraries/nodejs/examples/generate_addresses',
+                                'libraries/nodejs/examples/get_balance',
+                                'libraries/nodejs/examples/get_outputs',
+                                'libraries/nodejs/examples/simple_message',
+                                'libraries/nodejs/examples/get_message_data',
+                                'libraries/nodejs/examples/data_message',
+                                'libraries/nodejs/examples/transaction',
+                                'libraries/nodejs/examples/mqtt',
+                            ],
+                        },
+                        {
+                            type: 'doc',
+                            id: 'libraries/nodejs/api_reference',
+                            label: 'API Reference'
+                        },
+                    ]
+                },
+                {
+                    type: 'category',
+                    label: 'Python',
+                    items: [
+                        {
+                            type: 'doc',
+                            id: 'libraries/python/getting_started',
+                            label: 'Getting Started'
+                        },
+                        {
+                            type: 'category',
+                            label: 'Examples',
+                            items: [
+                                'libraries/python/examples/get_info',
+                                'libraries/python/examples/generate_seed',
+                                'libraries/python/examples/generate_addresses',
+                                'libraries/python/examples/get_balance',
+                                'libraries/python/examples/get_outputs',
+                                'libraries/python/examples/simple_message',
+                                'libraries/python/examples/get_message_data',
+                                'libraries/python/examples/data_message',
+                                'libraries/python/examples/transaction',
+                            ]
+                        },
+                        {
+                            type: 'doc',
+                            id: 'libraries/python/api_reference',
+                            label: 'API Reference'
+                        },
+                    ]
+                },
+                {
+                    type: 'category',
+                    label: 'Java',
+                    items: [
+                        {
+                            type: 'doc',
+                            id: 'libraries/java/getting_started',
+                            label: 'Getting Started'
+                        },
+                        {
+                            type: 'doc',
+                            id: 'libraries/java/examples',
+                            label: 'Examples'
+                        },
+                        {
+                            type: 'doc',
+                            id: 'libraries/java/api_reference',
+                            label: 'API Reference'
+                        },
+                    ]
+                },
+                {
+                    type: 'category',
+                    label: 'Wasm',
+                    items: [
+                        {
+                            type: 'doc',
+                            id: 'libraries/wasm/getting_started',
+                            label: 'Getting Started'
+                        },
+                        {
+                            type: 'category',
+                            label: 'Examples',
+                            items: [
+                                'libraries/wasm/examples/get_info',
+                                'libraries/wasm/examples/generate_seed',
+                                'libraries/wasm/examples/generate_addresses',
+                                'libraries/wasm/examples/get_balance',
+                                'libraries/wasm/examples/simple_message',
+                                'libraries/wasm/examples/get_message_data',
+                                'libraries/wasm/examples/data_message',
+                                'libraries/wasm/examples/transaction',
+                            ],
+                        },
+                        {
+                            type: 'doc',
+                            id: 'libraries/wasm/api_reference',
+                            label: 'API Reference'
+                        },
+                    ]
+                }
+            ]
         },
         {
-          type: 'doc',
-          id: 'libraries/nodejs/api_reference',
-          label: 'API Reference'
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Python',
-      items: [
-        {
-          type: 'doc',
-          id: 'libraries/python/getting_started',
-          label: 'Getting Started'
+            type: 'doc',
+            id: 'specs',
+            label: 'Specification',
         },
         {
-          type: 'doc',
-          id: 'libraries/python/examples',
-          label: 'Examples'
+            type: 'doc',
+            id: 'troubleshooting',
+            label: 'Troubleshooting'
         },
         {
-          type: 'doc',
-          id: 'libraries/python/api_reference',
-          label: 'API Reference'
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Java',
-      items: [
-        {
-          type: 'doc',
-          id: 'libraries/java/getting_started',
-          label: 'Getting Started'
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/android_development',
-          label: 'Android'
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/examples',
-          label: 'Examples'
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/api_reference',
-          label: 'API Reference'
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Wasm',
-      items: [
-        {
-          type: 'doc',
-          id: 'libraries/wasm/getting_started',
-          label: 'Getting Started'
-        },
-        {
-          type: 'doc',
-          id: 'libraries/wasm/examples',
-          label: 'Examples'
-        },
-        {
-          type: 'doc',
-          id: 'libraries/wasm/api_reference',
-          label: 'API Reference'
-        },
-      ]
-    }
+            type: 'doc',
+            id: 'contribute',
+            label: 'Contribute',
+        }
     ]
-  },
-  {
-    type: 'doc',
-    id: 'specs',
-    label: 'Specification',
-  },
-  {
-    type: 'doc',
-    id: 'troubleshooting',
-    label: 'Troubleshooting'
-  },
-  {
-    type: 'doc',
-    id: 'contribute',
-    label: 'Contribute',
-  }
-  ]
 };
