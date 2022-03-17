@@ -128,10 +128,13 @@ pub trait Signer: Send + Sync {
     /// Sign on `essence`, unlock `input` by returning an [UnlockBlock].
     async fn signature_unlock<'a>(
         &mut self,
-        input: &InputSigningData,
-        essence_hash: &[u8; 32],
-        metadata: &SignMessageMetadata<'a>,
-    ) -> crate::Result<UnlockBlock>;
+        _input: &InputSigningData,
+        _essence_hash: &[u8; 32],
+        _metadata: &SignMessageMetadata<'a>,
+    ) -> crate::Result<UnlockBlock> {
+        // Return error unless implemented otherwise.
+        Err(crate::Error::NoMnemonicWasStored)
+    }
 
     /// Signs transaction essence.
     ///

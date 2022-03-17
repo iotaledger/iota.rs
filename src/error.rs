@@ -128,6 +128,9 @@ pub enum Error {
     /// Output Error
     #[error("Output error: {0}")]
     OutputError(&'static str),
+    /// Not implemented, specially for the default impl of [crate::signing::Signer::signature_unlock()].
+    #[error("No mnemonic was stored! Please implement signature_unlock() :)")]
+    SignatureUnlockNotImplemented,
     #[cfg(not(feature = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]
