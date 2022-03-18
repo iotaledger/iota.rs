@@ -6,15 +6,19 @@
 use bee_message::output::TokenId;
 
 use primitive_types::U256;
-use serde::ser::{SerializeStruct, Serializer};
-use std::collections::HashMap;
+use serde::{ser::Serializer, Serialize};
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display},
+};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, Serialize)]
 /// Error type of the iota client crate.
 #[allow(clippy::large_enum_variant)]
+#[serde(tag = "type", content = "error")]
 pub enum Error {
     /// Error when building tagged_data messages
     #[error("Error when building tagged_data message: {0}")]
@@ -60,15 +64,19 @@ pub enum Error {
     NodeError(String),
     /// Hex string convert error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     FromHexError(#[from] hex::FromHexError),
     /// Bee common logger error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     CommonError(#[from] bee_common::logger::Error),
     /// Message types error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     MessageError(#[from] bee_message::Error),
     /// Bee rest api error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     BeeRestApiError(#[from] bee_rest_api::types::error::Error),
     /// The message doensn't need to be promoted or reattached
     #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
@@ -79,6 +87,7 @@ pub enum Error {
     /// Mqtt client error
     #[cfg(feature = "mqtt")]
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     MqttClientError(#[from] rumqttc::ClientError),
     /// Invalid MQTT topic.
     #[error("The MQTT topic {0} is invalid")]
@@ -88,9 +97,11 @@ pub enum Error {
     MqttConnectionNotFound,
     /// IO error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     IoError(#[from] std::io::Error),
     /// JSON error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     Json(#[from] serde_json::Error),
     /// PoW error
     #[error("{0}")]
@@ -100,10 +111,12 @@ pub enum Error {
     InputAddressNotFound(String, String),
     /// Crypto.rs error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
     /// ureq error
     #[cfg(feature = "sync")]
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     UreqError(#[from] ureq::Error),
     /// Error from RestAPI calls with unexpected status code response
     #[cfg(any(feature = "async", feature = "wasm"))]
@@ -112,9 +125,11 @@ pub enum Error {
     /// reqwest error
     #[cfg(any(feature = "async", feature = "wasm"))]
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     ReqwestError(#[from] reqwest::Error),
     /// URL error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     UrlError(#[from] url::ParseError),
     /// URL validation error
     #[error("{0}")]
@@ -131,12 +146,14 @@ pub enum Error {
     #[cfg(not(feature = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     TaskJoinError(#[from] tokio::task::JoinError),
     /// Invalid mnemonic error
     #[error("Invalid mnemonic {0}")]
     InvalidMnemonic(String),
     /// PoW error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     PowError(#[from] bee_pow::providers::miner::Error),
     /// Packable error
     #[error("Bee packable error")]
@@ -187,6 +204,7 @@ pub enum Error {
     /// Riker system error during Stronghold initialization
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a system error: {0}")]
+    #[serde(serialize_with = "display_string")]
     StrongholdActorSystemError(#[from] riker::system::SystemError),
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
@@ -219,90 +237,11 @@ impl From<iota_ledger::api::errors::APIError> for Error {
     }
 }
 
-impl serde::Serialize for Error {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        fn serialize_variant<S: Serializer>(
-            error: &Error,
-            serializer: S,
-            variant_name: &str,
-        ) -> std::result::Result<S::Ok, S::Error> {
-            let mut state = serializer.serialize_struct("Error", 2)?;
-            state.serialize_field("type", variant_name)?;
-            state.serialize_field("error", &error.to_string())?;
-            state.end()
-        }
-
-        match self {
-            Self::TaggedDataError(_) => serialize_variant(self, serializer, "TaggedDataError"),
-            Self::TransactionError => serialize_variant(self, serializer, "TransactionError"),
-            Self::NotEnoughBalance(..) => serialize_variant(self, serializer, "NotEnoughBalance"),
-            Self::NoInputs => serialize_variant(self, serializer, "NoInputs"),
-            Self::NotEnoughNativeTokens(_) => serialize_variant(self, serializer, "NotEnoughNativeTokens"),
-            Self::NoBalanceForNativeTokenRemainder => {
-                serialize_variant(self, serializer, "NoBalanceForNativeTokenRemainder")
-            }
-            Self::ConsolidationRequired(_) => serialize_variant(self, serializer, "ConsolidationRequired"),
-            Self::MissingParameter(_) => serialize_variant(self, serializer, "MissingParameter"),
-            Self::InvalidParameter(_) => serialize_variant(self, serializer, "InvalidParameter"),
-            Self::SyncedNodePoolEmpty => serialize_variant(self, serializer, "SyncedNodePoolEmpty"),
-            Self::QuorumThresholdError(_, _) => serialize_variant(self, serializer, "QuorumThresholdError"),
-            Self::QuorumPoolSizeError(_, _) => serialize_variant(self, serializer, "QuorumPoolSizeError"),
-            Self::NodeError(_) => serialize_variant(self, serializer, "NodeError"),
-            Self::FromHexError(_) => serialize_variant(self, serializer, "FromHexError"),
-            Self::CommonError(_) => serialize_variant(self, serializer, "CommonError"),
-            Self::MessageError(_) => serialize_variant(self, serializer, "MessageError"),
-            Self::BeeRestApiError(_) => serialize_variant(self, serializer, "BeeRestApiError"),
-            Self::NoNeedPromoteOrReattach(_) => serialize_variant(self, serializer, "NoNeedPromoteOrReattach"),
-            Self::TangleInclusionError(_) => serialize_variant(self, serializer, "TangleInclusionError"),
-            #[cfg(feature = "mqtt")]
-            Self::MqttClientError(_) => serialize_variant(self, serializer, "MqttClientError"),
-            Self::InvalidMqttTopic(_) => serialize_variant(self, serializer, "InvalidMqttTopic"),
-            Self::MqttConnectionNotFound => serialize_variant(self, serializer, "MqttConnectionNotFound"),
-            Self::IoError(_) => serialize_variant(self, serializer, "IoError"),
-            Self::Json(_) => serialize_variant(self, serializer, "Json"),
-            Self::Pow(_) => serialize_variant(self, serializer, "Pow"),
-            Self::InputAddressNotFound(_, _) => serialize_variant(self, serializer, "InputAddressNotFound"),
-            Self::CryptoError(_) => serialize_variant(self, serializer, "CryptoError"),
-            #[cfg(feature = "sync")]
-            Self::UreqError(_) => serialize_variant(self, serializer, "UreqError"),
-            #[cfg(any(feature = "async", feature = "wasm"))]
-            Self::ResponseError(_, _, _) => serialize_variant(self, serializer, "ResponseError"),
-            #[cfg(any(feature = "async", feature = "wasm"))]
-            Self::ReqwestError(_) => serialize_variant(self, serializer, "ReqwestError"),
-            Self::UrlError(_) => serialize_variant(self, serializer, "UrlError"),
-            Self::UrlValidationError(_) => serialize_variant(self, serializer, "UrlValidationError"),
-            Self::UrlAuthError(_) => serialize_variant(self, serializer, "UrlAuthError"),
-            Self::Blake2b256Error(_) => serialize_variant(self, serializer, "Blake2b256Error"),
-            Self::OutputError(_) => serialize_variant(self, serializer, "OutputError"),
-            #[cfg(not(feature = "wasm"))]
-            Self::TaskJoinError(_) => serialize_variant(self, serializer, "TaskJoinError"),
-            Self::InvalidMnemonic(_) => serialize_variant(self, serializer, "InvalidMnemonic"),
-            Self::PowError(_) => serialize_variant(self, serializer, "PowError"),
-            Self::PackableError => serialize_variant(self, serializer, "PackableError"),
-            Self::ApiError => serialize_variant(self, serializer, "ApiError"),
-            Self::PoisonError => serialize_variant(self, serializer, "PoisonError"),
-            Self::MissingUnlockBlock => serialize_variant(self, serializer, "MissingUnlockBlock"),
-            Self::MissingInputWithEd25519UnlockCondition => {
-                serialize_variant(self, serializer, "MissingInputWithEd25519UnlockCondition")
-            }
-            Self::NoMnemonicWasStored => serialize_variant(self, serializer, "NoMnemonicWasStored"),
-            #[cfg(feature = "ledger")]
-            Self::LedgerMiscError => serialize_variant(self, serializer, "LedgerMiscError"),
-            #[cfg(feature = "ledger")]
-            Self::LedgerDongleLocked => serialize_variant(self, serializer, "LedgerDongleLocked"),
-            #[cfg(feature = "ledger")]
-            Self::LedgerDeniedByUser => serialize_variant(self, serializer, "LedgerDeniedByUser"),
-            #[cfg(feature = "ledger")]
-            Self::LedgerDeviceNotFound => serialize_variant(self, serializer, "LedgerDeviceNotFound"),
-            #[cfg(feature = "ledger")]
-            Self::LedgerEssenceTooLarge => serialize_variant(self, serializer, "LedgerEssenceTooLarge"),
-            #[cfg(feature = "ledger")]
-            Self::LedgerNetMismatch => serialize_variant(self, serializer, "LedgerNetMismatch"),
-            #[cfg(feature = "ledger")]
-            Self::LedgerMnemonicMismatch => serialize_variant(self, serializer, "LedgerMnemonicMismatch"),
-        }
-    }
+/// Use this to serialize Error variants that implements Debug but not Serialize
+fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
+where
+    T: Display,
+    S: Serializer,
+{
+    value.to_string().serialize(serializer)
 }
