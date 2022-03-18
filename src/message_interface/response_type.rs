@@ -124,7 +124,6 @@ pub enum ResponseType<'a> {
     Error(Error),
     /// A panic occurred.
     Panic(String),
-    /// GenerateMnemonic response.
     /// All went fine.
     Ok(()),
 }
