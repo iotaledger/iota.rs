@@ -29,8 +29,6 @@ pub enum ResponseType<'a> {
     GeneratedMessage(PreparedTransactionData),
     /// Node
     Node(Node),
-    // /// Proof of work provider
-    // PoWProvider(ClientMiner),
     /// Network info
     NetworkInfo(NetworkInfo),
     /// Network ID
