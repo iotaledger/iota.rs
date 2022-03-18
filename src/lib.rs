@@ -41,6 +41,8 @@ pub mod builder;
 pub mod client;
 pub mod constants;
 pub mod error;
+#[cfg(feature = "message_interface")]
+pub mod message_interface;
 pub mod node_api;
 pub mod node_manager;
 pub mod signing;

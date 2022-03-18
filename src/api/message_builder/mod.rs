@@ -56,6 +56,44 @@ pub struct ClientMessageBuilder<'a> {
     parents: Option<Vec<MessageId>>,
 }
 
+/// Message output address
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientMessageBuilderOutputAddress {
+    /// Address
+    pub address: String,
+    /// Amount
+    pub amount: u64,
+}
+
+/// Options for generating message
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientMessageBuilderOptions {
+    /// Coin type
+    pub coin_type: Option<u32>,
+    /// Account index
+    pub account_index: Option<u32>,
+    /// Initial address index
+    pub initial_address_index: Option<u32>,
+    /// Inputs
+    pub inputs: Option<Vec<UtxoInput>>,
+    /// Input range
+    pub input_range: Option<Range<u32>>,
+    /// Bech32 encoded output address and amount
+    pub output: Option<ClientMessageBuilderOutputAddress>,
+    /// Hex encoded output address and amount
+    pub output_hex: Option<ClientMessageBuilderOutputAddress>,
+    /// Outputs
+    pub outputs: Option<Vec<Output>>,
+    /// Tag
+    pub tag: Option<Box<[u8]>>,
+    /// Data
+    pub data: Option<Vec<u8>>,
+    /// Parents
+    pub parents: Option<Vec<MessageId>>,
+}
+
 impl<'a> ClientMessageBuilder<'a> {
     /// Create message builder
     pub fn new(client: &'a Client) -> Self {
@@ -183,6 +221,58 @@ impl<'a> ClientMessageBuilder<'a> {
             )));
         }
         self.parents.replace(parent_ids);
+        Ok(self)
+    }
+
+    /// Set multiple options from client message builder options type
+    /// Useful for bindings
+    pub fn set_options(mut self, options: ClientMessageBuilderOptions) -> Result<Self> {
+        if let Some(coin_type) = options.coin_type {
+            self = self.with_coin_type(coin_type);
+        }
+
+        if let Some(account_index) = options.account_index {
+            self = self.with_account_index(account_index);
+        }
+
+        if let Some(initial_address_index) = options.initial_address_index {
+            self = self.with_initial_address_index(initial_address_index);
+        }
+
+        if let Some(inputs) = options.inputs {
+            for input in inputs {
+                self = self.with_input(input)?;
+            }
+        }
+
+        if let Some(input_range) = options.input_range {
+            self = self.with_input_range(input_range);
+        }
+
+        if let Some(output) = options.output {
+            self = self.with_output(&output.address, output.amount)?;
+        }
+
+        if let Some(output_hex) = options.output_hex {
+            self = self.with_output_hex(&output_hex.address, output_hex.amount)?;
+        }
+
+        if let Some(outputs) = options.outputs {
+            self = self.with_outputs(outputs)?;
+        }
+
+        if let Some(tag) = options.tag {
+            self = self.with_tag(tag);
+        }
+
+        if let Some(data) = options.data {
+            self = self.with_data(data);
+        }
+
+        if let Some(parents) = options.parents {
+            self = self.with_parents(parents)?;
+        }
+
         Ok(self)
     }
 

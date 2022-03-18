@@ -6,15 +6,19 @@
 use bee_message::output::TokenId;
 
 use primitive_types::U256;
-
-use std::collections::HashMap;
+use serde::{ser::Serializer, Serialize};
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display},
+};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, Serialize)]
 /// Error type of the iota client crate.
 #[allow(clippy::large_enum_variant)]
+#[serde(tag = "type", content = "error")]
 pub enum Error {
     /// Error when building tagged_data messages
     #[error("Error when building tagged_data message: {0}")]
@@ -60,15 +64,19 @@ pub enum Error {
     NodeError(String),
     /// Hex string convert error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     FromHexError(#[from] hex::FromHexError),
     /// Bee common logger error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     CommonError(#[from] bee_common::logger::Error),
     /// Message types error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     MessageError(#[from] bee_message::Error),
     /// Bee rest api error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     BeeRestApiError(#[from] bee_rest_api::types::error::Error),
     /// The message doensn't need to be promoted or reattached
     #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
@@ -79,6 +87,7 @@ pub enum Error {
     /// Mqtt client error
     #[cfg(feature = "mqtt")]
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     MqttClientError(#[from] rumqttc::ClientError),
     /// Invalid MQTT topic.
     #[error("The MQTT topic {0} is invalid")]
@@ -88,9 +97,11 @@ pub enum Error {
     MqttConnectionNotFound,
     /// IO error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     IoError(#[from] std::io::Error),
     /// JSON error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     Json(#[from] serde_json::Error),
     /// PoW error
     #[error("{0}")]
@@ -100,10 +111,12 @@ pub enum Error {
     InputAddressNotFound(String, String),
     /// Crypto.rs error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
     /// ureq error
     #[cfg(feature = "sync")]
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     UreqError(#[from] ureq::Error),
     /// Error from RestAPI calls with unexpected status code response
     #[cfg(any(feature = "async", feature = "wasm"))]
@@ -112,9 +125,11 @@ pub enum Error {
     /// reqwest error
     #[cfg(any(feature = "async", feature = "wasm"))]
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     ReqwestError(#[from] reqwest::Error),
     /// URL error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     UrlError(#[from] url::ParseError),
     /// URL validation error
     #[error("{0}")]
@@ -134,12 +149,14 @@ pub enum Error {
     #[cfg(not(feature = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     TaskJoinError(#[from] tokio::task::JoinError),
     /// Invalid mnemonic error
     #[error("Invalid mnemonic {0}")]
     InvalidMnemonic(String),
     /// PoW error
     #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
     PowError(#[from] bee_pow::providers::miner::Error),
     /// Packable error
     #[error("Bee packable error")]
@@ -190,6 +207,7 @@ pub enum Error {
     /// Riker system error during Stronghold initialization
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a system error: {0}")]
+    #[serde(serialize_with = "display_string")]
     StrongholdActorSystemError(#[from] riker::system::SystemError),
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
@@ -220,4 +238,13 @@ impl From<iota_ledger::api::errors::APIError> for Error {
             _ => Error::LedgerMiscError,
         }
     }
+}
+
+/// Use this to serialize Error variants that implements Debug but not Serialize
+fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
+where
+    T: Display,
+    S: Serializer,
+{
+    value.to_string().serialize(serializer)
 }

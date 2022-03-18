@@ -9,6 +9,7 @@ use crate::{
 };
 
 use bee_message::address::Address;
+use serde::Deserialize;
 
 use std::ops::Range;
 
@@ -21,6 +22,22 @@ pub struct GetAddressesBuilder<'a> {
     range: Range<u32>,
     bech32_hrp: Option<String>,
     metadata: GenerateAddressMetadata,
+}
+
+/// Get address builder from string
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetAddressesBuilderOptions {
+    /// Coin type
+    pub coin_type: Option<u32>,
+    /// Account index
+    pub account_index: Option<u32>,
+    /// Range
+    pub range: Option<Range<u32>>,
+    /// Bech32 human readable part
+    pub bech32_hrp: Option<String>,
+    /// Metadata
+    pub metadata: Option<GenerateAddressMetadata>,
 }
 
 impl<'a> Default for GetAddressesBuilder<'a> {
@@ -83,6 +100,28 @@ impl<'a> GetAddressesBuilder<'a> {
     pub fn with_generate_metadata(mut self, metadata: GenerateAddressMetadata) -> Self {
         self.metadata = metadata;
         self
+    }
+
+    /// Set multiple options from address builder options type
+    /// Useful for bindings
+    pub fn set_options(mut self, options: GetAddressesBuilderOptions) -> Result<Self> {
+        if let Some(coin_type) = options.coin_type {
+            self = self.with_coin_type(coin_type);
+        };
+
+        if let Some(account_index) = options.account_index {
+            self = self.with_account_index(account_index);
+        }
+
+        if let Some(range) = options.range {
+            self = self.with_range(range);
+        };
+
+        if let Some(bech32_hrp) = options.bech32_hrp {
+            self = self.with_bech32_hrp(bech32_hrp);
+        };
+
+        Ok(self)
     }
 
     /// Consume the builder and get a vector of public addresses bech32 encoded
