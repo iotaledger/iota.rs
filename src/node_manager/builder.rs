@@ -23,25 +23,36 @@ use std::{
     time::Duration,
 };
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct NodeManagerBuilder {
+/// Node manager builder
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct NodeManagerBuilder {
+    /// Node which will be tried first for all requests
     #[serde(rename = "primaryNode")]
-    pub(crate) primary_node: Option<NodeDto>,
+    pub primary_node: Option<NodeDto>,
+    /// Node which will be tried first when using remote PoW, even before the primary_node
     #[serde(rename = "primaryPoWNode")]
-    pub(crate) primary_pow_node: Option<NodeDto>,
+    pub primary_pow_node: Option<NodeDto>,
+    /// Nodes
     #[serde(default)]
-    pub(crate) nodes: HashSet<NodeDto>,
-    pub(crate) permanodes: Option<HashSet<NodeDto>>,
+    pub nodes: HashSet<NodeDto>,
+    /// Permanodes
+    pub permanodes: Option<HashSet<NodeDto>>,
+    /// If node syncing is enabled
     #[serde(rename = "nodeSyncEnabled", default = "default_node_sync_enabled")]
-    pub(crate) node_sync_enabled: bool,
+    pub node_sync_enabled: bool,
+    /// Interval in which nodes will be checked for their sync status and the [NetworkInfo] gets updated
     #[serde(rename = "nodeSyncInterval", default = "default_node_sync_interval")]
-    pub(crate) node_sync_interval: Duration,
+    pub node_sync_interval: Duration,
+    /// If node quorum is enabled. Will compare the responses from multiple nodes and only returns the response if
+    /// [quorum_threshold]% of the nodes return the same one
     #[serde(default)]
-    quorum: bool,
+    pub quorum: bool,
+    /// Minimum amount of nodes required for request when quorum is enabled
     #[serde(rename = "minQuorumSize", default = "default_min_quorum_size")]
-    min_quorum_size: usize,
+    pub min_quorum_size: usize,
+    /// % of nodes that have to return the same response so it gets accepted
     #[serde(rename = "quorumThreshold", default = "default_quorum_threshold")]
-    quorum_threshold: usize,
+    pub quorum_threshold: usize,
 }
 
 fn default_node_sync_enabled() -> bool {

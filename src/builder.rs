@@ -33,7 +33,7 @@ use {
 };
 
 /// Struct containing network and PoW related information
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct NetworkInfo {
     /// Network
     pub network: Option<String>,
@@ -93,24 +93,31 @@ fn default_tips_interval() -> u64 {
 }
 
 /// Builder to construct client instance with sensible default values
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ClientBuilder {
+    /// Node manager builder
     #[serde(flatten, rename = "nodeManagerBuilder")]
-    node_manager_builder: crate::node_manager::builder::NodeManagerBuilder,
+    pub node_manager_builder: crate::node_manager::builder::NodeManagerBuilder,
+    /// Options for the MQTT broker
     #[cfg(feature = "mqtt")]
     #[serde(flatten, rename = "brokerOptions")]
-    broker_options: BrokerOptions,
+    pub broker_options: BrokerOptions,
+    /// Data related to the used network
     #[serde(flatten, rename = "networkInfo", default)]
-    pub(crate) network_info: NetworkInfo,
+    pub network_info: NetworkInfo,
+    /// Timeout for API requests
     #[serde(rename = "apiTimeout", default = "default_api_timeout")]
-    api_timeout: Duration,
+    pub api_timeout: Duration,
+    /// Timeout when sending a message that requires remote proof of work
     #[serde(rename = "remotePowTimeout", default = "default_remote_pow_timeout")]
-    remote_pow_timeout: Duration,
+    pub remote_pow_timeout: Duration,
+    /// If the Client should be able to use without a node connection
     #[serde(default)]
-    offline: bool,
+    pub offline: bool,
+    /// The amount of threads to be used for proof of work
     #[serde(rename = "powWorkerCount", default)]
-    pow_worker_count: Option<usize>,
+    pub pow_worker_count: Option<usize>,
 }
 
 fn default_api_timeout() -> Duration {

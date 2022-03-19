@@ -23,7 +23,8 @@ use std::{
 pub mod builder;
 pub(crate) mod http_client;
 use http_client::HttpClient;
-pub(crate) mod node;
+/// Structs for nodes
+pub mod node;
 use node::Node;
 
 #[cfg(all(feature = "sync", not(feature = "async")))]

@@ -224,8 +224,8 @@ pub enum ClientMethod {
         message_id: MessageId,
     },
     /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first position
-    /// and additional reattached messages
+    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first
+    /// position and additional reattached messages
     RetryUntilIncluded {
         /// Message ID
         message_id: MessageId,

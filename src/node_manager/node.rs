@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use serde::{Deserialize, Serialize};
-use url::Url;
 
 use std::hash::Hash;
+
+pub use url::Url;
 
 /// Node authentication object.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -37,10 +38,13 @@ impl From<Url> for Node {
     }
 }
 
+/// NodeDto enum to accept just a single url or also provided auth options or set if the node should be disabled.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(untagged)]
 pub enum NodeDto {
+    /// Node url
     Url(Url),
+    /// Node
     Node(Node),
 }
 
