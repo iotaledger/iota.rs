@@ -34,7 +34,7 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<()> {
     let iota = Client::builder()
-        .with_node("https://api.stardust-testnet.iotaledger.net")?
+        .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         // .with_local_pow(false)
         .with_default_logger()?
@@ -50,7 +50,7 @@ async fn main() -> Result<()> {
     println!(
         "{}",
         request_funds_from_faucet(
-            "https://faucet.stardust-testnet.iotaledger.net/api/plugins/faucet/v1/enqueue",
+            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
             &address.to_bech32("atoi"),
         )
         .await?
