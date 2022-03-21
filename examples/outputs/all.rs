@@ -169,6 +169,7 @@ async fn main() -> Result<()> {
             1,
             TokenTag::new([0u8; 12]),
             U256::from(0),
+            U256::from(0),
             U256::from(100),
             TokenScheme::Simple,
         )?
@@ -230,6 +231,7 @@ async fn main() -> Result<()> {
             1,
             TokenTag::new([0u8; 12]),
             U256::from(50),
+            U256::from(0),
             U256::from(100),
             TokenScheme::Simple,
         )?
@@ -287,6 +289,7 @@ async fn main() -> Result<()> {
             1,
             TokenTag::new([0u8; 12]),
             U256::from(50),
+            U256::from(0),
             U256::from(100),
             TokenScheme::Simple,
         )?

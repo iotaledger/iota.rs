@@ -314,7 +314,12 @@ impl<'a> ClientMessageBuilder<'a> {
                 for block in &r.unlock_conditions {
                     match block {
                         bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?));
+                            return Ok((
+                                r.amount
+                                    .parse::<u64>()
+                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
+                                Address::try_from(&e.address)?,
+                            ));
                         }
                         _ => todo!(),
                     }
@@ -333,12 +338,22 @@ impl<'a> ClientMessageBuilder<'a> {
                     match block {
                         bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
                             if is_governance_transition {
-                                return Ok((r.amount, Address::try_from(&e.address)?));
+                                return Ok((
+                                    r.amount
+                                        .parse::<u64>()
+                                        .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
+                                    Address::try_from(&e.address)?,
+                                ));
                             }
                         }
                         bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
                             if !is_governance_transition {
-                                return Ok((r.amount, Address::try_from(&e.address)?));
+                                return Ok((
+                                    r.amount
+                                        .parse::<u64>()
+                                        .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
+                                    Address::try_from(&e.address)?,
+                                ));
                             }
                         }
                         _ => todo!(),
@@ -350,7 +365,12 @@ impl<'a> ClientMessageBuilder<'a> {
                 for block in &r.unlock_conditions {
                     match block {
                         bee_rest_api::types::dtos::UnlockConditionDto::ImmutableAliasAddress(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?));
+                            return Ok((
+                                r.amount
+                                    .parse::<u64>()
+                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
+                                Address::try_from(&e.address)?,
+                            ));
                         }
                         _ => todo!(),
                     }
@@ -361,7 +381,12 @@ impl<'a> ClientMessageBuilder<'a> {
                 for block in &r.unlock_conditions {
                     match block {
                         bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
-                            return Ok((r.amount, Address::try_from(&e.address)?));
+                            return Ok((
+                                r.amount
+                                    .parse::<u64>()
+                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
+                                Address::try_from(&e.address)?,
+                            ));
                         }
                         _ => todo!(),
                     }
