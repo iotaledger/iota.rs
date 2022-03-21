@@ -60,7 +60,7 @@ pub(crate) fn get_minted_and_burned_native_tokens(
                         initial_creation = false;
                         match output_foundry
                             .circulating_supply()
-                            .cmp(input_foundry.circulating_supply())
+                            .cmp(&input_foundry.circulating_supply())
                         {
                             Ordering::Greater => {
                                 let minted_native_token_amount =
@@ -96,13 +96,13 @@ pub(crate) fn get_minted_and_burned_native_tokens(
             if initial_creation {
                 let token_id = TokenId::build(output_foundry.id(), *output_foundry.token_tag());
                 let circulating_supply = output_foundry.circulating_supply();
-                if *circulating_supply != U256::from(0) {
+                if circulating_supply != U256::from(0) {
                     match minted_native_tokens.entry(token_id) {
                         Entry::Vacant(e) => {
-                            e.insert(*circulating_supply);
+                            e.insert(circulating_supply);
                         }
                         Entry::Occupied(mut e) => {
-                            *e.get_mut() += *circulating_supply;
+                            *e.get_mut() += circulating_supply;
                         }
                     }
                 }

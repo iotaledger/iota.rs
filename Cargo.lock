@@ -202,7 +202,7 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b#d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b"
+source = "git+https://github.com/iotaledger/bee?rev=b7e49f697586b08bdfb595de151df229dbe6e42f#b7e49f697586b08bdfb595de151df229dbe6e42f"
 dependencies = [
  "bee-message",
  "packable",
@@ -213,7 +213,7 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b#d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b"
+source = "git+https://github.com/iotaledger/bee?rev=b7e49f697586b08bdfb595de151df229dbe6e42f#b7e49f697586b08bdfb595de151df229dbe6e42f"
 dependencies = [
  "bech32 0.8.1",
  "bee-pow",
@@ -223,10 +223,10 @@ dependencies = [
  "derive_more",
  "digest",
  "hashbrown 0.12.0",
- "hex",
  "iota-crypto 0.9.1",
  "iterator-sorted",
  "packable",
+ "prefix-hex",
  "primitive-types",
  "serde 1.0.136",
  "serde-big-array",
@@ -236,7 +236,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b#d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b"
+source = "git+https://github.com/iotaledger/bee?rev=b7e49f697586b08bdfb595de151df229dbe6e42f#b7e49f697586b08bdfb595de151df229dbe6e42f"
 dependencies = [
  "bee-ternary",
  "iota-crypto 0.9.1",
@@ -246,14 +246,14 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b#d6e3fa6c6c1ebaa8fe6ad926e3539afae488bb8b"
+source = "git+https://github.com/iotaledger/bee?rev=b7e49f697586b08bdfb595de151df229dbe6e42f#b7e49f697586b08bdfb595de151df229dbe6e42f"
 dependencies = [
  "bee-ledger",
  "bee-message",
  "bee-pow",
- "hex",
  "multiaddr",
  "packable",
+ "prefix-hex",
  "primitive-types",
  "serde 1.0.136",
  "serde_json",
@@ -1639,6 +1639,17 @@ name = "ppv-lite86"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb9f9e6e233e5c4a35559a617bf40a4ec447db2e84c20b55a6f83167b7e57872"
+
+[[package]]
+name = "prefix-hex"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f120947380f07a50dd8d9985d3591f6632d688b8060321c3783aac91fa902c7"
+dependencies = [
+ "hex",
+ "primitive-types",
+ "uint",
+]
 
 [[package]]
 name = "primitive-types"

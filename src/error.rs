@@ -23,6 +23,9 @@ pub enum Error {
     /// Error when building tagged_data messages
     #[error("Error when building tagged_data message: {0}")]
     TaggedDataError(String),
+    /// Invalid amount in API response
+    #[error("Invalid amount in API response: {0}")]
+    InvalidAmount(String),
     /// Error when building transaction messages
     #[error("Error when building transaction message")]
     TransactionError,

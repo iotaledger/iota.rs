@@ -43,10 +43,8 @@ pub async fn get_tips(client: &Client) -> Result<Vec<MessageId>> {
         .await?;
 
     let mut tips = Vec::new();
-    for tip in resp.tip_message_ids {
-        let mut new_tip = [0u8; 32];
-        hex::decode_to_slice(tip, &mut new_tip)?;
-        tips.push(MessageId::from(new_tip));
+    for message_id in resp.tip_message_ids {
+        tips.push(MessageId::from_str(&message_id)?);
     }
     Ok(tips)
 }
