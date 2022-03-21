@@ -50,11 +50,12 @@ def libsPath = "${projectDir}/src/main/jniLibs"
 def rustBuildType = "release"
 def rustBasePath = "../../"
 def archTriplets = [
-        //'armeabi-v7a': 'armv7-linux-androideabi',
+        'armeabi-v7a': 'armv7-linux-androideabi',
         'arm64-v8a': 'aarch64-linux-android',
         'x86': 'i686-linux-android',
-        //'x86_64': '	x86_64-linux-android',
+        'x86_64': '	x86_64-linux-android',
 ]
+def androidShared = "$System.env.ANDROID_NDK_HOME/sources/cxx-stl/llvm-libc++/libs"
 
 // build deps and move to JNI libs to be packaged
 // TODO: only pass --release if buildType is release instead of a variable
@@ -76,18 +77,23 @@ archTriplets.each { arch, target ->
     // Build with cargo
     tasks.create(name: "cargo-build-${arch}", type: Exec, description: "Building core for ${arch}", dependsOn: "cargo-output-dir-${arch}") {
         workingDir "${rustBasePath}"
-        environment "BINDGEN_EXTRA_CLANG_ARGS", "--target=${target}"
         commandLine "cargo", "ndk", "-t", "${arch}", "-o", "${libsPath}", "build", "--${rustBuildType}"
+    }
+    // Copy shared android dependencies
+    tasks.create(name: "copy-android-deps-${arch}", type: Sync, dependsOn: "cargo-build-${arch}", description: "Copy Android shared lib for (${arch}) to jniLibs") {
+        from "${androidShared}/${arch}"
+        include "libc++_shared.so"
+        into "${libsPath}/${arch}"
     }
 
     // Sync shared native dependencies
-    tasks.create(name: "sync-rust-deps-${arch}", type: Sync, dependsOn: "cargo-build-${arch}") {
+    tasks.create(name: "sync-rust-deps-${arch}", type: Sync, dependsOn: "copy-android-deps-${arch}", description: "Copy rust external libs for (${arch}) to jniLibs") {
         from "${rustBasePath}/src/libs/${arch}"
         include "*.so"
         into "${libsPath}/${arch}"
     }
     // Copy build libs into this app's libs directory
-    tasks.create(name: "rust-deploy-${arch}", type: Copy, dependsOn: "sync-rust-deps-${arch}", description: "Copy rust libs for (${arch}) to jniLibs") {
+    tasks.create(name: "rust-deploy-${arch}", type: Copy, dependsOn: "sync-rust-deps-${arch}", description: "Copy compiled rust binary for (${arch}) to jniLibs") {
         from "${project.ext.cargo_target_directory}/${target}/${rustBuildType}"
         include "*.so"
         into "${libsPath}/${arch}"

@@ -32,6 +32,8 @@ Maven: `cd examples/java-app && mvn test`
 
 For the rest of the examples in this document we will be using the `node()` method below:
 ```java
+import org.iota.client.*;
+
 private static Client node() {
     String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
     Client iota = Client.Builder()

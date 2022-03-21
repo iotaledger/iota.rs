@@ -101,19 +101,18 @@ mvn exec:exec
 This example fetches node information
 
 ```java
-use iota_client::Client;
-
-#[tokio::main]
-async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")
-        .unwrap()
-        .finish()
-        .await
-        .unwrap();
-
-    let info = iota.get_info().await.unwrap();
-    println!("Nodeinfo: {:?}", info);
+private static void nodeInfo() {
+    String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
+    Client iota = Client.Builder()
+        // Insert your node URL here
+        .withNode(nodeUrl) 
+        // Choose pow mode
+        .withLocalPow(true)
+        //Then create the Client instance
+        .finish();
+    NodeInfoWrapper info = iota.getInfo();
+    System.out.println("Node url: " + info.url());
+    System.out.println("Node Info: " + info.nodeInfo());
 }
 ```
 
