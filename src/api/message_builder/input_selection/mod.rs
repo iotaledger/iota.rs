@@ -177,7 +177,7 @@ pub async fn try_select_inputs(
                 let remainder_address = remainder_address.unwrap_or({
                     // todo: find a better way to do this, this address is only used for the storage deposit calculation
                     Address::from(Ed25519Address::from_str(
-                        "52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649",
+                        "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649",
                     )?)
                 });
                 let required_deposit =
@@ -239,7 +239,7 @@ pub async fn try_select_inputs(
                 let remainder_address = remainder_address.unwrap_or({
                     // todo: find a better way to do this, this address is only used for the storage deposit calculation
                     Address::from(Ed25519Address::from_str(
-                        "52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649",
+                        "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649",
                     )?)
                 });
                 let required_deposit =
