@@ -566,8 +566,8 @@ impl Client {
     }
 
     /// api/plugins/indexer/v1/aliases/{AliasId}
-    pub async fn alias_output_ids(&self, alias_id: AliasId) -> Result<Vec<OutputId>> {
-        crate::node_api::indexer_api::routes::alias_output_ids(self, alias_id).await
+    pub async fn alias_output_id(&self, alias_id: AliasId) -> Result<OutputId> {
+        crate::node_api::indexer_api::routes::alias_output_id(self, alias_id).await
     }
 
     /// api/plugins/indexer/v1/nfts
@@ -576,8 +576,8 @@ impl Client {
     }
 
     /// api/plugins/indexer/v1/nfts/{NftId}
-    pub async fn nft_output_ids(&self, nft_id: NftId) -> Result<Vec<OutputId>> {
-        crate::node_api::indexer_api::routes::nft_output_ids(self, nft_id).await
+    pub async fn nft_output_id(&self, nft_id: NftId) -> Result<OutputId> {
+        crate::node_api::indexer_api::routes::nft_output_id(self, nft_id).await
     }
 
     /// api/plugins/indexer/v1/foundries
@@ -586,8 +586,8 @@ impl Client {
     }
 
     /// api/plugins/indexer/v1/foundries/{FoundryID}
-    pub async fn foundry_output_ids(&self, foundry_id: FoundryId) -> Result<Vec<OutputId>> {
-        crate::node_api::indexer_api::routes::foundry_output_ids(self, foundry_id).await
+    pub async fn foundry_output_id(&self, foundry_id: FoundryId) -> Result<OutputId> {
+        crate::node_api::indexer_api::routes::foundry_output_id(self, foundry_id).await
     }
 
     //////////////////////////////////////////////////////////////////////

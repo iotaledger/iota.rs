@@ -38,10 +38,13 @@ pub async fn aliases_output_ids(client: &Client, query_parameters: Vec<QueryPara
 
 /// Get aliases by their aliasID.
 /// api/plugins/indexer/v1/aliases/:{AliasId}
-pub async fn alias_output_ids(client: &Client, alias_id: AliasId) -> Result<Vec<OutputId>> {
+pub async fn alias_output_id(client: &Client, alias_id: AliasId) -> Result<OutputId> {
     let route = format!("api/plugins/indexer/v1/aliases/{alias_id}");
 
-    get_output_ids_with_pagination(client, &route, Vec::new()).await
+    Ok(*(get_output_ids_with_pagination(client, &route, Vec::new())
+        .await?
+        .first()
+        .ok_or_else(|| crate::Error::NodeError("No output id for alias".to_string()))?))
 }
 
 /// Get NFT filtered by the given parameters.
@@ -59,10 +62,13 @@ pub async fn nfts_output_ids(client: &Client, query_parameters: Vec<QueryParamet
 
 /// Get NFT by their nftID.
 /// api/plugins/indexer/v1/nfts/:{NftId}
-pub async fn nft_output_ids(client: &Client, nft_id: NftId) -> Result<Vec<OutputId>> {
+pub async fn nft_output_id(client: &Client, nft_id: NftId) -> Result<OutputId> {
     let route = format!("api/plugins/indexer/v1/nfts/{nft_id}");
 
-    get_output_ids_with_pagination(client, &route, Vec::new()).await
+    Ok(*(get_output_ids_with_pagination(client, &route, Vec::new())
+        .await?
+        .first()
+        .ok_or_else(|| crate::Error::NodeError("No output id for nft".to_string()))?))
 }
 
 /// Get foundries filtered by the given parameters.
@@ -78,8 +84,11 @@ pub async fn foundries_output_ids(client: &Client, query_parameters: Vec<QueryPa
 
 /// Get foundries by their foundryID.
 /// api/plugins/indexer/v1/foundries/:{FoundryID}
-pub async fn foundry_output_ids(client: &Client, foundry_id: FoundryId) -> Result<Vec<OutputId>> {
+pub async fn foundry_output_id(client: &Client, foundry_id: FoundryId) -> Result<OutputId> {
     let route = format!("api/plugins/indexer/v1/foundries/{foundry_id}");
 
-    get_output_ids_with_pagination(client, &route, Vec::new()).await
+    Ok(*(get_output_ids_with_pagination(client, &route, Vec::new())
+        .await?
+        .first()
+        .ok_or_else(|| crate::Error::NodeError("No output id for foundry".to_string()))?))
 }

@@ -56,16 +56,14 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
             if x.state_index() > 0 {
                 // Check if the transaction is a governance_transition, by checking if the new index is the same as
                 // the previous index
-                let output_ids = message_builder.client.alias_output_ids(*x.alias_id()).await?;
-                let outputs = message_builder.client.get_outputs(output_ids).await?;
-                for output in outputs {
-                    if let OutputDto::Alias(output) = output.output {
-                        // A governance transition is identified by an unchanged State Index in next state.
-                        if x.state_index() == output.state_index {
-                            let mut transitions = HashSet::new();
-                            transitions.insert(AliasId::try_from(&output.alias_id)?);
-                            governance_transition.replace(transitions);
-                        }
+                let output_id = message_builder.client.alias_output_id(*x.alias_id()).await?;
+                let output_response = message_builder.client.get_output(&output_id).await?;
+                if let OutputDto::Alias(output) = output_response.output {
+                    // A governance transition is identified by an unchanged State Index in next state.
+                    if x.state_index() == output.state_index {
+                        let mut transitions = HashSet::new();
+                        transitions.insert(AliasId::try_from(&output.alias_id)?);
+                        governance_transition.replace(transitions);
                     }
                 }
             }

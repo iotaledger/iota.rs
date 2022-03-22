@@ -170,29 +170,26 @@ pub(crate) async fn get_utxo_chains_inputs(
                 if alias_output.alias_id().as_ref() != [0u8; 20] {
                     // Check if the transaction is a governance_transition, by checking if the new index is the same
                     // as the previous index
-                    let output_ids = client.alias_output_ids(*alias_output.alias_id()).await?;
-                    let outputs = client.get_outputs(output_ids).await?;
-                    for output_response in outputs {
-                        if let OutputDto::Alias(output) = &output_response.output {
-                            if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                                for unlock_condition in &alias_output_dto.unlock_conditions {
-                                    // A governance transition is identified by an unchanged State Index in next
-                                    // state.
-                                    if alias_output.state_index() == output.state_index {
-                                        if let UnlockConditionDto::GovernorAddress(governor_unlock_condition_dto) =
-                                            unlock_condition
-                                        {
-                                            let address = Address::try_from(&governor_unlock_condition_dto.address)?;
-                                            utxo_chains.push((address, output_response.clone()));
-                                        }
-                                    } else if let UnlockConditionDto::StateControllerAddress(
-                                        state_controller_unlock_condition_dto,
-                                    ) = unlock_condition
+                    let output_id = client.alias_output_id(*alias_output.alias_id()).await?;
+                    let output_response = client.get_output(&output_id).await?;
+                    if let OutputDto::Alias(output) = &output_response.output {
+                        if let OutputDto::Alias(alias_output_dto) = &output_response.output {
+                            for unlock_condition in &alias_output_dto.unlock_conditions {
+                                // A governance transition is identified by an unchanged State Index in next
+                                // state.
+                                if alias_output.state_index() == output.state_index {
+                                    if let UnlockConditionDto::GovernorAddress(governor_unlock_condition_dto) =
+                                        unlock_condition
                                     {
-                                        let address =
-                                            Address::try_from(&state_controller_unlock_condition_dto.address)?;
+                                        let address = Address::try_from(&governor_unlock_condition_dto.address)?;
                                         utxo_chains.push((address, output_response.clone()));
                                     }
+                                } else if let UnlockConditionDto::StateControllerAddress(
+                                    state_controller_unlock_condition_dto,
+                                ) = unlock_condition
+                                {
+                                    let address = Address::try_from(&state_controller_unlock_condition_dto.address)?;
+                                    utxo_chains.push((address, output_response.clone()));
                                 }
                             }
                         }
@@ -202,15 +199,13 @@ pub(crate) async fn get_utxo_chains_inputs(
             Output::Nft(nft_output) => {
                 // If the id is [0u8; 20] then this output creates it and we can't have a previous output
                 if nft_output.nft_id().as_ref() != [0u8; 20] {
-                    let output_ids = client.nft_output_ids(*nft_output.nft_id()).await?;
-                    let outputs = client.get_outputs(output_ids).await?;
-                    for output_response in outputs {
-                        if let OutputDto::Nft(nft_output_dto) = &output_response.output {
-                            for unlock_condition in &nft_output_dto.unlock_conditions {
-                                if let UnlockConditionDto::Address(address_unlock_condition_dto) = unlock_condition {
-                                    let address = Address::try_from(&address_unlock_condition_dto.address)?;
-                                    utxo_chains.push((address, output_response.clone()));
-                                }
+                    let output_id = client.nft_output_id(*nft_output.nft_id()).await?;
+                    let output_response = client.get_output(&output_id).await?;
+                    if let OutputDto::Nft(nft_output_dto) = &output_response.output {
+                        for unlock_condition in &nft_output_dto.unlock_conditions {
+                            if let UnlockConditionDto::Address(address_unlock_condition_dto) = unlock_condition {
+                                let address = Address::try_from(&address_unlock_condition_dto.address)?;
+                                utxo_chains.push((address, output_response.clone()));
                             }
                         }
                     }
@@ -218,19 +213,16 @@ pub(crate) async fn get_utxo_chains_inputs(
             }
             Output::Foundry(foundry_output) => {
                 // if it's the first foundry output, then we can't have it as input
-                if let Ok(output_ids) = client.foundry_output_ids(foundry_output.id()).await {
-                    let outputs = client.get_outputs(output_ids).await?;
-                    for output_response in outputs {
-                        if let OutputDto::Foundry(foundry_output) = &output_response.output {
-                            for unlock_condition in &foundry_output.unlock_conditions {
-                                if let UnlockConditionDto::ImmutableAliasAddress(
-                                    immutable_alias_address_unlock_condition_dto,
-                                ) = unlock_condition
-                                {
-                                    let address =
-                                        Address::try_from(&immutable_alias_address_unlock_condition_dto.address)?;
-                                    utxo_chains.push((address, output_response.clone()));
-                                }
+                if let Ok(output_id) = client.foundry_output_id(foundry_output.id()).await {
+                    let output_response = client.get_output(&output_id).await?;
+                    if let OutputDto::Foundry(foundry_output) = &output_response.output {
+                        for unlock_condition in &foundry_output.unlock_conditions {
+                            if let UnlockConditionDto::ImmutableAliasAddress(
+                                immutable_alias_address_unlock_condition_dto,
+                            ) = unlock_condition
+                            {
+                                let address = Address::try_from(&immutable_alias_address_unlock_condition_dto.address)?;
+                                utxo_chains.push((address, output_response.clone()));
                             }
                         }
                     }
