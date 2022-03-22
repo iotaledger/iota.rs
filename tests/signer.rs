@@ -38,12 +38,11 @@ async fn stronghold_signer_dto() -> Result<()> {
     let signer_type_dto: SignerTypeDto = serde_json::from_str(stronghold_dto_str)?;
     let stronghold_signer = SignerHandle::from_str(&serde_json::to_string(&signer_type_dto)?)?;
 
-    let storage_path = std::path::Path::new("test.stronghold");
     // The mnemonic only needs to be stored the first time
     stronghold_signer
         .lock()
         .await
-        .store_mnemonic(storage_path, mnemonic.clone())
+        .store_mnemonic(mnemonic.clone())
         .await
         .unwrap();
 
@@ -61,12 +60,7 @@ async fn stronghold_signer_dto() -> Result<()> {
     );
 
     // Calling store_mnemonic() twice should fail, because we would otherwise overwrite the stored entry
-    assert!(stronghold_signer
-        .lock()
-        .await
-        .store_mnemonic(storage_path, mnemonic)
-        .await
-        .is_err());
+    assert!(stronghold_signer.lock().await.store_mnemonic(mnemonic).await.is_err());
 
     // Remove garbage after test, but don't care about the result
     std::fs::remove_file(storage_path).unwrap_or(());

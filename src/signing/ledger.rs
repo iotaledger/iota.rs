@@ -86,7 +86,7 @@ impl super::Signer for LedgerSigner {
         LedgerStatus { connected, locked, app }
     }
 
-    async fn store_mnemonic(&mut self, _: &Path, _mnemonic: String) -> crate::Result<()> {
+    async fn store_mnemonic(&mut self, _mnemonic: String) -> crate::Result<()> {
         Err(crate::Error::InvalidMnemonic(String::from(
             "Can't store mnemonic to ledger",
         )))

@@ -29,7 +29,6 @@ use std::{
     collections::HashMap,
     fmt::{Debug, Formatter, Result},
     ops::{Deref, Range},
-    path::Path,
     sync::Arc,
 };
 
@@ -110,7 +109,7 @@ pub trait Signer: Send + Sync {
     /// Initialises a mnemonic.
     ///
     /// This is only meaningful for the Stronghold signer; other signers don't implement this.
-    async fn store_mnemonic(&mut self, _: &Path, _: String) -> crate::Result<()> {
+    async fn store_mnemonic(&mut self, _: String) -> crate::Result<()> {
         Err(crate::Error::NoMnemonicWasStored)
     }
 
