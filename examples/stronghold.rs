@@ -19,20 +19,15 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    let storage_path = Path::new("test.stronghold");
     let stronghold_signer =
-        StrongholdSigner::try_new_signer_handle("some_hopefully_secure_password", storage_path).unwrap();
+        StrongholdSigner::try_new_signer_handle("some_hopefully_secure_password", Path::new("test.stronghold"))
+            .unwrap();
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
     let mnemonic = env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap();
     // The mnemonic only needs to be stored the first time
-    stronghold_signer
-        .lock()
-        .await
-        .store_mnemonic(storage_path, mnemonic)
-        .await
-        .unwrap();
+    stronghold_signer.lock().await.store_mnemonic(mnemonic).await.unwrap();
 
     // Generate addresses with custom account index and range
     let addresses = iota

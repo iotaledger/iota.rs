@@ -77,7 +77,7 @@ pub struct StrongholdSigner {
 
 #[async_trait]
 impl Signer for StrongholdSigner {
-    async fn store_mnemonic(&mut self, _storage_path: &Path, mnemonic: String) -> Result<()> {
+    async fn store_mnemonic(&mut self, mnemonic: String) -> Result<()> {
         // Stronghold arguments.
         let output = Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -435,16 +435,10 @@ mod tests {
             signing::{GenerateAddressMetadata, Network},
         };
 
-        let storage_path = Path::new("test.stronghold");
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
-        let signer = StrongholdSigner::try_new_signer_handle("", storage_path).unwrap();
+        let signer = StrongholdSigner::try_new_signer_handle("", Path::new("test.stronghold")).unwrap();
 
-        signer
-            .lock()
-            .await
-            .store_mnemonic(storage_path, mnemonic.to_string())
-            .await
-            .unwrap();
+        signer.lock().await.store_mnemonic(mnemonic.to_string()).await.unwrap();
 
         let addresses = signer
             .lock()
