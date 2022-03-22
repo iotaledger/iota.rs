@@ -61,7 +61,7 @@ pub async fn nfts_output_ids(client: &Client, query_parameters: Vec<QueryParamet
 }
 
 /// Get NFT by their nftID.
-/// api/plugins/indexer/    v1/nfts/:{NftId}
+/// api/plugins/indexer/v1/nfts/:{NftId}
 pub async fn nft_output_id(client: &Client, nft_id: NftId) -> Result<OutputId> {
     let route = format!("api/plugins/indexer/v1/nfts/{nft_id}");
 
