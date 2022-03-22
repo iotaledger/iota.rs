@@ -166,19 +166,19 @@ impl ClientMessageHandler {
                 self.client.aliases_output_ids(query_parameters.clone()).await?,
             )),
             ClientMethod::AliasOutputIds { alias_id } => {
-                Ok(ResponseType::OutputIds(self.client.alias_output_ids(*alias_id).await?))
+                Ok(ResponseType::OutputIds(self.client.alias_output_id(*alias_id).await?))
             }
             ClientMethod::NftsOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
                 self.client.nfts_output_ids(query_parameters.clone()).await?,
             )),
             ClientMethod::NftOutputIds { nft_id } => {
-                Ok(ResponseType::OutputIds(self.client.nft_output_ids(*nft_id).await?))
+                Ok(ResponseType::OutputIds(self.client.nft_output_id(*nft_id).await?))
             }
             ClientMethod::FoundriesOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
                 self.client.foundries_output_ids(query_parameters.clone()).await?,
             )),
             ClientMethod::FoundryOutputIds { foundry_id } => Ok(ResponseType::OutputIds(
-                self.client.foundry_output_ids(*foundry_id).await?,
+                self.client.foundry_output_id(*foundry_id).await?,
             )),
             ClientMethod::GetOutputs { output_ids } => Ok(ResponseType::Outputs(
                 self.client.get_outputs(output_ids.clone()).await?,
