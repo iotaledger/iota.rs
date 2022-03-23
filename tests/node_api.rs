@@ -214,20 +214,21 @@ async fn test_get_address_balance() {
 #[tokio::test]
 #[ignore]
 async fn test_get_address_outputs() {
-    let r = iota_client::Client::builder()
+    let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .with_node_sync_disabled()
         .finish()
         .await
-        .unwrap()
-        .get_address()
-        .outputs(vec![QueryParameter::Address(
+        .unwrap();
+    let output_ids = client
+        .output_ids(vec![QueryParameter::Address(
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),
         )])
         .await
         .unwrap();
 
+    let r = client.get_outputs(output_ids).await.unwrap();
     println!("{:#?}", r);
 }
 

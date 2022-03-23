@@ -86,6 +86,8 @@ pub enum ResponseType<'a> {
     Treasury(TreasuryResponse),
     /// Get included message successful
     IncludedMessage(Message),
+    /// Fetched output ID
+    OutputId(OutputId),
     /// Fetched output IDs
     OutputIds(Vec<OutputId>),
     /// Messages

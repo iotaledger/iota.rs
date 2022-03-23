@@ -1,13 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example send_all --release
+//! cargo run --example 05_get_address_balance --release
 
 use iota_client::{
-    bee_message::output::{AddressUnlockCondition, BasicOutputBuilder, NativeToken, Output, UnlockCondition},
-    node_api::indexer_api::query_parameters::QueryParameter,
-    signing::mnemonic::MnemonicSigner,
-    Client, Result,
+    bee_message::output::Output, node_api::indexer_api::query_parameters::QueryParameter,
+    signing::mnemonic::MnemonicSigner, Client, Result,
 };
 extern crate dotenv;
 use dotenv::dotenv;
@@ -16,8 +14,8 @@ use std::{
     env,
 };
 
-/// In this example we will get the outputs of the first address of the seed and send everything
-/// Run the consolidation example first if there are more than 128 outputs
+/// In this example we will get the outputs of an address that have no additional unlock conditions and sum the amounts
+/// and native tokens
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -29,16 +27,21 @@ async fn main() -> Result<()> {
         .await?;
 
     // This example uses dotenv, which is not safe for use in production
-    // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
-
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
-    let seed_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
+
+    // Generate the first address
+    let addresses = iota
+        .get_addresses(&signer)
+        .with_account_index(0)
+        .with_range(0..1)
+        .finish()
+        .await?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = iota
         .output_ids(vec![
-            QueryParameter::Address(iota.get_addresses(&signer).with_range(0..1).finish().await?[0].clone()),
+            QueryParameter::Address(addresses[0].clone()),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
             QueryParameter::HasStorageDepositReturnCondition(false),
@@ -68,30 +71,9 @@ async fn main() -> Result<()> {
         total_amount += output.amount();
     }
 
-    println!("Total amount: {}", total_amount);
-
-    let mut basic_output_builder =
-        BasicOutputBuilder::new(total_amount)?.add_unlock_condition(UnlockCondition::Address(
-            AddressUnlockCondition::new(iota.get_addresses(&seed_2).with_range(0..1).get_raw().await?[0]),
-        ));
-
-    for (token_id, amount) in total_native_tokens.iter() {
-        basic_output_builder = basic_output_builder.add_native_token(NativeToken::new(*token_id, *amount)?);
-    }
-    let new_output = Output::Basic(basic_output_builder.finish()?);
-
-    let message = iota
-        .message()
-        .with_signer(&signer)
-        .with_outputs(vec![new_output])?
-        .finish()
-        .await?;
-
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/message/{}",
-        message.id()
+        "Outputs controlled by {} have: {:?}i and native tokens: {:?}",
+        addresses[0], total_amount, total_native_tokens
     );
-
-    let _ = iota.retry_until_included(&message.id(), None, None).await.unwrap();
     Ok(())
 }

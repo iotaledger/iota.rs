@@ -6,15 +6,12 @@
 use crate::{
     api::{
         miner::{ClientMiner, ClientMinerBuilder},
-        ClientMessageBuilder, GetAddressesBuilder, GetBalanceBuilder,
+        ClientMessageBuilder, GetAddressesBuilder,
     },
     builder::{ClientBuilder, NetworkInfo},
     constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
     error::{Error, Result},
-    node_api::{
-        high_level::{AddressBalance, GetAddressBuilder},
-        indexer_api::query_parameters::QueryParameter,
-    },
+    node_api::{high_level::GetAddressBuilder, indexer_api::query_parameters::QueryParameter},
     node_manager::node::{Node, NodeAuth},
     signing::SignerHandle,
     utils::{
@@ -635,24 +632,6 @@ impl Client {
         Ok(messages)
     }
 
-    /// Return the balance for a provided signer and its wallet chain account index.
-    /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
-    /// balance address.
-    pub fn get_balance<'a>(&'a self, signer: &'a SignerHandle) -> GetBalanceBuilder<'a> {
-        GetBalanceBuilder::new(self, signer)
-    }
-
-    /// Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and
-    /// already know the addresses.
-    pub async fn get_address_balances(&self, addresses: &[String]) -> Result<Vec<AddressBalance>> {
-        let mut address_balance_pairs = Vec::new();
-        for address in addresses {
-            let balance_response = self.get_address().balance(address).await?;
-            address_balance_pairs.push(balance_response);
-        }
-        Ok(address_balance_pairs)
-    }
-
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
     /// retried only if they are valid and haven't been confirmed for a while.
     pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
@@ -818,9 +797,15 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
+            // Get output ids of outputs that can be controlled by this address without further unlock constraints
             let address_outputs = self
                 .get_address()
-                .outputs(vec![QueryParameter::Address(address.to_string())])
+                .outputs(vec![
+                    QueryParameter::Address(address.to_string()),
+                    QueryParameter::HasExpirationCondition(false),
+                    QueryParameter::HasTimelockCondition(false),
+                    QueryParameter::HasStorageDepositReturnCondition(false),
+                ])
                 .await?;
             output_metadata.extend(address_outputs.into_iter());
         }

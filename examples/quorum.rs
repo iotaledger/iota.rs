@@ -3,7 +3,9 @@
 
 //! cargo run --example quorum --release
 
-use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{
+    node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner, Client, Result,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -27,8 +29,24 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let seed_balance = iota.get_balance(&signer).finish().await.unwrap();
-    println!("Account balance: {:?}i\n", seed_balance);
+    // Generate the first address
+    let addresses = iota
+        .get_addresses(&signer)
+        .with_account_index(0)
+        .with_range(0..1)
+        .finish()
+        .await?;
+
+    // Get output ids of outputs that can be controlled by this address without further unlock constraints
+    let output_ids = iota
+        .output_ids(vec![
+            QueryParameter::Address(addresses[0].clone()),
+            QueryParameter::HasExpirationCondition(false),
+            QueryParameter::HasTimelockCondition(false),
+            QueryParameter::HasStorageDepositReturnCondition(false),
+        ])
+        .await?;
+    println!("Address outputs: {:?}", output_ids);
 
     Ok(())
 }
