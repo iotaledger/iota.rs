@@ -165,19 +165,19 @@ impl ClientMessageHandler {
             ClientMethod::AliasesOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
                 self.client.aliases_output_ids(query_parameters.clone()).await?,
             )),
-            ClientMethod::AliasOutputIds { alias_id } => {
-                Ok(ResponseType::OutputIds(self.client.alias_output_id(*alias_id).await?))
+            ClientMethod::AliasOutputId { alias_id } => {
+                Ok(ResponseType::OutputId(self.client.alias_output_id(*alias_id).await?))
             }
             ClientMethod::NftsOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
                 self.client.nfts_output_ids(query_parameters.clone()).await?,
             )),
-            ClientMethod::NftOutputIds { nft_id } => {
-                Ok(ResponseType::OutputIds(self.client.nft_output_id(*nft_id).await?))
+            ClientMethod::NftOutputId { nft_id } => {
+                Ok(ResponseType::OutputId(self.client.nft_output_id(*nft_id).await?))
             }
             ClientMethod::FoundriesOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
                 self.client.foundries_output_ids(query_parameters.clone()).await?,
             )),
-            ClientMethod::FoundryOutputIds { foundry_id } => Ok(ResponseType::OutputIds(
+            ClientMethod::FoundryOutputId { foundry_id } => Ok(ResponseType::OutputId(
                 self.client.foundry_output_id(*foundry_id).await?,
             )),
             ClientMethod::GetOutputs { output_ids } => Ok(ResponseType::Outputs(
@@ -189,17 +189,6 @@ impl ClientMessageHandler {
             ClientMethod::FindMessages { message_ids } => {
                 Ok(ResponseType::Messages(self.client.find_messages(message_ids).await?))
             }
-            ClientMethod::GetBalance { signer, options } => {
-                let signer = SignerHandle::from_str(signer)?;
-                let mut get_balance_builder = self.client.get_balance(&signer);
-                if let Some(options) = options {
-                    get_balance_builder = get_balance_builder.set_options(options.clone());
-                }
-                Ok(ResponseType::Balance(get_balance_builder.finish().await?))
-            }
-            ClientMethod::GetAddressBalances { addresses } => Ok(ResponseType::AddressesBalances(
-                self.client.get_address_balances(addresses).await?,
-            )),
             ClientMethod::Retry { message_id } => {
                 Ok(ResponseType::RetrySuccessful(self.client.retry(message_id).await?))
             }

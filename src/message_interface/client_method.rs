@@ -4,7 +4,6 @@
 use crate::{
     api::{
         ClientMessageBuilderOptions as GenerateMessageOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
-        GetBalanceBuilderOptions as GetBalanceOptions,
     },
     node_api::indexer_api::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
@@ -152,13 +151,13 @@ pub enum ClientMethod {
         /// Query parameters for output requests
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch alaises output IDs
+    /// Fetch aliases output IDs
     AliasesOutputIds {
         /// Query parameters for output requests
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch alais output IDs
-    AliasOutputIds {
+    /// Fetch alias output ID
+    AliasOutputId {
         /// Alias id
         alias_id: AliasId,
     },
@@ -167,9 +166,9 @@ pub enum ClientMethod {
         /// Query parameters for output requests
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch NFT output IDs
-    NftOutputIds {
-        /// NFT IDs
+    /// Fetch NFT output ID
+    NftOutputId {
+        /// NFT ID
         nft_id: NftId,
     },
     /// Fetch Foundries Output IDs
@@ -177,8 +176,8 @@ pub enum ClientMethod {
         /// Query parameters for output requests
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch Foundry Output IDs
-    FoundryOutputIds {
+    /// Fetch Foundry Output ID
+    FoundryOutputId {
         /// Foundry ID
         foundry_id: FoundryId,
     },
@@ -201,21 +200,6 @@ pub enum ClientMethod {
     FindMessages {
         /// MessageIDs
         message_ids: Vec<MessageId>,
-    },
-    /// Return the balance for a provided signer and its wallet chain account index.
-    /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
-    /// balance address.
-    GetBalance {
-        /// Signer
-        signer: String,
-        /// Options
-        options: Option<GetBalanceOptions>,
-    },
-    /// Return the balance in iota for the given addresses; No seed needed to do this since we are only checking and
-    /// already know the addresses.
-    GetAddressBalances {
-        /// Addresses
-        addresses: Vec<String>,
     },
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
     /// retried only if they are valid and haven't been confirmed for a while.
