@@ -224,6 +224,14 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("a mnemonic has already been stored in the Stronghold vault")]
     StrongholdMnemonicAlreadyStored,
+    /// No password has been supplied to a Stronghold vault, or it has been cleared
+    #[cfg(feature = "stronghold")]
+    #[error("no password has been supplied, or the key has been cleared from the memory")]
+    StrongholdKeyCleared,
+    /// No snapshot path has been supplied
+    #[cfg(feature = "stronghold")]
+    #[error("no snapshot path has been supplied")]
+    StrongholdSnapshotPathMissing,
 }
 
 // map most errors to a single error but there are some errors that

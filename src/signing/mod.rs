@@ -4,9 +4,9 @@
 //! Signing module to allow using different signer types for address generation and transaction essence signing
 
 #[cfg(feature = "ledger")]
-use crate::signing::ledger::LedgerSigner;
+use self::ledger::LedgerSigner;
 #[cfg(feature = "stronghold")]
-use crate::signing::stronghold::StrongholdSigner;
+use self::stronghold::StrongholdSigner;
 use crate::signing::{
     mnemonic::MnemonicSigner,
     types::{InputSigningData, SignerTypeDto},
@@ -20,19 +20,20 @@ use bee_message::{
     unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock, UnlockBlocks},
 };
 
+#[cfg(feature = "wasm")]
+use std::sync::Mutex;
 #[cfg(not(feature = "wasm"))]
 use tokio::sync::Mutex;
 
-#[cfg(any(feature = "ledger", feature = "stronghold"))]
-use std::path::Path;
-#[cfg(feature = "wasm")]
-use std::sync::Mutex;
 use std::{
     collections::HashMap,
     fmt::{Debug, Formatter, Result},
     ops::{Deref, Range},
     sync::Arc,
 };
+
+#[cfg(feature = "stronghold")]
+use std::path::PathBuf;
 
 #[cfg(feature = "ledger")]
 pub mod ledger;
@@ -43,6 +44,7 @@ pub mod mnemonic;
 pub mod stronghold;
 /// Signing related types
 pub mod types;
+
 pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetadata, SignerType};
 
 /// SignerHandle, possible signers are mnemonic, Stronghold and Ledger
@@ -74,10 +76,11 @@ impl SignerHandle {
 
         Ok(match signer_type {
             #[cfg(feature = "stronghold")]
-            SignerTypeDto::Stronghold(stronghold_dto) => StrongholdSigner::try_new_signer_handle(
-                &stronghold_dto.password,
-                Path::new(&stronghold_dto.snapshot_path),
-            )?,
+            SignerTypeDto::Stronghold(stronghold_dto) => StrongholdSigner::builder()
+                .password(&stronghold_dto.password)
+                .snapshot_path(PathBuf::from(&stronghold_dto.snapshot_path))
+                .build()
+                .into(),
             #[cfg(feature = "ledger")]
             SignerTypeDto::LedgerNano => LedgerSigner::new(false),
             #[cfg(feature = "ledger")]
