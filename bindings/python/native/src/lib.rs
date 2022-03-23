@@ -7,9 +7,10 @@
 #![warn(missing_docs, rust_2018_idioms, unreachable_pub)]
 
 /// The client library of python binding.
-pub mod client;
-use client::Client;
-use pyo3::prelude::*;
+pub mod types;
+use iota_client::message_interface::MessageType;
+use pyo3::{prelude::*, wrap_pyfunction};
+use types::*;
 
 use once_cell::sync::OnceCell;
 use std::sync::Mutex;
@@ -21,19 +22,36 @@ pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
     runtime.lock().unwrap().block_on(cb)
 }
 
-pub(crate) fn spawn_blocking<F, R>(f: F) -> tokio::task::JoinHandle<R>
-where
-    F: FnOnce() -> R + Send + 'static,
-    R: Send + 'static,
-{
-    static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();
-    let runtime = INSTANCE.get_or_init(|| Mutex::new(Runtime::new().unwrap()));
-    runtime.lock().unwrap().spawn_blocking(f)
+#[pyfunction]
+/// Create message handler for python-side usage.
+pub fn create_message_handler(options: Option<String>) -> Result<ClientMessageHandler> {
+    let message_handler =
+        crate::block_on(async { iota_client::message_interface::create_message_handler(options).await })?;
+
+    Ok(ClientMessageHandler {
+        client_message_handler: message_handler,
+    })
 }
 
-/// A Python module implemented in Rust.
+#[pyfunction]
+/// Send message through handler.
+pub fn send_message(handle: &ClientMessageHandler, message_type: String) -> Result<String> {
+    let message_type = match serde_json::from_str::<MessageType>(&message_type) {
+        Ok(message_type) => message_type,
+        Err(e) => {
+            panic!("Wrong message type! {:?}", e);
+        }
+    };
+    let response = crate::block_on(async {
+        iota_client::message_interface::send_message(&handle.client_message_handler, message_type).await
+    });
+    Ok(serde_json::to_string(&response)?)
+}
+
+/// IOTA Client implemented in Rust for Python binding.
 #[pymodule]
 fn iota_client(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
-    m.add_class::<Client>()?;
+    m.add_function(wrap_pyfunction!(create_message_handler, m)?).unwrap();
+    m.add_function(wrap_pyfunction!(send_message, m)?).unwrap();
     Ok(())
 }
