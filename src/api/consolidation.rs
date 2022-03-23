@@ -40,6 +40,7 @@ pub async fn consolidate_funds(
             // add the offset so the index matches the address index also for higher start indexes
             let index = index + offset;
 
+            // Get output ids of outputs that can be controlled by this address without further unlock constraints
             let basic_outputs = client
                 .get_address()
                 .outputs(vec![

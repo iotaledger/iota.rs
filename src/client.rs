@@ -797,6 +797,7 @@ impl Client {
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
+            // Get output ids of outputs that can be controlled by this address without further unlock constraints
             let address_outputs = self
                 .get_address()
                 .outputs(vec![
