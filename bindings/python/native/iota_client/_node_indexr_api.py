@@ -37,7 +37,7 @@ class NodeIndexerAPI():
 
     @send_message_routine
     def nfts_output_id(self, nft_id):
-        """Fetch NFT output IDs.
+        """Fetch NFT output ID.
         """
         return call_client_method('NftOutputIds', {
             'nft_id': nft_id
