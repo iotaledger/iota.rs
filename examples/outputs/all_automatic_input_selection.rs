@@ -97,7 +97,6 @@ async fn main() -> Result<()> {
     );
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
-    
     //////////////////////////////////
     // create foundry output, native tokens and nft
     //////////////////////////////////

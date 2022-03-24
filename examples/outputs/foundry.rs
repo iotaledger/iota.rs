@@ -170,24 +170,14 @@ async fn main() -> Result<()> {
             )))
             .finish()?,
     ));
-    // Foundry ID (address kind 1+ Alias address 20 + Serial Number 4 + Token Scheme Type + 1) || Token Tag +12
-    let token_id_bytes: Vec<u8> = [8u8; 1]
-        .iter()
-        .chain(alias_output_id.hash().iter())
-        .chain([1, 0, 0, 0].iter())
-        .chain([0u8; 1].iter())
-        .chain(TokenTag::new([0u8; 12]).iter())
-        .map(|v| *v)
-        .collect();
-    let token_id = TokenId::new(token_id_bytes.try_into().unwrap());
 
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
             1_000_000,
             1,
             TokenTag::new([0u8; 12]),
-            U256::from(50),
-            U256::from(0),
+            U256::from(70),
+            U256::from(20),
             U256::from(100),
             TokenScheme::Simple,
         )?
@@ -238,8 +228,8 @@ async fn main() -> Result<()> {
             1_000_000,
             1,
             TokenTag::new([0u8; 12]),
-            U256::from(50),
-            U256::from(0),
+            U256::from(70),
+            U256::from(20),
             U256::from(100),
             TokenScheme::Simple,
         )?
