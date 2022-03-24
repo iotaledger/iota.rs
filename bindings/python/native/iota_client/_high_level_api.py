@@ -29,26 +29,6 @@ class HighLevelAPI():
         })
 
     @send_message_routine
-    def get_balance(self, signer, options=None):
-        """Return the balance for a provided signer and its wallet chain account index.
-           Addresses with balance must be consecutive, so this method will return once
-           it encounters a zero balance address.
-        """
-        return call_client_method('GetBalance', {
-            'signer': signer,
-            'options': options
-        })
-
-    @send_message_routine
-    def get_address_balances(self, addresses):
-        """Return the balance in iota for the given addresses.
-           No seed needed to do this since we are only checking and already know the addresses.
-        """
-        return call_client_method('GetAddressBalances', {
-            'addresses': addresses
-        })
-
-    @send_message_routine
     def retry(self, message_id):
         """Retries (promotes or reattaches) a message for provided message id. Message should only be
            retried only if they are valid and haven't been confirmed for a while.
