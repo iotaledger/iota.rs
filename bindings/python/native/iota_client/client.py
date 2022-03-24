@@ -22,7 +22,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
 
     @send_message_routine
     def generate_addresses(self, signer, options):
-        """Generate a new unused address.
+        """Generate addresses.
         """
         return call_client_method('GenerateAddresses', {
             'signer': signer,
@@ -99,7 +99,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         return call_client_method('GetFallbackToLocalPoW')
 
     @send_message_routine
-    def unsynched_nodes(self):
+    def unsynced_nodes(self):
         """Returns the unsynced nodes.
         """
-        return call_client_method('UnsynchedNodes')
+        return call_client_method('UnsyncedNodes')

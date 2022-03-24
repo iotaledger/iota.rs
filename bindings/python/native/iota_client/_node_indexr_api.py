@@ -20,10 +20,10 @@ class NodeIndexerAPI():
         })
 
     @send_message_routine
-    def alias_out_ids(self, alias_id):
+    def alias_output_id(self, alias_id):
         """Fetch alias output ID.
         """
-        return call_client_method('AliasOutputIds', {
+        return call_client_method('AliasOutputId', {
             'alias_id': alias_id
         })
 
@@ -39,7 +39,7 @@ class NodeIndexerAPI():
     def nfts_output_id(self, nft_id):
         """Fetch NFT output ID.
         """
-        return call_client_method('NftOutputIds', {
+        return call_client_method('NftOutputId', {
             'nft_id': nft_id
         })
 
