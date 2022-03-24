@@ -53,7 +53,7 @@ class NodeIndexerAPI():
 
     @send_message_routine
     def foundry_output_ids(self, foundry_id):
-        """Fetch Foundry Output IDs.
+        """Fetch Foundry Output ID.
         """
         return call_client_method('FoundryOutputId', {
             'foundry_id': foundry_id
