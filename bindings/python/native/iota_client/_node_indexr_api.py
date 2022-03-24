@@ -55,6 +55,6 @@ class NodeIndexerAPI():
     def foundry_output_ids(self, foundry_id):
         """Fetch Foundry Output IDs.
         """
-        return call_client_method('GetNodeHealth', {
+        return call_client_method('FoundryOutputId', {
             'foundry_id': foundry_id
         })
