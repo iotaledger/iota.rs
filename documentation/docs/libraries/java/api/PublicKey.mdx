@@ -1,0 +1,22 @@
+
+
+### verify(sig, bytes): boolean
+
+Verify the signature and bytes against this public key
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| sig | [Signature](#signature) |  The signature to verify |
+| bytes | byte[] |  The bytes to verify |
+
+### toBytes(): byte[]
+
+Turns ths public key into bytes
+
+### tryFromBytes(bytes): [PublicKey](#publickey)
+
+Attempt to create a public key from the provided bytes
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| bytes | byte[] |  The bytes to create the key from |

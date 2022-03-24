@@ -12,7 +12,7 @@ public class NativeAPI {
     // Stores any errors that were encountered at library load time
     private static final Throwable INIT_ERROR;
 
-    // The static block below loads the iota_wallet library. It will be
+    // The static block below loads the iota_client library. It will be
     // executed the first time the NativeAPI is used. Later, it will contain
     // other initialization logic.
     static {

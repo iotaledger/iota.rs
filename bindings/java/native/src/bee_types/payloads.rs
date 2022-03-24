@@ -69,49 +69,46 @@ impl MessagePayload {
         }
     }
 
-    pub fn get_as_indexation(&self) -> Option<IndexationPayload> {
-        if let RustPayload::Indexation(index) = &self.payload {
-            match IndexationPayload::new(index.index(), index.data()) {
-                Ok(i) => Some(i),
-                Err(_) => None,
-            }
-        } else {
-            None
-        }
-    }
-
-    pub fn get_as_transaction(&self) -> Option<TransactionPayload> {
+    pub fn as_transaction(&self) -> Result<TransactionPayload> {
         if let RustPayload::Transaction(payload) = &self.payload {
-            Some((*payload.clone()).into())
+            Ok((*payload.clone()).into())
         } else {
-            None
+            Err(anyhow::anyhow!("Message is not of type Transaction"))
         }
     }
 
-    pub fn get_as_treasury(&self) -> Option<TreasuryPayload> {
-        if let RustPayload::TreasuryTransaction(payload) = &self.payload {
-            Some((*payload.clone()).into())
+    pub fn as_indexation(&self) -> Result<IndexationPayload> {
+        if let RustPayload::Indexation(index) = &self.payload {
+            IndexationPayload::new(index.index(), index.data())
         } else {
-            None
+            Err(anyhow::anyhow!("Message is not of type Indexation"))
         }
     }
 
-    pub fn get_as_milestone(&self) -> Option<MilestonePayload> {
+    pub fn as_milestone(&self) -> Result<MilestonePayload> {
         if let RustPayload::Milestone(payload) = &self.payload {
-            Some(MilestonePayload::new(
+            Ok(MilestonePayload::new(
                 payload.essence().to_owned(),
                 payload.signatures().to_owned(),
             ))
         } else {
-            None
+            Err(anyhow::anyhow!("Message is not of type Milestone"))
         }
     }
 
-    pub fn get_as_receipt(&self) -> Option<ReceiptPayload> {
+    pub fn as_receipt(&self) -> Result<ReceiptPayload> {
         if let RustPayload::Receipt(payload) = &self.payload {
-            Some((*payload.clone()).into())
+            Ok((*payload.clone()).into())
         } else {
-            None
+            Err(anyhow::anyhow!("Message is not of type Receipt"))
+        }
+    }
+
+    pub fn as_treasury(&self) -> Result<TreasuryPayload> {
+        if let RustPayload::TreasuryTransaction(payload) = &self.payload {
+            Ok((*payload.clone()).into())
+        } else {
+            Err(anyhow::anyhow!("Message is not of type Treasury"))
         }
     }
 }

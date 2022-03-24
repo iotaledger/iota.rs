@@ -1,0 +1,22 @@
+A payload which defines the inclusion set of other messages in the Tangle.
+
+### essence(): [MilestonePayloadEssence](#milestonepayloadessence)
+
+Returns the essence of a `MilestonePayload`.
+
+### signatures(): [MilestoneSignature[]](#milestonesignature)
+
+Returns the signatures of a `MilestonePayload`.
+
+### validate(applicable_public_keys, min_threshold): void
+
+Semantically validate a `MilestonePayload`.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| applicable_public_keys | String[] |  The public keys to use to validate |
+| min_threshold | long |  THe minimum threshold for this to succeed (0...100) |
+
+### id(): String
+
+Computes the identifier of a `MilestonePayload`.

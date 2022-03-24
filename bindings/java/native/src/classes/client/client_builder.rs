@@ -1,7 +1,10 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{client::BrokerOptions as RustBrokerOptions, Api, ClientBuilder as RustClientBuilder};
+use iota_client::{
+    builder::NetworkInfo as RustNetworkInfo, client::BrokerOptions as RustBrokerOptions, Api,
+    ClientBuilder as RustClientBuilder,
+};
 use std::{cell::RefCell, convert::TryFrom, rc::Rc, time::Duration};
 
 use crate::{full_node_api::Client, Result};
@@ -88,12 +91,19 @@ impl ClientBuilder {
         }
     }
 
-    pub fn with_node(&mut self, node: &str) -> ClientBuilder {
-        let new_builder = self.builder.borrow_mut().take().unwrap().with_node(node).unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+    pub fn with_node(&mut self, node: &str) -> Result<ClientBuilder> {
+        let new_builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_node(node)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
+            .unwrap();
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
-    pub fn with_nodes(&mut self, nodes: Vec<String>) -> ClientBuilder {
+    pub fn with_nodes(&mut self, nodes: Vec<String>) -> Result<ClientBuilder> {
         let nodes_arr: Vec<&str> = nodes
             .iter()
             .map(|s| {
@@ -107,8 +117,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_nodes(nodes_arr.as_slice())
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_node_auth(
@@ -117,7 +128,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -126,8 +137,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_node_auth(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_primary_node(
@@ -136,7 +148,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -145,8 +157,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_primary_node(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_primary_pow_node(
@@ -155,7 +168,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -164,8 +177,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_node_auth(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_permanode(
@@ -174,7 +188,7 @@ impl ClientBuilder {
         jwt: Option<&str>,
         username: Option<&str>,
         password: Option<&str>,
-    ) -> ClientBuilder {
+    ) -> Result<ClientBuilder> {
         let jwt_opt = jwt.map(|j| j.to_string());
         let auth_opt = username.map(|user| (user, password.unwrap()));
         let new_builder = self
@@ -183,8 +197,9 @@ impl ClientBuilder {
             .take()
             .unwrap()
             .with_permanode(node, jwt_opt, auth_opt)
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
             .unwrap();
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     /// Allows creating the client without nodes for offline address generation or signing
@@ -194,12 +209,12 @@ impl ClientBuilder {
         ClientBuilder::new_with_builder(new_builder)
     }
 
-    pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> ClientBuilder {
+    pub fn with_node_pool_urls(&mut self, node_pool_urls: Vec<String>) -> Result<ClientBuilder> {
         let old_builder = self.builder.borrow_mut().take().unwrap();
         let new_builder =
             crate::block_on(async move { old_builder.with_node_pool_urls(&node_pool_urls).await.unwrap() });
 
-        ClientBuilder::new_with_builder(new_builder)
+        Ok(ClientBuilder::new_with_builder(new_builder))
     }
 
     pub fn with_network(&mut self, network: String) -> ClientBuilder {
@@ -276,7 +291,53 @@ impl ClientBuilder {
     pub fn finish(&mut self) -> Result<Client> {
         let builder = self.builder.borrow_mut().take().unwrap();
         let client = crate::block_on(async move { builder.finish().await.unwrap() });
+        Client::try_from(client).map_err(|e| anyhow::anyhow!(e.to_string()))
+    }
+}
 
-        Ok(Client::try_from(client).unwrap())
+/// Struct containing network and PoW related information
+#[derive(Clone, Debug, PartialEq)]
+pub struct NetworkInfo(RustNetworkInfo);
+
+impl NetworkInfo {
+    // Network
+    pub fn network(&self) -> Option<String> {
+        self.0.network.clone()
+    }
+    // Network ID
+    pub fn network_id(&self) -> u64 {
+        self.0.network_id.unwrap_or(0)
+    }
+    // Bech32 HRP
+    pub fn bech32_hrp(&self) -> String {
+        self.0.bech32_hrp.clone()
+    }
+    // Mininum proof of work score
+    pub fn min_pow_score(&self) -> f64 {
+        self.0.min_pow_score
+    }
+    // Local proof of work
+    pub fn local_pow(&self) -> bool {
+        self.0.local_pow
+    }
+    // Fallback to local proof of work if the node doesn't support remote PoW
+    pub fn fallback_to_local_pow(&self) -> bool {
+        self.0.fallback_to_local_pow
+    }
+    // Tips request interval during PoW in seconds
+    pub fn tips_interval(&self) -> u64 {
+        self.0.tips_interval
+    }
+}
+
+impl core::fmt::Display for NetworkInfo {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl From<RustNetworkInfo> for NetworkInfo {
+    fn from(miner: RustNetworkInfo) -> Self {
+        Self(miner)
     }
 }

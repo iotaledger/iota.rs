@@ -11,7 +11,7 @@ keywords:
 ---
 # Examples
 
-It's possible to send transactions with iota.rs, but we strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [wallet docs](https://wiki.iota.org/wallet.rs/welcome).
+It's possible to send transactions with iota.rs, but we strongly recommend to use official `iota.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [iota docs](https://wiki.iota.org/iota.rs/welcome).
 
 ```bash
 git clone https://github.com/iotaledger/iota.rs
@@ -25,13 +25,15 @@ Examples are all collected in a sample project. By default it runs a node info e
 
 Run the example like:
 
-Gradle: `./gradlew examples:basic-app:test --info`
+Gradle: `./gradlew examples:java-app:test --info`
 
-Maven: `cd examples/basic-app && mvn test`
+Maven: `cd examples/java-app && mvn test`
 
 
 For the rest of the examples in this document we will be using the `node()` method below:
 ```java
+import org.iota.client.*;
+
 private static Client node() {
     String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
     Client iota = Client.Builder()

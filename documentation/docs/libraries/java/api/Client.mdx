@@ -1,0 +1,295 @@
+The iota.rs client instance
+
+### Builder(): [ClientBuilder](#clientbuilder)
+
+Creates a new instance of the CLient builder
+
+### getHealth(): boolean
+
+GET /health endpoint
+
+### getNodeHealth(node): boolean
+
+GET /health endpoint for the passed node
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node | String |  the node url which you want to query speicifically for, in the case of multiple nodes in a pool |
+
+### getNode(): [Node](#node)
+
+
+
+### getNetworkId(): long
+
+Gets the network id of the node we're connecting to.
+
+### getPowProvider(): [ClientMiner](#clientminer)
+
+Gets the miner to use based on the PoW setting
+
+### getNetworkInfo(): [NetworkInfo](#networkinfo)
+
+Gets the network related information such as network_id and min_pow_score
+ and if it's the default one, sync it first.
+
+### getInfo(): [NodeInfoWrapper](#nodeinfowrapper)
+
+GET /api/v1/info endpoint
+
+### getPeers(): [PeerDto[]](#peerdto)
+
+GET /api/v1/peers endpoint
+
+### getTips(): String[]
+
+GET /api/v1/tips endpoint
+
+### getOutput(output_id): [OutputResponse](#outputresponse)
+
+GET /api/v1/outputs/{outputId} endpoint
+ Find an output by its transaction_id and corresponding output_index.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| output_id | String |  The id of the output |
+
+### getAddress(): [GetAddressBuilder](#getaddressbuilder)
+
+GET /api/v1/addresses/{address} endpoint
+ Creates a new instance of the AddressBuilder
+
+### getAddressBalance(address): [BalanceAddressResponse](#balanceaddressresponse)
+
+Return the balance in iota for the given address; No seed needed to do this
+ since we are only checking and already know the address.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The address we want to get the balance for |
+
+### getAddressesBalances(addresses): [BalanceAddressResponse[]](#balanceaddressresponse)
+
+since we are only checking and already know the addresses.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| addresses | String[] |  The addresses we want to get the balance for |
+
+### findOutputs(output_ids, addresses): [OutputResponse[]](#outputresponse)
+
+Find all outputs based on the requests criteria. This method will try to query multiple nodes if
+ the request amount exceeds individual node limit.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| output_ids | String[] |  The optional output ids to check for |
+| addresses | String[] |  The optional list of addresses to check for |
+
+### getMilestone(index): [MilestoneResponse](#milestoneresponse)
+
+GET /api/v1/milestones/{index} endpoint
+ Get the milestone by the given index.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| index | long |  the milestone index |
+
+### getMilestoneUtxoChanges(index): [MilestoneUtxoChangesResponse](#milestoneutxochangesresponse)
+
+GET /api/v1/milestones/{index}/utxo-changes endpoint
+ Gets the utxo changes by the given milestone index.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| index | long |  the milestone index |
+
+### getReceipts(): [ReceiptDto[]](#receiptdto)
+
+GET /api/v1/receipts endpoint
+ Get all receipts.
+
+### getReceiptsMigratedAt(index): [ReceiptDto[]](#receiptdto)
+
+GET /api/v1/receipts/{migratedAt} endpoint
+ Get the receipts by the given milestone index.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| index | long |  the milestone index |
+
+### getTreasury(): [TreasuryResponse](#treasuryresponse)
+
+GET /api/v1/treasury endpoint
+ Get the treasury output.
+
+### getIncludedMessage(transaction_id): [Message](#message)
+
+GET /api/v1/transactions/{transactionId}/included-message
+ Returns the included message of the transaction.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| transaction_id | [TransactionId](#transactionid) |  the transaction id |
+
+### postMessage(msg): [MessageId](#messageid)
+
+POST /api/v1/messages endpoint
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| msg | [Message](#message) |  The message to post. Use `Client.message()` to create one. |
+
+### reattach(message_id): [MessageWrap](#messagewrap)
+
+Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+ confirmed for a while.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the Message to reattach |
+
+### reattachUnchecked(message_id): [MessageWrap](#messagewrap)
+
+Reattach a message without checking if it should be reattached
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the Message to reattach |
+
+### promote(message_id): [MessageWrap](#messagewrap)
+
+Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+ method should error out and should not allow unnecessary promotions.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the Message to promote |
+
+### promoteUnchecked(message_id): [MessageWrap](#messagewrap)
+
+Promote a message without checking if it should be promoted
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the Message to promote |
+
+### getBalance(seed): [GetBalanceBuilderApi](#getbalancebuilderapi)
+
+Return the balance for a provided seed
+ Addresses with balance must be consecutive, so this method will return once it encounters a zero
+ balance address.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |  the seed which contains the addressses you want to check balance for |
+
+### message(): [ClientMessageBuilder](#clientmessagebuilder)
+
+A generic send function for easily sending transaction or indexation messages.
+
+### getMessage(): [GetMessageBuilder](#getmessagebuilder)
+
+GET /api/v1/messages/{messageId} endpoint
+
+### getAddresses(seed): [GetAddressesBuilder](#getaddressesbuilder)
+
+Return a list of addresses from the seed regardless of their validity.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |  ssed that will create the addresses |
+
+### retryUntilIncluded(message_id, interval, max_attempts): [MessageWrap[]](#messagewrap)
+
+Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
+ milestone). Default interval is 5 seconds and max attempts is 40. Returns reattached messages. Set to -1 for defaults.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the Message to include |
+| interval | long |  The interval in seconds to try |
+| max_attempts | long |  The maximum attempts for retrying |
+
+### subscriber(): [MqttManager](#mqttmanager)
+
+Returns a handle to the MQTT topics manager.
+
+### generateMnemonic(): String
+
+Generates a new mnemonic.
+
+### mnemonicToHexSeed(mnemonic): String
+
+Returns a hex encoded seed for a mnemonic.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| mnemonic | String |  The mmnemonic to turn into a seed |
+
+### findInputs(addresses, amount): [UtxoInput[]](#utxoinput)
+
+Function to find inputs from addresses for a provided amount (useful for offline signing)
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| addresses | String[] |  The addresses to obtain balance from |
+| amount | long |  the amount we need to find |
+
+### bech32ToHex(bech32): String
+
+Returns a parsed hex String from bech32.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| bech32 | String |  The address Bech32 string |
+
+### hexToBech32(hex, bech32_hrp): String
+
+Transforms hex to bech32
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| hex | String |  The address Bech32 string |
+| bech32_hrp | String |  The Bech32 hrp string |
+
+### isAddressValid(address): boolean
+
+Checks if a str is a valid bech32 encoded address.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The addresss string to check |
+
+### parseBech32Address(address): [Address](#address)
+
+Returns a valid Address parsed from a String.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The addresss string to parse |
+
+### shouldMigrate(seed, account_index, address_index, pub_addr): boolean
+
+Temporarily method to check if your seed is made using the incorrect generation of the old JAVA seed input
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |  The seed you used previously |
+| account_index | long |  The account index used, is 0 when you didnt use it |
+| address_index | long |  The address index you want to migrate |
+| pub_addr | boolean |  If it's a public or internal address |
+
+### migrate(seed, account_index, address_index, pub_addr, to_address): [Message](#message)
+
+Temporarily method in order to migrate wrongly generated seeds from JAVA to Rust
+ Migrates the balance of the address towards the provided to_address
+ And returns the message or an error
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |  The seed you used previously |
+| account_index | long |  The account index used, is 0 when you didnt use it |
+| address_index | long |  The address index you want to migrate |
+| pub_addr | boolean |  If it's a public or internal address |
+| to_address | String |  The address we send the balance to |

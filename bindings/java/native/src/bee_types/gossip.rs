@@ -5,7 +5,7 @@ use iota_client::bee_rest_api::types::dtos::{
     GossipDto as RustgossipDto, HeartbeatDto as RustheartbeatDto, MetricsDto as RustMetricsDto,
 };
 
-#[derive(Copy, Clone, PartialEq, Getters, CopyGetters)]
+#[derive(Copy, Clone, PartialEq, Getters, CopyGetters, Debug)]
 pub struct GossipDto {
     #[getset(get_copy = "pub")]
     pub heartbeat: HeartbeatDto,
@@ -13,7 +13,13 @@ pub struct GossipDto {
     pub metrics: MetricsDto,
 }
 
-#[derive(Copy, Clone, PartialEq, Getters, CopyGetters)]
+impl core::fmt::Display for GossipDto {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "heartbeat={}, metrics={}", self.heartbeat, self.metrics)
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Getters, CopyGetters, Debug)]
 pub struct HeartbeatDto {
     #[getset(get_copy = "pub")]
     pub solid_milestone_index: u32,
@@ -27,7 +33,17 @@ pub struct HeartbeatDto {
     pub synced_neighbors: u8,
 }
 
-#[derive(Copy, Clone, PartialEq, Getters, CopyGetters)]
+impl core::fmt::Display for HeartbeatDto {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(
+            f,
+            "solid_milestone_index={}, latest_milestone_index={}, latest_milestone_index={}, connected_neighbors={}, synced_neighbors={}",
+            self.solid_milestone_index, self.latest_milestone_index, self.latest_milestone_index, self.connected_neighbors, self.synced_neighbors
+        )
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Getters, CopyGetters, Debug)]
 pub struct MetricsDto {
     #[getset(get_copy = "pub")]
     pub new_messages: u64,
@@ -51,6 +67,16 @@ pub struct MetricsDto {
     pub sent_heartbeats: u64,
     #[getset(get_copy = "pub")]
     pub dropped_packets: u64,
+}
+
+impl core::fmt::Display for MetricsDto {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(
+            f,
+            "new_messages={}, received_messages={}, known_messages={}, received_message_requests={}, received_milestone_requests={}, received_heartbeats={}, sent_messages={}, sent_message_requests={}, sent_message_requests={}, sent_heartbeats={}, dropped_packets={}",
+            self.new_messages, self.received_messages, self.known_messages, self.received_message_requests, self.received_milestone_requests, self.received_heartbeats, self.sent_messages, self.sent_message_requests, self.sent_message_requests, self.sent_heartbeats, self.dropped_packets
+        )
+    }
 }
 
 impl From<RustgossipDto> for GossipDto {

@@ -79,11 +79,12 @@ pub struct Essence(RustEssence);
 
 impl Essence {
     #[allow(irrefutable_let_patterns)]
-    pub fn get_as_regular(&self) -> Option<RegularEssence> {
+    pub fn as_regular(&self) -> Result<RegularEssence> {
         if let RustEssence::Regular(essence) = &self.0 {
-            return Some(RegularEssence(essence.clone()));
-        };
-        None
+            Ok(RegularEssence(essence.clone()))
+        } else {
+            Err(anyhow::anyhow!("Essence is not of type Regular"))
+        }
     }
 
     pub fn to_inner(&self) -> RustEssence {

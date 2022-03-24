@@ -14,146 +14,111 @@ keywords:
 
 To use the library, we recommend you update Rust to the latest stable version [`$ rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but some changes might not be compatible.
 
-- Download or clone the `iota.rs` repository
+Ensure you have first installed the required dependencies for the library [here](https://github.com/iotaledger/iota.rs/blob/dev/README.md). Then also install the following programs:
+
+- Java & JDK (Make sure $JAVA_HOME env variable) is set
+- [Gradle](https://gradle.org/install/) v4 or higher or [Maven](https://maven.apache.org/download.cgi) installe
+- Cargo ndk (`cargo install cargo-ndk`)
+- Cargo fmt (`rustup component add rustfmt`)
+
+
+Download or clone the `iota.rs` repository
 ```
 $ git clone https://github.com/iotaledger/iota.rs.git
 ```
 
-- A valid C compiler
-- [Rust](https://www.rust-lang.org/tools/install) installation on your path
-- [Gradle](https://gradle.org/install/) v4 or higher or [Maven](https://maven.apache.org/download.cgi) installed
+## Security
 
-## Preparing your work environment
+:::warning
+In a production setup, do not store passwords in the host's environment variables or in the source code.  See our [backup and security recommendations](https://chrysalis.docs.iota.org/guides/backup_security) for production setups.
+:::
 
-In order to build with the Java bindings, you need the following two parts:
-1. Java classes containing `native` methods which call C code. (`.jar`)
-2. JNI bindings linking `Rust` to `C`, and then `C` to java `native` methods (`.so` , `.dll` or `.dylib` depending on your system)
+## Installation
 
+In order to build using the iota.rs Java bindings, you need the following two parts:
+1. JNI Native library linking `Rust` to `C`, and then `C` to java `native` methods (`.so` , `.dll` or `.dylib` depending on your system)
+2. Java archive(Jar) containing `native` methods which call C code. (`.jar`)
 
-# Step 1: Linking the Java file (Jar)
-## Maven
+### Step 1: Creating the native library
 
-### Installing the jar on your system
-```bash
-mvn install:install-file -Dfile=/path/to/iota.rs/bindings/java/native/build/libs/native.jar -DgroupId=org.iota.client -DartifactId=native -Dversion=1.0 -Dpackaging=jar 
+Build the iota.rs library (This generates the java source code and JNI library file)
+```
+cd iota.rs/bindings/java
+cargo build --release
 ```
 
-### Adding the dependency to POM
+Generated binaries can then be found at `iota.rs/bindings/java/target/release`
 
-```java
-<dependency>
-    <groupId>org.iota.client</groupId>
-    <artifactId>native</artifactId>
-    <version>1.0<version>
-</dependency>
+:::info
+Compiling for Android requires additional compilation instructions.
+Specific instructions can be found in [Android development](android_development.md)
+:::
+
+### Step 2: Creating the Java archive
+
+#### Generating the source files and classes
+
+After step 1, Java source files will be generated under `iota.rs/bindings/java/native/src/main/java/org/iota/client`.
+
+If this step succeeded, we need to generate the jar file containing the newly generated Java source files.
+
+#### Generating the jar
+
+Generating the jar can be done with your tool of preference. We provide examples for Gradle and Maven in this guide
+
+##### Gradle
+
+Make `gradlew` executable (`chmod +x gradlew`) if needed, then run
+```
+cd iota.rs/bindings/java
+./gradlew jar
 ```
 
-## Gradle
-***With a pre-made jar***
-- Point to the JAR in `build.gradle` `dependencies` section using `implementation files("native.jar")`
-
-Building the jar through gradle in `iota.rs` creates the jar at `iota.rs/bindings/java/native/build/libs`
-
-***Directly pointing to the iota.rs project***
-- Uncomment the lines in `settings.gradle`, then:
-- Change `settings.gradle` to point to the `\native` project inside `iota.rs\bindings\java`, so we can load the Java files
-- Add `implementation project(':native')` to the `dependencies` section of your `build.gradle` (and comment  `implementation files("native.jar")` if you have it)
-
-# Step 2: Adding the native library
-
-This file can be found at `iota.rs/bindings/java/target/release` after building the bindings with `cargo build --release` in the `iota.rs/bindings/java` folder. We will call this file `iota_client` for the purpose of this README.
-
-## Generic
-
-Adding the folder to your PATH is the easiest way to ensure it is available.
-
-### Linux
-1. Change to your home directory. `cd $HOME`.
-2. Open the `.bashrc` file.
-3. Add the following line to the file: `export PATH=/path/to/iota_client:$PATH`.
-4. Save the file and exit. Use the `source` command to force Linux to reload the `.bashrc`
-
-### Windows
-1. Open the Start Search, type in “env”, and choose “Edit the system environment variables”
-2. Click the “Environment Variables…” button.
-3. Under the “System Variables” section (the lower half), find the row with “Path” in the first column, and click edit.
-4. The “Edit environment variable” UI will appear. Click “New” and type in the new path: `/path/to/iota_client`
-5. Dismiss all of the dialogs by choosing “OK”. Your changes are saved!
-
-### OSX
-1. Open up Terminal.
-2. Run the following command: sudo nano /etc/paths.
-3. Enter your password, when prompted.
-4. Go to the bottom of the file, and enter the path you wish to add.
-5. Hit control-x to quit.
-6. Enter “Y” to save the modified buffer.
-
-## Maven
-We need to make sure the file is added to `java.library.path` before building or running.
-To do this, we add/update the section below to our `pom.xml`
-
-The `${basedir}` means we need to place the `iota_client` file in the base of our repo. (Where your pom.xml is)
-Alternatively, you can replace `${basedir}` with an absolute path to the file: `/path/to/iota_client` 
-
-```java
-<build>
-    <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>[VERSION]</version>
-        <configuration>
-            <argLine>-Djava.library.path=${basedir}</argLine>
-        </configuration>
-    </plugin>
-</build>
+##### Maven
+```
+cd iota.rs/bindings/java
+mvn install
 ```
 
-## Gradle
+After running one of these commands, the jar can then be found at `iota.rs/bindings/java/native/build/libs/native.jar`
 
-Modify `build.gradle` variable `iotaLibLocation` to the location of `iota_client`.
 
-# Step 3. Building your app
+## Usage
+You can find more information on using the `iota.rs` library's java binding in the [examples section](examples.md).
 
-## Maven
-Run `mvn compile` to build.
+### Gradle
+```
+./gradlew examples:java-app:test --info
+```
 
-Run `mvn exec:java -Dexec.mainClass="org.example.ExampleApp"` to run. (You can also add the mainclass to your pom using the `exec-maven-plugin` plugin)
+### Maven
+```
+mvn exec:exec
+```
 
-Run `mvn test` to specifically run the test.
-
-## Gradle
-Run `gradle build` to build.
-
-Run `gradle run` to run. (linking directly to the iota.rs for jar triggers a rebuild every time)
-
-Run `gradle test` to specifically run the test.
-
-# Documentation
-As the API is made to be as close as possible to the rust API, the most up to date documentation can be found [here](https://client-lib.docs.iota.org/docs/libraries/rust/getting_started), until a pure Java version is made.
-
-YOu can also generate more up-to-date documentation by compiling it yourself. Instructions can be found [here]](https://github.com/iotaledger/iota.rs/tree/dev/documentation#readme) 
-
-The java methods are made to almost 1:1 correspond to rust version. Difference beeing the naming convention (Rust beeing snake_case, java camelCase)
-
-# Initialisation
+## Initialisation
 
 This example fetches node information
 
 ```java
-use iota_client::Client;
-
-#[tokio::main]
-async fn main() {
-    let iota = Client::builder() // Crate a client instance builder
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")
-        .unwrap()
-        .finish()
-        .await
-        .unwrap();
-
-    let info = iota.get_info().await.unwrap();
-    println!("Nodeinfo: {:?}", info);
+private static void nodeInfo() {
+    String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
+    Client iota = Client.Builder()
+        // Insert your node URL here
+        .withNode(nodeUrl) 
+        // Choose pow mode
+        .withLocalPow(true)
+        //Then create the Client instance
+        .finish();
+    NodeInfoWrapper info = iota.getInfo();
+    System.out.println("Node url: " + info.url());
+    System.out.println("Node Info: " + info.nodeInfo());
 }
 ```
+
+## API Reference
+
+API Reference can be found [here](api_reference).
 
 # Limitations
 

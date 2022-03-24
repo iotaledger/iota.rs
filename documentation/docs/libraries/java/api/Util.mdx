@@ -1,0 +1,27 @@
+
+
+### consolidateFunds(client, seed, account_index, address_range_low, address_range_high): String
+
+Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+ Returns the address to which the funds got consolidated, if any were available
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| client | [Client](#client) |   |
+| seed | String |   |
+| account_index | long |   |
+| address_range_low | long |   |
+| address_range_high | long |   |
+
+### searchAddress(seed, bech32_hrp, account_index, range_low, range_high, address): [IndexPublicDto](#indexpublicdto)
+
+Function to find the index and public or internal type of an Bech32 encoded address
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| seed | String |   |
+| bech32_hrp | String |   |
+| account_index | long |   |
+| range_low | long |   |
+| range_high | long |   |
+| address | [Address](#address) |   |

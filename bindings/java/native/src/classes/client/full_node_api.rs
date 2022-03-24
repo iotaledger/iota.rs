@@ -12,13 +12,14 @@ use std::{
 use iota_client::{
     bee_message::{input::UtxoInput as RustUtxoInput, payload::transaction::TransactionId, MessageId},
     client::Client as ClientRust,
+    node_manager::Node as RustNode,
 };
 
 use crate::{
     address::*,
     balance::GetBalanceBuilderApi,
     bee_types::*,
-    client_builder::ClientBuilder,
+    client_builder::{ClientBuilder, NetworkInfo},
     message::{ClientMessageBuilder, GetMessageBuilder, Message, MessageWrap},
     mqtt::MqttManager,
     Result,
@@ -51,26 +52,48 @@ impl Client {
     }
 
     pub fn get_health(&self) -> Result<bool> {
-        Ok(crate::block_on(async { self.0.get_health().await })?)
+        crate::block_on(async { self.0.get_health().await }).map_err(|e| anyhow::anyhow!(e.to_string()))
     }
 
     pub fn get_node_health(&self, node: &str) -> Result<bool> {
-        Ok(crate::block_on(async {
-            iota_client::Client::get_node_health(node).await
-        })?)
+        crate::block_on(async { iota_client::Client::get_node_health(node).await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))
     }
 
     pub fn get_info(&self) -> Result<NodeInfoWrapper> {
-        Ok(crate::block_on(async { self.0.get_info().await })?.into())
+        Ok(crate::block_on(async { self.0.get_info().await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
+            .into())
+    }
+
+    pub fn get_node(&self) -> Result<Node> {
+        Ok(crate::block_on(async { self.0.get_node().await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
+            .into())
+    }
+
+    pub fn get_network_id(&self) -> Result<u64> {
+        crate::block_on(async { self.0.get_network_id().await }).map_err(|e| anyhow::anyhow!(e.to_string()))
+    }
+
+    pub fn get_pow_provider(&self) -> ClientMiner {
+        crate::block_on(async { self.0.get_pow_provider().await }).into()
+    }
+
+    pub fn get_network_info(&self) -> Result<NetworkInfo> {
+        Ok(crate::block_on(async { self.0.get_network_info().await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
+            .into())
     }
 
     pub fn get_tips(&self) -> Result<Vec<String>> {
-        let tips = crate::block_on(async { self.0.get_tips().await })?;
+        let tips = crate::block_on(async { self.0.get_tips().await }).map_err(|e| anyhow::anyhow!(e.to_string()))?;
         Ok(tips.into_iter().map(|p| p.to_string()).collect())
     }
 
     pub fn get_peers(&self) -> Result<Vec<PeerDto>> {
-        Ok(crate::block_on(async { self.0.get_peers().await })?
+        Ok(crate::block_on(async { self.0.get_peers().await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
             .into_iter()
             .map(PeerDto::from)
             .collect())
@@ -86,7 +109,11 @@ impl Client {
     }
 
     pub fn get_output(&self, output_id: String) -> Result<OutputResponse> {
-        Ok(crate::block_on(async { self.0.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
+        Ok(
+            crate::block_on(async { self.0.get_output(&RustUtxoInput::from_str(&output_id)?).await })
+                .map_err(|e| anyhow::anyhow!(e.to_string()))?
+                .into(),
+        )
     }
 
     /// GET /api/v1/addresses/{address} endpoint
@@ -96,14 +123,18 @@ impl Client {
 
     pub fn get_address_balance(&self, address: &str) -> Result<BalanceAddressResponse> {
         let mut result: BalanceAddressResponse =
-            crate::block_on(async { self.0.get_address().balance(&String::from(address)).await })?.into();
-        result.address = crate::block_on(async { self.0.hex_to_bech32(&result.address, None).await })?;
+            crate::block_on(async { self.0.get_address().balance(&String::from(address)).await })
+                .map_err(|e| anyhow::anyhow!(e.to_string()))?
+                .into();
+        result.address = crate::block_on(async { self.0.hex_to_bech32(&result.address, None).await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
         Ok(result)
     }
 
     pub fn get_addresses_balances(&self, addresses: Vec<String>) -> Result<Vec<BalanceAddressResponse>> {
         let result: Vec<BalanceAddressResponse> =
-            crate::block_on(async { self.0.get_address_balances(&addresses).await })?
+            crate::block_on(async { self.0.get_address_balances(&addresses).await })
+                .map_err(|e| anyhow::anyhow!(e.to_string()))?
                 .into_iter()
                 .map(|b| b.into())
                 .collect();
@@ -125,7 +156,8 @@ impl Client {
             self.0
                 .find_outputs(&output_ids[..], &addresses.unwrap_or_default()[..])
                 .await
-        })?;
+        })
+        .map_err(|e| anyhow::anyhow!(e.to_string()))?;
         Ok(output_metadata_vec
             .into_iter()
             .map(|metadata| metadata.into())
@@ -133,15 +165,22 @@ impl Client {
     }
 
     pub fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
-        Ok(crate::block_on(async { self.0.get_milestone(index).await })?.into())
+        Ok(crate::block_on(async { self.0.get_milestone(index).await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
+            .into())
     }
 
     pub fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUtxoChangesResponse> {
-        Ok(crate::block_on(async { self.0.get_milestone_utxo_changes(index).await })?.into())
+        Ok(
+            crate::block_on(async { self.0.get_milestone_utxo_changes(index).await })
+                .map_err(|e| anyhow::anyhow!(e.to_string()))?
+                .into(),
+        )
     }
 
     pub fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
-        let receipts: Vec<ReceiptDto> = crate::block_on(async { self.0.get_receipts().await })?
+        let receipts: Vec<ReceiptDto> = crate::block_on(async { self.0.get_receipts().await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
             .into_iter()
             .map(|r| r.into())
             .collect();
@@ -149,7 +188,8 @@ impl Client {
     }
 
     pub fn get_receipts_migrated_at(&self, index: u32) -> Result<Vec<ReceiptDto>> {
-        let receipts: Vec<ReceiptDto> = crate::block_on(async { self.0.get_receipts_migrated_at(index).await })?
+        let receipts: Vec<ReceiptDto> = crate::block_on(async { self.0.get_receipts_migrated_at(index).await })
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?
             .into_iter()
             .map(|r| r.into())
             .collect();
@@ -218,9 +258,6 @@ impl Client {
 
     // HIGH LEVEL API
 
-    /// Return the balance for a provided seed and its wallet chain account index.
-    /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
-    /// balance address.
     pub fn get_balance(&self, seed: &str) -> Result<GetBalanceBuilderApi> {
         GetBalanceBuilderApi::new(self, seed)
     }
@@ -401,5 +438,30 @@ impl Client {
             .with_input(inputs.into_iter().next().unwrap())
             .with_output(to_address, balance_wrap.balance())?
             .finish()
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Node(RustNode);
+
+impl Node {
+    pub fn url(&self) -> String {
+        self.0.url.to_string()
+    }
+
+    pub fn jwt(&self) -> Option<String> {
+        self.0.jwt.clone()
+    }
+}
+
+impl From<RustNode> for Node {
+    fn from(node: RustNode) -> Self {
+        Self(node)
+    }
+}
+
+impl core::fmt::Display for Node {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }

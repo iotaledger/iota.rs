@@ -10,8 +10,10 @@ repositories {
 }
 
 dependencies {
+    implementation 'androidx.annotation:annotation:1.2.0'
+
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 tasks.withType(Test) {
@@ -19,17 +21,19 @@ tasks.withType(Test) {
 }
 
 test {
-    systemProperty "java.library.path", file("./target/debug")
+    systemProperty "java.library.path", file("../target/release")
 }
 
 task cargoBuild(type: Exec) {
     doFirst {
         workingDir "./"
-        commandLine 'cargo', 'build'
+        commandLine 'cargo', 'build', '--release'
     }
 }
 compileJava {
-    dependsOn cargoBuild
+    // uncomment this line to autocompile rust when building a jar
+    // It is disabled as this build isnt needed for android targets
+    // dependsOn cargoBuild
 }
 
 task cargoClean(type: Exec) {

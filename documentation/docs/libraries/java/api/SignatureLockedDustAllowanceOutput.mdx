@@ -1,0 +1,19 @@
+Output type for deposits that enables an address to receive dust outputs. It can be consumed as an input like a
+ regular SigLockedSingleOutput.
+
+### from(address, amount): [SignatureLockedDustAllowanceOutput](#signaturelockeddustallowanceoutput)
+
+Creates a new `SignatureLockedDustAllowanceOutput`.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | [Address](#address) |  The address to set |
+| amount | long |  The amount to set |
+
+### amount(): long
+
+Returns the amount of a `SignatureLockedDustAllowanceOutput`.
+
+### address(): [Address](#address)
+
+Returns the address of a `SignatureLockedDustAllowanceOutput`.

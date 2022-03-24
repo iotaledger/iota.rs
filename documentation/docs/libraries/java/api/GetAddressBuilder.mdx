@@ -1,0 +1,22 @@
+Builder of GET /api/v1/address/{address} endpoint
+
+### balance(address): [BalanceAddressResponse](#balanceaddressresponse)
+
+Consume the builder and get the balance of a given Bech32 encoded address.
+ If count equals maxResults, then there might be more outputs available but those were skipped for performance
+ reasons. User should sweep the address to reduce the amount of outputs.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The address to get the balance for |
+
+### outputs(address, options): [UtxoInput[]](#utxoinput)
+
+Consume the builder and get all outputs that use a given address.
+ If count equals maxResults, then there might be more outputs available but those were skipped for performance
+ reasons. User should sweep the address to reduce the amount of outputs.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| address | String |  The address to get the balance for |
+| options | [OutputsOptions](#outputsoptions) |  The options for finding outputs |

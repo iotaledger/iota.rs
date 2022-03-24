@@ -1,8 +1,6 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::convert::AsMut;
-
 use iota_client::crypto::signatures::ed25519::{
     PublicKey as RustPublicKey, SecretKey as RustSecretKey, Signature as RustSignature,
 };
@@ -25,7 +23,9 @@ impl SecretKey {
     }
 
     pub fn from_bytes(bs: Vec<u8>) -> Self {
-        Self(RustSecretKey::from_bytes(clone_into_array(&bs[0..SECRET_KEY_LENGTH])))
+        let mut bs_arr: [u8; SECRET_KEY_LENGTH] = [0; SECRET_KEY_LENGTH];
+        bs_arr.copy_from_slice(&bs[0..SECRET_KEY_LENGTH]);
+        Self(RustSecretKey::from_bytes(bs_arr))
     }
 
     pub fn public_key(&self) -> PublicKey {
@@ -65,9 +65,11 @@ impl PublicKey {
     }
 
     pub fn try_from_bytes(bs: Vec<u8>) -> Result<Self> {
-        match RustPublicKey::try_from_bytes(clone_into_array(&bs[0..SECRET_KEY_LENGTH])) {
+        let mut bs_arr: [u8; SECRET_KEY_LENGTH] = [0; SECRET_KEY_LENGTH];
+        bs_arr.copy_from_slice(&bs[0..SECRET_KEY_LENGTH]);
+        match RustPublicKey::try_from_bytes(bs_arr) {
             Ok(bytes) => Ok(Self(bytes)),
-            Err(e) => Err(anyhow!(e.to_string())),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
 }
@@ -117,15 +119,4 @@ impl From<RustSignature> for Signature {
     fn from(output: RustSignature) -> Self {
         Self(output)
     }
-}
-
-// https://stackoverflow.com/a/37679442
-fn clone_into_array<A, T>(slice: &[T]) -> A
-where
-    A: Sized + Default + AsMut<[T]>,
-    T: Clone,
-{
-    let mut a = Default::default();
-    <A as AsMut<[T]>>::as_mut(&mut a).clone_from_slice(slice);
-    a
 }

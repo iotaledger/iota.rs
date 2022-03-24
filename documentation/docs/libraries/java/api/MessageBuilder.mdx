@@ -1,0 +1,42 @@
+A builder to build a `Message`.
+
+### MessageBuilder(): [MessageBuilder](#messagebuilder)
+
+Creates a new `MessageBuilder`.
+
+### networkId(network_id): [MessageBuilder](#messagebuilder)
+
+Adds a network id to a `MessageBuilder`.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| network_id | long |  The network id |
+
+### parents(parents): [MessageBuilder](#messagebuilder)
+
+Adds parents to a `MessageBuilder`.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| parents | [MessageId[]](#messageid) |  A list of parents to set |
+
+### payload(payload): [MessageBuilder](#messagebuilder)
+
+Adds a payload to a `MessageBuilder`.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| payload | [MessagePayload](#messagepayload) |  the MessagePayload to set |
+
+### nonceProvider(provider, target_score): [MessageBuilder](#messagebuilder)
+
+Sets a provider for the nonce. Can currently only be obtained from Client.getPowProvider
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| provider | [ClientMiner](#clientminer) |  Sets the nonce provider |
+| target_score | double |  Target score for the nonce, Recommended: 4000 |
+
+### finish(): [Message](#message)
+
+Finish the MessageBuilder

@@ -11,7 +11,7 @@ use iota_client::{
         prelude::{Message as RustMessage, MessageBuilder as RustMessageBuilder, MessageId, Parents},
     },
     node::GetMessageBuilder as RustGetMessageBuilder,
-    Seed as RustSeed,
+    ClientMiner as RustClientMiner, Seed as RustSeed,
 };
 
 use crate::{
@@ -21,7 +21,7 @@ use crate::{
     },
     full_node_api::Client,
     prepared::{addres_into_rust_address_recorder, PreparedTransactionData},
-    MessagePayload, Result,
+    ClientMiner, MessagePayload, Result,
 };
 
 #[derive(Clone, PartialEq)]
@@ -128,23 +128,25 @@ impl Message {
 }
 
 pub struct MessageBuilder {
-    builder: Rc<RefCell<Option<RustMessageBuilder>>>,
+    builder: Rc<RefCell<Option<RustMessageBuilder<RustClientMiner>>>>,
 }
 
 impl Default for MessageBuilder {
     fn default() -> Self {
         Self {
-            builder: Rc::new(RefCell::new(Option::from(RustMessageBuilder::default()))),
+            builder: Rc::new(RefCell::new(Option::from(
+                RustMessageBuilder::<RustClientMiner>::default(),
+            ))),
         }
     }
 }
 
 impl MessageBuilder {
     pub fn new() -> Self {
-        MessageBuilder::new_with_builder(RustMessageBuilder::new())
+        MessageBuilder::new_with_builder(RustMessageBuilder::<RustClientMiner>::new())
     }
 
-    fn new_with_builder(builder: RustMessageBuilder) -> Self {
+    fn new_with_builder(builder: RustMessageBuilder<RustClientMiner>) -> Self {
         Self {
             builder: Rc::new(RefCell::new(Option::from(builder))),
         }
@@ -163,7 +165,7 @@ impl MessageBuilder {
             .borrow_mut()
             .take()
             .unwrap()
-            .with_parents(Parents::new(parents)?);
+            .with_parents(Parents::new(parents).map_err(|e| anyhow::anyhow!(e.to_string()))?);
         Ok(MessageBuilder::new_with_builder(new_builder))
     }
 
@@ -179,16 +181,15 @@ impl MessageBuilder {
     }
 
     /// Adds a nonce provider to a `MessageBuilder`.
-    // pub fn nonce_provider(&self, nonce_provider: P, target_score: f64) -> Self {
-    // let new_builder = self
-    // .builder
-    // .borrow_mut()
-    // .take()
-    // .unwrap()
-    // .with_payload(payload.to_inner())
-    // .unwrap();
-    // MessageBuilder::new_with_builder(new_builder)
-    // }
+    pub fn nonce_provider(&self, provider: ClientMiner, target_score: f64) -> Self {
+        let new_builder = self
+            .builder
+            .borrow_mut()
+            .take()
+            .unwrap()
+            .with_nonce_provider(provider.to_inner(), target_score);
+        MessageBuilder::new_with_builder(new_builder)
+    }
 
     /// Finishes the `MessageBuilder` into a `Message`.
     pub fn finish(&self) -> Result<Message> {
@@ -365,7 +366,9 @@ impl<'a> ClientMessageBuilder<'a> {
         inputs_range_low: usize,
         inputs_range_high: usize,
     ) -> Result<MessagePayload> {
-        let second_seed = Some(RustSeed::from_bytes(&hex::decode(seed)?));
+        let second_seed = Some(RustSeed::from_bytes(
+            &hex::decode(seed).map_err(|e| anyhow::anyhow!(e.to_string()))?,
+        ));
 
         let mut range = None;
         if inputs_range_low != 0 {

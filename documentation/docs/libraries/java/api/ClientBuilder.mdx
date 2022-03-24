@@ -1,0 +1,173 @@
+The options builder for a client connected to multiple nodes.
+
+### ClientBuilder(): [ClientBuilder](#clientbuilder)
+
+Create a new instance of the Client
+
+### withNode(node): [ClientBuilder](#clientbuilder)
+
+Adds an IOTA node by its URL.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node | String |  The node URL |
+
+### withNodes(nodes): [ClientBuilder](#clientbuilder)
+
+Adds a list of IOTA nodes by their URLs.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| nodes | String[] |  The list of node URLs |
+
+### withNodeAuth(node, jwt, username, password): [ClientBuilder](#clientbuilder)
+
+Adds an IOTA node by its URL with optional jwt and or basic authentication
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node | String |  The node URL |
+| jwt | String |  The JWT, can be `null` |
+| username | String |  The username, can be `null` |
+| password | String |  The password, can be `null`. Only checked if username is not `null` |
+
+### withPrimaryNode(node, jwt, username, password): [ClientBuilder](#clientbuilder)
+
+Adds an IOTA node by its URL to be used as primary node, with optional jwt and or basic authentication
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node | String |  The node URL |
+| jwt | String |  The JWT, can be `null` |
+| username | String |  The username, can be `null` |
+| password | String |  The password, can be `null`. Only checked if username is not `null` |
+
+### withPrimaryPowNode(node, jwt, username, password): [ClientBuilder](#clientbuilder)
+
+Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
+ authentication
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node | String |  The node URL |
+| jwt | String |  The JWT, can be `null` |
+| username | String |  The username, can be `null` |
+| password | String |  The password, can be `null`. Only checked if username is not `null` |
+
+### withPermanode(node, jwt, username, password): [ClientBuilder](#clientbuilder)
+
+Adds an IOTA permanode by its URL, with optional jwt and or basic authentication
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node | String |  The node URL |
+| jwt | String |  The JWT, can be `null` |
+| username | String |  The username, can be `null` |
+| password | String |  The password, can be `null`. Only checked if username is not `null` |
+
+### withNodePoolUrls(node_pool_urls): [ClientBuilder](#clientbuilder)
+
+Get node list from the node_pool_urls
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node_pool_urls | String[] |  node_pool_urls list of node URLs for the node pool |
+
+### withOfflineMode(): [ClientBuilder](#clientbuilder)
+
+Allows creating the client without nodes for offline address generation or signing
+
+### withNetwork(network): [ClientBuilder](#clientbuilder)
+
+Client connected to the default Network pool unless specified.
+ 
+ ```
+ import org.iota.client.ClientBuilder;
+ Client clientOptions = new ClientBuilder().with_network("devnet").build();
+ ```
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| network | String |  The network we connect to |
+
+### withNodeSyncInterval(node_sync_interval): [ClientBuilder](#clientbuilder)
+
+Set the node sync interval
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| node_sync_interval | float |  The interval in seconds |
+
+### withNodeSyncDisabled(): [ClientBuilder](#clientbuilder)
+
+Disables the node syncing process.
+ Every node will be considered healthy and ready to use.
+
+### withQuorum(quorum): [ClientBuilder](#clientbuilder)
+
+Set if quorum should be used or not
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| quorum | boolean |  `true` if we use a quorum |
+
+### withQuorumSize(quorum_size): [ClientBuilder](#clientbuilder)
+
+Set amount of nodes which should be used for quorum
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| quorum_size | long |  The amount of nodes |
+
+### withQuorumThreshold(threshold): [ClientBuilder](#clientbuilder)
+
+Set quorum threshold
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| threshold | long |  The percentage of nodes that need to agree (0-100) |
+
+### withMqttBrokerOptions(options): [ClientBuilder](#clientbuilder)
+
+Sets the MQTT broker options.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| options | [BrokerOptions](#brokeroptions) |  the MQTT options |
+
+### withLocalPow(local): [ClientBuilder](#clientbuilder)
+
+Sets whether the PoW should be done locally or remotely.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| local | boolean |  Enables or disables local PoW |
+
+### withTipsInterval(tips): [ClientBuilder](#clientbuilder)
+
+Sets after how many seconds new tips will be requested during PoW
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| tips | long |  delay in seconds |
+
+### withRequestTimeout(timeout): [ClientBuilder](#clientbuilder)
+
+Sets the default request timeout in seconds.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| timeout | float |  The request timeout in seconds |
+
+### withApiTimeout(api, timeout): [ClientBuilder](#clientbuilder)
+
+Sets the request timeout in seconds for a specific API usage.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| api | [Api](#api) |  The API we set the timeout for |
+| timeout | float |  The request timeout in seconds |
+
+### finish(): [Client](#client)
+
+Build the Client instance.

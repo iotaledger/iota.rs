@@ -19,15 +19,15 @@ crate-type = ["cdylib"]
 [dependencies]
 iota-client = { path = "../../..", features = ["mqtt"] }
 
-# Java gen
-jni = "0.19.0"
-flapigen = { git = "https://github.com/Dushistov/flapigen-rs", rev = "6a5e38b02781b47b955b88e88f70b10195b563d2" }
+# Generating bindings
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs", default-features = false }
+getset = { version = "0.1.1", default-features = false }
+jni = { version = "0.19", default-features = false }
 
 log = { version = "0.4.14", default-features = false }
-env_logger = "0.9.0"
-anyhow = "1.0.53"
+env_logger = { version = "0.9.0", default-features = false }
+anyhow = { version = "1.0.38", default-features = false }
 hex = { version = "0.4.3", default-features = false }
-getset = "0.1.2"
 
 # Needed for prepared transaction data serialization
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
@@ -39,9 +39,11 @@ once_cell = { version = "1.9.0", default-features = false }
 futures = { version = "0.3.19", default-features = false }
 
 [build-dependencies]
-flapigen = { git = "https://github.com/Dushistov/flapigen-rs", rev = "6a5e38b02781b47b955b88e88f70b10195b563d2" }
-env_logger = "0.9.0"
-bindgen = "0.59.2"
+flapigen = { git = "https://github.com/Dushistov/flapigen-rs", default-features = false }
+env_logger = { version = "0.9.0", default-features = false }
+walkdir = { version = "2.2.7", default-features = false }
+cc = { version = "1.0.67", default-features = false }
+bindgen = { version = "0.59.1", default-features = false, features = ["runtime"] }
 
 [features]
 default = ["mqtt", "iota-client/default"]

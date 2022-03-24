@@ -1,0 +1,22 @@
+
+
+### withTopic(topic): [MqttTopicManager](#mqtttopicmanager)
+
+Add a new topic to the list.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| topic | [Topic](#topic) |   |
+
+### withTopics(topics): [MqttTopicManager](#mqtttopicmanager)
+
+Add a collection of topics to the list.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| topics | [Topic[]](#topic) |   |
+
+### unsubscribe(): void
+
+Unsubscribe from the given topics.
+ If no topics were provided, the function will unsubscribe from every subscribed topic.

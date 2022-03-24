@@ -16,6 +16,8 @@ mod info_response;
 mod messagemetadata;
 mod peers;
 
+mod nonce;
+
 pub use index::*;
 pub use input::*;
 pub use milestone::*;
@@ -30,3 +32,5 @@ pub use gossip::*;
 pub use info_response::*;
 pub use messagemetadata::*;
 pub use peers::*;
+
+pub use nonce::*;

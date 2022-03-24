@@ -105,6 +105,11 @@ module.exports = {
         },
         {
           type: 'doc',
+          id: 'libraries/java/android_development',
+          label: 'Android'
+        },
+        {
+          type: 'doc',
           id: 'libraries/java/examples',
           label: 'Examples'
         },

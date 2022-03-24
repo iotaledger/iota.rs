@@ -1,3 +1,4 @@
-rootProject.name = 'client'
-
-include "native", "examples:basic-app"
+include ':native'
+include ':examples:android-app'
+include ':examples:java-app'
+rootProject.name = "client"

@@ -1,0 +1,55 @@
+
+
+### indexString(index): [MessageId[]](#messageid)
+
+GET /api/v1/messages?index={Index} endpoint
+ Consume the builder and search for messages matching the index
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| index | String |  the index string |
+
+### indexVec(index): [MessageId[]](#messageid)
+
+GET /api/v1/messages?index={Index} endpoint
+ Consume the builder and search for messages matching the index
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| index | byte[] |  the index in bytes |
+
+### data(message_id): [Message](#message)
+
+GET /api/v1/messages/{messageID} endpoint
+ Consume the builder and find a message by its identifer. This method returns the given message object.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the message to find |
+
+### metadata(message_id): [MessageMetadata](#messagemetadata)
+
+GET /api/v1/messages/{messageID}/metadata endpoint
+ Consume the builder and find a message by its identifer. This method returns the given message metadata.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the message to find |
+
+### raw(message_id): String
+
+GET /api/v1/messages/{messageID}/raw endpoint
+ Consume the builder and find a message by its identifer. This method returns the given message raw data.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the message to find |
+
+### children(message_id): [MessageId[]](#messageid)
+
+GET /api/v1/messages/{messageID}/children endpoint
+ Consume the builder and returns the list of message IDs that reference a message by its identifier.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| message_id | [MessageId](#messageid) |  The id of the message to find |

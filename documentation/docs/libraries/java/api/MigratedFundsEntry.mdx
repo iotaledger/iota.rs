@@ -1,0 +1,18 @@
+
+
+### from(hash, output): [MigratedFundsEntry](#migratedfundsentry)
+
+Creates a new `MigratedFundsEntry`.
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| hash | String |  The hash from the transaction used to receive the funds |
+| output | [SignatureLockedSingleOutput](#signaturelockedsingleoutput) |  the output related to this transaction |
+
+### tailTransactionHash(): String
+
+Returns the tail transaction hash of a `MigratedFundsEntry`.
+
+### output(): [SignatureLockedSingleOutput](#signaturelockedsingleoutput)
+
+Returns the output of a `MigratedFundsEntry`.
