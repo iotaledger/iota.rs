@@ -21,7 +21,7 @@ use std::ops::Range;
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "name", content = "data")]
 pub enum ClientMethod {
-    /// Generate a new unused address.
+    /// Generate a addresses.
     GenerateAddresses {
         /// Create singer from json
         signer: String,
