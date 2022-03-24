@@ -89,8 +89,8 @@ pub(crate) async fn get_remainder(
             None => {
                 let mut address = None;
                 for input in inputs {
-                    if let Output::Basic(basic_output) = input {
-                        for unlock_condition in basic_output.unlock_conditions().iter() {
+                    if let Some(unlock_conditions) = input.unlock_conditions() {
+                        for unlock_condition in unlock_conditions.iter() {
                             if let UnlockCondition::Address(address_unlock_condition) = unlock_condition {
                                 address.replace(address_unlock_condition.address());
                                 break;
