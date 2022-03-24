@@ -21,7 +21,7 @@ class NodeIndexerAPI():
 
     @send_message_routine
     def alias_out_ids(self, alias_id):
-        """Fetch alias output IDs.
+        """Fetch alias output ID.
         """
         return call_client_method('AliasOutputIds', {
             'alias_id': alias_id
