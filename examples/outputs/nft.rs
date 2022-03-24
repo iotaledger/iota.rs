@@ -71,37 +71,10 @@ async fn main() -> Result<()> {
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
-    // create second transaction with the actual NFT id (BLAKE2b-160 hash of the Output ID that created the NFT)
-    //////////////////////////////////
-    let nft_output_id = get_nft_output_id(message.payload().unwrap());
-    let nft_id = NftId::from(&nft_output_id);
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Nft(
-        // address of the owner of the NFT
-        NftOutputBuilder::new(1_000_000, nft_id)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            // address of the minter of the NFT
-            // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .finish()?,
-    ));
-
-    let message = iota
-        .message()
-        .with_signer(&signer)
-        .with_input(nft_output_id.into())?
-        .with_outputs(outputs)?
-        .finish()
-        .await?;
-    println!(
-        "Transaction with NFT id set sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
-    );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
-
-    //////////////////////////////////
     // move funds from an NFT address
     //////////////////////////////////
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
+    let nft_id = NftId::from(&nft_output_id);
 
     let nft_address = NftAddress::new(nft_id);
     let bech32_nft_address = Address::Nft(nft_address).to_bech32("atoi");
