@@ -55,7 +55,7 @@ pub(crate) fn get_minted_and_burned_native_tokens(
             let mut initial_creation = true;
             for input in inputs {
                 if let Output::Foundry(input_foundry) = input {
-                    let token_id = TokenId::build(output_foundry.id(), *output_foundry.token_tag());
+                    let token_id = TokenId::build(&output_foundry.id(), output_foundry.token_tag());
                     if output_foundry.id() == input_foundry.id() {
                         initial_creation = false;
                         match output_foundry
@@ -94,7 +94,7 @@ pub(crate) fn get_minted_and_burned_native_tokens(
             // If we created the foundry with this transaction, then we need to add the circulating supply as minted
             // tokens
             if initial_creation {
-                let token_id = TokenId::build(output_foundry.id(), *output_foundry.token_tag());
+                let token_id = TokenId::build(&output_foundry.id(), output_foundry.token_tag());
                 let circulating_supply = output_foundry.circulating_supply();
                 if circulating_supply != U256::from(0) {
                     match minted_native_tokens.entry(token_id) {

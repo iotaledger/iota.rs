@@ -9,8 +9,8 @@ use bee_message::{
     address::{Address, Ed25519Address},
     input::INPUT_COUNT_MAX,
     output::{
-        AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeToken, Output, TokenId,
-        UnlockCondition,
+        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeToken, Output,
+        TokenId, UnlockCondition,
     },
 };
 use packable::PackableExt;

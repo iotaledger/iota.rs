@@ -20,7 +20,6 @@ use bee_message::{
     },
     unlock_block::UnlockBlocks,
 };
-use bee_rest_api::types::dtos::OutputDto;
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use packable::PackableExt;
 

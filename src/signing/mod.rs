@@ -260,7 +260,7 @@ fn verify_signature(
     match address {
         Address::Ed25519(address) => {
             let Signature::Ed25519(ed25519_signature) = signature_unlock_block.signature();
-            address.verify(essence_hash, ed25519_signature)?
+            ed25519_signature.is_valid(essence_hash, address)?
         }
         // todo handle other addresses
         Address::Alias(_address) => {}

@@ -5,9 +5,9 @@
 
 use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
 
-use bee_message::{output::OutputId, payload::transaction::TransactionId, Message, MessageId};
+use bee_message::{output::OutputId, payload::transaction::TransactionId, Message, MessageDto, MessageId};
 use bee_rest_api::types::{
-    dtos::{MessageDto, PeerDto, ReceiptDto},
+    dtos::{PeerDto, ReceiptDto},
     responses::{
         MessageChildrenResponse, MessageMetadataResponse, MessageResponse, MilestoneResponse, OutputResponse,
         PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
