@@ -12,7 +12,7 @@ class NodeIndexerAPI():
         })
 
     @send_message_routine
-    def aliases_out_ids(self, query_parameters):
+    def aliases_output_ids(self, query_parameters):
         """Fetch aliases output IDs.
         """
         return call_client_method('AliasesOutputIds', {
