@@ -117,7 +117,7 @@ impl ClientMessageHandler {
                 self.client.get_fallback_to_local_pow().await,
             )),
             #[cfg(not(feature = "wasm"))]
-            ClientMethod::UnsynchedNodes => Ok(ResponseType::UnsynchedNodes(self.client.unsynced_nodes().await)),
+            ClientMethod::UnsyncedNodes => Ok(ResponseType::UnsyncedNodes(self.client.unsynced_nodes().await)),
             ClientMethod::GetNodeHealth { url } => Ok(ResponseType::NodeHealth(Client::get_node_health(url).await?)),
             ClientMethod::GetHealth => Ok(ResponseType::NodeHealth(self.client.get_health().await?)),
             ClientMethod::GetNodeInfo { url, auth } => {

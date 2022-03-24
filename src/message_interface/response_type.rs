@@ -49,7 +49,7 @@ pub enum ResponseType<'a> {
     FallbackToLocalPoW(bool),
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
-    UnsynchedNodes(HashSet<&'a Node>),
+    UnsyncedNodes(HashSet<&'a Node>),
     /// Node health
     NodeHealth(bool),
     /// Node info
