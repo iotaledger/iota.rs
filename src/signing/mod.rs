@@ -12,6 +12,7 @@ use crate::signing::{
     types::{InputSigningData, SignerTypeDto},
 };
 
+use crate::bee_message::output::{AliasId, NftId};
 use bee_message::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
@@ -191,11 +192,26 @@ pub trait Signer: Send + Sync {
             // that have the corresponding alias or nft address in their unlock condition
             let output = Output::try_from(&input.output_response.output)?;
             match &output {
-                Output::Alias(a) => {
-                    unlock_block_indexes.insert(Address::Alias(AliasAddress::new(*a.alias_id())), current_block_index)
+                Output::Alias(alias_output) => {
+                    // When the alias is minted, the alias_id contains only `0` bytes and we need to calculate the
+                    // output id
+                    // todo: replace with `.or_from_output_id(output_data.output_id)` when available in bee: https://github.com/iotaledger/bee/pull/977
+                    let alias_id = if alias_output.alias_id().iter().all(|&b| b == 0) {
+                        AliasId::from(&input.output_id()?)
+                    } else {
+                        *alias_output.alias_id()
+                    };
+                    unlock_block_indexes.insert(Address::Alias(AliasAddress::new(alias_id)), current_block_index)
                 }
-                Output::Nft(a) => {
-                    unlock_block_indexes.insert(Address::Nft(NftAddress::new(*a.nft_id())), current_block_index)
+                Output::Nft(nft_output) => {
+                    // When the nft is minted, the nft_id contains only `0` bytes and we need to calculate the output id
+                    // todo: replace with `.or_from_output_id(o.output_id)` when available in bee: https://github.com/iotaledger/bee/pull/977
+                    let nft_id = if nft_output.nft_id().iter().all(|&b| b == 0) {
+                        NftId::from(&input.output_id()?)
+                    } else {
+                        *nft_output.nft_id()
+                    };
+                    unlock_block_indexes.insert(Address::Nft(NftAddress::new(nft_id)), current_block_index)
                 }
                 _ => None,
             };

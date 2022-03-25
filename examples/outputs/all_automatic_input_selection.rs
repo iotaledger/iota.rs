@@ -98,106 +98,16 @@ async fn main() -> Result<()> {
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
-    // create second transaction with the actual AliasId/NftId (BLAKE2b-160 hash of the Output ID that created the
-    // alias{nft})
+    // create foundry output, native tokens and nft
     //////////////////////////////////
     let alias_output_id_1 = get_alias_output_id(message.payload().unwrap());
     let alias_id = AliasId::from(&alias_output_id_1);
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Alias(
-        AliasOutputBuilder::new(2_000_000, alias_id)?
-            .with_state_index(1)
-            .with_foundry_counter(0)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish()?,
-    ));
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let nft_id = NftId::from(&nft_output_id);
-    outputs.push(Output::Nft(
-        NftOutputBuilder::new(1_000_000, nft_id)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
-
-    let message = iota
-        .message()
-        .with_signer(&signer)
-        .with_outputs(outputs)?
-        .finish()
-        .await?;
-    println!(
-        "Transaction with alias id set sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
-    );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
-
-    //////////////////////////////////
-    // create foundry output
-    //////////////////////////////////
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
-        AliasOutputBuilder::new(1_000_000, alias_id)?
-            .with_state_index(2)
-            .with_foundry_counter(1)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish()?,
-    ));
-    outputs.push(Output::Foundry(
-        FoundryOutputBuilder::new(
-            1_000_000,
-            1,
-            TokenTag::new([0u8; 12]),
-            U256::from(0),
-            U256::from(0),
-            U256::from(100),
-            TokenScheme::Simple,
-        )?
-        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
-        ))
-        .finish()?,
-    ));
-    outputs.push(Output::Nft(
-        NftOutputBuilder::new(1_000_000, nft_id)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
-
-    let message = iota
-        .message()
-        .with_signer(&signer)
-        .with_outputs(outputs)?
-        .finish()
-        .await?;
-    println!(
-        "Transaction with foundry output sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
-    );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
-
-    //////////////////////////////////
-    // create native token
-    //////////////////////////////////
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Alias(
-        AliasOutputBuilder::new(1_000_000, alias_id)?
-            .with_state_index(3)
+        AliasOutputBuilder::new(1_000_000, alias_id.clone())?
+            .with_state_index(1)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
@@ -211,10 +121,8 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let foundry_id = FoundryId::build(AliasId::from(&alias_output_id_1), 1, TokenScheme::Simple);
-
+    let foundry_id = FoundryId::build(alias_id, 1, TokenScheme::Simple);
     let token_id = TokenId::build(foundry_id, TokenTag::new([0u8; 12]));
-
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(
             1_000_000,
@@ -225,6 +133,7 @@ async fn main() -> Result<()> {
             U256::from(100),
             TokenScheme::Simple,
         )?
+        // Mint native tokens
         .add_native_token(NativeToken::new(token_id, U256::from(50))?)
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
             ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
@@ -236,6 +145,7 @@ async fn main() -> Result<()> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));
+
     let message = iota
         .message()
         .with_signer(&signer)
@@ -243,7 +153,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with minted native tokens sent: http://localhost:14265/api/v2/messages/{}",
+        "Transaction with alias id, foundry output with minted native tokens, and nfts sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
     let _ = iota.retry_until_included(&message.id(), None, None).await?;
@@ -254,7 +164,7 @@ async fn main() -> Result<()> {
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
         AliasOutputBuilder::new(1_000_000, alias_id)?
-            .with_state_index(4)
+            .with_state_index(2)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
