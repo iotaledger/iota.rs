@@ -31,7 +31,7 @@ pub async fn create_message_handler(client_config: Option<String>) -> Result<Cli
 }
 
 /// Send message to message handler
-pub async fn send_message<'a>(handle: &'_ ClientMessageHandler, message_type: MessageType) -> Response<'_> {
+pub async fn send_message(handle: &ClientMessageHandler, message_type: MessageType) -> Response {
     let (message_tx, mut message_rx) = unbounded_channel();
     let message = Message::new(message_type, message_tx);
     handle.handle(message).await;
@@ -96,7 +96,7 @@ mod tests {
         let client_config = r#"{
             "nodes":[
                 {
-                    "url": ""http://localhost:14265"",
+                    "url": "http://localhost:14265",
                     "auth": null,
                     "disabled": false
                 }

@@ -13,7 +13,7 @@ use crate::message_interface::{
     response_type::ResponseType,
 };
 
-fn panic_to_response_message<'a>(panic: Box<dyn Any>) -> ResponseType<'a> {
+fn panic_to_response_message(panic: Box<dyn Any>) -> ResponseType {
     let msg = if let Some(message) = panic.downcast_ref::<String>() {
         format!("Internal error: {}", message)
     } else if let Some(message) = panic.downcast_ref::<&str>() {
@@ -25,9 +25,9 @@ fn panic_to_response_message<'a>(panic: Box<dyn Any>) -> ResponseType<'a> {
     ResponseType::Panic(format!("{}\n\n{:?}", msg, current_backtrace))
 }
 
-async fn convert_async_panics<'a, F>(f: impl FnOnce() -> F) -> Result<ResponseType<'a>>
+async fn convert_async_panics<F>(f: impl FnOnce() -> F) -> Result<ResponseType>
 where
-    F: Future<Output = Result<ResponseType<'a>>>,
+    F: Future<Output = Result<ResponseType>>,
 {
     match AssertUnwindSafe(f()).catch_unwind().await {
         Ok(result) => result,
@@ -55,8 +55,8 @@ impl ClientMessageHandler {
     }
 
     /// Handle messages
-    pub async fn handle<'a>(&'a self, mut message: Message<'a>) {
-        let response: Result<ResponseType<'a>> = match message.message_type_mut() {
+    pub async fn handle(&self, mut message: Message) {
+        let response: Result<ResponseType> = match message.message_type_mut() {
             MessageType::CallClientMethod(method) => {
                 convert_async_panics(|| async { self.call_client_method(method).await }).await
             }
@@ -69,7 +69,7 @@ impl ClientMessageHandler {
         let _ = message.response_tx.send(Response::new(message.message_type, response));
     }
 
-    async fn call_client_method<'a>(&'a self, method: &ClientMethod) -> Result<ResponseType<'a>> {
+    async fn call_client_method(&self, method: &ClientMethod) -> Result<ResponseType> {
         match method {
             ClientMethod::GenerateAddresses { signer, options } => {
                 let signer = SignerHandle::from_str(signer)?;
@@ -117,7 +117,9 @@ impl ClientMessageHandler {
                 self.client.get_fallback_to_local_pow().await,
             )),
             #[cfg(not(feature = "wasm"))]
-            ClientMethod::UnsyncedNodes => Ok(ResponseType::UnsyncedNodes(self.client.unsynced_nodes().await)),
+            ClientMethod::UnsyncedNodes => Ok(ResponseType::UnsyncedNodes(
+                self.client.unsynced_nodes().await.into_iter().cloned().collect(),
+            )),
             ClientMethod::GetNodeHealth { url } => Ok(ResponseType::NodeHealth(Client::get_node_health(url).await?)),
             ClientMethod::GetHealth => Ok(ResponseType::NodeHealth(self.client.get_health().await?)),
             ClientMethod::GetNodeInfo { url, auth } => {

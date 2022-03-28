@@ -20,7 +20,7 @@ use serde::Serialize;
 /// The response message.
 #[derive(Serialize, Debug)]
 #[serde(tag = "type", content = "payload")]
-pub enum ResponseType<'a> {
+pub enum ResponseType {
     /// GenerateAddress response.
     GeneratedAddresses(Vec<String>),
     /// Generated message
@@ -47,7 +47,7 @@ pub enum ResponseType<'a> {
     FallbackToLocalPoW(bool),
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
-    UnsyncedNodes(HashSet<&'a Node>),
+    UnsyncedNodes(HashSet<Node>),
     /// Node health
     NodeHealth(bool),
     /// Node info
