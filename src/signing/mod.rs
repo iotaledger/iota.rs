@@ -24,6 +24,8 @@ use bee_message::{
 #[cfg(not(feature = "wasm"))]
 use tokio::sync::Mutex;
 
+#[cfg(feature = "ledger")]
+use std::path::Path;
 #[cfg(feature = "wasm")]
 use std::sync::Mutex;
 use std::{

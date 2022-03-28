@@ -11,7 +11,7 @@ use bee_message::address::Address;
 // use iota_ledger::LedgerBIP32Index;
 use tokio::sync::Mutex;
 
-use std::{ops::Range, path::Path};
+use std::ops::Range;
 
 // ledger status codes https://github.com/iotaledger/ledger-iota-app/blob/53c1f96d15f8b014ba8ba31a85f0401bb4d33e18/src/iota_io.h#L54
 

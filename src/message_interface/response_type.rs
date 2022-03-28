@@ -1,8 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashSet;
-
 use crate::{
     api::PreparedTransactionData, builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node,
     Error, NodeInfoWrapper,
