@@ -152,7 +152,7 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
                             client,
                             network_id,
                             None,
-                            message.payload().clone(),
+                            message.payload().cloned(),
                             min_pow_score,
                         )
                         .await

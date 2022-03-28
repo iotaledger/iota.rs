@@ -835,9 +835,8 @@ impl Client {
                 let mut tips = self.get_tips().await?;
                 tips.sort_unstable_by_key(|a| a.pack_to_vec());
                 tips.dedup();
-                let mut message_builder = MessageBuilder::<ClientMiner>::new()
-                    .with_protocol_version(protocol_version)
-                    .with_parents(Parents::new(tips)?);
+                let mut message_builder =
+                    MessageBuilder::<ClientMiner>::new(Parents::new(tips)?).with_protocol_version(protocol_version);
                 if let Some(p) = message.payload().to_owned() {
                     message_builder = message_builder.with_payload(p.clone())
                 }

@@ -28,7 +28,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     match client.mqtt_client {
         Some(ref mut c) => Ok(c),
         None => {
-            let nodes = if client.node_manager.sync {
+            let nodes = if client.node_manager.node_sync_enabled {
                 #[cfg(not(feature = "wasm"))]
                 {
                     client
