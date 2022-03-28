@@ -15,11 +15,14 @@ use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput, Stronghold};
 use log::warn;
 use riker::system::ActorSystem;
+#[cfg(feature = "wasm")]
+use std::sync::Mutex;
 use std::{
     ops::Range,
     path::{Path, PathBuf},
     sync::Arc,
 };
+#[cfg(not(feature = "wasm"))]
 use tokio::sync::Mutex;
 use zeroize::Zeroize;
 

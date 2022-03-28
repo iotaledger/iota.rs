@@ -7,20 +7,20 @@ use crate::message_interface::{message_type::MessageType, response_type::Respons
 
 /// The actor response type.
 #[derive(Serialize, Debug)]
-pub struct Response<'a> {
+pub struct Response {
     #[serde(flatten)]
-    response_type: ResponseType<'a>,
+    response_type: ResponseType,
     action: MessageType,
 }
 
-impl<'a> Response<'a> {
+impl Response {
     /// Creates a new response.
-    pub fn new(action: MessageType, response_type: ResponseType<'a>) -> Self {
+    pub fn new(action: MessageType, response_type: ResponseType) -> Self {
         Self { response_type, action }
     }
 
     /// The response's type.
-    pub fn response_type(&self) -> &ResponseType<'a> {
+    pub fn response_type(&self) -> &ResponseType {
         &self.response_type
     }
 }
