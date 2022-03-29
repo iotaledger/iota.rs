@@ -82,7 +82,7 @@ async fn main() -> Result<()> {
     // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias)
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(message.payload().unwrap());
-    let alias_id = AliasId::from(&alias_output_id);
+    let alias_id = AliasId::from(alias_output_id);
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
         AliasOutputBuilder::new(1_000_000, alias_id)?
@@ -128,5 +128,5 @@ fn get_alias_output_id(payload: &Payload) -> OutputId {
             panic!("No alias output in transaction essence")
         }
         _ => panic!("No tx payload"),
-    };
+    }
 }
