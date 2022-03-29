@@ -6,12 +6,14 @@ use crate::{
     Error, NodeInfoWrapper,
 };
 
+use std::collections::HashSet;
+
 use bee_message::{address::Address, input::UtxoInput, output::OutputId, Message, MessageId};
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        InfoResponse as NodeInfo, MessageMetadataResponse, MilestoneResponse, OutputResponse, RentStructureResponse,
-        TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
+        InfoResponse as NodeInfo, MessageMetadataResponse, MilestoneResponse, OutputResponse, TreasuryResponse,
+        UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
 
@@ -41,8 +43,6 @@ pub enum ResponseType {
     TipsInterval(u64),
     /// Is local proof of work used
     LocalPoW(bool),
-    /// Rent structure
-    RentStructure(RentStructureResponse),
     /// Is fallback to local proof of work enabled
     FallbackToLocalPoW(bool),
     /// returns the unsynced nodes.

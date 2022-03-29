@@ -53,8 +53,6 @@ pub enum ClientMethod {
     GetTipsInterval,
     /// Returns if local pow should be used or not
     GetLocalPoW,
-    /// Get rent structure for the UTXO ledger
-    GetRentStructure,
     /// Get fallback to local proof of work timeout
     GetFallbackToLocalPoW,
     /// returns the unsynced nodes.

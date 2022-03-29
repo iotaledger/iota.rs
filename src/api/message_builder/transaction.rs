@@ -13,7 +13,7 @@ use crate::bee_message::output::AliasId;
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
-    output::{ByteCostConfigBuilder, Output},
+    output::Output,
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayload},
         Payload, TaggedDataPayload,
@@ -42,12 +42,8 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     //     .protocol
     //     .rent_structure;
     // #[cfg(not(feature = "wasm"))]
-    let rent_structure = message_builder.client.get_rent_structure().await?;
-    let byte_cost_config = ByteCostConfigBuilder::new()
-        .byte_cost(rent_structure.v_byte_cost)
-        .key_factor(rent_structure.v_byte_factor_key)
-        .data_factor(rent_structure.v_byte_factor_data)
-        .finish();
+    let byte_cost_config = message_builder.client.get_byte_cost_config().await?;
+
     let mut governance_transition: Option<HashSet<AliasId>> = None;
     for output in &message_builder.outputs {
         // Check if the outputs have enough amount to cover the storage deposit

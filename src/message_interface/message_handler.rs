@@ -112,7 +112,6 @@ impl ClientMessageHandler {
             ClientMethod::GetMinPoWScore => Ok(ResponseType::MinPoWScore(self.client.get_min_pow_score().await?)),
             ClientMethod::GetTipsInterval => Ok(ResponseType::TipsInterval(self.client.get_tips_interval().await)),
             ClientMethod::GetLocalPoW => Ok(ResponseType::LocalPoW(self.client.get_local_pow().await)),
-            ClientMethod::GetRentStructure => Ok(ResponseType::RentStructure(self.client.get_rent_structure().await?)),
             ClientMethod::GetFallbackToLocalPoW => Ok(ResponseType::FallbackToLocalPoW(
                 self.client.get_fallback_to_local_pow().await,
             )),

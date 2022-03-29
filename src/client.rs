@@ -20,11 +20,10 @@ use crate::{
     },
 };
 
-use crate::bee_rest_api::types::responses::RentStructureResponse;
 use bee_message::{
     address::Address,
     input::{UtxoInput, INPUT_COUNT_MAX},
-    output::{AliasId, FoundryId, NftId, OutputId},
+    output::{AliasId, ByteCostConfig, ByteCostConfigBuilder, FoundryId, NftId, OutputId},
     parent::Parents,
     payload::{transaction::TransactionId, Payload},
     Message, MessageBuilder, MessageId,
@@ -330,9 +329,15 @@ impl Client {
             .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
     }
 
-    /// returns the rent structure for the UTXO ledger
-    pub async fn get_rent_structure(&self) -> Result<RentStructureResponse> {
-        Ok(self.get_network_info().await?.rent_structure)
+    /// returns the byte cost configuration
+    pub async fn get_byte_cost_config(&self) -> Result<ByteCostConfig> {
+        let rent_structure = self.get_network_info().await?.rent_structure;
+        let byte_cost_config = ByteCostConfigBuilder::new()
+            .byte_cost(rent_structure.v_byte_cost)
+            .key_factor(rent_structure.v_byte_factor_key)
+            .data_factor(rent_structure.v_byte_factor_data)
+            .finish();
+        Ok(byte_cost_config)
     }
 
     pub(crate) fn get_timeout(&self) -> Duration {
