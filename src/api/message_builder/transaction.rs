@@ -29,19 +29,6 @@ use std::{collections::HashSet, str::FromStr};
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
     log::debug!("[prepare_transaction]");
-    // To be enabled when https://github.com/iotaledger/iota.rs/issues/830 gets implemented also for the difficulty
-    // #[cfg(feature = "wasm")]
-    // // With wasm we don't have the background syncing of nodes which updates the NetworkInfo in an interval, so we
-    // need // to get the data every time we send a function, because the data could otherwise be outdated (the
-    // values could be // changed via milestones later)
-    // let rent_structure = message_builder
-    //     .client
-    //     .get_info()
-    //     .await?
-    //     .nodeinfo
-    //     .protocol
-    //     .rent_structure;
-    // #[cfg(not(feature = "wasm"))]
     let byte_cost_config = message_builder.client.get_byte_cost_config().await?;
 
     let mut governance_transition: Option<HashSet<AliasId>> = None;
