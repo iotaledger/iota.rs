@@ -15,7 +15,7 @@ use iota_client::{
                 StorageDepositReturnUnlockCondition, TimelockUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
-            NativeToken, NftId, NftOutputBuilder, Output, OutputId, TokenId, TokenScheme, TokenTag,
+            NativeToken, NftId, NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme, TokenTag,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -102,10 +102,10 @@ async fn main() -> Result<()> {
     // create foundry, native tokens and nft output
     ///////////////////////////////////////////////
     let alias_output_id = get_alias_output_id(message.payload().unwrap());
-    let alias_id = AliasId::from(&alias_output_id);
+    let alias_id = AliasId::from(alias_output_id);
 
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
-    let nft_id = NftId::from(&nft_output_id);
+    let nft_id = NftId::from(nft_output_id);
 
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
@@ -124,24 +124,17 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let foundry_id = FoundryId::build(AliasId::from(&alias_output_id), 1, TokenScheme::Simple);
-    let token_id = TokenId::build(foundry_id, TokenTag::new([0u8; 12]));
+    let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?);
+    let foundry_id = FoundryId::build(&AliasAddress::from(AliasId::from(alias_output_id)), 1, &token_scheme);
+    let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
     outputs.push(Output::Foundry(
-        FoundryOutputBuilder::new(
-            1_000_000,
-            1,
-            TokenTag::new([0u8; 12]),
-            U256::from(50),
-            U256::from(0),
-            U256::from(100),
-            TokenScheme::Simple,
-        )?
-        // create native token
-        .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
-        ))
-        .finish()?,
+        FoundryOutputBuilder::new(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
+            // Mint native tokens
+            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+                ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+            ))
+            .finish()?,
     ));
     outputs.push(Output::Nft(
         NftOutputBuilder::new(1_000_000, nft_id)?
@@ -190,10 +183,7 @@ async fn main() -> Result<()> {
             1_000_000,
             1,
             TokenTag::new([0u8; 12]),
-            U256::from(50),
-            U256::from(0),
-            U256::from(100),
-            TokenScheme::Simple,
+            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?),
         )?
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
             ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
@@ -295,7 +285,7 @@ fn get_alias_output_id(payload: &Payload) -> OutputId {
             panic!("No alias output in transaction essence")
         }
         _ => panic!("No tx payload"),
-    };
+    }
 }
 
 // helper function to get the output id for the first foundry output
@@ -311,7 +301,7 @@ fn get_foundry_output_id(payload: &Payload) -> OutputId {
             panic!("No foundry output in transaction essence")
         }
         _ => panic!("No tx payload"),
-    };
+    }
 }
 
 // helper function to get the output id for the first NFT output
@@ -327,5 +317,5 @@ fn get_nft_output_id(payload: &Payload) -> OutputId {
             panic!("No nft output in transaction essence")
         }
         _ => panic!("No tx payload"),
-    };
+    }
 }

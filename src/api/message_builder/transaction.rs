@@ -13,14 +13,13 @@ use crate::bee_message::output::AliasId;
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
-    output::Output,
+    output::{dto::OutputDto, Output},
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayload},
         Payload, TaggedDataPayload,
     },
     unlock_block::UnlockBlocks,
 };
-use bee_rest_api::types::dtos::OutputDto;
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use packable::PackableExt;
 

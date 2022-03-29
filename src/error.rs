@@ -77,6 +77,10 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     MessageError(#[from] bee_message::Error),
+    /// Message dtos error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    MessageDtoError(#[from] bee_message::DtoError),
     /// Bee rest api error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]

@@ -13,13 +13,13 @@ use bee_message::{
     address::{Address, Ed25519Address},
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
-        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        dto::OutputDto,
+        unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
         AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Message, MessageId,
 };
-use bee_rest_api::types::dtos::OutputDto;
 use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
 
 use std::{collections::HashSet, ops::Range};
@@ -313,7 +313,7 @@ impl<'a> ClientMessageBuilder<'a> {
             OutputDto::Basic(ref r) => {
                 for block in &r.unlock_conditions {
                     match block {
-                        bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
+                        UnlockConditionDto::Address(e) => {
                             return Ok((
                                 r.amount
                                     .parse::<u64>()
@@ -336,7 +336,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
                 for block in &r.unlock_conditions {
                     match block {
-                        bee_rest_api::types::dtos::UnlockConditionDto::StateControllerAddress(e) => {
+                        UnlockConditionDto::StateControllerAddress(e) => {
                             if is_governance_transition {
                                 return Ok((
                                     r.amount
@@ -346,7 +346,7 @@ impl<'a> ClientMessageBuilder<'a> {
                                 ));
                             }
                         }
-                        bee_rest_api::types::dtos::UnlockConditionDto::GovernorAddress(e) => {
+                        UnlockConditionDto::GovernorAddress(e) => {
                             if !is_governance_transition {
                                 return Ok((
                                     r.amount
@@ -364,7 +364,7 @@ impl<'a> ClientMessageBuilder<'a> {
             OutputDto::Foundry(ref r) => {
                 for block in &r.unlock_conditions {
                     match block {
-                        bee_rest_api::types::dtos::UnlockConditionDto::ImmutableAliasAddress(e) => {
+                        UnlockConditionDto::ImmutableAliasAddress(e) => {
                             return Ok((
                                 r.amount
                                     .parse::<u64>()
@@ -380,7 +380,7 @@ impl<'a> ClientMessageBuilder<'a> {
             OutputDto::Nft(ref r) => {
                 for block in &r.unlock_conditions {
                     match block {
-                        bee_rest_api::types::dtos::UnlockConditionDto::Address(e) => {
+                        UnlockConditionDto::Address(e) => {
                             return Ok((
                                 r.amount
                                     .parse::<u64>()

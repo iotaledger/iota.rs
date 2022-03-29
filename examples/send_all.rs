@@ -4,7 +4,9 @@
 //! cargo run --example send_all --release
 
 use iota_client::{
-    bee_message::output::{AddressUnlockCondition, BasicOutputBuilder, NativeToken, Output, UnlockCondition},
+    bee_message::output::{
+        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeToken, Output, UnlockCondition,
+    },
     node_api::indexer_api::query_parameters::QueryParameter,
     signing::mnemonic::MnemonicSigner,
     Client, Result,

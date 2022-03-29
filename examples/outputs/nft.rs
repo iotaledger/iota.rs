@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
     // move funds from an NFT address
     //////////////////////////////////
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
-    let nft_id = NftId::from(&nft_output_id);
+    let nft_id = NftId::from(nft_output_id);
 
     let nft_address = NftAddress::new(nft_id);
     let bech32_nft_address = Address::Nft(nft_address).to_bech32("atoi");
@@ -156,5 +156,5 @@ fn get_nft_output_id(payload: &Payload) -> OutputId {
             panic!("No nft output in transaction essence")
         }
         _ => panic!("No tx payload"),
-    };
+    }
 }

@@ -17,14 +17,12 @@ use crate::{
 use bee_message::{
     address::Address,
     output::{
-        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        dto::OutputDto,
+        unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
         BasicOutputBuilder, ByteCostConfig, NativeToken, Output, TokenId,
     },
 };
-use bee_rest_api::types::{
-    dtos::{OutputDto, UnlockConditionDto},
-    responses::OutputResponse,
-};
+use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 
 use primitive_types::U256;
