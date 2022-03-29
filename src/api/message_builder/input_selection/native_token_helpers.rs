@@ -3,7 +3,7 @@
 
 use crate::Result;
 
-use bee_message::output::{Output, TokenId};
+use bee_message::output::{Output, TokenId, TokenScheme};
 use primitive_types::U256;
 
 use std::{
@@ -52,19 +52,21 @@ pub(crate) fn get_minted_and_burned_native_tokens(
     let mut burned_native_tokens: HashMap<TokenId, U256> = HashMap::new();
     for output in outputs {
         if let Output::Foundry(output_foundry) = output {
+            let TokenScheme::Simple(output_foundry_simple_ts) = output_foundry.token_scheme();
             let mut initial_creation = true;
             for input in inputs {
                 if let Output::Foundry(input_foundry) = input {
                     let token_id = TokenId::build(&output_foundry.id(), output_foundry.token_tag());
                     if output_foundry.id() == input_foundry.id() {
                         initial_creation = false;
-                        match output_foundry
+                        let TokenScheme::Simple(input_foundry_simple_ts) = input_foundry.token_scheme();
+                        match output_foundry_simple_ts
                             .circulating_supply()
-                            .cmp(&input_foundry.circulating_supply())
+                            .cmp(&input_foundry_simple_ts.circulating_supply())
                         {
                             Ordering::Greater => {
-                                let minted_native_token_amount =
-                                    output_foundry.circulating_supply() - input_foundry.circulating_supply();
+                                let minted_native_token_amount = output_foundry_simple_ts.circulating_supply()
+                                    - input_foundry_simple_ts.circulating_supply();
                                 match minted_native_tokens.entry(token_id) {
                                     Entry::Vacant(e) => {
                                         e.insert(minted_native_token_amount);
@@ -75,8 +77,8 @@ pub(crate) fn get_minted_and_burned_native_tokens(
                                 }
                             }
                             Ordering::Less => {
-                                let burned_native_token_amount =
-                                    input_foundry.circulating_supply() - output_foundry.circulating_supply();
+                                let burned_native_token_amount = input_foundry_simple_ts.circulating_supply()
+                                    - output_foundry_simple_ts.circulating_supply();
                                 match burned_native_tokens.entry(token_id) {
                                     Entry::Vacant(e) => {
                                         e.insert(burned_native_token_amount);
@@ -95,7 +97,7 @@ pub(crate) fn get_minted_and_burned_native_tokens(
             // tokens
             if initial_creation {
                 let token_id = TokenId::build(&output_foundry.id(), output_foundry.token_tag());
-                let circulating_supply = output_foundry.circulating_supply();
+                let circulating_supply = output_foundry_simple_ts.circulating_supply();
                 if circulating_supply != U256::from(0) {
                     match minted_native_tokens.entry(token_id) {
                         Entry::Vacant(e) => {
