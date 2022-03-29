@@ -13,7 +13,7 @@ use crate::bee_message::output::AliasId;
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
-    output::Output,
+    output::{dto::OutputDto, Output},
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayload},
         Payload, TaggedDataPayload,
