@@ -272,10 +272,6 @@ impl Client {
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
         let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
 
-        #[cfg(not(feature = "wasm"))]
-        let wasm = false;
-        #[cfg(feature = "wasm")]
-        let wasm = true;
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the PoW
         // difficulty or the byte cost could change via a milestone, so we request the nodeinfo every time, so we don't
         // create invalid transactions/messages
