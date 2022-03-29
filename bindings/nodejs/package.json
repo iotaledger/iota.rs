@@ -14,7 +14,7 @@
     "prebuild-install": "^6.1.2"
   },
   "scripts": {
-    "preinstall": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild && node scripts/create-package-json.js",
+    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild && node scripts/create-package-json.js",
     "build:neon": "neon build --release && node scripts/move-lib.js",
     "rebuild": "npm run build:neon && node scripts/strip.js",
     "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
