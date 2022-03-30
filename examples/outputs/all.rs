@@ -125,7 +125,11 @@ async fn main() -> Result<()> {
     ));
 
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?);
-    let foundry_id = FoundryId::build(&AliasAddress::from(AliasId::from(alias_output_id)), 1, &token_scheme);
+    let foundry_id = FoundryId::build(
+        &AliasAddress::from(AliasId::from(alias_output_id)),
+        1,
+        &token_scheme.kind(),
+    );
     let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
