@@ -53,7 +53,7 @@ pub struct NetworkInfo {
     #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
     /// Fallback to local proof of work if the node doesn't support remote PoW
-    #[serde(rename = "fallbackToLocalPow")]
+    #[serde(rename = "fallbackToLocalPow", default = "default_fallback_to_local_pow")]
     pub fallback_to_local_pow: bool,
     /// Tips request interval during PoW in seconds
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
@@ -86,6 +86,10 @@ fn default_local_pow() -> bool {
     {
         false
     }
+}
+
+fn default_fallback_to_local_pow() -> bool {
+    true
 }
 
 fn default_tips_interval() -> u64 {
