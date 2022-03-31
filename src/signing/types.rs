@@ -50,10 +50,10 @@ pub enum SignerTypeDto {
 #[cfg(feature = "stronghold")]
 pub struct StrongholdDto {
     /// The Stronghold password
-    pub password: String,
+    pub password: Option<String>,
     /// The path for the Stronghold file
     #[serde(rename = "snapshotPath")]
-    pub snapshot_path: String,
+    pub snapshot_path: Option<String>,
 }
 
 /// Metadata provided to [sign_message](trait.Signer.html#method.sign_message).

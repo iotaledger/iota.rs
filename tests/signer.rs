@@ -63,6 +63,6 @@ async fn stronghold_signer_dto() -> Result<()> {
     assert!(stronghold_signer.lock().await.store_mnemonic(mnemonic).await.is_err());
 
     // Remove garbage after test, but don't care about the result
-    std::fs::remove_file(storage_path).unwrap_or(());
+    std::fs::remove_file("test.stronghold").unwrap_or(());
     Ok(())
 }
