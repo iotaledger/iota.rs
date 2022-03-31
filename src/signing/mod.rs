@@ -76,15 +76,26 @@ impl SignerHandle {
 
         Ok(match signer_type {
             #[cfg(feature = "stronghold")]
-            SignerTypeDto::Stronghold(stronghold_dto) => StrongholdSigner::builder()
-                .password(&stronghold_dto.password)
-                .snapshot_path(PathBuf::from(&stronghold_dto.snapshot_path))
-                .build()
-                .into(),
+            SignerTypeDto::Stronghold(stronghold_dto) => {
+                let mut builder = StrongholdSigner::builder();
+
+                if let Some(password) = &stronghold_dto.password {
+                    builder = builder.password(password);
+                }
+
+                if let Some(snapshot_path) = &stronghold_dto.snapshot_path {
+                    builder = builder.snapshot_path(PathBuf::from(snapshot_path));
+                }
+
+                builder.build().into()
+            }
+
             #[cfg(feature = "ledger")]
             SignerTypeDto::LedgerNano => LedgerSigner::new(false),
+
             #[cfg(feature = "ledger")]
             SignerTypeDto::LedgerNanoSimulator => LedgerSigner::new(true),
+
             SignerTypeDto::Mnemonic(mnemonic) => MnemonicSigner::new(&mnemonic)?,
         })
     }
