@@ -470,7 +470,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 if let Some(worker_count) = self.client.pow_worker_count {
                     client_miner = client_miner.with_worker_count(worker_count);
                 }
-                do_pow(client_miner.finish(), min_pow_score,  payload, parents)?
+                do_pow(client_miner.finish(), min_pow_score, payload, parents)?
                     .1
                     .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
             }

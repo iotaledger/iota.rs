@@ -40,12 +40,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
             if let Some(worker_count) = pow_worker_count {
                 client_miner = client_miner.with_worker_count(worker_count);
             }
-            do_pow(
-                client_miner.finish(),
-                min_pow_score,
-                payload_,
-                parent_messages,
-            )
+            do_pow(client_miner.finish(), min_pow_score, payload_, parent_messages)
         });
 
         let threads = vec![pow_thread, time_thread];
@@ -81,8 +76,7 @@ pub fn do_pow(
     payload: Option<Payload>,
     parent_messages: Vec<MessageId>,
 ) -> Result<(u64, Option<Message>)> {
-    let mut message =
-        MessageBuilder::<ClientMiner>::new(Parents::new(parent_messages)?);
+    let mut message = MessageBuilder::<ClientMiner>::new(Parents::new(parent_messages)?);
     if let Some(p) = payload {
         message = message.with_payload(p);
     }
