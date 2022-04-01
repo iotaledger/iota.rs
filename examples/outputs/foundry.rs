@@ -109,7 +109,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(100))?);
+    let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(0), U256::from(100))?);
     let foundry_id = FoundryId::build(
         &AliasAddress::from(AliasId::from(alias_output_id)),
         1,
@@ -118,7 +118,7 @@ async fn main() -> Result<()> {
     let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
     outputs.push(Output::Foundry(
         FoundryOutputBuilder::new(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
-            // .add_native_token(NativeToken::new(token_id, U256::from(70))?)
+            .add_native_token(NativeToken::new(token_id, U256::from(70))?)
             .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
                 ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
             ))
