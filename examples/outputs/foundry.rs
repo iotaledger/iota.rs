@@ -214,7 +214,7 @@ async fn main() -> Result<()> {
             1_000_000,
             1,
             TokenTag::new([0u8; 12]),
-            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?),
+            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
         )?
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
             ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
