@@ -12,8 +12,8 @@ use iota_client::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
                 StateControllerAddressUnlockCondition, UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryOutputBuilder, NativeToken, Output,
-            OutputId, SimpleTokenScheme, TokenId, TokenScheme, TokenTag,
+            AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
+            NativeToken, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme, TokenTag,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -109,28 +109,20 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    // Foundry ID (address kind 1+ Alias address 20 + Serial Number 4 + Token Scheme Type + 1) || Token Tag +12
-    let token_id_bytes: Vec<u8> = [8u8; 1]
-        .iter()
-        .chain(alias_output_id.hash().iter())
-        .chain([1, 0, 0, 0].iter())
-        .chain([0u8; 1].iter())
-        .chain(TokenTag::new([0u8; 12]).iter())
-        .map(|v| *v)
-        .collect();
-    let token_id = TokenId::new(token_id_bytes.try_into().unwrap());
+    let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(0), U256::from(100))?);
+    let foundry_id = FoundryId::build(
+        &AliasAddress::from(AliasId::from(alias_output_id)),
+        1,
+        token_scheme.kind(),
+    );
+    let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
     outputs.push(Output::Foundry(
-        FoundryOutputBuilder::new(
-            1_000_000,
-            1,
-            TokenTag::new([0u8; 12]),
-            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(0), U256::from(100))?),
-        )?
-        .add_native_token(NativeToken::new(token_id, U256::from(70))?)
-        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
-        ))
-        .finish()?,
+        FoundryOutputBuilder::new(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
+            .add_native_token(NativeToken::new(token_id, U256::from(70))?)
+            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+                ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+            ))
+            .finish()?,
     ));
 
     let message = iota
@@ -222,7 +214,7 @@ async fn main() -> Result<()> {
             1_000_000,
             1,
             TokenTag::new([0u8; 12]),
-            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?),
+            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
         )?
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
             ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),

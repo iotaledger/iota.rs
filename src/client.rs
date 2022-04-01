@@ -882,14 +882,12 @@ impl Client {
         // Create a new message (zero value message) for which one tip would be the actual message
         let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
-        let protocol_version = self.get_protocol_version().await?;
         tips.push(*message_id);
         // Sort tips/parents
         tips.sort_unstable_by_key(|a| a.pack_to_vec());
         tips.dedup();
 
         let promote_message = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?)
-            .with_protocol_version(protocol_version)
             .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;
