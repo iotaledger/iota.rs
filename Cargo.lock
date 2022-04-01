@@ -202,7 +202,7 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=94261b7fb4db2edab20f3b7c16c9e87b48de547b#94261b7fb4db2edab20f3b7c16c9e87b48de547b"
+source = "git+https://github.com/iotaledger/bee?rev=49f494308f762e4306a7f212ccd0e0fcd104dc77#49f494308f762e4306a7f212ccd0e0fcd104dc77"
 dependencies = [
  "bee-message",
  "packable",
@@ -213,7 +213,7 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=94261b7fb4db2edab20f3b7c16c9e87b48de547b#94261b7fb4db2edab20f3b7c16c9e87b48de547b"
+source = "git+https://github.com/iotaledger/bee?rev=49f494308f762e4306a7f212ccd0e0fcd104dc77#49f494308f762e4306a7f212ccd0e0fcd104dc77"
 dependencies = [
  "bech32 0.8.1",
  "bee-pow",
@@ -223,6 +223,7 @@ dependencies = [
  "derive_more",
  "digest",
  "hashbrown 0.12.0",
+ "hex",
  "iota-crypto 0.9.1",
  "iterator-sorted",
  "packable",
@@ -237,7 +238,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=94261b7fb4db2edab20f3b7c16c9e87b48de547b#94261b7fb4db2edab20f3b7c16c9e87b48de547b"
+source = "git+https://github.com/iotaledger/bee?rev=49f494308f762e4306a7f212ccd0e0fcd104dc77#49f494308f762e4306a7f212ccd0e0fcd104dc77"
 dependencies = [
  "bee-ternary",
  "iota-crypto 0.9.1",
@@ -247,7 +248,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=94261b7fb4db2edab20f3b7c16c9e87b48de547b#94261b7fb4db2edab20f3b7c16c9e87b48de547b"
+source = "git+https://github.com/iotaledger/bee?rev=49f494308f762e4306a7f212ccd0e0fcd104dc77#49f494308f762e4306a7f212ccd0e0fcd104dc77"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -548,6 +549,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "darling"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f2c43f534ea4b0b049015d00269734195e6d3f0f6635cb692251aca6f9f8b3c"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e91455b86830a1c21799d94524df0845183fa55bafd9aa137b01c7d1065fa36"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2 1.0.36",
+ "quote 1.0.15",
+ "strsim",
+ "syn 1.0.86",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29b5acf0dea37a7f66f7b25d2c5e93fd46f8f6968b1a5d7a3e02e97768afc95a"
+dependencies = [
+ "darling_core",
+ "quote 1.0.15",
+ "syn 1.0.86",
+]
+
+[[package]]
 name = "dashmap"
 version = "3.11.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -563,6 +599,37 @@ name = "data-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ee2393c4a91429dffb4bedf19f4d6abf27d8a732c8ce4980305d782e5426d57"
+
+[[package]]
+name = "derive_builder"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11d918e7dabe374a51dae0f29d818fece3b218b8b4eabec3bc4d42c537e7ed8f"
+dependencies = [
+ "derive_builder_macro",
+]
+
+[[package]]
+name = "derive_builder_core"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f712c2d4e52d5fcae53584e461dcb92fb2202e144ebf83ab0ba4360d18b767c7"
+dependencies = [
+ "darling",
+ "proc-macro2 1.0.36",
+ "quote 1.0.15",
+ "syn 1.0.86",
+]
+
+[[package]]
+name = "derive_builder_macro"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8a2ac71b4a9a590dde6cee3ca4687aca5e7ce06f4ee297c5a959de5f1e42b2e"
+dependencies = [
+ "derive_builder_core",
+ "syn 1.0.86",
+]
 
 [[package]]
 name = "derive_more"
@@ -987,6 +1054,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ident_case"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
+
+[[package]]
 name = "idna"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1065,6 +1138,7 @@ dependencies = [
  "bee-pow",
  "bee-rest-api",
  "bee-ternary",
+ "derive_builder",
  "dotenv",
  "futures",
  "gloo-timers",
@@ -1119,10 +1193,13 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c98a3248cde6b42cb479a52089fe4fc20d12de51b8edd923294cd5240ec89b0"
 dependencies = [
+ "aead",
  "bee-ternary",
  "blake2",
+ "chacha20poly1305",
  "digest",
  "ed25519-zebra",
+ "generic-array",
  "getrandom 0.2.5",
  "hmac",
  "lazy_static",
@@ -2272,6 +2349,12 @@ dependencies = [
  "stronghold-runtime",
  "thiserror",
 ]
+
+[[package]]
+name = "strsim"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "subtle"
