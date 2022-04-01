@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     println!(
         "{}",
         request_funds_from_faucet(
-            "https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue",
+            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
             &address.to_bech32("atoi"),
         )
         .await?
