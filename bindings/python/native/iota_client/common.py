@@ -13,15 +13,3 @@ def send_message_routine(func):
         response = iota_client.send_message(args[0].handle, message_type)
         return response
     return wrapper
-
-
-def call_client_method(name, data=None):
-    message = {
-        'cmd': 'CallClientMethod',
-        'payload': {
-            'name': name
-        }
-    }
-    if data:
-        message['payload']['data'] = data
-    return message
