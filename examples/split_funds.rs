@@ -12,7 +12,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let address = iota.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
+    let address = client.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
         request_funds_from_faucet(
@@ -36,12 +36,12 @@ async fn main() -> Result<()> {
     // wait so the faucet can send the funds
     // tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
-    let mut message_builder = iota.message().with_signer(&signer);
+    let mut message_builder = client.message().with_signer(&signer);
     // Insert the output address and amount to spent. The amount cannot be zero.
     for _ in 0..100 {
         message_builder = message_builder.with_output(
             // We generate an address from our seed so that we send the funds to ourselves
-            &iota.get_addresses(&signer).with_range(0..1).finish().await?[0],
+            &client.get_addresses(&signer).with_range(0..1).finish().await?[0],
             1_000_000,
         )?
     }

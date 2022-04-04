@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     let amount = 1_000_000;
 
     // Get inputs and create transaction essence online
-    let iota_online = Client::builder()
+    let online_client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
@@ -29,10 +29,10 @@ async fn main() -> Result<()> {
 
     let addresses = read_addresses_from_file(ADDRESS_FILE_NAME)?;
 
-    let inputs = iota_online.find_inputs(addresses, amount).await?;
+    let inputs = online_client.find_inputs(addresses, amount).await?;
 
     // Prepare transaction
-    let mut transaction_builder = iota_online.message();
+    let mut transaction_builder = online_client.message();
     for input in inputs {
         transaction_builder = transaction_builder.with_input(input)?;
     }

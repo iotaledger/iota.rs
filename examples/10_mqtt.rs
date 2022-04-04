@@ -10,7 +10,7 @@ use std::sync::{mpsc::channel, Arc, Mutex};
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let mut iota = Client::builder()
+    let mut client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
 
-    let mut event_rx = iota.mqtt_event_receiver();
+    let mut event_rx = client.mqtt_event_receiver();
     tokio::spawn(async move {
         while event_rx.changed().await.is_ok() {
             let event = event_rx.borrow();
@@ -30,7 +30,8 @@ async fn main() -> Result<()> {
         }
     });
 
-    iota.subscriber()
+    client
+        .subscriber()
         .with_topics(vec![Topic::new("milestones/latest")?, Topic::new("messages")?])
         .subscribe(move |event| {
             match event.topic.as_str() {
@@ -50,15 +51,16 @@ async fn main() -> Result<()> {
         rx.recv().unwrap();
         if i == 7 {
             // unsubscribe from topic "messages", will continue to receive events for "milestones/latest"
-            iota.subscriber()
+            client
+                .subscriber()
                 .with_topics(vec![Topic::new("messages")?])
                 .unsubscribe()
                 .await?;
         }
     }
 
-    iota.subscriber().disconnect().await?;
+    client.subscriber().disconnect().await?;
     // alternatively
-    // iota.subscriber().unsubscribe().await?;
+    // client.subscriber().unsubscribe().await?;
     Ok(())
 }

@@ -32,7 +32,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         // .with_local_pow(false)
@@ -45,7 +45,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let address = iota.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
+    let address = client.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
         request_funds_from_faucet(
@@ -84,7 +84,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_outputs(outputs)?
@@ -95,7 +95,7 @@ async fn main() -> Result<()> {
         "Transaction with new nft and alias output sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
     // create foundry output, native tokens and nft
@@ -143,7 +143,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_outputs(outputs)?
@@ -153,7 +153,7 @@ async fn main() -> Result<()> {
         "Transaction with alias id, foundry output with minted native tokens, and nfts sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
     // create all outputs
@@ -242,7 +242,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_outputs(outputs)?
@@ -252,7 +252,7 @@ async fn main() -> Result<()> {
         "Transaction with all outputs sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
     Ok(())
 }

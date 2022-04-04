@@ -9,13 +9,13 @@ use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    let message = iota.message().finish().await?;
+    let message = client.message().finish().await?;
 
     println!(
         "Empty message sent: https://explorer.iota.org/devnet/message/{}",

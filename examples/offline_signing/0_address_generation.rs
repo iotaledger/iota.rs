@@ -14,14 +14,14 @@ const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota_offline = Client::builder().with_offline_mode().finish().await?;
+    let offline_client = Client::builder().with_offline_mode().finish().await?;
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     // Generate addresses offline
-    let addresses = iota_offline
+    let addresses = offline_client
         .get_addresses(&signer)
         .with_range(0..10)
         .with_bech32_hrp("atoi".into())

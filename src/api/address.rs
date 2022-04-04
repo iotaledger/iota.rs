@@ -3,7 +3,7 @@
 
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
-    constants::IOTA_COIN_TYPE,
+    constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
     signing::{GenerateAddressMetadata, Network, SignerHandle},
     Client, Error, Result,
 };
@@ -45,7 +45,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
         Self {
             client: None,
             signer: None,
-            coin_type: IOTA_COIN_TYPE,
+            coin_type: SHIMMER_COIN_TYPE,
             account_index: 0,
             range: 0..super::ADDRESS_GAP_RANGE,
             bech32_hrp: None,
@@ -130,7 +130,7 @@ impl<'a> GetAddressesBuilder<'a> {
             Some(bech32_hrp) => bech32_hrp,
             None => match self.client {
                 Some(client) => client.get_bech32_hrp().await?,
-                None => "iota".to_string(),
+                None => SHIMMER_TESTNET_BECH32_HRP.to_string(),
             },
         };
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
@@ -177,7 +177,7 @@ impl<'a> GetAddressesBuilder<'a> {
             Some(bech32_hrp) => bech32_hrp,
             None => match self.client {
                 Some(client) => client.get_bech32_hrp().await?,
-                None => "iota".to_string(),
+                None => SHIMMER_TESTNET_BECH32_HRP.to_string(),
             },
         };
         let addresses = self.get_all_raw().await?;

@@ -28,7 +28,7 @@ const EXPLORER_URL: &str = "https://explorer.iota.org/devnet/message/";
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
@@ -41,65 +41,65 @@ async fn main() -> Result<()> {
     let signer_1 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
     let signer_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer_1)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &iota.get_addresses(&signer_2).with_range(0..1).finish().await?[0],
+            &client.get_addresses(&signer_2).with_range(0..1).finish().await?[0],
             3_000_000,
         )?
         .finish()
         .await?;
 
     println!("First transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer_1)
         .with_output(
-            &iota.get_addresses(&signer_2).with_range(1..2).finish().await?[0],
+            &client.get_addresses(&signer_2).with_range(1..2).finish().await?[0],
             3_000_000,
         )?
         .finish()
         .await?;
 
     println!("Second transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer_1)
         .with_output(
-            &iota.get_addresses(&signer_2).with_range(2..3).finish().await?[0],
+            &client.get_addresses(&signer_2).with_range(2..3).finish().await?[0],
             3_000_000,
         )?
         .finish()
         .await?;
 
     println!("Third transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer_2)
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            &iota.get_addresses(&signer_1).with_range(1..2).finish().await?[0],
+            &client.get_addresses(&signer_1).with_range(1..2).finish().await?[0],
             3_000_000,
         )?
         .with_output(
-            &iota.get_addresses(&signer_1).with_range(2..3).finish().await?[0],
+            &client.get_addresses(&signer_1).with_range(2..3).finish().await?[0],
             3_000_000,
         )?
         .finish()
         .await?;
 
     println!("Last transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
-    let message_metadata = iota.get_message_metadata(&message.id()).await;
+    let message_metadata = client.get_message_metadata(&message.id()).await;
     println!("Ledger Inclusion State: {:?}", message_metadata?.ledger_inclusion_state);
 
     Ok(())

@@ -3,6 +3,7 @@
 
 use iota_client::{
     api::GetAddressesBuilder,
+    constants::SHIMMER_TESTNET_BECH32_HRP,
     signing::{types::SignerTypeDto, SignerHandle},
     Result,
 };
@@ -14,7 +15,7 @@ async fn mnemonic_signer_dto() -> Result<()> {
     let signer = SignerHandle::from_str(&serde_json::to_string(&signer_type_dto)?)?;
 
     let addresses = GetAddressesBuilder::new(&signer)
-        .with_bech32_hrp("iota".into())
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP.to_string())
         .with_account_index(0)
         .with_range(0..1)
         .finish()
@@ -23,7 +24,7 @@ async fn mnemonic_signer_dto() -> Result<()> {
 
     assert_eq!(
         addresses[0],
-        "iota1qpg2xkj66wwgn8p2ggnp7p582gj8g6p79us5hve2tsudzpsr2ap4skprwjg".to_string()
+        "rms1qzev36lk0gzld0k28fd2fauz26qqzh4hd4cwymlqlv96x7phjxcw6v3ea5a".to_string()
     );
     Ok(())
 }
@@ -47,7 +48,7 @@ async fn stronghold_signer_dto() -> Result<()> {
         .unwrap();
 
     let addresses = GetAddressesBuilder::new(&stronghold_signer)
-        .with_bech32_hrp("iota".into())
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP.to_string())
         .with_account_index(0)
         .with_range(0..1)
         .finish()
@@ -56,7 +57,7 @@ async fn stronghold_signer_dto() -> Result<()> {
 
     assert_eq!(
         addresses[0],
-        "iota1qpg2xkj66wwgn8p2ggnp7p582gj8g6p79us5hve2tsudzpsr2ap4skprwjg".to_string()
+        "rms1qzev36lk0gzld0k28fd2fauz26qqzh4hd4cwymlqlv96x7phjxcw6v3ea5a".to_string()
     );
 
     // Calling store_mnemonic() twice should fail, because we would otherwise overwrite the stored entry

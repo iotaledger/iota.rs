@@ -15,7 +15,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe/")?
         .with_node("http://localhost:14265")?
         .with_node("https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe/")?
@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     // Generate the first address
-    let addresses = iota
+    let addresses = client
         .get_addresses(&signer)
         .with_account_index(0)
         .with_range(0..1)
@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
-    let output_ids = iota
+    let output_ids = client
         .output_ids(vec![
             QueryParameter::Address(addresses[0].clone()),
             QueryParameter::HasExpirationCondition(false),

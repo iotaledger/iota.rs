@@ -10,7 +10,7 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265") // Insert the node here
         .unwrap()
         .with_node_sync_disabled()
@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let seed = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
-    let addresses = iota
+    let addresses = client
         .get_addresses(&seed)
         .with_account_index(0)
         .with_range(0..1)

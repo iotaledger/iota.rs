@@ -20,7 +20,7 @@ use std::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     // Generate the first address
-    let addresses = iota
+    let addresses = client
         .get_addresses(&signer)
         .with_account_index(0)
         .with_range(0..1)
@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
-    let output_ids = iota
+    let output_ids = client
         .output_ids(vec![
             QueryParameter::Address(addresses[0].clone()),
             QueryParameter::HasExpirationCondition(false),
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // Get the outputs by their id
-    let outputs_responses = iota.get_outputs(output_ids).await?;
+    let outputs_responses = client.get_outputs(output_ids).await?;
 
     // Calculate the total amount and native tokens
     let mut total_amount = 0;

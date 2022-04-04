@@ -3,7 +3,9 @@
 
 //! cargo run --example 03_generate_addresses --release
 
-use iota_client::{api::GetAddressesBuilder, signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{
+    api::GetAddressesBuilder, constants::SHIMMER_TESTNET_BECH32_HRP, signing::mnemonic::MnemonicSigner, Client, Result,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -13,7 +15,7 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
@@ -24,11 +26,11 @@ async fn main() -> Result<()> {
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     // Generate addresses with default account index and range
-    let addresses = iota.get_addresses(&signer).finish().await.unwrap();
+    let addresses = client.get_addresses(&signer).finish().await.unwrap();
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate addresses with custom account index and range
-    let addresses = iota
+    let addresses = client
         .get_addresses(&signer)
         .with_account_index(0)
         .with_range(0..4)
@@ -38,12 +40,12 @@ async fn main() -> Result<()> {
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate public (false) & internal (true) addresses
-    let addresses = iota.get_addresses(&signer).with_range(0..4).get_all().await?;
+    let addresses = client.get_addresses(&signer).with_range(0..4).get_all().await?;
     println!("List of generated public and internal addresses:\n{:?}\n", addresses);
 
     // Generate public addresses offline with the bech32_hrp defined
     let addresses = GetAddressesBuilder::new(&signer)
-        .with_bech32_hrp("atoi".into())
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP.into())
         .with_account_index(0)
         .with_range(0..4)
         .finish()

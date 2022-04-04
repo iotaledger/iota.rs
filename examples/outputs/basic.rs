@@ -27,7 +27,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let address = iota.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
+    let address = client.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
         request_funds_from_faucet(
@@ -93,7 +93,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_outputs(outputs)?
@@ -108,6 +108,6 @@ async fn main() -> Result<()> {
         "Message metadata: http://localhost:14265/api/v2/messages/{}/metadata",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
     Ok(())
 }
