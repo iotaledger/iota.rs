@@ -105,9 +105,6 @@ impl ClientMessageHandler {
             ClientMethod::GetNode => Ok(ResponseType::Node(self.client.get_node().await?)),
             ClientMethod::GetNetworkInfo => Ok(ResponseType::NetworkInfo(self.client.get_network_info().await?)),
             ClientMethod::GetNetworkId => Ok(ResponseType::NetworkId(self.client.get_network_id().await?)),
-            ClientMethod::GetProtocolVersion => {
-                Ok(ResponseType::ProtocolVersion(self.client.get_protocol_version().await?))
-            }
             ClientMethod::GetBech32Hrp => Ok(ResponseType::Bech32Hrp(self.client.get_bech32_hrp().await?)),
             ClientMethod::GetMinPoWScore => Ok(ResponseType::MinPoWScore(self.client.get_min_pow_score().await?)),
             ClientMethod::GetTipsInterval => Ok(ResponseType::TipsInterval(self.client.get_tips_interval().await)),
