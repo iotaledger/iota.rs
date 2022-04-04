@@ -3,7 +3,9 @@
 
 //! cargo run --example 03_generate_addresses --release
 
-use iota_client::{api::GetAddressesBuilder, signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{
+    api::GetAddressesBuilder, constants::SHIMMER_TESTNET_BECH32_HRP, signing::mnemonic::MnemonicSigner, Client, Result,
+};
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
@@ -43,7 +45,7 @@ async fn main() -> Result<()> {
 
     // Generate public addresses offline with the bech32_hrp defined
     let addresses = GetAddressesBuilder::new(&signer)
-        .with_bech32_hrp("atoi".into())
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP.into())
         .with_account_index(0)
         .with_range(0..4)
         .finish()
