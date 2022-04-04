@@ -7,7 +7,7 @@
 //!
 //! ## Sending a message without a payload
 //!  ```compile_fail
-//! let iota = Client::builder()
+//! let client = Client::builder()
 //!    .with_node("http://localhost:14265")?
 //!    .finish()
 //!    .await?;

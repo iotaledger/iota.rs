@@ -16,7 +16,7 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     let seed = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
-    let addresses = iota.get_addresses(&seed).with_range(0..1).finish().await?;
+    let addresses = client.get_addresses(&seed).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
 
     println!(
@@ -38,13 +38,13 @@ async fn main() -> Result<()> {
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
-        &iota,
+        &client,
         vec![QueryParameter::Address(addresses[0].clone())],
     )
     .await?;
     println!("{:?}", output_ids);
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&seed)
         .with_input(UtxoInput::from(output_ids[0]))?

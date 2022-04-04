@@ -13,7 +13,7 @@ use std::env;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265") // Insert your node URL here
         .unwrap()
         .finish()
@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
 
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let addresses = iota
+    let addresses = client
         .get_addresses(&signer)
         .with_account_index(0)
         .with_range(9..10)
@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
 
     let res = search_address(
         &signer,
-        &iota.get_bech32_hrp().await.unwrap(),
+        &client.get_bech32_hrp().await.unwrap(),
         IOTA_COIN_TYPE,
         0,
         0..10,

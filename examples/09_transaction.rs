@@ -12,7 +12,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
@@ -23,13 +23,13 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
             // We generate an address from our seed so that we send the funds to ourselves
-            &iota.get_addresses(&signer).with_range(1..2).finish().await?[0],
+            &client.get_addresses(&signer).with_range(1..2).finish().await?[0],
             1_000_000,
         )?
         .finish()

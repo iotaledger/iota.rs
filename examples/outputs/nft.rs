@@ -25,7 +25,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let address = iota.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
+    let address = client.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(
         "http://localhost:14265/api/plugins/faucet/v1/enqueue",
         &address.to_bech32("atoi"),
@@ -57,7 +57,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_outputs(outputs)?
@@ -68,7 +68,7 @@ async fn main() -> Result<()> {
         "Transaction with new NFT output sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
     // move funds from an NFT address
@@ -89,13 +89,13 @@ async fn main() -> Result<()> {
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
-    let output_ids = iota
+    let output_ids = client
         .output_ids(vec![QueryParameter::Address(bech32_nft_address)])
         .await?;
-    let output_response = iota.get_output(&output_ids[0]).await?;
+    let output_response = client.get_output(&output_ids[0]).await?;
     let output = Output::try_from(&output_response.output)?;
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_input(nft_output_id.into())?
@@ -113,13 +113,13 @@ async fn main() -> Result<()> {
         message.id()
     );
 
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
     // burn NFT
     //////////////////////////////////
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
-    let output_response = iota.get_output(&nft_output_id).await?;
+    let output_response = client.get_output(&nft_output_id).await?;
     let output = Output::try_from(&output_response.output)?;
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Basic(
@@ -128,7 +128,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_input(nft_output_id.into())?
@@ -139,7 +139,7 @@ async fn main() -> Result<()> {
         "Burn transaction sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
     Ok(())
 }
 

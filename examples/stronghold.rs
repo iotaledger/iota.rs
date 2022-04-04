@@ -16,7 +16,7 @@ use std::{env, path::PathBuf};
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()

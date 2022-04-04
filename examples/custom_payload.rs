@@ -11,7 +11,7 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .finish()
         .await
@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
     let tagged_data_payload =
         TaggedDataPayload::new("Your tag".as_bytes().to_vec(), "Your data".as_bytes().to_vec()).unwrap();
 
-    let message = iota
+    let message = client
         .message()
         .finish_message(Some(Payload::TaggedData(Box::new(tagged_data_payload))))
         .await

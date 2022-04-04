@@ -10,7 +10,7 @@ use iota_client::Client;
 #[tokio::main]
 async fn main() {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .from_json(
             r#"{
                 "nodes":[
@@ -37,6 +37,6 @@ async fn main() {
         .await
         .unwrap();
 
-    let info = iota.get_info().await.unwrap();
+    let info = client.get_info().await.unwrap();
     println!("Node Info: {:?}", info);
 }

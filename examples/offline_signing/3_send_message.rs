@@ -12,7 +12,7 @@ const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_tran
 #[tokio::main]
 async fn main() -> Result<()> {
     // Get inputs and create transaction essence online
-    let iota_online = Client::builder()
+    let online_client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     let signed_transaction_payload = read_signed_transaction_from_file(SIGNED_TRANSACTION_FILE_NAME)?;
 
     // Send offline signed transaction online
-    let message = iota_online
+    let message = online_client
         .message()
         .finish_message(Some(signed_transaction_payload))
         .await?;

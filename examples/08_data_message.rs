@@ -9,14 +9,14 @@ use iota_client::{bee_message::payload::Payload, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         // .with_permanode("http://18.196.167.57:8000/api/permanode/", None, None)?
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    let message = iota
+    let message = client
         .message()
         .with_tag("Hello")
         .with_data("Tangle".as_bytes().to_vec())
@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
         message.id()
     );
 
-    let fetched_msg = iota.get_message_data(&message.id()).await?;
+    let fetched_msg = client.get_message_data(&message.id()).await?;
     println!("{:#?}\n", fetched_msg);
 
     if let Payload::TaggedData(payload) = fetched_msg.payload().as_ref().unwrap() {

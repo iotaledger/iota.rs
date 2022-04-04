@@ -31,11 +31,11 @@ async fn addresses() {
 
 #[tokio::test]
 async fn public_key_to_address() {
-    let iota = Client::builder().with_offline_mode().finish().await.unwrap();
+    let client = Client::builder().with_offline_mode().finish().await.unwrap();
 
     let hex_public_key = "2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a";
 
-    let public_key_address = iota
+    let public_key_address = client
         .hex_public_key_to_bech32_address(hex_public_key, Some("atoi"))
         .await
         .unwrap();

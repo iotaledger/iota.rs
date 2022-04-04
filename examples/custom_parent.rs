@@ -11,7 +11,7 @@ use std::str::FromStr;
 #[tokio::main]
 async fn main() {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265") // Insert your node URL here
         .unwrap()
         .finish()
@@ -21,7 +21,7 @@ async fn main() {
     let custom_parent =
         MessageId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b").unwrap();
 
-    let message = iota
+    let message = client
         .message()
         .with_parents(vec![custom_parent])
         .unwrap()

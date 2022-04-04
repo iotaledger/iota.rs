@@ -26,7 +26,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let address = iota.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
+    let address = client.get_addresses(&signer).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(
         "http://localhost:14265/api/plugins/faucet/v1/enqueue",
         &address.to_bech32("atoi"),
@@ -65,7 +65,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_outputs(outputs)?
@@ -76,7 +76,7 @@ async fn main() -> Result<()> {
         "Transaction with new alias output sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
     // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias)
@@ -100,7 +100,7 @@ async fn main() -> Result<()> {
             .finish()?,
     ));
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_input(alias_output_id.into())?
@@ -111,7 +111,7 @@ async fn main() -> Result<()> {
         "Transaction with alias id set sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
-    let _ = iota.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
     Ok(())
 }
 

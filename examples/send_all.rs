@@ -24,7 +24,7 @@ use std::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let iota = Client::builder()
+    let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
@@ -38,9 +38,9 @@ async fn main() -> Result<()> {
     let seed_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
-    let output_ids = iota
+    let output_ids = client
         .output_ids(vec![
-            QueryParameter::Address(iota.get_addresses(&signer).with_range(0..1).finish().await?[0].clone()),
+            QueryParameter::Address(client.get_addresses(&signer).with_range(0..1).finish().await?[0].clone()),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
             QueryParameter::HasStorageDepositReturnCondition(false),
@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // Get the outputs by their id
-    let outputs_responses = iota.get_outputs(output_ids).await?;
+    let outputs_responses = client.get_outputs(output_ids).await?;
 
     // Calculate the total amount and native tokens
     let mut total_amount = 0;
@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
 
     let mut basic_output_builder =
         BasicOutputBuilder::new(total_amount)?.add_unlock_condition(UnlockCondition::Address(
-            AddressUnlockCondition::new(iota.get_addresses(&seed_2).with_range(0..1).get_raw().await?[0]),
+            AddressUnlockCondition::new(client.get_addresses(&seed_2).with_range(0..1).get_raw().await?[0]),
         ));
 
     for (token_id, amount) in total_native_tokens.iter() {
@@ -82,7 +82,7 @@ async fn main() -> Result<()> {
     }
     let new_output = Output::Basic(basic_output_builder.finish()?);
 
-    let message = iota
+    let message = client
         .message()
         .with_signer(&signer)
         .with_outputs(vec![new_output])?
@@ -94,6 +94,6 @@ async fn main() -> Result<()> {
         message.id()
     );
 
-    let _ = iota.retry_until_included(&message.id(), None, None).await.unwrap();
+    let _ = client.retry_until_included(&message.id(), None, None).await.unwrap();
     Ok(())
 }
