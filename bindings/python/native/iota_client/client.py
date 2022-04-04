@@ -50,11 +50,6 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
         return self.call_client_method('GetNetworkId')
 
-    def get_protocol_version(self):
-        """Gets the protocol version of the node we're connecting to.
-        """
-        return self.call_client_method('GetProtocolVersion')
-
     def get_bech32_hrp(self):
         """Returns the bech32_hrp.
         """

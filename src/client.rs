@@ -300,14 +300,6 @@ impl Client {
             .ok_or(Error::MissingParameter("Missing network id."))
     }
 
-    /// Gets the protocol version of the node we're connecting to.
-    pub async fn get_protocol_version(&self) -> Result<u8> {
-        let network_info = self.get_network_info().await?;
-        network_info
-            .protocol_version
-            .ok_or(Error::MissingParameter("Missing protocol version."))
-    }
-
     /// returns the bech32_hrp
     pub async fn get_bech32_hrp(&self) -> Result<String> {
         Ok(self.get_network_info().await?.bech32_hrp)
@@ -839,12 +831,10 @@ impl Client {
         let reattach_message = {
             #[cfg(feature = "wasm")]
             {
-                let protocol_version = self.get_protocol_version().await?;
                 let mut tips = self.get_tips().await?;
                 tips.sort_unstable_by_key(|a| a.pack_to_vec());
                 tips.dedup();
-                let mut message_builder =
-                    MessageBuilder::<ClientMiner>::new(Parents::new(tips)?).with_protocol_version(protocol_version);
+                let mut message_builder = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?);
                 if let Some(p) = message.payload().to_owned() {
                     message_builder = message_builder.with_payload(p.clone())
                 }
