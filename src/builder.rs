@@ -5,7 +5,7 @@
 use crate::{
     client::*,
     constants::{
-        DEFAULT_API_TIMEOUT, DEFAULT_BECH32_HRP, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL,
+        DEFAULT_API_TIMEOUT, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL, SHIMMER_BECH32_HRP,
     },
     error::*,
     node_manager::{
@@ -61,7 +61,7 @@ pub struct NetworkInfo {
 }
 
 fn default_bech32_hrp() -> String {
-    DEFAULT_BECH32_HRP.into()
+    SHIMMER_BECH32_HRP.into()
 }
 fn default_min_pow_score() -> f64 {
     DEFAULT_MIN_POW
@@ -137,7 +137,7 @@ impl Default for NetworkInfo {
             min_pow_score: DEFAULT_MIN_POW,
             local_pow: default_local_pow(),
             fallback_to_local_pow: true,
-            bech32_hrp: DEFAULT_BECH32_HRP.into(),
+            bech32_hrp: SHIMMER_BECH32_HRP.into(),
             tips_interval: DEFAULT_TIPS_INTERVAL,
             rent_structure: default_rent_structure(),
         }

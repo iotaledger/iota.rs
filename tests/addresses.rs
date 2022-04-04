@@ -1,7 +1,12 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{api::GetAddressesBuilder, signing::mnemonic::MnemonicSigner, Client};
+use iota_client::{
+    api::GetAddressesBuilder,
+    constants::{IOTA_BECH32_HRP, IOTA_COIN_TYPE, SHIMMER_BECH32_HRP, SHIMMER_COIN_TYPE},
+    signing::mnemonic::MnemonicSigner,
+    Client,
+};
 
 #[tokio::test]
 async fn addresses() {
@@ -41,14 +46,16 @@ async fn public_key_to_address() {
 }
 
 #[tokio::test]
-async fn mnemonic_address_generation() {
+async fn mnemonic_address_generation_iota() {
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
     let signer = MnemonicSigner::new(mnemonic).unwrap();
 
+    // account 0, address 0 and 1
     let addresses = GetAddressesBuilder::new(&signer)
-        .with_bech32_hrp("iota".into())
+        .with_coin_type(IOTA_COIN_TYPE)
+        .with_bech32_hrp(IOTA_BECH32_HRP.to_string())
         .with_account_index(0)
-        .with_range(0..1)
+        .with_range(0..2)
         .finish()
         .await
         .unwrap();
@@ -56,5 +63,64 @@ async fn mnemonic_address_generation() {
     assert_eq!(
         addresses[0],
         "iota1qpg2xkj66wwgn8p2ggnp7p582gj8g6p79us5hve2tsudzpsr2ap4skprwjg".to_string()
+    );
+    assert_eq!(
+        addresses[1],
+        "iota1qpswqe4v8z2cdtgc7sfj0hfneqh37lhmjgnth36mfndwcxkjrakcvpmm727".to_string()
+    );
+
+    // account 1
+    let addresses = GetAddressesBuilder::new(&signer)
+        .with_coin_type(IOTA_COIN_TYPE)
+        .with_bech32_hrp(IOTA_BECH32_HRP.to_string())
+        .with_account_index(1)
+        .with_range(0..1)
+        .finish()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        addresses[0],
+        "iota1qr43g007shcd7zx3xe7s4lu2c9fr33w7tfjppyy0swlhrxx247szqhuaeaa".to_string()
+    );
+}
+
+#[tokio::test]
+async fn mnemonic_address_generation_shimmer() {
+    let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
+    let signer = MnemonicSigner::new(mnemonic).unwrap();
+
+    // account 0, address 0 and 1
+    let addresses = GetAddressesBuilder::new(&signer)
+        .with_coin_type(SHIMMER_COIN_TYPE)
+        .with_bech32_hrp(SHIMMER_BECH32_HRP.to_string())
+        .with_account_index(0)
+        .with_range(0..2)
+        .finish()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        addresses[0],
+        "smr1qzev36lk0gzld0k28fd2fauz26qqzh4hd4cwymlqlv96x7phjxcw6ckj80y".to_string()
+    );
+    assert_eq!(
+        addresses[1],
+        "smr1qznujl7m240za4pf6p0p8rdtqdca6tq7z44heqec8e57xsf429tvz0wt4w3".to_string()
+    );
+
+    // account 1
+    let addresses = GetAddressesBuilder::new(&signer)
+        .with_coin_type(SHIMMER_COIN_TYPE)
+        .with_bech32_hrp(SHIMMER_BECH32_HRP.to_string())
+        .with_account_index(1)
+        .with_range(0..1)
+        .finish()
+        .await
+        .unwrap();
+
+    assert_eq!(
+        addresses[0],
+        "smr1qrexl2g0m74v57y4kl6kfwqz7zrlrkvjt8m30av0cxgxlu92kyzc5npslm8".to_string()
     );
 }

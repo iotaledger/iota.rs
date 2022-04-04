@@ -128,7 +128,7 @@ async fn main() -> Result<()> {
     let foundry_id = FoundryId::build(
         &AliasAddress::from(AliasId::from(alias_output_id)),
         1,
-        &token_scheme.kind(),
+        token_scheme.kind(),
     );
     let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
     outputs.push(Output::Foundry(
