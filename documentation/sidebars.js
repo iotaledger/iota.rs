@@ -25,10 +25,17 @@ module.exports = {
         {
             type: 'category',
             label: 'Key Concepts',
-            items:
-                [
+            items:[
                     'key_concepts/address_key_space',
-                    'key_concepts/messages_payloads_and_transactions']
+                    'key_concepts/messages_payloads_and_transactions'
+            ]
+        },
+        {
+            type: 'category',
+            label: 'Examples',
+            items:[
+                    'examples/get_info'
+            ]
         },
         {
             type: 'category',
@@ -73,7 +80,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/nodejs/examples/get_info',
                                 'libraries/nodejs/examples/generate_seed',
                                 'libraries/nodejs/examples/generate_addresses',
                                 'libraries/nodejs/examples/get_balance',
@@ -105,7 +111,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/python/examples/get_info',
                                 'libraries/python/examples/generate_seed',
                                 'libraries/python/examples/generate_addresses',
                                 'libraries/python/examples/get_balance',
@@ -157,7 +162,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/wasm/examples/get_info',
                                 'libraries/wasm/examples/generate_seed',
                                 'libraries/wasm/examples/generate_addresses',
                                 'libraries/wasm/examples/get_balance',

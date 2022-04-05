@@ -1,0 +1,45 @@
+import CodeBlock from '@theme/CodeBlock';
+import LoadBalancerHealthChecks from '../../../_partials/admonitions/_load_balancer_health_checks.md';
+import ClientBuilder from '../../../_partials/examples/01_get_info/_client_builder.md';
+import java_examples
+    from '!!raw-loader!../../../../../bindings/java/examples/basic-app/src/main/java/org/example/ExampleApp.java';
+const javaFunctionName = 'public static void nodeInfo() {', indexStart = java_examples.indexOf(javaFunctionName);
+const nextJavaFunctionName = 'public static void generateSeed() {', indexEnd = java_examples.indexOf(nextJavaFunctionName);
+const get_info = java_examples.substring(indexStart, indexEnd);
+
+<CodeBlock className="language-javascript">
+    {get_info}
+</CodeBlock>
+
+<>
+
+**Output example** of the `getInfo()` function of the `Client` instance:
+
+</>
+
+<GetInfoOutput/>
+
+<LoadBalancerHealthChecks/>
+
+<ClientBuilder />
+
+<>
+The most common ones are:
+
+* `.withNetwork(string)`: Can be either `devnet` or `mainnet`. It instructs
+the library whether to automatically select devnet nodes or mainnet nodes.
+* `.withNode(string)`: Specify address of actual running IOTA node that should be used
+to communicate with in the format `https://node:port`). For example: `https://api.lb-0.h.chrysalis-devnet.iota.cafe:443`.
+* `.withNodePoolUrls(String[])`: The library also supports managing a pool of
+nodes. You can provide a list of nodes and the library manages the access to them automatically by selecting them based
+on their sync status. If you provide `.withNodePoolUrls(String[])`, then the library periodically will periodically
+check
+whether node is in sync or
+not by calling `.withNodeSyncInterval(float)`.
+* `.withLocalPow(boolean)`: If `.localPow (True)` a Proof-of-work will be done
+locally and not remotely.
+* `.withNodeSyncDisabled()`: When called, the library will use nodes that
+are **not** in sync with network. This parameter is usually useful if you would like to interact with a local test node
+that is not fully synced. **This parameter should not be used in production**.
+
+</>
