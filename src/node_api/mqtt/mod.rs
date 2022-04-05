@@ -127,7 +127,7 @@ fn poll_mqtt(
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             let topics = mqtt_topic_handlers
                                 .keys()
-                                .map(|t| SubscribeFilter::new(t.0.clone(), QoS::AtLeastOnce))
+                                .map(|t| SubscribeFilter::new(t.topic().to_string(), QoS::AtLeastOnce))
                                 .collect::<Vec<SubscribeFilter>>();
                             if !topics.is_empty() {
                                 let _ = handle.send(Request::Subscribe(Subscribe::new_many(topics))).await;
@@ -138,12 +138,9 @@ fn poll_mqtt(
                         let topic = p.topic.clone();
                         crate::async_runtime::spawn(async move {
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
-                            if let Some(handlers) = mqtt_topic_handlers.get(&Topic(topic.clone())) {
+                            if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
-                                    if topic.as_str() == "messages"
-                                        || topic.contains("messages/indexation/")
-                                        || topic.contains("transactions/")
-                                    {
+                                    if topic.as_str() == "messages" || topic.contains("included-message") {
                                         let mut payload = &*p.payload;
                                         match Message::unpack_verified(&mut payload) {
                                             Ok(iota_message) => match serde_json::to_string(&iota_message) {
@@ -275,7 +272,7 @@ impl<'a> MqttTopicManager<'a> {
             .subscribe_many(
                 self.topics
                     .iter()
-                    .map(|t| SubscribeFilter::new(t.0.clone(), QoS::AtLeastOnce))
+                    .map(|t| SubscribeFilter::new(t.topic().to_string(), QoS::AtLeastOnce))
                     .collect::<Vec<SubscribeFilter>>(),
             )
             .await?;
@@ -309,7 +306,7 @@ impl<'a> MqttTopicManager<'a> {
 
         if let Some(client) = &mut self.client.mqtt_client {
             for topic in topics.iter() {
-                client.unsubscribe(&topic.0).await?;
+                client.unsubscribe(topic.topic()).await?;
             }
         }
 
