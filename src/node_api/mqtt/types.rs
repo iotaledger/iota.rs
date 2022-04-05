@@ -151,7 +151,7 @@ impl Topic {
             // Transaction topics
             r"^transactions/0x([a-f0-9]{64})/included-message$",
             // Output topics
-            r"outputs/([a-f0-9]{64})(\d{4})",
+            r"^outputs/([a-f0-9]{64})(\d{4})$",
             r"^outputs/aliases/0x([a-f0-9]{40})$",
             r"^outputs/nfts/0x([a-f0-9]{40})$",
             r"^outputs/foundries/0x([a-f0-9]{52})$",
