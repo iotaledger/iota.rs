@@ -1,26 +1,10 @@
----
-title: Generate Addresses
-description: You can generate an IOTA address using the AddressGetter helper class and calling the Client.getAddresses() function and respective chaining calls that will return a list of tuples with the generated addresses.
-image: /img/logo/iota_mark_light.png
-keywords:
-- how to
-- address
-- iota address
-- addressgetter
-- environment variable
-- nodejs
----
 import CodeBlock from '@theme/CodeBlock';
 import generate_addresses from '!!raw-loader!../../../../../bindings/nodejs/examples/03_generate_addresses.js';
 
-You can generate an IOTA address using the `AddressGetter` helper class and calling the `Client.getAddresses()` function
-and respective chaining calls that will return a list of tuples with the generated addresses. You can find more information
-on the parameters in the [Address/Key Space section](../../../key_concepts/address_key_space.md).
-
-:::note
-The examples use an example seed `b3d7092195c36d47133ff786d4b0a1ef2ee6a0052f6e87b6dc337935c70c531e` is
-stored in an environment variable called `IOTA_SEED_SECRET`. This seed serves for training purposes only.
-:::
+You can generate an IOTA address using the [`AddressGetter`](../libraries/nodejs/api_reference#addressgetter) helper
+class and calling the [`Client.getAddresses()`](../libraries/nodejs/api_reference#getaddressesseed-addressgetter)
+function and respective chaining calls that will return a list of tuples with the generated addresses. You can find
+more information on the parameters in the [Address/Key Space section](../../../key_concepts/address_key_space.md).
 
 The whole process is deterministic. This means the output is the same as long as the seed is the same:
 
@@ -45,14 +29,14 @@ IOTA addresses are represented by a checksumed base-32 string (Bech32). You can 
 parts relevant to this example:
 
 * If an address starts with `atoi` then it means it is related to `devnet`. `iota` stands for `mainnet`.
-* Number `1` at the 5<sup>th</sup> position is just a separator.
+* Number `1` at the 5<sup>th</sup> positvion is just a separator.
 * The last 6 characters are reserved for a checksum.
 
 Addresses can be also represented in a hex format and `iota.rs` provides some convenient functions to convert addresses:
-`Client.bech32ToHex(bech32)`and
-`Client.hexToBech32(hex, bech32_hrp (optional))`.
+[`Client.bech32ToHex(bech32)`](../libraries/nodejs/api_reference#bech32tohexbech32) and
+[`Client.hexToBech32(hex, bech32_hrp (optional))`](../libraries/nodejs/api_reference#hextobech32hex-bech32_hrp-optional).
 
 If you want to quickly validate any IOTA address, you can use the
-`Client.isAddressValid()` function that returns a `bool` value. You should
-perform a sanity check on address before using it.
+[`Client.isAddressValid()`](../libraries/nodejs/api_reference#isaddressvalidaddress-string-boolean) function that
+returns a `bool` value. You should perform a sanity check on address before using it.
 

@@ -35,8 +35,9 @@ module.exports = {
             type: 'category',
             label: 'Examples',
             items:[
-                'examples/get_info',
-                'examples/generate_seed'
+                'how_tos/get_info',
+                'how_tos/generate_seed',
+                'how_tos/generate_addresses'
             ]
         },
         {
@@ -82,7 +83,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/nodejs/examples/generate_addresses',
                                 'libraries/nodejs/examples/get_balance',
                                 'libraries/nodejs/examples/get_outputs',
                                 'libraries/nodejs/examples/simple_message',
@@ -112,7 +112,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/python/examples/generate_addresses',
                                 'libraries/python/examples/get_balance',
                                 'libraries/python/examples/get_outputs',
                                 'libraries/python/examples/simple_message',
@@ -162,7 +161,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/wasm/examples/generate_addresses',
                                 'libraries/wasm/examples/get_balance',
                                 'libraries/wasm/examples/simple_message',
                                 'libraries/wasm/examples/get_message_data',

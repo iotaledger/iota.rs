@@ -8,9 +8,12 @@ keywords:
 - set of addresses
 - account discovery
 - accounts
+
 ---
 
 # Address/Key Space
+
+## BIP32 - Tree Structure
 
 The [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) standard describes an approach to
 _Hierarchical Deterministic Wallets_. The standard was improved
@@ -53,21 +56,19 @@ And there are few additional interesting notes:
   then
   `account=0` is usually used).
 * Using different `accounts` may be useful to split addresses/keys into some independent spaces, and it is up to
-  developers to implement.<br />
-
-:::note
-
-Using different `accounts` may have a negative impact on a performance while you are on the
+  developers to implement. _Using different `accounts` may have a negative impact on a performance while you are on the
 [account discovery](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#account-discovery) phase. If you are
 planning on using many multiple accounts then you may be interested in our stateful library
 [wallet.rs](https://wiki.iota.org/wallet.rs/welcome) that incorporates all business logic needed to efficiently manage
 independent accounts.
 Our [exchange guide](https://wiki.iota.org/docs/build/exchange-integration/exchange-integration-guide)
-provides some useful tips on how different accounts may be leveraged.
-
-:::
+provides some useful tips on how different accounts may be leveraged._
 
 ![address_generation](/img/libraries/address_generation.svg)
 
 In case of IOTA, the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The levels `purpose`
 and `coin_type` are given, the rest levels are up to developers to integrate.
+
+## How-to Guides
+
+[Generate Addresses](../how_tos/generate_addresses.mdx)
