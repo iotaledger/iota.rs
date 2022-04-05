@@ -136,29 +136,29 @@ impl Topic {
         let available_topics = lazy_static!(
         RegexSet::new(&[
             // Milestone topics
-            r"milestones/latest",
-            r"milestones/confirmed",
+            r"^milestones/latest$",
+            r"^milestones/confirmed$",
             // Message topics
-            r"messages",
-            r"messages/referenced",
-            r"messages/transaction",
-            r"messages/transaction/tagged-data",
-            r"messages/transaction/tagged-data/0x([a-f0-9]{64})",
-            r"messages/milestone",
-            r"messages/tagged-data",
-            r"messages/tagged-data/0x([a-f0-9]{64})",
-            r"messages/0x([a-f0-9]{64})/metadata",
+            r"^messages$",
+            r"^messages/referenced$",
+            r"^messages/transaction$",
+            r"^messages/transaction/tagged-data$",
+            r"^messages/transaction/tagged-data/0x([a-f0-9]{128})$",
+            r"^messages/milestone$",
+            r"^messages/tagged-data$",
+            r"^messages/tagged-data/0x([a-f0-9]{64})$",
+            r"^messages/0x([a-f0-9]{64})/metadata$",
             // Transaction topics
-            r"transactions/0x([a-f0-9]{64})/included-message",
+            r"^transactions/0x([a-f0-9]{64})/included-message$",
             // Output topics
-            r"outputs/0x([a-f0-9]{64})(\d{4})",
-            r"outputs/aliases/0x([a-f0-9]{20})",
-            r"outputs/nfts/0x([a-f0-9]{20})",
-            r"outputs/foundries/0x([a-f0-9]{26})",
+            r"outputs/([a-f0-9]{64})(\d{4})",
+            r"^outputs/aliases/0x([a-f0-9]{40})$",
+            r"^outputs/nfts/0x([a-f0-9]{40})$",
+            r"^outputs/foundries/0x([a-f0-9]{52})$",
             // BIP-173 compliant bech32 address
-            r"outputs/unlock/(+|address|storage-return|expiration-return|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+",
+            r"^outputs/unlock/(\+|address|storage-return|expiration-return|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+$",
             // BIP-173 compliant bech32 address
-            r"outputs/unlock/(+|address|storage-return|expiration-return|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/spent",
+            r"^outputs/unlock/(\+|address|storage-return|expiration-return|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/spent$",
         ]).expect("cannot build regex set") => RegexSet);
 
         if available_topics.is_match(&topic) {
