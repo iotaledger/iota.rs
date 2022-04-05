@@ -26,6 +26,7 @@ module.exports = {
             type: 'category',
             label: 'Key Concepts',
             items:[
+                    'key_concepts/seeds',
                     'key_concepts/address_key_space',
                     'key_concepts/messages_payloads_and_transactions'
             ]
@@ -34,7 +35,8 @@ module.exports = {
             type: 'category',
             label: 'Examples',
             items:[
-                    'examples/get_info'
+                'examples/get_info',
+                'examples/generate_seed'
             ]
         },
         {
@@ -80,7 +82,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/nodejs/examples/generate_seed',
                                 'libraries/nodejs/examples/generate_addresses',
                                 'libraries/nodejs/examples/get_balance',
                                 'libraries/nodejs/examples/get_outputs',
@@ -111,7 +112,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/python/examples/generate_seed',
                                 'libraries/python/examples/generate_addresses',
                                 'libraries/python/examples/get_balance',
                                 'libraries/python/examples/get_outputs',
@@ -162,7 +162,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/wasm/examples/generate_seed',
                                 'libraries/wasm/examples/generate_addresses',
                                 'libraries/wasm/examples/get_balance',
                                 'libraries/wasm/examples/simple_message',
