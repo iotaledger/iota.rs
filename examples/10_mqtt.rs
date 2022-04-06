@@ -3,7 +3,7 @@
 
 //! cargo run --example 10_mqtt --features=mqtt --release
 
-use iota_client::{bee_message::Message, Client, MqttEvent, Result, Topic};
+use iota_client::{bee_message::Message, BrokerOptions, Client, MqttEvent, MqttPayload, Result, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 // Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
@@ -11,8 +11,10 @@ use std::sync::{mpsc::channel, Arc, Mutex};
 async fn main() -> Result<()> {
     // Create a client instance
     let mut client = Client::builder()
-        .with_node("http://localhost:14265")?
+        // todo: replace url when we have a public testnet
+        .with_node("https://chrysalis-nodes.iota.cafe/")?
         .with_node_sync_disabled()
+        // .with_mqtt_broker_options(BrokerOptions::new().use_ws(false))
         .finish()
         .await?;
 
@@ -32,15 +34,18 @@ async fn main() -> Result<()> {
 
     client
         .subscriber()
-        .with_topics(vec![Topic::new("milestones/latest")?, Topic::new("messages")?])
+        .with_topics(vec![
+            Topic::try_from("milestones/latest".to_string())?,
+            Topic::try_from("messages".to_string())?,
+            Topic::try_from(
+                "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),
+            )?,
+        ])
         .subscribe(move |event| {
-            match event.topic.as_str() {
-                "messages" => {
-                    let message: Message = serde_json::from_str(&event.payload).unwrap();
-                    println!("{:?}", event);
-                    println!("{:?}", message);
-                }
-                _ => println!("{:?}", event),
+            println!("Topic: {}", event.topic);
+            match &event.payload {
+                MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
+                MqttPayload::Message(msg) => println!("{:?}", msg),
             }
             tx.lock().unwrap().send(()).unwrap();
         })
@@ -53,7 +58,7 @@ async fn main() -> Result<()> {
             // unsubscribe from topic "messages", will continue to receive events for "milestones/latest"
             client
                 .subscriber()
-                .with_topics(vec![Topic::new("messages")?])
+                .with_topics(vec![Topic::try_from("messages".to_string())?])
                 .unsubscribe()
                 .await?;
         }
