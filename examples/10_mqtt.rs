@@ -3,7 +3,7 @@
 
 //! cargo run --example 10_mqtt --features=mqtt --release
 
-use iota_client::{bee_message::Message, Client, MqttEvent, Result, Topic};
+use iota_client::{bee_message::Message, BrokerOptions, Client, MqttEvent, MqttPayload, Result, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 // Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
@@ -42,13 +42,10 @@ async fn main() -> Result<()> {
             )?,
         ])
         .subscribe(move |event| {
-            match event.topic.as_str() {
-                "messages" => {
-                    let message: Message = serde_json::from_str(&event.payload).unwrap();
-                    println!("{:?}", event);
-                    println!("{:?}", message);
-                }
-                _ => println!("{:?}", event),
+            println!("Topic: {}", event.topic);
+            match &event.payload {
+                MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
+                MqttPayload::Message(msg) => println!("{:?}", msg),
             }
             tx.lock().unwrap().send(()).unwrap();
         })
