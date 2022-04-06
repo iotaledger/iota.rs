@@ -9,7 +9,7 @@ use iota_client::{
         payload::{transaction::TransactionPayload, Payload},
         unlock_block::UnlockBlocks,
     },
-    signing::{mnemonic::MnemonicSigner, verify_unlock_blocks, Network, SignMessageMetadata},
+    signing::{mnemonic::MnemonicSigner, verify_unlock_blocks, Network, SignMessageMetadata, Signer},
     Result,
 };
 extern crate dotenv;
@@ -30,9 +30,9 @@ const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_tran
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
+    let signer = MnemonicSigner::try_from_mnemonic(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
-    let mut prepared_transaction_data = read_prepared_transactiondata_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
+    let prepared_transaction_data = read_prepared_transactiondata_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
     let mut input_addresses = Vec::new();
     for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
@@ -41,11 +41,10 @@ async fn main() -> Result<()> {
     }
 
     // Sign prepared transaction offline
-    let mut signer = signer.lock().await;
     let unlock_blocks = signer
         .sign_transaction_essence(
             &prepared_transaction_data.essence,
-            &mut prepared_transaction_data.input_signing_data_entrys,
+            &prepared_transaction_data.input_signing_data_entrys,
             // todo set correct data
             SignMessageMetadata {
                 remainder_value: 0,

@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     let ledger_signer = LedgerSigner::new(false);
 
     // Generate addresses with custom account index and range
-    let addresses = iota
+    let addresses = client
         .get_addresses(&ledger_signer)
         .with_account_index(0)
         .with_range(0..2)

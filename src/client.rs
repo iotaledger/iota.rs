@@ -13,7 +13,7 @@ use crate::{
     error::{Error, Result},
     node_api::{high_level::GetAddressBuilder, indexer_api::query_parameters::QueryParameter},
     node_manager::node::{Node, NodeAuth},
-    signing::SignerHandle,
+    signing::Signer,
     utils::{
         bech32_to_hex, generate_mnemonic, hash_network, hex_public_key_to_bech32_address, hex_to_bech32,
         is_address_valid, mnemonic_to_hex_seed, mnemonic_to_seed, parse_bech32_address,
@@ -608,7 +608,7 @@ impl Client {
     }
 
     /// Return a list of addresses from the signer regardless of their validity.
-    pub fn get_addresses<'a>(&'a self, signer: &'a SignerHandle) -> GetAddressesBuilder<'a> {
+    pub fn get_addresses<'a>(&'a self, signer: &'a dyn Signer) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(signer).with_client(self)
     }
 
@@ -724,7 +724,7 @@ impl Client {
     /// Returns the address to which the funds got consolidated, if any were available
     pub async fn consolidate_funds(
         &self,
-        signer: &SignerHandle,
+        signer: &dyn Signer,
         account_index: u32,
         address_range: Range<u32>,
     ) -> crate::Result<String> {

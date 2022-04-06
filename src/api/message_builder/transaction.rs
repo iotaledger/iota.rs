@@ -106,7 +106,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 /// Sign the transaction
 pub async fn sign_transaction(
     message_builder: &ClientMessageBuilder<'_>,
-    mut prepared_transaction_data: PreparedTransactionData,
+    prepared_transaction_data: PreparedTransactionData,
 ) -> Result<Payload> {
     log::debug!("[sign_transaction]");
     let mut input_addresses = Vec::new();
@@ -115,16 +115,12 @@ pub async fn sign_transaction(
         input_addresses.push(address);
     }
     let signer = message_builder.signer.ok_or(Error::MissingParameter("signer"))?;
-    #[cfg(feature = "wasm")]
-    let mut signer = signer.lock().unwrap();
-    #[cfg(not(feature = "wasm"))]
-    let mut signer = signer.lock().await;
     let unlock_blocks = signer
         .sign_transaction_essence(
             // IOTA_COIN_TYPE,
             // message_builder.account_index.unwrap_or(0),
             &prepared_transaction_data.essence,
-            &mut prepared_transaction_data.input_signing_data_entrys,
+            &prepared_transaction_data.input_signing_data_entrys,
             // todo set correct data
             SignMessageMetadata {
                 remainder_value: 0,

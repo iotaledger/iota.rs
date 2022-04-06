@@ -3,7 +3,7 @@
 
 use crate::{
     api::message_builder::ClientMessageBuilder, node_api::indexer_api::query_parameters::QueryParameter,
-    signing::SignerHandle, Client, Result,
+    signing::Signer, Client, Result,
 };
 
 use bee_message::{
@@ -18,7 +18,7 @@ use std::{ops::Range, str::FromStr};
 /// Returns the address to which the funds got consolidated, if any were available
 pub async fn consolidate_funds(
     client: &Client,
-    signer: &SignerHandle,
+    signer: &dyn Signer,
     account_index: u32,
     address_range: Range<u32>,
 ) -> Result<String> {

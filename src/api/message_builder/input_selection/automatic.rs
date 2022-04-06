@@ -58,12 +58,7 @@ pub(crate) async fn get_inputs(
         // Get the addresses in the BIP path/index ~ path/index+20
         let addresses = message_builder
             .client
-            .get_addresses(
-                message_builder
-                    .signer
-                    .as_ref()
-                    .ok_or(crate::Error::MissingParameter("signer"))?,
-            )
+            .get_addresses(message_builder.signer.ok_or(crate::Error::MissingParameter("signer"))?)
             .with_account_index(account_index)
             .with_range(gap_index..gap_index + ADDRESS_GAP_RANGE)
             .get_all()

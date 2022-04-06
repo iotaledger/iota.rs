@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
+    let signer = MnemonicSigner::try_from_mnemonic(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
 
     // Generate addresses offline
     let addresses = offline_client

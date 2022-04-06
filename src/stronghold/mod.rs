@@ -58,15 +58,12 @@ mod encryption;
 mod signer;
 
 use self::common::{PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
-use crate::{
-    signing::{SignerHandle, SignerType},
-    Error, Result,
-};
+use crate::{Error, Result};
 use derive_builder::Builder;
 use iota_stronghold::{ResultMessage, Stronghold};
 use log::debug;
 use riker::actors::ActorSystem;
-use std::{path::PathBuf, sync::Arc, time::Duration};
+use std::{io::ErrorKind, path::PathBuf, sync::Arc, time::Duration};
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
 
@@ -112,16 +109,6 @@ pub struct StrongholdAdapter {
     /// Whether the snapshot has been loaded from the disk to the memory.
     #[builder(setter(skip))]
     snapshot_loaded: bool,
-}
-
-/// [`SignerHandle`]s wrapping [`Signer`]s are still required at some places.
-impl From<StrongholdAdapter> for SignerHandle {
-    fn from(signer: StrongholdAdapter) -> Self {
-        SignerHandle {
-            signer: Arc::new(Mutex::new(Box::new(signer))),
-            signer_type: SignerType::Stronghold,
-        }
-    }
 }
 
 impl Default for StrongholdAdapter {
@@ -327,7 +314,7 @@ impl StrongholdAdapter {
 
     /// Persist Stronghold to a snapshot at `snapshot_path`.
     ///
-    /// It doesn't unload the snapshot.
+    /// It doesn't unload the snapshot from memory. See also [`Self::unload_snapshot()`].
     pub async fn write_stronghold_snapshot(&mut self) -> Result<()> {
         // The key and the snapshot path need to be supplied first.
         let locked_key = self.key.lock().await;
@@ -337,24 +324,51 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        let snapshot_path = if let Some(path) = &self.snapshot_path {
-            path
+        let mut snapshot_path = if let Some(path) = &self.snapshot_path {
+            path.clone()
         } else {
             return Err(Error::StrongholdSnapshotPathMissing);
         };
 
+        // If the path doesn't exist yet, we create it - Stronghold doesn't.
+        if let Err(e) = tokio::fs::create_dir_all(&snapshot_path).await {
+            if e.kind() != ErrorKind::AlreadyExists {
+                return Err(e.into());
+            }
+        }
+
+        snapshot_path.push(STRONGHOLD_FILENAME);
+
+        // NOTE: parameter `filename` and `path` of `write_all_to_snapshot()` are mutually exclusive; RTFSC for details.
+        // Appending the file name to the path is correct.
         match self
             .stronghold
-            .write_all_to_snapshot(
-                &**key,
-                Some(STRONGHOLD_FILENAME.to_string()),
-                Some(snapshot_path.clone()),
-            )
+            .write_all_to_snapshot(&**key, None, Some(snapshot_path))
             .await
         {
             ResultMessage::Ok(_) => Ok(()),
             ResultMessage::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
         }
+    }
+
+    /// Unload Stronghold from the memory.
+    ///
+    /// If a snapshot path is set, then this method also flushes Stronghold onto the disk. If not, then data in the
+    /// Stronghold in memory will be lost.
+    ///
+    /// Note that this does not clear the password / key cached in [`StrongholdAdapter`]; invoke [`Self::clear_key()`]
+    /// to do this.
+    pub async fn unload_stronghold(&mut self) -> Result<()> {
+        let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
+
+        if self.snapshot_path.is_some() {
+            self.write_stronghold_snapshot().await?;
+        }
+
+        self.stronghold.kill_stronghold(client_path, false).await;
+        self.snapshot_loaded = false;
+
+        Ok(())
     }
 }
 
@@ -381,7 +395,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_clear_key() {
-        let mut client = StrongholdAdapter::builder()
+        let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(Duration::from_millis(100))
             .build();
@@ -390,25 +404,25 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(20)).await;
 
         // Setting a password would spawn a task to automatically clear the key.
-        assert!(matches!(*client.key.lock().await, Some(_)));
-        assert!(matches!(client.timeout, Some(_)));
-        assert!(matches!(*client.timeout_task.lock().await, Some(_)));
+        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert!(matches!(adapter.timeout, Some(_)));
+        assert!(matches!(*adapter.timeout_task.lock().await, Some(_)));
 
         // After the timeout, the key should be purged.
         tokio::time::sleep(Duration::from_millis(150)).await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert!(matches!(client.timeout, Some(_)));
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert!(matches!(adapter.timeout, Some(_)));
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
 
         // Set the key again, but this time we manually purge the key.
-        client.set_password("password").await;
-        assert!(matches!(*client.key.lock().await, Some(_)));
-        assert!(matches!(client.timeout, Some(_)));
-        assert!(matches!(*client.timeout_task.lock().await, Some(_)));
+        adapter.set_password("password").await;
+        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert!(matches!(adapter.timeout, Some(_)));
+        assert!(matches!(*adapter.timeout_task.lock().await, Some(_)));
 
-        client.clear_key().await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert!(matches!(client.timeout, Some(_)));
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        adapter.clear_key().await;
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert!(matches!(adapter.timeout, Some(_)));
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
     }
 }

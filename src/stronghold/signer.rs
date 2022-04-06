@@ -4,11 +4,11 @@
 //! The [Signer] implementation for [StrongholdAdapter].
 
 use super::{
-    common::{DERIVE_OUTPUT_RECORD_PATH, RECORD_HINT, SECRET_VAULT_PATH, SEED_RECORD_PATH},
+    common::{DERIVE_OUTPUT_RECORD_PATH, RECORD_HINT, SECRET_VAULT_PATH, SEED_RECORD_PATH, STRONGHOLD_FILENAME},
     StrongholdAdapter,
 };
 use crate::{
-    signing::{types::InputSigningData, GenerateAddressMetadata, SignMessageMetadata, Signer},
+    signing::{types::InputSigningData, GenerateAddressMetadata, SignMessageMetadata, Signer, SignerType},
     Result,
 };
 use async_trait::async_trait;
@@ -20,65 +20,74 @@ use bee_message::{
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput};
 use log::warn;
-use std::ops::Range;
+use std::{ops::Range, time::SystemTime};
 
 #[async_trait]
 impl Signer for StrongholdAdapter {
-    async fn store_mnemonic(&mut self, mnemonic: String) -> Result<()> {
-        // Stronghold arguments.
-        let output = Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: SEED_RECORD_PATH.to_vec(),
-        };
-        let hint = RecordHint::new("wallet.rs-seed").unwrap();
+    async fn signer_type(&self) -> SignerType {
+        SignerType::Stronghold
+    }
 
-        // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
-        let trimmed_mnemonic = mnemonic.trim().to_string();
-
-        // Check if the mnemonic is valid.
-        crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
-
-        // Try to load the snapshot to see if we're creating a new Stronghold vault or not.
-        //
-        // XXX: The current design of [Error] doesn't allow us to see if it's really a "file does
-        // not exist" error or not. Better throw errors other than that, but now we just leave it
-        // like this, as if so then later operations would throw errors too.
-        self.read_stronghold_snapshot().await.unwrap_or(());
-
-        // If the snapshot has successfully been loaded, then we need to check if there has been a
-        // mnemonic stored in Stronghold or not to prevent overwriting it.
-        if self.snapshot_loaded && self.stronghold.record_exists(output.clone()).await {
-            return Err(crate::Error::StrongholdMnemonicAlreadyStored);
+    async fn signer_init(&mut self, mnemonic: Option<&str>) -> crate::Result<()> {
+        if let Some(mnemonic) = mnemonic {
+            self.store_mnemonic(mnemonic.to_string()).await?;
         }
 
-        // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
-        self.bip39_recover(trimmed_mnemonic, None, output, hint).await?;
-
-        // Persist Stronghold to the disk, if a snapshot path has been set.
         if self.snapshot_path.is_some() {
-            self.write_stronghold_snapshot().await?;
+            self.read_stronghold_snapshot().await?;
         }
-
-        // Now we consider that the snapshot has been loaded; it's just in a reversed order.
-        self.snapshot_loaded = true;
 
         Ok(())
     }
 
-    async fn generate_addresses(
-        &mut self,
+    async fn signer_sync(&mut self) -> crate::Result<()> {
+        self.write_stronghold_snapshot().await?;
+
+        // Make a backup by copying the saved snapshot, if a snapshot path is set.
+        if let Some(snapshot_path) = &self.snapshot_path {
+            let mut from = snapshot_path.clone();
+            let mut to = snapshot_path.clone();
+
+            // XXX: we aren't expecting a system time before the epoch; just don't panic here.
+            let timestamp_str = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+                Ok(ts) => ts.as_secs().to_string(),
+                Err(err) => format!("-{}", err.duration().as_secs()),
+            };
+
+            from.push(STRONGHOLD_FILENAME);
+            to.push(format!("{}-backup-{}.stronghold", STRONGHOLD_FILENAME, timestamp_str));
+
+            tokio::fs::copy(from, to).await?;
+        }
+
+        Ok(())
+    }
+
+    async fn signer_set_password(&mut self, password: &str) {
+        self.set_password(password).await;
+    }
+
+    async fn signer_clear_password(&mut self) {
+        // Unload Stronghold, regardless of whether a snapshot path has been set or not.
+        //
+        // It doesn't make sense to allow Stronghold to continue to work when we're purging our cached key. However,
+        // by design Stronghold _can_ work when it's already loaded into the memory. Here we unload it first to
+        // stop it from working, but this also removes all data from the memory if there isn't a snapshot configured.
+        if let Err(e) = self.unload_stronghold().await {
+            warn!("Failed to unload Stronghold from memory: {}", e);
+        }
+
+        self.clear_key().await;
+    }
+
+    async fn signer_gen_addrs(
+        &self,
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
         _metadata: GenerateAddressMetadata,
     ) -> Result<Vec<Address>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
-
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -123,17 +132,12 @@ impl Signer for StrongholdAdapter {
         Ok(addresses)
     }
 
-    async fn signature_unlock<'a>(
-        &mut self,
+    async fn signer_unlock<'a>(
+        &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         _: &SignMessageMetadata<'a>,
     ) -> Result<UnlockBlock> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
-
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -181,6 +185,49 @@ impl Signer for StrongholdAdapter {
 
 /// Private methods for the signer implementation.
 impl StrongholdAdapter {
+    /// Store a mnemonic into the Stronghold vault.
+    pub async fn store_mnemonic(&mut self, mnemonic: String) -> Result<()> {
+        // Stronghold arguments.
+        let output = Location::Generic {
+            vault_path: SECRET_VAULT_PATH.to_vec(),
+            record_path: SEED_RECORD_PATH.to_vec(),
+        };
+        let hint = RecordHint::new("wallet.rs-seed").unwrap();
+
+        // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
+        let trimmed_mnemonic = mnemonic.trim().to_string();
+
+        // Check if the mnemonic is valid.
+        crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+
+        // Try to load the snapshot to see if we're creating a new Stronghold vault or not.
+        //
+        // XXX: The current design of [Error] doesn't allow us to see if it's really a "file does
+        // not exist" error or not. Better throw errors other than that, but now we just leave it
+        // like this, as if so then later operations would throw errors too.
+        self.read_stronghold_snapshot().await.unwrap_or(());
+
+        // If the snapshot has successfully been loaded, then we need to check if there has been a
+        // mnemonic stored in Stronghold or not to prevent overwriting it.
+        if self.snapshot_loaded && self.stronghold.record_exists(output.clone()).await {
+            return Err(crate::Error::StrongholdMnemonicAlreadyStored);
+        }
+
+        // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
+        self.bip39_recover(trimmed_mnemonic, None, output, hint).await?;
+
+        // Persist Stronghold to the disk, if a snapshot path has been set.
+        if self.snapshot_path.is_some() {
+            self.write_stronghold_snapshot().await?;
+        }
+
+        // Now we consider that the snapshot has been loaded; it's just in a reversed order.
+        self.snapshot_loaded = true;
+
+        Ok(())
+    }
+
     /// Execute [Procedure::BIP39Recover] in Stronghold to put a mnemonic into the Stronghold vault.
     async fn bip39_recover(
         &self,
@@ -314,24 +361,53 @@ impl StrongholdAdapter {
 mod tests {
     use super::*;
     use crate::{constants::IOTA_COIN_TYPE, signing::Network};
-    use std::path::PathBuf;
+    use std::path::Path;
 
     #[tokio::test]
-    async fn test_address_generation() {
-        let stronghold_path = PathBuf::from("test.stronghold");
-        let mnemonic = String::from("giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally");
+    async fn test_signer_sync() {
+        let snapshot_path = Path::new("stronghold-test");
         let mut signer = StrongholdAdapter::builder()
-            .snapshot_path(stronghold_path.clone())
+            .snapshot_path(snapshot_path.to_path_buf())
             .password("drowssap")
             .build();
 
-        signer.store_mnemonic(mnemonic).await.unwrap();
+        let timestamp_str = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+            Ok(ts) => ts.as_secs().to_string(),
+            Err(err) => format!("-{}", err.duration().as_secs()),
+        };
+        let backup_filename = format!("{}-backup-{}.stronghold", STRONGHOLD_FILENAME, timestamp_str);
+
+        let mut saved_file = snapshot_path.to_path_buf();
+        let mut backup_file = snapshot_path.to_path_buf();
+        saved_file.push(STRONGHOLD_FILENAME);
+        backup_file.push(backup_filename);
+
+        signer.signer_sync().await.unwrap();
+
+        assert!(saved_file.exists());
+        assert!(backup_file.exists());
+
+        // Remove artifacts, but don't care about the result.
+        tokio::fs::remove_dir_all(snapshot_path).await.unwrap_or(());
+    }
+
+    #[tokio::test]
+    async fn test_address_generation() {
+        let stronghold_path = Path::new("test.stronghold");
+        let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
+
+        let mut signer = StrongholdAdapter::builder()
+            .snapshot_path(stronghold_path.to_path_buf())
+            .password("drowssap")
+            .build();
+
+        signer.signer_init(Some(mnemonic)).await.unwrap();
 
         // The snapshot should have been on the disk now.
         assert!(stronghold_path.exists());
 
         let addresses = signer
-            .generate_addresses(
+            .signer_gen_addrs(
                 IOTA_COIN_TYPE,
                 0,
                 0..1,

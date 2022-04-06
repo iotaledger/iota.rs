@@ -1,24 +1,23 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Ledger signer
+//! A [`Signer`] implementation that uses a Ledger hardware wallet.
 
-use crate::signing::{LedgerStatus, SignerHandle, SignerType};
+// Note: ledger status codes:
+// https://github.com/iotaledger/ledger-iota-app/blob/53c1f96d15f8b014ba8ba31a85f0401bb4d33e18/src/iota_io.h#L54
 
-use bee_message::address::Address;
-// use packable::PackableExt;
-
-// use iota_ledger::LedgerBIP32Index;
+use super::{types::InputSigningData, LedgerStatus, SignMessageMetadata, Signer, SignerType};
+use async_trait::async_trait;
+use bee_message::{address::Address, unlock_block::UnlockBlock};
+use std::ops::Range;
 use tokio::sync::Mutex;
 
-use std::ops::Range;
-
-// ledger status codes https://github.com/iotaledger/ledger-iota-app/blob/53c1f96d15f8b014ba8ba31a85f0401bb4d33e18/src/iota_io.h#L54
-
-/// Hardened const for the bip path https://wiki.trezor.io/Hardened_and_non-hardened_derivation
+/// Hardened const for the bip path.
+///
+/// See <https://wiki.trezor.io/Hardened_and_non-hardened_derivation>.
 pub const HARDENED: u32 = 0x80000000;
 
-/// Ledger Signer
+/// A [`Signer`] implementation that uses a Ledger hardware wallet.
 #[derive(Default)]
 pub struct LedgerSigner {
     /// Specifies if a real Ledger hardware is used or only a simulator
@@ -28,21 +27,12 @@ pub struct LedgerSigner {
 }
 
 impl LedgerSigner {
-    /// Create a new LedgerSigner SignerHandle
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new(simulator: bool) -> SignerHandle {
-        let signer_type = if simulator {
-            SignerType::LedgerNano
-        } else {
-            SignerType::LedgerNanoSimulator
-        };
-        SignerHandle::new(
-            signer_type,
-            Box::new(LedgerSigner {
-                is_simulator: simulator,
-                ..Default::default()
-            }),
-        )
+    /// Create a new [`LedgerSigner`].
+    pub fn new(is_simulator: bool) -> Self {
+        Self {
+            is_simulator,
+            mutex: Mutex::new(()),
+        }
     }
 }
 
@@ -56,46 +46,42 @@ impl LedgerSigner {
 //     pub(crate) bip32: LedgerBIP32Index,
 // }
 
-#[async_trait::async_trait]
-impl super::Signer for LedgerSigner {
-    async fn get_ledger_status(&self, is_simulator: bool) -> LedgerStatus {
-        log::info!("ledger get_opened_app");
-        // lock the mutex
-        let _lock = self.mutex.lock().await;
-        let transport_type = match is_simulator {
-            true => iota_ledger::TransportTypes::TCP,
-            false => iota_ledger::TransportTypes::NativeHID,
-        };
-
-        let app = match iota_ledger::get_opened_app(&transport_type) {
-            Ok((name, version)) => Some(crate::signing::types::LedgerApp { name, version }),
-            _ => None,
-        };
-
-        log::info!("get_ledger");
-        let (connected_, locked) =
-            match iota_ledger::get_ledger(crate::signing::ledger::HARDENED, is_simulator).map_err(Into::into) {
-                Ok(_) => (true, false),
-                Err(crate::Error::LedgerDongleLocked) => (true, true),
-                Err(_) => (false, false),
-            };
-        // We get the app info also if not the iota app is open, but another one
-        // connected_ is in this case false, even tough the ledger is connected, that's why we always return true if we
-        // got the app
-        let connected = if app.is_some() { true } else { connected_ };
-        LedgerStatus { connected, locked, app }
+#[async_trait]
+impl Signer for LedgerSigner {
+    async fn signer_type(&self) -> SignerType {
+        if self.is_simulator {
+            SignerType::LedgerNanoSimulator
+        } else {
+            SignerType::LedgerNano
+        }
     }
 
-    async fn store_mnemonic(&mut self, _mnemonic: String) -> crate::Result<()> {
-        Err(crate::Error::InvalidMnemonic(String::from(
-            "Can't store mnemonic to ledger",
-        )))
+    async fn signer_init(&mut self, mnemonic: Option<&str>) -> crate::Result<()> {
+        if mnemonic.is_some() {
+            Err(crate::Error::InvalidMnemonic(String::from(
+                "Can't store mnemonic to ledger",
+            )))
+        } else {
+            // No-op
+            Ok(())
+        }
     }
 
-    async fn generate_addresses(
-        &mut self,
-        // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        // current ledger app only supports IOTA_COIN_TYPE
+    async fn signer_sync(&mut self) -> crate::Result<()> {
+        todo!()
+    }
+
+    async fn signer_set_password(&mut self, _password: &str) {
+        todo!()
+    }
+
+    async fn signer_clear_password(&mut self) {
+        todo!()
+    }
+
+    async fn signer_gen_addrs(
+        &self,
+        // XXX: the current Ledger app only supports IOTA_COIN_TYPE
         _coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
@@ -142,12 +128,12 @@ impl super::Signer for LedgerSigner {
         Ok(ed25519_addresses)
     }
 
-    async fn sign_transaction_essence<'a>(
-        &mut self,
-        _essence: &bee_message::payload::transaction::TransactionEssence,
-        _inputs: &mut Vec<super::InputSigningData>,
-        _meta: super::SignMessageMetadata<'a>,
-    ) -> crate::Result<Vec<bee_message::unlock_block::UnlockBlock>> {
+    async fn signer_unlock<'a>(
+        &self,
+        _input: &InputSigningData,
+        _essence_hash: &[u8; 32],
+        _metadata: &SignMessageMetadata<'a>,
+    ) -> crate::Result<UnlockBlock> {
         todo!()
         // lock the mutex
         // let _lock = self.mutex.lock().await;
@@ -288,5 +274,33 @@ impl super::Signer for LedgerSigner {
         //     unlock_blocks.push(unlock_block);
         // }
         // Ok(unlock_blocks)
+    }
+
+    async fn get_ledger_status(&self, is_simulator: bool) -> LedgerStatus {
+        log::info!("ledger get_opened_app");
+        // lock the mutex
+        let _lock = self.mutex.lock().await;
+        let transport_type = match is_simulator {
+            true => iota_ledger::TransportTypes::TCP,
+            false => iota_ledger::TransportTypes::NativeHID,
+        };
+
+        let app = match iota_ledger::get_opened_app(&transport_type) {
+            Ok((name, version)) => Some(crate::signing::types::LedgerApp { name, version }),
+            _ => None,
+        };
+
+        log::info!("get_ledger");
+        let (connected_, locked) =
+            match iota_ledger::get_ledger(crate::signing::ledger::HARDENED, is_simulator).map_err(Into::into) {
+                Ok(_) => (true, false),
+                Err(crate::Error::LedgerDongleLocked) => (true, true),
+                Err(_) => (false, false),
+            };
+        // We get the app info also if not the iota app is open, but another one
+        // connected_ is in this case false, even tough the ledger is connected, that's why we always return true if we
+        // got the app
+        let connected = if app.is_some() { true } else { connected_ };
+        LedgerStatus { connected, locked, app }
     }
 }

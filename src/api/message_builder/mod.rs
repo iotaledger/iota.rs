@@ -5,7 +5,7 @@ use crate::{
     api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
     bee_message::output::BasicOutputBuilder,
     constants::SHIMMER_COIN_TYPE,
-    signing::SignerHandle,
+    signing::Signer,
     Client, Error, Result,
 };
 
@@ -44,7 +44,7 @@ use transaction::{prepare_transaction, sign_transaction};
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
-    signer: Option<&'a SignerHandle>,
+    signer: Option<&'a dyn Signer>,
     coin_type: u32,
     account_index: u32,
     initial_address_index: u32,
@@ -117,7 +117,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Sets the seed.
-    pub fn with_signer(mut self, signer: &'a SignerHandle) -> Self {
+    pub fn with_signer(mut self, signer: &'a dyn Signer) -> Self {
         self.signer.replace(signer);
         self
     }

@@ -4,7 +4,7 @@
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
-    signing::{GenerateAddressMetadata, Network, SignerHandle},
+    signing::{GenerateAddressMetadata, Network, Signer},
     Client, Error, Result,
 };
 
@@ -16,7 +16,7 @@ use std::ops::Range;
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
-    signer: Option<&'a SignerHandle>,
+    signer: Option<&'a dyn Signer>,
     coin_type: u32,
     account_index: u32,
     range: Range<u32>,
@@ -59,7 +59,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
 
 impl<'a> GetAddressesBuilder<'a> {
     /// Create get_addresses builder
-    pub fn new(signer: &'a SignerHandle) -> Self {
+    pub fn new(signer: &'a dyn Signer) -> Self {
         Self {
             signer: Some(signer),
             ..Default::default()
@@ -134,12 +134,8 @@ impl<'a> GetAddressesBuilder<'a> {
             },
         };
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
-        #[cfg(feature = "wasm")]
-        let mut signer = signer.lock().unwrap();
-        #[cfg(not(feature = "wasm"))]
-        let mut signer = signer.lock().await;
         let addresses = signer
-            .generate_addresses(
+            .signer_gen_addrs(
                 self.coin_type,
                 self.account_index,
                 self.range,
@@ -156,12 +152,8 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Consume the builder and get a vector of public addresses
     pub async fn get_raw(self) -> Result<Vec<Address>> {
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
-        #[cfg(feature = "wasm")]
-        let mut signer = signer.lock().unwrap();
-        #[cfg(not(feature = "wasm"))]
-        let mut signer = signer.lock().await;
         signer
-            .generate_addresses(
+            .signer_gen_addrs(
                 self.coin_type,
                 self.account_index,
                 self.range,
@@ -195,12 +187,8 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Consume the builder and get the vector of public and internal addresses
     pub async fn get_all_raw(self) -> Result<RawAddresses> {
         let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
-        #[cfg(feature = "wasm")]
-        let mut signer = signer.lock().unwrap();
-        #[cfg(not(feature = "wasm"))]
-        let mut signer = signer.lock().await;
         let public_addresses = signer
-            .generate_addresses(
+            .signer_gen_addrs(
                 self.coin_type,
                 self.account_index,
                 self.range.clone(),
@@ -210,7 +198,7 @@ impl<'a> GetAddressesBuilder<'a> {
             .await?;
 
         let internal_addresses = signer
-            .generate_addresses(
+            .signer_gen_addrs(
                 self.coin_type,
                 self.account_index,
                 self.range,
@@ -228,7 +216,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
 /// Function to find the index and public (false) or internal (true) type of an Bech32 encoded address
 pub async fn search_address(
-    signer: &SignerHandle,
+    signer: &dyn Signer,
     bech32_hrp: &str,
     coin_type: u32,
     account_index: u32,

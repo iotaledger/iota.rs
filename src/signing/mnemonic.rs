@@ -1,12 +1,13 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{types::InputSigningData, SignMessageMetadata};
+use super::{types::InputSigningData, GenerateAddressMetadata, SignMessageMetadata};
 use crate::{
     constants::HD_WALLET_TYPE,
-    signing::{SignerHandle, SignerType},
+    signing::{Signer, SignerType},
     Client, Result,
 };
+use async_trait::async_trait;
 use bee_message::{
     address::{Address, Ed25519Address},
     signature::{Ed25519Signature, Signature},
@@ -16,7 +17,85 @@ use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::slip10::{Chain, Curve, Seed},
 };
-use std::ops::{Deref, Range};
+use std::ops::Range;
+
+/// A [`Signer`] implementation that uses a seed or a mnemonic string.
+pub struct MnemonicSigner(Seed);
+
+#[async_trait]
+impl Signer for MnemonicSigner {
+    async fn signer_type(&self) -> SignerType {
+        SignerType::Mnemonic
+    }
+
+    async fn signer_init(&mut self, mnemonic: Option<&str>) -> Result<()> {
+        if let Some(mnemonic) = mnemonic {
+            self.0 = Client::mnemonic_to_seed(mnemonic)?;
+        }
+
+        Ok(())
+    }
+
+    async fn signer_sync(&mut self) -> Result<()> {
+        // No-op
+        Ok(())
+    }
+
+    async fn signer_set_password(&mut self, _password: &str) {
+        // No-op
+    }
+
+    async fn signer_clear_password(&mut self) {
+        // No-op
+    }
+
+    async fn signer_gen_addrs(
+        &self,
+        coin_type: u32,
+        account_index: u32,
+        address_indexes: Range<u32>,
+        internal: bool,
+        _metadata: GenerateAddressMetadata,
+    ) -> Result<Vec<Address>> {
+        generate_addresses(&self.0, coin_type, account_index, address_indexes, internal)
+    }
+
+    async fn signer_unlock<'a>(
+        &self,
+        input: &InputSigningData,
+        essence_hash: &[u8; 32],
+        _: &SignMessageMetadata<'a>,
+    ) -> Result<UnlockBlock> {
+        // Get the private and public key for this Ed25519 address
+        let private_key = self
+            .0
+            .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
+            .secret_key();
+        let public_key = private_key.public_key().to_bytes();
+
+        // The signature unlock block needs to sign the hash of the entire transaction essence of the
+        // transaction payload
+        let signature = private_key.sign(essence_hash).to_bytes();
+
+        Ok(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
+            Ed25519Signature::new(public_key, signature),
+        ))))
+    }
+}
+
+impl MnemonicSigner {
+    /// Create a new [`MnemonicSigner`] with a mnemonic string in English.
+    ///
+    /// For more information, see <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>.
+    pub fn try_from_mnemonic(mnemonic: &str) -> Result<Self> {
+        Ok(Self(Client::mnemonic_to_seed(mnemonic)?))
+    }
+
+    /// Create  a new [`MnemonicSigner`] with a hex-encoded seed.
+    pub fn try_from_hex_seed(hex: &str) -> Result<Self> {
+        Ok(Self(Seed::from_bytes(&hex::decode(hex)?)))
+    }
+}
 
 fn generate_addresses(
     seed: &Seed,
@@ -24,7 +103,7 @@ fn generate_addresses(
     account_index: u32,
     address_indexes: Range<u32>,
     internal: bool,
-) -> crate::Result<Vec<Address>> {
+) -> Result<Vec<Address>> {
     let mut addresses = Vec::new();
     for address_index in address_indexes {
         let chain = Chain::from_u32_hardened(vec![
@@ -49,74 +128,10 @@ fn generate_addresses(
     Ok(addresses)
 }
 
-/// MnemonicSigner, also used for seeds
-pub struct MnemonicSigner(Seed);
-
-impl Deref for MnemonicSigner {
-    type Target = Seed;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl MnemonicSigner {
-    /// Create a new MnemonicSigner SignerHandle with a given BIP39 mnemonic from the English wordlist
-    /// for more information see https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new(mnemonic: &str) -> Result<SignerHandle> {
-        Ok(SignerHandle::new(
-            SignerType::Mnemonic,
-            Box::new(Self(Client::mnemonic_to_seed(mnemonic)?)),
-        ))
-    }
-    /// Create a new MnemonicSigner SignerHandle with a given hex encoded seed
-    pub fn new_from_seed(seed: &str) -> Result<SignerHandle> {
-        Ok(SignerHandle::new(
-            SignerType::Mnemonic,
-            Box::new(Self(Seed::from_bytes(&hex::decode(seed)?))),
-        ))
-    }
-}
-
-#[async_trait::async_trait]
-impl crate::signing::Signer for MnemonicSigner {
-    async fn generate_addresses(
-        &mut self,
-        // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        coin_type: u32,
-        account_index: u32,
-        address_indexes: Range<u32>,
-        internal: bool,
-        _: super::GenerateAddressMetadata,
-    ) -> crate::Result<Vec<Address>> {
-        generate_addresses(self.deref(), coin_type, account_index, address_indexes, internal)
-    }
-
-    async fn signature_unlock<'a>(
-        &mut self,
-        input: &InputSigningData,
-        essence_hash: &[u8; 32],
-        _: &SignMessageMetadata<'a>,
-    ) -> crate::Result<UnlockBlock> {
-        // Get the private and public key for this Ed25519 address
-        let private_key = self
-            .deref()
-            .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
-            .secret_key();
-        let public_key = private_key.public_key().to_bytes();
-
-        // The signature unlock block needs to sign the hash of the entire transaction essence of the
-        // transaction payload
-        let signature = private_key.sign(essence_hash).to_bytes();
-
-        Ok(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
-            Ed25519Signature::new(public_key, signature),
-        ))))
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[tokio::test]
     async fn address() {
         use crate::{
@@ -125,12 +140,10 @@ mod tests {
         };
 
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
-        let mnemonic_signer = super::MnemonicSigner::new(mnemonic).unwrap();
+        let mnemonic_signer = MnemonicSigner::try_from_mnemonic(mnemonic).unwrap();
 
         let addresses = mnemonic_signer
-            .lock()
-            .await
-            .generate_addresses(
+            .signer_gen_addrs(
                 IOTA_COIN_TYPE,
                 0,
                 0..1,
@@ -157,12 +170,10 @@ mod tests {
         };
 
         let seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
-        let mnemonic_signer = super::MnemonicSigner::new_from_seed(seed).unwrap();
+        let mnemonic_signer = MnemonicSigner::try_from_hex_seed(seed).unwrap();
 
         let addresses = mnemonic_signer
-            .lock()
-            .await
-            .generate_addresses(
+            .signer_gen_addrs(
                 IOTA_COIN_TYPE,
                 0,
                 0..1,

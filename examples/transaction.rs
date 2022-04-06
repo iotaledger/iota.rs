@@ -38,8 +38,8 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let signer_1 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
-    let signer_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
+    let signer_1 = MnemonicSigner::try_from_hex_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
+    let signer_2 = MnemonicSigner::try_from_hex_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
 
     let message = client
         .message()

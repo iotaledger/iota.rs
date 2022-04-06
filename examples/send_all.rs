@@ -34,8 +34,8 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
-    let seed_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
+    let signer = MnemonicSigner::try_from_mnemonic(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
+    let seed_2 = MnemonicSigner::try_from_hex_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client

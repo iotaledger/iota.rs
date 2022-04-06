@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-    let seed = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
+    let seed = MnemonicSigner::try_from_hex_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
     let addresses = client.get_addresses(&seed).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);

@@ -3,12 +3,11 @@
 
 //! cargo run --example stronghold --features=stronghold --release
 
+use dotenv::dotenv;
 use iota_client::{
     signing::{stronghold::StrongholdSigner, Signer},
     Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
 use std::{env, path::PathBuf};
 
 /// In this example we will create addresses with a stronghold signer
@@ -31,11 +30,11 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let mnemonic = env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap();
     // The mnemonic only needs to be stored the first time
-    stronghold_signer.store_mnemonic(mnemonic).await.unwrap();
+    stronghold_signer.signer_init(Some(&mnemonic)).await.unwrap();
 
     // Generate addresses with custom account index and range
-    let addresses = iota
-        .get_addresses(&stronghold_signer.into())
+    let addresses = client
+        .get_addresses(&stronghold_signer)
         .with_account_index(0)
         .with_range(0..2)
         .finish()
