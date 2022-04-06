@@ -2,7 +2,8 @@ name: Covector
 on:
   push:
     branches:
-      - developelop
+      # disabled until node.js or wasm binding is updated
+      # - develop
     paths-ignore:
       - 'specs/**'
       - 'documentation/**'
