@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
         .await
         .unwrap();
 
-    for i in 0..1000 {
+    for i in 0..10 {
         rx.recv().unwrap();
         if i == 7 {
             // unsubscribe from topic "messages", will continue to receive events for "milestones/latest"
