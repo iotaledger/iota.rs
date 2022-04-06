@@ -63,7 +63,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <workingDirectory>target</workingDirectory>
-          <argLine>-Djava.library.path=${maven.multiModuleProjectDirectory}/native/target/release</argLine>
+          <argLine>-Djava.library.path=${maven.multiModuleProjectDirectory}/target/release</argLine>
         </configuration>
       </plugin>
     </plugins>
