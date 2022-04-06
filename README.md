@@ -35,7 +35,7 @@ Or, for the latest changes:
 
 ```toml
 [dependencies]
-iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "develop" }
 ```
 
 Then, use the library in code with:

@@ -21,7 +21,7 @@ Using the library is easy, just add it as dependency in your `Cargo.toml`:
 
 ```bash
 [dependencies]
-iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "develop" }
 # asynchronous runtime
 tokio = { version = "1.12.0", features = ["full"] }
 ```

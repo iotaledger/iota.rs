@@ -4,7 +4,7 @@ Java binding to the iota.rs library.
 
 ## Requirements
 
-Ensure you have first installed the required dependencies for the library [here](https://github.com/iotaledger/iota.rs/blob/dev/README.md).
+Ensure you have first installed the required dependencies for the library [here](https://github.com/iotaledger/iota.rs/blob/develop/README.md).
 
 ## Installation
 

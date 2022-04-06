@@ -3,7 +3,7 @@ name: Build and Upload Wheels for the Python Bindings
 on:
   push:
     branches:
-      - dev
+      - develop
     paths:
       - '.github/workflows/python-bindings-publish.yml'
       - '.github/actions/**'
