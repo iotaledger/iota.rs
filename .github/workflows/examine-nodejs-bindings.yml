@@ -2,7 +2,8 @@ name: Examine the Node.js Bindings
 on:
   push:
     branches:
-      - develop
+      # disabled until node.js binding is updated
+      # - develop
     paths:
       - '.github/workflows/examine-nodejs-bindings.yml'
       - '.github/actions/**'
@@ -13,7 +14,8 @@ on:
       - 'Cargo.lock'
   pull_request:
     branches:
-      - develop
+      # disabled until node.js binding is updated
+      # - develop
     paths:
       - '.github/workflows/examine-nodejs-bindings.yml'
       - '.github/actions/**'

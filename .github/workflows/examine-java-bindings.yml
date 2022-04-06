@@ -2,7 +2,8 @@ name: Examine the Java Bindings
 on:
   push:
     branches:
-      - develop
+      # disabled until Java binding is updated
+      # - develop
     paths:
       - '.github/workflows/examine-java-bindings.yml'
       - '.github/actions/**'
@@ -13,7 +14,8 @@ on:
       - 'Cargo.lock'
   pull_request:
     branches:
-      - develop
+      # disabled until Java binding is updated
+      # - develop
     paths:
       - '.github/workflows/examine-java-bindings.yml'
       - '.github/actions/**'
