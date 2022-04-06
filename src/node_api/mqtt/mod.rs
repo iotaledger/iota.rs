@@ -140,7 +140,11 @@ fn poll_mqtt(
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
-                                    if topic.contains("messages") || topic.contains("included-message") {
+                                    if (topic.contains("messages")
+                                        && !topic.contains("referenced")
+                                        && !topic.contains("metadata"))
+                                        || topic.contains("included-message")
+                                    {
                                         let mut payload = &*p.payload;
                                         match Message::unpack_verified(&mut payload) {
                                             Ok(message) => Ok(TopicEvent {
