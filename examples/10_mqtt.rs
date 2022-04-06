@@ -15,7 +15,6 @@ async fn main() -> Result<()> {
         .with_node("https://chrysalis-nodes.iota.cafe/")?
         .with_node_sync_disabled()
         // .with_mqtt_broker_options(BrokerOptions::new().use_ws(false))
-        .with_default_logger()?
         .finish()
         .await?;
 
