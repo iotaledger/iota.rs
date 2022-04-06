@@ -8,10 +8,10 @@ pub use types::*;
 use crate::{Client, Result};
 
 use bee_message::Message;
-use crypto::utils;
-use packable::PackableExt;
 
+use crypto::utils;
 use log::warn;
+use packable::PackableExt;
 use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
     Transport,
@@ -140,29 +140,29 @@ fn poll_mqtt(
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
-                                    if topic.as_str() == "messages" || topic.contains("included-message") {
+                                    if topic.contains("messages") || topic.contains("included-message") {
                                         let mut payload = &*p.payload;
                                         match Message::unpack_verified(&mut payload) {
-                                            Ok(iota_message) => match serde_json::to_string(&iota_message) {
-                                                Ok(message) => Ok(TopicEvent {
-                                                    topic,
-                                                    payload: message,
-                                                }),
-                                                Err(e) => {
-                                                    warn!("Parsing iota message failed: {0}", e);
-                                                    Err(())
-                                                }
-                                            },
+                                            Ok(message) => Ok(TopicEvent {
+                                                topic,
+                                                payload: MqttPayload::Message(message),
+                                            }),
                                             Err(e) => {
                                                 warn!("Message unpacking failed: {:?}", e);
                                                 Err(())
                                             }
                                         }
                                     } else {
-                                        Ok(TopicEvent {
-                                            topic,
-                                            payload: String::from_utf8_lossy(&*p.payload).to_string(),
-                                        })
+                                        match serde_json::from_slice(&*p.payload) {
+                                            Ok(value) => Ok(TopicEvent {
+                                                topic,
+                                                payload: MqttPayload::Json(value),
+                                            }),
+                                            Err(e) => {
+                                                warn!("Cannot parse JSON: {:?}", e);
+                                                Err(())
+                                            }
+                                        }
                                     }
                                 };
                                 if let Ok(event) = event {

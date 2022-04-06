@@ -5,7 +5,9 @@
 
 use crate::Result;
 
+use bee_message::Message;
 use regex::RegexSet;
+use serde_json::Value;
 
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
@@ -20,7 +22,17 @@ pub struct TopicEvent {
     /// the MQTT topic.
     pub topic: String,
     /// The MQTT event payload.
-    pub payload: String,
+    pub payload: MqttPayload,
+}
+
+/// The payload of an `TopicEvent`.
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub enum MqttPayload {
+    /// In case it contains JSON.
+    Json(Value),
+    /// In case it contains a `Message` object.
+    Message(Message),
 }
 
 /// Mqtt events.
@@ -133,7 +145,7 @@ impl TryFrom<String> for Topic {
 impl Topic {
     /// Creates a new topic and checks if it's valid.
     pub fn try_new(topic: String) -> Result<Self> {
-        let available_topics = lazy_static!(
+        let valid_topics = lazy_static!(
         RegexSet::new(&[
             // Milestone topics
             r"^milestones/latest$",
@@ -161,7 +173,7 @@ impl Topic {
             r"^outputs/unlock/(\+|address|storage-return|expiration-return|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/spent$",
         ]).expect("cannot build regex set") => RegexSet);
 
-        if available_topics.is_match(&topic) {
+        if valid_topics.is_match(&topic) {
             Ok(Self(topic))
         } else {
             Err(crate::Error::InvalidMqttTopic(topic))
