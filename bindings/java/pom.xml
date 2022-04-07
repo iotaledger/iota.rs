@@ -13,6 +13,7 @@
   <packaging>pom</packaging>
 
   <properties>
+    <main.basedir>${project.basedir}</main.basedir>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <junit.version>4.13.1</junit.version>
     <maven-compiler-plugin.version>3.5</maven-compiler-plugin.version>

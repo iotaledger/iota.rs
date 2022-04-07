@@ -5,8 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <properties>
+    <main.basedir>${project.parent.basedir}</main.basedir>
     <mainClass>org.iota.client.example.ExampleApp</mainClass>
-    <libPath>${maven.multiModuleProjectDirectory}/target/release</libPath>
+    <libPath>${main.basedir}/target/release</libPath>
   </properties>
 
   <parent>
@@ -63,7 +64,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <workingDirectory>target</workingDirectory>
-          <argLine>-Djava.library.path=${maven.multiModuleProjectDirectory}/target/release</argLine>
+          <argLine>-Djava.library.path=${libPath}</argLine>
         </configuration>
       </plugin>
     </plugins>
