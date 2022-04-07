@@ -51,7 +51,6 @@ pub mod signing;
 pub mod stronghold;
 pub mod utils;
 
-pub use bee_common as common;
 pub use bee_message;
 pub use bee_pow as pow;
 pub use bee_rest_api;

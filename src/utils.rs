@@ -5,13 +5,13 @@
 
 use crate::error::*;
 
-use bee_common::logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use bee_message::address::{Address, Ed25519Address};
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::{bip39::wordlist, slip10::Seed},
     utils,
 };
+use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 
 use log::LevelFilter;
 use zeroize::Zeroize;

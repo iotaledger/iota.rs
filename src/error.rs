@@ -72,7 +72,7 @@ pub enum Error {
     /// Bee common logger error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    CommonError(#[from] bee_common::logger::Error),
+    CommonError(#[from] fern_logger::Error),
     /// Message types error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
