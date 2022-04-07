@@ -1,0 +1,59 @@
+import CodeBlock from "@theme/CodeBlock";
+import get_balance from "!!raw-loader!../../../../../examples/04_get_balance.rs";
+
+There are several API calls you can use to get a balance:
+
+## [`Client. get_address_balances(addresses: &[String])`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_address_balances)
+
+Aconvenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all
+given addresses.
+
+## [`Client.get_balance(seed: seed: &'a Seed)`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_balance)
+
+A convenient [`GetBalanceBuilder`](https://docs.rs/iota-client/latest/iota_client/api/struct.GetBalanceBuilder.html#)
+class that combines
+[`Client.get_addresses(seed: &'a Seed)`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_addresses)
+and
+[`Client.get_address_balances(addresses: &[String])`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_address_balances)
+api calls. It returns a combined balance for the provided `seed` and optional chaining calls
+[`.with_account_index(account_index: usize)`](https://docs.rs/iota-client/latest/iota_client/api/struct.GetBalanceBuilder.html#method.with_account_index),
+[`.with_initial_address_index(initial_address_index: usize)` ](https://docs.rs/iota-client/latest/iota_client/api/struct.GetBalanceBuilder.html#method.with_initial_address_index)
+and
+[`.with_gap_limit(gap_limit: usize)`](https://docs.rs/iota-client/latest/iota_client/api/struct.GetBalanceBuilder.html#method.with_gap_limit).
+
+`Client.get_balance(seed)` performs several tasks under the hood. It starts by generating addresses for the provided
+`seed` and `.account_index` from `.with_initial_address_index(account_index)`, and checks for a balance of each of the
+generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by the
+`.with_gap_limit(gap_limit)` argument to know when to stop searching. If the `.gap_limit` amount of addresses in a row
+have no balance, the function returns results and searching does not continue.
+
+## [`Client.get_address().balance(address: &str)`](./../libraries/java/api_reference#balanceaddress-balanceaddressresponse)
+
+You can use the [`GetAdressBuilder`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetAddressBuilder.html)
+on a `Client` instance and query for an addresses' balances by chaining a call to the `balance(address: String)`
+function.
+
+## [`Client.get_address().outputs(address: &str, options: OutputOptions)`](./../libraries/java/api_reference#balanceaddress-balanceaddressresponse)
+
+You can use the [`GetAdressBuilder`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetAddressBuilder.html)
+on a `Client` instance and query for an addresses' balances by chaining a call to the `outputs(address: String)`
+function.
+
+<CodeBlock className="language-rust">{get_balance}</CodeBlock>
+
+Example of output:
+
+```json
+Account balance: 1096055332i
+
+The balance of "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r" is 451055332i
+
+The outputs of address "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r" are: [
+  UtxoInput(741673db85f78ebd95d04b572d1bf32e9207bbd265d90dbbe499a6d32f2b25470000),
+  UtxoInput(ed33089c623c67eb06dbc1c10b0c1c0424b0ace04a2e44070702668b3de440c80000),
+  UtxoInput(0af84c860dc461730064e7c4c88152ed8bea1ae72b1d6f5e4ab0c3e51ed185b70100),
+  ...]
+```
+
+- `dustAllowed` indicates whether the given address is allowed to accept a dust due to
+  [dust protection mechanism](https://wiki.iota.org/chrysalis-docs/faq#what-is-dust-protection-and-how-does-it-work).

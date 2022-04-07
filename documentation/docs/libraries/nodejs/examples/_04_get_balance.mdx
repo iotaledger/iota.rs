@@ -1,0 +1,45 @@
+import CodeBlock from "@theme/CodeBlock";
+import get_balance from "!!raw-loader!../../../../../bindings/nodejs/examples/04_get_balance.js";
+
+There are three common API calls you can use to get a balance:
+
+## [`Client.getAddressBalance(address: string)`](./../libraries/nodejs/api_reference#getaddressbalanceaddress-promise)
+
+It expects a single address in Bech32 format and returns `dict` with a balance for the address.
+
+## [`Client.getAddressBalances(AddressBalance[]: string[])`](./../libraries/nodejs/api_reference#getaddressbalancesaddresses-promiseaddressbalance)
+
+A convenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all
+given addresses.
+
+## [`Client.getBalance(seed: string)`](./../libraries/nodejs/api_reference#getbalanceseed-string-balancegetter)
+
+A convenient helper [`BalanceGetter`](./../libraries/nodejs/api_reference#balancegetter) class that combines
+[`Client.getAddresses()`](./../libraries/nodejs/api_reference#getaddressesseed-addressgetter) and
+`Client.getAddressBalance()` api calls. It returns a combined balance for the provided `seed` and optional chaining
+calls [`.accountIndex(index: number)`](./../libraries/nodejs/api_reference#accountindexindex-balancegetter),
+[`.initialAddressIndex(index: number)`](./../libraries/nodejs/api_reference#initialaddressindexindex-balancegetter) and
+[`.gapLimit(amount: number)`](./../libraries/nodejs/api_reference#gaplimitamount-balancegetter).
+
+`Client.getBalance(seed)` performs several tasks under the hood. It starts by generating addresses for the provided
+`seed` and `.accountIndex` from `.initialAddressIndex(index)`, and checks for a balance of each of the generated
+addresses. Since it does not know how many addresses are used in fact, there is a condition set by the
+`.gapLimit(amount)` argument to know when to stop searching. If the `.gapLimit` amount of addresses in a row have no
+balance, the function returns results and searching does not continue.
+
+<CodeBlock className="language-javascript">{get_balance}</CodeBlock>
+
+Example of output:
+
+```json
+{
+   "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
+   "balance":10000000,
+   "dustAllowed":false
+}
+Account balance: 0
+```
+
+- `dustAllowed` indicates whether the given address is allowed to accept a dust. You can learn more about dust
+  protection in the
+  [Chrysalis documentation](https://wiki.iota.org/chrysalis-docs/faq#what-is-dust-protection-and-how-does-it-work).

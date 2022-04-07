@@ -1,0 +1,55 @@
+import CodeBlock from "@theme/CodeBlock";
+import java_examples from "!!raw-loader!../../../../../bindings/java/examples/basic-app/src/main/java/org/example/ExampleApp.java";
+const javaFunctionName = "public static void getBalance() {",
+  indexStart = java_examples.indexOf(javaFunctionName);
+const nextJavaFunctionName = " public static void getOutputs() {",
+  indexEnd = java_examples.indexOf(nextJavaFunctionName);
+const get_balance = java_examples.substring(indexStart, indexEnd);
+
+<>
+
+## [`Client.getBalance(seed: String)`](./../libraries/java/api_reference#getbalanceseed-getbalancebuilderapi)
+
+Combines [`Client.getAddresses()`](./../libraries/java/api_reference#getaddressesseed-getaddressesbuilder) and
+`Client.getAddressBalance()` api calls. It returns a combined balance for the provided `seed`.
+
+## [`Client.getAddressBalance(address: String)`](./../libraries/java/api_reference#getaddressbalanceaddress-balanceaddressresponse)
+
+Expects a single address in Bech32 format and returns `dict` with a balance for the address.
+
+## [`Client.getAddressBalances(addresses: String[])`](./../libraries/java/api_reference#getaddressesbalancesaddresses-balanceaddressresponse)
+
+A convenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all
+given addresses.
+
+## [`Client.getAddress().balance(address: String)`](./../libraries/java/api_reference#balanceaddress-balanceaddressresponse)
+
+You can use the [`GetAdressBuilder`](./..//libraries/java/api_reference#getaddressesbuilder) on a `Client` instance and
+query for and addresses' balances by chaining a call to the `balance(address: String)` function.
+
+## [`Client.getAddress().outputs(address: String, options: OutputOptions)`](./../libraries/java/api_reference#outputsaddress-options-balanceaddressresponse)
+
+You can use the [`GetAdressBuilder`](./..//libraries/java/api_reference#getaddressesbuilde) on a `Client` instance and
+query for and addresses' balances by chaining a call to the `outputs(address: String)` function.
+
+<CodeBlock className="language-java">{get_balance}</CodeBlock>
+
+Example output:
+
+```json
+Account balance: 1096055332i
+
+The balance of "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r" is 451055332i
+
+The outputs of address "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r" are: [
+  UtxoInput(741673db85f78ebd95d04b572d1bf32e9207bbd265d90dbbe499a6d32f2b25470000),
+  UtxoInput(ed33089c623c67eb06dbc1c10b0c1c0424b0ace04a2e44070702668b3de440c80000),
+  UtxoInput(0af84c860dc461730064e7c4c88152ed8bea1ae72b1d6f5e4ab0c3e51ed185b70100),
+  ...]
+```
+
+- `dustAllowed` indicates whether the given address is allowed to accept a dust. You can learn more about dust
+  protection in the
+  [Chrysalis documentation](https://wiki.iota.org/chrysalis-docs/faq#what-is-dust-protection-and-how-does-it-work).
+
+</>
