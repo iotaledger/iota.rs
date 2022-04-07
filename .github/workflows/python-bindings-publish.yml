@@ -5,6 +5,7 @@ on:
     branches:
       # disabled until python binding is updated
       # - develop
+      - dev
     paths:
       - '.github/workflows/python-bindings-publish.yml'
       - '.github/actions/**'

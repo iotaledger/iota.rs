@@ -43,8 +43,6 @@ pub enum ClientMethod {
     GetNetworkInfo,
     /// Gets the network id of the node we're connecting to.
     GetNetworkId,
-    /// Gets the protocol version of the node we're connecting to.
-    GetProtocolVersion,
     /// Returns the bech32_hrp
     GetBech32Hrp,
     /// Returns the min pow score
