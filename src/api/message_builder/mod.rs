@@ -4,7 +4,7 @@
 use crate::{
     api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
     bee_message::output::BasicOutputBuilder,
-    constants::IOTA_COIN_TYPE,
+    constants::SHIMMER_COIN_TYPE,
     signing::SignerHandle,
     Client, Error, Result,
 };
@@ -100,7 +100,7 @@ impl<'a> ClientMessageBuilder<'a> {
         Self {
             client,
             signer: None,
-            coin_type: IOTA_COIN_TYPE,
+            coin_type: SHIMMER_COIN_TYPE,
             account_index: 0,
             initial_address_index: 0,
             inputs: None,
