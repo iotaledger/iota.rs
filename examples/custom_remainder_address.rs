@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example custom_inputs --release
+//! cargo run --example custom_remainder_address --release
 use iota_client::{
     node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner, Client, Result,
@@ -10,8 +10,8 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we will send 9_000_000 tokens to a given receiver and 1_000_000 tokens to a custom remainder address.
-/// The used addresses belong to the first seed in .env.example.
+/// In this example we will send 9_000_000 tokens to a given receiver and 1_000_000 tokens to a custom remainder
+/// address. The used addresses belong to the first seed in .env.example.
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -40,7 +40,11 @@ async fn main() -> Result<()> {
 
     println!(
         "automatically funding sender address with faucet: {}",
-        request_funds_from_faucet("https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue", &sender_address).await?
+        request_funds_from_faucet(
+            "https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue",
+            &sender_address
+        )
+        .await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
@@ -48,7 +52,7 @@ async fn main() -> Result<()> {
         &client,
         vec![QueryParameter::Address(sender_address.clone())],
     )
-        .await?;
+    .await?;
     println!("{:?}", output_ids);
 
     let message = client
