@@ -51,6 +51,7 @@ pub struct ClientMessageBuilder<'a> {
     inputs: Option<Vec<UtxoInput>>,
     input_range: Range<u32>,
     outputs: Vec<Output>,
+    custom_remainder_address: Option<Address>,
     tag: Option<Box<[u8]>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
@@ -86,6 +87,8 @@ pub struct ClientMessageBuilderOptions {
     pub output_hex: Option<ClientMessageBuilderOutputAddress>,
     /// Outputs
     pub outputs: Option<Vec<Output>>,
+    /// Custom remainder address
+    pub custom_remainder_address: Option<String>,
     /// Tag
     pub tag: Option<Box<[u8]>>,
     /// Data
@@ -106,6 +109,7 @@ impl<'a> ClientMessageBuilder<'a> {
             inputs: None,
             input_range: 0..100,
             outputs: Vec::new(),
+            custom_remainder_address: None,
             tag: None,
             data: None,
             parents: None,
@@ -201,6 +205,13 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok(self)
     }
 
+    /// Set a custom remainder address
+    pub fn with_custom_remainder_address(mut self, address: &str) -> Result<Self> {
+        let address = Address::try_from_bech32(address)?.1;
+        self.custom_remainder_address.replace(address);
+        Ok(self)
+    }
+
     /// Set tagged_data to the builder
     pub fn with_tag<I: AsRef<[u8]>>(mut self, tag: I) -> Self {
         self.tag.replace(tag.as_ref().into());
@@ -259,6 +270,10 @@ impl<'a> ClientMessageBuilder<'a> {
 
         if let Some(outputs) = options.outputs {
             self = self.with_outputs(outputs)?;
+        }
+
+        if let Some(custom_remainder_address) = options.custom_remainder_address {
+            self = self.with_custom_remainder_address(&custom_remainder_address)?;
         }
 
         if let Some(tag) = options.tag {

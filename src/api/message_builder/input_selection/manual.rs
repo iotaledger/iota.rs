@@ -82,8 +82,7 @@ pub(crate) async fn get_custom_inputs(
         input_signing_data_entrys,
         message_builder.outputs.clone(),
         true,
-        // todo allow custom remainder address
-        None,
+        message_builder.custom_remainder_address,
         byte_cost_config,
     )
     .await?;
