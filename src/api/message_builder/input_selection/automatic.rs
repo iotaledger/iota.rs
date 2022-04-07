@@ -44,8 +44,7 @@ pub(crate) async fn get_inputs(
         available_inputs.clone(),
         message_builder.outputs.clone(),
         force_use_all_inputs,
-        // todo allow custom remainder address
-        None,
+        message_builder.custom_remainder_address,
         byte_cost_config,
     )
     .await
@@ -122,8 +121,7 @@ pub(crate) async fn get_inputs(
                     available_inputs.clone(),
                     message_builder.outputs.clone(),
                     force_use_all_inputs,
-                    // todo allow custom remainder address
-                    None,
+                    message_builder.custom_remainder_address,
                     byte_cost_config,
                 )
                 .await
