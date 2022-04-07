@@ -4,6 +4,7 @@ on:
     branches:
       # disabled until node.js binding is updated
       # - develop
+      - dev
     paths:
       - '.github/workflows/examine-nodejs-bindings.yml'
       - '.github/actions/**'
@@ -16,6 +17,7 @@ on:
     branches:
       # disabled until node.js binding is updated
       # - develop
+      - dev
     paths:
       - '.github/workflows/examine-nodejs-bindings.yml'
       - '.github/actions/**'

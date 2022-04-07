@@ -4,6 +4,7 @@ on:
     branches:
       # disabled until node.js or wasm binding is updated
       # - develop
+      - dev
     paths-ignore:
       - 'specs/**'
       - 'documentation/**'
