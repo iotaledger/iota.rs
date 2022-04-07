@@ -3,15 +3,15 @@
 
 //! cargo run --example custom_inputs --release
 use iota_client::{
-    bee_message::input::UtxoInput, node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
+    node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner, Client, Result,
 };
 extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
-/// In this example we will send 1_000_000 tokens to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-/// This address belongs to the first seed in .env.example
+/// In this example we will send 9_000_000 tokens to a given receiver and 1_000_000 tokens to a custom remainder address.
+/// The used addresses belong to the first seed in .env.example.
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,18 +28,25 @@ async fn main() -> Result<()> {
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     let seed = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
-    let addresses = client.get_addresses(&seed).with_range(0..1).finish().await?;
-    println!("{:?}", addresses[0]);
+    let addresses = client.get_addresses(&seed).with_range(0..3).finish().await?;
+
+    let sender_address = &addresses[0];
+    let receiver_address = &addresses[1];
+    let remainder_address = &addresses[2];
+
+    println!("sender address: {}", sender_address);
+    println!("receiver address: {}", receiver_address);
+    println!("remainder address: {}", remainder_address);
 
     println!(
-        "{}",
-        request_funds_from_faucet("http://localhost:14265/api/plugins/faucet/v1/enqueue", &addresses[0]).await?
+        "automatically funding sender address with faucet: {}",
+        request_funds_from_faucet("https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue", &sender_address).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
         &client,
-        vec![QueryParameter::Address(addresses[0].clone())],
+        vec![QueryParameter::Address(sender_address.clone())],
     )
         .await?;
     println!("{:?}", output_ids);
@@ -49,10 +56,11 @@ async fn main() -> Result<()> {
         .with_signer(&seed)
         .with_output(
             // We generate an address from our seed so that we send the funds to ourselves
-            &client.get_addresses(&seed).with_range(1..2).finish().await?[0],
-            999_999,
+            &receiver_address,
+            9_000_000,
         )?
-        .with_custom_remainder_address("iota1qqjwn9jezjjgycfx9670s0v33krxr90h94zuxvdwr99l8h5ps7cxcr90dan")?
+        // We send the remainder to an address where we don't have access to.
+        .with_custom_remainder_address(&remainder_address)?
         .finish()
         .await?;
 
