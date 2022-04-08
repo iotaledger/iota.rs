@@ -186,20 +186,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 
 [[package]]
-name = "bee-common"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70a0740d9b585483eba7812cd9e429fc6aa0337e624ea3b207545ceee3dc3c4f"
-dependencies = [
- "autocfg",
- "fern",
- "log",
- "serde 1.0.136",
- "thiserror",
- "time 0.3.7",
-]
-
-[[package]]
 name = "bee-ledger"
 version = "0.7.0"
 source = "git+https://github.com/iotaledger/bee?rev=3ce056ca8d79d2e752658bb48aa9727d03501e62#3ce056ca8d79d2e752658bb48aa9727d03501e62"
@@ -737,6 +723,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "fern-logger"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d72fcbd7f804f2dcb89b295dfdfeff1a81338b1960387a45261f857ddc553a9f"
+dependencies = [
+ "fern",
+ "log",
+ "serde 1.0.136",
+ "thiserror",
+ "time-helper",
+]
+
+[[package]]
 name = "fixed-hash"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1133,13 +1132,13 @@ version = "1.1.1"
 dependencies = [
  "async-trait",
  "backtrace",
- "bee-common",
  "bee-message",
  "bee-pow",
  "bee-rest-api",
  "bee-ternary",
  "derive_builder",
  "dotenv",
+ "fern-logger",
  "futures",
  "gloo-timers",
  "hex",

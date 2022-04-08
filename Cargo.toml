@@ -21,9 +21,9 @@ bee-pow = { git = "https://github.com/iotaledger/bee", rev = "3ce056ca8d79d2e752
 # bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
 # bee-message = { path = "../bee/bee-message",  default-features = false, features = ["serde1"] }
 # bee-pow = { path = "../bee/bee-pow",  default-features = false }
-bee-common = { version = "0.6.0", default-features = false }
-packable = { version = "0.2.1", default-features = false, features = [ "serde", "primitive-types" ] }
+fern-logger = { version = "0.5.0", default-features = false }
 iota-crypto = { version = "0.9.1", default-features = false, features = ["std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en"] }
+packable = { version = "0.2.1", default-features = false, features = [ "serde", "primitive-types" ] }
 
 async-trait = { version ="0.1.51", default-features = false }
 derive_builder = { version = "0.11.1", default-features = false, features = ["std"]}
