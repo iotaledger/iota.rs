@@ -50,7 +50,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
-        AliasOutputBuilder::new(1_000_000, AliasId::from([0; 20]))?
+        AliasOutputBuilder::new_with_amount(1_000_000, AliasId::from([0; 20]))?
             .with_state_index(0)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
@@ -85,7 +85,7 @@ async fn main() -> Result<()> {
     let alias_id = AliasId::from(alias_output_id);
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
-        AliasOutputBuilder::new(1_000_000, alias_id)?
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(1)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))

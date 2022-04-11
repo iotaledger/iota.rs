@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
 
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1_000_000)?
+        BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));

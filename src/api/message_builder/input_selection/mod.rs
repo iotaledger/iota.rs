@@ -310,7 +310,7 @@ pub fn minimum_storage_deposit(
     // Safety: This can never fail because the amount will always be within the valid range. Also, the actual value is
     // not important, we are only interested in the storage requirements of the type.
     // todo: use `OutputAmount::MIN` when public, see https://github.com/iotaledger/bee/issues/1238
-    let mut basic_output_builder = BasicOutputBuilder::new(1_000_000_000)?;
+    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000_000)?;
     if let Some(native_tokens) = native_tokens {
         basic_output_builder = basic_output_builder.with_native_tokens(
             native_tokens

@@ -188,7 +188,7 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=3ce056ca8d79d2e752658bb48aa9727d03501e62#3ce056ca8d79d2e752658bb48aa9727d03501e62"
+source = "git+https://github.com/iotaledger/bee?rev=6f5721322c02cde3e1a15311729a1b94370e1a39#6f5721322c02cde3e1a15311729a1b94370e1a39"
 dependencies = [
  "bee-message",
  "packable",
@@ -199,7 +199,7 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=3ce056ca8d79d2e752658bb48aa9727d03501e62#3ce056ca8d79d2e752658bb48aa9727d03501e62"
+source = "git+https://github.com/iotaledger/bee?rev=6f5721322c02cde3e1a15311729a1b94370e1a39#6f5721322c02cde3e1a15311729a1b94370e1a39"
 dependencies = [
  "bech32 0.8.1",
  "bee-pow",
@@ -224,7 +224,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=3ce056ca8d79d2e752658bb48aa9727d03501e62#3ce056ca8d79d2e752658bb48aa9727d03501e62"
+source = "git+https://github.com/iotaledger/bee?rev=6f5721322c02cde3e1a15311729a1b94370e1a39#6f5721322c02cde3e1a15311729a1b94370e1a39"
 dependencies = [
  "bee-ternary",
  "iota-crypto 0.9.1",
@@ -234,7 +234,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=3ce056ca8d79d2e752658bb48aa9727d03501e62#3ce056ca8d79d2e752658bb48aa9727d03501e62"
+source = "git+https://github.com/iotaledger/bee?rev=6f5721322c02cde3e1a15311729a1b94370e1a39#6f5721322c02cde3e1a15311729a1b94370e1a39"
 dependencies = [
  "bee-ledger",
  "bee-message",

@@ -50,7 +50,7 @@ async fn main() -> Result<()> {
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Nft(
         // address of the owner of the NFT
-        NftOutputBuilder::new(1_000_000, NftId::from([0; 20]))?
+        NftOutputBuilder::new_with_amount(1_000_000, NftId::from([0; 20]))?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
             // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
@@ -101,7 +101,7 @@ async fn main() -> Result<()> {
         .with_input(nft_output_id.into())?
         .with_input(output_ids[0].into())?
         .with_outputs(vec![Output::Nft(
-            NftOutputBuilder::new(1_000_000 + output.amount(), nft_id)?
+            NftOutputBuilder::new_with_amount(1_000_000 + output.amount(), nft_id)?
                 .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
                 .finish()?,
         )])?
@@ -123,7 +123,7 @@ async fn main() -> Result<()> {
     let output = Output::try_from(&output_response.output)?;
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Basic(
-        BasicOutputBuilder::new(output.amount())?
+        BasicOutputBuilder::new_with_amount(output.amount())?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .finish()?,
     ));

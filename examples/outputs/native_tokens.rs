@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
     let mut outputs: Vec<Output> = Vec::new();
     // most simple output
     outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1_000_000)?
+        BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(50))?)
             .finish()?,

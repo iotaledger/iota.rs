@@ -164,7 +164,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder
     pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = BasicOutputBuilder::new(amount)?
+        let output = BasicOutputBuilder::new_with_amount(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 Address::try_from_bech32(address)?.1,
             )))
@@ -191,7 +191,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Set a transfer to the builder, address needs to be hex encoded
     pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
-        let output = BasicOutputBuilder::new(amount)?
+        let output = BasicOutputBuilder::new_with_amount(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 address.parse::<Ed25519Address>()?.into(),
             )))

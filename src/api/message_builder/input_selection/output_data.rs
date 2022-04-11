@@ -103,7 +103,7 @@ pub(crate) async fn get_remainder(
             }
         };
 
-        let mut remainder_output_builder = BasicOutputBuilder::new(remainder_amount)?
+        let mut remainder_output_builder = BasicOutputBuilder::new_with_amount(remainder_amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_addr)));
         if let Some(remainder_native_tokens) = native_token_remainder {
             for (token_id, amount) in remainder_native_tokens {
