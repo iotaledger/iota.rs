@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
     println!("Total amount: {}", total_amount);
 
     let mut basic_output_builder =
-        BasicOutputBuilder::new(total_amount)?.add_unlock_condition(UnlockCondition::Address(
+        BasicOutputBuilder::new_with_amount(total_amount)?.add_unlock_condition(UnlockCondition::Address(
             AddressUnlockCondition::new(client.get_addresses(&seed_2).with_range(0..1).get_raw().await?[0]),
         ));
 

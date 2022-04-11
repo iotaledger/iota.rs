@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
-        AliasOutputBuilder::new(2_000_000, AliasId::from([0; 20]))?
+        AliasOutputBuilder::new_with_amount(2_000_000, AliasId::from([0; 20]))?
             .with_state_index(0)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
@@ -94,7 +94,7 @@ async fn main() -> Result<()> {
     let alias_id = AliasId::from(alias_output_id);
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
-        AliasOutputBuilder::new(1_000_000, alias_id)?
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(1)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
@@ -117,7 +117,7 @@ async fn main() -> Result<()> {
     );
     let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
     outputs.push(Output::Foundry(
-        FoundryOutputBuilder::new(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
+        FoundryOutputBuilder::new_with_amount(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
             .add_native_token(NativeToken::new(token_id, U256::from(70))?)
             .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
                 ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
@@ -145,7 +145,7 @@ async fn main() -> Result<()> {
     let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
-        AliasOutputBuilder::new(1_000_000, alias_id)?
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(2)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
@@ -161,7 +161,7 @@ async fn main() -> Result<()> {
     ));
 
     outputs.push(Output::Foundry(
-        FoundryOutputBuilder::new(
+        FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
             TokenTag::new([0u8; 12]),
@@ -194,7 +194,7 @@ async fn main() -> Result<()> {
     let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Alias(
-        AliasOutputBuilder::new(1_000_000, alias_id)?
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(3)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
@@ -210,7 +210,7 @@ async fn main() -> Result<()> {
     ));
 
     outputs.push(Output::Foundry(
-        FoundryOutputBuilder::new(
+        FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
             TokenTag::new([0u8; 12]),
@@ -223,7 +223,7 @@ async fn main() -> Result<()> {
     ));
 
     outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1_000_000)?
+        BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
@@ -257,7 +257,7 @@ async fn main() -> Result<()> {
     let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
     let mut outputs: Vec<Output> = Vec::new();
     outputs.push(Output::Basic(
-        BasicOutputBuilder::new(1_000_000)?
+        BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
