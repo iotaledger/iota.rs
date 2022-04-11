@@ -1,6 +1,0 @@
-{
-  label: "Core",
-  to: "iota.rs/welcome",
-  className: "icon-iota-mark",
-  activeBaseRegex: 'iota.rs/.*'
-},
