@@ -1,7 +1,9 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 1_transaction_preparation --release
+//! In this example we get inputs and prepare a transaction.
+//! `cargo run --example 1_transaction_preparation --release`.
+
 use iota_client::{api::PreparedTransactionData, Client, Result};
 use std::{
     fs::File,
@@ -9,60 +11,59 @@ use std::{
     path::Path,
 };
 
-/// In this example we will get inputs and prepare a transaction
-
 const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Address to which we want to send the amount
+    // Address to which we want to send the amount.
     let address = "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq";
+    // The amount to send.
     let amount = 1_000_000;
 
-    // Get inputs and create transaction essence online
+    // Creates a client instance.
     let online_client = Client::builder()
-        .with_node("http://localhost:14265")? // Insert your node URL here
+        // Insert your node URL here.
+        .with_node("https://api.alphanet.iotaledger.net")?
         .with_node_sync_disabled()
         .finish()
         .await?;
 
+    // Recovers addresses from example `0_address_generation`.
     let addresses = read_addresses_from_file(ADDRESS_FILE_NAME)?;
-
+    // Gets enough inputs related to these addresses to cover the amount.
     let inputs = online_client.find_inputs(addresses, amount).await?;
 
-    // Prepare transaction
+    // Prepares the transaction.
     let mut transaction_builder = online_client.message();
     for input in inputs {
         transaction_builder = transaction_builder.with_input(input)?;
     }
-    let prepared_transaction_data = transaction_builder
+    let prepared_transaction = transaction_builder
         .with_output(address, amount)?
         .prepare_transaction()
         .await?;
 
-    println!("Prepared transaction sending {} to {}", amount, address);
+    println!("Prepared transaction sending {} to {}.", amount, address);
 
-    write_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, prepared_transaction_data)?;
-
-    Ok(())
+    write_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, prepared_transaction)
 }
 
 fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
     let mut file = File::open(&path)?;
-    let mut data = String::new();
-    file.read_to_string(&mut data)?;
-    let addresses: Vec<String> = serde_json::from_str(&data)?;
-    Ok(addresses)
+    let mut json = String::new();
+    file.read_to_string(&mut json)?;
+
+    Ok(serde_json::from_str(&json)?)
 }
 
-fn write_transaction_to_file<P: AsRef<Path>>(
-    path: P,
-    prepared_transaction_data: PreparedTransactionData,
-) -> Result<()> {
-    let jsonvalue = serde_json::to_value(&prepared_transaction_data)?;
-    let file = File::create(path)?;
-    let bw = BufWriter::new(file);
-    serde_json::to_writer_pretty(bw, &jsonvalue)?;
+fn write_transaction_to_file<P: AsRef<Path>>(path: P, prepared_transaction: PreparedTransactionData) -> Result<()> {
+    let json = serde_json::to_string_pretty(&prepared_transaction)?;
+    let mut file = BufWriter::new(File::create(path)?);
+
+    println!("{}", json);
+
+    file.write_all(json.as_bytes())?;
+
     Ok(())
 }

@@ -274,7 +274,7 @@ impl Task for ClientTask {
                     }
 
                     if let Some(bech32_hrp) = bech32_hrp {
-                        getter = getter.with_bech32_hrp(bech32_hrp.clone())
+                        getter = getter.with_bech32_hrp(bech32_hrp)
                     }
 
                     if *include_internal {

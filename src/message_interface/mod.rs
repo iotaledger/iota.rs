@@ -66,7 +66,7 @@ mod tests {
 
         let signer = format!(
             "{{\"Mnemonic\":\"{}\"}}",
-            &env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap()
+            &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
         );
         let options = GenerateAddressesOptions {
             coin_type: None,
@@ -114,7 +114,7 @@ mod tests {
         // Generate addresses
         let signer = format!(
             "{{\"Mnemonic\":\"{}\"}}",
-            &env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap()
+            &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
         );
         let options = GenerateAddressesOptions {
             coin_type: None,

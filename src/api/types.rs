@@ -11,7 +11,7 @@ pub struct PreparedTransactionData {
     /// Transaction essence
     pub essence: TransactionEssence,
     /// Required address information for signing
-    pub input_signing_data_entrys: Vec<InputSigningData>,
+    pub input_signing_data_entries: Vec<InputSigningData>,
 }
 
 /// Generated addresses

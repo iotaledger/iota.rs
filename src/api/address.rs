@@ -91,8 +91,8 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Set bech32 human readable part (hrp)
-    pub fn with_bech32_hrp(mut self, bech32_hrp: String) -> Self {
-        self.bech32_hrp.replace(bech32_hrp);
+    pub fn with_bech32_hrp<T: Into<String>>(mut self, bech32_hrp: T) -> Self {
+        self.bech32_hrp.replace(bech32_hrp.into());
         self
     }
 

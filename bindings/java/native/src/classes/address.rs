@@ -266,9 +266,9 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Set bech32 human readable part (hrp)
-    pub fn with_bech32_hrp(&self, bech32_hrp: String) -> Self {
+    pub fn with_bech32_hrp<T: Into<String>>(&self, bech32_hrp: T) -> Self {
         let mut fields = self.fields.borrow_mut().take().unwrap();
-        fields.bech32_hrp = Some(bech32_hrp);
+        fields.bech32_hrp = Some(bech32_hrp.into());
         GetAddressesBuilder::new_with_fields(fields)
     }
 
