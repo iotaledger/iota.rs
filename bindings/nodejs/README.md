@@ -18,7 +18,7 @@ $ yarn add @iota/client
 
 ## Requirements
 
-One of the following Node.js version: '10.x', '12.x', '14.x', '15.x', '16.x'
+One of the following Node.js version: '10.x', '14.x', '16.x'
 
 If there is no prebuilt binary available for your system you need `Rust` and `Cargo`, to build it yourself. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
