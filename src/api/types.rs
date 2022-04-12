@@ -19,7 +19,7 @@ pub struct PreparedTransactionData {
 pub struct RawAddresses {
     /// Public addresses
     pub public: Vec<Address>,
-    /// Internal/change addresses https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change
+    /// Internal/change addresses <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change>
     pub internal: Vec<Address>,
 }
 
@@ -28,6 +28,6 @@ pub struct RawAddresses {
 pub struct Bech32Addresses {
     /// Public addresses
     pub public: Vec<String>,
-    /// Internal/change addresses https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change
+    /// Internal/change addresses <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change>
     pub internal: Vec<String>,
 }

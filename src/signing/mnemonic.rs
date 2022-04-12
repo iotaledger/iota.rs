@@ -61,7 +61,7 @@ impl Deref for MnemonicSigner {
 
 impl MnemonicSigner {
     /// Create a new MnemonicSigner SignerHandle with a given BIP39 mnemonic from the English wordlist
-    /// for more information see https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+    /// for more information see <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>
     #[allow(clippy::new_ret_no_self)]
     pub fn new(mnemonic: &str) -> Result<SignerHandle> {
         Ok(SignerHandle::new(
