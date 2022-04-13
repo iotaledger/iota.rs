@@ -1,15 +1,14 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::Result;
+use std::str::FromStr;
 
 use bee_message::{address::Address, output::OutputId, payload::transaction::TransactionId};
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
-
 use serde::{Deserialize, Serialize};
 
-use std::str::FromStr;
+use crate::Result;
 
 /// The signer types.
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]

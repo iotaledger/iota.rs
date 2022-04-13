@@ -3,14 +3,15 @@
 
 //! The `DatabaseProvider` implementation for `StrongholdAdapter`.
 
+use async_trait::async_trait;
+use iota_stronghold::{Location, ResultMessage};
+use log::debug;
+
 use super::{
     encryption::{decrypt, encrypt},
     StrongholdAdapter,
 };
 use crate::{db::DatabaseProvider, Error, Result};
-use async_trait::async_trait;
-use iota_stronghold::{Location, ResultMessage};
-use log::debug;
 
 /// Convert from a string to a Stronghold location that we'll use.
 fn location_from_key(key: &[u8]) -> Location {

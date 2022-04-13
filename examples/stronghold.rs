@@ -3,13 +3,13 @@
 
 //! cargo run --example stronghold --features=stronghold --release
 
+use std::{env, path::PathBuf};
+
+use dotenv::dotenv;
 use iota_client::{
     signing::{stronghold::StrongholdSigner, Signer},
     Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::{env, path::PathBuf};
 
 /// In this example we will create addresses with a stronghold signer
 

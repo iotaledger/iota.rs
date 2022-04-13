@@ -1,10 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    api::message_builder::ClientMessageBuilder, node_api::indexer_api::query_parameters::QueryParameter,
-    signing::SignerHandle, Client, Result,
-};
+use std::{ops::Range, str::FromStr};
 
 use bee_message::{
     input::{UtxoInput, INPUT_COUNT_MAX},
@@ -12,7 +9,10 @@ use bee_message::{
     payload::transaction::TransactionId,
 };
 
-use std::{ops::Range, str::FromStr};
+use crate::{
+    api::message_builder::ClientMessageBuilder, node_api::indexer_api::query_parameters::QueryParameter,
+    signing::SignerHandle, Client, Result,
+};
 
 /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
 /// Returns the address to which the funds got consolidated, if any were available

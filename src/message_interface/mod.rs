@@ -10,16 +10,13 @@ mod message_type;
 mod response;
 mod response_type;
 
-pub use client_method::ClientMethod;
-pub use message::Message;
-pub use message_handler::ClientMessageHandler;
-pub use message_type::MessageType;
-pub use response::Response;
-pub use response_type::ResponseType;
-
-use crate::{ClientBuilder, Result};
-
 use tokio::sync::mpsc::unbounded_channel;
+
+pub use self::{
+    client_method::ClientMethod, message::Message, message_handler::ClientMessageHandler, message_type::MessageType,
+    response::Response, response_type::ResponseType,
+};
+use crate::{ClientBuilder, Result};
 
 /// Create message handler with client options
 pub async fn create_message_handler(client_config: Option<String>) -> Result<ClientMessageHandler> {
@@ -40,13 +37,15 @@ pub async fn send_message(handle: &ClientMessageHandler, message_type: MessageTy
 
 #[cfg(test)]
 mod tests {
+    use std::env;
+
+    use dotenv::dotenv;
+
     use crate::{
         api::GetAddressesBuilderOptions as GenerateAddressesOptions,
         message_interface::{self, ClientMethod, MessageType, ResponseType},
         signing::{types::Network, GenerateAddressMetadata},
     };
-    use dotenv::dotenv;
-    use std::env;
 
     #[tokio::test]
     async fn generate_addresses() {

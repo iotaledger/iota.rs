@@ -3,8 +3,9 @@
 
 //! cargo run --example 10_mqtt --features=mqtt --release
 
-use iota_client::{bee_message::Message, BrokerOptions, Client, MqttEvent, MqttPayload, Result, Topic};
 use std::sync::{mpsc::channel, Arc, Mutex};
+
+use iota_client::{bee_message::Message, BrokerOptions, Client, MqttEvent, MqttPayload, Result, Topic};
 
 // Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
 #[tokio::main]

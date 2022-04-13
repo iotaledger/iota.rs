@@ -3,11 +3,10 @@
 
 //! PoW functions
 
-use crate::{api::miner::ClientMiner, Client, Error, Result};
+pub mod miner;
 
 use bee_message::{parent::Parents, payload::Payload, Message, MessageBuilder, MessageId};
 use packable::PackableExt;
-
 #[cfg(not(feature = "wasm"))]
 use {
     crate::api::miner::ClientMinerBuilder,
@@ -16,7 +15,7 @@ use {
 #[cfg(feature = "wasm")]
 use {bee_message::payload::OptionalPayload, packable::Packable};
 
-pub mod miner;
+use crate::{api::miner::ClientMiner, Client, Error, Result};
 
 /// Does PoW with always new tips
 #[cfg(not(feature = "wasm"))]

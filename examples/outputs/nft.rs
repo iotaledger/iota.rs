@@ -3,6 +3,9 @@
 
 //! cargo run --example nft --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     bee_message::{
         address::{Address, NftAddress},
@@ -17,9 +20,6 @@ use iota_client::{
     signing::mnemonic::MnemonicSigner,
     Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will create an NFT output
 

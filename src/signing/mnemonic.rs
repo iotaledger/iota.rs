@@ -1,12 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{types::InputSigningData, SignMessageMetadata};
-use crate::{
-    constants::HD_WALLET_TYPE,
-    signing::{SignerHandle, SignerType},
-    Client, Result,
-};
+use std::ops::{Deref, Range};
+
 use bee_message::{
     address::{Address, Ed25519Address},
     signature::{Ed25519Signature, Signature},
@@ -16,7 +12,13 @@ use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::slip10::{Chain, Curve, Seed},
 };
-use std::ops::{Deref, Range};
+
+use super::{types::InputSigningData, SignMessageMetadata};
+use crate::{
+    constants::HD_WALLET_TYPE,
+    signing::{SignerHandle, SignerType},
+    Client, Result,
+};
 
 fn generate_addresses(
     seed: &Seed,

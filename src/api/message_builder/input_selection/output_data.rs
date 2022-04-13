@@ -1,6 +1,20 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::{hash_map::Entry, HashMap};
+
+use bee_message::{
+    address::Address,
+    output::{
+        dto::OutputDto,
+        unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
+        BasicOutputBuilder, ByteCostConfig, NativeToken, Output, TokenId,
+    },
+};
+use bee_rest_api::types::responses::OutputResponse;
+use crypto::keys::slip10::Chain;
+use primitive_types::U256;
+
 use crate::{
     api::{
         input_selection::{
@@ -13,21 +27,6 @@ use crate::{
     signing::types::InputSigningData,
     Error, Result,
 };
-
-use bee_message::{
-    address::Address,
-    output::{
-        dto::OutputDto,
-        unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
-        BasicOutputBuilder, ByteCostConfig, NativeToken, Output, TokenId,
-    },
-};
-use bee_rest_api::types::responses::OutputResponse;
-use crypto::keys::slip10::Chain;
-
-use primitive_types::U256;
-
-use std::collections::{hash_map::Entry, HashMap};
 
 // Get a remainder with amount and native tokens if necessary, if no remainder_address is provided it will be selected
 // from the inputs, also validates the amounts

@@ -3,14 +3,14 @@
 
 //! Error handling in iota-client crate.
 
-use bee_message::output::TokenId;
-
-use primitive_types::U256;
-use serde::{ser::Serializer, Serialize};
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
 };
+
+use bee_message::output::TokenId;
+use primitive_types::U256;
+use serde::{ser::Serializer, Serialize};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;

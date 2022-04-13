@@ -3,6 +3,9 @@
 
 //! cargo run --example native_tokens --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     bee_message::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
@@ -13,9 +16,6 @@ use iota_client::{
     Client, Result,
 };
 use primitive_types::U256;
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will send basic outputs with native tokens
 

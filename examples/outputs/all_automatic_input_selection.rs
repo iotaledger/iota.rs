@@ -3,6 +3,9 @@
 
 //! cargo run --example all_automatic_input_selection --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     bee_message::{
         address::AliasAddress,
@@ -24,9 +27,6 @@ use iota_client::{
     Client, Result,
 };
 use primitive_types::U256;
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will create all output types in a single transaction
 

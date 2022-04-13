@@ -8,9 +8,11 @@ mod consolidation;
 mod message_builder;
 mod types;
 
-pub use address::*;
-pub use consolidation::*;
-pub use message_builder::{pow::*, *};
-pub use types::*;
+pub use self::{
+    address::*,
+    consolidation::*,
+    message_builder::{pow::*, *},
+    types::*,
+};
 
 const ADDRESS_GAP_RANGE: u32 = 20;

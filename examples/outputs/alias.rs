@@ -3,6 +3,9 @@
 
 //! cargo run --example alias --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     bee_message::{
         output::{
@@ -18,9 +21,6 @@ use iota_client::{
     signing::mnemonic::MnemonicSigner,
     Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will create an alias output
 

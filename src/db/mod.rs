@@ -6,11 +6,11 @@
 #[cfg(feature = "stronghold")]
 mod stronghold;
 
+use async_trait::async_trait;
+
 #[cfg(feature = "stronghold")]
 pub use self::stronghold::StrongholdDatabaseProvider;
-
 use crate::Result;
-use async_trait::async_trait;
 
 /// The interface for database providers.
 #[async_trait]
