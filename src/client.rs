@@ -27,7 +27,7 @@ use bee_message::{
     parent::Parents,
     payload::{
         transaction::{TransactionEssence, TransactionId},
-        Payload,
+        Payload, TaggedDataPayload,
     },
     Message, MessageBuilder, MessageId,
 };
@@ -970,5 +970,22 @@ impl Client {
     /// Returns a hex encoded seed for a mnemonic.
     pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
         mnemonic_to_hex_seed(mnemonic)
+    }
+
+    /// UTF-8 encodes the `tag` of a given TaggedDataPayload.
+    pub fn tag_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
+        Ok(String::from_utf8(payload.tag().to_vec())
+            .map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))?)
+    }
+
+    /// UTF-8 encodes the `data` of a given TaggedDataPayload.
+    pub fn data_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
+        Ok(String::from_utf8(payload.data().to_vec())
+            .map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))?)
+    }
+
+    /// UTF-8 encodes both the `tag` and `data` of a given TaggedDataPayload.
+    pub fn tagged_data_to_utf8(payload: &TaggedDataPayload) -> Result<(String, String)> {
+        Ok((Client::tag_to_utf8(&payload)?, Client::data_to_utf8(&payload)?))
     }
 }
