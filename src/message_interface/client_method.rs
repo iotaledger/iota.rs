@@ -7,7 +7,7 @@ use bee_message::{
     input::UtxoInput,
     output::{AliasId, FoundryId, NftId, OutputId},
     payload::transaction::TransactionId,
-    Message, MessageId,
+    MessageDto, MessageId,
 };
 use serde::Deserialize;
 
@@ -84,12 +84,12 @@ pub enum ClientMethod {
     /// Post message
     PostMessage {
         /// Message
-        message: Message,
+        message: MessageDto,
     },
     /// Post message json
     PostMessageJson {
         /// Message
-        message: Message,
+        message: MessageDto,
     },
     /// Get message data
     GetMessageData {

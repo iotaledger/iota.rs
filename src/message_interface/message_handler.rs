@@ -4,6 +4,7 @@
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
+use bee_message::{address::dto::AddressDto, input::dto::UtxoInputDto, Message as BeeMessage, MessageDto};
 use futures::{Future, FutureExt};
 
 use crate::{
@@ -127,14 +128,14 @@ impl ClientMessageHandler {
             ClientMethod::GetPeers => Ok(ResponseType::Peers(self.client.get_peers().await?)),
             ClientMethod::GetTips => Ok(ResponseType::Tips(self.client.get_tips().await?)),
             ClientMethod::PostMessage { message } => Ok(ResponseType::PostMessageSuccessful(
-                self.client.post_message(message).await?,
+                self.client.post_message(&BeeMessage::try_from(message)?).await?,
             )),
             ClientMethod::PostMessageJson { message } => Ok(ResponseType::PostMessageSuccessful(
-                self.client.post_message_json(message).await?,
+                self.client.post_message_json(&BeeMessage::try_from(message)?).await?,
             )),
-            ClientMethod::GetMessageData { message_id } => Ok(ResponseType::MessageData(
-                self.client.get_message_data(message_id).await?,
-            )),
+            ClientMethod::GetMessageData { message_id } => Ok(ResponseType::MessageData(MessageDto::from(
+                &self.client.get_message_data(message_id).await?,
+            ))),
             ClientMethod::GetMessageMetadata { message_id } => Ok(ResponseType::MessageMetadata(
                 self.client.get_message_metadata(message_id).await?,
             )),
@@ -156,9 +157,9 @@ impl ClientMessageHandler {
                 self.client.get_receipts_migrated_at(*milestone_index).await?,
             )),
             ClientMethod::GetTreasury => Ok(ResponseType::Treasury(self.client.get_treasury().await?)),
-            ClientMethod::GetIncludedMessage { transaction_id } => Ok(ResponseType::IncludedMessage(
-                self.client.get_included_message(transaction_id).await?,
-            )),
+            ClientMethod::GetIncludedMessage { transaction_id } => Ok(ResponseType::IncludedMessage(MessageDto::from(
+                &self.client.get_included_message(transaction_id).await?,
+            ))),
             ClientMethod::OutputIds { query_parameters } => Ok(ResponseType::OutputIds(
                 self.client.output_ids(query_parameters.clone()).await?,
             )),
@@ -186,21 +187,33 @@ impl ClientMessageHandler {
             ClientMethod::TryGetOutputs { output_ids } => Ok(ResponseType::Outputs(
                 self.client.try_get_outputs(output_ids.clone()).await?,
             )),
-            ClientMethod::FindMessages { message_ids } => {
-                Ok(ResponseType::Messages(self.client.find_messages(message_ids).await?))
-            }
+            ClientMethod::FindMessages { message_ids } => Ok(ResponseType::Messages(
+                self.client
+                    .find_messages(message_ids)
+                    .await?
+                    .iter()
+                    .map(MessageDto::from)
+                    .collect(),
+            )),
             ClientMethod::Retry { message_id } => {
-                Ok(ResponseType::RetrySuccessful(self.client.retry(message_id).await?))
+                let (message_id, message) = self.client.retry(message_id).await?;
+                Ok(ResponseType::RetrySuccessful((message_id, MessageDto::from(&message))))
             }
             ClientMethod::RetryUntilIncluded {
                 message_id,
                 interval,
                 max_attempts,
-            } => Ok(ResponseType::RetryUntilIncludedSuccessful(
-                self.client
+            } => {
+                let res = self
+                    .client
                     .retry_until_included(message_id, *interval, *max_attempts)
-                    .await?,
-            )),
+                    .await?;
+                let res = res
+                    .into_iter()
+                    .map(|(message_id, message)| (message_id, MessageDto::from(&message)))
+                    .collect();
+                Ok(ResponseType::RetryUntilIncludedSuccessful(res))
+            }
             ClientMethod::ConsolidateFunds {
                 signer,
                 account_index,
@@ -214,20 +227,31 @@ impl ClientMessageHandler {
                 ))
             }
             ClientMethod::FindInputs { addresses, amount } => Ok(ResponseType::Inputs(
-                self.client.find_inputs(addresses.clone(), *amount).await?,
+                self.client
+                    .find_inputs(addresses.clone(), *amount)
+                    .await?
+                    .iter()
+                    .map(UtxoInputDto::from)
+                    .collect(),
             )),
             ClientMethod::FindOutputs { outputs, addresses } => Ok(ResponseType::Outputs(
                 self.client.find_outputs(outputs, addresses).await?,
             )),
             ClientMethod::Reattach { message_id } => {
-                Ok(ResponseType::Reattached(self.client.reattach(message_id).await?))
+                let (message_id, message) = self.client.reattach(message_id).await?;
+                Ok(ResponseType::Reattached((message_id, MessageDto::from(&message))))
             }
-            ClientMethod::ReattachUnchecked { message_id } => Ok(ResponseType::Reattached(
-                self.client.reattach_unchecked(message_id).await?,
-            )),
-            ClientMethod::Promote { message_id } => Ok(ResponseType::Promoted(self.client.promote(message_id).await?)),
+            ClientMethod::ReattachUnchecked { message_id } => {
+                let (message_id, message) = self.client.reattach_unchecked(message_id).await?;
+                Ok(ResponseType::Reattached((message_id, MessageDto::from(&message))))
+            }
+            ClientMethod::Promote { message_id } => {
+                let (message_id, message) = self.client.promote(message_id).await?;
+                Ok(ResponseType::Promoted((message_id, MessageDto::from(&message))))
+            }
             ClientMethod::PromoteUnchecked { message_id } => {
-                Ok(ResponseType::Promoted(self.client.promote_unchecked(message_id).await?))
+                let (message_id, message) = self.client.promote_unchecked(message_id).await?;
+                Ok(ResponseType::Promoted((message_id, MessageDto::from(&message))))
             }
             ClientMethod::Bech32ToHex { bech32 } => Ok(ResponseType::Bech32ToHex(Client::bech32_to_hex(bech32)?)),
             ClientMethod::HexToBech32 { hex, bech32_hrp } => Ok(ResponseType::HexToBech32(
@@ -238,9 +262,9 @@ impl ClientMessageHandler {
                     .hex_public_key_to_bech32_address(hex, bech32_hrp.as_deref())
                     .await?,
             )),
-            ClientMethod::ParseBech32Address { address } => Ok(ResponseType::ParsedBech32Address(
-                Client::parse_bech32_address(address)?,
-            )),
+            ClientMethod::ParseBech32Address { address } => Ok(ResponseType::ParsedBech32Address(AddressDto::from(
+                &Client::parse_bech32_address(address)?,
+            ))),
             ClientMethod::IsAddressValid { address } => {
                 Ok(ResponseType::IsAddressValid(Client::is_address_valid(address)))
             }
