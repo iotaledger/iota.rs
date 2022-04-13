@@ -3,12 +3,12 @@
 
 //! cargo run --example quorum --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner, Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will get the account balance of a known seed with quorum, which will compare the responses from
 /// the nodes

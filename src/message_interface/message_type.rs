@@ -1,8 +1,9 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::message_interface::ClientMethod;
 use serde::{ser::Serializer, Deserialize, Serialize};
+
+use crate::message_interface::ClientMethod;
 
 /// The messages that can be sent to the message interface.
 #[derive(Clone, Debug, Deserialize)]

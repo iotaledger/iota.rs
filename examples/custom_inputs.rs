@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_inputs --release
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     bee_message::input::UtxoInput, node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner, Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will send 1_000_000 tokens to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
 /// This address belongs to the first seed in .env.example

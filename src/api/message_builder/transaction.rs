@@ -3,13 +3,8 @@
 
 //! Transaction preparation and signing
 
-use crate::{
-    api::{types::PreparedTransactionData, ClientMessageBuilder},
-    signing::{verify_unlock_blocks, Network, SignMessageMetadata},
-    Error, Result,
-};
+use std::{collections::HashSet, str::FromStr};
 
-use crate::bee_message::output::AliasId;
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
@@ -23,7 +18,12 @@ use bee_message::{
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use packable::PackableExt;
 
-use std::{collections::HashSet, str::FromStr};
+use crate::{
+    api::{types::PreparedTransactionData, ClientMessageBuilder},
+    bee_message::output::AliasId,
+    signing::{verify_unlock_blocks, Network, SignMessageMetadata},
+    Error, Result,
+};
 
 /// Prepare a transaction
 pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {

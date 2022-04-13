@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Types used during transaction creation
-use crate::api::message_builder::input_selection::InputSigningData;
+use std::collections::HashMap;
 
 use bee_message::output::{Output, TokenId};
-
 use primitive_types::U256;
 
-use std::collections::HashMap;
+use crate::api::message_builder::input_selection::InputSigningData;
 
 /// Transaction data with selected inputs, input data for signing and outputs, with remainder output if required
 #[derive(Debug, Clone)]

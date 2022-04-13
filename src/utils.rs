@@ -3,7 +3,7 @@
 
 //! Utility functions for IOTA
 
-use crate::error::*;
+use std::collections::HashMap;
 
 use bee_message::address::{Address, Ed25519Address};
 use crypto::{
@@ -12,11 +12,10 @@ use crypto::{
     utils,
 };
 use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
-
 use log::LevelFilter;
 use zeroize::Zeroize;
 
-use std::collections::HashMap;
+use crate::error::*;
 
 /// Hash the network id str from the nodeinfo to an u64 (used in messages)
 pub fn hash_network(network_id_string: &str) -> Result<u64> {

@@ -3,6 +3,15 @@
 
 //! The node manager that takes care of sending requests with synced nodes and quorum if enabled
 
+use std::{
+    collections::HashSet,
+    sync::{Arc, RwLock},
+    time::Duration,
+};
+
+use serde::{Deserialize, Serialize};
+use url::Url;
+
 use crate::{
     builder::NetworkInfo,
     constants::{DEFAULT_API_TIMEOUT, DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
@@ -12,15 +21,6 @@ use crate::{
         node::{Node, NodeAuth, NodeDetail, NodeDto},
         NodeManager,
     },
-};
-
-use serde::{Deserialize, Serialize};
-use url::Url;
-
-use std::{
-    collections::HashSet,
-    sync::{Arc, RwLock},
-    time::Duration,
 };
 
 /// Node manager builder

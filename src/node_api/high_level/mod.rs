@@ -5,4 +5,4 @@
 
 mod address;
 
-pub use address::*;
+pub use self::address::*;

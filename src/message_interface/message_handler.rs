@@ -1,16 +1,18 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{signing::SignerHandle, Client, Result};
+use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
 use futures::{Future, FutureExt};
 
-use std::{any::Any, panic::AssertUnwindSafe};
-
-use crate::message_interface::{
-    client_method::ClientMethod, message::Message, message_type::MessageType, response::Response,
-    response_type::ResponseType,
+use crate::{
+    message_interface::{
+        client_method::ClientMethod, message::Message, message_type::MessageType, response::Response,
+        response_type::ResponseType,
+    },
+    signing::SignerHandle,
+    Client, Result,
 };
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> ResponseType {

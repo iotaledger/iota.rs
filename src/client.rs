@@ -3,21 +3,12 @@
 
 //! The Client module to connect through HORNET or Bee with API usages
 
-use crate::{
-    api::{
-        miner::{ClientMiner, ClientMinerBuilder},
-        ClientMessageBuilder, GetAddressesBuilder,
-    },
-    builder::{ClientBuilder, NetworkInfo},
-    constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
-    error::{Error, Result},
-    node_api::{high_level::GetAddressBuilder, indexer_api::query_parameters::QueryParameter},
-    node_manager::node::{Node, NodeAuth},
-    signing::SignerHandle,
-    utils::{
-        bech32_to_hex, generate_mnemonic, hash_network, hex_public_key_to_bech32_address, hex_to_bech32,
-        is_address_valid, mnemonic_to_hex_seed, mnemonic_to_seed, parse_bech32_address,
-    },
+use std::{
+    collections::HashSet,
+    ops::Range,
+    str::FromStr,
+    sync::{Arc, RwLock},
+    time::Duration,
 };
 
 use bee_message::{
@@ -40,20 +31,10 @@ use bee_rest_api::types::{
     },
 };
 use crypto::keys::slip10::Seed;
-use packable::PackableExt;
-
-use url::Url;
-
-use std::{
-    collections::HashSet,
-    ops::Range,
-    str::FromStr,
-    sync::{Arc, RwLock},
-    time::Duration,
-};
-
 #[cfg(feature = "wasm")]
 use gloo_timers::future::TimeoutFuture;
+use packable::PackableExt;
+use url::Url;
 #[cfg(not(feature = "wasm"))]
 use {
     crate::api::finish_pow,
@@ -69,6 +50,23 @@ use {
     crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerMap},
     rumqttc::AsyncClient as MqttClient,
     tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender},
+};
+
+use crate::{
+    api::{
+        miner::{ClientMiner, ClientMinerBuilder},
+        ClientMessageBuilder, GetAddressesBuilder,
+    },
+    builder::{ClientBuilder, NetworkInfo},
+    constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
+    error::{Error, Result},
+    node_api::{high_level::GetAddressBuilder, indexer_api::query_parameters::QueryParameter},
+    node_manager::node::{Node, NodeAuth},
+    signing::SignerHandle,
+    utils::{
+        bech32_to_hex, generate_mnemonic, hash_network, hex_public_key_to_bech32_address, hex_to_bech32,
+        is_address_valid, mnemonic_to_hex_seed, mnemonic_to_seed, parse_bech32_address,
+    },
 };
 
 /// NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)

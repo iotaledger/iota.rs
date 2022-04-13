@@ -1,13 +1,13 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{node_api::indexer_api::query_parameters::QueryParameter, Client, Result};
+use std::collections::{hash_map::Entry, HashMap};
 
 use bee_message::output::{Output, TokenId};
 use bee_rest_api::types::responses::OutputResponse;
 use primitive_types::U256;
 
-use std::collections::{hash_map::Entry, HashMap};
+use crate::{node_api::indexer_api::query_parameters::QueryParameter, Client, Result};
 
 /// Balance information for an address.
 #[derive(Clone, Debug, Serialize, Deserialize)]

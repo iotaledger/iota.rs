@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example transaction --release
-use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
-extern crate dotenv;
-use dotenv::dotenv;
 use std::env;
+
+use dotenv::dotenv;
+use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 
 /// In this example we will send 9_000_000 tokens to the following 3 locations, respectively
 /// First send 10 Mi from the faucet to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r

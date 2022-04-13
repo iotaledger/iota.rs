@@ -1,11 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    api::PreparedTransactionData, builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node,
-    Error, NodeInfoWrapper,
-};
-
 use std::collections::HashSet;
 
 use bee_message::{address::Address, input::UtxoInput, output::OutputId, Message, MessageId};
@@ -16,8 +11,12 @@ use bee_rest_api::types::{
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
-
 use serde::Serialize;
+
+use crate::{
+    api::PreparedTransactionData, builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node,
+    Error, NodeInfoWrapper,
+};
 
 /// The response message.
 #[derive(Serialize, Debug)]

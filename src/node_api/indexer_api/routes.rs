@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! IOTA node indexer routes
+use bee_message::output::{AliasId, FoundryId, NftId, OutputId};
+
 use crate::{
     node_api::indexer_api::{get_output_ids_with_pagination, query_parameters::QueryParameter},
     Client, Result,
 };
-
-use bee_message::output::{AliasId, FoundryId, NftId, OutputId};
 
 // hornet: https://github.com/gohornet/hornet/blob/develop/plugins/indexer/routes.go
 

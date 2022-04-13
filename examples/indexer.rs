@@ -3,13 +3,13 @@
 
 //! cargo run --example indexer --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner,
     utils::request_funds_from_faucet, Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will get output ids from the indexer API
 

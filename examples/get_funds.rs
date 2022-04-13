@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example get_funds --release
-use iota_client::{signing::mnemonic::MnemonicSigner, utils::request_funds_from_faucet, Client, Result};
-extern crate dotenv;
-use dotenv::dotenv;
 use std::env;
+
+use dotenv::dotenv;
+use iota_client::{signing::mnemonic::MnemonicSigner, utils::request_funds_from_faucet, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {

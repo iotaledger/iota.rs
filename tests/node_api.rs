@@ -3,11 +3,10 @@
 
 // These are E2E test samples, so they are ignored by default.
 
-use iota_client::{node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner};
+use std::str::FromStr;
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, MessageId};
-
-use std::str::FromStr;
+use iota_client::{node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner};
 
 const DEFAULT_NODE_URL: &str = "http://localhost:14265";
 

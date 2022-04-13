@@ -5,14 +5,15 @@
 //! This example uses dotenv, which is not safe for use in production.
 //! `cargo run --example 0_address_generation --release`.
 
-use dotenv::dotenv;
-use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 use std::{
     env,
     fs::File,
     io::{BufWriter, Write},
     path::Path,
 };
+
+use dotenv::dotenv;
+use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 
 const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 

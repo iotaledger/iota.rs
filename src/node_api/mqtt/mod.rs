@@ -3,12 +3,10 @@
 
 //! IOTA node MQTT API
 pub mod types;
-pub use types::*;
 
-use crate::{Client, Result};
+use std::{sync::Arc, time::Instant};
 
 use bee_message::Message;
-
 use crypto::utils;
 use log::warn;
 use packable::PackableExt;
@@ -18,7 +16,8 @@ use rumqttc::{
 };
 use tokio::sync::{watch::Sender, RwLock};
 
-use std::{sync::Arc, time::Instant};
+pub use self::types::*;
+use crate::{Client, Result};
 
 async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     // if the client was disconnected, we clear it so we can start over

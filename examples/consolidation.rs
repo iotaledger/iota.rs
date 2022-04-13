@@ -3,10 +3,10 @@
 
 //! cargo run --example consolidation --release
 
-use iota_client::{api::consolidate_funds, signing::mnemonic::MnemonicSigner, Client, Result};
-extern crate dotenv;
-use dotenv::dotenv;
 use std::env;
+
+use dotenv::dotenv;
+use iota_client::{api::consolidate_funds, signing::mnemonic::MnemonicSigner, Client, Result};
 
 /// In this example we will consolidate all funds in a range of addresses
 

@@ -3,8 +3,9 @@
 
 //! A symmetric encryption implementation for `StrongholdAdapter`.
 
-use crate::Result;
 use crypto::ciphers::{chacha::XChaCha20Poly1305, traits::Aead};
+
+use crate::Result;
 
 // Fixed position indexes for referencing the concatenated parts in a ciphertext:
 //

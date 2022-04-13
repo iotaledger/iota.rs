@@ -3,14 +3,8 @@
 
 //! The [Signer] implementation for [StrongholdAdapter].
 
-use super::{
-    common::{DERIVE_OUTPUT_RECORD_PATH, RECORD_HINT, SECRET_VAULT_PATH, SEED_RECORD_PATH},
-    StrongholdAdapter,
-};
-use crate::{
-    signing::{types::InputSigningData, GenerateAddressMetadata, SignMessageMetadata, Signer},
-    Result,
-};
+use std::ops::Range;
+
 use async_trait::async_trait;
 use bee_message::{
     address::{Address, Ed25519Address},
@@ -20,7 +14,15 @@ use bee_message::{
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput};
 use log::warn;
-use std::ops::Range;
+
+use super::{
+    common::{DERIVE_OUTPUT_RECORD_PATH, RECORD_HINT, SECRET_VAULT_PATH, SEED_RECORD_PATH},
+    StrongholdAdapter,
+};
+use crate::{
+    signing::{types::InputSigningData, GenerateAddressMetadata, SignMessageMetadata, Signer},
+    Result,
+};
 
 #[async_trait]
 impl Signer for StrongholdAdapter {
@@ -312,14 +314,17 @@ impl StrongholdAdapter {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use super::*;
     use crate::{constants::IOTA_COIN_TYPE, signing::Network};
-    use std::path::PathBuf;
 
     #[tokio::test]
     async fn test_address_generation() {
         let stronghold_path = PathBuf::from("test.stronghold");
-        let mnemonic = String::from("giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally");
+        let mnemonic = String::from(
+            "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
+        );
         let mut signer = StrongholdAdapter::builder()
             .snapshot_path(stronghold_path.clone())
             .password("drowssap")

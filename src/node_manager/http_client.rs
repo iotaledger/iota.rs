@@ -3,18 +3,17 @@
 
 //! The node manager that takes care of sending requests with synced nodes and quorum if enabled
 
+use std::time::Duration;
+
+use serde::de::DeserializeOwned;
+use serde_json::Value;
+#[cfg(all(feature = "sync", not(feature = "async")))]
+use ureq::{Agent, AgentBuilder};
+
 use crate::{
     error::{Error, Result},
     node_manager::node::Node,
 };
-
-use serde::de::DeserializeOwned;
-use serde_json::Value;
-
-use std::time::Duration;
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-use ureq::{Agent, AgentBuilder};
 
 #[cfg(all(feature = "sync", not(feature = "async")))]
 pub(crate) struct Response(ureq::Response);

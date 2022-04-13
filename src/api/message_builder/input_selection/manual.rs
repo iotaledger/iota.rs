@@ -3,6 +3,14 @@
 
 //! Manual input selection for transactions
 
+use std::collections::HashSet;
+
+use bee_message::{
+    address::Address,
+    output::{AliasId, ByteCostConfig},
+};
+use crypto::keys::slip10::Chain;
+
 use crate::{
     api::{
         address::search_address, input_selection::try_select_inputs,
@@ -12,14 +20,6 @@ use crate::{
     signing::types::InputSigningData,
     Result,
 };
-
-use bee_message::{
-    address::Address,
-    output::{AliasId, ByteCostConfig},
-};
-use crypto::keys::slip10::Chain;
-
-use std::collections::HashSet;
 
 /// If custom inputs are provided we check if they are unspent, get the balance and search the Ed25519 addresses for
 /// them with the provided input_range so we can later sign them.

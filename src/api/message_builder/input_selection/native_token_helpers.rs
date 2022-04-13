@@ -1,15 +1,15 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::Result;
-
-use bee_message::output::{Output, TokenId, TokenScheme};
-use primitive_types::U256;
-
 use std::{
     cmp::Ordering,
     collections::{hash_map::Entry, HashMap},
 };
+
+use bee_message::output::{Output, TokenId, TokenScheme};
+use primitive_types::U256;
+
+use crate::Result;
 
 pub(crate) fn missing_native_tokens(
     inputs: &HashMap<TokenId, U256>,
@@ -116,8 +116,9 @@ pub(crate) fn get_minted_and_burned_native_tokens(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use bee_message::output::TokenId;
+
+    use super::*;
 
     #[test]
     fn nativ_token() {

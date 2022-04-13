@@ -1,9 +1,9 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::signing::types::InputSigningData;
-
 use bee_message::{address::Address, payload::transaction::TransactionEssence};
+
+use crate::signing::types::InputSigningData;
 
 /// Helper struct for offline signing
 #[derive(Debug, Clone, Serialize, Deserialize)]
