@@ -74,7 +74,7 @@ public class ExampleApp {
         try {
             Client iota = node();
 
-            String seed = RustHex.encode("NONSECURE_USE_OF_DEVELOPMENT_SEED_1");
+            String seed = RustHex.encode("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1");
             String[] addresses = GetAddressesBuilder.from(seed).withClient(iota).withRange(0, 10).finish();
             System.out.println(Arrays.toString(addresses));
         } catch (ClientException e) {
@@ -86,7 +86,7 @@ public class ExampleApp {
         try {
             Client iota = node();
 
-            String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
+            String seed = "NON_SECURE_USE_OF_DEVELOPMENT_SEED_1";
 
             long seed_balance = iota.getBalance(seed).finish();
             System.out.println("Account balance: " + seed_balance);
@@ -155,7 +155,7 @@ public class ExampleApp {
     public static void transaction() {
         Client iota = node();
 
-        String seed_1 = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
+        String seed_1 = "NON_SECURE_USE_OF_DEVELOPMENT_SEED_1";
 
         Message message = iota
             .message()
@@ -186,7 +186,7 @@ public class ExampleApp {
     public static void consolidate() {
         Client iota = node();
 
-        String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
+        String seed = "NON_SECURE_USE_OF_DEVELOPMENT_SEED_1";
 
         // Here all funds will be send to the address with the lowest index in the range
         String address = Util.consolidateFunds(iota, seed, 0, 0, 150);
@@ -196,8 +196,8 @@ public class ExampleApp {
 
     public static void createMaxDust(){
         Client iota = node();
-        String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
-        String seed_2 = "NONSECURE_USE_OF_DEVELOPMENT_SEED_2";
+        String seed = "NON_SECURE_USE_OF_DEVELOPMENT_SEED_1";
+        String seed_2 = "NON_SECURE_USE_OF_DEVELOPMENT_SEED_2";
 
         String[] new_addresses = iota.getAddresses(seed_2).withRange(0, 1).finish();
 
@@ -291,7 +291,7 @@ public class ExampleApp {
     }
 
     public static void offlineExample() {
-        String seed = "NONSECURE_USE_OF_DEVELOPMENT_SEED_1";
+        String seed = "NON_SECURE_USE_OF_DEVELOPMENT_SEED_1";
         String toAddress = "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq";
         long amount = 1_000_000;
 

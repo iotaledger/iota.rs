@@ -13,7 +13,7 @@ async fn addresses() {
     let signer =
         MnemonicSigner::new_from_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap();
     let addresses = GetAddressesBuilder::new(&signer)
-        .with_bech32_hrp("atoi".into())
+        .with_bech32_hrp("atoi")
         .with_account_index(0)
         .with_range(0..1)
         .get_all()
@@ -53,7 +53,7 @@ async fn mnemonic_address_generation_iota() {
     // account 0, address 0 and 1
     let addresses = GetAddressesBuilder::new(&signer)
         .with_coin_type(IOTA_COIN_TYPE)
-        .with_bech32_hrp(IOTA_BECH32_HRP.to_string())
+        .with_bech32_hrp(IOTA_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..2)
         .finish()
@@ -72,7 +72,7 @@ async fn mnemonic_address_generation_iota() {
     // account 1
     let addresses = GetAddressesBuilder::new(&signer)
         .with_coin_type(IOTA_COIN_TYPE)
-        .with_bech32_hrp(IOTA_BECH32_HRP.to_string())
+        .with_bech32_hrp(IOTA_BECH32_HRP)
         .with_account_index(1)
         .with_range(0..1)
         .finish()
@@ -93,7 +93,7 @@ async fn mnemonic_address_generation_shimmer() {
     // account 0, address 0 and 1
     let addresses = GetAddressesBuilder::new(&signer)
         .with_coin_type(SHIMMER_COIN_TYPE)
-        .with_bech32_hrp(SHIMMER_BECH32_HRP.to_string())
+        .with_bech32_hrp(SHIMMER_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..2)
         .finish()
@@ -112,7 +112,7 @@ async fn mnemonic_address_generation_shimmer() {
     // account 1
     let addresses = GetAddressesBuilder::new(&signer)
         .with_coin_type(SHIMMER_COIN_TYPE)
-        .with_bech32_hrp(SHIMMER_BECH32_HRP.to_string())
+        .with_bech32_hrp(SHIMMER_BECH32_HRP)
         .with_account_index(1)
         .with_range(0..1)
         .finish()

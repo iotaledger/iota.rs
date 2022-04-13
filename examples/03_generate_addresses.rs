@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let signer = MnemonicSigner::new(&env::var("NONSECURE_USE_OF_DEVELOPMENT_MNEMONIC1").unwrap())?;
+    let signer = MnemonicSigner::new(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generate addresses with default account index and range
     let addresses = client.get_addresses(&signer).finish().await.unwrap();
@@ -45,7 +45,7 @@ async fn main() -> Result<()> {
 
     // Generate public addresses offline with the bech32_hrp defined
     let addresses = GetAddressesBuilder::new(&signer)
-        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP.into())
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..4)
         .finish()

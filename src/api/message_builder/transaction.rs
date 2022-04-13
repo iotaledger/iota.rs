@@ -99,7 +99,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 
     Ok(PreparedTransactionData {
         essence,
-        input_signing_data_entrys: selected_transaction_data.inputs,
+        input_signing_data_entries: selected_transaction_data.inputs,
     })
 }
 
@@ -110,7 +110,7 @@ pub async fn sign_transaction(
 ) -> Result<Payload> {
     log::debug!("[sign_transaction]");
     let mut input_addresses = Vec::new();
-    for input_signing_data in &prepared_transaction_data.input_signing_data_entrys {
+    for input_signing_data in &prepared_transaction_data.input_signing_data_entries {
         let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
         input_addresses.push(address);
     }
@@ -124,7 +124,7 @@ pub async fn sign_transaction(
             // IOTA_COIN_TYPE,
             // message_builder.account_index.unwrap_or(0),
             &prepared_transaction_data.essence,
-            &mut prepared_transaction_data.input_signing_data_entrys,
+            &mut prepared_transaction_data.input_signing_data_entries,
             // todo set correct data
             SignMessageMetadata {
                 remainder_value: 0,

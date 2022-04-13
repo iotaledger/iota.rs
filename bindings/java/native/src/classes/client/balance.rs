@@ -1,5 +1,6 @@
 // Copyright 2020 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+
 use iota_client::{api::GetBalanceBuilder as RustGetBalanceBuilderApi, Seed as RustSeed};
 
 use std::{borrow::Borrow, cell::RefCell, rc::Rc};

@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let seed = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
+    let seed = MnemonicSigner::new_from_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
     // Here all funds will be send to the address with the lowest index in the range
     let address = consolidate_funds(&client, &seed, 0, address_range).await?;

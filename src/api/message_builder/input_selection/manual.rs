@@ -31,7 +31,7 @@ pub(crate) async fn get_custom_inputs(
     byte_cost_config: &ByteCostConfig,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[get_custom_inputs]");
-    let mut input_signing_data_entrys = Vec::new();
+    let mut input_signing_data_entries = Vec::new();
 
     if let Some(inputs) = &message_builder.inputs {
         for input in inputs {
@@ -64,7 +64,7 @@ pub(crate) async fn get_custom_inputs(
                     }
                     None => (0, false),
                 };
-                input_signing_data_entrys.push(InputSigningData {
+                input_signing_data_entries.push(InputSigningData {
                     output_response: output_response.clone(),
                     chain: Some(Chain::from_u32_hardened(vec![
                         HD_WALLET_TYPE,
@@ -79,7 +79,7 @@ pub(crate) async fn get_custom_inputs(
         }
     }
     let selected_transaction_data = try_select_inputs(
-        input_signing_data_entrys,
+        input_signing_data_entries,
         message_builder.outputs.clone(),
         true,
         message_builder.custom_remainder_address,

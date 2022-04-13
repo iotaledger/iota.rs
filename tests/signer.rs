@@ -15,7 +15,7 @@ async fn mnemonic_signer_dto() -> Result<()> {
     let signer = SignerHandle::from_str(&serde_json::to_string(&signer_type_dto)?)?;
 
     let addresses = GetAddressesBuilder::new(&signer)
-        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP.to_string())
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..1)
         .finish()
@@ -48,7 +48,7 @@ async fn stronghold_signer_dto() -> Result<()> {
         .unwrap();
 
     let addresses = GetAddressesBuilder::new(&stronghold_signer)
-        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP.to_string())
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..1)
         .finish()

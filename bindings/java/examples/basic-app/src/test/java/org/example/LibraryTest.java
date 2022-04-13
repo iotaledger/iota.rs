@@ -26,7 +26,7 @@ public class LibraryTest {
             Client node = node();
 
             SecretKey secret_key = SecretKey.generate();
-            String seed = RustHex.encode("NONSECURE_USE_OF_DEVELOPMENT_SEED_1");
+            String seed = RustHex.encode("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1");
             // 4e4f4e5345435552455f5553455f4f465f444556454c4f504d454e545f534545445f31
             System.out.println("seed: " + seed);
 

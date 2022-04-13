@@ -33,7 +33,7 @@
             "payload": null
         }
     },
-    "input_signing_data_entrys": [
+    "input_signing_data_entries": [
         {
             "account_index": 0,
             "input": {

@@ -170,7 +170,7 @@ impl super::Signer for LedgerSigner {
         // // on essence finalization, inputs are sorted lexically before they are packed into bytes.
         // // we need the correct order of the bip32 indices before we can call PrepareSigning, but
         // // because inputs of the essence don't have bip32 indices, we need to sort it on our own too.
-        // let mut input_signing_data_entrys: Vec<AddressIndexRecorder> = Vec::new();
+        // let mut input_signing_data_entries: Vec<AddressIndexRecorder> = Vec::new();
         // for input_signing_data in inputs {
         //     let input = Input::Utxo(UtxoInput::new(
         //         TransactionId::from_str(&input_signing_data.output_response.transaction_id)?,
@@ -179,7 +179,7 @@ impl super::Signer for LedgerSigner {
         //     // todo validate
         //     let address_index = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[3].bs());
         //     let address_internal = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[4].bs());
-        //     input_signing_data_entrys.push(AddressIndexRecorder {
+        //     input_signing_data_entries.push(AddressIndexRecorder {
         //         input,
         //         bip32: LedgerBIP32Index {
         //             bip32_index: address_index | HARDENED,
@@ -187,11 +187,11 @@ impl super::Signer for LedgerSigner {
         //         },
         //     });
         // }
-        // // input_signing_data_entrys.sort_by(|a, b| a.input.cmp(&b.input));
+        // // input_signing_data_entries.sort_by(|a, b| a.input.cmp(&b.input));
 
         // // now extract the bip32 indices in the right order
         // let mut input_bip32_indices: Vec<LedgerBIP32Index> = Vec::new();
-        // for recorder in input_signing_data_entrys {
+        // for recorder in input_signing_data_entries {
         //     input_bip32_indices.push(recorder.bip32);
         // }
 
