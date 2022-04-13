@@ -4,7 +4,5 @@
 //! Iota high level node APIs
 
 mod address;
-mod inputs;
 
 pub use address::*;
-pub use inputs::*;

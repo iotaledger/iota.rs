@@ -3,9 +3,7 @@
 
 //! cargo run --example inputs_from_transaction_id --release
 
-use iota_client::{
-    bee_message::payload::transaction::TransactionId, node_api::high_level::GetTransactionInputsBuilder, Client, Result,
-};
+use iota_client::{bee_message::payload::transaction::TransactionId, Client, Result};
 
 /// In this example we will fetch all inputs from a given transaction id.
 
@@ -21,9 +19,7 @@ async fn main() -> Result<()> {
         .parse::<TransactionId>()
         .unwrap();
 
-    let inputs = GetTransactionInputsBuilder::new(&client)
-        .transaction_inputs(&transaction_id)
-        .await?;
+    let inputs = client.inputs_from_transaction_id(&transaction_id).await?;
 
     println!("Transaction inputs {:?}", inputs);
 

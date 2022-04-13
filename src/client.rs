@@ -22,10 +22,13 @@ use crate::{
 
 use bee_message::{
     address::Address,
-    input::{UtxoInput, INPUT_COUNT_MAX},
+    input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{AliasId, ByteCostConfig, ByteCostConfigBuilder, FoundryId, NftId, OutputId},
     parent::Parents,
-    payload::{transaction::TransactionId, Payload},
+    payload::{
+        transaction::{TransactionEssence, TransactionId},
+        Payload,
+    },
     Message, MessageBuilder, MessageId,
 };
 use bee_pow::providers::NonceProviderBuilder;
@@ -600,6 +603,32 @@ impl Client {
     /// useful for spent outputs)
     pub async fn try_get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
         crate::node_api::core_api::try_get_outputs(self, output_ids).await
+    }
+
+    /// Get the inputs of a transaction for the given transaction id.
+    pub async fn inputs_from_transaction_id(&self, transaction_id: &TransactionId) -> Result<Vec<OutputResponse>> {
+        let message = crate::node_api::core_api::routes::get_included_message(self, transaction_id).await?;
+
+        let inputs = match message.payload() {
+            Some(Payload::Transaction(t)) => match t.essence() {
+                TransactionEssence::Regular(e) => e.inputs(),
+            },
+            _ => {
+                unreachable!()
+            }
+        };
+
+        let input_ids = inputs
+            .iter()
+            .map(|i| match i {
+                Input::Utxo(input) => *input.output_id(),
+                _ => {
+                    unreachable!()
+                }
+            })
+            .collect();
+
+        crate::node_api::core_api::get_outputs(self, input_ids).await
     }
 
     /// A generic send function for easily sending transaction or tagged data messages.
