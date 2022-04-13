@@ -39,6 +39,7 @@ pub mod input_selection;
 pub mod pow;
 pub mod transaction;
 use input_selection::{get_custom_inputs, get_inputs};
+pub use transaction::verify_semantic;
 use transaction::{prepare_transaction, sign_transaction};
 
 /// Builder of the message API

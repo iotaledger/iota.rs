@@ -5,7 +5,7 @@
 
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
-    signing::{verify_unlock_blocks, Network, SignMessageMetadata},
+    signing::{Network, SignMessageMetadata},
     Error, Result,
 };
 
@@ -13,11 +13,13 @@ use crate::bee_message::output::AliasId;
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
-    output::{dto::OutputDto, Output},
+    milestone::MilestoneIndex,
+    output::{dto::OutputDto, Output, OutputId},
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayload},
         Payload, TaggedDataPayload,
     },
+    semantic::{semantic_validation, ConflictReason, ValidationContext},
     unlock_block::UnlockBlocks,
 };
 use crypto::hashes::{blake2b::Blake2b256, Digest};
@@ -137,9 +139,52 @@ pub async fn sign_transaction(
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence, unlock_blocks)?;
+    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlock_blocks.clone())?;
 
-    // validate the signatures in the unlock blocks so we don't send invalid transactions
-    verify_unlock_blocks(&tx_payload, input_addresses)?;
+    let conflict = verify_semantic(&prepared_transaction_data, &tx_payload, &unlock_blocks)?;
+
+    if conflict != ConflictReason::None {
+        return Err(Error::TransactionSemantic(conflict));
+    }
+
     Ok(Payload::Transaction(Box::new(tx_payload)))
+}
+
+// TODO @thibault-martinez: this is very cumbersome with the current state, will refactor.
+/// Verifies the semantic of a prepared transaction.
+pub fn verify_semantic(
+    prepared_transaction_data: &PreparedTransactionData,
+    transaction: &TransactionPayload,
+    unlock_blocks: &UnlockBlocks,
+) -> crate::Result<ConflictReason> {
+    let transaction_id = transaction.id();
+    let TransactionEssence::Regular(essence) = transaction.essence();
+    let outputs = prepared_transaction_data
+        .input_signing_data_entries
+        .iter()
+        .map(|i| Ok(Output::try_from(&i.output_response.output)?))
+        .collect::<Result<Vec<Output>>>()?;
+    let inputs = prepared_transaction_data
+        .input_signing_data_entries
+        .iter()
+        .zip(outputs.iter())
+        .map(|(i, o)| {
+            Ok((
+                // PANIC: at this point, OutputIds have been validated many times already.
+                i.output_id().unwrap(),
+                o,
+            ))
+        })
+        .collect::<Result<Vec<(OutputId, &Output)>>>()?;
+
+    let context = ValidationContext::new(
+        &transaction_id,
+        &essence,
+        inputs.iter().map(|(id, input)| (id, *input)),
+        &unlock_blocks,
+        MilestoneIndex(0),
+        0,
+    );
+
+    semantic_validation(context, inputs.as_slice(), &unlock_blocks).map_err(Error::MessageError)
 }

@@ -7,14 +7,15 @@
 
 use dotenv::dotenv;
 use iota_client::{
-    api::PreparedTransactionData,
+    api::{verify_semantic, PreparedTransactionData},
     bee_message::{
         address::Address,
         payload::{transaction::TransactionPayload, Payload},
+        semantic::ConflictReason,
         unlock_block::UnlockBlocks,
     },
-    signing::{mnemonic::MnemonicSigner, verify_unlock_blocks, Network, SignMessageMetadata},
-    Result,
+    signing::{mnemonic::MnemonicSigner, Network, SignMessageMetadata},
+    Error, Result,
 };
 use std::{
     env,
@@ -55,9 +56,13 @@ async fn main() -> Result<()> {
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let signed_transaction = TransactionPayload::new(prepared_transaction.essence, unlock_blocks)?;
+    let signed_transaction = TransactionPayload::new(prepared_transaction.essence.clone(), unlock_blocks.clone())?;
 
-    verify_unlock_blocks(&signed_transaction, input_addresses)?;
+    let conflict = verify_semantic(&prepared_transaction, &signed_transaction, &unlock_blocks)?;
+
+    if conflict != ConflictReason::None {
+        return Err(Error::TransactionSemantic(conflict));
+    }
 
     println!("Signed transaction.");
 

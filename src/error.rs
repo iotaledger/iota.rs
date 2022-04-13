@@ -3,7 +3,7 @@
 
 //! Error handling in iota-client crate.
 
-use bee_message::output::TokenId;
+use bee_message::{output::TokenId, semantic::ConflictReason};
 
 use primitive_types::U256;
 use serde::{ser::Serializer, Serialize};
@@ -232,6 +232,9 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("no snapshot path has been supplied")]
     StrongholdSnapshotPathMissing,
+    /// The semantic validation of a transaction failed.
+    #[error("the semantic validation of a transaction failed")]
+    TransactionSemantic(ConflictReason),
 }
 
 // map most errors to a single error but there are some errors that
