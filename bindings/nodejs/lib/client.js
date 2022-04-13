@@ -17,6 +17,11 @@ class Client {
             },
         })).payload;
     }
+
+    // MQTT
+    async listen(topics, callback) {
+        return this.messageHandler.listen(topics, callback, this.messageHandler);
+    }
 }
 
 module.exports.Client = Client;

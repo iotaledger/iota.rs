@@ -4,9 +4,10 @@
 const addon = require('../build/Release/index.node');
 const utils = require('./utils.js');
 
-let { sendMessage, messageHandlerNew, } = addon;
+let { sendMessage, messageHandlerNew, listen } = addon;
 
 const sendMessageAsync = utils.promisify(sendMessage);
+const listenAsync = utils.promisify(listen);
 
 class MessageHandler {
     constructor(options) {
@@ -15,6 +16,11 @@ class MessageHandler {
 
     async sendMessage(message) {
         return sendMessageAsync(JSON.stringify(message), this.messageHandler);
+    }
+
+    // MQTT
+    async listen(topics, callback) {
+        return listenAsync(topics, callback, this.messageHandler);
     }
 }
 

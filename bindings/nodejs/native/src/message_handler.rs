@@ -1,14 +1,21 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::message_interface::{
-    create_message_handler, ClientMessageHandler, Message as ClientMessage, MessageType, Response, ResponseType,
+use iota_client::{
+    bee_message::MessageDto,
+    message_interface::{
+        create_message_handler, ClientMessageHandler, Message as ClientMessage, MessageType, Response, ResponseType,
+    },
+    MqttPayload, Topic, TopicEvent,
 };
 
 use neon::prelude::*;
+use serde::Serialize;
 use tokio::sync::mpsc::unbounded_channel;
 
 use std::sync::Arc;
+
+type JsCallback = Root<JsFunction<JsObject>>;
 
 pub struct MessageHandler {
     channel: Channel,
@@ -60,6 +67,33 @@ impl MessageHandler {
             }
         }
     }
+    fn call_event_callback(&self, event: TopicEvent, callback: Arc<JsCallback>) {
+        self.channel.send(move |mut cx| {
+            #[derive(Serialize)]
+            struct MqttResponse {
+                topic: String,
+                payload: String,
+            }
+            let payload = match &event.payload {
+                MqttPayload::Json(val) => serde_json::to_string(&val).unwrap(),
+                MqttPayload::Message(msg) => serde_json::to_string(&MessageDto::from(msg)).unwrap(),
+            };
+            let response = MqttResponse {
+                topic: event.topic,
+                payload,
+            };
+            let cb = (*callback).to_inner(&mut cx);
+            let this = cx.undefined();
+            let args = vec![
+                cx.undefined().upcast::<JsValue>(),
+                cx.string(serde_json::to_string(&response).unwrap()).upcast::<JsValue>(),
+            ];
+
+            cb.call(&mut cx, this, args)?;
+
+            Ok(())
+        });
+    }
 }
 
 pub fn message_handler_new(mut cx: FunctionContext) -> JsResult<JsBox<Arc<MessageHandler>>> {
@@ -97,6 +131,35 @@ pub fn send_message(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
             Ok(())
         });
+    });
+
+    Ok(cx.undefined())
+}
+
+// MQTT
+pub fn listen(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let js_arr_handle: Handle<JsArray> = cx.argument(0)?;
+    let vec: Vec<Handle<JsValue>> = js_arr_handle.to_vec(&mut cx)?;
+    let mut topics = vec![];
+    for topic_string in vec {
+        let topic = topic_string.downcast::<JsString, FunctionContext>(&mut cx).unwrap();
+        topics.push(Topic::try_from(topic.value(&mut cx).as_str().to_string()).expect("Invalid MQTT topic"));
+    }
+
+    let callback = Arc::new(cx.argument::<JsFunction>(1)?.root(&mut cx));
+    let message_handler = Arc::clone(&&cx.argument::<JsBox<Arc<MessageHandler>>>(2)?);
+
+    crate::RUNTIME.spawn(async move {
+        let cloned_message_handler = message_handler.clone();
+        let mut cloned_client = message_handler.client_message_handler.client.clone();
+        cloned_client
+            .subscriber()
+            .with_topics(topics)
+            .subscribe(move |event_data| {
+                cloned_message_handler.call_event_callback(event_data.clone(), callback.clone())
+            })
+            .await
+            .unwrap();
     });
 
     Ok(cx.undefined())

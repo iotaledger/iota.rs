@@ -39,7 +39,8 @@ where
 
 /// The Client message handler.
 pub struct ClientMessageHandler {
-    client: Client,
+    /// The Client
+    pub client: Client,
 }
 
 impl ClientMessageHandler {

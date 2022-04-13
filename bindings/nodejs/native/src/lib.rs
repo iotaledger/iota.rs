@@ -3,7 +3,7 @@
 
 #![allow(clippy::needless_borrow)]
 
-pub mod message_handler;
+mod message_handler;
 pub use message_handler::*;
 
 use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
@@ -25,6 +25,9 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     // Message handler methods.
     cx.export_function("sendMessage", message_handler::send_message)?;
     cx.export_function("messageHandlerNew", message_handler::message_handler_new)?;
+
+    // MQTT
+    cx.export_function("listen", message_handler::listen)?;
 
     cx.export_function("initLogger", init_logger)?;
     Ok(())

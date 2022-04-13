@@ -20,7 +20,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 fern-logger = { version = "0.5.0", default-features = false }
-iota-client = { path = "../../..", features = ["message_interface"] }
+iota-client = { path = "../../..", features = ["message_interface", "mqtt"] }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.68", default-features = false }
 log = { version = "0.4.14", default-features = false }
