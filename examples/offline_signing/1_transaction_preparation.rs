@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
     // Creates a client instance.
     let online_client = Client::builder()
         // Insert your node URL here.
-        .with_node("https://api.alphanet.iotaledger.net")?
+        .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
         .await?;
