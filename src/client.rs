@@ -918,7 +918,7 @@ impl Client {
         Ok((message_id, msg))
     }
 
-    /// Rerturns checked local time and milestone index.
+    /// Returns checked local time and milestone index.
     pub async fn get_time_and_milestone_checked(&self) -> Result<(u64, u32)> {
         let local_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
