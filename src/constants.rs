@@ -19,18 +19,18 @@ pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 #[cfg(not(feature = "wasm"))]
 pub(crate) const MAX_PARALLEL_API_REQUESTS: usize = 100;
 
-/// Bech32 hrp for the IOTA mainnet https://github.com/satoshilabs/slips/blob/master/slip-0173.md
+/// Bech32 hrp for the IOTA mainnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
 pub const IOTA_BECH32_HRP: &str = "iota";
-/// Bech32 hrp for the IOTA testnet https://github.com/satoshilabs/slips/blob/master/slip-0173.md
+/// Bech32 hrp for the IOTA testnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
 pub const IOTA_TESTNET_BECH32_HRP: &str = "atoi";
-/// Bech32 hrp for the Shimmer mainnet https://github.com/satoshilabs/slips/blob/master/slip-0173.md
+/// Bech32 hrp for the Shimmer mainnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
 pub const SHIMMER_BECH32_HRP: &str = "smr";
-/// Bech32 hrp for the IOTA testnet https://github.com/satoshilabs/slips/blob/master/slip-0173.md
+/// Bech32 hrp for the IOTA testnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
 pub const SHIMMER_TESTNET_BECH32_HRP: &str = "rms";
 
 /// BIP-0044 defines a logical hierarchy for deterministic wallets
 pub const HD_WALLET_TYPE: u32 = 44;
-/// IOTA coin type https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+/// IOTA coin type <https://github.com/satoshilabs/slips/blob/master/slip-0044.md>
 pub const IOTA_COIN_TYPE: u32 = 4218;
-/// Shimmer coin type https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+/// Shimmer coin type <https://github.com/satoshilabs/slips/blob/master/slip-0044.md>
 pub const SHIMMER_COIN_TYPE: u32 = 4219;

@@ -44,7 +44,7 @@ pub struct NodeManagerBuilder {
     #[serde(rename = "nodeSyncInterval", default = "default_node_sync_interval")]
     pub node_sync_interval: Duration,
     /// If node quorum is enabled. Will compare the responses from multiple nodes and only returns the response if
-    /// [quorum_threshold]% of the nodes return the same one
+    /// `quorum_threshold`% of the nodes return the same one
     #[serde(default)]
     pub quorum: bool,
     /// Minimum amount of nodes required for request when quorum is enabled
