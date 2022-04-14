@@ -30,6 +30,7 @@ use {
     tokio::time::sleep,
 };
 
+pub use self::transaction::verify_semantic;
 use self::{
     input_selection::{get_custom_inputs, get_inputs},
     transaction::{prepare_transaction, sign_transaction},

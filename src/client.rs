@@ -8,7 +8,7 @@ use std::{
     ops::Range,
     str::FromStr,
     sync::{Arc, RwLock},
-    time::Duration,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use bee_message::{
@@ -58,7 +58,7 @@ use crate::{
         ClientMessageBuilder, GetAddressesBuilder,
     },
     builder::{ClientBuilder, NetworkInfo},
-    constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
+    constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL, FIVE_MINUTES_IN_SECONDS},
     error::{Error, Result},
     node_api::{high_level::GetAddressBuilder, indexer_api::query_parameters::QueryParameter},
     node_manager::node::{Node, NodeAuth},
@@ -916,6 +916,23 @@ impl Client {
             false => self.get_message_data(&message_id).await?,
         };
         Ok((message_id, msg))
+    }
+
+    /// Returns checked local time and milestone index.
+    pub async fn get_time_and_milestone_checked(&self) -> Result<(u64, u32)> {
+        let local_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs();
+        let status_response = self.get_info().await?.nodeinfo.status;
+        let latest_ms_timestamp = status_response.latest_milestone_timestamp;
+        // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
+        if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
+            .contains(&local_time)
+        {
+            return Err(Error::TimeNotSynced(local_time, latest_ms_timestamp));
+        }
+        Ok((local_time, status_response.latest_milestone_index))
     }
 
     //////////////////////////////////////////////////////////////////////

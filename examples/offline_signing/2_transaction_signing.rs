@@ -20,7 +20,7 @@ use iota_client::{
         payload::{transaction::TransactionPayload, Payload},
         unlock_block::UnlockBlocks,
     },
-    signing::{mnemonic::MnemonicSigner, verify_unlock_blocks, Network, SignMessageMetadata},
+    signing::{mnemonic::MnemonicSigner, Network, SignMessageMetadata},
     Result,
 };
 
@@ -56,9 +56,7 @@ async fn main() -> Result<()> {
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let signed_transaction = TransactionPayload::new(prepared_transaction.essence, unlock_blocks)?;
-
-    verify_unlock_blocks(&signed_transaction, input_addresses)?;
+    let signed_transaction = TransactionPayload::new(prepared_transaction.essence.clone(), unlock_blocks.clone())?;
 
     println!("Signed transaction.");
 

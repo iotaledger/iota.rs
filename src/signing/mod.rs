@@ -27,9 +27,8 @@ use std::{
 use bee_message::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
-    payload::transaction::{TransactionEssence, TransactionPayload},
-    signature::Signature,
-    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock, UnlockBlocks},
+    payload::transaction::TransactionEssence,
+    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock},
 };
 #[cfg(not(feature = "wasm"))]
 use tokio::sync::Mutex;
@@ -221,52 +220,4 @@ pub trait Signer: Send + Sync {
         }
         Ok(unlock_blocks)
     }
-}
-
-// todo use validation function from bee-ledger if possible
-/// Verify unlock blocks of a transaction
-pub fn verify_unlock_blocks(transaction_payload: &TransactionPayload, inputs: Vec<Address>) -> crate::Result<()> {
-    let essence_hash = transaction_payload.essence().hash();
-    let unlock_blocks = transaction_payload.unlock_blocks();
-    for (index, address) in inputs.iter().enumerate() {
-        verify_signature(address, unlock_blocks, index, &essence_hash)?;
-    }
-    Ok(())
-}
-
-fn verify_signature(
-    address: &Address,
-    unlock_blocks: &UnlockBlocks,
-    index: usize,
-    essence_hash: &[u8; 32],
-) -> crate::Result<()> {
-    let signature_unlock_block = match unlock_blocks.get(index) {
-        Some(unlock_block) => match unlock_block {
-            UnlockBlock::Signature(b) => b,
-            UnlockBlock::Reference(b) => match unlock_blocks.get(b.index().into()) {
-                Some(UnlockBlock::Signature(unlock_block)) => unlock_block,
-                _ => return Err(crate::Error::MissingUnlockBlock),
-            },
-            UnlockBlock::Alias(b) => match unlock_blocks.get(b.index().into()) {
-                Some(UnlockBlock::Signature(unlock_block)) => unlock_block,
-                _ => return Err(crate::Error::MissingUnlockBlock),
-            },
-            UnlockBlock::Nft(b) => match unlock_blocks.get(b.index().into()) {
-                Some(UnlockBlock::Signature(unlock_block)) => unlock_block,
-                _ => return Err(crate::Error::MissingUnlockBlock),
-            },
-        },
-        None => return Err(crate::Error::MissingUnlockBlock),
-    };
-    match address {
-        Address::Ed25519(address) => {
-            let Signature::Ed25519(ed25519_signature) = signature_unlock_block.signature();
-            ed25519_signature.is_valid(essence_hash, address)?
-        }
-        // todo handle other addresses
-        Address::Alias(_address) => {}
-        Address::Nft(_address) => {}
-    };
-
-    Ok(())
 }

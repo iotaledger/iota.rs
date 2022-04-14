@@ -8,7 +8,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use bee_message::output::TokenId;
+use bee_message::{output::TokenId, semantic::ConflictReason};
 use primitive_types::U256;
 use serde::{ser::Serializer, Serialize};
 
@@ -232,6 +232,12 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("no snapshot path has been supplied")]
     StrongholdSnapshotPathMissing,
+    /// The semantic validation of a transaction failed.
+    #[error("the semantic validation of a transaction failed")]
+    TransactionSemantic(ConflictReason),
+    /// Local time doesn't match the time of the latest milestone timestamp
+    #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
+    TimeNotSynced(u64, u64),
 }
 
 // map most errors to a single error but there are some errors that
