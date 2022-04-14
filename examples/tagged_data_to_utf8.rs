@@ -1,8 +1,8 @@
-// Copyright 2021 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example tagged_data_to_utf8 --release
-//!
+
 use bee_message::payload::TaggedDataPayload;
 use iota_client::{Client, Result};
 
