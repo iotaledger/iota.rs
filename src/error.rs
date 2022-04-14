@@ -235,8 +235,8 @@ pub enum Error {
     /// The semantic validation of a transaction failed.
     #[error("the semantic validation of a transaction failed")]
     TransactionSemantic(ConflictReason),
-    /// Local time doesn't match the time of the latest timestamp
-    #[error("Local time {0} doesn't match the time of the latest timestamp: {1}")]
+    /// Local time doesn't match the time of the latest milestone timestamp
+    #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
     TimeNotSynced(u64, u64),
 }
 
