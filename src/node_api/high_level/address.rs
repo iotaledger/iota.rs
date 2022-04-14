@@ -7,7 +7,7 @@ use bee_message::output::{Output, TokenId};
 use bee_rest_api::types::responses::OutputResponse;
 use primitive_types::U256;
 
-use crate::{node_api::indexer_api::query_parameters::QueryParameter, Client, Result};
+use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
 /// Balance information for an address.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -37,7 +37,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get the IOTA and native tokens balance of a given Bech32 encoded address, ignoring
     /// outputs with additional unlock conditions.
     pub async fn balance(self, address: &str) -> Result<AddressBalance> {
-        let output_ids = crate::node_api::indexer_api::routes::output_ids(
+        let output_ids = crate::node_api::indexer::routes::output_ids(
             self.client,
             vec![
                 QueryParameter::Address(address.to_string()),
@@ -49,7 +49,7 @@ impl<'a> GetAddressBuilder<'a> {
         .await?;
 
         let outputs_responses: Vec<OutputResponse> =
-            crate::node_api::core_api::get_outputs(self.client, output_ids).await?;
+            crate::node_api::core::get_outputs(self.client, output_ids).await?;
 
         let mut total_balance = 0;
         let mut native_tokens_map = HashMap::new();
@@ -85,7 +85,7 @@ impl<'a> GetAddressBuilder<'a> {
     }
     /// Get outputs
     pub async fn outputs(self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputResponse>> {
-        let output_ids = crate::node_api::indexer_api::routes::output_ids(self.client, query_parameters).await?;
-        crate::node_api::core_api::get_outputs(self.client, output_ids).await
+        let output_ids = crate::node_api::indexer::routes::output_ids(self.client, query_parameters).await?;
+        crate::node_api::core::get_outputs(self.client, output_ids).await
     }
 }

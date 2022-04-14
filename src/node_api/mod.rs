@@ -3,8 +3,8 @@
 
 //! node API modules
 
-pub mod core_api;
+pub mod core;
 pub mod high_level;
-pub mod indexer_api;
+pub mod indexer;
 #[cfg(feature = "mqtt")]
 pub mod mqtt;

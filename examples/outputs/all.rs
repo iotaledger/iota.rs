@@ -22,7 +22,7 @@ use iota_client::{
         },
         payload::{transaction::TransactionEssence, Payload},
     },
-    node_api::indexer_api::query_parameters::QueryParameter,
+    node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner,
     Client, Result,
@@ -251,7 +251,7 @@ async fn main() -> Result<()> {
     ));
 
     // get additional input for the new basic output
-    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
+    let output_ids = iota_client::node_api::indexer::routes::output_ids(
         &client,
         vec![QueryParameter::Address(address.to_bech32("atoi"))],
     )

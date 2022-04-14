@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner, Client, Result,
+    node_api::indexer::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner, Client, Result,
 };
 
 /// In this example we will get the account balance of a known seed with quorum, which will compare the responses from

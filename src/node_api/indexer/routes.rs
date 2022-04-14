@@ -5,7 +5,7 @@
 use bee_message::output::{AliasId, FoundryId, NftId, OutputId};
 
 use crate::{
-    node_api::indexer_api::{get_output_ids_with_pagination, query_parameters::QueryParameter},
+    node_api::indexer::{get_output_ids_with_pagination, query_parameters::QueryParameter},
     Client, Result,
 };
 

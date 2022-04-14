@@ -15,7 +15,7 @@ use crate::{
     api::{
         ClientMessageBuilderOptions as GenerateMessageOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
     },
-    node_api::indexer_api::query_parameters::QueryParameter,
+    node_api::indexer::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
 };
 

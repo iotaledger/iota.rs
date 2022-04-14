@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner,
+    node_api::indexer::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner,
     utils::request_funds_from_faucet, Client, Result,
 };
 
@@ -37,14 +37,14 @@ async fn main() -> Result<()> {
         .await?
     );
 
-    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
+    let output_ids = iota_client::node_api::indexer::routes::output_ids(
         &client,
         vec![QueryParameter::Address(address.to_bech32("atoi"))],
     )
     .await?;
     println!("output ids {:?}", output_ids);
 
-    let outputs = iota_client::node_api::core_api::get_outputs(&client, output_ids).await?;
+    let outputs = iota_client::node_api::core::get_outputs(&client, output_ids).await?;
 
     println!("outputs {:?}", outputs);
     Ok(())
