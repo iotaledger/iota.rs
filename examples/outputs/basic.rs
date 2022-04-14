@@ -3,6 +3,9 @@
 
 //! cargo run --example basic --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     bee_message::{
         milestone::MilestoneIndex,
@@ -19,9 +22,6 @@ use iota_client::{
     utils::request_funds_from_faucet,
     Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will send basic outputs with different feature blocks
 

@@ -3,10 +3,10 @@
 
 //! cargo run --example split_funds --release
 
-use iota_client::{request_funds_from_faucet, signing::mnemonic::MnemonicSigner, Client, Result};
-extern crate dotenv;
-use dotenv::dotenv;
 use std::env;
+
+use dotenv::dotenv;
+use iota_client::{request_funds_from_faucet, signing::mnemonic::MnemonicSigner, Client, Result};
 
 /// In this example we will send 100 basic outputs to our first address
 

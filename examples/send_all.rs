@@ -3,6 +3,12 @@
 
 //! cargo run --example send_all --release
 
+use std::{
+    collections::hash_map::{Entry, HashMap},
+    env,
+};
+
+use dotenv::dotenv;
 use iota_client::{
     bee_message::output::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeToken, Output, UnlockCondition,
@@ -10,12 +16,6 @@ use iota_client::{
     node_api::indexer_api::query_parameters::QueryParameter,
     signing::mnemonic::MnemonicSigner,
     Client, Result,
-};
-extern crate dotenv;
-use dotenv::dotenv;
-use std::{
-    collections::hash_map::{Entry, HashMap},
-    env,
 };
 
 /// In this example we will get the outputs of the first address of the seed and send everything

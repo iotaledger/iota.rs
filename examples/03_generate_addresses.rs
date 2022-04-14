@@ -3,12 +3,12 @@
 
 //! cargo run --example 03_generate_addresses --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilder, constants::SHIMMER_TESTNET_BECH32_HRP, signing::mnemonic::MnemonicSigner, Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will create addresses from a seed defined in .env
 

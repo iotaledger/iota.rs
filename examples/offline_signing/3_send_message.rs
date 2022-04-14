@@ -4,8 +4,9 @@
 //! In this example we send the signed transaction in a message.
 //! `cargo run --example 3_send_message --release`.
 
-use iota_client::{bee_message::payload::Payload, Client, Result};
 use std::{fs::File, io::prelude::*, path::Path};
+
+use iota_client::{bee_message::payload::Payload, Client, Result};
 
 const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_transaction.json";
 

@@ -1,17 +1,17 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::ops::Range;
+
+use bee_message::address::Address;
+use serde::Deserialize;
+
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
     signing::{GenerateAddressMetadata, Network, SignerHandle},
     Client, Error, Result,
 };
-
-use bee_message::address::Address;
-use serde::Deserialize;
-
-use std::ops::Range;
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {

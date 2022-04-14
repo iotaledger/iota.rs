@@ -4,37 +4,6 @@
 //! Signing module to allow using different signer types for address generation and transaction essence signing
 
 #[cfg(feature = "ledger")]
-use self::ledger::LedgerSigner;
-#[cfg(feature = "stronghold")]
-use self::stronghold::StrongholdSigner;
-use crate::signing::{
-    mnemonic::MnemonicSigner,
-    types::{InputSigningData, SignerTypeDto},
-};
-
-use bee_message::{
-    address::{Address, AliasAddress, Ed25519Address, NftAddress},
-    output::Output,
-    payload::transaction::TransactionEssence,
-    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock},
-};
-
-#[cfg(feature = "wasm")]
-use std::sync::Mutex;
-#[cfg(not(feature = "wasm"))]
-use tokio::sync::Mutex;
-
-use std::{
-    collections::HashMap,
-    fmt::{Debug, Formatter, Result},
-    ops::{Deref, Range},
-    sync::Arc,
-};
-
-#[cfg(feature = "stronghold")]
-use std::path::PathBuf;
-
-#[cfg(feature = "ledger")]
 pub mod ledger;
 /// Module for signing with a mnemonic or seed
 pub mod mnemonic;
@@ -44,7 +13,35 @@ pub mod stronghold;
 /// Signing related types
 pub mod types;
 
+#[cfg(feature = "stronghold")]
+use std::path::PathBuf;
+#[cfg(feature = "wasm")]
+use std::sync::Mutex;
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Formatter, Result},
+    ops::{Deref, Range},
+    sync::Arc,
+};
+
+use bee_message::{
+    address::{Address, AliasAddress, Ed25519Address, NftAddress},
+    output::Output,
+    payload::transaction::TransactionEssence,
+    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock},
+};
+#[cfg(not(feature = "wasm"))]
+use tokio::sync::Mutex;
 pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetadata, SignerType};
+
+#[cfg(feature = "ledger")]
+use self::ledger::LedgerSigner;
+#[cfg(feature = "stronghold")]
+use self::stronghold::StrongholdSigner;
+use crate::signing::{
+    mnemonic::MnemonicSigner,
+    types::{InputSigningData, SignerTypeDto},
+};
 
 /// SignerHandle, possible signers are mnemonic, Stronghold and Ledger
 #[derive(Clone)]

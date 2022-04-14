@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_remainder_address --release
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{
     node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner, Client, Result,
 };
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
 
 /// In this example we will send 9_000_000 tokens to a given receiver and 1_000_000 tokens to a custom remainder
 /// address. The used addresses belong to the first seed in .env.example.

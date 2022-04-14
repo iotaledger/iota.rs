@@ -3,10 +3,10 @@
 
 //! cargo run --example search_address --release
 
-use iota_client::{api::search_address, constants::IOTA_COIN_TYPE, signing::mnemonic::MnemonicSigner, Client, Result};
-extern crate dotenv;
-use dotenv::dotenv;
 use std::env;
+
+use dotenv::dotenv;
+use iota_client::{api::search_address, constants::IOTA_COIN_TYPE, signing::mnemonic::MnemonicSigner, Client, Result};
 
 /// In this example we will try to find the index and address type of an address
 

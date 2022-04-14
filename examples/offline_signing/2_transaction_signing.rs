@@ -5,6 +5,13 @@
 //! This example uses dotenv, which is not safe for use in production.
 //! `cargo run --example 2_transaction_signing --release`.
 
+use std::{
+    env,
+    fs::File,
+    io::{prelude::*, BufWriter},
+    path::Path,
+};
+
 use dotenv::dotenv;
 use iota_client::{
     api::{verify_semantic, PreparedTransactionData},
@@ -16,12 +23,6 @@ use iota_client::{
     },
     signing::{mnemonic::MnemonicSigner, Network, SignMessageMetadata},
     Error, Result,
-};
-use std::{
-    env,
-    fs::File,
-    io::{prelude::*, BufWriter},
-    path::Path,
 };
 
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";

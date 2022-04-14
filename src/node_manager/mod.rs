@@ -3,16 +3,10 @@
 
 //! The node manager that takes care of sending requests with synced nodes and quorum if enabled
 
-use crate::{
-    error::{Error, Result},
-    node_manager::builder::NodeManagerBuilder,
-};
-
-use bee_rest_api::types::responses::InfoResponse;
-
-use log::warn;
-use regex::Regex;
-use serde_json::Value;
+pub mod builder;
+pub(crate) mod http_client;
+/// Structs for nodes
+pub mod node;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -20,15 +14,18 @@ use std::{
     time::Duration,
 };
 
-pub mod builder;
-pub(crate) mod http_client;
-use http_client::HttpClient;
-/// Structs for nodes
-pub mod node;
-use node::Node;
-
+use bee_rest_api::types::responses::InfoResponse;
+use log::warn;
+use regex::Regex;
+use serde_json::Value;
 #[cfg(all(feature = "sync", not(feature = "async")))]
 use ureq::{Agent, AgentBuilder};
+
+use self::{http_client::HttpClient, node::Node};
+use crate::{
+    error::{Error, Result},
+    node_manager::builder::NodeManagerBuilder,
+};
 
 // Nodemanger, takes care of selecting node(s) for requests until a result is returned or if quorum
 // is enabled it will send the requests for some endpoints to multiple nodes and compares the results

@@ -3,6 +3,12 @@
 
 //! Automatic input selection for transactions
 
+use bee_message::{
+    address::Address,
+    output::{feature_block::FeatureBlock, ByteCostConfig},
+};
+use crypto::keys::slip10::Chain;
+
 use crate::{
     api::{
         address::search_address,
@@ -15,12 +21,6 @@ use crate::{
     signing::types::InputSigningData,
     Error, Result,
 };
-
-use bee_message::{
-    address::Address,
-    output::{feature_block::FeatureBlock, ByteCostConfig},
-};
-use crypto::keys::slip10::Chain;
 
 /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
 /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]

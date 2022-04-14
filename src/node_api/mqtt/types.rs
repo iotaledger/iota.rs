@@ -3,13 +3,13 @@
 
 //! MQTT types
 
-use crate::Result;
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use bee_message::Message;
 use regex::RegexSet;
 use serde_json::Value;
 
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use crate::Result;
 
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
 

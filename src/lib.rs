@@ -54,23 +54,21 @@ pub mod utils;
 pub use bee_message;
 pub use bee_pow as pow;
 pub use bee_rest_api;
-pub use builder::ClientBuilder;
-pub use client::*;
 pub use crypto::{self, keys::slip10::Seed};
-pub use error::*;
 pub use fern_logger as logger;
-#[cfg(feature = "mqtt")]
-pub use node_api::mqtt::*;
 pub use packable;
 pub use url::Url;
-pub use utils::*;
+
+#[cfg(feature = "mqtt")]
+pub use self::node_api::mqtt::*;
+pub use self::{builder::ClientBuilder, client::*, error::*, utils::*};
 
 #[cfg(feature = "mqtt")]
 mod async_runtime {
+    use std::sync::Mutex;
+
     use once_cell::sync::OnceCell;
     use tokio::runtime::Runtime;
-
-    use std::sync::Mutex;
 
     static RUNTIME: OnceCell<Mutex<Runtime>> = OnceCell::new();
 

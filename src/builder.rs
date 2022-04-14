@@ -2,6 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Builder of the Client Instance
+use std::{
+    sync::{Arc, RwLock},
+    time::Duration,
+};
+
+use bee_rest_api::types::responses::RentStructureResponse;
+use log::LevelFilter;
+#[cfg(not(feature = "wasm"))]
+use {
+    std::collections::HashSet,
+    tokio::{runtime::Runtime, sync::broadcast::channel},
+};
+
+#[cfg(feature = "mqtt")]
+use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{
     client::*,
     constants::{
@@ -13,24 +28,6 @@ use crate::{
         builder::validate_url,
         node::{Node, NodeAuth},
     },
-};
-
-use bee_rest_api::types::responses::RentStructureResponse;
-
-use log::LevelFilter;
-
-use std::{
-    sync::{Arc, RwLock},
-    time::Duration,
-};
-
-#[cfg(feature = "mqtt")]
-use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
-
-#[cfg(not(feature = "wasm"))]
-use {
-    std::collections::HashSet,
-    tokio::{runtime::Runtime, sync::broadcast::channel},
 };
 
 /// Struct containing network and PoW related information

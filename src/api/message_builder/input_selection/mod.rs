@@ -3,7 +3,16 @@
 
 //! Input selection for transactions
 
-use crate::{signing::types::InputSigningData, Error, Result};
+mod automatic;
+mod manual;
+mod native_token_helpers;
+mod output_data;
+pub mod types;
+
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    str::FromStr,
+};
 
 use bee_message::{
     address::{Address, Ed25519Address},
@@ -14,24 +23,15 @@ use bee_message::{
     },
 };
 use packable::PackableExt;
-
 use primitive_types::U256;
 
-use std::{
-    collections::{hash_map::Entry, HashMap},
-    str::FromStr,
+pub(crate) use self::{automatic::get_inputs, manual::get_custom_inputs};
+use self::{
+    native_token_helpers::{get_minted_and_burned_native_tokens, get_remainder_native_tokens, missing_native_tokens},
+    output_data::{get_accumulated_output_amounts, get_remainder},
+    types::SelectedTransactionData,
 };
-
-mod automatic;
-pub(crate) use automatic::get_inputs;
-mod manual;
-pub(crate) use manual::get_custom_inputs;
-mod native_token_helpers;
-mod output_data;
-pub mod types;
-use native_token_helpers::{get_minted_and_burned_native_tokens, get_remainder_native_tokens, missing_native_tokens};
-use output_data::{get_accumulated_output_amounts, get_remainder};
-use types::SelectedTransactionData;
+use crate::{signing::types::InputSigningData, Error, Result};
 
 /// Select inputs from provided inputs([InputSigningData]) for provided [Output]s, validate amounts and create remainder
 /// output if necessary. Also checks for alias, foundry and nft that they exist in the inputs if required.

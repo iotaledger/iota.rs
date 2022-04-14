@@ -1,13 +1,8 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    api::{
-        ClientMessageBuilderOptions as GenerateMessageOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
-    },
-    node_api::indexer_api::query_parameters::QueryParameter,
-    node_manager::node::NodeAuth,
-};
+use std::ops::Range;
+
 use bee_message::{
     input::UtxoInput,
     output::{AliasId, FoundryId, NftId, OutputId},
@@ -15,7 +10,14 @@ use bee_message::{
     Message, MessageId,
 };
 use serde::Deserialize;
-use std::ops::Range;
+
+use crate::{
+    api::{
+        ClientMessageBuilderOptions as GenerateMessageOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
+    },
+    node_api::indexer_api::query_parameters::QueryParameter,
+    node_manager::node::NodeAuth,
+};
 
 /// Each public client method.
 #[derive(Clone, Debug, Deserialize)]

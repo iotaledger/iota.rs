@@ -3,21 +3,19 @@
 
 //! IOTA node indexer API
 
-use crate::{
-    node_api::indexer_api::{
-        query_parameters::{QueryParameter, QueryParameters},
-        responses::OutputIdsResponse,
-    },
-    Client, Result,
-};
-
-use bee_message::output::OutputId;
-
-use std::str::FromStr;
-
 pub mod query_parameters;
 pub mod responses;
 pub mod routes;
+
+use std::str::FromStr;
+
+use bee_message::output::OutputId;
+
+use self::{
+    query_parameters::{QueryParameter, QueryParameters},
+    responses::OutputIdsResponse,
+};
+use crate::{Client, Result};
 
 /// Get all output ids for a provided URL route and query parameters
 pub async fn get_output_ids_with_pagination(

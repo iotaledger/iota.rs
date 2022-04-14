@@ -57,18 +57,20 @@ mod db;
 mod encryption;
 mod signer;
 
+use std::{path::PathBuf, sync::Arc, time::Duration};
+
+use derive_builder::Builder;
+use iota_stronghold::{ResultMessage, Stronghold};
+use log::debug;
+use riker::actors::ActorSystem;
+use tokio::{sync::Mutex, task::JoinHandle};
+use zeroize::{Zeroize, Zeroizing};
+
 use self::common::{PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
 use crate::{
     signing::{SignerHandle, SignerType},
     Error, Result,
 };
-use derive_builder::Builder;
-use iota_stronghold::{ResultMessage, Stronghold};
-use log::debug;
-use riker::actors::ActorSystem;
-use std::{path::PathBuf, sync::Arc, time::Duration};
-use tokio::{sync::Mutex, task::JoinHandle};
-use zeroize::{Zeroize, Zeroizing};
 
 /// A wrapper on [Stronghold].
 ///

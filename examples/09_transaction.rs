@@ -3,10 +3,10 @@
 
 //! cargo run --example 09_transaction --release
 
-use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
-extern crate dotenv;
-use dotenv::dotenv;
 use std::env;
+
+use dotenv::dotenv;
+use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
 
 /// In this example we will send a transaction
 

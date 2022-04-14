@@ -1,13 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
-    bee_message::output::BasicOutputBuilder,
-    constants::SHIMMER_COIN_TYPE,
-    signing::SignerHandle,
-    Client, Error, Result,
-};
+pub mod input_selection;
+pub mod pow;
+pub mod transaction;
+
+use std::{collections::HashSet, ops::Range};
 
 use bee_message::{
     address::{Address, Ed25519Address},
@@ -20,12 +18,9 @@ use bee_message::{
     payload::{Payload, TaggedDataPayload},
     Message, MessageId,
 };
-use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
-
-use std::{collections::HashSet, ops::Range};
-
 #[cfg(feature = "wasm")]
 use gloo_timers::future::TimeoutFuture;
+use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
 #[cfg(not(feature = "wasm"))]
 use {
     crate::api::{do_pow, miner::ClientMinerBuilder, pow::finish_pow},
@@ -35,12 +30,18 @@ use {
     tokio::time::sleep,
 };
 
-pub mod input_selection;
-pub mod pow;
-pub mod transaction;
-use input_selection::{get_custom_inputs, get_inputs};
-pub use transaction::verify_semantic;
-use transaction::{prepare_transaction, sign_transaction};
+pub use self::transaction::verify_semantic;
+use self::{
+    input_selection::{get_custom_inputs, get_inputs},
+    transaction::{prepare_transaction, sign_transaction},
+};
+use crate::{
+    api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
+    bee_message::output::BasicOutputBuilder,
+    constants::SHIMMER_COIN_TYPE,
+    signing::SignerHandle,
+    Client, Error, Result,
+};
 
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {

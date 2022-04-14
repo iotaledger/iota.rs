@@ -3,7 +3,7 @@
 
 //! IOTA node core API routes
 
-use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
+use std::str::FromStr;
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, Message, MessageDto, MessageId};
 use bee_rest_api::types::{
@@ -15,7 +15,7 @@ use bee_rest_api::types::{
 };
 use packable::PackableExt;
 
-use std::str::FromStr;
+use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
 
 // https://github.com/gohornet/hornet/blob/stardust-utxo/plugins/restapi/v2/plugin.go
 
