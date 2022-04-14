@@ -139,9 +139,11 @@ pub async fn sign_transaction(
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlock_blocks.clone())?;
+    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlock_blocks)?;
 
-    let conflict = verify_semantic(&prepared_transaction_data, &tx_payload, &unlock_blocks)?;
+    let (local_time, milestone_index) = message_builder.client.get_time_and_milestone_checked().await?;
+
+    let conflict = verify_semantic(&prepared_transaction_data, &tx_payload, milestone_index, local_time)?;
 
     if conflict != ConflictReason::None {
         return Err(Error::TransactionSemantic(conflict));
@@ -155,7 +157,8 @@ pub async fn sign_transaction(
 pub fn verify_semantic(
     prepared_transaction_data: &PreparedTransactionData,
     transaction: &TransactionPayload,
-    unlock_blocks: &UnlockBlocks,
+    milestone_index: u32,
+    local_time: u64,
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();
@@ -181,10 +184,10 @@ pub fn verify_semantic(
         &transaction_id,
         &essence,
         inputs.iter().map(|(id, input)| (id, *input)),
-        &unlock_blocks,
-        MilestoneIndex(0),
-        0,
+        transaction.unlock_blocks(),
+        MilestoneIndex(milestone_index),
+        local_time,
     );
 
-    semantic_validation(context, inputs.as_slice(), &unlock_blocks).map_err(Error::MessageError)
+    semantic_validation(context, inputs.as_slice(), transaction.unlock_blocks()).map_err(Error::MessageError)
 }

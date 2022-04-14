@@ -14,15 +14,14 @@ use std::{
 
 use dotenv::dotenv;
 use iota_client::{
-    api::{verify_semantic, PreparedTransactionData},
+    api::PreparedTransactionData,
     bee_message::{
         address::Address,
         payload::{transaction::TransactionPayload, Payload},
-        semantic::ConflictReason,
         unlock_block::UnlockBlocks,
     },
     signing::{mnemonic::MnemonicSigner, Network, SignMessageMetadata},
-    Error, Result,
+    Result,
 };
 
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
@@ -58,12 +57,6 @@ async fn main() -> Result<()> {
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
     let signed_transaction = TransactionPayload::new(prepared_transaction.essence.clone(), unlock_blocks.clone())?;
-
-    let conflict = verify_semantic(&prepared_transaction, &signed_transaction, &unlock_blocks)?;
-
-    if conflict != ConflictReason::None {
-        return Err(Error::TransactionSemantic(conflict));
-    }
 
     println!("Signed transaction.");
 
