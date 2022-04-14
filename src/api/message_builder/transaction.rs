@@ -162,23 +162,20 @@ pub fn verify_semantic(
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();
+    let output_ids = prepared_transaction_data
+        .input_signing_data_entries
+        .iter()
+        .map(|i| i.output_id())
+        .collect::<Result<Vec<OutputId>>>()?;
     let outputs = prepared_transaction_data
         .input_signing_data_entries
         .iter()
         .map(|i| Ok(Output::try_from(&i.output_response.output)?))
         .collect::<Result<Vec<Output>>>()?;
-    let inputs = prepared_transaction_data
-        .input_signing_data_entries
-        .iter()
+    let inputs = output_ids
+        .into_iter()
         .zip(outputs.iter())
-        .map(|(i, o)| {
-            Ok((
-                // PANIC: at this point, OutputIds have been validated many times already.
-                i.output_id().unwrap(),
-                o,
-            ))
-        })
-        .collect::<Result<Vec<(OutputId, &Output)>>>()?;
+        .collect::<Vec<(OutputId, &Output)>>();
 
     let context = ValidationContext::new(
         &transaction_id,
