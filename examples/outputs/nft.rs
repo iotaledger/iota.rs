@@ -15,7 +15,7 @@ use iota_client::{
         },
         payload::{transaction::TransactionEssence, Payload},
     },
-    node_api::indexer_api::query_parameters::QueryParameter,
+    node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner,
     Client, Result,

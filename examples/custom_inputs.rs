@@ -6,7 +6,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::input::UtxoInput, node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
+    bee_message::input::UtxoInput, node_api::indexer::query_parameters::QueryParameter, request_funds_from_faucet,
     signing::mnemonic::MnemonicSigner, Client, Result,
 };
 
@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
     );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
-    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
+    let output_ids = iota_client::node_api::indexer::routes::output_ids(
         &client,
         vec![QueryParameter::Address(addresses[0].clone())],
     )

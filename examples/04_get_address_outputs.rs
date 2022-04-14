@@ -3,7 +3,7 @@
 
 //! cargo run --example 04_get_address_outputs --release
 
-use iota_client::{node_api::indexer_api::query_parameters::QueryParameter, Client, Result};
+use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
 /// In this example we will get the outputs of a known address
 

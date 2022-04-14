@@ -13,7 +13,7 @@ use iota_client::{
     bee_message::output::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeToken, Output, UnlockCondition,
     },
-    node_api::indexer_api::query_parameters::QueryParameter,
+    node_api::indexer::query_parameters::QueryParameter,
     signing::mnemonic::MnemonicSigner,
     Client, Result,
 };

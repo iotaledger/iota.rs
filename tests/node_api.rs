@@ -6,7 +6,7 @@
 use std::str::FromStr;
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, MessageId};
-use iota_client::{node_api::indexer_api::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner};
+use iota_client::{node_api::indexer::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner};
 
 const DEFAULT_NODE_URL: &str = "http://localhost:14265";
 

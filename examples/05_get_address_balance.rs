@@ -10,7 +10,7 @@ use std::{
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::Output, node_api::indexer_api::query_parameters::QueryParameter,
+    bee_message::output::Output, node_api::indexer::query_parameters::QueryParameter,
     signing::mnemonic::MnemonicSigner, Client, Result,
 };
 

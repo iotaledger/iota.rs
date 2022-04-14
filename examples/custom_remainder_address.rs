@@ -6,8 +6,8 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    node_api::indexer_api::query_parameters::QueryParameter, request_funds_from_faucet,
-    signing::mnemonic::MnemonicSigner, Client, Result,
+    node_api::indexer::query_parameters::QueryParameter, request_funds_from_faucet, signing::mnemonic::MnemonicSigner,
+    Client, Result,
 };
 
 /// In this example we will send 9_000_000 tokens to a given receiver and 1_000_000 tokens to a custom remainder
@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
     );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
-    let output_ids = iota_client::node_api::indexer_api::routes::output_ids(
+    let output_ids = iota_client::node_api::indexer::routes::output_ids(
         &client,
         vec![QueryParameter::Address(sender_address.clone())],
     )

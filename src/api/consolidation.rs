@@ -10,7 +10,7 @@ use bee_message::{
 };
 
 use crate::{
-    api::message_builder::ClientMessageBuilder, node_api::indexer_api::query_parameters::QueryParameter,
+    api::message_builder::ClientMessageBuilder, node_api::indexer::query_parameters::QueryParameter,
     signing::SignerHandle, Client, Result,
 };
 
