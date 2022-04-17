@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {MessageHandler} from './MessageHandler';
+import type {ClientOptions} from "../types";
 
 export class Client {
-    messageHandler: any;
+    private messageHandler: MessageHandler;
     
-    constructor(options: any) {
+    constructor(options: ClientOptions) {
         this.messageHandler = new MessageHandler(options);
     }
 
@@ -21,7 +22,7 @@ export class Client {
 
     // MQTT
     async listen(topics: any, callback: any) {
-        return this.messageHandler.listen(topics, callback, this.messageHandler);
+        return this.messageHandler.listen(topics, callback);
     }
 }
 
