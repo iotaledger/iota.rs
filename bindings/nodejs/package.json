@@ -10,12 +10,13 @@
   "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
   "license": "Apache-2.0",
   "dependencies": {
-    "neon-cli": "^0.8",
+    "cargo-cp-artifact": "^0.1.5",
     "prebuild-install": "^6.1.2"
   },
   "scripts": {
     "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
-    "build:neon": "neon build --release && node scripts/move-lib.js",
+    "build": "npm run build:neon",
+    "build:neon": "cargo-cp-artifact -nc ./index.node -- cargo build --release --message-format=json-render-diagnostics",
     "rebuild": "npm run build:neon && node scripts/strip.js",
     "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
     "prebuild:electron": "node scripts/electron-prebuild.js",
