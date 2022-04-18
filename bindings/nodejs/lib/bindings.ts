@@ -2,26 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { MessageHandler } from './MessageHandler';
-// @ts-ignore
-const addon = require('../../index.node');
 
-const {
-    initLogger,
-    sendMessage, 
-    messageHandlerNew,
-    listen
-} = addon;
+// @ts-ignore: path is set to match runtime transpiled js path
+import addon = require('../../index.node');
 
-const sendMessageAsync = (message: string, handler: MessageHandler): Promise<string> => new Promise((resolve, reject) => {
-    sendMessage(message, handler, (error: Error, result: string) => {
-        if (error) {
-            reject(error);
-        } else {
-            resolve(result);
-        }
-    })
-});
+const { initLogger, sendMessage, messageHandlerNew, listen } = addon;
 
-export {
-    initLogger, sendMessageAsync, messageHandlerNew, listen
-}
+const sendMessageAsync = (
+    message: string,
+    handler: MessageHandler,
+): Promise<string> =>
+    new Promise((resolve, reject) => {
+        sendMessage(message, handler, (error: Error, result: string) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+
+export { initLogger, sendMessageAsync, messageHandlerNew, listen };

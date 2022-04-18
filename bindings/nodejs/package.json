@@ -1,33 +1,42 @@
 {
-  "name": "@iota/client",
-  "version": "2.2.3",
-  "description": "Node.js binding to the client library",
-  "main": "out/lib/index.js",
-  "types": "out/lib/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/iotaledger/iota.rs"
-  },
-  "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "cargo-cp-artifact": "^0.1.5",
-    "prebuild-install": "^6.1.2"
-  },
-  "scripts": {
-    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
-    "build": "npm run build:neon && tsc",
-    "build:neon": "cargo-cp-artifact -nc ./index.node -- cargo build --release --message-format=json-render-diagnostics",
-    "rebuild": "npm run build:neon && tsc && node scripts/strip.js",
-    "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
-    "prebuild:electron": "node scripts/electron-prebuild.js",
-    "build:docs": "./node_modules/.bin/jsdoc lib/index.js",
-    "test": "npm run rebuild && mocha ./tests --exclude assertions.js --timeout 0"
-  },
-  "devDependencies": {
-    "electron-build-env": "^0.2.0",
-    "mocha": "^8.3.2",
-    "prebuild": "^10.0.1",
-    "typescript": "^4.3.4"
-  }
+    "name": "@iota/client",
+    "version": "2.2.3",
+    "description": "Node.js binding to the client library",
+    "main": "out/lib/index.js",
+    "types": "out/lib/index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/iotaledger/iota.rs"
+    },
+    "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "cargo-cp-artifact": "^0.1.5",
+        "prebuild-install": "^6.1.2"
+    },
+    "scripts": {
+        "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
+        "format": "prettier --ignore-path .eslintignore -w {,*/**/}*.{ts,js,json}",
+        "format-check": "prettier --ignore-path .eslintignore -c {,*/**/}*.{ts,js,json}",
+        "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
+        "build": "npm run build:neon && tsc",
+        "build:neon": "cargo-cp-artifact -nc ./index.node -- cargo build --release --message-format=json-render-diagnostics",
+        "rebuild": "npm run build:neon && tsc && node scripts/strip.js",
+        "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
+        "prebuild:electron": "node scripts/electron-prebuild.js",
+        "build:docs": "./node_modules/.bin/jsdoc lib/index.js",
+        "test": "mocha ./tests --exclude assertions.js --timeout 0"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.19.0",
+        "@typescript-eslint/parser": "^5.19.0",
+        "electron-build-env": "^0.2.0",
+        "eslint": "^8.13.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "mocha": "^8.3.2",
+        "prebuild": "^10.0.1",
+        "prettier": "^2.6.2",
+        "typescript": "^4.3.4"
+    }
 }

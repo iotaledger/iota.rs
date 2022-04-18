@@ -1,0 +1,6 @@
+scripts
+examples
+target
+**/node_modules/
+**/out/
+**/tests/
