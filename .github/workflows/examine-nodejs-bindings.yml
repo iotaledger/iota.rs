@@ -109,6 +109,16 @@ jobs:
           name: Clippy Results for the Node.js Bindings
 
       # TODO: Lint the JavaScript code too
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Lint
+        run: yarn lint
 
   check-unused-deps:
     name: Check Unused Dependencies
@@ -160,6 +170,16 @@ jobs:
           args: --manifest-path bindings/nodejs/native/Cargo.toml --all -- --check
 
       # TODO: Check the JavaScript code too
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Format
+        run: yarn format-check
 
   audit:
     name: Perform Security Audit
