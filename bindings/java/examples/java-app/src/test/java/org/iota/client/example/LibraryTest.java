@@ -25,7 +25,7 @@ public class LibraryTest {
         iota = node();
     }
 
-    //@Test
+    @Test
     public void testNodeInfo() {
         NodeInfoWrapper info = iota.getInfo();
 
@@ -33,7 +33,7 @@ public class LibraryTest {
         assertNotNull(info.nodeInfo());
     }
 
-    //@Test
+    @Test
     public void testIndexable() {
         String index = "Hello " + new Date().toString();
         String data = "Iota.rs java test";
