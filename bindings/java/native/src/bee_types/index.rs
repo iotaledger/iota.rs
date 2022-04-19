@@ -34,8 +34,16 @@ impl IndexationPayload {
         self.payload.index()
     }
 
+    pub fn index_string(&self) -> Result<String> {
+        Ok(std::str::from_utf8(self.payload.index()).unwrap().to_string())
+    }
+
     pub fn data(&self) -> &[u8] {
         self.payload.data()
+    }
+
+    pub fn data_string(&self) -> Result<String> {
+        Ok(std::str::from_utf8(self.payload.data()).unwrap().to_string())
     }
 }
 

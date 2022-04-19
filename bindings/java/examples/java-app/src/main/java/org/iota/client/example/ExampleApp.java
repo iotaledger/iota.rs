@@ -3,6 +3,7 @@ package org.iota.client.example;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.iota.client.*;
@@ -10,20 +11,18 @@ import org.iota.client.local.*;
 
 public class ExampleApp {
 
-    private static final String MAINNET = "https://chrysalis-nodes.iota.cafe:443";
+    protected static final String MAINNET = "https://chrysalis-nodes.iota.cafe";
 
     // Faucet: https://faucet.chrysalis-devnet.iota.cafe/
     // Explorer: https://explorer.iota.org/devnet
-    private static final String TESTNET = "https://api.lb-0.h.chrysalis-devnet.iota.cafe";
-    private static final String TESTNET_LB = "api.lb-0.h.chrysalis-devnet.iota.cafe";
+    protected static final String TESTNET = "https://api.lb-0.h.chrysalis-devnet.iota.cafe";
+    protected static final String TESTNET_LB = "api.lb-0.h.chrysalis-devnet.iota.cafe";
 
     protected static final String NODE = TESTNET;
 
     static {
         NativeAPI.verifyLink();
     }
-
-    private static String URL = "https://chrysalis-nodes.iota.cafe:443";
 
     public static void main(String[] args) {
 
@@ -39,7 +38,7 @@ public class ExampleApp {
     }
 
     private static Client node() {
-        Client iota = Client.Builder().withNode(URL) // Insert your node URL here
+        Client iota = Client.Builder().withNode(NODE) // Insert your node URL here
                 // .withNodeAuth("https://somechrysalisiotanode.com", "jwt_or_null",
                 // "name_or_null", "password_or_null") //
                 // Optional authentication
@@ -295,7 +294,7 @@ public class ExampleApp {
         String toAddress = "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq";
         long amount = 1_000_000;
 
-        Offline offlineExample = new Offline(URL, seed);
+        Offline offlineExample = new Offline(NODE, seed);
         String[] inputAddresses = offlineExample.generateAddresses();
         String preparedData = offlineExample.prepareTransaction(inputAddresses, toAddress, amount);
         System.out.println("Prepared data: " + preparedData);

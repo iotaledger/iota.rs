@@ -379,10 +379,14 @@ foreign_class!(
         /// Returns a parsed hex String from bech32.
         /// @param bech32 The address Bech32 string
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
-        /// Transforms hex to bech32
+        /// Transforms a hex encoded address to a bech32 encoded address
         /// @param hex The address Bech32 string
         /// @param bech32_hrp The Bech32 hrp string 
         fn Client::hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
+        /// Transforms a hex encoded public key to a bech32 encoded address
+        /// @param hex hex encoded public key
+        /// @param bech32_hrp The Bech32 hrp string 
+        fn Client::hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
         /// Checks if a str is a valid bech32 encoded address.
         /// @param address The addresss string to check
         fn Client::is_address_valid(address: &str) -> bool;
@@ -1171,7 +1175,7 @@ foreign_class!(
         private constructor = empty;
         private fn AddressStringPublicWrapper::to_string(&self) -> String; alias to_string;
         private fn AddressStringPublicWrapper::eq(&self, o: &AddressStringPublicWrapper) -> bool; alias rustEq;
-        /// If this is a publci address
+        /// If this is a public address
         fn AddressStringPublicWrapper::public(&self) -> bool; alias isPublic;
         /// The address itself
         fn AddressStringPublicWrapper::address(&self) -> &str;
@@ -1540,8 +1544,10 @@ foreign_class!(
         fn IndexationPayload::new_from_string(index: &str, data: &str) -> Result<IndexationPayload>; alias fromStrings;
         /// Returns the index of an `IndexationPayload`.
         fn IndexationPayload::index(&self) -> &[u8];
+        fn IndexationPayload::index_string(&self) -> Result<String>;
         /// Returns the data of an `IndexationPayload`.
         fn IndexationPayload::data(&self) -> &[u8];
+        fn IndexationPayload::data_string(&self) -> Result<String>;
     }
 );
 
