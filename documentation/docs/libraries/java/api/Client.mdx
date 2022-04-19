@@ -246,11 +246,20 @@ Returns a parsed hex String from bech32.
 
 ### hexToBech32(hex, bech32_hrp): String
 
-Transforms hex to bech32
+Transforms a hex encoded address to a bech32 encoded address
 
 | Parameter       | Type |  Description |
 | --------------- | -------- | -------- |
 | hex | String |  The address Bech32 string |
+| bech32_hrp | String |  The Bech32 hrp string |
+
+### hexPublicKeyToBech32Address(hex, bech32_hrp): String
+
+Transforms a hex encoded public key to a bech32 encoded address
+
+| Parameter       | Type |  Description |
+| --------------- | -------- | -------- |
+| hex | String |  hex encoded public key |
 | bech32_hrp | String |  The Bech32 hrp string |
 
 ### isAddressValid(address): boolean
