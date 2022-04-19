@@ -3,7 +3,7 @@
 
 use std::collections::HashSet;
 
-use bee_message::{address::Address, input::UtxoInput, output::OutputId, Message, MessageId};
+use bee_message::{address::dto::AddressDto, input::dto::UtxoInputDto, output::OutputId, MessageDto, MessageId};
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
@@ -60,7 +60,7 @@ pub enum ResponseType {
     /// Posted message
     PostMessageSuccessful(MessageId),
     /// Message data
-    MessageData(Message),
+    MessageData(MessageDto),
     /// Message metadata
     MessageMetadata(MessageMetadataResponse),
     /// Message raw
@@ -82,35 +82,35 @@ pub enum ResponseType {
     /// Get treasury successful
     Treasury(TreasuryResponse),
     /// Get included message successful
-    IncludedMessage(Message),
+    IncludedMessage(MessageDto),
     /// Fetched output ID
     OutputId(OutputId),
     /// Fetched output IDs
     OutputIds(Vec<OutputId>),
     /// Messages
-    Messages(Vec<Message>),
+    Messages(Vec<MessageDto>),
     /// Balance
     Balance(u64),
     /// Addresses balances
     AddressesBalances(Vec<AddressBalance>),
     /// Retry
-    RetrySuccessful((MessageId, Message)),
+    RetrySuccessful((MessageId, MessageDto)),
     /// Retry until included
-    RetryUntilIncludedSuccessful(Vec<(MessageId, Message)>),
+    RetryUntilIncludedSuccessful(Vec<(MessageId, MessageDto)>),
     /// Consolidated funds
     ConsolidatedFunds(String),
     /// Found inputs
-    Inputs(Vec<UtxoInput>),
+    Inputs(Vec<UtxoInputDto>),
     /// Reattach
-    Reattached((MessageId, Message)),
+    Reattached((MessageId, MessageDto)),
     /// Promoted
-    Promoted((MessageId, Message)),
+    Promoted((MessageId, MessageDto)),
     /// Bech32 to hex
     Bech32ToHex(String),
     /// Hex to bech32
     HexToBech32(String),
     /// Parsed bech32 address
-    ParsedBech32Address(Address),
+    ParsedBech32Address(AddressDto),
     /// Is address valid
     IsAddressValid(bool),
     /// Generated mnemonic

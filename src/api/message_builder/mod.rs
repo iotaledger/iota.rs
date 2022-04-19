@@ -37,7 +37,7 @@ use self::{
 };
 use crate::{
     api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
-    bee_message::output::BasicOutputBuilder,
+    bee_message::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
     constants::SHIMMER_COIN_TYPE,
     signing::SignerHandle,
     Client, Error, Result,
@@ -80,7 +80,7 @@ pub struct ClientMessageBuilderOptions {
     /// Initial address index
     pub initial_address_index: Option<u32>,
     /// Inputs
-    pub inputs: Option<Vec<UtxoInput>>,
+    pub inputs: Option<Vec<UtxoInputDto>>,
     /// Input range
     pub input_range: Option<Range<u32>>,
     /// Bech32 encoded output address and amount
@@ -88,7 +88,7 @@ pub struct ClientMessageBuilderOptions {
     /// Hex encoded output address and amount
     pub output_hex: Option<ClientMessageBuilderOutputAddress>,
     /// Outputs
-    pub outputs: Option<Vec<Output>>,
+    pub outputs: Option<Vec<OutputDto>>,
     /// Custom remainder address
     pub custom_remainder_address: Option<String>,
     /// Tag
@@ -254,7 +254,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
         if let Some(inputs) = options.inputs {
             for input in inputs {
-                self = self.with_input(input)?;
+                self = self.with_input(UtxoInput::try_from(&input)?)?;
             }
         }
 
@@ -271,7 +271,12 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         if let Some(outputs) = options.outputs {
-            self = self.with_outputs(outputs)?;
+            self = self.with_outputs(
+                outputs
+                    .iter()
+                    .map(|o| Ok(Output::try_from(o)?))
+                    .collect::<Result<Vec<Output>>>()?,
+            )?;
         }
 
         if let Some(custom_remainder_address) = options.custom_remainder_address {
