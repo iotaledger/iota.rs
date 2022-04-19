@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MessageHandler } from './MessageHandler';
-import type { ClientOptions } from '../types';
+import type { ClientOptions, NodeInfo } from '../types';
 
 export class Client {
     private messageHandler: MessageHandler;
@@ -11,15 +11,12 @@ export class Client {
         this.messageHandler = new MessageHandler(options);
     }
 
-    async getInfo() {
-        return JSON.parse(
-            await this.messageHandler.sendMessage({
-                cmd: 'CallClientMethod',
-                payload: {
-                    name: 'GetInfo',
-                },
-            }),
-        ).payload;
+    async getInfo(): Promise<NodeInfo> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetInfo',
+        });
+
+        return JSON.parse(response).payload;
     }
 
     // MQTT

@@ -18,3 +18,20 @@ export type Node = {
     auth?: Auth;
     disabled?: boolean;
 };
+
+export interface NodeInfo {
+    name: string;
+    version: string;
+    isHealthy: boolean;
+    networkId: string;
+    bech32HRP: string;
+    minPoWScore: number;
+    messagesPerSecond: number;
+    referencedMessagesPerSecond: number;
+    referencedRate: number;
+    latestMilestoneTimestamp: number;
+    latestMilestoneIndex: number;
+    confirmedMilestoneIndex: number;
+    pruningIndex: number;
+    features: string[];
+}
