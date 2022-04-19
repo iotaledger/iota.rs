@@ -28,7 +28,7 @@ export class MessageHandler {
 
     // MQTT
     listen(
-        topics: any,
+        topics: string[],
         callback: (error: Error, result: string) => void,
     ): void {
         return listen(topics, callback, this.messageHandler);

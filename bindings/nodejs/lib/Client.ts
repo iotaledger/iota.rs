@@ -20,7 +20,10 @@ export class Client {
     }
 
     // MQTT
-    async listen(topics: any, callback: any) {
+    listen(
+        topics: string[],
+        callback: (error: Error, result: string) => void,
+    ): void {
         return this.messageHandler.listen(topics, callback);
     }
 }
