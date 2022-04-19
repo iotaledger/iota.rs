@@ -1,6 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+//! Miscellaneous types for secret managers.
+
 use std::str::FromStr;
 
 use bee_message::{address::Address, output::OutputId, payload::transaction::TransactionId};
@@ -10,26 +12,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::Result;
 
-/// The signer types.
-#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
-pub enum SignerType {
-    /// Stronghold signer.
-    #[cfg(feature = "stronghold")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
-    Stronghold,
-    /// Ledger Device
-    #[cfg(feature = "ledger")]
-    LedgerNano,
-    /// Ledger Speculos Simulator
-    #[cfg(feature = "ledger")]
-    LedgerNanoSimulator,
-    /// Mnemonic, not as secure as Stronghold or Ledger
-    Mnemonic,
-}
-
-/// Dto for the signer types with required data.
+/// DTO for secret manager types with required data.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SignerTypeDto {
+pub enum SecretManagerTypeDto {
     /// Stronghold
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
@@ -44,7 +29,7 @@ pub enum SignerTypeDto {
     Mnemonic(String),
 }
 
-/// Stronghold Dto to allow the creation of a Stronghold signer from bindings
+/// Stronghold DTO to allow the creation of a Stronghold signer from bindings
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg(feature = "stronghold")]
 pub struct StrongholdDto {

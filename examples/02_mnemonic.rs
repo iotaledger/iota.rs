@@ -3,7 +3,7 @@
 
 //! cargo run --example 02_mnemonic --release
 
-use iota_client::{api::GetAddressesBuilder, signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{api::GetAddressesBuilder, secret::mnemonic::MnemonicSecretManager, Client, Result};
 
 /// In this example we will generate a mnemonic, convert it to a seed and generate the first address
 
@@ -12,7 +12,7 @@ async fn main() -> Result<()> {
     let mnemonic = Client::generate_mnemonic()?;
     println!("Mnemonic: {}", mnemonic);
 
-    let signer = MnemonicSigner::new(&mnemonic)?;
+    let signer = MnemonicSecretManager::try_from_mnemonic(&mnemonic)?;
 
     // Generate addresses with custom account index and range
     let addresses = GetAddressesBuilder::new(&signer)

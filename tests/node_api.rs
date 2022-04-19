@@ -6,7 +6,7 @@
 use std::str::FromStr;
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, MessageId};
-use iota_client::{node_api::indexer::query_parameters::QueryParameter, signing::mnemonic::MnemonicSigner};
+use iota_client::{node_api::indexer::query_parameters::QueryParameter, secret::mnemonic::MnemonicSecretManager};
 
 const DEFAULT_NODE_URL: &str = "http://localhost:14265";
 
@@ -109,11 +109,12 @@ async fn test_post_message_with_transaction() {
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    let signer =
-        MnemonicSigner::new_from_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap();
+    let secmngr =
+        MnemonicSecretManager::try_from_hex_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
+            .unwrap();
     let message_id = iota
         .message()
-        .with_signer(&signer)
+        .with_secret_manager(&secmngr)
         // Insert the output address and ampunt to spent. The amount cannot be zero.
         .with_output_hex(
             "5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8", // Insert the address to search for

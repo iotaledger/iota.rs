@@ -13,67 +13,71 @@ pub mod stronghold;
 /// Signing related types
 pub mod types;
 
-#[cfg(feature = "stronghold")]
-use std::path::PathBuf;
 #[cfg(feature = "wasm")]
 use std::sync::Mutex;
-use std::{
-    collections::HashMap,
-    fmt::{Debug, Formatter, Result},
-    ops::{Deref, Range},
-    sync::Arc,
-};
+use std::{collections::HashMap, ops::Range, path::PathBuf, str::FromStr};
 
+use async_trait::async_trait;
 use bee_message::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
     payload::transaction::TransactionEssence,
     unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock},
 };
-#[cfg(not(feature = "wasm"))]
-use tokio::sync::Mutex;
-pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetadata, SignerType};
+pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetadata};
 
 #[cfg(feature = "ledger")]
-use self::ledger::LedgerSigner;
+use self::ledger::LedgerSecretManager;
 #[cfg(feature = "stronghold")]
-use self::stronghold::StrongholdSigner;
-use crate::signing::{
-    mnemonic::MnemonicSigner,
-    types::{InputSigningData, SignerTypeDto},
-};
+use self::stronghold::StrongholdSecretManager;
+use self::{mnemonic::MnemonicSecretManager, types::SecretManagerTypeDto};
+use crate::secret::types::InputSigningData;
 
-/// SignerHandle, possible signers are mnemonic, Stronghold and Ledger
-#[derive(Clone)]
-pub struct SignerHandle {
-    pub(crate) signer: Arc<Mutex<Box<dyn Signer + Sync + Send>>>,
-    /// SignerType
-    pub signer_type: SignerType,
+/// Supported secret managers.
+///
+/// Boxes are because of clippy::large_enum_variant.
+pub enum SecretManagerType {
+    /// Secret manager that uses [`iota_stronghold`] as the backing storage.
+    #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
+    Stronghold(Box<StrongholdSecretManager>),
+
+    /// Secret manager that uses a Ledger hardware wallet.
+    #[cfg(feature = "ledger")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
+    LedgerNano(Box<LedgerSecretManager>),
+
+    /// Secret manager that uses a Ledger Speculos simulator.
+    #[cfg(feature = "ledger")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
+    LedgerNanoSimulator(Box<LedgerSecretManager>),
+
+    /// Secret manager that uses only a mnemonic.
+    Mnemonic(Box<MnemonicSecretManager>),
 }
 
-impl Debug for SignerHandle {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{:?}", self.signer_type)
-    }
-}
-
-impl SignerHandle {
-    /// Create a new SignerHandle
-    pub fn new(signer_type: SignerType, signer: Box<dyn Signer + Sync + Send>) -> Self {
-        Self {
-            signer_type,
-            signer: Arc::new(Mutex::new(signer)),
+impl std::fmt::Debug for SecretManagerType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            #[cfg(feature = "stronghold")]
+            Self::Stronghold(_) => f.debug_tuple("Stronghold").field(&"...").finish(),
+            #[cfg(feature = "ledger")]
+            Self::LedgerNano(_) => f.debug_tuple("LedgerNano").field(&"...").finish(),
+            #[cfg(feature = "ledger")]
+            Self::LedgerNanoSimulator(_) => f.debug_tuple("LedgerNanoSimulator").field(&"...").finish(),
+            Self::Mnemonic(_) => f.debug_tuple("Mnemonic").field(&"...").finish(),
         }
     }
-    /// Create a new SignerHandle from a serialized SignerTypeDto
-    #[allow(clippy::should_implement_trait)]
-    pub fn from_str(data: &str) -> crate::Result<Self> {
-        let signer_type: SignerTypeDto = serde_json::from_str(data)?;
+}
 
-        Ok(match signer_type {
+impl FromStr for SecretManagerType {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> crate::Result<Self> {
+        Ok(match serde_json::from_str(s)? {
             #[cfg(feature = "stronghold")]
-            SignerTypeDto::Stronghold(stronghold_dto) => {
-                let mut builder = StrongholdSigner::builder();
+            SecretManagerTypeDto::Stronghold(stronghold_dto) => {
+                let mut builder = StrongholdSecretManager::builder();
 
                 if let Some(password) = &stronghold_dto.password {
                     builder = builder.password(password);
@@ -83,52 +87,69 @@ impl SignerHandle {
                     builder = builder.snapshot_path(PathBuf::from(snapshot_path));
                 }
 
-                builder.build().into()
+                Self::Stronghold(Box::new(builder.build()))
             }
 
             #[cfg(feature = "ledger")]
-            SignerTypeDto::LedgerNano => LedgerSigner::new(false),
+            SecretManagerTypeDto::LedgerNano => Self::LedgerNano(Box::new(LedgerSecretManager::new(false))),
 
             #[cfg(feature = "ledger")]
-            SignerTypeDto::LedgerNanoSimulator => LedgerSigner::new(true),
+            SecretManagerTypeDto::LedgerNanoSimulator => {
+                Self::LedgerNanoSimulator(Box::new(LedgerSecretManager::new(true)))
+            }
 
-            SignerTypeDto::Mnemonic(mnemonic) => MnemonicSigner::new(&mnemonic)?,
+            SecretManagerTypeDto::Mnemonic(mnemonic) => {
+                Self::Mnemonic(Box::new(MnemonicSecretManager::try_from_mnemonic(&mnemonic)?))
+            }
         })
     }
 }
 
-impl Deref for SignerHandle {
-    type Target = Arc<Mutex<Box<dyn Signer + Sync + Send>>>;
-    fn deref(&self) -> &Self::Target {
-        &self.signer
+#[cfg(feature = "stronghold")]
+impl TryInto<StrongholdSecretManager> for SecretManagerType {
+    type Error = crate::Error;
+
+    fn try_into(self) -> crate::Result<StrongholdSecretManager> {
+        if let Self::Stronghold(boxed) = self {
+            Ok(*boxed)
+        } else {
+            Err(crate::Error::SecretManagerTypeMismatch)
+        }
     }
 }
 
-/// Signer interface.
-#[async_trait::async_trait]
-pub trait Signer: Send + Sync {
-    /// Get the ledger status.
-    ///
-    /// This is only meaningful for the Ledger hardware; other signers don't implement this.
-    async fn get_ledger_status(&self, _: bool) -> LedgerStatus {
-        LedgerStatus {
-            app: None,
-            connected: false,
-            locked: false,
+#[cfg(feature = "ledger")]
+impl TryInto<LedgerSecretManager> for SecretManagerType {
+    type Error = crate::Error;
+
+    fn try_into(self) -> crate::Result<LedgerSecretManager> {
+        match self {
+            Self::LedgerNano(boxed) | Self::LedgerNanoSimulator(boxed) => Ok(*boxed),
+            _ => Err(crate::Error::SecretManagerTypeMismatch),
         }
     }
+}
 
-    /// Initialises a mnemonic.
-    ///
-    /// This is only meaningful for the Stronghold signer; other signers don't implement this.
-    async fn store_mnemonic(&mut self, _: String) -> crate::Result<()> {
-        Err(crate::Error::NoMnemonicWasStored)
+impl TryInto<MnemonicSecretManager> for SecretManagerType {
+    type Error = crate::Error;
+
+    fn try_into(self) -> crate::Result<MnemonicSecretManager> {
+        if let Self::Mnemonic(boxed) = self {
+            Ok(*boxed)
+        } else {
+            Err(crate::Error::SecretManagerTypeMismatch)
+        }
     }
+}
 
+/// The secret manager interface.
+#[async_trait]
+pub trait SecretManager: Send + Sync {
     /// Generates an address.
+    ///
+    /// For `coin_type`, see also <https://github.com/satoshilabs/slips/blob/master/slip-0044.md>.
     async fn generate_addresses(
-        &mut self,
-        // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+        &self,
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
@@ -137,15 +158,15 @@ pub trait Signer: Send + Sync {
     ) -> crate::Result<Vec<Address>>;
 
     /// Sign on `essence`, unlock `input` by returning an [UnlockBlock].
+    ///
+    /// Compared with `sign_transaction_essence()`, this signs on a single input. It's called by
+    /// `sign_transaction_essence()` on every input it receives.
     async fn signature_unlock<'a>(
-        &mut self,
-        _input: &InputSigningData,
-        _essence_hash: &[u8; 32],
-        _metadata: &SignMessageMetadata<'a>,
-    ) -> crate::Result<UnlockBlock> {
-        // Return error unless implemented otherwise.
-        Err(crate::Error::NoMnemonicWasStored)
-    }
+        &self,
+        input: &InputSigningData,
+        essence_hash: &[u8; 32],
+        metadata: &SignMessageMetadata<'a>,
+    ) -> crate::Result<UnlockBlock>;
 
     /// Signs transaction essence.
     ///
@@ -153,9 +174,9 @@ pub trait Signer: Send + Sync {
     /// (e.g. references between them). [Signer::signature_unlock()] will be invoked every time a necessary signing
     /// action needs to be performed.
     async fn sign_transaction_essence<'a>(
-        &mut self,
+        &self,
         essence: &TransactionEssence,
-        inputs: &mut Vec<InputSigningData>,
+        inputs: &[InputSigningData],
         metadata: SignMessageMetadata<'a>,
     ) -> crate::Result<Vec<UnlockBlock>> {
         // The hashed_essence gets signed

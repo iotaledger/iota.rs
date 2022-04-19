@@ -55,7 +55,7 @@
 mod common;
 mod db;
 mod encryption;
-mod signer;
+mod secret;
 
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
@@ -67,10 +67,7 @@ use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
 
 use self::common::{PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
-use crate::{
-    signing::{SignerHandle, SignerType},
-    Error, Result,
-};
+use crate::{Error, Result};
 
 /// A wrapper on [Stronghold].
 ///
@@ -114,16 +111,6 @@ pub struct StrongholdAdapter {
     /// Whether the snapshot has been loaded from the disk to the memory.
     #[builder(setter(skip))]
     snapshot_loaded: bool,
-}
-
-/// [`SignerHandle`]s wrapping [`Signer`]s are still required at some places.
-impl From<StrongholdAdapter> for SignerHandle {
-    fn from(signer: StrongholdAdapter) -> Self {
-        SignerHandle {
-            signer: Arc::new(Mutex::new(Box::new(signer))),
-            signer_type: SignerType::Stronghold,
-        }
-    }
 }
 
 impl Default for StrongholdAdapter {
@@ -242,6 +229,12 @@ impl StrongholdAdapter {
         StrongholdAdapterBuilder::default()
     }
 
+    /// Set the path to a Stronghold snapshot file.
+    pub async fn set_snapshot_path(&mut self, path: PathBuf) -> &mut Self {
+        self.snapshot_path = Some(path);
+        self
+    }
+
     /// Use an user-input password string to derive a key to use Stronghold.
     ///
     /// This function will also spawn an asynchronous task in Tokio to automatically purge the derived key from
@@ -263,12 +256,6 @@ impl StrongholdAdapter {
             *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key, timeout)));
         }
 
-        self
-    }
-
-    /// Set the path to a Stronghold snapshot file.
-    pub async fn set_snapshot_path(&mut self, path: PathBuf) -> &mut Self {
-        self.snapshot_path = Some(path);
         self
     }
 

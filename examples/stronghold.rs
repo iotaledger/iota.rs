@@ -6,10 +6,7 @@
 use std::{env, path::PathBuf};
 
 use dotenv::dotenv;
-use iota_client::{
-    signing::{stronghold::StrongholdSigner, Signer},
-    Client, Result,
-};
+use iota_client::{secret::stronghold::StrongholdSecretManager, Client, Result};
 
 /// In this example we will create addresses with a stronghold signer
 
@@ -22,7 +19,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    let mut stronghold_signer = StrongholdSigner::builder()
+    let mut stronghold_signer = StrongholdSecretManager::builder()
         .password("some_hopefully_secure_password")
         .snapshot_path(PathBuf::from("test.stronghold"))
         .build();
@@ -34,8 +31,8 @@ async fn main() -> Result<()> {
     stronghold_signer.store_mnemonic(mnemonic).await.unwrap();
 
     // Generate addresses with custom account index and range
-    let addresses = iota
-        .get_addresses(&stronghold_signer.into())
+    let addresses = client
+        .get_addresses(&stronghold_signer)
         .with_account_index(0)
         .with_range(0..2)
         .finish()

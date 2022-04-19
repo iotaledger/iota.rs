@@ -7,7 +7,7 @@ use std::env;
 use dotenv::dotenv;
 use iota_client::{
     bee_message::input::UtxoInput, node_api::indexer::query_parameters::QueryParameter, request_funds_from_faucet,
-    signing::mnemonic::MnemonicSigner, Client, Result,
+    secret::mnemonic::MnemonicSecretManager, Client, Result,
 };
 
 /// In this example we will send 1_000_000 tokens to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
@@ -26,9 +26,9 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-    let seed = MnemonicSigner::new_from_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
+    let secmngr = MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
-    let addresses = client.get_addresses(&seed).with_range(0..1).finish().await?;
+    let addresses = client.get_addresses(&secmngr).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
 
     println!(
@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_signer(&seed)
+        .with_secret_manager(&secmngr)
         .with_input(UtxoInput::from(output_ids[0]))?
         //.with_input_range(20..25)
         .with_output(

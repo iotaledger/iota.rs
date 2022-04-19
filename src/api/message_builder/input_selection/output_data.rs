@@ -15,7 +15,7 @@ use crate::{
         search_address,
     },
     constants::HD_WALLET_TYPE,
-    signing::types::InputSigningData,
+    secret::types::InputSigningData,
     Result,
 };
 
@@ -129,7 +129,7 @@ pub(crate) async fn get_utxo_chains_inputs(
 
     let mut utxo_chain_inputs = Vec::new();
     for (unlock_address, output_response) in utxo_chains {
-        let (address_index, internal) = match message_builder.signer {
+        let (address_index, internal) = match message_builder.secret_manager {
             Some(signer) => {
                 match unlock_address {
                     Address::Ed25519(_) => {

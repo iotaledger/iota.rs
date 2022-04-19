@@ -20,67 +20,20 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{
-    signing::{types::InputSigningData, GenerateAddressMetadata, SignMessageMetadata, Signer},
+    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManager, SignMessageMetadata},
     Result,
 };
 
 #[async_trait]
-impl Signer for StrongholdAdapter {
-    async fn store_mnemonic(&mut self, mnemonic: String) -> Result<()> {
-        // Stronghold arguments.
-        let output = Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: SEED_RECORD_PATH.to_vec(),
-        };
-        let hint = RecordHint::new("wallet.rs-seed").unwrap();
-
-        // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
-        let trimmed_mnemonic = mnemonic.trim().to_string();
-
-        // Check if the mnemonic is valid.
-        crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
-
-        // Try to load the snapshot to see if we're creating a new Stronghold vault or not.
-        //
-        // XXX: The current design of [Error] doesn't allow us to see if it's really a "file does
-        // not exist" error or not. Better throw errors other than that, but now we just leave it
-        // like this, as if so then later operations would throw errors too.
-        self.read_stronghold_snapshot().await.unwrap_or(());
-
-        // If the snapshot has successfully been loaded, then we need to check if there has been a
-        // mnemonic stored in Stronghold or not to prevent overwriting it.
-        if self.snapshot_loaded && self.stronghold.record_exists(output.clone()).await {
-            return Err(crate::Error::StrongholdMnemonicAlreadyStored);
-        }
-
-        // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
-        self.bip39_recover(trimmed_mnemonic, None, output, hint).await?;
-
-        // Persist Stronghold to the disk, if a snapshot path has been set.
-        if self.snapshot_path.is_some() {
-            self.write_stronghold_snapshot().await?;
-        }
-
-        // Now we consider that the snapshot has been loaded; it's just in a reversed order.
-        self.snapshot_loaded = true;
-
-        Ok(())
-    }
-
+impl SecretManager for StrongholdAdapter {
     async fn generate_addresses(
-        &mut self,
+        &self,
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
         _metadata: GenerateAddressMetadata,
     ) -> Result<Vec<Address>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
-
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -126,16 +79,11 @@ impl Signer for StrongholdAdapter {
     }
 
     async fn signature_unlock<'a>(
-        &mut self,
+        &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         _: &SignMessageMetadata<'a>,
     ) -> Result<UnlockBlock> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
-
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -310,6 +258,49 @@ impl StrongholdAdapter {
             }
         }
     }
+
+    /// Store a mnemonic into the Stronghold vault.
+    pub async fn store_mnemonic(&mut self, mnemonic: String) -> Result<()> {
+        // Stronghold arguments.
+        let output = Location::Generic {
+            vault_path: SECRET_VAULT_PATH.to_vec(),
+            record_path: SEED_RECORD_PATH.to_vec(),
+        };
+        let hint = RecordHint::new("wallet.rs-seed").unwrap();
+
+        // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
+        let trimmed_mnemonic = mnemonic.trim().to_string();
+
+        // Check if the mnemonic is valid.
+        crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+
+        // Try to load the snapshot to see if we're creating a new Stronghold vault or not.
+        //
+        // XXX: The current design of [Error] doesn't allow us to see if it's really a "file does
+        // not exist" error or not. Better throw errors other than that, but now we just leave it
+        // like this, as if so then later operations would throw errors too.
+        self.read_stronghold_snapshot().await.unwrap_or(());
+
+        // If the snapshot has successfully been loaded, then we need to check if there has been a
+        // mnemonic stored in Stronghold or not to prevent overwriting it.
+        if self.snapshot_loaded && self.stronghold.record_exists(output.clone()).await {
+            return Err(crate::Error::StrongholdMnemonicAlreadyStored);
+        }
+
+        // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
+        self.bip39_recover(trimmed_mnemonic, None, output, hint).await?;
+
+        // Persist Stronghold to the disk, if a snapshot path has been set.
+        if self.snapshot_path.is_some() {
+            self.write_stronghold_snapshot().await?;
+        }
+
+        // Now we consider that the snapshot has been loaded; it's just in a reversed order.
+        self.snapshot_loaded = true;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -317,7 +308,7 @@ mod tests {
     use std::path::PathBuf;
 
     use super::*;
-    use crate::{constants::IOTA_COIN_TYPE, signing::Network};
+    use crate::{constants::IOTA_COIN_TYPE, secret::Network};
 
     #[tokio::test]
     async fn test_address_generation() {

@@ -6,7 +6,9 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::{api::search_address, constants::IOTA_COIN_TYPE, signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{
+    api::search_address, constants::IOTA_COIN_TYPE, secret::mnemonic::MnemonicSecretManager, Client, Result,
+};
 
 /// In this example we will try to find the index and address type of an address
 
@@ -23,10 +25,11 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let signer = MnemonicSigner::new(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secmngr =
+        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let addresses = client
-        .get_addresses(&signer)
+        .get_addresses(&secmngr)
         .with_account_index(0)
         .with_range(9..10)
         .get_raw()
@@ -36,7 +39,7 @@ async fn main() -> Result<()> {
     println!("{:?}", addresses[0]);
 
     let res = search_address(
-        &signer,
+        &secmngr,
         &client.get_bech32_hrp().await.unwrap(),
         IOTA_COIN_TYPE,
         0,

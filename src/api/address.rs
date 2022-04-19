@@ -9,14 +9,14 @@ use serde::Deserialize;
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
-    signing::{GenerateAddressMetadata, Network, SignerHandle},
+    secret::{GenerateAddressMetadata, Network, SecretManager},
     Client, Error, Result,
 };
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
-    signer: Option<&'a SignerHandle>,
+    secret_manager: Option<&'a dyn SecretManager>,
     coin_type: u32,
     account_index: u32,
     range: Range<u32>,
@@ -47,7 +47,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
     fn default() -> Self {
         Self {
             client: None,
-            signer: None,
+            secret_manager: None,
             coin_type: SHIMMER_COIN_TYPE,
             account_index: 0,
             range: 0..super::ADDRESS_GAP_RANGE,
@@ -63,9 +63,9 @@ impl<'a> Default for GetAddressesBuilder<'a> {
 
 impl<'a> GetAddressesBuilder<'a> {
     /// Create get_addresses builder
-    pub fn new(signer: &'a SignerHandle) -> Self {
+    pub fn new(manager: &'a dyn SecretManager) -> Self {
         Self {
-            signer: Some(signer),
+            secret_manager: Some(manager),
             ..Default::default()
         }
     }
@@ -147,12 +147,10 @@ impl<'a> GetAddressesBuilder<'a> {
                 None => SHIMMER_TESTNET_BECH32_HRP.to_string(),
             },
         };
-        let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
-        #[cfg(feature = "wasm")]
-        let mut signer = signer.lock().unwrap();
-        #[cfg(not(feature = "wasm"))]
-        let mut signer = signer.lock().await;
-        let addresses = signer
+
+        let addresses = self
+            .secret_manager
+            .ok_or(Error::MissingParameter("secret_manager"))?
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -169,12 +167,8 @@ impl<'a> GetAddressesBuilder<'a> {
     }
     /// Consume the builder and get a vector of public addresses
     pub async fn get_raw(self) -> Result<Vec<Address>> {
-        let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
-        #[cfg(feature = "wasm")]
-        let mut signer = signer.lock().unwrap();
-        #[cfg(not(feature = "wasm"))]
-        let mut signer = signer.lock().await;
-        signer
+        self.secret_manager
+            .ok_or(Error::MissingParameter("secret_manager"))?
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -208,12 +202,9 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Consume the builder and get the vector of public and internal addresses
     pub async fn get_all_raw(self) -> Result<RawAddresses> {
-        let signer = self.signer.ok_or(Error::MissingParameter("signer"))?;
-        #[cfg(feature = "wasm")]
-        let mut signer = signer.lock().unwrap();
-        #[cfg(not(feature = "wasm"))]
-        let mut signer = signer.lock().await;
-        let public_addresses = signer
+        let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret_manager"))?;
+
+        let public_addresses = secret_manager
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -223,7 +214,7 @@ impl<'a> GetAddressesBuilder<'a> {
             )
             .await?;
 
-        let internal_addresses = signer
+        let internal_addresses = secret_manager
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -242,14 +233,14 @@ impl<'a> GetAddressesBuilder<'a> {
 
 /// Function to find the index and public (false) or internal (true) type of an Bech32 encoded address
 pub async fn search_address(
-    signer: &SignerHandle,
+    secret_manager: &dyn SecretManager,
     bech32_hrp: &str,
     coin_type: u32,
     account_index: u32,
     range: Range<u32>,
     address: &Address,
 ) -> Result<(u32, bool)> {
-    let addresses = GetAddressesBuilder::new(signer)
+    let addresses = GetAddressesBuilder::new(secret_manager)
         .with_coin_type(coin_type)
         .with_account_index(account_index)
         .with_range(range.clone())
