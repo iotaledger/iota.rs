@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
         let (local_time, milestone_index) = online_client.get_time_and_milestone_checked().await?;
 
         let conflict = verify_semantic(
-            &prepared_transaction,
+            &prepared_transaction.input_signing_data_entries,
             &signed_transaction_payload,
             milestone_index,
             local_time,

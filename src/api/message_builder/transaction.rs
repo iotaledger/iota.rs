@@ -23,7 +23,7 @@ use packable::PackableExt;
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
     bee_message::output::AliasId,
-    signing::{Network, SignMessageMetadata},
+    signing::{types::InputSigningData, Network, SignMessageMetadata},
     Error, Result,
 };
 
@@ -143,7 +143,12 @@ pub async fn sign_transaction(
 
     let (local_time, milestone_index) = message_builder.client.get_time_and_milestone_checked().await?;
 
-    let conflict = verify_semantic(&prepared_transaction_data, &tx_payload, milestone_index, local_time)?;
+    let conflict = verify_semantic(
+        &prepared_transaction_data.input_signing_data_entries,
+        &tx_payload,
+        milestone_index,
+        local_time,
+    )?;
 
     if conflict != ConflictReason::None {
         return Err(Error::TransactionSemantic(conflict));
@@ -155,20 +160,18 @@ pub async fn sign_transaction(
 // TODO @thibault-martinez: this is very cumbersome with the current state, will refactor.
 /// Verifies the semantic of a prepared transaction.
 pub fn verify_semantic(
-    prepared_transaction_data: &PreparedTransactionData,
+    input_signing_data: &[InputSigningData],
     transaction: &TransactionPayload,
     milestone_index: u32,
     local_time: u64,
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();
-    let output_ids = prepared_transaction_data
-        .input_signing_data_entries
+    let output_ids = input_signing_data
         .iter()
         .map(|i| i.output_id())
         .collect::<Result<Vec<OutputId>>>()?;
-    let outputs = prepared_transaction_data
-        .input_signing_data_entries
+    let outputs = input_signing_data
         .iter()
         .map(|i| Ok(Output::try_from(&i.output_response.output)?))
         .collect::<Result<Vec<Output>>>()?;
