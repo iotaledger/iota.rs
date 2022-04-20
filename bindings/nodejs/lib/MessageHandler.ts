@@ -1,15 +1,15 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ClientOptions } from '../types';
+import { sendMessageAsync, messageHandlerNew, listen } from './bindings';
 import type {
+    ClientOptions,
     __ClientPayloadMethods__,
     __SendMessagePayload__,
-} from '../types/bridge';
-import { sendMessageAsync, messageHandlerNew, listen } from './bindings';
+} from '../types';
 
 export class MessageHandler {
-    messageHandler: any;
+    messageHandler: MessageHandler;
 
     constructor(options: ClientOptions) {
         this.messageHandler = messageHandlerNew(JSON.stringify(options));
@@ -23,7 +23,7 @@ export class MessageHandler {
         return this.sendMessage({
             cmd: 'CallClientMethod',
             payload: method,
-        });
+        } as __SendMessagePayload__);
     }
 
     // MQTT

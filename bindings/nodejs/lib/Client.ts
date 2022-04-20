@@ -19,6 +19,17 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    async getOutput(output_id: string) {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetOutput',
+            data: {
+                output_id,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
     // MQTT
     listen(
         topics: string[],
