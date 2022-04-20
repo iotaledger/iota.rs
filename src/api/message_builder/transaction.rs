@@ -118,7 +118,7 @@ pub async fn sign_transaction(
     }
     let secret_manager = message_builder
         .secret_manager
-        .ok_or(Error::MissingParameter("signer"))?;
+        .ok_or(Error::MissingParameter("secret manager"))?;
     let unlock_blocks = secret_manager
         .sign_transaction_essence(
             // IOTA_COIN_TYPE,

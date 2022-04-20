@@ -1,17 +1,16 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{
-    api::GetAddressesBuilder,
-    constants::SHIMMER_TESTNET_BECH32_HRP,
-    secret::{mnemonic::MnemonicSecretManager, stronghold::StrongholdSecretManager, SecretManagerType},
-    Result,
-};
+use iota_client::{api::GetAddressesBuilder, constants::SHIMMER_TESTNET_BECH32_HRP, secret::SecretManagerType, Result};
 
 #[tokio::test]
 async fn mnemonic_secret_manager_dto() -> Result<()> {
     let dto = r#"{"Mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast"}"#;
-    let secmngr: MnemonicSecretManager = dto.parse::<SecretManagerType>()?.try_into()?;
+
+    let secmngr = match dto.parse::<SecretManagerType>()? {
+        SecretManagerType::Mnemonic(secmngr) => *secmngr,
+        _ => panic!(),
+    };
 
     let addresses = GetAddressesBuilder::new(&secmngr)
         .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
@@ -36,7 +35,11 @@ async fn stronghold_secret_manager_dto() -> Result<()> {
     let mnemonic = String::from(
         "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
     );
-    let mut secmngr: StrongholdSecretManager = dto.parse::<SecretManagerType>()?.try_into()?;
+
+    let mut secmngr = match dto.parse::<SecretManagerType>()? {
+        SecretManagerType::Stronghold(secmngr) => *secmngr,
+        _ => panic!(),
+    };
 
     // The mnemonic only needs to be stored the first time
     secmngr.store_mnemonic(mnemonic.clone()).await.unwrap();

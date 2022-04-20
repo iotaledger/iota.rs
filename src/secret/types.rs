@@ -29,7 +29,7 @@ pub enum SecretManagerTypeDto {
     Mnemonic(String),
 }
 
-/// Stronghold DTO to allow the creation of a Stronghold signer from bindings
+/// Stronghold DTO to allow the creation of a Stronghold secret manager from bindings
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg(feature = "stronghold")]
 pub struct StrongholdDto {
@@ -40,7 +40,7 @@ pub struct StrongholdDto {
     pub snapshot_path: Option<String>,
 }
 
-/// Metadata provided to [sign_message](trait.Signer.html#method.sign_message).
+/// Metadata provided to [SecretManager::signature_unlock()](super::SecretManager::signature_unlock()).
 pub struct SignMessageMetadata<'a> {
     /// The transfer's remainder value.
     pub remainder_value: u64,

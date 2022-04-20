@@ -12,10 +12,10 @@ async fn main() -> Result<()> {
     let mnemonic = Client::generate_mnemonic()?;
     println!("Mnemonic: {}", mnemonic);
 
-    let signer = MnemonicSecretManager::try_from_mnemonic(&mnemonic)?;
+    let secmngr = MnemonicSecretManager::try_from_mnemonic(&mnemonic)?;
 
     // Generate addresses with custom account index and range
-    let addresses = GetAddressesBuilder::new(&signer)
+    let addresses = GetAddressesBuilder::new(&secmngr)
         .with_account_index(0)
         .with_range(0..1)
         .finish()

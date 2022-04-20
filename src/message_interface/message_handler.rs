@@ -18,7 +18,7 @@ use crate::{
         client_method::ClientMethod, message::Message, message_type::MessageType, response::Response,
         response_type::ResponseType,
     },
-    signing::SignerHandle,
+    secret::SecretManagerType,
     Client, Result,
 };
 
@@ -81,26 +81,27 @@ impl ClientMessageHandler {
 
     async fn call_client_method(&self, method: &ClientMethod) -> Result<ResponseType> {
         match method {
-            ClientMethod::GenerateAddresses { signer, options } => {
-                let signer = SignerHandle::from_str(signer)?;
+            ClientMethod::GenerateAddresses { secmngr, options } => {
+                let secmngr: SecretManagerType = secmngr.parse()?;
                 let addresses = self
                     .client
-                    .get_addresses(&signer)
+                    .get_addresses(&secmngr)
                     .set_options(options.clone())?
                     .finish()
                     .await?;
                 Ok(ResponseType::GeneratedAddresses(addresses))
             }
-            ClientMethod::GenerateMessage { signer, options } => {
-                let mut message_builder = self.client.message();
+            ClientMethod::GenerateMessage { secmngr, options } => {
+                // Prepare transaction
+                let mut transaction_builder = self.client.message();
 
-                let signer = match signer {
-                    Some(signer) => Some(SignerHandle::from_str(signer)?),
+                let secmngr: Option<SecretManagerType> = match secmngr {
+                    Some(secmngr) => Some(secmngr.parse()?),
                     None => None,
                 };
 
-                if let Some(signer) = &signer {
-                    message_builder = message_builder.with_signer(signer);
+                if let Some(secmngr) = &secmngr {
+                    transaction_builder = transaction_builder.with_secret_manager(secmngr);
                 }
 
                 if let Some(options) = options {
@@ -266,14 +267,14 @@ impl ClientMessageHandler {
                 Ok(ResponseType::RetryUntilIncludedSuccessful(res))
             }
             ClientMethod::ConsolidateFunds {
-                signer,
+                secmngr,
                 account_index,
                 address_range,
             } => {
-                let signer = SignerHandle::from_str(signer)?;
+                let secmngr: SecretManagerType = secmngr.parse()?;
                 Ok(ResponseType::ConsolidatedFunds(
                     self.client
-                        .consolidate_funds(&signer, *account_index, address_range.clone())
+                        .consolidate_funds(&secmngr, *account_index, address_range.clone())
                         .await?,
                 ))
             }

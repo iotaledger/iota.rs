@@ -150,7 +150,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
         let addresses = self
             .secret_manager
-            .ok_or(Error::MissingParameter("secret_manager"))?
+            .ok_or(Error::MissingParameter("secret manager"))?
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -168,7 +168,7 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Consume the builder and get a vector of public addresses
     pub async fn get_raw(self) -> Result<Vec<Address>> {
         self.secret_manager
-            .ok_or(Error::MissingParameter("secret_manager"))?
+            .ok_or(Error::MissingParameter("secret manager"))?
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -202,7 +202,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Consume the builder and get the vector of public and internal addresses
     pub async fn get_all_raw(self) -> Result<RawAddresses> {
-        let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret_manager"))?;
+        let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?;
 
         let public_addresses = secret_manager
             .generate_addresses(

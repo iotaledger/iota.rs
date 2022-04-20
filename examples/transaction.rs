@@ -39,9 +39,9 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let secmngr_1 =
-        MnemonicSecretManager::try_from_hex_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
+        MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
     let secmngr_2 =
-        MnemonicSecretManager::try_from_hex_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
+        MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
 
     let message = client
         .message()

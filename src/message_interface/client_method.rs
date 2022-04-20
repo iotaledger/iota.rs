@@ -26,15 +26,17 @@ use crate::{
 pub enum ClientMethod {
     /// Generate a addresses.
     GenerateAddresses {
-        /// Create singer from json
-        signer: String,
+        /// Create secret manager from json; alias "signer" for compatibility
+        #[serde(alias = "signer")]
+        secmngr: String,
         /// Addresses generation options
         options: GenerateAddressesOptions,
     },
     /// Generate client message
     GenerateMessage {
-        /// Signer
-        signer: Option<String>,
+        /// Secret manager; alias "signer" for compatibility
+        #[serde(alias = "signer")]
+        secmngr: Option<String>,
         /// Options
         options: Option<GenerateMessageOptions>,
     },
@@ -241,8 +243,9 @@ pub enum ClientMethod {
     /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
     /// Returns the address to which the funds got consolidated, if any were available
     ConsolidateFunds {
-        /// Signer
-        signer: String,
+        /// Secret manager; alias "signer" for compatibility
+        #[serde(alias = "signer")]
+        secmngr: String,
         /// Account index
         account_index: u32,
         /// Address_range

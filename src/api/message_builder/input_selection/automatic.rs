@@ -64,7 +64,7 @@ pub(crate) async fn get_inputs(
             .get_addresses(
                 message_builder
                     .secret_manager
-                    .ok_or(crate::Error::MissingParameter("secret_manager"))?,
+                    .ok_or(crate::Error::MissingParameter("secret manager"))?,
             )
             .with_account_index(account_index)
             .with_range(gap_index..gap_index + ADDRESS_GAP_RANGE)

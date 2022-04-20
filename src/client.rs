@@ -634,9 +634,9 @@ impl Client {
         ClientMessageBuilder::new(self)
     }
 
-    /// Return a list of addresses from the signer regardless of their validity.
-    pub fn get_addresses<'a>(&'a self, signer: &'a dyn SecretManager) -> GetAddressesBuilder<'a> {
-        GetAddressesBuilder::new(signer).with_client(self)
+    /// Return a list of addresses from a secret manager regardless of their validity.
+    pub fn get_addresses<'a>(&'a self, secmngr: &'a dyn SecretManager) -> GetAddressesBuilder<'a> {
+        GetAddressesBuilder::new(secmngr).with_client(self)
     }
 
     /// Find all messages by provided message IDs.

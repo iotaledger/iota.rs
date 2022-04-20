@@ -44,7 +44,7 @@ mod tests {
     use crate::{
         api::GetAddressesBuilderOptions as GenerateAddressesOptions,
         message_interface::{self, ClientMethod, MessageType, ResponseType},
-        signing::{types::Network, GenerateAddressMetadata},
+        secret::{types::Network, GenerateAddressMetadata},
     };
 
     #[tokio::test]
@@ -63,7 +63,7 @@ mod tests {
             .await
             .unwrap();
 
-        let signer = format!(
+        let secmngr = format!(
             "{{\"Mnemonic\":\"{}\"}}",
             &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
         );
@@ -77,7 +77,7 @@ mod tests {
                 network: Network::Testnet,
             }),
         };
-        let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses { signer, options });
+        let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses { secmngr, options });
 
         let response = message_interface::send_message(&message_handler, message).await;
         match response.response_type() {
@@ -111,7 +111,7 @@ mod tests {
             .unwrap();
 
         // Generate addresses
-        let signer = format!(
+        let secmngr = format!(
             "{{\"Mnemonic\":\"{}\"}}",
             &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
         );
@@ -127,7 +127,7 @@ mod tests {
         };
 
         let generate_addresses_message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            signer: signer.clone(),
+            secmngr: secmngr.clone(),
             options,
         });
 
@@ -161,7 +161,7 @@ mod tests {
 
         let options = serde_json::from_str(&options).unwrap();
         let generate_message = MessageType::CallClientMethod(ClientMethod::GenerateMessage {
-            signer: Some(signer),
+            secmngr: Some(secmngr),
             options: Some(options),
         });
 

@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Signing module to allow using different signer types for address generation and transaction essence signing
+//! Secret manager module enabling address generation and transaction essence signing.
 
 #[cfg(feature = "ledger")]
 pub mod ledger;
@@ -32,115 +32,6 @@ use self::ledger::LedgerSecretManager;
 use self::stronghold::StrongholdSecretManager;
 use self::{mnemonic::MnemonicSecretManager, types::SecretManagerTypeDto};
 use crate::secret::types::InputSigningData;
-
-/// Supported secret managers.
-///
-/// Boxes are because of clippy::large_enum_variant.
-pub enum SecretManagerType {
-    /// Secret manager that uses [`iota_stronghold`] as the backing storage.
-    #[cfg(feature = "stronghold")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
-    Stronghold(Box<StrongholdSecretManager>),
-
-    /// Secret manager that uses a Ledger hardware wallet.
-    #[cfg(feature = "ledger")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
-    LedgerNano(Box<LedgerSecretManager>),
-
-    /// Secret manager that uses a Ledger Speculos simulator.
-    #[cfg(feature = "ledger")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
-    LedgerNanoSimulator(Box<LedgerSecretManager>),
-
-    /// Secret manager that uses only a mnemonic.
-    Mnemonic(Box<MnemonicSecretManager>),
-}
-
-impl std::fmt::Debug for SecretManagerType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            #[cfg(feature = "stronghold")]
-            Self::Stronghold(_) => f.debug_tuple("Stronghold").field(&"...").finish(),
-            #[cfg(feature = "ledger")]
-            Self::LedgerNano(_) => f.debug_tuple("LedgerNano").field(&"...").finish(),
-            #[cfg(feature = "ledger")]
-            Self::LedgerNanoSimulator(_) => f.debug_tuple("LedgerNanoSimulator").field(&"...").finish(),
-            Self::Mnemonic(_) => f.debug_tuple("Mnemonic").field(&"...").finish(),
-        }
-    }
-}
-
-impl FromStr for SecretManagerType {
-    type Err = crate::Error;
-
-    fn from_str(s: &str) -> crate::Result<Self> {
-        Ok(match serde_json::from_str(s)? {
-            #[cfg(feature = "stronghold")]
-            SecretManagerTypeDto::Stronghold(stronghold_dto) => {
-                let mut builder = StrongholdSecretManager::builder();
-
-                if let Some(password) = &stronghold_dto.password {
-                    builder = builder.password(password);
-                }
-
-                if let Some(snapshot_path) = &stronghold_dto.snapshot_path {
-                    builder = builder.snapshot_path(PathBuf::from(snapshot_path));
-                }
-
-                Self::Stronghold(Box::new(builder.build()))
-            }
-
-            #[cfg(feature = "ledger")]
-            SecretManagerTypeDto::LedgerNano => Self::LedgerNano(Box::new(LedgerSecretManager::new(false))),
-
-            #[cfg(feature = "ledger")]
-            SecretManagerTypeDto::LedgerNanoSimulator => {
-                Self::LedgerNanoSimulator(Box::new(LedgerSecretManager::new(true)))
-            }
-
-            SecretManagerTypeDto::Mnemonic(mnemonic) => {
-                Self::Mnemonic(Box::new(MnemonicSecretManager::try_from_mnemonic(&mnemonic)?))
-            }
-        })
-    }
-}
-
-#[cfg(feature = "stronghold")]
-impl TryInto<StrongholdSecretManager> for SecretManagerType {
-    type Error = crate::Error;
-
-    fn try_into(self) -> crate::Result<StrongholdSecretManager> {
-        if let Self::Stronghold(boxed) = self {
-            Ok(*boxed)
-        } else {
-            Err(crate::Error::SecretManagerTypeMismatch)
-        }
-    }
-}
-
-#[cfg(feature = "ledger")]
-impl TryInto<LedgerSecretManager> for SecretManagerType {
-    type Error = crate::Error;
-
-    fn try_into(self) -> crate::Result<LedgerSecretManager> {
-        match self {
-            Self::LedgerNano(boxed) | Self::LedgerNanoSimulator(boxed) => Ok(*boxed),
-            _ => Err(crate::Error::SecretManagerTypeMismatch),
-        }
-    }
-}
-
-impl TryInto<MnemonicSecretManager> for SecretManagerType {
-    type Error = crate::Error;
-
-    fn try_into(self) -> crate::Result<MnemonicSecretManager> {
-        if let Self::Mnemonic(boxed) = self {
-            Ok(*boxed)
-        } else {
-            Err(crate::Error::SecretManagerTypeMismatch)
-        }
-    }
-}
 
 /// The secret manager interface.
 #[async_trait]
@@ -240,5 +131,134 @@ pub trait SecretManager: Send + Sync {
             };
         }
         Ok(unlock_blocks)
+    }
+}
+
+/// Supported secret managers.
+///
+/// Boxes are because of clippy::large_enum_variant.
+pub enum SecretManagerType {
+    /// Secret manager that uses [`iota_stronghold`] as the backing storage.
+    #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
+    Stronghold(Box<StrongholdSecretManager>),
+
+    /// Secret manager that uses a Ledger hardware wallet.
+    #[cfg(feature = "ledger")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
+    LedgerNano(Box<LedgerSecretManager>),
+
+    /// Secret manager that uses a Ledger Speculos simulator.
+    #[cfg(feature = "ledger")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
+    LedgerNanoSimulator(Box<LedgerSecretManager>),
+
+    /// Secret manager that uses only a mnemonic.
+    Mnemonic(Box<MnemonicSecretManager>),
+}
+
+impl std::fmt::Debug for SecretManagerType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            #[cfg(feature = "stronghold")]
+            Self::Stronghold(_) => f.debug_tuple("Stronghold").field(&"...").finish(),
+            #[cfg(feature = "ledger")]
+            Self::LedgerNano(_) => f.debug_tuple("LedgerNano").field(&"...").finish(),
+            #[cfg(feature = "ledger")]
+            Self::LedgerNanoSimulator(_) => f.debug_tuple("LedgerNanoSimulator").field(&"...").finish(),
+            Self::Mnemonic(_) => f.debug_tuple("Mnemonic").field(&"...").finish(),
+        }
+    }
+}
+
+impl FromStr for SecretManagerType {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> crate::Result<Self> {
+        Ok(match serde_json::from_str(s)? {
+            #[cfg(feature = "stronghold")]
+            SecretManagerTypeDto::Stronghold(stronghold_dto) => {
+                let mut builder = StrongholdSecretManager::builder();
+
+                if let Some(password) = &stronghold_dto.password {
+                    builder = builder.password(password);
+                }
+
+                if let Some(snapshot_path) = &stronghold_dto.snapshot_path {
+                    builder = builder.snapshot_path(PathBuf::from(snapshot_path));
+                }
+
+                Self::Stronghold(Box::new(builder.build()))
+            }
+
+            #[cfg(feature = "ledger")]
+            SecretManagerTypeDto::LedgerNano => Self::LedgerNano(Box::new(LedgerSecretManager::new(false))),
+
+            #[cfg(feature = "ledger")]
+            SecretManagerTypeDto::LedgerNanoSimulator => {
+                Self::LedgerNanoSimulator(Box::new(LedgerSecretManager::new(true)))
+            }
+
+            SecretManagerTypeDto::Mnemonic(mnemonic) => {
+                Self::Mnemonic(Box::new(MnemonicSecretManager::try_from_mnemonic(&mnemonic)?))
+            }
+        })
+    }
+}
+
+#[async_trait]
+impl SecretManager for SecretManagerType {
+    async fn generate_addresses(
+        &self,
+        coin_type: u32,
+        account_index: u32,
+        address_indexes: Range<u32>,
+        internal: bool,
+        metadata: GenerateAddressMetadata,
+    ) -> crate::Result<Vec<Address>> {
+        match self {
+            #[cfg(feature = "stronghold")]
+            SecretManagerType::Stronghold(secmngr) => {
+                secmngr
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .await
+            }
+            #[cfg(feature = "ledger")]
+            SecretManagerType::LedgerNano(secmngr) => {
+                secmngr
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .await
+            }
+            #[cfg(feature = "ledger")]
+            SecretManagerType::LedgerNanoSimulator(secmngr) => {
+                secmngr
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .await
+            }
+            SecretManagerType::Mnemonic(secmngr) => {
+                secmngr
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .await
+            }
+        }
+    }
+
+    async fn signature_unlock<'a>(
+        &self,
+        input: &InputSigningData,
+        essence_hash: &[u8; 32],
+        metadata: &SignMessageMetadata<'a>,
+    ) -> crate::Result<UnlockBlock> {
+        match self {
+            #[cfg(feature = "stronghold")]
+            SecretManagerType::Stronghold(secmngr) => secmngr.signature_unlock(input, essence_hash, metadata).await,
+            #[cfg(feature = "ledger")]
+            SecretManagerType::LedgerNano(secmngr) => secmngr.signature_unlock(input, essence_hash, metadata).await,
+            #[cfg(feature = "ledger")]
+            SecretManagerType::LedgerNanoSimulator(secmngr) => {
+                secmngr.signature_unlock(input, essence_hash, metadata).await
+            }
+            SecretManagerType::Mnemonic(secmngr) => secmngr.signature_unlock(input, essence_hash, metadata).await,
+        }
     }
 }

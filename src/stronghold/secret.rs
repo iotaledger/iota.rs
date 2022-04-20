@@ -129,7 +129,7 @@ impl SecretManager for StrongholdAdapter {
     }
 }
 
-/// Private methods for the signer implementation.
+/// Private methods for the secret manager implementation.
 impl StrongholdAdapter {
     /// Execute [Procedure::BIP39Recover] in Stronghold to put a mnemonic into the Stronghold vault.
     async fn bip39_recover(
@@ -316,17 +316,17 @@ mod tests {
         let mnemonic = String::from(
             "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
         );
-        let mut signer = StrongholdAdapter::builder()
+        let mut stronghold_adapter = StrongholdAdapter::builder()
             .snapshot_path(stronghold_path.clone())
             .password("drowssap")
             .build();
 
-        signer.store_mnemonic(mnemonic).await.unwrap();
+        stronghold_adapter.store_mnemonic(mnemonic).await.unwrap();
 
         // The snapshot should have been on the disk now.
         assert!(stronghold_path.exists());
 
-        let addresses = signer
+        let addresses = stronghold_adapter
             .generate_addresses(
                 IOTA_COIN_TYPE,
                 0,
