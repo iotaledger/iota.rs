@@ -18,7 +18,7 @@ use primitive_types::U256;
 use crate::{
     api::{
         input_selection::{
-            get_minted_and_burned_native_tokens, get_remainder_native_tokens, types::AccumulatedOutputAmounts,
+            get_minted_and_melted_native_tokens, get_remainder_native_tokens, types::AccumulatedOutputAmounts,
         },
         message_builder::ClientMessageBuilder,
         search_address,
@@ -35,13 +35,14 @@ pub(crate) async fn get_remainder(
     outputs: &[Output],
     remainder_address: Option<Address>,
     byte_cost_config: &ByteCostConfig,
+    allow_burning: bool,
 ) -> Result<Option<Output>> {
     log::debug!("[get_remainder]");
     let mut remainder_output = None;
-    let input_data = get_accumulated_output_amounts(inputs).await?;
-    let output_data = get_accumulated_output_amounts(outputs).await?;
+    let input_data = get_accumulated_output_amounts(&[], inputs).await?;
+    let output_data = get_accumulated_output_amounts(&[], outputs).await?;
     // Get minted native tokens
-    let (minted_native_tokens, burned_native_tokens) = get_minted_and_burned_native_tokens(inputs, outputs)?;
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(inputs, outputs)?;
 
     // check amount first
     if input_data.amount < output_data.amount {
@@ -65,7 +66,7 @@ pub(crate) async fn get_remainder(
     // add burned tokens
     let mut output_native_tokens: HashMap<TokenId, U256> = output_data.native_tokens;
     // add burned native tokens as outputs, because we need to have this amount in the inputs
-    for (tokend_id, burned_amount) in burned_native_tokens {
+    for (tokend_id, burned_amount) in melted_native_tokens {
         match output_native_tokens.entry(tokend_id) {
             Entry::Vacant(e) => {
                 e.insert(burned_amount);
@@ -115,8 +116,9 @@ pub(crate) async fn get_remainder(
         remainder.verify_storage_deposit(byte_cost_config)?;
         remainder_output.replace(remainder);
     } else {
-        // if we have remaining native tokens, but no amount left, then we can't create this transaction
-        if native_token_remainder.is_some() {
+        // if we have remaining native tokens, but no amount left, then we can't create this transaction unless we want
+        // to burn them
+        if native_token_remainder.is_some() && !allow_burning {
             return Err(Error::NoBalanceForNativeTokenRemainder);
         }
     }
@@ -124,8 +126,11 @@ pub(crate) async fn get_remainder(
     Ok(remainder_output)
 }
 
-// Calculate total accumulated amounts from the outputs
-pub(crate) async fn get_accumulated_output_amounts(outputs: &[Output]) -> Result<AccumulatedOutputAmounts> {
+// Calculate required accumulated amounts from the outputs, considers also minted and melted native tokens
+pub(crate) async fn get_accumulated_output_amounts(
+    input_outputs: &[Output],
+    outputs: &[Output],
+) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
     let mut required_native_tokens: HashMap<TokenId, U256> = HashMap::new();
@@ -144,7 +149,22 @@ pub(crate) async fn get_accumulated_output_amounts(outputs: &[Output]) -> Result
             }
         }
     }
+
+    // check if a foundry mints or melts native tokens
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(input_outputs, outputs)?;
+    // add burned native tokens as outputs, because we need to have this amount in the inputs
+    for (tokend_id, burned_amount) in melted_native_tokens {
+        match required_native_tokens.entry(tokend_id) {
+            Entry::Vacant(e) => {
+                e.insert(burned_amount);
+            }
+            Entry::Occupied(mut e) => {
+                *e.get_mut() += burned_amount;
+            }
+        }
+    }
     Ok(AccumulatedOutputAmounts {
+        minted_native_tokens,
         amount: required_amount,
         native_tokens: required_native_tokens,
     })

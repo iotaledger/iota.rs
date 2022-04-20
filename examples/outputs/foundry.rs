@@ -32,7 +32,7 @@ use primitive_types::U256;
 #[tokio::main]
 async fn main() -> Result<()> {
     let client = Client::builder()
-        .with_node("http://localhost:14265")?
+        .with_node("https://api.alphanet.iotaledger.net")?
         .with_node_sync_disabled()
         .finish()
         .await?;
@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
     println!(
         "{}",
         request_funds_from_faucet(
-            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+            "https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue",
             &address.to_bech32("atoi"),
         )
         .await?
@@ -138,7 +138,7 @@ async fn main() -> Result<()> {
     let _ = client.retry_until_included(&message.id(), None, None).await?;
 
     //////////////////////////////////
-    // burn 20 native token
+    // melt 20 native token
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(message.payload().unwrap());
     let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
@@ -258,19 +258,46 @@ async fn main() -> Result<()> {
     outputs.push(Output::Basic(
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+            .add_native_token(NativeToken::new(token_id, U256::from(30))?)
             .finish()?,
     ));
 
     let message = client
         .message()
         .with_signer(&signer)
+        .with_burning_allowed(true)
         .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
         "Second transaction with native tokens sent: http://localhost:14265/api/v2/messages/{}",
+        message.id()
+    );
+    let _ = client.retry_until_included(&message.id(), None, None).await?;
+
+    //////////////////////////////////
+    // burn native token without foundry
+    //////////////////////////////////
+    let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
+    let mut outputs: Vec<Output> = Vec::new();
+    outputs.push(Output::Basic(
+        BasicOutputBuilder::new_with_amount(1_000_000)?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_native_token(NativeToken::new(token_id, U256::from(30))?)
+            .finish()?,
+    ));
+
+    let message = client
+        .message()
+        .with_signer(&signer)
+        .with_burning_allowed(true)
+        .with_input(basic_output_id.into())?
+        .with_outputs(outputs)?
+        .finish()
+        .await?;
+    println!(
+        "Third transaction with native tokens burned sent: http://localhost:14265/api/v2/messages/{}",
         message.id()
     );
     let _ = client.retry_until_included(&message.id(), None, None).await?;

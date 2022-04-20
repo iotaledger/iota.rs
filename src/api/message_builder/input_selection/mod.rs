@@ -27,20 +27,22 @@ use primitive_types::U256;
 
 pub(crate) use self::{automatic::get_inputs, manual::get_custom_inputs};
 use self::{
-    native_token_helpers::{get_minted_and_burned_native_tokens, get_remainder_native_tokens, missing_native_tokens},
+    native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens, missing_native_tokens},
     output_data::{get_accumulated_output_amounts, get_remainder},
     types::SelectedTransactionData,
 };
 use crate::{signing::types::InputSigningData, Error, Result};
 
 /// Select inputs from provided inputs([InputSigningData]) for provided [Output]s, validate amounts and create remainder
-/// output if necessary. Also checks for alias, foundry and nft that they exist in the inputs if required.
+/// output if necessary. Also checks for alias, foundry and nft outputs that there previous output exist in the inputs,
+/// when required. Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
 pub async fn try_select_inputs(
     mut inputs: Vec<InputSigningData>,
     mut outputs: Vec<Output>,
     force_use_all_inputs: bool,
     remainder_address: Option<Address>,
     byte_cost_config: &ByteCostConfig,
+    allow_burning: bool,
 ) -> Result<SelectedTransactionData> {
     inputs.dedup();
     if inputs.len() as u16 > INPUT_COUNT_MAX {
@@ -54,7 +56,14 @@ pub async fn try_select_inputs(
 
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
-        let remainder_output = get_remainder(&input_outputs, &outputs, remainder_address, byte_cost_config).await?;
+        let remainder_output = get_remainder(
+            &input_outputs,
+            &outputs,
+            remainder_address,
+            byte_cost_config,
+            allow_burning,
+        )
+        .await?;
         if let Some(remainder_output) = &remainder_output {
             outputs.push(remainder_output.clone());
         }
@@ -66,23 +75,8 @@ pub async fn try_select_inputs(
     }
     // else: only select inputs that are necessary for the provided outputs
 
-    let required = get_accumulated_output_amounts(&outputs).await?;
-
-    // check if a foundry minted native tokens
-    let (minted_native_tokens, burned_native_tokens) = get_minted_and_burned_native_tokens(&input_outputs, &outputs)?;
-    let mut selected_input_native_tokens: HashMap<TokenId, U256> = minted_native_tokens;
-    let mut required_native_tokens: HashMap<TokenId, U256> = required.native_tokens;
-    // add burned native tokens as outputs, because we need to have this amount in the inputs
-    for (tokend_id, burned_amount) in burned_native_tokens {
-        match required_native_tokens.entry(tokend_id) {
-            Entry::Vacant(e) => {
-                e.insert(burned_amount);
-            }
-            Entry::Occupied(mut e) => {
-                *e.get_mut() += burned_amount;
-            }
-        }
-    }
+    let required = get_accumulated_output_amounts(&input_outputs, &outputs).await?;
+    let mut selected_input_native_tokens = required.minted_native_tokens;
 
     let mut selected_input_amount = 0;
     let mut selected_inputs = Vec::new();
@@ -112,7 +106,7 @@ pub async fn try_select_inputs(
     }
 
     // 2. get native tokens (because amount of these outputs will also be used)
-    if !required_native_tokens.is_empty() {
+    if !required.native_tokens.is_empty() {
         for input_signing_data in &inputs {
             // only add outputs that aren't already in the inputs
             if !selected_inputs.iter().any(|e| {
@@ -123,7 +117,7 @@ pub async fn try_select_inputs(
                 if let Some(output_native_tokens) = output.native_tokens() {
                     for native_token in output_native_tokens.iter() {
                         // only check required tokens
-                        if let Some(required_native_token_amount) = required_native_tokens.get(native_token.token_id())
+                        if let Some(required_native_token_amount) = required.native_tokens.get(native_token.token_id())
                         {
                             match selected_input_native_tokens.entry(*native_token.token_id()) {
                                 Entry::Vacant(e) => {
@@ -147,9 +141,10 @@ pub async fn try_select_inputs(
             }
         }
     }
+
     // check if we got all required native tokens
     // println!("selected_input_native_tokens: {:?}", selected_input_native_tokens);
-    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required_native_tokens) {
+    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required.native_tokens) {
         return Err(Error::NotEnoughNativeTokens(native_token));
     }
     // check if we have too many inputs
@@ -172,7 +167,7 @@ pub async fn try_select_inputs(
             if selected_input_amount > required.amount {
                 let current_remainder_amount = selected_input_amount - required.amount;
                 let native_token_remainder =
-                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens);
+                    get_remainder_native_tokens(&selected_input_native_tokens, &required.native_tokens);
                 // If no remainder address is provided, an Ed25519Address from the inputs will  be used
                 let remainder_address = remainder_address.unwrap_or({
                     // todo: find a better way to do this, this address is only used for the storage deposit calculation
@@ -222,7 +217,6 @@ pub async fn try_select_inputs(
     });
 
     // 4. try to select outputs with native tokens
-    // todo: handle remainder amount for native tokens
     for input_signing_data in inputs
         .iter()
         // Max inputs is 128
@@ -234,7 +228,7 @@ pub async fn try_select_inputs(
             if selected_input_amount > required.amount {
                 let current_remainder_amount = selected_input_amount - required.amount;
                 let native_token_remainder =
-                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens);
+                    get_remainder_native_tokens(&selected_input_native_tokens, &required.native_tokens);
                 // If no remainder address is provided, an Ed25519Address from the inputs will  be used
                 let remainder_address = remainder_address.unwrap_or({
                     // todo: find a better way to do this, this address is only used for the storage deposit calculation
@@ -285,8 +279,14 @@ pub async fn try_select_inputs(
         .map(|i| Ok(Output::try_from(&i.output_response.output)?))
         .collect::<Result<Vec<Output>>>()?;
     // get_remainder also checks for amounts and returns an error if we don't have enough
-    let remainder_output =
-        get_remainder(&selected_input_outputs, &outputs, remainder_address, byte_cost_config).await?;
+    let remainder_output = get_remainder(
+        &selected_input_outputs,
+        &outputs,
+        remainder_address,
+        byte_cost_config,
+        allow_burning,
+    )
+    .await?;
     if let Some(remainder_output) = &remainder_output {
         outputs.push(remainder_output.clone());
     }
