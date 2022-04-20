@@ -21,7 +21,7 @@ async function run() {
 
     try {
         const output = await client.getOutput(
-            '0xa22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c37720000',
+            '0xc1e8fe6424b93c4f6aef98b356dd47af3f3bdba510e1f5567f6d4b4c96b78dc80000',
         );
         console.log('Output: ', output);
     } catch (error) {

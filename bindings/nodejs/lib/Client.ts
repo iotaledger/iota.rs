@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MessageHandler } from './MessageHandler';
-import type { ClientOptions, NodeInfo } from '../types';
-
+import type {
+    Address,
+    ClientOptions,
+    NodeInfo,
+    OutputResponse,
+} from '../types';
 export class Client {
     private messageHandler: MessageHandler;
 
@@ -19,11 +23,33 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    async getOutput(output_id: string) {
+    async getOutputIds(queryParameters: Address[]) {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'OutputIds',
+            data: {
+                queryParameters,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    async getOutput(outputId: string): Promise<OutputResponse> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetOutput',
             data: {
-                output_id,
+                outputId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    async getOutputs(outputIds: string[]): Promise<OutputResponse[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetOutputs',
+            data: {
+                outputIds,
             },
         });
 

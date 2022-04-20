@@ -145,6 +145,7 @@ pub enum ClientMethod {
     /// Get output
     GetOutput {
         /// Output ID
+        #[serde(rename = "outputId")]
         output_id: OutputId,
     },
     /// Get the milestone by the given milestone id.
@@ -188,6 +189,7 @@ pub enum ClientMethod {
     /// Fetch output IDs
     OutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch aliases output IDs
@@ -227,6 +229,7 @@ pub enum ClientMethod {
     /// Fetch OutputResponse from provided OutputIds (requests are sent in parallel)
     GetOutputs {
         /// Output IDs
+        #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
     },
     /// Try to get OutputResponse from provided OutputIds (requests are sent in parallel and errors are ignored, can be

@@ -48,6 +48,7 @@ impl QueryParameters {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub enum QueryParameter {
     /// Bech32-encoded address that should be searched for.
+    #[serde(rename = "address")]
     Address(String),
     /// Bech32-encoded alias address that should be searched for.
     AliasAddress(String),
