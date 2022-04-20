@@ -36,6 +36,8 @@ use crate::{signing::types::InputSigningData, Error, Result};
 /// Select inputs from provided inputs([InputSigningData]) for provided [Output]s, validate amounts and create remainder
 /// output if necessary. Also checks for alias, foundry and nft outputs that there previous output exist in the inputs,
 /// when required. Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
+/// Provided alias, foundry and nft outputs will be used first as inputs and therefore destroyed if not existent in the
+/// output
 pub async fn try_select_inputs(
     mut inputs: Vec<InputSigningData>,
     mut outputs: Vec<Output>,
@@ -79,29 +81,36 @@ pub async fn try_select_inputs(
     let mut selected_input_native_tokens = required.minted_native_tokens;
 
     let mut selected_input_amount = 0;
-    let mut selected_inputs = Vec::new();
+    let mut selected_inputs: Vec<InputSigningData> = Vec::new();
 
-    // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs could be used)
+    // Split outputs by type
+    let mut basic_outputs = Vec::new();
+    // alias, foundry, nft outputs
+    let mut utxo_chain_outputs = Vec::new();
     for input_signing_data in &inputs {
         let output = Output::try_from(&input_signing_data.output_response.output)?;
         match output {
-            Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => {
-                selected_input_amount += output.amount();
-                if let Some(output_native_tokens) = output.native_tokens() {
-                    for native_token in output_native_tokens.iter() {
-                        match selected_input_native_tokens.entry(*native_token.token_id()) {
-                            Entry::Vacant(e) => {
-                                e.insert(*native_token.amount());
-                            }
-                            Entry::Occupied(mut e) => {
-                                *e.get_mut() += *native_token.amount();
-                            }
-                        }
+            Output::Basic(_) => basic_outputs.push(input_signing_data),
+            Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_outputs.push(input_signing_data),
+            _ => {}
+        }
+    }
+
+    // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs could be used)
+    for input_signing_data in &utxo_chain_outputs {
+        let output = Output::try_from(&input_signing_data.output_response.output)?;
+        selected_input_amount += output.amount();
+        if let Some(output_native_tokens) = output.native_tokens() {
+            for native_token in output_native_tokens.iter() {
+                match selected_input_native_tokens.entry(*native_token.token_id()) {
+                    Entry::Vacant(e) => {
+                        e.insert(*native_token.amount());
+                    }
+                    Entry::Occupied(mut e) => {
+                        *e.get_mut() += *native_token.amount();
                     }
                 }
-                selected_inputs.push(input_signing_data.clone());
             }
-            _ => {}
         }
     }
 
@@ -271,6 +280,12 @@ pub async fn try_select_inputs(
                 selected_inputs.push(input_signing_data.clone());
             }
         }
+    }
+
+    // check if we have too many inputs
+    let current_selected_input_len = selected_inputs.len() as u16;
+    if current_selected_input_len > INPUT_COUNT_MAX {
+        return Err(Error::ConsolidationRequired(current_selected_input_len.into()));
     }
 
     // create remainder output if necessary
