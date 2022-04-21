@@ -18,14 +18,12 @@ exclude = ["artifacts.json", "index.node"]
 name = "iota_client"
 crate-type = ["cdylib"]
 
-[build-dependencies]
-neon-build = "0.5"
-
 [dependencies]
-neon = "0.8"
-iota-client = { path = "../../..", features = ["mqtt"] }
+fern-logger = { version = "0.5.0", default-features = false }
+iota-client = { path = "../../..", features = ["message_interface", "mqtt"] }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.68", default-features = false }
+log = { version = "0.4.14", default-features = false }
 once_cell = { version = "1.8.0", default-features = false, features = ["std"] }
 rand = "0.7.3"
 futures = { version = "0.3.17", default-features = false }
@@ -34,3 +32,8 @@ anyhow = "1.0.44"
 thiserror = { version = "1.0.29", default-features = false }
 tokio = { version = "1.12.0", features = ["macros"] }
 hex = { version = "0.4.3", default-features = false }
+
+[dependencies.neon]
+version = "0.10"
+default-features = false
+features = ["napi-6", "event-queue-api"]
