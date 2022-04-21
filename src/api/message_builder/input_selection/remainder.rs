@@ -73,7 +73,10 @@ pub(crate) async fn get_remainder_output(
     let native_token_remainder = get_remainder_native_tokens(&input_native_tokens, &output_native_tokens);
     // Output possible remaining tokens back to the original address
     if remainder_amount > 0 {
-        let remainder_addr = get_remainder_address(remainder_address, inputs)?;
+        let remainder_addr = match remainder_address {
+            Some(a) => a,
+            None => get_remainder_address(inputs)?,
+        };
 
         let mut remainder_output_builder = BasicOutputBuilder::new_with_amount(remainder_amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_addr)));
@@ -98,30 +101,25 @@ pub(crate) async fn get_remainder_output(
     Ok(remainder_output)
 }
 
-// Return provided remainder address or get an Ed25519 address from the inputs as remainder address
+// Get an Ed25519 address from the inputs as remainder address
 // We don't want to use nft or alias addresses as remainder address, because we might can't control them later
-pub(crate) fn get_remainder_address(remainder_address: Option<Address>, inputs: &[Output]) -> Result<Address> {
-    match remainder_address {
-        Some(address) => Ok(address),
-        // get address from an input, by default we only allow ed25519 addresses as remainder, because then we're
-        // sure that the sender can access it
-        None => {
-            let mut address = None;
-            for input in inputs {
-                if let Some(unlock_conditions) = input.unlock_conditions() {
-                    for unlock_condition in unlock_conditions.iter() {
-                        if let UnlockCondition::Address(address_unlock_condition) = unlock_condition {
-                            address.replace(address_unlock_condition.address());
-                            break;
-                        }
-                    }
+pub(crate) fn get_remainder_address(inputs: &[Output]) -> Result<Address> {
+    // get address from an input, by default we only allow ed25519 addresses as remainder, because then we're
+    // sure that the sender can access it
+    let mut address = None;
+    'outer: for input in inputs {
+        if let Some(unlock_conditions) = input.unlock_conditions() {
+            for unlock_condition in unlock_conditions.iter() {
+                if let UnlockCondition::Address(address_unlock_condition) = unlock_condition {
+                    address.replace(address_unlock_condition.address());
+                    break 'outer;
                 }
             }
-            match address {
-                Some(addr) => Ok(*addr),
-                None => Err(Error::MissingInputWithEd25519UnlockCondition),
-            }
         }
+    }
+    match address {
+        Some(addr) => Ok(*addr),
+        None => Err(Error::MissingInputWithEd25519UnlockCondition),
     }
 }
 
@@ -144,13 +142,15 @@ pub(crate) fn get_additional_required_remainder_amount(
 
             let required_deposit = minimum_storage_deposit(
                 byte_cost_config,
-                &get_remainder_address(
-                    remainder_address,
-                    &selected_inputs
-                        .iter()
-                        .map(|i| Ok(Output::try_from(&i.output_response.output)?))
-                        .collect::<Result<Vec<Output>>>()?,
-                )?,
+                &match remainder_address {
+                    Some(a) => a,
+                    None => get_remainder_address(
+                        &selected_inputs
+                            .iter()
+                            .map(|i| Ok(Output::try_from(&i.output_response.output)?))
+                            .collect::<Result<Vec<Output>>>()?,
+                    )?,
+                },
                 &native_token_remainder,
             )?;
             if required_deposit > current_remainder_amount {
