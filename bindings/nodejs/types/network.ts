@@ -22,16 +22,35 @@ export type Node = {
 export interface NodeInfo {
     name: string;
     version: string;
+    status: Status;
+    metrics: Metrics;
+    protocol: Protocol;
+    features: string[];
+    plugins: string[];
+    url: string;
+}
+
+export interface Status {
     isHealthy: boolean;
-    networkId: string;
-    bech32HRP: string;
-    minPoWScore: number;
-    messagesPerSecond: number;
-    referencedMessagesPerSecond: number;
-    referencedRate: number;
     latestMilestoneTimestamp: number;
     latestMilestoneIndex: number;
     confirmedMilestoneIndex: number;
     pruningIndex: number;
-    features: string[];
+}
+
+export interface Metrics {
+    messagesPerSecond: number;
+    referencedMessagesPerSecond: number;
+    referencedRate: number;
+}
+
+export interface Protocol {
+    networkName: string;
+    bech32HRP: string;
+    minPoWScore: number;
+    rentStructure?: {
+        vByteCost: number;
+        vByteFactorData: number;
+        vByteFactorKey: number;
+    };
 }
