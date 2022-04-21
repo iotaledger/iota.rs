@@ -32,7 +32,7 @@ use primitive_types::U256;
 #[tokio::main]
 async fn main() -> Result<()> {
     let client = Client::builder()
-        .with_node("https://api.alphanet.iotaledger.net")?
+        .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
         .await?;
@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
     println!(
         "{}",
         request_funds_from_faucet(
-            "https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue",
+            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
             &address.to_bech32("atoi"),
         )
         .await?
@@ -258,14 +258,13 @@ async fn main() -> Result<()> {
     outputs.push(Output::Basic(
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(30))?)
+            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
             .finish()?,
     ));
 
     let message = client
         .message()
         .with_signer(&signer)
-        .with_burning_allowed(true)
         .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
