@@ -189,6 +189,5 @@ pub fn verify_semantic(
         local_time,
     );
 
-    // Ok(ConflictReason::None)
     semantic_validation(context, inputs.as_slice(), transaction.unlock_blocks()).map_err(Error::MessageError)
 }
