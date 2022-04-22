@@ -106,7 +106,7 @@ pub struct StrongholdAdapter {
 
     /// The path to a Stronghold snapshot file.
     #[builder(setter(strip_option))]
-    snapshot_path: Option<PathBuf>,
+    pub snapshot_path: Option<PathBuf>,
 
     /// Whether the snapshot has been loaded from the disk to the memory.
     #[builder(setter(skip))]
@@ -229,17 +229,11 @@ impl StrongholdAdapter {
         StrongholdAdapterBuilder::default()
     }
 
-    /// Set the path to a Stronghold snapshot file.
-    pub async fn set_snapshot_path(&mut self, path: PathBuf) -> &mut Self {
-        self.snapshot_path = Some(path);
-        self
-    }
-
     /// Use an user-input password string to derive a key to use Stronghold.
     ///
     /// This function will also spawn an asynchronous task in Tokio to automatically purge the derived key from
     /// `password` after `timeout` (if set).
-    pub async fn set_password(&mut self, password: &str) -> &mut Self {
+    pub async fn set_password(&mut self, password: &str) {
         *self.key.lock().await = Some(self::common::derive_key_from_password(password));
 
         // If a timeout is set, spawn a task to clear the key after the timeout.
@@ -255,8 +249,6 @@ impl StrongholdAdapter {
 
             *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key, timeout)));
         }
-
-        self
     }
 
     /// Immediately clear ([zeroize]) the stored key.
