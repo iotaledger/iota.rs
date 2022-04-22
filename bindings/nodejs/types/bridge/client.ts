@@ -1,4 +1,3 @@
-import type { Address } from '../address';
 import type { GenerateAddressesOptions } from '../client';
 
 export interface __GetInfoPayloadMethod__ {
@@ -25,7 +24,7 @@ export interface __GetOutputPayload__ {
 export interface __GetOutputIdsPayloadMethod__ {
     name: 'OutputIds';
     data: {
-        queryParameters: Address[];
+        queryParameters: string[];
     };
 }
 

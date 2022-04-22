@@ -3,7 +3,6 @@
 
 import { MessageHandler } from './MessageHandler';
 import type {
-    Address,
     ClientOptions,
     GenerateAddressesOptions,
     NodeInfo,
@@ -24,7 +23,8 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    async getOutputIds(queryParameters: Address[]) {
+    // TODO: proper type for queryParameters
+    async getOutputIds(queryParameters: string[]) {
         const response = await this.messageHandler.callClientMethod({
             name: 'OutputIds',
             data: {
