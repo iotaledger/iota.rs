@@ -163,7 +163,7 @@ pub fn verify_semantic(
     input_signing_data: &[InputSigningData],
     transaction: &TransactionPayload,
     milestone_index: u32,
-    local_time: u64,
+    local_time: u32,
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();

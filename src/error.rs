@@ -237,7 +237,7 @@ pub enum Error {
     TransactionSemantic(ConflictReason),
     /// Local time doesn't match the time of the latest milestone timestamp
     #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
-    TimeNotSynced(u64, u64),
+    TimeNotSynced(u32, u32),
 }
 
 // map most errors to a single error but there are some errors that
