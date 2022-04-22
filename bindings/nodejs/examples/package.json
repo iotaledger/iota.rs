@@ -1,6 +1,7 @@
 {
     "name": "examples",
     "dependencies": {
-        "@iota/client": "../"
+        "@iota/client": "../",
+        "dotenv": "^16.0.0"
     }
 }

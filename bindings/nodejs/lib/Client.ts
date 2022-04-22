@@ -5,6 +5,7 @@ import { MessageHandler } from './MessageHandler';
 import type {
     Address,
     ClientOptions,
+    GenerateAddressesOptions,
     NodeInfo,
     OutputResponse,
 } from '../types';
@@ -50,6 +51,40 @@ export class Client {
             name: 'GetOutputs',
             data: {
                 outputIds,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    async generateMnemonic() {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GenerateMnemonic',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    async mnemonicToHexSeed(mnemonic: string) {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'MnemonicToHexSeed',
+            data: {
+                mnemonic,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    async generateAddresses(
+        mnemonic: string,
+        generateAddressesOptions: GenerateAddressesOptions,
+    ) {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GenerateAddresses',
+            data: {
+                signer: mnemonic,
+                options: generateAddressesOptions,
             },
         });
 

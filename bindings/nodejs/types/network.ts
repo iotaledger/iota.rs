@@ -1,8 +1,12 @@
-export type Auth = {
+export enum Network {
+    Mainnet,
+    Testnet,
+}
+export interface Auth {
     jwt?: string;
     username?: string;
     password?: string;
-};
+}
 
 export interface MqttBrokerOptions {
     automaticDisconnect?: boolean;

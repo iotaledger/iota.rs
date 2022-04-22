@@ -1,46 +1,81 @@
 import type { Address } from '../address';
+import type { GenerateAddressesOptions } from '../client';
 
-export type __GetInfoPayloadMethod__ = {
+export interface __GetInfoPayloadMethod__ {
     name: 'GetInfo';
-};
+}
 
-export type __GetInfoPayload__ = {
+export interface __GetInfoPayload__ {
     cmd: 'CallClientMethod';
     payload: __GetInfoPayloadMethod__;
-};
+}
 
-export type __GetOutputPayloadMethod__ = {
+export interface __GetOutputPayloadMethod__ {
     name: 'GetOutput';
     data: {
         outputId: string;
     };
-};
+}
 
-export type __GetOutputPayload__ = {
+export interface __GetOutputPayload__ {
     cmd: 'CallClientMethod';
     payload: __GetOutputPayloadMethod__;
-};
+}
 
-export type __GetOutputIdsPayloadMethod__ = {
+export interface __GetOutputIdsPayloadMethod__ {
     name: 'OutputIds';
     data: {
         queryParameters: Address[];
     };
-};
+}
 
-export type __GetOutputIdsPayload__ = {
+export interface __GetOutputIdsPayload__ {
     cmd: 'CallClientMethod';
     payload: __GetOutputPayloadMethod__;
-};
+}
 
-export type __GetOutputsMethod__ = {
+export interface __GetOutputsMethod__ {
     name: 'GetOutputs';
     data: {
         outputIds: string[];
     };
-};
+}
 
-export type __GetOutputsPayload__ = {
+export interface __GetOutputsPayload__ {
     cmd: 'CallClientMethod';
     payload: __GetOutputsMethod__;
-};
+}
+
+export interface __GenerateMnemonicMethod__ {
+    name: 'GenerateMnemonic';
+}
+
+export interface __GenerateMnemonicPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __GenerateMnemonicMethod__;
+}
+
+export interface __MnemonicToHexSeedMethod__ {
+    name: 'MnemonicToHexSeed';
+    data: {
+        mnemonic: string;
+    };
+}
+
+export interface __MnemonicToHexSeedPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __MnemonicToHexSeedMethod__;
+}
+
+export interface __GenerateAddressesMethod__ {
+    name: 'GenerateAddresses';
+    data: {
+        signer: string;
+        options: GenerateAddressesOptions;
+    };
+}
+
+export interface __GenerateAddressesPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __GenerateAddressesMethod__;
+}
