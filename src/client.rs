@@ -508,7 +508,7 @@ impl Client {
         crate::node_api::core::routes::get_output(self, output_id).await
     }
 
-    /// GET /api/plugins/indexer/v1/outputs{query} endpoint
+    /// GET /api/plugins/indexer/v1/basic-outputs{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }
@@ -553,7 +553,7 @@ impl Client {
     // Node indexer API
     //////////////////////////////////////////////////////////////////////
 
-    /// api/plugins/indexer/v1/outputs
+    /// api/plugins/indexer/v1/basic-outputs
     pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         crate::node_api::indexer::routes::output_ids(self, query_parameters).await
     }

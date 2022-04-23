@@ -276,7 +276,7 @@ Find an output by its transaction_id and corresponding output_index.
 
 #### getAddress(): GetAddressBuilder
 
-GET /api/plugins/indexer/v1/outputs{query} endpoint
+GET /api/plugins/indexer/v1/basic-outputs{query} endpoint
 Returns a builder ith which to construct the exact needs.
 
 #### getAddressBalance(address): BalanceAddressResponse

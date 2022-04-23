@@ -18,9 +18,9 @@ use crate::{
 ///                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
 ///                 "timelockedAfterMilestone", "sender", "tag", "createdBefore", "createdAfter"
 /// Returns an empty Vec if no results are found.
-/// api/plugins/indexer/v1/outputs
+/// api/plugins/indexer/v1/basic-outputs
 pub async fn output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-    let route = "api/plugins/indexer/v1/outputs";
+    let route = "api/plugins/indexer/v1/basic-outputs";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
 }

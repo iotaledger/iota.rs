@@ -115,7 +115,7 @@ impl HttpClient {
         {
             request_builder = request_builder.timeout(_timeout);
         }
-        request_builder = request_builder.header("Content-Type", "application/octet-stream");
+        request_builder = request_builder.header("Content-Type", "application/vnd.iota.serializer-v1");
         Self::parse_response(request_builder.body(body.to_vec()).send().await?, &node.url).await
     }
 
@@ -161,7 +161,7 @@ impl HttpClient {
                 request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
             }
         }
-        request_builder = request_builder.set("Content-Type", "application/octet-stream");
+        request_builder = request_builder.set("Content-Type", "application/vnd.iota.serializer-v1");
         Ok(request_builder.send_bytes(body)?.into())
     }
 
