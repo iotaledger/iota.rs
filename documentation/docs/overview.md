@@ -1,6 +1,6 @@
 ---
 description: The wallet library is a stateful package with a standardized interface for developers to build applications involving IOTA value transactions.
-image: /img/overview/layered_overview.svg
+image: /img/Banner/banner_client_lib_overview.png
 keywords:
 - layered overview
 - high level
@@ -9,6 +9,8 @@ keywords:
 - value transactions
 ---
 # Overview
+
+![IOTA Client Library Overview](/img/Banner/banner_client_lib_overview.png)
 
 To communicate with the IOTA network, you have to connect and interact with a [node](https://wiki.iota.org/chrysalis-docs/node_software), the task that the iota.rs library is designed to simplify. It will generate addresses for you, send messages, sign and send transactions, and more.
 

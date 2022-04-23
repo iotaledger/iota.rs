@@ -1,6 +1,6 @@
 ---
 description: Official IOTA Client Library which can be used to easily integrate an IOTA Client into your application 
-image: /img/logo/iota_mark_light.png
+image: /img/Banner/banner_client_lib.png
 keywords:
 - requirements
 - wallet
@@ -11,6 +11,8 @@ keywords:
 - nodejs
 ---
 # Welcome
+
+![IOTA Client Library](/img/Banner/banner_client_lib.png)
 
 The iota.rs library is a library that handles communications between your software and the IOTA network. 
 
