@@ -1,6 +1,6 @@
 ---
 description:   Choose your binding and get started with the IOTA Client Library. 
-image: /img/logo/iota_mark_light.png
+image: /img/Banner/banner_client_lib_getting_started.png
 keywords:
 - rust
 - python
@@ -8,6 +8,8 @@ keywords:
 - IDE
 ---
 # Getting Started
+
+![IOTA Client Library getting started](/img/Banner/banner_client_lib_getting_started.png)
 
 To check out our examples and write and test your own code, you would need an IDE or a code editor of your choice and a stable internet connection. You also need to set up your environment by following instructions for one of the languages: [Rust](./libraries/rust/getting_started.md), [Node.js](./libraries/nodejs/getting_started.md), [Python](./libraries/python/getting_started.md), or [Java](./libraries/java/getting_started.md).
 
