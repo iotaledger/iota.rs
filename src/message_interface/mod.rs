@@ -167,8 +167,8 @@ mod tests {
 
         let response = message_interface::send_message(&message_handler, generate_message).await;
         match response.response_type() {
-            ResponseType::GeneratedMessage(transaction_data) => {
-                println!("{}", serde_json::to_string(transaction_data).unwrap())
+            ResponseType::GeneratedMessage(message_data) => {
+                println!("{}", serde_json::to_string(message_data).unwrap())
             }
             response_type => panic!("Unexpected response type: {:?}", response_type),
         }

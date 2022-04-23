@@ -25,7 +25,7 @@ pub enum ResponseType {
     /// GenerateAddress response.
     GeneratedAddresses(Vec<String>),
     /// Generated message
-    GeneratedMessage(PreparedTransactionData),
+    GeneratedMessage(MessageDto),
     /// Node
     Node(Node),
     /// Network info
