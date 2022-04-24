@@ -24,6 +24,10 @@ import type {
     __GetMessageDataPayload__,
     __GetMessageMetadataPayload__,
     __GetMessageMetadataPayloadMethod__,
+    __FindInputsPayloadMethod__,
+    __FindOutputsPayloadMethod__,
+    __FindOutputsPayload__,
+    __FindInputsPayload__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -39,7 +43,9 @@ export type __ClientPayloadMethods__ =
     | __GetTipsPayloadMethod__
     | __GetNetworkInfoPayloadMethod__
     | __GetMessageDataPayloadMethod__
-    | __GetMessageMetadataPayloadMethod__;
+    | __GetMessageMetadataPayloadMethod__
+    | __FindInputsPayloadMethod__
+    | __FindOutputsPayloadMethod__;
 
 export type __SendMessagePayload__ =
     | __GetInfoPayload__
@@ -53,4 +59,6 @@ export type __SendMessagePayload__ =
     | __GetTipsPayload__
     | __GetNetworkInfoPayload__
     | __GetMessageDataPayload__
-    | __GetMessageMetadataPayload__;
+    | __GetMessageMetadataPayload__
+    | __FindInputsPayload__
+    | __FindOutputsPayload__;

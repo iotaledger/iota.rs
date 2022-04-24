@@ -1,0 +1,67 @@
+{
+    "protocolVersion": 2,
+    "parentMessageIds": [
+        "0x0e9dfd22c1bd18ec5c3c53ffe730ddc233a64b95a1b98575a0107e62cd0ebe55",
+        "0x892eb2f60cc3edd0fb31b4fb9b3a239e495dcc2240bdb4dfff3e7272b4c25213",
+        "0xa317b8e018ea44fb940c40f50c18f8c7b24ddadb3d231c5efb471a20057f0a41",
+        "0xa8169758d45f68667feda56827e66c863c6cdb25f78184045ab2fe902f103694"
+    ],
+    "payload": {
+        "type": 6,
+        "essence": {
+            "type": 1,
+            "networkId": "10859088168901003616",
+            "inputs": [
+                {
+                    "type": 0,
+                    "transactionId": "0x72591df9a128d58a4e707be1cdb8f49d5849f0fd0cb3126180233ddbb38cc67e",
+                    "transactionOutputIndex": 1
+                }
+            ],
+            "inputsCommitment": "0xa4d512ca8b41a017ddebe10f53f40b869f3c68359f710c1b1239e4dc02690c0b",
+            "outputs": [
+                {
+                    "type": 3,
+                    "amount": "1000000",
+                    "nativeTokens": [],
+                    "unlockConditions": [
+                        {
+                            "type": 0,
+                            "address": {
+                                "type": 0,
+                                "pubKeyHash": "0x194eb32b9b6c61207192c7073562a0b3adf50a7c1f268182b552ec8999380acb"
+                            }
+                        }
+                    ],
+                    "featureBlocks": []
+                },
+                {
+                    "type": 3,
+                    "amount": "13000000",
+                    "nativeTokens": [],
+                    "unlockConditions": [
+                        {
+                            "type": 0,
+                            "address": {
+                                "type": 0,
+                                "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+                            }
+                        }
+                    ],
+                    "featureBlocks": []
+                }
+            ]
+        },
+        "unlockBlocks": [
+            {
+                "type": 0,
+                "signature": {
+                    "type": 0,
+                    "publicKey": "0x67b7fc3f78763c9394fc4fcdb52cf3a973b6e064bdc3defb40a6cb2c880e6f5c",
+                    "signature": "0xff0ab5b636b06af6bc2c2a2bc64992765aa7c42521ee54a5b61145a6aadc1cacb4dbca747f0dfca65ecf171411ced56a518970d52f326312935584ee889d940e"
+                }
+            }
+        ]
+    },
+    "nonce": "13835058055282224699"
+}

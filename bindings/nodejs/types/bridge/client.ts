@@ -1,5 +1,6 @@
 import type { GenerateAddressesOptions } from '../client';
 import type { GenerateMessageOptions } from '../generateMessageOptions';
+import type { UTXOInput } from '../inputs/UTXOInput';
 import type { Message } from '../message';
 import type { QueryParameter } from '../queryParameters';
 
@@ -146,4 +147,29 @@ export interface __GetMessageMetadataPayloadMethod__ {
 export interface __GetMessageMetadataPayload__ {
     cmd: 'CallClientMethod';
     payload: __GetMessageMetadataPayloadMethod__;
+}
+
+export interface __FindInputsPayloadMethod__ {
+    name: 'FindInputs';
+    data: {
+        addresses: string[];
+        amount: number;
+    };
+}
+
+export interface __FindInputsPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __FindInputsPayloadMethod__;
+}
+export interface __FindOutputsPayloadMethod__ {
+    name: 'FindOutputs';
+    data: {
+        outputs: UTXOInput[];
+        addresses: string[];
+    };
+}
+
+export interface __FindOutputsPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __FindOutputsPayloadMethod__;
 }

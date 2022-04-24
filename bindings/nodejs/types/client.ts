@@ -3,6 +3,7 @@
 import type { MqttBrokerOptions, Network, Node } from './network';
 
 export interface ClientOptions {
+    offline?: boolean;
     primaryNode?: string | Node;
     primaryPoWNode?: string | Node;
     node?: string | Node;

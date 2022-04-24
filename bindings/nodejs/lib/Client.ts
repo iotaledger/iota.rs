@@ -12,6 +12,8 @@ import type { Message } from '../types/message';
 import type { MessageMetadata } from '../types/messageMetadata';
 import type { GenerateMessageOptions } from '../types/generateMessageOptions';
 import type { QueryParameter } from '../types/queryParameters';
+import type { UTXOInput } from '../types/inputs/UTXOInput';
+
 export class Client {
     private messageHandler: MessageHandler;
 
@@ -166,6 +168,43 @@ export class Client {
             name: 'GetMessageMetadata',
             data: {
                 messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Find inputs from addresses for a provided amount (useful for offline signing)
+     */
+    async findInputs(
+        addresses: string[],
+        amount: number,
+    ): Promise<UTXOInput[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'FindInputs',
+            data: {
+                addresses,
+                amount,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Find all outputs based on the requests criteria. This method will try to query multiple nodes if
+     * the request amount exceeds individual node limit.
+     */
+    async findOutputs(
+        outputs: UTXOInput[],
+        addresses: string[],
+    ): Promise<UTXOInput[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'FindOutputs',
+            data: {
+                outputs,
+                addresses,
             },
         });
 

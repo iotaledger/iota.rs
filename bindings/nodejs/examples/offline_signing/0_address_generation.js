@@ -1,28 +1,68 @@
+// Copyright 2021-2022 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 // In this example we will generate addresses which will be used later to find inputs
 async function run() {
-    const { ClientBuilder } = require('../../');
-    const fs = require('fs')
+    const {
+        Client,
+        initLogger,
+        SHIMMER_TESTNET_BECH32_HRP,
+    } = require('@iota/client');
+    const { writeFile } = require('fs/promises');
+    require('dotenv').config({ path: '../.env' });
 
-    const iota_offline = new ClientBuilder()
-        .offlineMode()
-        .build();
+    initLogger({
+        colorEnabled: true,
+        name: './client.log',
+        levelFilter: 'debug',
+    });
 
-    const ADDRESS_FILE_NAME = "examples/offline_signing/addresses.json";
-    const seed = process.env.IOTA_SEED_SECRET;
+    // client will connect to testnet by default
+    const offlineClient = new Client({
+        offline: true,
+        nodes: [
+            {
+                // Insert your node URL here.
+                url: 'http://localhost:14265/',
+                auth: null,
+                disabled: false,
+            },
+        ],
+        localPow: true,
+    });
 
-    let addresses = await iota_offline
-        .getAddresses(seed)
-        .range(0, 10)
-        .bech32Hrp("atoi")
-        .get();
+    const signer = JSON.stringify({
+        Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+    });
+    const ADDRESS_FILE_NAME = './addresses.json';
 
-    console.log(addresses)
+    const offlineGeneratedOptions = {
+        range: {
+            start: 0,
+            end: 10,
+        },
+        bech32Hrp: SHIMMER_TESTNET_BECH32_HRP,
+    };
 
-    fs.writeFile(ADDRESS_FILE_NAME, JSON.stringify(addresses), err => {
-        if (err) {
-            console.error(err)
-        }
-    })
+    try {
+        // Generates addresses offline.
+        const offlineGeneratedAddresses = await offlineClient.generateAddresses(
+            signer,
+            offlineGeneratedOptions,
+        );
+
+        await writeFile(
+            ADDRESS_FILE_NAME,
+            JSON.stringify(offlineGeneratedAddresses),
+            (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            },
+        );
+    } catch (error) {
+        console.error('Error: ', error);
+    }
 }
 
-run()
+run().then(() => process.exit());
