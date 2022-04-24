@@ -1,7 +1,7 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-// In this example we will get information about the node
+// In this example we will get the outputs of a known address
 async function run() {
     const { Client, initLogger } = require('@iota/client');
 
@@ -24,10 +24,18 @@ async function run() {
     });
 
     try {
-        const nodeInfo = await client.getInfo();
-        console.log('Node info: ', nodeInfo);
+        const outputIds = await client.outputIds([
+            {
+                address:
+                    'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe',
+            },
+        ]);
+        console.log('Output ids: ', outputIds, '\n');
+
+        const addressOutputs = await client.getOutputs(outputIds);
+        console.log('Address outputs: ', addressOutputs);
     } catch (error) {
-        console.log('Error: ', error);
+        console.log('Error: ' + error);
     }
 }
 

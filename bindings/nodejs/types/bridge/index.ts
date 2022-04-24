@@ -1,5 +1,4 @@
 import type {
-    __GetOutputsMethod__,
     __GetOutputsPayload__,
     __GetInfoPayloadMethod__,
     __GetInfoPayload__,
@@ -7,22 +6,40 @@ import type {
     __GetOutputIdsPayload__,
     __GetOutputPayloadMethod__,
     __GetOutputPayload__,
-    __GenerateMnemonicMethod__,
     __GenerateMnemonicPayload__,
-    __MnemonicToHexSeedMethod__,
     __MnemonicToHexSeedPayload__,
-    __GenerateAddressesMethod__,
     __GenerateAddressesPayload__,
+    __PostMessagePayload__,
+    __GetOutputsPayloadMethod__,
+    __GenerateMnemonicPayloadMethod__,
+    __MnemonicToHexSeedPayloadMethod__,
+    __GenerateAddressesPayloadMethod__,
+    __PostMessagePayloadMethod__,
+    __GenerateMessagePayloadMethod__,
+    __GetTipsPayloadMethod__,
+    __GetTipsPayload__,
+    __GetNetworkInfoPayloadMethod__,
+    __GetNetworkInfoPayload__,
+    __GetMessageDataPayloadMethod__,
+    __GetMessageDataPayload__,
+    __GetMessageMetadataPayload__,
+    __GetMessageMetadataPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
     | __GetInfoPayloadMethod__
     | __GetOutputPayloadMethod__
     | __GetOutputIdsPayloadMethod__
-    | __GetOutputsMethod__
-    | __GenerateMnemonicMethod__
-    | __MnemonicToHexSeedMethod__
-    | __GenerateAddressesMethod__;
+    | __GetOutputsPayloadMethod__
+    | __GenerateMnemonicPayloadMethod__
+    | __MnemonicToHexSeedPayloadMethod__
+    | __GenerateAddressesPayloadMethod__
+    | __PostMessagePayloadMethod__
+    | __GenerateMessagePayloadMethod__
+    | __GetTipsPayloadMethod__
+    | __GetNetworkInfoPayloadMethod__
+    | __GetMessageDataPayloadMethod__
+    | __GetMessageMetadataPayloadMethod__;
 
 export type __SendMessagePayload__ =
     | __GetInfoPayload__
@@ -31,4 +48,9 @@ export type __SendMessagePayload__ =
     | __GetOutputsPayload__
     | __GenerateMnemonicPayload__
     | __MnemonicToHexSeedPayload__
-    | __GenerateAddressesPayload__;
+    | __GenerateAddressesPayload__
+    | __PostMessagePayload__
+    | __GetTipsPayload__
+    | __GetNetworkInfoPayload__
+    | __GetMessageDataPayload__
+    | __GetMessageMetadataPayload__;

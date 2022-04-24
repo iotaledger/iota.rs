@@ -125,11 +125,13 @@ pub enum ClientMethod {
     /// Get message data
     GetMessageData {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get message metadata with message_id
     GetMessageMetadata {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get message raw

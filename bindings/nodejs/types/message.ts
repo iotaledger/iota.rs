@@ -20,5 +20,5 @@ export interface Message {
      * The result of the Proof of Work in order for the message to be accepted into the tangle.
      * Plain string encoded number.
      */
-    nonce: number;
+    nonce: string;
 }

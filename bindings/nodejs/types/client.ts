@@ -1,6 +1,6 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import type { MqttBrokerOptions, Network } from './network';
+import type { MqttBrokerOptions, Network, Node } from './network';
 
 export interface ClientOptions {
     primaryNode?: string | Node;

@@ -1,11 +1,21 @@
+// Copyright 2021-2022 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+// In this example we will generate a mnemonic and generate the first address
 async function run() {
-    const { Client } = require('@iota/client');
+    const { Client, initLogger } = require('@iota/client');
+
+    initLogger({
+        color_enabled: true,
+        name: './client.log',
+        level_filter: 'debug',
+    });
 
     // client will connect to testnet by default
     const client = new Client({
         nodes: [
             {
-                url: 'http://localhost:14265/',
+                url: 'http://localhost:14265',
                 auth: null,
                 disabled: false,
             },
@@ -15,6 +25,7 @@ async function run() {
 
     try {
         const mnemonic = await client.generateMnemonic();
+        const signer = JSON.stringify({ Mnemonic: mnemonic });
 
         // Generate addresses with custom account index and range
         const options = {
@@ -24,16 +35,12 @@ async function run() {
                 end: 1,
             },
         };
-        const signer = JSON.stringify({ Mnemonic: mnemonic });
-
         const addresses = await client.generateAddresses(signer, options);
 
         console.log('First public address: ', addresses[0]);
     } catch (error) {
         console.log('Error: ', error);
     }
-
-    process.exit();
 }
 
-run();
+run().then(() => process.exit());

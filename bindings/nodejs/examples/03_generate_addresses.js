@@ -1,12 +1,25 @@
+// Copyright 2021-2022 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+// In this example we will create addresses from a mnemonic defined in .env
 async function run() {
-    // client will connect to testnet by default
-    const { Client } = require('@iota/client');
+    const {
+        Client,
+        initLogger,
+        SHIMMER_TESTNET_BECH32_HRP,
+    } = require('@iota/client');
+
+    initLogger({
+        color_enabled: true,
+        name: './client.log',
+        level_filter: 'debug',
+    });
 
     // client will connect to testnet by default
     const client = new Client({
         nodes: [
             {
-                url: 'http://localhost:14265/',
+                url: 'http://localhost:14265',
                 auth: null,
                 disabled: false,
             },
@@ -18,9 +31,9 @@ async function run() {
     const signer = JSON.stringify({
         Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
     });
-    const SHIMMER_TESTNET_BECH32_HRP = 'rms';
 
     const defaultOptions = {};
+
     const customOptions = {
         accountIndex: 0,
         range: {
@@ -28,6 +41,7 @@ async function run() {
             end: 4,
         },
     };
+
     const offlineGeneratedOptions = {
         accountIndex: 0,
         range: {
@@ -44,7 +58,9 @@ async function run() {
             defaultOptions,
         );
         console.log(
-            `List of generated public addresses: \n${defaultAddresses}\n`,
+            'List of generated public addresses:',
+            defaultAddresses,
+            '\n',
         );
 
         // Generate addresses with custom account index and range
@@ -53,7 +69,9 @@ async function run() {
             customOptions,
         );
         console.log(
-            `List of generated public addresses: \n${customAddresses}\n`,
+            `List of generated public addresses:`,
+            customAddresses,
+            '\n',
         );
 
         // TODO: How to implement this? Is a new client_method required?
@@ -68,13 +86,12 @@ async function run() {
             offlineGeneratedOptions,
         );
         console.log(
-            `List of offline generated public addresses: \n${offlineGeneratedAddresses}\n`,
+            `List of offline generated public addresses:`,
+            offlineGeneratedAddresses,
         );
     } catch (error) {
         console.log('Error: ', error);
     }
-
-    process.exit();
 }
 
-run();
+run().then(() => process.exit());

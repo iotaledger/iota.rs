@@ -12,12 +12,12 @@ export const TAGGED_DATA_PAYLOAD_TYPE = 5;
  */
 export interface TaggedDataPayload extends TypeBase<5> {
     /**
-     * The tag to use to categorize the data.
+     * The hex encoded tag used to categorize the data.
      */
     tag?: string;
 
     /**
-     * The index data.
+     * The hex encoded data.
      */
     data?: string;
 }

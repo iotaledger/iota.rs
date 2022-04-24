@@ -4,7 +4,8 @@
 import { initLogger as initLoggerBinding } from './bindings';
 export * from './MessageHandler';
 export * from './Client';
-
+export * from './constants';
+export * from './utils';
 const initLogger = (config: any) => initLoggerBinding(JSON.stringify(config));
 
 export { initLogger };

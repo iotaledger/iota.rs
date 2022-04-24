@@ -1,22 +1,38 @@
+// Copyright 2021-2022 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+// In this example we will send a message and get the data and metadata for it
 async function run() {
-    const { ClientBuilder } = require('@iota/client');
+    const { Client } = require('@iota/client');
 
     // client will connect to testnet by default
-    const client = new ClientBuilder().build();
+    const client = new Client({
+        nodes: [
+            {
+                url: 'http://localhost:14265',
+                auth: null,
+                disabled: false,
+            },
+        ],
+        localPow: true,
+    });
 
-    // get message data by message id (get a random message id with getTips)
-    const tips = await client.getTips();
-    const message_data = await client.getMessage().data(tips[0]);
-    const message_metadata = await client.getMessage().metadata(tips[0]);
-    console.log(message_metadata);
-    console.log(message_data);
+    try {
+        // Create message with no payload
+        const message = await client.generateMessage();
+        console.log('Message:', message, '\n');
 
-    // get indexation data by index
-    const message_ids = await client.getMessage().index("IOTA.RS BINDING - NODE.JS")
-    for (message_id of message_ids) {
-        const message_wrapper = await client.getMessage().data(message_id)
-        console.log(Buffer.from(message_wrapper.message.payload.data, 'hex').toString('utf8'));
+        // Send message
+        const messageId = await client.postMessage(message);
+
+        const messageData = await client.getMessageData(messageId);
+        const messageMetadata = await client.getMessageMetadata(messageId);
+
+        console.log('Message data: ', messageData, '\n');
+        console.log('Message metadata: ', messageMetadata, '\n');
+    } catch (error) {
+        console.log(error);
     }
 }
 
-run()
+run().then(() => process.exit());
