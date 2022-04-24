@@ -18,7 +18,7 @@ async function run() {
         nodes: [
             {
                 // Insert your node URL here.
-                url: 'https://api.alphanet.iotaledger.net/',
+                url: 'http://localhost:14265/',
                 auth: null,
                 disabled: false,
             },
