@@ -3,7 +3,18 @@
 
 // In this example we will send a message with a tagged data payload
 async function run() {
-    const { Client, utf8ToBytes, hexToUtf8 } = require('@iota/client');
+    const {
+        Client,
+        utf8ToBytes,
+        hexToUtf8,
+        initLogger,
+    } = require('@iota/client');
+
+    initLogger({
+        colorEnabled: true,
+        name: './client.log',
+        levelFilter: 'debug',
+    });
 
     // client will connect to testnet by default
     const client = new Client({

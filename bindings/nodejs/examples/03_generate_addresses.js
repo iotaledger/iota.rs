@@ -10,9 +10,9 @@ async function run() {
     } = require('@iota/client');
 
     initLogger({
-        color_enabled: true,
+        colorEnabled: true,
         name: './client.log',
-        level_filter: 'debug',
+        levelFilter: 'debug',
     });
 
     // client will connect to testnet by default
@@ -74,7 +74,8 @@ async function run() {
             '\n',
         );
 
-        // TODO: How to implement this? Is a new client_method required?
+        // TODO: Can't be implemented due to the client method GenerateAddresses
+        // calling finish(), restricting it to one response type.
         // Generate public (false) & internal (true) addresses
         // console.log(
         //     `List of generated public and internal addresses: \n${bech32Addresses}\n`,

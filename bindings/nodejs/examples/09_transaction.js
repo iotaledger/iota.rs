@@ -3,7 +3,13 @@
 
 // In this example we will send a transaction
 async function run() {
-    const { Client } = require('@iota/client');
+    const { Client, initLogger } = require('@iota/client');
+
+    initLogger({
+        colorEnabled: true,
+        name: './client.log',
+        levelFilter: 'debug',
+    });
 
     // client will connect to testnet by default
     const client = new Client({

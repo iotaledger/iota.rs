@@ -1,6 +1,6 @@
 /** Convert UTF8 string to an array of bytes */
 export const utf8ToBytes = (utf8: string) => {
-    let utf8Encode = new TextEncoder();
+    const utf8Encode = new TextEncoder();
     return Array.from(utf8Encode.encode(utf8));
 };
 
