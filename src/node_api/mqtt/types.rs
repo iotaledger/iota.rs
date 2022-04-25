@@ -5,7 +5,10 @@
 
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use bee_message::Message;
+use bee_message::{
+    payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
+    Message,
+};
 use regex::RegexSet;
 use serde_json::Value;
 
@@ -33,6 +36,10 @@ pub enum MqttPayload {
     Json(Value),
     /// In case it contains a `Message` object.
     Message(Message),
+    /// In case it contains a `Milestone` object.
+    MilestonePayload(MilestonePayload),
+    /// In case it contains a `Receipt` object.
+    Receipt(ReceiptMilestoneOption),
 }
 
 /// Mqtt events.
@@ -148,18 +155,18 @@ impl Topic {
         let valid_topics = lazy_static!(
         RegexSet::new(&[
             // Milestone topics
-            r"^milestones/latest$",
-            r"^milestones/confirmed$",
+            r"^milestone-info/latest$",
+            r"^milestone-info/confirmed$",
+            r"^milestones$",
             // Message topics
             r"^messages$",
-            r"^messages/referenced$",
             r"^messages/transaction$",
             r"^messages/transaction/tagged-data$",
             r"^messages/transaction/tagged-data/0x([a-f0-9]{128})$",
-            r"^messages/milestone$",
             r"^messages/tagged-data$",
             r"^messages/tagged-data/0x([a-f0-9]{64})$",
-            r"^messages/0x([a-f0-9]{64})/metadata$",
+            r"^message-metadata/0x([a-f0-9]{64})",
+            r"^message-metadata/referenced$",
             // Transaction topics
             r"^transactions/0x([a-f0-9]{64})/included-message$",
             // Output topics
@@ -168,9 +175,10 @@ impl Topic {
             r"^outputs/nfts/0x([a-f0-9]{40})$",
             r"^outputs/foundries/0x([a-f0-9]{52})$",
             // BIP-173 compliant bech32 address
-            r"^outputs/unlock/(\+|address|storage-return|expiration-return|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+$",
+            r"^outputs/unlock/(\+|address|storage-return|expiration|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+$",
             // BIP-173 compliant bech32 address
-            r"^outputs/unlock/(\+|address|storage-return|expiration-return|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/spent$",
+            r"^outputs/unlock/(\+|address|storage-return|expiration|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/spent$",
+            r"^receipts$",
         ]).expect("cannot build regex set") => RegexSet);
 
         if valid_topics.is_match(&topic) {

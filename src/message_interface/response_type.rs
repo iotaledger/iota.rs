@@ -15,8 +15,7 @@ use bee_rest_api::types::{
 use serde::Serialize;
 
 use crate::{
-    builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node,
-    Error, NodeInfoWrapper,
+    builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node, Error, NodeInfoWrapper,
 };
 
 /// The response message.

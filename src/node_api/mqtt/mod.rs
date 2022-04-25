@@ -6,7 +6,10 @@ pub mod types;
 
 use std::{sync::Arc, time::Instant};
 
-use bee_message::Message;
+use bee_message::{
+    payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
+    Message,
+};
 use crypto::utils;
 use log::warn;
 use packable::PackableExt;
@@ -139,11 +142,7 @@ fn poll_mqtt(
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
-                                    if (topic.contains("messages")
-                                        && !topic.contains("referenced")
-                                        && !topic.contains("metadata"))
-                                        || topic.contains("included-message")
-                                    {
+                                    if topic.contains("messages") || topic.contains("included-message") {
                                         let mut payload = &*p.payload;
                                         match Message::unpack_verified(&mut payload) {
                                             Ok(message) => Ok(TopicEvent {
@@ -152,6 +151,30 @@ fn poll_mqtt(
                                             }),
                                             Err(e) => {
                                                 warn!("Message unpacking failed: {:?}", e);
+                                                Err(())
+                                            }
+                                        }
+                                    } else if topic.contains("milestones") {
+                                        let mut payload = &*p.payload;
+                                        match MilestonePayload::unpack_verified(&mut payload) {
+                                            Ok(milestone_payload) => Ok(TopicEvent {
+                                                topic,
+                                                payload: MqttPayload::MilestonePayload(milestone_payload),
+                                            }),
+                                            Err(e) => {
+                                                warn!("MilestonePayload unpacking failed: {:?}", e);
+                                                Err(())
+                                            }
+                                        }
+                                    } else if topic.contains("receipts") {
+                                        let mut payload = &*p.payload;
+                                        match ReceiptMilestoneOption::unpack_verified(&mut payload) {
+                                            Ok(receipt) => Ok(TopicEvent {
+                                                topic,
+                                                payload: MqttPayload::Receipt(receipt),
+                                            }),
+                                            Err(e) => {
+                                                warn!("Receipt unpacking failed: {:?}", e);
                                                 Err(())
                                             }
                                         }
