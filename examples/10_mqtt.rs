@@ -47,8 +47,8 @@ async fn main() -> Result<()> {
             match &event.payload {
                 MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
                 MqttPayload::Message(msg) => println!("{:?}", msg),
-                MqttPayload::MilestonePayload(_) => todo!(),
-                MqttPayload::Receipt(_) => todo!(),
+                MqttPayload::MilestonePayload(ms) => println!("{:?}", ms),
+                MqttPayload::Receipt(receipt) => println!("{:?}", receipt),
             }
             tx.lock().unwrap().send(()).unwrap();
         })

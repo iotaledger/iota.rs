@@ -16,7 +16,7 @@ pub(crate) const DEFAULT_MIN_POW: f64 = 4000f64;
 pub(crate) const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 pub(crate) const DEFAULT_MIN_QUORUM_SIZE: usize = 3;
 pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 pub(crate) const MAX_PARALLEL_API_REQUESTS: usize = 100;
 /// Max allowed difference between the local time and latest milestone time, 5 minutes in seconds
 pub(crate) const FIVE_MINUTES_IN_SECONDS: u32 = 300;

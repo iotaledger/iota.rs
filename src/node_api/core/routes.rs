@@ -142,9 +142,9 @@ pub async fn post_message(client: &Client, message: &Message) -> Result<MessageI
                         // switch to local PoW
                         client_network_info.local_pow = true;
                     }
-                    #[cfg(not(feature = "wasm"))]
+                    #[cfg(not(target_family = "wasm"))]
                     let msg_res = crate::api::finish_pow(client, message.payload().cloned()).await;
-                    #[cfg(feature = "wasm")]
+                    #[cfg(target_family = "wasm")]
                     let msg_res = {
                         let min_pow_score = client.get_min_pow_score().await?;
                         let network_id = client.get_network_id().await?;
@@ -226,9 +226,9 @@ pub async fn post_message_json(client: &Client, message: &Message) -> Result<Mes
                         // switch to local PoW
                         client_network_info.local_pow = true;
                     }
-                    #[cfg(not(feature = "wasm"))]
+                    #[cfg(not(target_family = "wasm"))]
                     let msg_res = crate::api::finish_pow(client, message.payload().cloned()).await;
-                    #[cfg(feature = "wasm")]
+                    #[cfg(target_family = "wasm")]
                     let msg_res = {
                         let min_pow_score = client.get_min_pow_score().await?;
                         let network_id = client.get_network_id().await?;

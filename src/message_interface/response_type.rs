@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 use std::collections::HashSet;
 
 use bee_message::{
@@ -53,7 +53,7 @@ pub enum ResponseType {
     /// Signed transaction data for signing
     SignedTransaction(PayloadDto),
     /// returns the unsynced nodes.
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     UnsyncedNodes(HashSet<Node>),
     /// Node health
     NodeHealth(bool),

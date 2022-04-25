@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
 
         let conflict = verify_semantic(
             &prepared_transaction.input_signing_data_entries,
-            &signed_transaction_payload,
+            signed_transaction_payload,
             milestone_index,
             local_time,
         )?;

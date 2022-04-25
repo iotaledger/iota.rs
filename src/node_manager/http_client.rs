@@ -40,10 +40,10 @@ impl Response {
     }
 }
 
-#[cfg(any(feature = "async", feature = "wasm"))]
+#[cfg(any(feature = "async", target_family = "wasm"))]
 pub(crate) struct Response(reqwest::Response);
 
-#[cfg(any(feature = "async", feature = "wasm"))]
+#[cfg(any(feature = "async", target_family = "wasm"))]
 impl Response {
     pub(crate) fn status(&self) -> u16 {
         self.0.status().as_u16()
@@ -58,7 +58,7 @@ impl Response {
     }
 }
 
-#[cfg(any(feature = "async", feature = "wasm"))]
+#[cfg(any(feature = "async", target_family = "wasm"))]
 #[derive(Clone)]
 pub(crate) struct HttpClient {
     client: reqwest::Client,
@@ -68,7 +68,7 @@ pub(crate) struct HttpClient {
 #[derive(Clone)]
 pub(crate) struct HttpClient;
 
-#[cfg(any(feature = "async", feature = "wasm"))]
+#[cfg(any(feature = "async", target_family = "wasm"))]
 impl HttpClient {
     pub(crate) fn new() -> Self {
         Self {
@@ -96,7 +96,7 @@ impl HttpClient {
                 request_builder = request_builder.bearer_auth(jwt);
             }
         }
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         {
             request_builder = request_builder.timeout(_timeout);
         }
@@ -111,7 +111,7 @@ impl HttpClient {
                 request_builder = request_builder.bearer_auth(jwt);
             }
         }
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         {
             request_builder = request_builder.timeout(_timeout);
         }
@@ -126,7 +126,7 @@ impl HttpClient {
                 request_builder = request_builder.bearer_auth(jwt);
             }
         }
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         {
             request_builder = request_builder.timeout(_timeout);
         }

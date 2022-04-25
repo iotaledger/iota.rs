@@ -9,18 +9,18 @@ use bee_message::output::OutputId;
 use bee_rest_api::types::responses::OutputResponse;
 
 use self::routes::get_output;
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 use crate::constants::MAX_PARALLEL_API_REQUESTS;
 use crate::{Client, Result};
 
 /// Request outputs by their output id in parallel
 pub async fn get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
     let mut outputs = Vec::new();
-    #[cfg(feature = "wasm")]
+    #[cfg(target_family = "wasm")]
     for output_id in output_ids {
         outputs.push(get_output(client, &output_id).await?);
     }
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     for output_ids_chunk in output_ids
         .chunks(MAX_PARALLEL_API_REQUESTS)
         .map(|x: &[OutputId]| x.to_vec())
@@ -49,13 +49,13 @@ pub async fn get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<V
 /// Useful to get data about spent outputs, that might not be pruned yet
 pub async fn try_get_outputs(client: &Client, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
     let mut outputs = Vec::new();
-    #[cfg(feature = "wasm")]
+    #[cfg(target_family = "wasm")]
     for output_id in output_ids {
         if let Ok(output_response) = get_output(client, &output_id).await {
             outputs.push(output_response);
         }
     }
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     for output_ids_chunk in output_ids
         .chunks(MAX_PARALLEL_API_REQUESTS)
         .map(|x: &[OutputId]| x.to_vec())

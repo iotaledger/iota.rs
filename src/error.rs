@@ -122,11 +122,11 @@ pub enum Error {
     #[serde(serialize_with = "display_string")]
     UreqError(#[from] ureq::Error),
     /// Error from RestAPI calls with unexpected status code response
-    #[cfg(any(feature = "async", feature = "wasm"))]
+    #[cfg(any(feature = "async", target_family = "wasm"))]
     #[error("Response error with status code {0}: {1}, URL: {2}")]
     ResponseError(u16, String, String),
     /// reqwest error
-    #[cfg(any(feature = "async", feature = "wasm"))]
+    #[cfg(any(feature = "async", target_family = "wasm"))]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     ReqwestError(#[from] reqwest::Error),
@@ -149,7 +149,7 @@ pub enum Error {
     /// Not implemented, specially for the default impl of [crate::secret::SecretManager::signature_unlock()].
     #[error("No mnemonic was stored! Please implement signature_unlock() :)")]
     SignatureUnlockNotImplemented,
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]

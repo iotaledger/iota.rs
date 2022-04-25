@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - develop
+      - dev
     paths:
       - '.github/workflows/examine-python-bindings.yml'
       - '.github/actions/**'
@@ -14,6 +15,7 @@ on:
   pull_request:
     branches:
       - develop
+      - dev
     paths:
       - '.github/workflows/examine-python-bindings.yml'
       - '.github/actions/**'

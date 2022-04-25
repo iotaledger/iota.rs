@@ -50,50 +50,51 @@ async fn main() -> Result<()> {
         .await?
     );
 
-    let mut outputs: Vec<Output> = Vec::new();
-    // most simple output
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
-    // with metadata feature block
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
-            .finish()?,
-    ));
-    // with storage deposit return
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(234100)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 234000)?,
-            ))
-            .finish()?,
-    ));
-    // with expiration
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
-                address,
-                MilestoneIndex::new(400),
-                0,
-            )?))
-            .finish()?,
-    ));
-    // with timelock
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
-                MilestoneIndex::new(400),
-                0,
-            )?))
-            .finish()?,
-    ));
+    let outputs = vec![
+        // most simple output
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .finish()?,
+        ),
+        // with metadata feature block
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
+                .finish()?,
+        ),
+        // with storage deposit return
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(234100)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_unlock_condition(UnlockCondition::StorageDepositReturn(
+                    StorageDepositReturnUnlockCondition::new(address, 234000)?,
+                ))
+                .finish()?,
+        ),
+        // with expiration
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
+                    address,
+                    MilestoneIndex::new(400),
+                    0,
+                )?))
+                .finish()?,
+        ),
+        // with timelock
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
+                    MilestoneIndex::new(400),
+                    0,
+                )?))
+                .finish()?,
+        ),
+    ];
 
     let message = client
         .message()

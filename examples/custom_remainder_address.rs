@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
         "automatically funding sender address with faucet: {}",
         request_funds_from_faucet(
             "https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue",
-            &sender_address
+            sender_address
         )
         .await?
     );
@@ -64,11 +64,11 @@ async fn main() -> Result<()> {
         .with_secret_manager(&secret_manager)
         .with_output(
             // We generate an address from our seed so that we send the funds to ourselves
-            &receiver_address,
+            receiver_address,
             9_000_000,
         )?
         // We send the remainder to an address where we don't have access to.
-        .with_custom_remainder_address(&remainder_address)?
+        .with_custom_remainder_address(remainder_address)?
         .finish()
         .await?;
 
