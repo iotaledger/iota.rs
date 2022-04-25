@@ -3,7 +3,7 @@
 
 use iota_client::{
     bee_message::{
-        payload::milestone::{dto::MilestonePayloadDto, option::receipt::dto::ReceiptMilestoneOption},
+        payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
         MessageDto,
     },
     message_interface::{
@@ -81,7 +81,9 @@ impl MessageHandler {
                 MqttPayload::Json(val) => serde_json::to_string(&val).unwrap(),
                 MqttPayload::Message(msg) => serde_json::to_string(&MessageDto::from(msg)).unwrap(),
                 MqttPayload::MilestonePayload(ms) => serde_json::to_string(&MilestonePayloadDto::from(ms)).unwrap(),
-                MqttPayload::Receipt(receipt) => serde_json::to_string(&ReceiptMilestoneOption::from(receipt)).unwrap(),
+                MqttPayload::Receipt(receipt) => {
+                    serde_json::to_string(&ReceiptMilestoneOptionDto::from(receipt)).unwrap()
+                }
             };
             let response = MqttResponse {
                 topic: event.topic,
