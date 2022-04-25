@@ -59,7 +59,7 @@ crypto05 = { package = "iota-crypto", version = "0.5.1", default-features = fals
 instant = { version = "0.1.12", default-features = false, optional = true }
 gloo-timers = { version = "0.2.3", default-features = false, features = [ "futures" ], optional = true }
 # single thread pow for wasm
-bee-ternary = { version = "0.5.2", default-features = false, optional = true }
+bee-ternary = { version = "0.6.0", default-features = false, optional = true }
 
 # message_interface
 backtrace = { version = "0.3.62", default-features = false, features = [ "std" ], optional = true }
