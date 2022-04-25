@@ -4,7 +4,10 @@
 #[cfg(not(feature = "wasm"))]
 use std::collections::HashSet;
 
-use bee_message::{address::dto::AddressDto, input::dto::UtxoInputDto, output::OutputId, MessageDto, MessageId};
+use bee_message::{
+    address::dto::AddressDto, input::dto::UtxoInputDto, output::OutputId, payload::dto::PayloadDto, MessageDto,
+    MessageId,
+};
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
@@ -15,7 +18,8 @@ use bee_rest_api::types::{
 use serde::Serialize;
 
 use crate::{
-    builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node, Error, NodeInfoWrapper,
+    api::PreparedTransactionData, builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node,
+    Error, NodeInfoWrapper,
 };
 
 /// The response message.
@@ -44,6 +48,10 @@ pub enum ResponseType {
     LocalPoW(bool),
     /// Is fallback to local proof of work enabled
     FallbackToLocalPoW(bool),
+    /// Prepared transaction data for signing
+    PreparedTransactionData(PreparedTransactionData),
+    /// Signed transaction data for signing
+    SignedTransaction(PayloadDto),
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
     UnsyncedNodes(HashSet<Node>),

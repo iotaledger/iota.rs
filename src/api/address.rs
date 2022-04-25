@@ -20,6 +20,7 @@ pub struct GetAddressesBuilder<'a> {
     coin_type: u32,
     account_index: u32,
     range: Range<u32>,
+    internal: bool,
     bech32_hrp: Option<String>,
     metadata: GenerateAddressMetadata,
 }
@@ -34,6 +35,8 @@ pub struct GetAddressesBuilderOptions {
     pub account_index: Option<u32>,
     /// Range
     pub range: Option<Range<u32>>,
+    /// Internal addresses
+    pub internal: Option<bool>,
     /// Bech32 human readable part
     pub bech32_hrp: Option<String>,
     /// Metadata
@@ -48,6 +51,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
             coin_type: SHIMMER_COIN_TYPE,
             account_index: 0,
             range: 0..super::ADDRESS_GAP_RANGE,
+            internal: false,
             bech32_hrp: None,
             metadata: GenerateAddressMetadata {
                 syncing: true,
@@ -90,6 +94,12 @@ impl<'a> GetAddressesBuilder<'a> {
         self
     }
 
+    /// Set if internal or public addresses should be generated
+    pub fn with_internal_addresses(mut self, internal: bool) -> Self {
+        self.internal = internal;
+        self
+    }
+
     /// Set bech32 human readable part (hrp)
     pub fn with_bech32_hrp<T: Into<String>>(mut self, bech32_hrp: T) -> Self {
         self.bech32_hrp.replace(bech32_hrp.into());
@@ -115,6 +125,10 @@ impl<'a> GetAddressesBuilder<'a> {
 
         if let Some(range) = options.range {
             self = self.with_range(range);
+        };
+
+        if let Some(internal) = options.internal {
+            self = self.with_internal_addresses(internal);
         };
 
         if let Some(bech32_hrp) = options.bech32_hrp {
@@ -143,7 +157,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.coin_type,
                 self.account_index,
                 self.range,
-                false,
+                self.internal,
                 self.metadata.clone(),
             )
             .await?

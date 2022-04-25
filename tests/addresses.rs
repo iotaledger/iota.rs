@@ -13,6 +13,7 @@ async fn addresses() {
     let signer =
         MnemonicSigner::new_from_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap();
     let addresses = GetAddressesBuilder::new(&signer)
+        .with_coin_type(IOTA_COIN_TYPE)
         .with_bech32_hrp("atoi")
         .with_account_index(0)
         .with_range(0..1)

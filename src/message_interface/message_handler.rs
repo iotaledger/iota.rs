@@ -4,7 +4,12 @@
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
-use bee_message::{address::dto::AddressDto, input::dto::UtxoInputDto, Message as BeeMessage, MessageDto};
+use bee_message::{
+    address::dto::AddressDto,
+    input::dto::UtxoInputDto,
+    payload::{dto::PayloadDto, Payload},
+    Message as BeeMessage, MessageDto,
+};
 use futures::{Future, FutureExt};
 
 use crate::{
@@ -115,6 +120,51 @@ impl ClientMessageHandler {
             ClientMethod::GetFallbackToLocalPoW => Ok(ResponseType::FallbackToLocalPoW(
                 self.client.get_fallback_to_local_pow().await,
             )),
+            ClientMethod::PrepareTransaction { signer, options } => {
+                let mut message_builder = self.client.message();
+
+                let signer = match signer {
+                    Some(signer) => Some(SignerHandle::from_str(signer)?),
+                    None => None,
+                };
+
+                if let Some(signer) = &signer {
+                    message_builder = message_builder.with_signer(signer);
+                }
+
+                if let Some(options) = options {
+                    message_builder = message_builder.set_options(options.clone())?;
+                }
+
+                Ok(ResponseType::PreparedTransactionData(
+                    message_builder.prepare_transaction().await?,
+                ))
+            }
+            ClientMethod::SignTransaction {
+                signer,
+                prepared_transaction_data,
+            } => {
+                let mut message_builder = self.client.message();
+
+                let signer = SignerHandle::from_str(signer)?;
+
+                message_builder = message_builder.with_signer(&signer);
+
+                Ok(ResponseType::SignedTransaction(PayloadDto::from(
+                    &message_builder
+                        .sign_transaction(prepared_transaction_data.clone())
+                        .await?,
+                )))
+            }
+            ClientMethod::SubmitPayload { payload_dto } => {
+                let message_builder = self.client.message();
+
+                Ok(ResponseType::GeneratedMessage(MessageDto::from(
+                    &message_builder
+                        .finish_message(Some(Payload::try_from(payload_dto)?))
+                        .await?,
+                )))
+            }
             #[cfg(not(feature = "wasm"))]
             ClientMethod::UnsyncedNodes => Ok(ResponseType::UnsyncedNodes(
                 self.client.unsynced_nodes().await.into_iter().cloned().collect(),
