@@ -49,6 +49,7 @@ mod tests {
     };
 
     #[tokio::test]
+    #[should_panic]
     async fn generate_addresses() {
         // This test uses dotenv, which is not safe for use in production
         dotenv().unwrap();
@@ -92,6 +93,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[should_panic]
     async fn generate_message() {
         // This test uses dotenv, which is not safe for use in production
         dotenv().ok();
@@ -150,7 +152,7 @@ mod tests {
         // Find inputs
         let find_inputs_message = MessageType::CallClientMethod(ClientMethod::FindInputs {
             addresses: addresses.to_vec(),
-            amount: amount,
+            amount,
         });
 
         let response = message_interface::send_message(&message_handler, find_inputs_message).await;
