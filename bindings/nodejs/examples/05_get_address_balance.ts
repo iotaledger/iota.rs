@@ -1,11 +1,14 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+import 'dotenv/config';
+
+// Run with command:
+// node ./dist/05_get_address_balance.js
 
 // In this example we will get the outputs of an address that has no additional unlock
 // conditions and sum the amounts and native tokens
 async function run() {
-    const { Client, initLogger } = require('@iota/client');
-
     initLogger({
         colorEnabled: true,
         name: './client.log',
@@ -16,15 +19,14 @@ async function run() {
     const client = new Client({
         nodes: [
             {
+                // Insert your node URL here.
                 url: 'http://localhost:14265',
-                auth: null,
                 disabled: false,
             },
         ],
         localPow: true,
     });
 
-    require('dotenv').config();
     const signer = JSON.stringify({
         Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
     });
@@ -52,16 +54,18 @@ async function run() {
 
         // Calculate the total amount and native tokens
         let totalAmount = 0;
-        let totalNativeTokens = {};
+        let totalNativeTokens: { [id: string]: number } = {};
         for (const outputResponse of addressOutputs) {
             const output = outputResponse['output'];
 
-            output.nativeTokens.forEach(
-                (token) =>
-                    (totalNativeTokens[token.id] =
-                        (totalNativeTokens[token.id] || 0) +
-                        parseInt(token.amount)),
-            );
+            if ('nativeTokens' in output) {
+                output.nativeTokens.forEach(
+                    (token) =>
+                        (totalNativeTokens[token.id] =
+                            (totalNativeTokens[token.id] || 0) +
+                            parseInt(token.amount)),
+                );
+            }
 
             totalAmount += parseInt(output.amount);
         }
@@ -71,7 +75,7 @@ async function run() {
             totalNativeTokens,
         );
     } catch (error) {
-        console.log('Error: ', error);
+        console.error('Error: ', error);
     }
 }
 

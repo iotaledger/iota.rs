@@ -42,26 +42,24 @@ async function run() {
         const inputs = await onlineClient.findInputs(addresses, amount);
         console.log(inputs);
 
-        // TODO: This is incorrect, is it because a message can't be built
-        // without a signer via the message handler? The incorrect output is
-        // in examples/offline_signing/test_example_prepared_transaction.json
-        // We prepare the transaction.
-        const transaction = await onlineClient.generateMessage(signer, {
-            inputs,
-            output: { address, amount },
-        });
+        // TODO: This example is blocked by the message interface
+        // See #931 https://github.com/iotaledger/iota.rs/issues/931
+        // const transaction = await onlineClient.generateMessage(signer, {
+        //     inputs,
+        //     output: { address, amount },
+        // });
 
-        console.log(`Prepared transaction sending ${amount} to ${address}.`);
+        // console.log(`Prepared transaction sending ${amount} to ${address}.`);
 
-        await writeFile(
-            PREPARED_TRANSACTION_FILE_NAME,
-            JSON.stringify(transaction),
-            (err) => {
-                if (err) {
-                    console.error(err);
-                }
-            },
-        );
+        // await writeFile(
+        //     PREPARED_TRANSACTION_FILE_NAME,
+        //     JSON.stringify(transaction),
+        //     (err) => {
+        //         if (err) {
+        //             console.error(err);
+        //         }
+        //     },
+        // );
     } catch (error) {
         console.error(error);
     }

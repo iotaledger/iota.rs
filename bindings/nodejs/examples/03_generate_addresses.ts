@@ -1,14 +1,13 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger, SHIMMER_TESTNET_BECH32_HRP } from '@iota/client';
+import 'dotenv/config';
+
+// Run with command:
+// node ./dist/03_generate_addresses.js
 
 // In this example we will create addresses from a mnemonic defined in .env
 async function run() {
-    const {
-        Client,
-        initLogger,
-        SHIMMER_TESTNET_BECH32_HRP,
-    } = require('@iota/client');
-
     initLogger({
         colorEnabled: true,
         name: './client.log',
@@ -19,15 +18,14 @@ async function run() {
     const client = new Client({
         nodes: [
             {
+                // Insert your node URL here.
                 url: 'http://localhost:14265',
-                auth: null,
                 disabled: false,
             },
         ],
         localPow: true,
     });
 
-    require('dotenv').config();
     const signer = JSON.stringify({
         Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
     });
@@ -76,6 +74,8 @@ async function run() {
 
         // TODO: Can't be implemented due to the client method GenerateAddresses
         // calling finish(), restricting it to one response type.
+        // See #931 https://github.com/iotaledger/iota.rs/issues/931
+
         // Generate public (false) & internal (true) addresses
         // console.log(
         //     `List of generated public and internal addresses: \n${bech32Addresses}\n`,
@@ -91,7 +91,7 @@ async function run() {
             offlineGeneratedAddresses,
         );
     } catch (error) {
-        console.log('Error: ', error);
+        console.error('Error: ', error);
     }
 }
 

@@ -1,10 +1,12 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+
+// Run with command:
+// node ./dist/06_simple_message.js
 
 // In this example we will send a message without a payload
 async function run() {
-    const { Client, initLogger } = require('@iota/client');
-
     initLogger({
         colorEnabled: true,
         name: './client.log',
@@ -15,8 +17,8 @@ async function run() {
     const client = new Client({
         nodes: [
             {
+                // Insert your node URL here.
                 url: 'http://localhost:14265',
-                auth: null,
                 disabled: false,
             },
         ],
@@ -36,7 +38,7 @@ async function run() {
             `Empty message sent: https://explorer.iota.org/devnet/message/${messageId}`,
         );
     } catch (error) {
-        console.log('Error: ', error);
+        console.error('Error: ', error);
     }
 }
 

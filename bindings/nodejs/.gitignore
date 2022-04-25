@@ -5,3 +5,4 @@ index.node
 **/.DS_Store
 build
 out/
+**/dist

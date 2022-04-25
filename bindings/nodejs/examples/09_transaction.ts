@@ -1,10 +1,13 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+import 'dotenv/config';
+
+// Run with command:
+// node ./dist/09_transaction.js
 
 // In this example we will send a transaction
 async function run() {
-    const { Client, initLogger } = require('@iota/client');
-
     initLogger({
         colorEnabled: true,
         name: './client.log',
@@ -15,15 +18,14 @@ async function run() {
     const client = new Client({
         nodes: [
             {
+                // Insert your node URL here.
                 url: 'http://localhost:14265',
-                auth: null,
                 disabled: false,
             },
         ],
         localPow: true,
     });
 
-    require('dotenv').config();
     const signer = JSON.stringify({
         Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
     });
@@ -37,6 +39,7 @@ async function run() {
             },
         });
 
+        // We prepare the transaction
         // Insert the output address and amount to spend. The amount cannot be zero.
         const message = await client.generateMessage(signer, {
             output: { address: addresses[0], amount: 1000000 },
@@ -51,7 +54,7 @@ async function run() {
             `Transaction sent: https://explorer.iota.org/devnet/message/${messageId}`,
         );
     } catch (error) {
-        console.log('Error: ', error);
+        console.error('Error: ', error);
     }
 }
 

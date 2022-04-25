@@ -1,10 +1,12 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+
+// Run with command:
+// node ./dist/04_get_address_outputs.js
 
 // In this example we will get the outputs of a known address
 async function run() {
-    const { Client, initLogger } = require('@iota/client');
-
     initLogger({
         colorEnabled: true,
         name: './client.log',
@@ -15,8 +17,8 @@ async function run() {
     const client = new Client({
         nodes: [
             {
+                // Insert your node URL here.
                 url: 'http://localhost:14265',
-                auth: null,
                 disabled: false,
             },
         ],
@@ -35,7 +37,7 @@ async function run() {
         const addressOutputs = await client.getOutputs(outputIds);
         console.log('Address outputs: ', addressOutputs);
     } catch (error) {
-        console.log('Error: ' + error);
+        console.error('Error: ' + error);
     }
 }
 
