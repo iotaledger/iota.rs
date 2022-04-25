@@ -56,16 +56,6 @@ async fn main() -> Result<()> {
 
         if let Some(native_tokens) = output.native_tokens() {
             total_native_tokens.add_native_tokens(native_tokens.clone())?;
-            // for native_token in native_tokens.iter() {
-            //     match total_native_tokens.entry(*native_token.token_id()) {
-            //         Entry::Vacant(e) => {
-            //             e.insert(*native_token.amount());
-            //         }
-            //         Entry::Occupied(mut e) => {
-            //             *e.get_mut() += *native_token.amount();
-            //         }
-            //     }
-            // }
         }
         total_amount += output.amount();
     }

@@ -246,16 +246,6 @@ pub async fn try_select_inputs(
                 selected_input_amount += output.amount();
                 if let Some(output_native_tokens) = output.native_tokens() {
                     selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
-                    // for native_token in output_native_tokens.iter() {
-                    //     match selected_input_native_tokens.entry(*native_token.token_id()) {
-                    //         Entry::Vacant(e) => {
-                    //             e.insert(*native_token.amount());
-                    //         }
-                    //         Entry::Occupied(mut e) => {
-                    //             *e.get_mut() += *native_token.amount();
-                    //         }
-                    //     }
-                    // }
                 }
                 selected_inputs.push(input_signing_data.clone());
             }
