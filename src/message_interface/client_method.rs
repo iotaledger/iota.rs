@@ -6,7 +6,7 @@ use std::ops::Range;
 use bee_message::{
     input::UtxoInput,
     output::{AliasId, FoundryId, NftId, OutputId},
-    payload::transaction::TransactionId,
+    payload::{dto::PayloadDto, transaction::TransactionId},
     MessageDto, MessageId,
 };
 use serde::Deserialize;
@@ -14,6 +14,7 @@ use serde::Deserialize;
 use crate::{
     api::{
         ClientMessageBuilderOptions as GenerateMessageOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
+        PreparedTransactionData,
     },
     node_api::indexer::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
@@ -58,6 +59,27 @@ pub enum ClientMethod {
     /// returns the unsynced nodes.
     #[cfg(not(feature = "wasm"))]
     UnsyncedNodes,
+    /// Prepare a transaction for signing
+    PrepareTransaction {
+        /// Signer
+        signer: Option<String>,
+        /// Options
+        options: Option<GenerateMessageOptions>,
+    },
+    /// Sign a transaction
+    SignTransaction {
+        /// Signer
+        signer: String,
+        /// Prepared transaction data
+        #[serde(rename = "preparedTransactionData")]
+        prepared_transaction_data: PreparedTransactionData,
+    },
+    /// Submit a payload in a message
+    SubmitPayload {
+        /// The payload to send
+        #[serde(rename = "payload")]
+        payload_dto: PayloadDto,
+    },
     //////////////////////////////////////////////////////////////////////
     // Node core API
     //////////////////////////////////////////////////////////////////////
