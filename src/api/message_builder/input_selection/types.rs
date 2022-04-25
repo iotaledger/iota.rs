@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Types used during transaction creation
-use std::collections::HashMap;
 
-use bee_message::output::{Output, TokenId};
-use primitive_types::U256;
+use bee_message::output::{NativeTokensBuilder, Output};
 
 use crate::api::message_builder::input_selection::InputSigningData;
 
@@ -24,5 +22,5 @@ pub struct SelectedTransactionData {
 #[derive(Debug, Clone)]
 pub(crate) struct AccumulatedOutputAmounts {
     pub(crate) amount: u64,
-    pub(crate) native_tokens: HashMap<TokenId, U256>,
+    pub(crate) native_tokens: NativeTokensBuilder,
 }

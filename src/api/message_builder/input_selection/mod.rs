@@ -9,21 +9,17 @@ mod native_token_helpers;
 mod output_data;
 pub mod types;
 
-use std::{
-    collections::{hash_map::Entry, HashMap},
-    str::FromStr,
-};
+use std::str::FromStr;
 
 use bee_message::{
     address::{Address, Ed25519Address},
     input::INPUT_COUNT_MAX,
     output::{
-        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeToken, Output,
-        TokenId, UnlockCondition,
+        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeTokens, Output,
+        UnlockCondition,
     },
 };
 use packable::PackableExt;
-use primitive_types::U256;
 
 pub(crate) use self::{automatic::get_inputs, manual::get_custom_inputs};
 use self::{
@@ -70,19 +66,12 @@ pub async fn try_select_inputs(
 
     // check if a foundry minted native tokens
     let (minted_native_tokens, burned_native_tokens) = get_minted_and_burned_native_tokens(&input_outputs, &outputs)?;
-    let mut selected_input_native_tokens: HashMap<TokenId, U256> = minted_native_tokens;
-    let mut required_native_tokens: HashMap<TokenId, U256> = required.native_tokens;
+    let mut selected_input_native_tokens = minted_native_tokens;
+    let mut required_native_tokens = required.native_tokens;
+
     // add burned native tokens as outputs, because we need to have this amount in the inputs
-    for (tokend_id, burned_amount) in burned_native_tokens {
-        match required_native_tokens.entry(tokend_id) {
-            Entry::Vacant(e) => {
-                e.insert(burned_amount);
-            }
-            Entry::Occupied(mut e) => {
-                *e.get_mut() += burned_amount;
-            }
-        }
-    }
+    // TODO @thibault-martinez: Add a method in bee to add another builder + Add builder::clone.
+    required_native_tokens.add_native_tokens(burned_native_tokens.finish()?)?;
 
     let mut selected_input_amount = 0;
     let mut selected_inputs = Vec::new();
@@ -90,20 +79,12 @@ pub async fn try_select_inputs(
     // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs could be used)
     for input_signing_data in &inputs {
         let output = Output::try_from(&input_signing_data.output_response.output)?;
+
         match output {
             Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => {
                 selected_input_amount += output.amount();
                 if let Some(output_native_tokens) = output.native_tokens() {
-                    for native_token in output_native_tokens.iter() {
-                        match selected_input_native_tokens.entry(*native_token.token_id()) {
-                            Entry::Vacant(e) => {
-                                e.insert(*native_token.amount());
-                            }
-                            Entry::Occupied(mut e) => {
-                                *e.get_mut() += *native_token.amount();
-                            }
-                        }
-                    }
+                    selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
                 }
                 selected_inputs.push(input_signing_data.clone());
             }
@@ -125,20 +106,20 @@ pub async fn try_select_inputs(
                         // only check required tokens
                         if let Some(required_native_token_amount) = required_native_tokens.get(native_token.token_id())
                         {
-                            match selected_input_native_tokens.entry(*native_token.token_id()) {
-                                Entry::Vacant(e) => {
-                                    e.insert(*native_token.amount());
-                                    selected_input_amount += output.amount();
-                                    selected_inputs.push(input_signing_data.clone());
-                                }
-                                Entry::Occupied(mut e) => {
+                            match selected_input_native_tokens.get_mut(native_token.token_id()) {
+                                Some(amount) => {
                                     // only add if we haven't already reached the required amount
-                                    let mut amount = *e.get_mut();
-                                    if amount < *required_native_token_amount {
-                                        amount += *native_token.amount();
+                                    if *amount < *required_native_token_amount {
+                                        *amount += *native_token.amount();
                                         selected_input_amount += output.amount();
                                         selected_inputs.push(input_signing_data.clone());
                                     }
+                                }
+                                None => {
+                                    selected_input_native_tokens
+                                        .insert(*native_token.token_id(), *native_token.amount());
+                                    selected_input_amount += output.amount();
+                                    selected_inputs.push(input_signing_data.clone());
                                 }
                             }
                         }
@@ -149,7 +130,7 @@ pub async fn try_select_inputs(
     }
     // check if we got all required native tokens
     // println!("selected_input_native_tokens: {:?}", selected_input_native_tokens);
-    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required_native_tokens) {
+    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required_native_tokens)? {
         return Err(Error::NotEnoughNativeTokens(native_token));
     }
     // check if we have too many inputs
@@ -172,7 +153,7 @@ pub async fn try_select_inputs(
             if selected_input_amount > required.amount {
                 let current_remainder_amount = selected_input_amount - required.amount;
                 let native_token_remainder =
-                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens);
+                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens)?;
                 // If no remainder address is provided, an Ed25519Address from the inputs will  be used
                 let remainder_address = remainder_address.unwrap_or({
                     // todo: find a better way to do this, this address is only used for the storage deposit calculation
@@ -234,7 +215,7 @@ pub async fn try_select_inputs(
             if selected_input_amount > required.amount {
                 let current_remainder_amount = selected_input_amount - required.amount;
                 let native_token_remainder =
-                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens);
+                    get_remainder_native_tokens(&selected_input_native_tokens, &required_native_tokens)?;
                 // If no remainder address is provided, an Ed25519Address from the inputs will  be used
                 let remainder_address = remainder_address.unwrap_or({
                     // todo: find a better way to do this, this address is only used for the storage deposit calculation
@@ -244,6 +225,7 @@ pub async fn try_select_inputs(
                 });
                 let required_deposit =
                     minimum_storage_deposit(byte_cost_config, &remainder_address, &native_token_remainder)?;
+
                 if required_deposit > current_remainder_amount {
                     required_deposit - current_remainder_amount
                 } else {
@@ -263,16 +245,17 @@ pub async fn try_select_inputs(
                 let output = Output::try_from(&input_signing_data.output_response.output)?;
                 selected_input_amount += output.amount();
                 if let Some(output_native_tokens) = output.native_tokens() {
-                    for native_token in output_native_tokens.iter() {
-                        match selected_input_native_tokens.entry(*native_token.token_id()) {
-                            Entry::Vacant(e) => {
-                                e.insert(*native_token.amount());
-                            }
-                            Entry::Occupied(mut e) => {
-                                *e.get_mut() += *native_token.amount();
-                            }
-                        }
-                    }
+                    selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
+                    // for native_token in output_native_tokens.iter() {
+                    //     match selected_input_native_tokens.entry(*native_token.token_id()) {
+                    //         Entry::Vacant(e) => {
+                    //             e.insert(*native_token.amount());
+                    //         }
+                    //         Entry::Occupied(mut e) => {
+                    //             *e.get_mut() += *native_token.amount();
+                    //         }
+                    //     }
+                    // }
                 }
                 selected_inputs.push(input_signing_data.clone());
             }
@@ -304,7 +287,7 @@ pub async fn try_select_inputs(
 pub fn minimum_storage_deposit(
     config: &ByteCostConfig,
     address: &Address,
-    native_tokens: &Option<HashMap<TokenId, U256>>,
+    native_tokens: &Option<NativeTokens>,
 ) -> Result<u64> {
     let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
     // Safety: This can never fail because the amount will always be within the valid range. Also, the actual value is
@@ -312,13 +295,9 @@ pub fn minimum_storage_deposit(
     // todo: use `OutputAmount::MIN` when public, see https://github.com/iotaledger/bee/issues/1238
     let mut basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000_000)?;
     if let Some(native_tokens) = native_tokens {
-        basic_output_builder = basic_output_builder.with_native_tokens(
-            native_tokens
-                .iter()
-                .map(|(id, amount)| NativeToken::new(*id, *amount).map_err(crate::Error::MessageError))
-                .collect::<Result<Vec<NativeToken>>>()?,
-        );
+        basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
     }
     let basic_output = basic_output_builder.add_unlock_condition(address_condition).finish()?;
+
     Ok(Output::Basic(basic_output).byte_cost(config))
 }

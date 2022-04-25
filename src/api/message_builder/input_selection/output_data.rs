@@ -1,19 +1,16 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::{hash_map::Entry, HashMap};
-
 use bee_message::{
     address::Address,
     output::{
         dto::OutputDto,
         unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
-        BasicOutputBuilder, ByteCostConfig, NativeToken, Output, TokenId,
+        BasicOutputBuilder, ByteCostConfig, NativeTokensBuilder, Output,
     },
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
-use primitive_types::U256;
 
 use crate::{
     api::{
@@ -51,32 +48,15 @@ pub(crate) async fn get_remainder(
 
     // add minted tokens
     let mut input_native_tokens = input_data.native_tokens;
-    for (token_id, minted_native_token_amount) in minted_native_tokens {
-        match input_native_tokens.entry(token_id) {
-            Entry::Vacant(e) => {
-                e.insert(minted_native_token_amount);
-            }
-            Entry::Occupied(mut e) => {
-                *e.get_mut() += minted_native_token_amount;
-            }
-        }
-    }
+    input_native_tokens.merge(minted_native_tokens)?;
 
     // add burned tokens
-    let mut output_native_tokens: HashMap<TokenId, U256> = output_data.native_tokens;
+    let mut output_native_tokens = output_data.native_tokens;
     // add burned native tokens as outputs, because we need to have this amount in the inputs
-    for (tokend_id, burned_amount) in burned_native_tokens {
-        match output_native_tokens.entry(tokend_id) {
-            Entry::Vacant(e) => {
-                e.insert(burned_amount);
-            }
-            Entry::Occupied(mut e) => {
-                *e.get_mut() += burned_amount;
-            }
-        }
-    }
+    output_native_tokens.merge(burned_native_tokens)?;
 
-    let native_token_remainder = get_remainder_native_tokens(&input_native_tokens, &output_native_tokens);
+    let native_token_remainder = get_remainder_native_tokens(&input_native_tokens, &output_native_tokens)?;
+
     // Output possible remaining tokens back to the original address
     if remainder_amount > 0 {
         let remainder_addr = match remainder_address {
@@ -105,9 +85,8 @@ pub(crate) async fn get_remainder(
         let mut remainder_output_builder = BasicOutputBuilder::new_with_amount(remainder_amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_addr)));
         if let Some(remainder_native_tokens) = native_token_remainder {
-            for (token_id, amount) in remainder_native_tokens {
-                remainder_output_builder =
-                    remainder_output_builder.add_native_token(NativeToken::new(token_id, amount)?);
+            for native_token in remainder_native_tokens {
+                remainder_output_builder = remainder_output_builder.add_native_token(native_token);
             }
         }
         let remainder = Output::Basic(remainder_output_builder.finish()?);
@@ -128,22 +107,16 @@ pub(crate) async fn get_remainder(
 pub(crate) async fn get_accumulated_output_amounts(outputs: &[Output]) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
-    let mut required_native_tokens: HashMap<TokenId, U256> = HashMap::new();
+    let mut required_native_tokens = NativeTokensBuilder::new();
+
     for output in outputs {
         required_amount += output.amount();
+
         if let Some(output_native_tokens) = output.native_tokens() {
-            for native_token in output_native_tokens.iter() {
-                match required_native_tokens.entry(*native_token.token_id()) {
-                    Entry::Vacant(e) => {
-                        e.insert(*native_token.amount());
-                    }
-                    Entry::Occupied(mut e) => {
-                        *e.get_mut() += *native_token.amount();
-                    }
-                }
-            }
+            required_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
     }
+
     Ok(AccumulatedOutputAmounts {
         amount: required_amount,
         native_tokens: required_native_tokens,
