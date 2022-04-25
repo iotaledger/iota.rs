@@ -3,15 +3,12 @@
 
 //! cargo run --example send_all --release
 
-use std::{
-    collections::hash_map::{Entry, HashMap},
-    env,
-};
+use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
     bee_message::output::{
-        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeToken, Output, UnlockCondition,
+        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, UnlockCondition,
     },
     node_api::indexer::query_parameters::QueryParameter,
     signing::mnemonic::MnemonicSigner,
@@ -52,23 +49,18 @@ async fn main() -> Result<()> {
 
     // Calculate the total amount and native tokens
     let mut total_amount = 0;
-    let mut total_native_tokens = HashMap::new();
-    for output_response in outputs_responses.iter() {
+    let mut total_native_tokens = NativeTokensBuilder::new();
+
+    for output_response in outputs_responses.into_iter() {
         let output = Output::try_from(&output_response.output)?;
+
         if let Some(native_tokens) = output.native_tokens() {
-            for native_token in native_tokens.iter() {
-                match total_native_tokens.entry(*native_token.token_id()) {
-                    Entry::Vacant(e) => {
-                        e.insert(*native_token.amount());
-                    }
-                    Entry::Occupied(mut e) => {
-                        *e.get_mut() += *native_token.amount();
-                    }
-                }
-            }
+            total_native_tokens.add_native_tokens(native_tokens.clone())?;
         }
         total_amount += output.amount();
     }
+
+    let total_native_tokens = total_native_tokens.finish()?;
 
     println!("Total amount: {}", total_amount);
 
@@ -77,10 +69,10 @@ async fn main() -> Result<()> {
             AddressUnlockCondition::new(client.get_addresses(&seed_2).with_range(0..1).get_raw().await?[0]),
         ));
 
-    for (token_id, amount) in total_native_tokens.iter() {
-        basic_output_builder = basic_output_builder.add_native_token(NativeToken::new(*token_id, *amount)?);
+    for native_token in total_native_tokens.into_iter() {
+        basic_output_builder = basic_output_builder.add_native_token(native_token);
     }
-    let new_output = Output::Basic(basic_output_builder.finish()?);
+    let new_output = basic_output_builder.finish_output()?;
 
     let message = client
         .message()

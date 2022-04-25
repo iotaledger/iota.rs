@@ -10,18 +10,15 @@ mod output_data;
 mod remainder;
 pub mod types;
 
-use std::collections::{hash_map::Entry, HashMap};
-
 use bee_message::{
     address::Address,
     input::INPUT_COUNT_MAX,
     output::{
-        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeToken, Output,
-        TokenId, UnlockCondition,
+        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeTokens, Output,
+        UnlockCondition,
     },
 };
 use packable::PackableExt;
-use primitive_types::U256;
 
 pub(crate) use self::{automatic::get_inputs, manual::get_custom_inputs};
 use self::{
@@ -88,6 +85,7 @@ pub async fn try_select_inputs(
     let mut utxo_chain_outputs = Vec::new();
     for input_signing_data in &inputs {
         let output = Output::try_from(&input_signing_data.output_response.output)?;
+
         match output {
             Output::Basic(_) => basic_outputs.push(input_signing_data),
             Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_outputs.push(input_signing_data),
@@ -101,16 +99,7 @@ pub async fn try_select_inputs(
         let output = Output::try_from(&input_signing_data.output_response.output)?;
         selected_input_amount += output.amount();
         if let Some(output_native_tokens) = output.native_tokens() {
-            for native_token in output_native_tokens.iter() {
-                match selected_input_native_tokens.entry(*native_token.token_id()) {
-                    Entry::Vacant(e) => {
-                        e.insert(*native_token.amount());
-                    }
-                    Entry::Occupied(mut e) => {
-                        *e.get_mut() += *native_token.amount();
-                    }
-                }
-            }
+            selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
     }
 
@@ -130,16 +119,7 @@ pub async fn try_select_inputs(
                 {
                     // If there is a native token we need for the outputs we'll also add all others, because we'll
                     // consume this output
-                    for native_token in output_native_tokens.iter() {
-                        match selected_input_native_tokens.entry(*native_token.token_id()) {
-                            Entry::Vacant(e) => {
-                                e.insert(*native_token.amount());
-                            }
-                            Entry::Occupied(mut e) => {
-                                *e.get_mut() += *native_token.amount();
-                            }
-                        }
-                    }
+                    selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
                     selected_input_amount += output.amount();
                     selected_inputs.push(basic_outputs[index].clone());
                     added_to_inputs = true;
@@ -158,7 +138,7 @@ pub async fn try_select_inputs(
     }
 
     // check if we got all required native tokens
-    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required.native_tokens) {
+    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required.native_tokens)? {
         return Err(Error::NotEnoughNativeTokens(native_token));
     }
 
@@ -228,16 +208,7 @@ pub async fn try_select_inputs(
             let output = Output::try_from(&basic_outputs[index].output_response.output)?;
             selected_input_amount += output.amount();
             if let Some(output_native_tokens) = output.native_tokens() {
-                for native_token in output_native_tokens.iter() {
-                    match selected_input_native_tokens.entry(*native_token.token_id()) {
-                        Entry::Vacant(e) => {
-                            e.insert(*native_token.amount());
-                        }
-                        Entry::Occupied(mut e) => {
-                            *e.get_mut() += *native_token.amount();
-                        }
-                    }
-                }
+                selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
             }
             selected_inputs.push(basic_outputs[index].clone());
             added_to_inputs = true;
@@ -290,7 +261,7 @@ pub async fn try_select_inputs(
 pub fn minimum_storage_deposit(
     config: &ByteCostConfig,
     address: &Address,
-    native_tokens: &Option<HashMap<TokenId, U256>>,
+    native_tokens: &Option<NativeTokens>,
 ) -> Result<u64> {
     let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
     // Safety: This can never fail because the amount will always be within the valid range. Also, the actual value is
@@ -298,13 +269,9 @@ pub fn minimum_storage_deposit(
     // todo: use `OutputAmount::MIN` when public, see https://github.com/iotaledger/bee/issues/1238
     let mut basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000_000)?;
     if let Some(native_tokens) = native_tokens {
-        basic_output_builder = basic_output_builder.with_native_tokens(
-            native_tokens
-                .iter()
-                .map(|(id, amount)| NativeToken::new(*id, *amount).map_err(crate::Error::MessageError))
-                .collect::<Result<Vec<NativeToken>>>()?,
-        );
+        basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
     }
     let basic_output = basic_output_builder.add_unlock_condition(address_condition).finish()?;
+
     Ok(Output::Basic(basic_output).byte_cost(config))
 }

@@ -1,11 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::{hash_map::Entry, HashMap};
-
-use bee_message::output::{Output, TokenId};
+use bee_message::output::{NativeTokens, NativeTokensBuilder, Output};
 use bee_rest_api::types::responses::OutputResponse;
-use primitive_types::U256;
 
 use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
@@ -17,7 +14,7 @@ pub struct AddressBalance {
     /// IOTA balance
     pub balance: u64,
     /// native tokens
-    pub native_tokens: HashMap<TokenId, U256>,
+    pub native_tokens: NativeTokens,
     /// The ledger index at which the outputs were retrieved
     #[serde(rename = "ledgerIndex", default)]
     pub ledger_index: u32,
@@ -52,23 +49,17 @@ impl<'a> GetAddressBuilder<'a> {
             crate::node_api::core::get_outputs(self.client, output_ids).await?;
 
         let mut total_balance = 0;
-        let mut native_tokens_map = HashMap::new();
+        let mut native_tokens_builder = NativeTokensBuilder::new();
+
         for output_response in outputs_responses.iter() {
             let output = Output::try_from(&output_response.output)?;
+
             if let Some(native_tokens) = output.native_tokens() {
-                for native_token in native_tokens.iter() {
-                    match native_tokens_map.entry(*native_token.token_id()) {
-                        Entry::Vacant(e) => {
-                            e.insert(*native_token.amount());
-                        }
-                        Entry::Occupied(mut e) => {
-                            *e.get_mut() += *native_token.amount();
-                        }
-                    }
-                }
+                native_tokens_builder.add_native_tokens(native_tokens.clone())?;
             }
             total_balance += output.amount();
         }
+
         let ledger_index = {
             if outputs_responses.is_empty() {
                 0
@@ -76,16 +67,19 @@ impl<'a> GetAddressBuilder<'a> {
                 outputs_responses[0].ledger_index
             }
         };
+
         Ok(AddressBalance {
             address: address.to_string(),
             balance: total_balance,
             ledger_index,
-            native_tokens: native_tokens_map,
+            native_tokens: native_tokens_builder.finish()?,
         })
     }
+
     /// Get outputs
     pub async fn outputs(self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputResponse>> {
         let output_ids = crate::node_api::indexer::routes::output_ids(self.client, query_parameters).await?;
+
         crate::node_api::core::get_outputs(self.client, output_ids).await
     }
 }

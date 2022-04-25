@@ -1,15 +1,12 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::{hash_map::Entry, HashMap};
-
 use bee_message::{
     address::Address,
-    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, Output, TokenId},
+    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, Output},
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
-use primitive_types::U256;
 
 use crate::{
     api::{
@@ -29,36 +26,21 @@ pub(crate) async fn get_accumulated_output_amounts(
 ) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
-    let mut required_native_tokens: HashMap<TokenId, U256> = HashMap::new();
+    let mut required_native_tokens = NativeTokensBuilder::new();
+
     for output in outputs {
         required_amount += output.amount();
+
         if let Some(output_native_tokens) = output.native_tokens() {
-            for native_token in output_native_tokens.iter() {
-                match required_native_tokens.entry(*native_token.token_id()) {
-                    Entry::Vacant(e) => {
-                        e.insert(*native_token.amount());
-                    }
-                    Entry::Occupied(mut e) => {
-                        *e.get_mut() += *native_token.amount();
-                    }
-                }
-            }
+            required_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
     }
 
     // check if a foundry mints or melts native tokens
     let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(inputs, outputs)?;
-    // add burned native tokens as outputs, because we need to have this amount in the inputs
-    for (tokend_id, burned_amount) in melted_native_tokens {
-        match required_native_tokens.entry(tokend_id) {
-            Entry::Vacant(e) => {
-                e.insert(burned_amount);
-            }
-            Entry::Occupied(mut e) => {
-                *e.get_mut() += burned_amount;
-            }
-        }
-    }
+    // add melted native tokens as outputs, because we need to have this amount in the inputs
+    required_native_tokens.merge(melted_native_tokens)?;
+
     Ok(AccumulatedOutputAmounts {
         minted_native_tokens,
         amount: required_amount,

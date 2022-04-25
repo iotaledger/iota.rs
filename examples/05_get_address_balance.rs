@@ -3,15 +3,14 @@
 
 //! cargo run --example 05_get_address_balance --release
 
-use std::{
-    collections::hash_map::{Entry, HashMap},
-    env,
-};
+use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::Output, node_api::indexer::query_parameters::QueryParameter,
-    signing::mnemonic::MnemonicSigner, Client, Result,
+    bee_message::output::{NativeTokensBuilder, Output},
+    node_api::indexer::query_parameters::QueryParameter,
+    signing::mnemonic::MnemonicSigner,
+    Client, Result,
 };
 
 /// In this example we will get the outputs of an address that have no additional unlock conditions and sum the amounts
@@ -53,27 +52,21 @@ async fn main() -> Result<()> {
 
     // Calculate the total amount and native tokens
     let mut total_amount = 0;
-    let mut total_native_tokens = HashMap::new();
-    for output_response in outputs_responses.iter() {
+    let mut total_native_tokens = NativeTokensBuilder::new();
+    for output_response in outputs_responses.into_iter() {
         let output = Output::try_from(&output_response.output)?;
+
         if let Some(native_tokens) = output.native_tokens() {
-            for native_token in native_tokens.iter() {
-                match total_native_tokens.entry(*native_token.token_id()) {
-                    Entry::Vacant(e) => {
-                        e.insert(*native_token.amount());
-                    }
-                    Entry::Occupied(mut e) => {
-                        *e.get_mut() += *native_token.amount();
-                    }
-                }
-            }
+            total_native_tokens.add_native_tokens(native_tokens.clone())?;
         }
         total_amount += output.amount();
     }
 
     println!(
         "Outputs controlled by {} have: {:?}i and native tokens: {:?}",
-        addresses[0], total_amount, total_native_tokens
+        addresses[0],
+        total_amount,
+        total_native_tokens.finish()?
     );
     Ok(())
 }

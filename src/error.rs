@@ -3,13 +3,9 @@
 
 //! Error handling in iota-client crate.
 
-use std::{
-    collections::HashMap,
-    fmt::{Debug, Display},
-};
+use std::fmt::{Debug, Display};
 
-use bee_message::{output::TokenId, semantic::ConflictReason};
-use primitive_types::U256;
+use bee_message::{output::NativeTokens, semantic::ConflictReason};
 use serde::{ser::Serializer, Serialize};
 
 /// Type alias of `Result` in iota-client
@@ -37,7 +33,7 @@ pub enum Error {
     NoInputs,
     /// The wallet account doesn't have enough native tokens
     #[error("The wallet account doesn't have enough native tokens, missing: {0:?}")]
-    NotEnoughNativeTokens(HashMap<TokenId, U256>),
+    NotEnoughNativeTokens(NativeTokens),
     // todo get missing amount (storage deposit for an output with this amount of native tokens)
     /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
     #[error("The wallet account doesn't have enough balance for an output with the remaining native tokens.")]
