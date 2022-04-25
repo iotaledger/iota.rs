@@ -15,15 +15,15 @@ categories = [ "cryptography::cryptocurrencies" ]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "e9ef4d6725a9b63756107618c60b75cf1aca56d1", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", rev = "e9ef4d6725a9b63756107618c60b75cf1aca56d1", default-features = false, features = [ "serde1", "dto" ] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "e9ef4d6725a9b63756107618c60b75cf1aca56d1", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "787d72bf23cd9004ecc7cce88dd8e1baf330b3c1", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "787d72bf23cd9004ecc7cce88dd8e1baf330b3c1", default-features = false, features = [ "serde", "dto" ] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "787d72bf23cd9004ecc7cce88dd8e1baf330b3c1", default-features = false }
 # bee-rest-api = { path = "../bee/bee-api/bee-rest-api",  default-features = false }
 # bee-message = { path = "../bee/bee-message",  default-features = false, features = [ "serde1" ] }
 # bee-pow = { path = "../bee/bee-pow",  default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 iota-crypto = { version = "0.9.1", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
-packable = { version = "0.2.1", default-features = false, features = [ "serde", "primitive-types" ] }
+packable = { version = "0.3.1", default-features = false, features = [ "serde", "primitive-types" ] }
 
 async-trait = { version ="0.1.51", default-features = false }
 derive_builder = { version = "0.11.1", default-features = false, features = [ "std" ]}

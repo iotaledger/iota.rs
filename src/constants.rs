@@ -19,7 +19,7 @@ pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 #[cfg(not(feature = "wasm"))]
 pub(crate) const MAX_PARALLEL_API_REQUESTS: usize = 100;
 /// Max allowed difference between the local time and latest milestone time, 5 minutes in seconds
-pub(crate) const FIVE_MINUTES_IN_SECONDS: u64 = 300;
+pub(crate) const FIVE_MINUTES_IN_SECONDS: u32 = 300;
 
 /// Bech32 hrp for the IOTA mainnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
 pub const IOTA_BECH32_HRP: &str = "iota";
