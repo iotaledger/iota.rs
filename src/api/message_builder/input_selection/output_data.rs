@@ -85,9 +85,7 @@ pub(crate) async fn get_remainder(
         let mut remainder_output_builder = BasicOutputBuilder::new_with_amount(remainder_amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_addr)));
         if let Some(remainder_native_tokens) = native_token_remainder {
-            for native_token in remainder_native_tokens {
-                remainder_output_builder = remainder_output_builder.add_native_token(native_token);
-            }
+            remainder_output_builder = remainder_output_builder.with_native_tokens(remainder_native_tokens);
         }
         let remainder = Output::Basic(remainder_output_builder.finish()?);
         // Check if output has enough amount to cover the storage deposit

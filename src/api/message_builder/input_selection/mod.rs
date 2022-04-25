@@ -70,8 +70,7 @@ pub async fn try_select_inputs(
     let mut required_native_tokens = required.native_tokens;
 
     // add burned native tokens as outputs, because we need to have this amount in the inputs
-    // TODO @thibault-martinez: Add a method in bee to add another builder + Add builder::clone.
-    required_native_tokens.add_native_tokens(burned_native_tokens.finish()?)?;
+    required_native_tokens.merge(burned_native_tokens)?;
 
     let mut selected_input_amount = 0;
     let mut selected_inputs = Vec::new();
@@ -129,7 +128,6 @@ pub async fn try_select_inputs(
         }
     }
     // check if we got all required native tokens
-    // println!("selected_input_native_tokens: {:?}", selected_input_native_tokens);
     if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required_native_tokens)? {
         return Err(Error::NotEnoughNativeTokens(native_token));
     }
