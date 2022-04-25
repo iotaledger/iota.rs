@@ -62,7 +62,7 @@ pub(crate) async fn get_remainder_output(
         if let Some(remainder_native_tokens) = native_token_remainder {
             remainder_output_builder = remainder_output_builder.with_native_tokens(remainder_native_tokens);
         }
-        let remainder = Output::Basic(remainder_output_builder.finish()?);
+        let remainder = remainder_output_builder.finish_output()?;
         // Check if output has enough amount to cover the storage deposit
         remainder.verify_storage_deposit(byte_cost_config)?;
         remainder_output.replace(remainder);

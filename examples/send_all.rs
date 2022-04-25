@@ -72,7 +72,7 @@ async fn main() -> Result<()> {
     for native_token in total_native_tokens.into_iter() {
         basic_output_builder = basic_output_builder.add_native_token(native_token);
     }
-    let new_output = Output::Basic(basic_output_builder.finish()?);
+    let new_output = basic_output_builder.finish_output()?;
 
     let message = client
         .message()
