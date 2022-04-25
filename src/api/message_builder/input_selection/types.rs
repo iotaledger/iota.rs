@@ -23,6 +23,7 @@ pub struct SelectedTransactionData {
 /// Required things from the to be created outputs
 #[derive(Debug, Clone)]
 pub(crate) struct AccumulatedOutputAmounts {
+    pub(crate) minted_native_tokens: HashMap<TokenId, U256>,
     pub(crate) amount: u64,
     pub(crate) native_tokens: HashMap<TokenId, U256>,
 }

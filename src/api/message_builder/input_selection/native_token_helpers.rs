@@ -43,13 +43,14 @@ pub(crate) fn get_remainder_native_tokens(
     missing_native_tokens(required, inputs)
 }
 
-// minted first, burned second
-pub(crate) fn get_minted_and_burned_native_tokens(
+// Get minted and melted tokens from foundry outputs
+// minted first, melted second
+pub(crate) fn get_minted_and_melted_native_tokens(
     inputs: &[Output],
     outputs: &[Output],
 ) -> Result<(HashMap<TokenId, U256>, HashMap<TokenId, U256>)> {
     let mut minted_native_tokens: HashMap<TokenId, U256> = HashMap::new();
-    let mut burned_native_tokens: HashMap<TokenId, U256> = HashMap::new();
+    let mut melted_native_tokens: HashMap<TokenId, U256> = HashMap::new();
     for output in outputs {
         if let Output::Foundry(output_foundry) = output {
             let TokenScheme::Simple(output_foundry_simple_ts) = output_foundry.token_scheme();
@@ -79,7 +80,7 @@ pub(crate) fn get_minted_and_burned_native_tokens(
                             Ordering::Less => {
                                 let burned_native_token_amount = input_foundry_simple_ts.circulating_supply()
                                     - output_foundry_simple_ts.circulating_supply();
-                                match burned_native_tokens.entry(token_id) {
+                                match melted_native_tokens.entry(token_id) {
                                     Entry::Vacant(e) => {
                                         e.insert(burned_native_token_amount);
                                     }
@@ -111,7 +112,7 @@ pub(crate) fn get_minted_and_burned_native_tokens(
             }
         }
     }
-    Ok((minted_native_tokens, burned_native_tokens))
+    Ok((minted_native_tokens, melted_native_tokens))
 }
 
 #[cfg(test)]

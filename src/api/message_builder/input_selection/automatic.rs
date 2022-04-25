@@ -46,6 +46,9 @@ pub(crate) async fn get_inputs(
         force_use_all_inputs,
         message_builder.custom_remainder_address,
         byte_cost_config,
+        // Don't allow burning of native tokens during automatic input selection, because otherwise it
+        // could lead to burned native tokens by accident
+        false,
     )
     .await
     {
@@ -123,6 +126,9 @@ pub(crate) async fn get_inputs(
                     force_use_all_inputs,
                     message_builder.custom_remainder_address,
                     byte_cost_config,
+                    // Don't allow burning of native tokens during automatic input selection, because otherwise it
+                    // could lead to burned native tokens by accident
+                    false,
                 )
                 .await
                 {

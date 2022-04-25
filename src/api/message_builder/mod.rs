@@ -57,6 +57,7 @@ pub struct ClientMessageBuilder<'a> {
     tag: Option<Box<[u8]>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<MessageId>>,
+    allow_burning: bool,
 }
 
 /// Message output address
@@ -97,6 +98,8 @@ pub struct ClientMessageBuilderOptions {
     pub data: Option<Vec<u8>>,
     /// Parents
     pub parents: Option<Vec<MessageId>>,
+    /// Allow burning of native tokens
+    pub allow_burning: bool,
 }
 
 impl<'a> ClientMessageBuilder<'a> {
@@ -115,7 +118,14 @@ impl<'a> ClientMessageBuilder<'a> {
             tag: None,
             data: None,
             parents: None,
+            allow_burning: false,
         }
+    }
+
+    /// Allow burning of native tokens when custom inputs are provided.
+    pub fn with_burning_allowed(mut self, allow_burning: bool) -> Self {
+        self.allow_burning = allow_burning;
+        self
     }
 
     /// Sets the seed.
@@ -420,12 +430,14 @@ impl<'a> ClientMessageBuilder<'a> {
 
     // If custom inputs are provided we check if they are unspent, get the balance and search the address for it,
     // governance_transition makes only a difference for alias outputs
+    // Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
     async fn get_custom_inputs(
         &self,
         governance_transition: Option<HashSet<AliasId>>,
         byte_cost_config: &ByteCostConfig,
+        allow_burning: bool,
     ) -> Result<SelectedTransactionData> {
-        get_custom_inputs(self, governance_transition, byte_cost_config).await
+        get_custom_inputs(self, governance_transition, byte_cost_config, allow_burning).await
     }
 
     // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust

@@ -57,7 +57,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     // Inputselection
     let selected_transaction_data = if message_builder.inputs.is_some() {
         message_builder
-            .get_custom_inputs(governance_transition, &byte_cost_config)
+            .get_custom_inputs(governance_transition, &byte_cost_config, message_builder.allow_burning)
             .await?
     } else {
         message_builder.get_inputs(&byte_cost_config).await?
@@ -182,7 +182,7 @@ pub fn verify_semantic(
 
     let context = ValidationContext::new(
         &transaction_id,
-        &essence,
+        essence,
         inputs.iter().map(|(id, input)| (id, *input)),
         transaction.unlock_blocks(),
         MilestoneIndex(milestone_index),
