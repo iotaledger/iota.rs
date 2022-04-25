@@ -86,8 +86,7 @@ impl ClientMessageHandler {
                 Ok(ResponseType::GeneratedAddresses(addresses))
             }
             ClientMethod::GenerateMessage { signer, options } => {
-                // Prepare transaction
-                let mut transaction_builder = self.client.message();
+                let mut message_builder = self.client.message();
 
                 let signer = match signer {
                     Some(signer) => Some(SignerHandle::from_str(signer)?),
@@ -95,16 +94,16 @@ impl ClientMessageHandler {
                 };
 
                 if let Some(signer) = &signer {
-                    transaction_builder = transaction_builder.with_signer(signer);
+                    message_builder = message_builder.with_signer(signer);
                 }
 
                 if let Some(options) = options {
-                    transaction_builder = transaction_builder.set_options(options.clone())?;
+                    message_builder = message_builder.set_options(options.clone())?;
                 }
 
-                Ok(ResponseType::GeneratedMessage(
-                    transaction_builder.prepare_transaction().await?,
-                ))
+                Ok(ResponseType::GeneratedMessage(MessageDto::from(
+                    &message_builder.finish().await?,
+                )))
             }
             ClientMethod::GetNode => Ok(ResponseType::Node(self.client.get_node().await?)),
             ClientMethod::GetNetworkInfo => Ok(ResponseType::NetworkInfo(self.client.get_network_info().await?)),

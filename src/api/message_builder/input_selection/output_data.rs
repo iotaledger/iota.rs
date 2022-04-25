@@ -3,106 +3,27 @@
 
 use bee_message::{
     address::Address,
-    output::{
-        dto::OutputDto,
-        unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
-        BasicOutputBuilder, ByteCostConfig, NativeTokensBuilder, Output,
-    },
+    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, Output},
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 
 use crate::{
     api::{
-        input_selection::{
-            get_minted_and_burned_native_tokens, get_remainder_native_tokens, types::AccumulatedOutputAmounts,
-        },
+        input_selection::{get_minted_and_melted_native_tokens, types::AccumulatedOutputAmounts},
         message_builder::ClientMessageBuilder,
         search_address,
     },
     constants::HD_WALLET_TYPE,
     signing::types::InputSigningData,
-    Error, Result,
+    Result,
 };
 
-// Get a remainder with amount and native tokens if necessary, if no remainder_address is provided it will be selected
-// from the inputs, also validates the amounts
-pub(crate) async fn get_remainder(
+// Calculate required accumulated amounts from the outputs, considers also minted and melted native tokens
+pub(crate) async fn get_accumulated_output_amounts(
     inputs: &[Output],
     outputs: &[Output],
-    remainder_address: Option<Address>,
-    byte_cost_config: &ByteCostConfig,
-) -> Result<Option<Output>> {
-    log::debug!("[get_remainder]");
-    let mut remainder_output = None;
-    let input_data = get_accumulated_output_amounts(inputs).await?;
-    let output_data = get_accumulated_output_amounts(outputs).await?;
-    // Get minted native tokens
-    let (minted_native_tokens, burned_native_tokens) = get_minted_and_burned_native_tokens(inputs, outputs)?;
-
-    // check amount first
-    if input_data.amount < output_data.amount {
-        return Err(Error::NotEnoughBalance(input_data.amount, output_data.amount));
-    }
-    let remainder_amount = input_data.amount - output_data.amount;
-
-    // add minted tokens
-    let mut input_native_tokens = input_data.native_tokens;
-    input_native_tokens.merge(minted_native_tokens)?;
-
-    // add burned tokens
-    let mut output_native_tokens = output_data.native_tokens;
-    // add burned native tokens as outputs, because we need to have this amount in the inputs
-    output_native_tokens.merge(burned_native_tokens)?;
-
-    let native_token_remainder = get_remainder_native_tokens(&input_native_tokens, &output_native_tokens)?;
-
-    // Output possible remaining tokens back to the original address
-    if remainder_amount > 0 {
-        let remainder_addr = match remainder_address {
-            Some(address) => address,
-            // get address from an input, by default we only allow ed25519 addresses as remainder, because then we're
-            // sure that the sender can access it
-            None => {
-                let mut address = None;
-                for input in inputs {
-                    if let Some(unlock_conditions) = input.unlock_conditions() {
-                        for unlock_condition in unlock_conditions.iter() {
-                            if let UnlockCondition::Address(address_unlock_condition) = unlock_condition {
-                                address.replace(address_unlock_condition.address());
-                                break;
-                            }
-                        }
-                    }
-                }
-                match address {
-                    Some(addr) => *addr,
-                    None => return Err(Error::MissingInputWithEd25519UnlockCondition),
-                }
-            }
-        };
-
-        let mut remainder_output_builder = BasicOutputBuilder::new_with_amount(remainder_amount)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_addr)));
-        if let Some(remainder_native_tokens) = native_token_remainder {
-            remainder_output_builder = remainder_output_builder.with_native_tokens(remainder_native_tokens);
-        }
-        let remainder = Output::Basic(remainder_output_builder.finish()?);
-        // Check if output has enough amount to cover the storage deposit
-        remainder.verify_storage_deposit(byte_cost_config)?;
-        remainder_output.replace(remainder);
-    } else {
-        // if we have remaining native tokens, but no amount left, then we can't create this transaction
-        if native_token_remainder.is_some() {
-            return Err(Error::NoBalanceForNativeTokenRemainder);
-        }
-    }
-
-    Ok(remainder_output)
-}
-
-// Calculate total accumulated amounts from the outputs
-pub(crate) async fn get_accumulated_output_amounts(outputs: &[Output]) -> Result<AccumulatedOutputAmounts> {
+) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
     let mut required_native_tokens = NativeTokensBuilder::new();
@@ -115,7 +36,13 @@ pub(crate) async fn get_accumulated_output_amounts(outputs: &[Output]) -> Result
         }
     }
 
+    // check if a foundry mints or melts native tokens
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(inputs, outputs)?;
+    // add melted native tokens as outputs, because we need to have this amount in the inputs
+    required_native_tokens.merge(melted_native_tokens)?;
+
     Ok(AccumulatedOutputAmounts {
+        minted_native_tokens,
         amount: required_amount,
         native_tokens: required_native_tokens,
     })

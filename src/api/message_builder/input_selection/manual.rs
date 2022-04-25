@@ -25,10 +25,12 @@ use crate::{
 /// them with the provided input_range so we can later sign them.
 /// Forwards to [try_select_inputs()] with `force_use_all_inputs` set to true, so all inputs will be included in the
 /// transaction, even if not required for the provided outputs.
+/// Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
 pub(crate) async fn get_custom_inputs(
     message_builder: &ClientMessageBuilder<'_>,
     governance_transition: Option<HashSet<AliasId>>,
     byte_cost_config: &ByteCostConfig,
+    allow_burning: bool,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[get_custom_inputs]");
     let mut input_signing_data_entries = Vec::new();
@@ -84,6 +86,7 @@ pub(crate) async fn get_custom_inputs(
         true,
         message_builder.custom_remainder_address,
         byte_cost_config,
+        allow_burning,
     )
     .await?;
     Ok(selected_transaction_data)

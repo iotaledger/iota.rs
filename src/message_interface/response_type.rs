@@ -1,6 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(not(feature = "wasm"))]
 use std::collections::HashSet;
 
 use bee_message::{address::dto::AddressDto, input::dto::UtxoInputDto, output::OutputId, MessageDto, MessageId};
@@ -14,8 +15,7 @@ use bee_rest_api::types::{
 use serde::Serialize;
 
 use crate::{
-    api::PreparedTransactionData, builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node,
-    Error, NodeInfoWrapper,
+    builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node, Error, NodeInfoWrapper,
 };
 
 /// The response message.
@@ -25,7 +25,7 @@ pub enum ResponseType {
     /// GenerateAddress response.
     GeneratedAddresses(Vec<String>),
     /// Generated message
-    GeneratedMessage(PreparedTransactionData),
+    GeneratedMessage(MessageDto),
     /// Node
     Node(Node),
     /// Network info

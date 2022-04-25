@@ -42,13 +42,14 @@ pub(crate) fn get_remainder_native_tokens(
     missing_native_tokens(required, inputs)
 }
 
-// minted first, burned second
-pub(crate) fn get_minted_and_burned_native_tokens(
+// Get minted and melted tokens from foundry outputs
+// minted first, melted second
+pub(crate) fn get_minted_and_melted_native_tokens(
     inputs: &[Output],
     outputs: &[Output],
 ) -> Result<(NativeTokensBuilder, NativeTokensBuilder)> {
     let mut minted_native_tokens = NativeTokensBuilder::new();
-    let mut burned_native_tokens = NativeTokensBuilder::new();
+    let mut melted_native_tokens = NativeTokensBuilder::new();
 
     for output in outputs {
         if let Output::Foundry(output_foundry) = output {
@@ -73,11 +74,11 @@ pub(crate) fn get_minted_and_burned_native_tokens(
                                     .add_native_token(NativeToken::new(token_id, minted_native_token_amount)?)?;
                             }
                             Ordering::Less => {
-                                let burned_native_token_amount = input_foundry_simple_ts.circulating_supply()
+                                let melted_native_token_amount = input_foundry_simple_ts.circulating_supply()
                                     - output_foundry_simple_ts.circulating_supply();
 
-                                burned_native_tokens
-                                    .add_native_token(NativeToken::new(token_id, burned_native_token_amount)?)?;
+                                melted_native_tokens
+                                    .add_native_token(NativeToken::new(token_id, melted_native_token_amount)?)?;
                             }
                             Ordering::Equal => {}
                         }
@@ -98,7 +99,7 @@ pub(crate) fn get_minted_and_burned_native_tokens(
         }
     }
 
-    Ok((minted_native_tokens, burned_native_tokens))
+    Ok((minted_native_tokens, melted_native_tokens))
 }
 
 #[cfg(test)]

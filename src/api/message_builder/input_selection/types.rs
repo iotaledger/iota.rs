@@ -21,6 +21,7 @@ pub struct SelectedTransactionData {
 /// Required things from the to be created outputs
 #[derive(Debug, Clone)]
 pub(crate) struct AccumulatedOutputAmounts {
+    pub(crate) minted_native_tokens: NativeTokensBuilder,
     pub(crate) amount: u64,
     pub(crate) native_tokens: NativeTokensBuilder,
 }
