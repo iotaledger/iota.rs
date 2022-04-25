@@ -15,6 +15,7 @@ pub struct PreparedTransactionData {
     /// Transaction essence
     pub essence: TransactionEssence,
     /// Required address information for signing
+    #[serde(rename = "inputSigningDataEntries")]
     pub input_signing_data_entries: Vec<InputSigningData>,
 }
 

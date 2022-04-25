@@ -42,7 +42,11 @@ async function run() {
         // We prepare the transaction
         // Insert the output address and amount to spend. The amount cannot be zero.
         const message = await client.generateMessage(signer, {
-            output: { address: addresses[0], amount: 1000000 },
+            output: {
+                address: addresses[0],
+                amount: 1000000,
+            },
+            allowBurning: false,
         });
         console.log('Message: ', message, '\n');
 

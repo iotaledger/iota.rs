@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // In this example we will get inputs and prepare a transaction
+
+const ADDRESS_FILE_NAME = './addresses.json';
+const PREPARED_TRANSACTION_FILE_NAME = './prepared_transaction.json';
+
 async function run() {
     const { Client, initLogger } = require('@iota/client');
     const { writeFile, readFile } = require('fs/promises');
-    require('dotenv').config({ path: '../.env' });
 
     initLogger({
         colorEnabled: true,
@@ -19,47 +22,43 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265/',
-                auth: null,
                 disabled: false,
             },
         ],
         localPow: true,
     });
 
-    const signer = JSON.stringify({
-        Mnemonic: 'None',
-    });
-
     let address =
         'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe';
     let amount = 1_000_000;
-    const ADDRESS_FILE_NAME = './addresses.json';
-    const PREPARED_TRANSACTION_FILE_NAME = './prepared_transaction.json';
-
     try {
+        // Recovers addresses from example `0_address_generation`.
         const addresses = JSON.parse(await readFile(ADDRESS_FILE_NAME, 'utf8'));
 
+        // Gets enough inputs related to these addresses to cover the amount.
         const inputs = await onlineClient.findInputs(addresses, amount);
-        console.log(inputs);
 
-        // TODO: This example is blocked by the message interface
-        // See #931 https://github.com/iotaledger/iota.rs/issues/931
-        // const transaction = await onlineClient.generateMessage(signer, {
-        //     inputs,
-        //     output: { address, amount },
-        // });
+        // Prepares the transaction
+        const preparedTransaction = await onlineClient.prepareTransaction(
+            undefined,
+            {
+                inputs,
+                output: { address, amount },
+                allowBurning: false,
+            },
+        );
 
-        // console.log(`Prepared transaction sending ${amount} to ${address}.`);
+        console.log(`Prepared transaction sending ${amount} to ${address}.`);
 
-        // await writeFile(
-        //     PREPARED_TRANSACTION_FILE_NAME,
-        //     JSON.stringify(transaction),
-        //     (err) => {
-        //         if (err) {
-        //             console.error(err);
-        //         }
-        //     },
-        // );
+        await writeFile(
+            PREPARED_TRANSACTION_FILE_NAME,
+            JSON.stringify(preparedTransaction),
+            (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            },
+        );
     } catch (error) {
         console.error(error);
     }

@@ -54,7 +54,7 @@ async function run() {
 
         // Calculate the total amount and native tokens
         let totalAmount = 0;
-        let totalNativeTokens: { [id: string]: number } = {};
+        const totalNativeTokens: { [id: string]: number } = {};
         for (const outputResponse of addressOutputs) {
             const output = outputResponse['output'];
 

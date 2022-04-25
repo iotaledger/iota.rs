@@ -28,6 +28,7 @@ async function run() {
     const options = {
         tag: utf8ToBytes('Hello'),
         data: utf8ToBytes('Tangle'),
+        allowBurning: false,
     };
     try {
         const mnemonic = await client.generateMnemonic();

@@ -1,6 +1,7 @@
 scripts
-examples
 target
 **/node_modules/
 **/out/
 **/tests/
+examples/offline_signing
+**/dist

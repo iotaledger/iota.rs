@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // In this example we will generate addresses which will be used later to find inputs
+
+const ADDRESS_FILE_NAME = './addresses.json';
+
 async function run() {
     const {
         Client,
@@ -34,7 +37,6 @@ async function run() {
     const signer = JSON.stringify({
         Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
     });
-    const ADDRESS_FILE_NAME = './addresses.json';
 
     const offlineGeneratedOptions = {
         range: {

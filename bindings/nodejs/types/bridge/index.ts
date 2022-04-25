@@ -28,6 +28,14 @@ import type {
     __FindOutputsPayloadMethod__,
     __FindOutputsPayload__,
     __FindInputsPayload__,
+    __PrepareTransactionPayloadMethod__,
+    __SignTransactionPayloadMethod__,
+    __SubmitPayloadPayloadMethod__,
+    __SignTransactionPayload__,
+    __PrepareTransactionPayload__,
+    __SubmitPayloadPayload__,
+    __ParseBech32AddressPayloadMethod__,
+    __ParseBech32AddressPayload__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -45,7 +53,11 @@ export type __ClientPayloadMethods__ =
     | __GetMessageDataPayloadMethod__
     | __GetMessageMetadataPayloadMethod__
     | __FindInputsPayloadMethod__
-    | __FindOutputsPayloadMethod__;
+    | __FindOutputsPayloadMethod__
+    | __PrepareTransactionPayloadMethod__
+    | __SignTransactionPayloadMethod__
+    | __SubmitPayloadPayloadMethod__
+    | __ParseBech32AddressPayloadMethod__;
 
 export type __SendMessagePayload__ =
     | __GetInfoPayload__
@@ -61,4 +73,8 @@ export type __SendMessagePayload__ =
     | __GetMessageDataPayload__
     | __GetMessageMetadataPayload__
     | __FindInputsPayload__
-    | __FindOutputsPayload__;
+    | __FindOutputsPayload__
+    | __PrepareTransactionPayload__
+    | __SignTransactionPayload__
+    | __SubmitPayloadPayload__
+    | __ParseBech32AddressPayload__;

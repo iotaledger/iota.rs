@@ -23,6 +23,8 @@ export interface GenerateMessageOptions {
     data?: number[];
     /** Parent message IDs */
     parents?: string[];
+    /** Allow burning of native tokens */
+    allowBurning: boolean;
 }
 
 export interface ClientMessageBuilderOutputAddress {

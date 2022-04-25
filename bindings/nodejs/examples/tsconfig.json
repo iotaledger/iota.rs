@@ -9,5 +9,5 @@
         "noImplicitAny": true,
         "removeComments": true,
         "outDir": "dist"
-    },
+    }
 }

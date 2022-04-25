@@ -1,7 +1,9 @@
-import type { GenerateAddressesOptions } from '../client';
+import type { GenerateAddressesOptions } from '../generateAddressesOptions';
 import type { GenerateMessageOptions } from '../generateMessageOptions';
 import type { UTXOInput } from '../inputs/UTXOInput';
 import type { Message } from '../message';
+import type { Payload } from '../payloads';
+import type { PreparedTransactionData } from '../preparedTransactionData';
 import type { QueryParameter } from '../queryParameters';
 
 export interface __GetInfoPayloadMethod__ {
@@ -172,4 +174,54 @@ export interface __FindOutputsPayloadMethod__ {
 export interface __FindOutputsPayload__ {
     cmd: 'CallClientMethod';
     payload: __FindOutputsPayloadMethod__;
+}
+
+export interface __PrepareTransactionPayloadMethod__ {
+    name: 'PrepareTransaction';
+    data: {
+        signer?: string;
+        options?: GenerateMessageOptions;
+    };
+}
+
+export interface __PrepareTransactionPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __PrepareTransactionPayloadMethod__;
+}
+
+export interface __SignTransactionPayloadMethod__ {
+    name: 'SignTransaction';
+    data: {
+        signer: string;
+        preparedTransactionData: PreparedTransactionData;
+    };
+}
+
+export interface __SignTransactionPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __SignTransactionPayloadMethod__;
+}
+
+export interface __SubmitPayloadPayloadMethod__ {
+    name: 'SubmitPayload';
+    data: {
+        payload: Payload;
+    };
+}
+
+export interface __SubmitPayloadPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __SubmitPayloadPayloadMethod__;
+}
+
+export interface __ParseBech32AddressPayloadMethod__ {
+    name: 'ParseBech32Address';
+    data: {
+        address: string;
+    };
+}
+
+export interface __ParseBech32AddressPayload__ {
+    cmd: 'CallClientMethod';
+    payload: __ParseBech32AddressPayloadMethod__;
 }

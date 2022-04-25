@@ -1,8 +1,8 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-
 import { MessageHandler } from './MessageHandler';
 import type {
+    Address,
     ClientOptions,
     GenerateAddressesOptions,
     NodeInfo,
@@ -13,6 +13,8 @@ import type { MessageMetadata } from '../types/messageMetadata';
 import type { GenerateMessageOptions } from '../types/generateMessageOptions';
 import type { QueryParameter } from '../types/queryParameters';
 import type { UTXOInput } from '../types/inputs/UTXOInput';
+import type { Payload } from '../types/payloads';
+import type { PreparedTransactionData } from '../types/preparedTransactionData';
 
 export class Client {
     private messageHandler: MessageHandler;
@@ -205,6 +207,70 @@ export class Client {
             data: {
                 outputs,
                 addresses,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Prepare a transaction for signing
+     */
+    async prepareTransaction(
+        signer?: string,
+        options?: GenerateMessageOptions,
+    ) {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'PrepareTransaction',
+            data: {
+                signer,
+                options,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Sign a transaction
+     */
+    async signTransaction(
+        signer: string,
+        preparedTransactionData: PreparedTransactionData,
+    ) {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'SignTransaction',
+            data: {
+                signer,
+                preparedTransactionData,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Submit a payload in a message
+     */
+    async submitPayload(payload: Payload) {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'SubmitPayload',
+            data: {
+                payload,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns a valid Address parsed from a String.
+     */
+    async parseBech32Address(address: string): Promise<Address> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'ParseBech32Address',
+            data: {
+                address,
             },
         });
 
