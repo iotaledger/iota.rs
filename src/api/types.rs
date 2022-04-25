@@ -1,7 +1,11 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_message::{address::Address, payload::transaction::TransactionEssence};
+use bee_message::{
+    address::Address,
+    payload::transaction::{dto::TransactionEssenceDto, TransactionEssence},
+    DtoError,
+};
 
 use crate::signing::types::InputSigningData;
 
@@ -12,6 +16,34 @@ pub struct PreparedTransactionData {
     pub essence: TransactionEssence,
     /// Required address information for signing
     pub input_signing_data_entries: Vec<InputSigningData>,
+}
+
+/// PreparedTransactionData Dto
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PreparedTransactionDataDto {
+    /// Transaction essence
+    pub essence: TransactionEssenceDto,
+    /// Required address information for signing
+    pub input_signing_data_entries: Vec<InputSigningData>,
+}
+
+impl From<&PreparedTransactionData> for PreparedTransactionDataDto {
+    fn from(value: &PreparedTransactionData) -> Self {
+        PreparedTransactionDataDto {
+            essence: TransactionEssenceDto::from(&value.essence),
+            input_signing_data_entries: value.input_signing_data_entries.clone(),
+        }
+    }
+}
+
+impl TryFrom<&PreparedTransactionDataDto> for PreparedTransactionData {
+    type Error = DtoError;
+    fn try_from(value: &PreparedTransactionDataDto) -> Result<Self, Self::Error> {
+        Ok(PreparedTransactionData {
+            essence: TransactionEssence::try_from(&value.essence).map_err(|_| DtoError::InvalidField("essences"))?,
+            input_signing_data_entries: value.input_signing_data_entries.clone(),
+        })
+    }
 }
 
 /// Generated addresses

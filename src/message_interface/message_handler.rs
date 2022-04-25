@@ -13,6 +13,7 @@ use bee_message::{
 use futures::{Future, FutureExt};
 
 use crate::{
+    api::{PreparedTransactionData, PreparedTransactionDataDto},
     message_interface::{
         client_method::ClientMethod, message::Message, message_type::MessageType, response::Response,
         response_type::ResponseType,
@@ -136,9 +137,9 @@ impl ClientMessageHandler {
                     message_builder = message_builder.set_options(options.clone())?;
                 }
 
-                Ok(ResponseType::PreparedTransactionData(
-                    message_builder.prepare_transaction().await?,
-                ))
+                Ok(ResponseType::PreparedTransactionData(PreparedTransactionDataDto::from(
+                    &message_builder.prepare_transaction().await?,
+                )))
             }
             ClientMethod::SignTransaction {
                 signer,
@@ -152,7 +153,7 @@ impl ClientMessageHandler {
 
                 Ok(ResponseType::SignedTransaction(PayloadDto::from(
                     &message_builder
-                        .sign_transaction(prepared_transaction_data.clone())
+                        .sign_transaction(PreparedTransactionData::try_from(prepared_transaction_data)?)
                         .await?,
                 )))
             }
