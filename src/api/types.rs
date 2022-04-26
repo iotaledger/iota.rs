@@ -40,7 +40,7 @@ impl TryFrom<&PreparedTransactionDataDto> for PreparedTransactionData {
     type Error = DtoError;
     fn try_from(value: &PreparedTransactionDataDto) -> Result<Self, Self::Error> {
         Ok(PreparedTransactionData {
-            essence: TransactionEssence::try_from(&value.essence).map_err(|_| DtoError::InvalidField("essences"))?,
+            essence: TransactionEssence::try_from(&value.essence).map_err(|_| DtoError::InvalidField("essence"))?,
             input_signing_data_entries: value.input_signing_data_entries.clone(),
         })
     }
