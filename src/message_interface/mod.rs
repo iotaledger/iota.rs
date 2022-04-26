@@ -71,6 +71,7 @@ mod tests {
             coin_type: None,
             account_index: None,
             range: Some(std::ops::Range { start: 0, end: 10 }),
+            internal: None,
             bech32_hrp: Some("atoi".to_string()),
             metadata: Some(GenerateAddressMetadata {
                 syncing: false,
@@ -122,6 +123,7 @@ mod tests {
             coin_type: None,
             account_index: None,
             range: Some(std::ops::Range { start: 0, end: 10 }),
+            internal: None,
             bech32_hrp: Some("atoi".to_string()),
             metadata: Some(GenerateAddressMetadata {
                 syncing: false,

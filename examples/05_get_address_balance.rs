@@ -5,6 +5,7 @@
 
 use std::env;
 
+use bee_message::output::NativeTokensBuilder;
 use dotenv::dotenv;
 use iota_client::{
     bee_message::output::Output,

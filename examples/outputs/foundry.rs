@@ -291,7 +291,7 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_signer(&signer)
+        .with_secret_manager(&secret_manager)
         .with_burning_allowed(true)
         .with_input(basic_output_id.into())?
         .with_outputs(outputs)?

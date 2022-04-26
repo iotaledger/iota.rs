@@ -111,11 +111,11 @@ impl ClientMessageHandler {
                 }
 
                 if let Some(options) = options {
-                    message_builder = message_builder.set_options(options.clone())?;
+                    transaction_builder = transaction_builder.set_options(options.clone())?;
                 }
 
                 Ok(ResponseType::GeneratedMessage(MessageDto::from(
-                    &message_builder.finish().await?,
+                    &transaction_builder.finish().await?,
                 )))
             }
             ClientMethod::GetNode => Ok(ResponseType::Node(self.client.get_node().await?)),
@@ -128,16 +128,19 @@ impl ClientMessageHandler {
             ClientMethod::GetFallbackToLocalPoW => Ok(ResponseType::FallbackToLocalPoW(
                 self.client.get_fallback_to_local_pow().await,
             )),
-            ClientMethod::PrepareTransaction { signer, options } => {
+            ClientMethod::PrepareTransaction {
+                secret_manager,
+                options,
+            } => {
                 let mut message_builder = self.client.message();
 
-                let signer = match signer {
-                    Some(signer) => Some(SignerHandle::from_str(signer)?),
+                let secret_manager = match secret_manager {
+                    Some(secret_manager) => Some(secret_manager.parse::<SecretManager>()?),
                     None => None,
                 };
 
-                if let Some(signer) = &signer {
-                    message_builder = message_builder.with_signer(signer);
+                if let Some(secret_manager) = &secret_manager {
+                    message_builder = message_builder.with_secret_manager(secret_manager);
                 }
 
                 if let Some(options) = options {
@@ -149,14 +152,14 @@ impl ClientMessageHandler {
                 )))
             }
             ClientMethod::SignTransaction {
-                signer,
+                secret_manager,
                 prepared_transaction_data,
             } => {
                 let mut message_builder = self.client.message();
 
-                let signer = SignerHandle::from_str(signer)?;
+                let secret_manager = secret_manager.parse()?;
 
-                message_builder = message_builder.with_signer(&signer);
+                message_builder = message_builder.with_secret_manager(&secret_manager);
 
                 Ok(ResponseType::SignedTransaction(PayloadDto::from(
                     &message_builder

@@ -61,15 +61,15 @@ pub enum ClientMethod {
     UnsyncedNodes,
     /// Prepare a transaction for signing
     PrepareTransaction {
-        /// Signer
-        signer: Option<String>,
+        /// Secret manager
+        secret_manager: Option<String>,
         /// Options
         options: Option<GenerateMessageOptions>,
     },
     /// Sign a transaction
     SignTransaction {
-        /// Signer
-        signer: String,
+        /// Secret manager
+        secret_manager: String,
         /// Prepared transaction data
         #[serde(rename = "preparedTransactionData")]
         prepared_transaction_data: PreparedTransactionDataDto,
