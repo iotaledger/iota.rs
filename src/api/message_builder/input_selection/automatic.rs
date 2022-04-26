@@ -216,7 +216,7 @@ async fn get_inputs_for_sender_and_issuer(
             let (address_index, internal) = search_address(
                 message_builder
                     .secret_manager
-                    .ok_or(Error::MissingParameter("Signer"))?,
+                    .ok_or(Error::MissingParameter("secret manager"))?,
                 &bech32_hrp,
                 message_builder.coin_type,
                 message_builder.account_index,

@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The [Signer] implementation for [StrongholdAdapter].
+//! The [SecretManager] implementation for [StrongholdAdapter].
 
 use std::ops::Range;
 
@@ -159,7 +159,7 @@ impl StrongholdAdapter {
             // Unexpected result type, which should never happen!
             err => {
                 warn!(
-                    "StrongholdSigner::bip39_recover(): unexpected result from Stronghold: {:?}",
+                    "StrongholdSecretManager::bip39_recover(): unexpected result from Stronghold: {:?}",
                     err
                 );
                 Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
@@ -197,7 +197,7 @@ impl StrongholdAdapter {
             // Unexpected result type, which should never happen!
             err => {
                 warn!(
-                    "StrongholdSigner::slip10_derive(): unexpected result from Stronghold: {:?}",
+                    "StrongholdSecretManager::slip10_derive(): unexpected result from Stronghold: {:?}",
                     err
                 );
                 Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
@@ -223,7 +223,7 @@ impl StrongholdAdapter {
             // Unexpected result type, which should never happen!
             err => {
                 warn!(
-                    "StrongholdSigner::ed25519_public_key(): unexpected result from Stronghold: {:?}",
+                    "StrongholdSecretManager::ed25519_public_key(): unexpected result from Stronghold: {:?}",
                     err
                 );
                 Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
@@ -251,7 +251,7 @@ impl StrongholdAdapter {
             // Unexpected result type, which should never happen!
             err => {
                 warn!(
-                    "StrongholdSigner::ed25519_sign(): unexpected result from Stronghold: {:?}",
+                    "StrongholdSecretManager::ed25519_sign(): unexpected result from Stronghold: {:?}",
                     err
                 );
                 Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))

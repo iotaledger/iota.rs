@@ -8,9 +8,9 @@
 //! - Smart-card-like secret vault
 //! - Generic key-value, encrypted database
 //!
-//! [`StrongholdAdapter`] respectively implements [`DatabaseProvider`] and [`Signer`] for the above purposes using
-//! Stronghold. Type aliases [`StrongholdDatabaseProvider`] and [`StrongholdSigner`] are also provided if one wants to
-//! have a more consistent naming when using any of the feature sets.
+//! [`StrongholdAdapter`] respectively implements [`DatabaseProvider`] and [`SecretManager`] for the above purposes
+//! using Stronghold. Type aliases [`StrongholdDatabaseProvider`] and [`StrongholdSecretManager`] are also provided if
+//! one wants to have a more consistent naming when using any of the feature sets.
 //!
 //! Use [`builder()`] to construct a [`StrongholdAdapter`] with customized parameters; see documentation of methods of
 //! [`StrongholdAdapterBuilder`] for details. Alternatively, invoking [`new()`] (or using [`Default::default()`])
@@ -42,9 +42,9 @@
 //!
 //! [Stronghold]: iota_stronghold
 //! [`DatabaseProvider`]: crate::db::DatabaseProvider
-//! [`Signer`]: crate::signing::Signer
+//! [`SecretManager`]: crate::secret::SecretManager
 //! [`StrongholdDatabaseProvider`]: crate::db::StrongholdDatabaseProvider
-//! [`StrongholdSigner`]: crate::signing::StrongholdSigner
+//! [`StrongholdSecretmanager`]: crate::signing::StrongholdSecretmanager
 //! [`builder()`]: self::StrongholdAdapter::builder()
 //! [`new()`]: self::StrongholdAdapter::new()
 //! [`set_password()`]: self::StrongholdAdapter::set_password()

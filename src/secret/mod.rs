@@ -61,9 +61,9 @@ pub trait SecretManager: Send + Sync {
 
     /// Signs transaction essence.
     ///
-    /// Signers usually don't implement this, as the default implementation has taken care of the placement of blocks
-    /// (e.g. references between them). [Signer::signature_unlock()] will be invoked every time a necessary signing
-    /// action needs to be performed.
+    /// Secret managers usually don't implement this, as the default implementation has taken care of the placement of
+    /// blocks (e.g. references between them). [SecretManager::signature_unlock()] will be invoked every time a
+    /// necessary signing action needs to be performed.
     async fn sign_transaction_essence<'a>(
         &self,
         essence: &TransactionEssence,

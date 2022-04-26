@@ -64,7 +64,7 @@ pub struct AccountAddress {
     pub internal: bool,
 }
 
-/// Metadata provided to [generate_address](trait.Signer.html#method.generate_address).
+/// Metadata provided to `generate_address()`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GenerateAddressMetadata {
     /// Indicates that the address is being generated as part of the account syncing process.
