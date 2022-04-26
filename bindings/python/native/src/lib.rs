@@ -13,8 +13,7 @@ use std::sync::Mutex;
 use iota_client::{
     bee_message::output::{
         dto::OutputDto, AliasId, AliasOutputBuilder, BasicOutputBuilder, ByteCostConfigBuilder, FeatureBlock,
-        FoundryOutputBuilder, NativeToken, NftId, NftOutputBuilder, Output, TokenScheme, TokenTag, TreasuryOutput,
-        UnlockCondition,
+        FoundryOutputBuilder, NativeToken, NftId, NftOutputBuilder, TokenScheme, TokenTag, UnlockCondition,
     },
     message_interface::MessageType,
 };
