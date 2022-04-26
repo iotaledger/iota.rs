@@ -19,6 +19,74 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def get_handle(self):
         return self.handle
 
+    @staticmethod
+    def create_treasury_output(amount):
+        """Create OutputDto::Treasury JSON string.
+        """
+        return iota_client.create_treasury_output(amount)
+
+    @staticmethod
+    def create_basic_output(amount=None,
+                            byte_cost=None,
+                            key_factor=None,
+                            data_factor=None,
+                            native_tokens=None,
+                            unlock_conditions=None,
+                            feature_blocks=None):
+        """Create OutputDto::Basic JSON string.
+        """
+        return iota_client.create_basic_output(**locals())
+
+    @staticmethod
+    def create_alias_output(
+            alias_id,
+            amount=None,
+            byte_cost=None,
+            key_factor=None,
+            data_factor=None,
+            native_tokens=None,
+            state_index=None,
+            state_metadata=None,
+            foundry_counter=None,
+            unlock_conditions=None,
+            feature_blocks=None,
+            immutable_feature_blocks=None):
+        """Create OutputDto::Alias JSON string.
+        """
+        return iota_client.create_alias_output(**locals())
+
+    @staticmethod
+    def create_foundry_output(
+            serial_number,
+            token_tag,
+            token_scheme,
+            amount=None,
+            byte_cost=None,
+            key_factor=None,
+            data_factor=None,
+            native_tokens=None,
+            unlock_conditions=None,
+            feature_blocks=None,
+            immutable_feature_blocks=None):
+        """Create OutputDto::Foundry JSON string
+        """
+        return iota_client.create_foundry_output(**locals())
+
+    @staticmethod
+    def create_nft_output(
+            nft_id,
+            amount=None,
+            byte_cost=None,
+            key_factor=None,
+            data_factor=None,
+            native_tokens=None,
+            unlock_conditions=None,
+            feature_blocks=None,
+            immutable_feature_blocks=None):
+        """Create OutputDto::Nft JSON string
+        """
+        return iota_client.create_nft_output(**locals())
+
     def generate_addresses(self, signer, options):
         """Generate addresses.
         """

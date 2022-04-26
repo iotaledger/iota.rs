@@ -1,9 +1,10 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::error::Error as RustError;
-use pyo3::{exceptions, prelude::*};
+use core::convert::Infallible;
 use std::convert::From;
+
+use pyo3::{exceptions, prelude::*};
 
 /// The `Result` structure to wrap the error type for python binding.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -15,8 +16,8 @@ pub struct Error {
     pub error: PyErr,
 }
 
-impl From<RustError> for Error {
-    fn from(err: RustError) -> Self {
+impl From<iota_client::error::Error> for Error {
+    fn from(err: iota_client::error::Error) -> Self {
         Error {
             error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
         }
@@ -41,6 +42,22 @@ impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
         Error {
             error: PyErr::new::<exceptions::PyIOError, _>(err.to_string()),
+        }
+    }
+}
+
+impl From<iota_client::bee_message::Error> for Error {
+    fn from(err: iota_client::bee_message::Error) -> Self {
+        Error {
+            error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
+        }
+    }
+}
+
+impl From<Infallible> for Error {
+    fn from(err: Infallible) -> Self {
+        Error {
+            error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
         }
     }
 }
