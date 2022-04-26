@@ -18,8 +18,8 @@ use bee_rest_api::types::{
 use serde::Serialize;
 
 use crate::{
-    api::PreparedTransactionData, builder::NetworkInfo, node_api::high_level::AddressBalance, node_manager::node::Node,
-    Error, NodeInfoWrapper,
+    api::PreparedTransactionDataDto, builder::NetworkInfo, node_api::high_level::AddressBalance,
+    node_manager::node::Node, Error, NodeInfoWrapper,
 };
 
 /// The response message.
@@ -49,7 +49,7 @@ pub enum ResponseType {
     /// Is fallback to local proof of work enabled
     FallbackToLocalPoW(bool),
     /// Prepared transaction data for signing
-    PreparedTransactionData(PreparedTransactionData),
+    PreparedTransactionData(PreparedTransactionDataDto),
     /// Signed transaction data for signing
     SignedTransaction(PayloadDto),
     /// returns the unsynced nodes.

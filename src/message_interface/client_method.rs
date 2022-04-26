@@ -14,7 +14,7 @@ use serde::Deserialize;
 use crate::{
     api::{
         ClientMessageBuilderOptions as GenerateMessageOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
-        PreparedTransactionData,
+        PreparedTransactionDataDto,
     },
     node_api::indexer::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
@@ -72,7 +72,7 @@ pub enum ClientMethod {
         signer: String,
         /// Prepared transaction data
         #[serde(rename = "preparedTransactionData")]
-        prepared_transaction_data: PreparedTransactionData,
+        prepared_transaction_data: PreparedTransactionDataDto,
     },
     /// Submit a payload in a message
     SubmitPayload {

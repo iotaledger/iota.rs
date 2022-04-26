@@ -99,7 +99,7 @@ pub struct ClientMessageBuilderOptions {
     /// Parents
     pub parents: Option<Vec<MessageId>>,
     /// Allow burning of native tokens
-    pub allow_burning: bool,
+    pub allow_burning: Option<bool>,
 }
 
 impl<'a> ClientMessageBuilder<'a> {
@@ -303,6 +303,9 @@ impl<'a> ClientMessageBuilder<'a> {
 
         if let Some(parents) = options.parents {
             self = self.with_parents(parents)?;
+        }
+        if let Some(allow_burning) = options.allow_burning {
+            self = self.with_burning_allowed(allow_burning);
         }
 
         Ok(self)
