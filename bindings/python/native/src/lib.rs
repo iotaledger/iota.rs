@@ -60,8 +60,9 @@ pub fn send_message(handle: &ClientMessageHandler, message_type: String) -> Resu
 /// Create OutputDto::Treasury JSON string
 pub fn create_treasury_output(amount: u64) -> Result<String> {
     let treasury_output = TreasuryOutput::new(amount)?;
+    let output = &Output::Treasury(treasury_output);
     // Convert to Dto
-    let treasury_output_dto: OutputDto = (&Output::Treasury(treasury_output)).try_into()?;
+    let treasury_output_dto: OutputDto = output.try_into()?;
     Ok(serde_json::ser::to_string(&treasury_output_dto)?)
 }
 
@@ -99,7 +100,7 @@ pub fn create_basic_output(
         let tokens: Vec<NativeToken> = native_tokens
             .iter()
             .map(|native_token| {
-                serde_json::from_str::<NativeToken>(&native_token)
+                serde_json::from_str::<NativeToken>(native_token)
                     .unwrap_or_else(|_| panic!("Invalid NativeToken: {:?}", native_token))
             })
             .collect();
@@ -109,7 +110,7 @@ pub fn create_basic_output(
         let conditions: Vec<UnlockCondition> = unlock_conditions
             .iter()
             .map(|unlock_condition| {
-                serde_json::from_str::<UnlockCondition>(&unlock_condition)
+                serde_json::from_str::<UnlockCondition>(unlock_condition)
                     .unwrap_or_else(|_| panic!("Invalid UnlockCondition: {:?}", unlock_condition))
             })
             .collect();
@@ -119,15 +120,15 @@ pub fn create_basic_output(
         let blocks: Vec<FeatureBlock> = feature_blocks
             .iter()
             .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(&feature_block)
+                serde_json::from_str::<FeatureBlock>(feature_block)
                     .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
             })
             .collect();
         builder = builder.with_feature_blocks(blocks);
     }
-    let basic_output = builder.finish_output()?;
+    let basic_output = &builder.finish_output()?;
     // Convert to Dto
-    let basic_output_dto: OutputDto = (&basic_output).try_into()?;
+    let basic_output_dto: OutputDto = basic_output.try_into()?;
     Ok(serde_json::ser::to_string(&basic_output_dto)?)
 }
 
@@ -171,7 +172,7 @@ pub fn create_alias_output(
         let tokens: Vec<NativeToken> = native_tokens
             .iter()
             .map(|native_token| {
-                serde_json::from_str::<NativeToken>(&native_token)
+                serde_json::from_str::<NativeToken>(native_token)
                     .unwrap_or_else(|_| panic!("Invalid NativeToken: {:?}", native_token))
             })
             .collect();
@@ -190,7 +191,7 @@ pub fn create_alias_output(
         let conditions: Vec<UnlockCondition> = unlock_conditions
             .iter()
             .map(|unlock_condition| {
-                serde_json::from_str::<UnlockCondition>(&unlock_condition)
+                serde_json::from_str::<UnlockCondition>(unlock_condition)
                     .unwrap_or_else(|_| panic!("Invalid UnlockCondition: {:?}", unlock_condition))
             })
             .collect();
@@ -200,7 +201,7 @@ pub fn create_alias_output(
         let blocks: Vec<FeatureBlock> = feature_blocks
             .iter()
             .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(&feature_block)
+                serde_json::from_str::<FeatureBlock>(feature_block)
                     .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
             })
             .collect();
@@ -210,15 +211,15 @@ pub fn create_alias_output(
         let blocks: Vec<FeatureBlock> = immutable_feature_blocks
             .iter()
             .map(|immutable_feature_block| {
-                serde_json::from_str::<FeatureBlock>(&immutable_feature_block)
+                serde_json::from_str::<FeatureBlock>(immutable_feature_block)
                     .unwrap_or_else(|_| panic!("Invalid immutable FeatureBlock: {:?}", immutable_feature_block))
             })
             .collect();
         builder = builder.with_immutable_feature_blocks(blocks);
     }
-    let alias_output = builder.finish_output()?;
+    let alias_output = &builder.finish_output()?;
     // Convert to Dto
-    let alias_output_dto: OutputDto = (&alias_output).try_into()?;
+    let alias_output_dto: OutputDto = alias_output.try_into()?;
     Ok(serde_json::ser::to_string(&alias_output_dto)?)
 }
 
@@ -264,7 +265,7 @@ pub fn create_foundry_output(
         let tokens: Vec<NativeToken> = native_tokens
             .iter()
             .map(|native_token| {
-                serde_json::from_str::<NativeToken>(&native_token)
+                serde_json::from_str::<NativeToken>(native_token)
                     .unwrap_or_else(|_| panic!("Invalid NativeToken: {:?}", native_token))
             })
             .collect();
@@ -274,7 +275,7 @@ pub fn create_foundry_output(
         let conditions: Vec<UnlockCondition> = unlock_conditions
             .iter()
             .map(|unlock_condition| {
-                serde_json::from_str::<UnlockCondition>(&unlock_condition)
+                serde_json::from_str::<UnlockCondition>(unlock_condition)
                     .unwrap_or_else(|_| panic!("Invalid UnlockCondition: {:?}", unlock_condition))
             })
             .collect();
@@ -284,7 +285,7 @@ pub fn create_foundry_output(
         let blocks: Vec<FeatureBlock> = feature_blocks
             .iter()
             .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(&feature_block)
+                serde_json::from_str::<FeatureBlock>(feature_block)
                     .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
             })
             .collect();
@@ -294,15 +295,15 @@ pub fn create_foundry_output(
         let blocks: Vec<FeatureBlock> = immutable_feature_blocks
             .iter()
             .map(|immutable_feature_block| {
-                serde_json::from_str::<FeatureBlock>(&immutable_feature_block)
+                serde_json::from_str::<FeatureBlock>(immutable_feature_block)
                     .unwrap_or_else(|_| panic!("Invalid immutable FeatureBlock: {:?}", immutable_feature_block))
             })
             .collect();
         builder = builder.with_immutable_feature_blocks(blocks);
     }
-    let foundry_output = builder.finish_output()?;
+    let foundry_output = &builder.finish_output()?;
     // Convert to Dto
-    let foundry_output_dto: OutputDto = (&foundry_output).try_into()?;
+    let foundry_output_dto: OutputDto = foundry_output.try_into()?;
     Ok(serde_json::ser::to_string(&foundry_output_dto)?)
 }
 
@@ -343,7 +344,7 @@ pub fn create_nft_output(
         let tokens: Vec<NativeToken> = native_tokens
             .iter()
             .map(|native_token| {
-                serde_json::from_str::<NativeToken>(&native_token)
+                serde_json::from_str::<NativeToken>(native_token)
                     .unwrap_or_else(|_| panic!("Invalid NativeToken: {:?}", native_token))
             })
             .collect();
@@ -353,7 +354,7 @@ pub fn create_nft_output(
         let conditions: Vec<UnlockCondition> = unlock_conditions
             .iter()
             .map(|unlock_condition| {
-                serde_json::from_str::<UnlockCondition>(&unlock_condition)
+                serde_json::from_str::<UnlockCondition>(unlock_condition)
                     .unwrap_or_else(|_| panic!("Invalid UnlockCondition: {:?}", unlock_condition))
             })
             .collect();
@@ -363,7 +364,7 @@ pub fn create_nft_output(
         let blocks: Vec<FeatureBlock> = feature_blocks
             .iter()
             .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(&feature_block)
+                serde_json::from_str::<FeatureBlock>(feature_block)
                     .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
             })
             .collect();
@@ -373,15 +374,15 @@ pub fn create_nft_output(
         let blocks: Vec<FeatureBlock> = immutable_feature_blocks
             .iter()
             .map(|immutable_feature_block| {
-                serde_json::from_str::<FeatureBlock>(&immutable_feature_block)
+                serde_json::from_str::<FeatureBlock>(immutable_feature_block)
                     .unwrap_or_else(|_| panic!("Invalid immutable FeatureBlock: {:?}", immutable_feature_block))
             })
             .collect();
         builder = builder.with_immutable_feature_blocks(blocks);
     }
-    let nft_output = builder.finish_output()?;
+    let nft_output = &builder.finish_output()?;
     // Convert to Dto
-    let nft_output_dto: OutputDto = (&nft_output).try_into()?;
+    let nft_output_dto: OutputDto = nft_output.try_into()?;
     Ok(serde_json::ser::to_string(&nft_output_dto)?)
 }
 
