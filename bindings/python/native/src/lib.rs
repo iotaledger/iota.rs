@@ -57,17 +57,6 @@ pub fn send_message(handle: &ClientMessageHandler, message_type: String) -> Resu
 
 #[pyfunction]
 #[allow(clippy::too_many_arguments)]
-/// Create OutputDto::Treasury JSON string
-pub fn create_treasury_output(amount: u64) -> Result<String> {
-    let treasury_output = TreasuryOutput::new(amount)?;
-    let output = &Output::Treasury(treasury_output);
-    // Convert to Dto
-    let treasury_output_dto: OutputDto = output.try_into()?;
-    Ok(serde_json::ser::to_string(&treasury_output_dto)?)
-}
-
-#[pyfunction]
-#[allow(clippy::too_many_arguments)]
 /// Create OutputDto::Basic JSON string
 pub fn create_basic_output(
     amount: Option<u64>,
@@ -391,7 +380,6 @@ pub fn create_nft_output(
 fn iota_client(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_message_handler, m)?).unwrap();
     m.add_function(wrap_pyfunction!(send_message, m)?).unwrap();
-    m.add_function(wrap_pyfunction!(create_treasury_output, m)?).unwrap();
     m.add_function(wrap_pyfunction!(create_basic_output, m)?).unwrap();
     m.add_function(wrap_pyfunction!(create_alias_output, m)?).unwrap();
     m.add_function(wrap_pyfunction!(create_foundry_output, m)?).unwrap();
