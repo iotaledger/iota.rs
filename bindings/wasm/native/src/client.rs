@@ -8,8 +8,8 @@ use crate::{
 };
 use iota_client::{
   bee_message::{
-    input::UtxoInput, parents::Parents, payload::transaction::TransactionId, payload::transaction::TransactionPayload,
-    Message, MessageBuilder as RustMessageBuilder, MessageId,
+    input::UtxoInput, parents::Parents, payload::transaction::Essence, payload::transaction::TransactionId,
+    payload::transaction::TransactionPayload, Message, MessageBuilder as RustMessageBuilder, MessageId,
   },
   bee_rest_api::types::dtos::{AddressDto, MessageDto as BeeMessageDto, OutputDto, PayloadDto, TransactionPayloadDto},
   common::packable::Packable,
@@ -673,5 +673,13 @@ impl Client {
       Err(_) => serde_json::from_str::<TransactionPayload>(transaction).map_err(wasm_error)?,
     };
     Ok(transaction.id().to_string())
+  }
+
+  /// Get essence hash
+  #[wasm_bindgen(js_name = getEssenceHash)]
+  pub fn get_essence_hash(&self, essence: &str) -> Result<String, JsValue> {
+    let essence = serde_json::from_str::<Essence>(essence).map_err(wasm_error)?;
+    let hashed_essence = essence.hash();
+    Ok(hex::encode(hashed_essence))
   }
 }
