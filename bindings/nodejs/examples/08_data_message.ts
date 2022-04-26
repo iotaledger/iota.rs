@@ -7,11 +7,7 @@ import { Client, utf8ToBytes, hexToUtf8, initLogger } from '@iota/client';
 
 // In this example we will send a message with a tagged data payload
 async function run() {
-    initLogger({
-        colorEnabled: true,
-        name: './client.log',
-        levelFilter: 'debug',
-    });
+    initLogger();
 
     // client will connect to testnet by default
     const client = new Client({

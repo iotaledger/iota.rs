@@ -14,11 +14,7 @@ async function run() {
     const { writeFile } = require('fs/promises');
     require('dotenv').config({ path: '../.env' });
 
-    initLogger({
-        colorEnabled: true,
-        name: './client.log',
-        levelFilter: 'debug',
-    });
+    initLogger();
 
     // client will connect to testnet by default
     const offlineClient = new Client({
@@ -27,7 +23,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265/',
-                auth: null,
                 disabled: false,
             },
         ],

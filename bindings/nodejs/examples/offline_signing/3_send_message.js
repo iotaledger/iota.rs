@@ -9,18 +9,14 @@ async function run() {
     const { Client, initLogger } = require('@iota/client');
     const { readFile } = require('fs/promises');
 
-    initLogger({
-        colorEnabled: true,
-        name: './client.log',
-        levelFilter: 'debug',
-    });
+    initLogger();
 
     // client will connect to testnet by default
     const onlineClient = new Client({
         nodes: [
             {
                 // Insert your node URL here.
-                url: 'http://localhost:14265/',
+                url: 'http://localhost:14265',
                 disabled: false,
             },
         ],
@@ -32,17 +28,14 @@ async function run() {
             await readFile(SIGNED_TRANSACTION_FILE_NAME, 'utf8'),
         );
 
-        // TODO: fix error from submitPayload method:
-        // {"type":"Error","payload":{"type":"NodeError","error":"Response error with status code 400:
-        // {\"error\":{\"code\":\"400\",\"message\":\"invalid parameter, error: invalid payload,
-        // error: wrong networkID: 10859088168901003000: code=400, message=invalid parameter\"}}\n,
-        // URL: REDACTED"},"action":"CallClientMethod"}
         let message = await onlineClient.submitPayload(signedTransaction);
 
+        // TODO: get messageId from message (Blake2b256 hash of message)
         console.log(
             'Transaction sent: https://explorer.iota.org/devnet/message/' +
                 message.messageId,
         );
+        console.log(message);
     } catch (error) {
         console.error(error);
     }

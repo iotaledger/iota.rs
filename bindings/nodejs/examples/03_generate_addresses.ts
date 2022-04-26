@@ -8,11 +8,7 @@ import 'dotenv/config';
 
 // In this example we will create addresses from a mnemonic defined in .env
 async function run() {
-    initLogger({
-        colorEnabled: true,
-        name: './client.log',
-        levelFilter: 'debug',
-    });
+    initLogger();
 
     // client will connect to testnet by default
     const client = new Client({
@@ -72,10 +68,7 @@ async function run() {
             '\n',
         );
 
-        // TODO: Can't be implemented due to the client method GenerateAddresses
-        // calling finish(), restricting it to one response type.
-        // See #931 https://github.com/iotaledger/iota.rs/issues/931
-
+        // TODO: Implement this example
         // Generate public (false) & internal (true) addresses
         // console.log(
         //     `List of generated public and internal addresses: \n${bech32Addresses}\n`,

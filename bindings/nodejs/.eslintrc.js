@@ -1,9 +1,7 @@
 module.exports = {
     env: {
-        node: true,
-        browser: true,
         commonjs: true,
-        es2021: true,
+        es2019: true,
     },
     plugins: ['@typescript-eslint'],
     extends: [

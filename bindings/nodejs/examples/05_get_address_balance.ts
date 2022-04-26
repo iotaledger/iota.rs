@@ -9,11 +9,7 @@ import 'dotenv/config';
 // In this example we will get the outputs of an address that has no additional unlock
 // conditions and sum the amounts and native tokens
 async function run() {
-    initLogger({
-        colorEnabled: true,
-        name: './client.log',
-        levelFilter: 'debug',
-    });
+    initLogger();
 
     // client will connect to testnet by default
     const client = new Client({

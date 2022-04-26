@@ -10,11 +10,7 @@ async function run() {
     const { Client, initLogger } = require('@iota/client');
     const { writeFile, readFile } = require('fs/promises');
 
-    initLogger({
-        colorEnabled: true,
-        name: './client.log',
-        levelFilter: 'debug',
-    });
+    initLogger();
 
     // client will connect to testnet by default
     const onlineClient = new Client({

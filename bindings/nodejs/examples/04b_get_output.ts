@@ -7,11 +7,7 @@ import { Client, initLogger } from '@iota/client';
 
 // In this example we will get output from a known outputId
 async function run() {
-    initLogger({
-        colorEnabled: true,
-        name: './client.log',
-        levelFilter: 'debug',
-    });
+    initLogger();
 
     // client will connect to testnet by default
     const client = new Client({
