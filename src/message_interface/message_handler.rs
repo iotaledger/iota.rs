@@ -81,27 +81,33 @@ impl ClientMessageHandler {
 
     async fn call_client_method(&self, method: &ClientMethod) -> Result<ResponseType> {
         match method {
-            ClientMethod::GenerateAddresses { secmngr, options } => {
-                let secmngr: SecretManagerType = secmngr.parse()?;
+            ClientMethod::GenerateAddresses {
+                secret_manager,
+                options,
+            } => {
+                let secret_manager: SecretManagerType = secret_manager.parse()?;
                 let addresses = self
                     .client
-                    .get_addresses(&secmngr)
+                    .get_addresses(&secret_manager)
                     .set_options(options.clone())?
                     .finish()
                     .await?;
                 Ok(ResponseType::GeneratedAddresses(addresses))
             }
-            ClientMethod::GenerateMessage { secmngr, options } => {
+            ClientMethod::GenerateMessage {
+                secret_manager,
+                options,
+            } => {
                 // Prepare transaction
                 let mut transaction_builder = self.client.message();
 
-                let secmngr: Option<SecretManagerType> = match secmngr {
-                    Some(secmngr) => Some(secmngr.parse()?),
+                let secret_manager: Option<SecretManagerType> = match secret_manager {
+                    Some(secret_manager) => Some(secret_manager.parse()?),
                     None => None,
                 };
 
-                if let Some(secmngr) = &secmngr {
-                    transaction_builder = transaction_builder.with_secret_manager(secmngr);
+                if let Some(secret_manager) = &secret_manager {
+                    transaction_builder = transaction_builder.with_secret_manager(secret_manager);
                 }
 
                 if let Some(options) = options {
@@ -267,14 +273,14 @@ impl ClientMessageHandler {
                 Ok(ResponseType::RetryUntilIncludedSuccessful(res))
             }
             ClientMethod::ConsolidateFunds {
-                secmngr,
+                secret_manager,
                 account_index,
                 address_range,
             } => {
-                let secmngr: SecretManagerType = secmngr.parse()?;
+                let secret_manager: SecretManagerType = secret_manager.parse()?;
                 Ok(ResponseType::ConsolidatedFunds(
                     self.client
-                        .consolidate_funds(&secmngr, *account_index, address_range.clone())
+                        .consolidate_funds(&secret_manager, *account_index, address_range.clone())
                         .await?,
                 ))
             }

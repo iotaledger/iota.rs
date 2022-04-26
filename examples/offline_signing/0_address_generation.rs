@@ -23,12 +23,12 @@ async fn main() -> Result<()> {
 
     // Creates a client instance.
     let offline_client = Client::builder().with_offline_mode().finish().await?;
-    let secmngr =
+    let secret_manager =
         MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generates addresses offline.
     let addresses = offline_client
-        .get_addresses(&secmngr)
+        .get_addresses(&secret_manager)
         .with_range(0..10)
         .with_bech32_hrp("atoi")
         .finish()

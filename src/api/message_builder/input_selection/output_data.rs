@@ -130,11 +130,11 @@ pub(crate) async fn get_utxo_chains_inputs(
     let mut utxo_chain_inputs = Vec::new();
     for (unlock_address, output_response) in utxo_chains {
         let (address_index, internal) = match message_builder.secret_manager {
-            Some(secmngr) => {
+            Some(secret_manager) => {
                 match unlock_address {
                     Address::Ed25519(_) => {
                         search_address(
-                            secmngr,
+                            secret_manager,
                             &bech32_hrp,
                             message_builder.coin_type,
                             message_builder.account_index,

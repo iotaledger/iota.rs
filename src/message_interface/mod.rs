@@ -63,7 +63,7 @@ mod tests {
             .await
             .unwrap();
 
-        let secmngr = format!(
+        let secret_manager = format!(
             "{{\"Mnemonic\":\"{}\"}}",
             &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
         );
@@ -77,7 +77,10 @@ mod tests {
                 network: Network::Testnet,
             }),
         };
-        let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses { secmngr, options });
+        let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+            secret_manager,
+            options,
+        });
 
         let response = message_interface::send_message(&message_handler, message).await;
         match response.response_type() {
@@ -111,7 +114,7 @@ mod tests {
             .unwrap();
 
         // Generate addresses
-        let secmngr = format!(
+        let secret_manager = format!(
             "{{\"Mnemonic\":\"{}\"}}",
             &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
         );
@@ -127,7 +130,7 @@ mod tests {
         };
 
         let generate_addresses_message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            secmngr: secmngr.clone(),
+            secret_manager: secret_manager.clone(),
             options,
         });
 
@@ -161,7 +164,7 @@ mod tests {
 
         let options = serde_json::from_str(&options).unwrap();
         let generate_message = MessageType::CallClientMethod(ClientMethod::GenerateMessage {
-            secmngr: Some(secmngr),
+            secret_manager: Some(secret_manager),
             options: Some(options),
         });
 

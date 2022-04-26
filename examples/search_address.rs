@@ -25,11 +25,11 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    let secmngr =
+    let secret_manager =
         MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let addresses = client
-        .get_addresses(&secmngr)
+        .get_addresses(&secret_manager)
         .with_account_index(0)
         .with_range(9..10)
         .get_raw()
@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
     println!("{:?}", addresses[0]);
 
     let res = search_address(
-        &secmngr,
+        &secret_manager,
         &client.get_bech32_hrp().await.unwrap(),
         IOTA_COIN_TYPE,
         0,

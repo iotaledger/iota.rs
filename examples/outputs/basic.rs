@@ -36,10 +36,10 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
-    let secmngr =
+    let secret_manager =
         MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
-    let address = client.get_addresses(&secmngr).with_range(0..1).get_raw().await?[0];
+    let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
         request_funds_from_faucet(
@@ -96,7 +96,7 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_secret_manager(&secmngr)
+        .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;

@@ -635,8 +635,8 @@ impl Client {
     }
 
     /// Return a list of addresses from a secret manager regardless of their validity.
-    pub fn get_addresses<'a>(&'a self, secmngr: &'a dyn SecretManager) -> GetAddressesBuilder<'a> {
-        GetAddressesBuilder::new(secmngr).with_client(self)
+    pub fn get_addresses<'a>(&'a self, secret_manager: &'a dyn SecretManager) -> GetAddressesBuilder<'a> {
+        GetAddressesBuilder::new(secret_manager).with_client(self)
     }
 
     /// Find all messages by provided message IDs.

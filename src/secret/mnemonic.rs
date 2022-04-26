@@ -112,9 +112,9 @@ mod tests {
         };
 
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
-        let secmngr = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
+        let secret_manager = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
 
-        let addresses = secmngr
+        let addresses = secret_manager
             .generate_addresses(
                 IOTA_COIN_TYPE,
                 0,
@@ -142,9 +142,9 @@ mod tests {
         };
 
         let seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
-        let secmngr = MnemonicSecretManager::try_from_hex_seed(seed).unwrap();
+        let secret_manager = MnemonicSecretManager::try_from_hex_seed(seed).unwrap();
 
-        let addresses = secmngr
+        let addresses = secret_manager
             .generate_addresses(
                 IOTA_COIN_TYPE,
                 0,

@@ -7,12 +7,12 @@ use iota_client::{api::GetAddressesBuilder, constants::SHIMMER_TESTNET_BECH32_HR
 async fn mnemonic_secret_manager_dto() -> Result<()> {
     let dto = r#"{"Mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast"}"#;
 
-    let secmngr = match dto.parse::<SecretManagerType>()? {
-        SecretManagerType::Mnemonic(secmngr) => *secmngr,
+    let secret_manager = match dto.parse::<SecretManagerType>()? {
+        SecretManagerType::Mnemonic(secret_manager) => *secret_manager,
         _ => panic!(),
     };
 
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..1)
@@ -36,15 +36,15 @@ async fn stronghold_secret_manager_dto() -> Result<()> {
         "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
     );
 
-    let mut secmngr = match dto.parse::<SecretManagerType>()? {
-        SecretManagerType::Stronghold(secmngr) => *secmngr,
+    let mut secret_manager = match dto.parse::<SecretManagerType>()? {
+        SecretManagerType::Stronghold(secret_manager) => *secret_manager,
         _ => panic!(),
     };
 
     // The mnemonic only needs to be stored the first time
-    secmngr.store_mnemonic(mnemonic.clone()).await.unwrap();
+    secret_manager.store_mnemonic(mnemonic.clone()).await.unwrap();
 
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..1)
@@ -58,7 +58,7 @@ async fn stronghold_secret_manager_dto() -> Result<()> {
     );
 
     // Calling store_mnemonic() twice should fail, because we would otherwise overwrite the stored entry
-    assert!(secmngr.store_mnemonic(mnemonic).await.is_err());
+    assert!(secret_manager.store_mnemonic(mnemonic).await.is_err());
 
     // Remove garbage after test, but don't care about the result
     std::fs::remove_file("test.stronghold").unwrap_or(());

@@ -31,7 +31,7 @@ const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_tran
 async fn main() -> Result<()> {
     dotenv().ok();
 
-    let secmngr =
+    let secret_manager =
         MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let prepared_transaction = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     }
 
     // Signs prepared transaction offline.
-    let unlock_blocks = secmngr
+    let unlock_blocks = secret_manager
         .sign_transaction_essence(
             &prepared_transaction.essence,
             &prepared_transaction.input_signing_data_entries,

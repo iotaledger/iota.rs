@@ -38,17 +38,21 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let secmngr_1 =
+    let secret_manager_1 =
         MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
-    let secmngr_2 =
+    let secret_manager_2 =
         MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
 
     let message = client
         .message()
-        .with_secret_manager(&secmngr_1)
+        .with_secret_manager(&secret_manager_1)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &client.get_addresses(&secmngr_2).with_range(0..1).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_2)
+                .with_range(0..1)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()
@@ -59,9 +63,13 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_secret_manager(&secmngr_1)
+        .with_secret_manager(&secret_manager_1)
         .with_output(
-            &client.get_addresses(&secmngr_2).with_range(1..2).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_2)
+                .with_range(1..2)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()
@@ -72,9 +80,13 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_secret_manager(&secmngr_1)
+        .with_secret_manager(&secret_manager_1)
         .with_output(
-            &client.get_addresses(&secmngr_2).with_range(2..3).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_2)
+                .with_range(2..3)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()
@@ -85,14 +97,22 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_secret_manager(&secmngr_2)
+        .with_secret_manager(&secret_manager_2)
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            &client.get_addresses(&secmngr_1).with_range(1..2).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_1)
+                .with_range(1..2)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .with_output(
-            &client.get_addresses(&secmngr_1).with_range(2..3).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_1)
+                .with_range(2..3)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()

@@ -31,15 +31,22 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let secmngr_1 =
+    let secret_manager_1 =
         MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
-    let secmngr_2 =
+    let secret_manager_2 =
         MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client
         .output_ids(vec![
-            QueryParameter::Address(client.get_addresses(&secmngr_1).with_range(0..1).finish().await?[0].clone()),
+            QueryParameter::Address(
+                client
+                    .get_addresses(&secret_manager_1)
+                    .with_range(0..1)
+                    .finish()
+                    .await?[0]
+                    .clone(),
+            ),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
             QueryParameter::HasStorageDepositReturnCondition(false),
@@ -66,10 +73,15 @@ async fn main() -> Result<()> {
 
     println!("Total amount: {}", total_amount);
 
-    let mut basic_output_builder =
-        BasicOutputBuilder::new_with_amount(total_amount)?.add_unlock_condition(UnlockCondition::Address(
-            AddressUnlockCondition::new(client.get_addresses(&secmngr_2).with_range(0..1).get_raw().await?[0]),
-        ));
+    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(total_amount)?.add_unlock_condition(
+        UnlockCondition::Address(AddressUnlockCondition::new(
+            client
+                .get_addresses(&secret_manager_2)
+                .with_range(0..1)
+                .get_raw()
+                .await?[0],
+        )),
+    );
 
     for native_token in total_native_tokens.into_iter() {
         basic_output_builder = basic_output_builder.add_native_token(native_token);
@@ -78,7 +90,7 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_secret_manager(&secmngr_1)
+        .with_secret_manager(&secret_manager_1)
         .with_outputs(vec![new_output])?
         .finish()
         .await?;

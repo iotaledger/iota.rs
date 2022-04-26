@@ -24,16 +24,16 @@ async fn main() -> Result<()> {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let secmngr =
+    let secret_manager =
         MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generate addresses with default account index and range
-    let addresses = client.get_addresses(&secmngr).finish().await.unwrap();
+    let addresses = client.get_addresses(&secret_manager).finish().await.unwrap();
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate addresses with custom account index and range
     let addresses = client
-        .get_addresses(&secmngr)
+        .get_addresses(&secret_manager)
         .with_account_index(0)
         .with_range(0..4)
         .finish()
@@ -42,11 +42,11 @@ async fn main() -> Result<()> {
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate public (false) & internal (true) addresses
-    let addresses = client.get_addresses(&secmngr).with_range(0..4).get_all().await?;
+    let addresses = client.get_addresses(&secret_manager).with_range(0..4).get_all().await?;
     println!("List of generated public and internal addresses:\n{:?}\n", addresses);
 
     // Generate public addresses offline with the bech32_hrp defined
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..4)

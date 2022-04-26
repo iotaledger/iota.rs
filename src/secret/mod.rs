@@ -218,25 +218,25 @@ impl SecretManager for SecretManagerType {
     ) -> crate::Result<Vec<Address>> {
         match self {
             #[cfg(feature = "stronghold")]
-            SecretManagerType::Stronghold(secmngr) => {
-                secmngr
+            SecretManagerType::Stronghold(secret_manager) => {
+                secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
             #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNano(secmngr) => {
-                secmngr
+            SecretManagerType::LedgerNano(secret_manager) => {
+                secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
             #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNanoSimulator(secmngr) => {
-                secmngr
+            SecretManagerType::LedgerNanoSimulator(secret_manager) => {
+                secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
-            SecretManagerType::Mnemonic(secmngr) => {
-                secmngr
+            SecretManagerType::Mnemonic(secret_manager) => {
+                secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
@@ -251,14 +251,20 @@ impl SecretManager for SecretManagerType {
     ) -> crate::Result<UnlockBlock> {
         match self {
             #[cfg(feature = "stronghold")]
-            SecretManagerType::Stronghold(secmngr) => secmngr.signature_unlock(input, essence_hash, metadata).await,
-            #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNano(secmngr) => secmngr.signature_unlock(input, essence_hash, metadata).await,
-            #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNanoSimulator(secmngr) => {
-                secmngr.signature_unlock(input, essence_hash, metadata).await
+            SecretManagerType::Stronghold(secret_manager) => {
+                secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
-            SecretManagerType::Mnemonic(secmngr) => secmngr.signature_unlock(input, essence_hash, metadata).await,
+            #[cfg(feature = "ledger")]
+            SecretManagerType::LedgerNano(secret_manager) => {
+                secret_manager.signature_unlock(input, essence_hash, metadata).await
+            }
+            #[cfg(feature = "ledger")]
+            SecretManagerType::LedgerNanoSimulator(secret_manager) => {
+                secret_manager.signature_unlock(input, essence_hash, metadata).await
+            }
+            SecretManagerType::Mnemonic(secret_manager) => {
+                secret_manager.signature_unlock(input, essence_hash, metadata).await
+            }
         }
     }
 }

@@ -28,7 +28,7 @@ pub enum ClientMethod {
     GenerateAddresses {
         /// Create secret manager from json; alias "signer" for compatibility
         #[serde(alias = "signer")]
-        secmngr: String,
+        secret_manager: String,
         /// Addresses generation options
         options: GenerateAddressesOptions,
     },
@@ -36,7 +36,7 @@ pub enum ClientMethod {
     GenerateMessage {
         /// Secret manager; alias "signer" for compatibility
         #[serde(alias = "signer")]
-        secmngr: Option<String>,
+        secret_manager: Option<String>,
         /// Options
         options: Option<GenerateMessageOptions>,
     },
@@ -245,7 +245,7 @@ pub enum ClientMethod {
     ConsolidateFunds {
         /// Secret manager; alias "signer" for compatibility
         #[serde(alias = "signer")]
-        secmngr: String,
+        secret_manager: String,
         /// Account index
         account_index: u32,
         /// Address_range

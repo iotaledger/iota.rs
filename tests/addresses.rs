@@ -10,11 +10,11 @@ use iota_client::{
 
 #[tokio::test]
 async fn addresses() {
-    let secmngr =
+    let secret_manager =
         MnemonicSecretManager::try_from_hex_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
             .unwrap();
 
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(IOTA_COIN_TYPE)
         .with_bech32_hrp(IOTA_TESTNET_BECH32_HRP)
         .with_account_index(0)
@@ -52,10 +52,10 @@ async fn public_key_to_address() {
 #[tokio::test]
 async fn mnemonic_address_generation_iota() {
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
-    let secmngr = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
+    let secret_manager = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
 
     // account 0, address 0 and 1
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(IOTA_COIN_TYPE)
         .with_bech32_hrp(IOTA_BECH32_HRP)
         .with_account_index(0)
@@ -74,7 +74,7 @@ async fn mnemonic_address_generation_iota() {
     );
 
     // account 1
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(IOTA_COIN_TYPE)
         .with_bech32_hrp(IOTA_BECH32_HRP)
         .with_account_index(1)
@@ -92,10 +92,10 @@ async fn mnemonic_address_generation_iota() {
 #[tokio::test]
 async fn mnemonic_address_generation_shimmer() {
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
-    let secmngr = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
+    let secret_manager = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
 
     // account 0, address 0 and 1
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(SHIMMER_COIN_TYPE)
         .with_bech32_hrp(SHIMMER_BECH32_HRP)
         .with_account_index(0)
@@ -114,7 +114,7 @@ async fn mnemonic_address_generation_shimmer() {
     );
 
     // account 1
-    let addresses = GetAddressesBuilder::new(&secmngr)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(SHIMMER_COIN_TYPE)
         .with_bech32_hrp(SHIMMER_BECH32_HRP)
         .with_account_index(1)
